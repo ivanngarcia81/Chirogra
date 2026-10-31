@@ -97,6 +97,8 @@ extension SchemaV1 {
         public var ein: String = ""
         public var entityTypeRaw: String = EntityType.soleProprietorship.rawValue
         public var state: String = ""
+        /// Sector elegido en el alta (`BusinessSector`); decidió la plantilla del plan de cuentas.
+        public var sectorRaw: String = BusinessSector.services.rawValue
         public var address: String = ""
         public var email: String = ""
         public var phone: String = ""

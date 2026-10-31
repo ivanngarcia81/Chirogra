@@ -1,7 +1,36 @@
 import ChirograCore
 import Foundation
 
-/// Plantilla de plan de cuentas para pequeños negocios de servicios en EE. UU. (DISEÑO §4.1).
+/// Sector del negocio: decide la plantilla del plan de cuentas (DISEÑO §3.1 y §4.1).
+public enum BusinessSector: String, CaseIterable, Sendable, Codable {
+    case services, retail, construction
+
+    public var title: String {
+        switch self {
+        case .services: "Servicios"
+        case .retail: "Comercio"
+        case .construction: "Construcción y oficios"
+        }
+    }
+
+    public var summary: String {
+        switch self {
+        case .services: "Consultoría, diseño, salud, educación, agencias…"
+        case .retail: "Tienda física o en línea que vende productos con inventario."
+        case .construction: "Contratistas, remodelación, electricistas, plomeros…"
+        }
+    }
+
+    public var template: ChartTemplate {
+        switch self {
+        case .services: .usServices
+        case .retail: .usRetail
+        case .construction: .usConstruction
+        }
+    }
+}
+
+/// Plantillas de plan de cuentas para pequeños negocios en EE. UU. (DISEÑO §4.1).
 /// Categorías de gasto alineadas con las líneas del Schedule C; nombres y numeración propios de Chirogra.
 public struct ChartTemplate: Sendable {
     public struct Entry: Sendable {
@@ -79,4 +108,33 @@ public struct ChartTemplate: Sendable {
         Entry("6900", "Depreciación", "Depreciation", .operatingExpense),
         Entry("8000", "Otros gastos", "Other Expenses", .otherExpense),
     ])
+
+    /// Comercio: inventario, ventas de mercancía y su costo.
+    public static let usRetail = usServices.replacing([
+        Entry("4000", "Ventas de mercancía", "Merchandise Sales", .sales),
+        Entry("4100", "Ventas en línea", "Online Sales", .sales),
+        Entry("5000", "Costo de mercancía vendida", "Cost of Goods Sold", .costOfGoodsSold),
+        Entry("5100", "Fletes y envíos de compra", "Freight In", .costOfGoodsSold),
+    ]).adding([
+        Entry("1200", "Inventario", "Inventory", .inventory),
+        Entry("6120", "Comisiones de plataformas de venta", "Marketplace Fees", .operatingExpense),
+    ])
+
+    /// Construcción y oficios: ingresos por obra, subcontratistas, equipo y retenciones.
+    public static let usConstruction = usServices.replacing([
+        Entry("4000", "Ingresos por obra", "Construction Revenue", .sales),
+        Entry("4100", "Materiales facturados", "Billed Materials", .sales),
+    ]).adding([
+        Entry("1150", "Retenciones por cobrar (retainage)", "Retainage Receivable", .otherCurrentAsset),
+        Entry("5200", "Renta de equipo para obra", "Equipment Rental", .costOfGoodsSold),
+        Entry("5300", "Permisos y licencias de obra", "Job Permits", .costOfGoodsSold),
+    ])
+
+    func replacing(_ replacements: [Entry]) -> ChartTemplate {
+        ChartTemplate(entries: entries.map { entry in replacements.first { $0.code == entry.code } ?? entry })
+    }
+
+    func adding(_ extra: [Entry]) -> ChartTemplate {
+        ChartTemplate(entries: (entries + extra).sorted { $0.code < $1.code })
+    }
 }

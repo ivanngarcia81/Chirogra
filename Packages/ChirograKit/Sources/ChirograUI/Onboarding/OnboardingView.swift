@@ -2,7 +2,8 @@ import ChirograData
 import SwiftData
 import SwiftUI
 
-/// Alta de empresa (canvas: `OnbEmpresa`, `OnbTipo`). El paso 3 "Traer movimientos" es de la fase 2.
+/// Alta de empresa (canvas: `OnbEmpresa`, `OnbTipo`). El paso 2 elige el sector, que decide la plantilla
+/// del plan de cuentas. El paso 3 "Traer movimientos" es de la fase 2.
 struct OnboardingView: View {
     @Environment(\.modelContext) private var context
     @State private var step = 1
@@ -10,6 +11,7 @@ struct OnboardingView: View {
     @State private var legalName = ""
     @State private var state = ""
     @State private var entityType: EntityType = .soleProprietorship
+    @State private var sector: BusinessSector = .services
     @State private var errorMessage: String?
 
     var body: some View {
@@ -35,7 +37,7 @@ struct OnboardingView: View {
                     if step == 1 { step = 2 } else { createCompany() }
                 }
                 .buttonStyle(.primary)
-                .disabled(displayName.trimmingCharacters(in: .whitespaces).isEmpty)
+                .disabled(!canContinue)
 
                 if step == 1 {
                     Button("Probar con datos de ejemplo", action: loadSample)
@@ -50,6 +52,11 @@ struct OnboardingView: View {
         .background(Palette.background)
     }
 
+    /// El estado es obligatorio: decide qué sales tax se cobra.
+    private var canContinue: Bool {
+        !displayName.trimmingCharacters(in: .whitespaces).isEmpty && !state.isEmpty
+    }
+
     private var companyStep: some View {
         VStack(alignment: .leading, spacing: 16) {
             LogoMark(size: 56)
@@ -58,11 +65,15 @@ struct OnboardingView: View {
             VStack(spacing: 12) {
                 field("Nombre del negocio", text: $displayName, prompt: "Ríos Diseño & Obra")
                 field("Razón social (opcional)", text: $legalName, prompt: "Ríos Diseño & Obra LLC")
-                Picker("Estado", selection: $state) {
-                    Text("Elige tu estado").tag("")
-                    ForEach(USState.all, id: \.self) { Text($0).tag($0) }
+                VStack(alignment: .leading, spacing: 6) {
+                    Picker("Estado donde operas", selection: $state) {
+                        Text("Elige tu estado").tag("")
+                        ForEach(USState.all, id: \.self) { Text($0).tag($0) }
+                    }
+                    .pickerStyle(.menu)
+                    Text("Obligatorio: define el sales tax que cobras.")
+                        .font(.footnote).foregroundStyle(state.isEmpty ? Palette.warning : Palette.ink3)
                 }
-                .pickerStyle(.menu)
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
@@ -71,26 +82,45 @@ struct OnboardingView: View {
     private var typeStep: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Tipo de negocio").font(.largeTitle.bold())
-            Text("Define cómo se llama el patrimonio en tus reportes. Puedes cambiarlo después.").foregroundStyle(Palette.ink2)
+            Text("Preparamos un plan de cuentas pensado para tu sector. Podrás añadir o archivar cuentas después.")
+                .foregroundStyle(Palette.ink2)
             VStack(spacing: 10) {
-                ForEach(EntityType.allCases, id: \.self) { type in
-                    Button { entityType = type } label: {
-                        HStack {
-                            Text(type.title).font(.body.weight(.semibold)).foregroundStyle(Palette.ink)
+                ForEach(BusinessSector.allCases, id: \.self) { option in
+                    Button { sector = option } label: {
+                        HStack(alignment: .top) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(option.title).font(.body.weight(.semibold)).foregroundStyle(Palette.ink)
+                                Text(option.summary).font(.subheadline).foregroundStyle(Palette.ink3)
+                            }
                             Spacer()
-                            Image(systemName: entityType == type ? "checkmark.circle.fill" : "circle")
-                                .foregroundStyle(entityType == type ? Palette.brand : Palette.ink3)
+                            Image(systemName: sector == option ? "checkmark.circle.fill" : "circle")
+                                .foregroundStyle(sector == option ? Palette.brand : Palette.ink3)
                         }
                         .padding(14)
                         .background(Palette.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
                         .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .stroke(entityType == type ? Palette.brand : Palette.separator, lineWidth: entityType == type ? 2 : 1))
+                            .stroke(sector == option ? Palette.brand : Palette.separator, lineWidth: sector == option ? 2 : 1))
                     }
                     .buttonStyle(.plain)
-                    .accessibilityAddTraits(entityType == type ? .isSelected : [])
+                    .accessibilityAddTraits(sector == option ? .isSelected : [])
                 }
             }
+            VStack(alignment: .leading, spacing: 6) {
+                SectionLabel(text: "Algunas cuentas que crearemos")
+                Text(previewAccounts.joined(separator: " · ")).font(.footnote).foregroundStyle(Palette.ink2)
+            }
+            Picker("Tipo de entidad", selection: $entityType) {
+                ForEach(EntityType.allCases, id: \.self) { Text($0.title).tag($0) }
+            }
+            .pickerStyle(.menu)
         }
+    }
+
+    /// Ingresos y costos propios del sector elegido, como vista previa del plan de cuentas.
+    private var previewAccounts: [String] {
+        sector.template.entries
+            .filter { [.sales, .costOfGoodsSold, .inventory].contains($0.subtype) }
+            .map { $0.name(for: Locale(identifier: "es_US")) }
     }
 
     private func field(_ title: String, text: Binding<String>, prompt: String) -> some View {
@@ -108,7 +138,8 @@ struct OnboardingView: View {
         do {
             let name = displayName.trimmingCharacters(in: .whitespaces)
             try Bookkeeper(context: context).setUpCompany(
-                legalName: legalName.isEmpty ? name : legalName, displayName: name, entityType: entityType, state: state
+                legalName: legalName.isEmpty ? name : legalName, displayName: name, entityType: entityType,
+                state: state, sector: sector
             )
         } catch {
             errorMessage = error.localizedDescription

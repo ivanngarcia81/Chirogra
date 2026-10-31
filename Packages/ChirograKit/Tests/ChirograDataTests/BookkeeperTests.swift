@@ -252,3 +252,35 @@ struct InvoiceDraftTests {
         #expect(throws: BookkeepingError.self) { try books.saveDraft(input, into: invoice) }
     }
 }
+
+@MainActor
+@Suite("Plantillas por sector")
+struct SectorTemplateTests {
+    @Test("Cada plantilla tiene todas las cuentas de sistema y códigos únicos", arguments: BusinessSector.allCases)
+    func templatesAreComplete(sector: BusinessSector) {
+        let entries = sector.template.entries
+        #expect(Set(entries.map(\.code)).count == entries.count)
+        let system = Set(entries.filter(\.isSystem).map(\.subtype))
+        for subtype in [AccountSubtype.accountsReceivable, .accountsPayable, .salesTaxPayable, .retainedEarnings, .undepositedFunds, .openingBalanceEquity] {
+            #expect(system.contains(subtype), "\(sector) no tiene \(subtype)")
+        }
+    }
+
+    @Test("El alta de un comercio crea inventario y guarda el sector")
+    func retailSetUp() throws {
+        let container = try ChirograStore.makeContainer(inMemory: true)
+        let books = Bookkeeper(context: container.mainContext)
+        let company = try books.setUpCompany(legalName: "Tienda Sol", state: "TX", sector: .retail, locale: Locale(identifier: "es_US"))
+        #expect(company.sectorRaw == BusinessSector.retail.rawValue)
+        #expect(try books.accounts().contains { $0.subtype == .inventory })
+        #expect(try books.accounts().first { $0.code == "4000" }?.name == "Ventas de mercancía")
+    }
+
+    @Test("Construcción y servicios tienen ingresos distintos")
+    func sectorsDiffer() {
+        let names = { (sector: BusinessSector) in sector.template.entries.first { $0.code == "4000" }?.spanish }
+        #expect(names(.services) == "Ingresos por servicios")
+        #expect(names(.construction) == "Ingresos por obra")
+        #expect(BusinessSector.construction.template.entries.contains { $0.code == "1150" })
+    }
+}

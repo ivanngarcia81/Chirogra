@@ -128,20 +128,21 @@ public struct Bookkeeper {
 
     // MARK: - Alta de empresa
 
-    /// Crea la empresa, el plan de cuentas de la plantilla y las series de numeración.
+    /// Crea la empresa, el plan de cuentas de la plantilla de su sector y las series de numeración.
     @discardableResult
     public func setUpCompany(
         legalName: String,
         displayName: String = "",
         entityType: EntityType = .soleProprietorship,
         state: String = "",
-        template: ChartTemplate = .usServices,
+        sector: BusinessSector = .services,
         locale: Locale = .current
     ) throws -> Company {
         guard try company() == nil else { throw BookkeepingError.companyAlreadyExists }
         let company = Company(legalName: legalName, displayName: displayName, entityType: entityType, state: state)
+        company.sectorRaw = sector.rawValue
         context.insert(company)
-        for entry in template.entries {
+        for entry in sector.template.entries {
             context.insert(Account(code: entry.code, name: entry.name(for: locale), subtype: entry.subtype, isSystem: entry.isSystem))
         }
         context.insert(NumberSequence(kind: .journalEntry, prefix: "", minimumDigits: 1))
