@@ -1,7 +1,9 @@
 # Chirogra — Documento de diseño
 
-> Estado: **borrador para revisión** (v0.1, 31 oct 2026).
-> Nada de este documento está implementado todavía. Las secciones marcadas con 🔶 son decisiones abiertas que necesitan confirmación antes de escribir código.
+> Estado: **borrador para revisión** (v0.2, 31 oct 2026).
+> Nada de este documento está implementado todavía. Las secciones marcadas con 🔶 son decisiones abiertas; las marcadas con ✅ ya las confirmó el usuario.
+>
+> **Decisiones confirmadas (v0.2):** ✅ iPhone + iPad + Mac con SwiftUI multiplataforma · ✅ Estados Unidos, USD, *sales tax* (no IVA) · ✅ un solo usuario por empresa · ✅ sincronización privada con iCloud entre los dispositivos del usuario.
 
 ---
 
@@ -28,7 +30,7 @@ Principios de producto:
 | **iOS (iPhone)** | Consulta rápida, facturar en movimiento, fotografiar recibos | `TabView` con 5 pestañas + pilas de navegación |
 
 - **Un solo código SwiftUI multiplataforma** (un target de app multiplataforma en Xcode), con ajustes condicionales por tamaño de clase y plataforma.
-- **Versión mínima propuesta:** iOS 26 / iPadOS 26 / macOS 26. 🔶
+- ✅ **Las tres plataformas en el MVP.** Versión mínima propuesta: iOS 26 / iPadOS 26 / macOS 26.
   - Motivo: SwiftData es notablemente más estable y completo a partir de la generación 26 (herencia de modelos, mejoras en predicados e historial). Con Xcode 27 se compila contra el SDK 27; soportar una versión hacia atrás cubre la gran mayoría de dispositivos activos.
   - Alternativa: iOS 18 / macOS 15 para más alcance, a cambio de evitar algunas APIs de SwiftData.
 - **Fuera de alcance:** Android, web, Windows. Si en el futuro se necesitan, la capa de dominio (Swift puro, sin dependencias de Apple) es portable y la sincronización tendría que pasar a un backend propio (ver §6.5).
@@ -41,23 +43,27 @@ Principios de producto:
 
 | Módulo | Incluido en MVP |
 |---|---|
-| Alta de empresa | Asistente inicial: nombre, NIF/RFC/CIF, moneda, inicio del ejercicio fiscal, plantilla de plan de cuentas |
+| Alta de empresa | Asistente inicial: nombre legal y comercial, EIN (opcional), estado, tipo de entidad (sole proprietorship, LLC, S corp, C corp, partnership), moneda USD, inicio del año fiscal, plantilla de plan de cuentas |
 | Plan de cuentas | Árbol jerárquico, 5 tipos (Activo, Pasivo, Patrimonio, Ingreso, Gasto), códigos, activar/archivar, saldos |
 | Asientos de diario | Asientos manuales multilínea, validación débito = crédito, borrador → contabilizado → revertido |
 | Libro mayor | Movimientos por cuenta con saldo acumulado y filtro por fechas |
 | Clientes y facturas de venta | Ficha de cliente, facturas con líneas, impuestos, numeración correlativa, cobros (totales y parciales), notas de crédito |
 | Proveedores y facturas por pagar | Ficha de proveedor, facturas recibidas, pagos (totales y parciales) |
 | Gastos / recibos | Gasto pagado al momento (efectivo, banco, tarjeta) con foto/PDF del recibo adjunto |
-| Impuestos (IVA) | Tasas configurables, IVA repercutido / trasladado y soportado / acreditable en cuentas separadas, resumen del periodo |
-| Reportes | Estado de resultados, balance general, balanza de comprobación, antigüedad de cuentas por cobrar y por pagar, resumen de IVA |
+| Impuesto sobre ventas (*sales tax*) | Tasas por jurisdicción (estado + condado + ciudad + distrito) combinadas en grupos, clientes y artículos exentos, cuenta *Sales Tax Payable*, resumen por jurisdicción |
+| Reportes | Estado de resultados, balance general, balanza de comprobación, antigüedad de cuentas por cobrar y por pagar, resumen de sales tax (todos en base devengado) |
 | Exportación | CSV de cualquier reporte/listado y PDF de facturas y reportes |
 | Seguridad | Bloqueo con Face ID / Touch ID / contraseña del sistema, fecha de cierre (bloqueo de periodos) |
-| Sincronización | iCloud privado (CloudKit) entre los dispositivos del **mismo** Apple ID — activable/desactivable 🔶 |
+| Sincronización | ✅ iCloud privado (CloudKit) entre los dispositivos del **mismo** Apple ID — activable/desactivable en Ajustes |
+| Idiomas | Español e inglés desde el inicio (String Catalogs), formato de moneda y fecha de EE. UU. por defecto 🔶 |
 
 ### 3.2 Fase 2
 
 - **Conciliación bancaria** con importación de extractos CSV / OFX / CAMT.053, reglas de coincidencia y sesiones de conciliación.
 - **Estado de flujo de efectivo** (método indirecto, con opción de método directo).
+- **Reportes en base caja** (*cash basis*) además de devengado: muchos pequeños negocios de EE. UU. declaran en base caja; el ingreso se reconoce al cobrar, prorrateando cada cobro entre las líneas de la factura.
+- **Seguimiento 1099:** marcar proveedores sujetos a 1099-NEC/1099-MISC y reporte anual de pagos por proveedor (con su W-9 adjunto).
+- Mapeo de cuentas a líneas del Schedule C / Form 1120-S para preparar la declaración.
 - Transacciones recurrentes (facturas y gastos periódicos).
 - Lectura automática de recibos (Vision / OCR en el dispositivo) para prellenar gastos.
 - Presupuestos y comparación real vs. presupuesto.
@@ -69,7 +75,8 @@ Principios de producto:
 - Conexión bancaria automática vía agregador (Plaid, GoCardless/Nordigen, Belvo…) — requiere backend.
 - Multimoneda con revaluación cambiaria.
 - Multiusuario con roles (dueño, contador, solo lectura) — ver §6.5.
-- Facturación electrónica legal por país (CFDI 4.0 en México, Verifactu/TicketBAI en España, DTE en Chile, etc.).
+- Cálculo automático de sales tax por dirección con un servicio de tasas (Avalara, TaxJar, Stripe Tax…) y presentación de declaraciones.
+- Internacionalización a otros países (IVA, facturación electrónica legal como CFDI o Verifactu).
 - Inventario y costo de ventas, nómina, proyectos/centros de costo, cobro con tarjeta.
 
 ---
@@ -90,8 +97,8 @@ Principios de producto:
 
 - **Subtipos** (determinan el comportamiento y la clasificación en reportes): efectivo, banco, cuentas por cobrar, inventario, activo fijo, otros activos corrientes; cuentas por pagar, tarjeta de crédito, impuestos por pagar, préstamos; capital, resultados acumulados; ventas, otros ingresos; costo de ventas, gastos operativos, otros gastos.
 - **Jerarquía:** cuentas padre/hijo; los saldos se agregan hacia arriba. Solo las cuentas "hoja" admiten movimientos.
-- **Cuentas de sistema** (no se pueden borrar ni cambiar de tipo): Cuentas por cobrar, Cuentas por pagar, IVA por pagar, IVA acreditable, Resultados acumulados, Resultado del ejercicio, Fondos no depositados.
-- **Plantillas** de plan de cuentas según país/sector (genérica, servicios, comercio). 🔶 depende del país.
+- **Cuentas de sistema** (no se pueden borrar ni cambiar de tipo): Cuentas por cobrar (*Accounts Receivable*), Cuentas por pagar (*Accounts Payable*), Sales Tax Payable, Resultados acumulados (*Retained Earnings*), Capital del dueño / Retiros del dueño (*Owner's Equity / Owner's Draw*, según tipo de entidad), Fondos no depositados (*Undeposited Funds*), Saldos de apertura (*Opening Balance Equity*).
+- **Plantillas** de plan de cuentas para EE. UU. por sector (servicios, comercio minorista, construcción/oficios) con categorías de gasto alineadas a las líneas del Schedule C (publicidad, vehículo, seguros, honorarios profesionales, alquiler, suministros, viajes, comidas, servicios públicos…), con nombres originales de Chirogra y numeración propia (1000 activos, 2000 pasivos, 3000 patrimonio, 4000 ingresos, 5000 costo de ventas, 6000 gastos, 7000/8000 otros).
 - Una cuenta con movimientos **no se borra**: se archiva.
 
 ### 4.2 Asientos de diario
@@ -109,8 +116,8 @@ Principios de producto:
 
 ### 4.3 Clientes y facturas de venta (cuentas por cobrar)
 
-- **Cliente:** nombre/razón social, identificación fiscal, correo, teléfono, dirección de facturación, condiciones de pago (contado, 15/30/60 días), tasa de impuesto por defecto, notas.
-- **Factura:** cliente, número (serie + correlativo sin huecos), fecha, vencimiento, líneas (descripción, cantidad, precio unitario, descuento, cuenta de ingreso, código de impuesto), subtotal, impuestos, total, saldo pendiente, notas, adjuntos.
+- **Cliente:** nombre/empresa, correo, teléfono, dirección de facturación y de envío (la de envío determina la jurisdicción de sales tax), condiciones de pago (Due on receipt, Net 15/30/60), grupo de impuesto por defecto, exento de impuesto (sí/no, motivo y certificado de reventa/exención adjunto), notas.
+- **Factura:** cliente, número (correlativo con prefijo opcional), fecha, vencimiento, líneas (descripción, cantidad, precio unitario, descuento, cuenta de ingreso, código de impuesto), subtotal, impuestos, total, saldo pendiente, notas, adjuntos.
 - **Estados:** borrador → emitida → parcialmente cobrada → cobrada; o anulada. "Vencida" es un estado derivado (fecha > vencimiento y saldo > 0).
 - **Cobro:** fecha, cliente, cuenta de destino (banco/caja o *Fondos no depositados*), importe, método, aplicación a una o varias facturas.
 - **Nota de crédito:** documento negativo vinculado a una factura; genera el asiento inverso.
@@ -118,26 +125,27 @@ Principios de producto:
 
   | Evento | Debe | Haber |
   |---|---|---|
-  | Emitir factura | Cuentas por cobrar (total) | Ingresos (subtotal por línea) · IVA por pagar (impuesto) |
-  | Cobro | Banco / Caja | Cuentas por cobrar |
-  | Nota de crédito | Ingresos · IVA por pagar | Cuentas por cobrar |
+  | Emitir factura | Cuentas por cobrar (total) | Ingresos (subtotal por línea) · Sales Tax Payable (impuesto) |
+  | Cobro | Banco / Caja / Fondos no depositados | Cuentas por cobrar |
+  | Nota de crédito | Ingresos · Sales Tax Payable | Cuentas por cobrar |
   | Anular factura | Asiento de reversión del original | |
 
 ### 4.4 Proveedores y facturas por pagar (cuentas por pagar)
 
-- **Proveedor:** espejo del cliente (datos fiscales, condiciones de pago, cuenta de gasto por defecto).
-- **Factura de proveedor:** proveedor, número del proveedor, fecha, vencimiento, líneas (cuenta de gasto/activo, importe, código de impuesto), adjunto.
+- **Proveedor:** nombre/empresa, contacto, dirección, condiciones de pago, cuenta de gasto por defecto, marca "sujeto a 1099" y EIN/TIN del proveedor (solo los últimos 4 dígitos visibles; el número completo protegido — ver §6.6).
+- **Factura de proveedor:** proveedor, número del proveedor, fecha, vencimiento, líneas (cuenta de gasto/activo, importe), adjunto.
 - **Pago:** cuenta de origen, importe, aplicación a una o varias facturas.
+- En EE. UU. el sales tax pagado en compras **no es recuperable**: forma parte del costo del gasto o activo, así que no hay cuenta de "impuesto acreditable". (El *use tax* sobre compras sin impuesto queda para fase 3.)
 
   | Evento | Debe | Haber |
   |---|---|---|
-  | Registrar factura | Gasto/Activo (subtotal) · IVA acreditable | Cuentas por pagar (total) |
+  | Registrar factura | Gasto/Activo (total, impuesto incluido) | Cuentas por pagar (total) |
   | Pago | Cuentas por pagar | Banco / Caja / Tarjeta |
 
 ### 4.5 Gastos y recibos
 
-- Gasto **pagado al momento** (no pasa por cuentas por pagar): beneficiario (proveedor opcional), fecha, cuenta de pago (caja, banco, tarjeta), líneas de gasto con impuesto, recibo adjunto (foto, PDF, imagen arrastrada).
-- Asiento: **Debe** Gasto(s) + IVA acreditable / **Haber** cuenta de pago.
+- Gasto **pagado al momento** (no pasa por cuentas por pagar): beneficiario (proveedor opcional), fecha, cuenta de pago (caja, banco, tarjeta de crédito), líneas de gasto, recibo adjunto (foto, PDF, imagen arrastrada). El IRS pide conservar recibos; el adjunto queda ligado al asiento.
+- Asiento: **Debe** Gasto(s) (impuesto incluido) / **Haber** cuenta de pago.
 - Los adjuntos se guardan como archivos externos al almacén (`.externalStorage`) y se comprimen las fotos.
 - Fase 2: OCR en el dispositivo (Vision) para proponer proveedor, fecha, total e impuesto.
 
@@ -160,17 +168,22 @@ Todos los reportes se calculan **a partir de las líneas contabilizadas** (fuent
 | **Balanza de comprobación** | Saldo deudor/acreedor de cada cuenta a una fecha; sus totales deben coincidir (comprobación de integridad) |
 | **Flujo de efectivo** (fase 2) | Método indirecto: utilidad neta + partidas no monetarias ± variación de capital de trabajo; inversión; financiamiento |
 | **Antigüedad de CxC / CxP** | Saldo pendiente por cliente/proveedor en tramos: corriente, 1–30, 31–60, 61–90, > 90 días vencido |
-| **Resumen de IVA** | IVA repercutido − IVA soportado del periodo, por tasa, con detalle de documentos |
+| **Resumen de sales tax** | Ventas gravables, ventas exentas e impuesto cobrado por jurisdicción en el periodo, saldo de Sales Tax Payable, con detalle de documentos |
 | **Libro diario / mayor** | Listados de asientos y movimientos por cuenta |
 
-### 4.8 Impuestos / IVA
+### 4.8 Impuesto sobre ventas (*sales tax*, EE. UU.) ✅
 
-- **Tasa de impuesto** (`TaxRate`): nombre, porcentaje, cuenta de impuesto repercutido (ventas) y cuenta de impuesto soportado (compras), vigencia.
-- **Código de impuesto** (`TaxCode`): combinación de una o varias tasas aplicada a una línea (p. ej. "IVA 16 %", "Exento", "IVA 21 % + Recargo de equivalencia 5,2 %", "Retención ISR 10 %"). Las retenciones se modelan como tasas negativas con su propia cuenta.
-- **Precios con o sin impuesto incluido**, por documento.
-- **Redondeo:** por línea o por total del documento (configurable; algunos países exigen uno u otro).
-- **Liquidación del periodo:** asiento que traslada IVA repercutido e IVA soportado a "IVA a pagar/compensar".
-- 🔶 **País y moneda iniciales** determinan las tasas por defecto, el plan de cuentas plantilla, el formato del identificador fiscal y la terminología (IVA trasladado/acreditable en México vs. repercutido/soportado en España).
+En EE. UU. no hay IVA: los estados (y muchos condados, ciudades y distritos especiales) cobran un **impuesto sobre ventas** al consumidor final. El negocio lo cobra en sus facturas, lo acumula como pasivo y lo entrega periódicamente a cada agencia.
+
+- **Agencia tributaria** (`TaxAgency`): p. ej. "Texas Comptroller", con frecuencia de declaración (mensual, trimestral, anual) y su propia cuenta de pasivo (subcuenta de *Sales Tax Payable*).
+- **Tasa** (`TaxRate`): componente de una jurisdicción — nombre ("Travis County"), porcentaje con hasta 4 decimales (p. ej. 1,0000 %), agencia, vigencia desde/hasta.
+- **Grupo de impuesto** (`TaxGroup`): suma de tasas que aplica a una ubicación (p. ej. "Austin, TX" = 6,25 % estatal + 1 % ciudad + 1 % transporte = 8,25 %). La factura guarda el desglose por componente para poder declarar por jurisdicción.
+- **Gravabilidad:** cada artículo/servicio y cada línea se marca como gravable o no gravable (muchos servicios no lo son, según el estado); cada cliente puede estar **exento** (reventa, organización sin fines de lucro, gobierno) con su certificado adjunto.
+- **Impuesto sobre el subtotal gravable** del documento, después de descuentos; redondeo a centavo por documento y por componente (con el residuo de redondeo asignado al componente mayor para que la suma cuadre).
+- **Pago a la agencia:** asiento **Debe** Sales Tax Payable (subcuenta de la agencia) / **Haber** Banco; si la agencia concede descuento por pronto pago, la diferencia va a *Otros ingresos*. Si hay recargos o multas, a *Gastos*.
+- **Compras:** el sales tax pagado a proveedores se registra como parte del costo (§4.4).
+- **Fuera del MVP:** cálculo automático de la tasa a partir de la dirección (requiere servicio externo), *use tax*, declaraciones electrónicas, nexus económico multiestado — fase 3. En el MVP el usuario elige el grupo de impuesto del cliente o de la factura.
+- **Impuestos sobre la renta** (federal/estatal) no se calculan en la app; la app prepara los números (estado de resultados, 1099, mapeo a Schedule C en fase 2) para el preparador de impuestos.
 
 ---
 
@@ -189,24 +202,26 @@ Todos los reportes se calculan **a partir de las líneas contabilizadas** (fuent
 
 | Entidad | Campos principales | Relaciones |
 |---|---|---|
-| `Company` | nombre, razón social, idFiscal, país, monedaBase, inicioEjercicio (mes), fechaCierre, zonaHoraria, logo | 1→N todo lo demás |
+| `Company` | nombreLegal, nombreComercial, ein, tipoEntidad, estado, dirección, monedaBase (USD), inicioAñoFiscal (mes), fechaCierre, zonaHoraria, logo | 1→N todo lo demás |
 | `Account` | código, nombre, tipo, subtipo, saldoNormal (derivado del tipo), esSistema, isArchived, descripción | padre 0..1, hijos N, líneas N, bankAccount 0..1 |
 | `JournalEntry` | número, fecha, concepto, estado, origen, referencia | líneas N (cascade), documentoOrigen 0..1, revierteA 0..1, revertidoPor 0..1 |
-| `JournalLine` | debeMinor, haberMinor, descripción, orden | asiento 1, cuenta 1, cliente 0..1, proveedor 0..1, taxCode 0..1, bankTransaction 0..1 |
-| `Customer` | nombre, idFiscal, email, teléfono, dirección, condicionesPago, notas, isArchived | facturas N, cobros N, taxCode por defecto 0..1 |
-| `Vendor` | ídem cliente + cuenta de gasto por defecto | facturas N, pagos N, gastos N |
-| `Invoice` | serie, número, fecha, vencimiento, estado, preciosConImpuesto, notas | cliente 1, líneas N (cascade), aplicacionesDeCobro N, asiento 0..1, adjuntos N |
-| `InvoiceLine` | descripción, cantidad, precioUnitarioMinor, descuento, orden | factura 1, cuentaIngreso 1, taxCode 0..1, producto 0..1 |
+| `JournalLine` | debeMinor, haberMinor, descripción, orden | asiento 1, cuenta 1, cliente 0..1, proveedor 0..1, taxRate 0..1, bankTransaction 0..1 |
+| `Customer` | nombre, empresa, email, teléfono, direcciónFacturación, direcciónEnvío, condicionesPago, exentoImpuesto, motivoExención, notas, isArchived | facturas N, cobros N, taxGroup por defecto 0..1, certificado (Attachment) 0..1 |
+| `Vendor` | nombre, empresa, email, teléfono, dirección, condicionesPago, es1099, tinÚltimos4, notas, isArchived | facturas N, pagos N, gastos N, cuenta de gasto por defecto 0..1, W-9 (Attachment) 0..1 |
+| `Invoice` | número, fecha, vencimiento, estado, direcciónEnvío, notas, mensajeAlCliente | cliente 1, líneas N (cascade), taxGroup 0..1, desglose de impuesto N (`InvoiceTaxLine`), aplicacionesDeCobro N, asiento 0..1, adjuntos N |
+| `InvoiceLine` | descripción, cantidad, precioUnitarioMinor, descuento, gravable, orden | factura 1, cuentaIngreso 1, producto 0..1 |
+| `InvoiceTaxLine` | baseGravableMinor, importeMinor | factura 1, taxRate 1 |
 | `CreditNote` | número, fecha, motivo | factura 0..1, cliente 1, líneas N, asiento 0..1 |
 | `PaymentReceived` | fecha, importeMinor, método, referencia | cliente 1, cuentaDestino 1, aplicaciones N, asiento 0..1 |
 | `PaymentApplication` | importeMinor | cobro/pago 1, factura/facturaProveedor 1 |
 | `Bill` | númeroProveedor, fecha, vencimiento, estado | proveedor 1, líneas N, aplicacionesDePago N, asiento 0..1, adjuntos N |
-| `BillLine` | descripción, importeMinor, orden | bill 1, cuenta 1, taxCode 0..1 |
+| `BillLine` | descripción, importeMinor, orden | bill 1, cuenta 1 |
 | `BillPayment` | fecha, importeMinor, método, referencia | proveedor 1, cuentaOrigen 1, aplicaciones N, asiento 0..1 |
 | `Expense` | fecha, beneficiario, método, referencia | proveedor 0..1, cuentaPago 1, líneas N, asiento 0..1, adjuntos N |
-| `Item` (producto/servicio) | nombre, descripción, precioMinor, isArchived | cuentaIngreso, cuentaGasto, taxCode por defecto |
-| `TaxRate` | nombre, porcentaje (Decimal), vigenteDesde/Hasta, esRetención | cuentaRepercutido, cuentaSoportado |
-| `TaxCode` | nombre, isArchived | tasas N |
+| `Item` (producto/servicio) | nombre, descripción, precioMinor, gravable, isArchived | cuentaIngreso, cuentaGasto 0..1 |
+| `TaxAgency` | nombre, frecuenciaDeclaración, isArchived | cuenta de pasivo 1, tasas N |
+| `TaxRate` | nombre, porcentaje (Decimal, 4 decimales), vigenteDesde/Hasta, isArchived | agencia 1, grupos N |
+| `TaxGroup` | nombre (p. ej. "Austin, TX"), isArchived | tasas N |
 | `BankAccount` | nombre, banco, últimos4, mapeoCSV | cuenta contable 1, transacciones N, conciliaciones N |
 | `BankTransaction` | fecha, descripción, importeMinor (con signo), idExterno, estado | bankAccount 1, línea conciliada 0..1, importación 1 |
 | `Reconciliation` | fechaExtracto, saldoExtractoMinor, estado | bankAccount 1, líneas conciliadas N |
@@ -240,9 +255,11 @@ erDiagram
     BillPayment |o--o| JournalEntry : genera
     Expense |o--o| JournalEntry : genera
 
-    TaxCode }o--|{ TaxRate : agrupa
-    InvoiceLine }o--o| TaxCode : usa
-    BillLine }o--o| TaxCode : usa
+    TaxAgency ||--o{ TaxRate : administra
+    TaxGroup }o--|{ TaxRate : suma
+    Invoice }o--o| TaxGroup : aplica
+    Invoice ||--o{ InvoiceTaxLine : desglosa
+    InvoiceTaxLine }o--|| TaxRate : de
 
     BankAccount ||--|| Account : "vinculada a"
     BankAccount ||--o{ BankTransaction : importa
@@ -318,13 +335,14 @@ Usuario guarda factura ─► ChirograUI (InvoiceEditor)
 - **Reglas de modelo** ya aplicadas (§5.1): relaciones opcionales, valores por defecto, sin `.unique`.
 - **Conflictos contables:** CloudKit resuelve "el último gana" por registro. Para no romper la contabilidad:
   - Los asientos contabilizados son inmutables → no hay conflictos de edición sobre ellos.
-  - **Numeración correlativa**: dos dispositivos sin conexión podrían emitir el mismo número. Mitigación MVP: el número definitivo se asigna al contabilizar y se valida al sincronizar; si hay colisión se renumera el borrador más reciente y se avisa. Alternativa: series por dispositivo (A-0001 en Mac, B-0001 en iPhone). 🔶
+  - **Numeración correlativa**: dos dispositivos sin conexión podrían emitir el mismo número. En EE. UU. no hay obligación legal de numeración sin huecos, así que la mitigación del MVP es: serie única, el número se asigna al emitir y se valida tras sincronizar; si hay colisión se renumera el documento más reciente y se registra en la auditoría. Los asientos del diario usan su propio correlativo interno, que se puede reordenar sin efecto legal.
   - Verificación de integridad tras cada sincronización (balanza cuadrada, sin asientos descuadrados).
-- **Multiusuario (varias personas/Apple IDs):** SwiftData no permite compartir zonas de CloudKit entre usuarios. Opciones futuras: Core Data con `CKShare`, o backend propio. 🔶
+- **Multiusuario (varias personas/Apple IDs):** ✅ fuera del MVP (un solo usuario). SwiftData no permite compartir zonas de CloudKit entre usuarios; si se necesita (p. ej. dar acceso al contador), opciones: exportar un paquete de solo lectura para el contador (fase 2), Core Data con `CKShare` o backend propio (fase 3).
 
 ### 6.6 Seguridad y privacidad
 
 - Bloqueo de app con `LocalAuthentication`; protección de datos de archivos `complete` en iOS.
+- **Datos sensibles:** la app no pide ni guarda SSN. Los TIN/EIN completos de proveedores 1099 (fase 2) se guardan en el llavero (Keychain, sincronizado con iCloud Keychain) y en la base solo los últimos 4 dígitos.
 - Sin analítica de terceros; si se añade telemetría, anónima y opcional.
 - Fecha de cierre de periodo (nadie contabiliza antes de ella sin desbloquear explícitamente).
 
@@ -336,7 +354,8 @@ Usuario guarda factura ─► ChirograUI (InvoiceEditor)
 - **Paleta propuesta:** tinta azul petróleo profundo (`#0F4C5C`) como color principal, acento ámbar cálido (`#E9A23B`) para acciones, verde salvia para saldos a favor y terracota para vencidos/negativos; neutros cálidos de papel. Se evita deliberadamente el verde característico de otras apps contables. 🔶
 - **Tipografía:** SF Pro con cifras tabulares (`.monospacedDigit()`) en todas las columnas de importes; SF Pro Rounded solo para cifras grandes del panel.
 - **Iconografía:** SF Symbols + un monograma propio "C" con forma de pluma/renglón para el ícono de app (a diseñar).
-- **Tono de los textos:** cercano y claro, de tú, sin jerga innecesaria; la jerga contable aparece donde aporta precisión ("asiento", "saldo"), siempre con ayuda contextual.
+- **Idiomas:** español e inglés desde el primer día con String Catalogs; formatos de moneda, fecha y número según la configuración regional (por defecto en-US/es-US).
+- **Tono de los textos:** cercano y claro (en español, de tú), sin jerga innecesaria; la jerga contable aparece donde aporta precisión ("asiento", "saldo"), siempre con ayuda contextual.
 - **Accesibilidad:** Dynamic Type, VoiceOver con importes leídos como moneda, contraste AA, no depender solo del color para positivo/negativo.
 
 ---
@@ -383,7 +402,7 @@ Usuario guarda factura ─► ChirograUI (InvoiceEditor)
   - Asiento válido cuadra; asiento descuadrado, con una sola línea, con importes negativos o con debe y haber en la misma línea → rechazado con error específico.
   - Cada regla de contabilización (factura, cobro, factura de proveedor, pago, gasto, nota de crédito, reversión) produce asientos cuadrados y con las cuentas correctas.
   - Pruebas tipo propiedad: miles de documentos aleatorios → la balanza de comprobación siempre cuadra y Activo = Pasivo + Patrimonio.
-  - Impuestos: redondeo por línea vs. por documento, precios con impuesto incluido, retenciones.
+  - Sales tax: grupos de varias tasas, líneas no gravables, clientes exentos, descuentos antes de impuesto y reparto del residuo de redondeo entre componentes.
   - Reportes con datos de ejemplo de resultado conocido.
 - **ChirograData:** contenedor en memoria; contabilización end-to-end y atomicidad (si la validación falla no queda nada guardado).
 - **UI:** pruebas de humo con XCUITest en fase 2.
@@ -399,21 +418,26 @@ Usuario guarda factura ─► ChirograUI (InvoiceEditor)
 |---|---|---|
 | Rendimiento de SwiftData en reportes con muchos datos | Medio | Dominio desacoplado; caché de saldos por periodo; plan B GRDB |
 | Conflictos de sincronización (numeración, ediciones simultáneas) | Alto | Inmutabilidad de asientos, numeración al contabilizar con validación, verificación de integridad |
-| Requisitos legales por país (facturación electrónica, conservación, formatos) | Alto | Elegir un país inicial; MVP como contabilidad de gestión y declarar que la factura legal electrónica llega en fase 3 |
+| Tasas de sales tax cambiantes y reglas de gravabilidad distintas por estado | Alto | MVP con tasas que introduce el usuario y vigencias; avisar que la app no determina la gravabilidad; servicio de tasas automático en fase 3 |
 | Pérdida de datos del usuario | Alto | Copias de seguridad exportables, iCloud opcional, migraciones versionadas probadas |
 | Parecido con productos competidores (marca/interfaz) | Medio | Identidad original (§7), revisión de diseño antes de publicar, búsqueda de marca "Chirogra" en registros (USPTO/EUIPO/IMPI) |
 | Errores contables silenciosos | Alto | Invariantes en el dominio, pruebas de propiedad, balanza visible en la app |
 
-### 10.2 Decisiones abiertas 🔶 (para confirmar con el usuario)
+### 10.2 Decisiones
 
-1. **Plataformas y versión mínima:** ¿iOS + iPadOS + macOS con mínimo 26? ¿O solo una de ellas primero?
-2. **País y moneda iniciales:** determina tasas de IVA, retenciones, plan de cuentas plantilla y terminología (México, España, Colombia, Argentina, Chile, EE. UU.…).
-3. **Usuarios:** ¿una persona (dueño) o varias personas con acceso (p. ej. dueño + contador)? Cambia la elección de persistencia.
-4. **Sincronización:** ¿iCloud entre mis dispositivos en el MVP, o empezar 100 % local?
-5. **Alcance del MVP:** ¿la conciliación bancaria y el flujo de efectivo pueden esperar a la fase 2?
-6. **Numeración con varios dispositivos:** ¿serie única validada o series por dispositivo?
-7. **Identidad visual:** ¿te sirve la paleta azul petróleo + ámbar como punto de partida?
-8. **Idiomas:** ¿solo español, o español + inglés desde el inicio (String Catalogs)?
+Confirmadas ✅:
+
+1. Plataformas: iPhone + iPad + Mac, SwiftUI multiplataforma, mínimo iOS/macOS 26.
+2. País y moneda: Estados Unidos, USD, sales tax por jurisdicción.
+3. Usuarios: una sola persona por empresa.
+4. Sincronización: iCloud privado entre los dispositivos del usuario, desactivable.
+5. Numeración: serie única validada tras sincronizar (no hay obligación legal de numeración sin huecos en EE. UU.).
+
+Pendientes 🔶 (tienen valor por defecto; se pueden cambiar sin rehacer el diseño):
+
+6. **Alcance del MVP:** conciliación bancaria, flujo de efectivo, base caja y 1099 en fase 2 (por defecto: sí, fase 2).
+7. **Idiomas:** español + inglés desde el inicio (por defecto: sí).
+8. **Identidad visual:** paleta azul petróleo + ámbar como punto de partida (por defecto: sí).
 
 ---
 
