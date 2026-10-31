@@ -327,7 +327,7 @@ struct VendorListView: View {
             ForEach(vendors) { vendor in
                 NavigationLink { VendorEditorView(vendor: vendor) } label: {
                     LedgerRow(title: vendor.name, subtitle: vendor.is1099 ? "Sujeto a 1099" : (vendor.email.isEmpty ? "Proveedor" : vendor.email)) {
-                        InitialsTile(text: String(vendor.name.prefix(2)).uppercased(), foreground: Palette.outflow, background: Palette.outflowWash)
+                        InitialsTile(text: Initials.from(vendor.name), foreground: Palette.outflow, background: Palette.outflowWash)
                     } trailing: {
                         Text(vendor.openBalance.money).font(.body.weight(.semibold)).monospacedDigit()
                     }

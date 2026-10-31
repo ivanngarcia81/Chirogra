@@ -1,3 +1,4 @@
+import ChirograCore
 import ChirograData
 import LocalAuthentication
 import SwiftData
@@ -166,7 +167,7 @@ struct MoreView: View {
                 Section {
                     NavigationLink { CompanyProfileView(company: company) } label: {
                         LedgerRow(title: company.displayName, subtitle: company.legalName) {
-                            InitialsTile(text: String(company.displayName.prefix(2)).uppercased(),
+                            InitialsTile(text: Initials.from(company.displayName),
                                          foreground: Palette.background, background: Palette.ink)
                         } trailing: { EmptyView() }
                     }

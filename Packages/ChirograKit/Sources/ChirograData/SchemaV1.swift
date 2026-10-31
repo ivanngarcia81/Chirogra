@@ -267,7 +267,7 @@ extension SchemaV1 {
         }
 
         public var initials: String {
-            name.split(separator: " ").prefix(2).compactMap(\.first).map(String.init).joined().uppercased()
+            Initials.from(name)
         }
     }
 
