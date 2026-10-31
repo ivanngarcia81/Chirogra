@@ -10,6 +10,8 @@ struct InvoiceDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var showingPayment = false
     @State private var showingCreditNote = false
+    @State private var showingPreview = false
+    @Query private var companies: [Company]
     @State private var editingDraft = false
     @State private var confirmingVoid = false
     @State private var errorMessage: String?
@@ -102,6 +104,14 @@ struct InvoiceDetailView: View {
         .screenBackground()
         .navigationTitle(invoice.number.isEmpty ? "Borrador" : invoice.number)
         .inlineTitle()
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button("Vista previa", systemImage: "doc.text.magnifyingglass") { showingPreview = true }
+            }
+        }
+        .sheet(isPresented: $showingPreview) {
+            NavigationStack { InvoicePreviewView(invoice: invoice, company: companies.first) }
+        }
         .sheet(isPresented: $editingDraft) {
             NavigationStack { InvoiceEditorView(editing: invoice) }
         }
