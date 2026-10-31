@@ -1,7 +1,9 @@
 # Chirogra — Documento de diseño
 
-> Estado: **borrador para revisión** (v0.2, 31 oct 2026).
+> Estado: **borrador para revisión** (v0.3, 31 oct 2026).
 > Nada de este documento está implementado todavía. Las secciones marcadas con 🔶 son decisiones abiertas; las marcadas con ✅ ya las confirmó el usuario.
+>
+> **Alcance de este documento:** solo la parte técnica (alcance, módulos, modelo de datos, arquitectura, persistencia, sincronización y riesgos). El diseño visual, las pantallas y la navegación se definen en **Claude Design** (ver §7).
 >
 > **Decisiones confirmadas (v0.2):** ✅ iPhone + iPad + Mac con SwiftUI multiplataforma · ✅ Estados Unidos, USD, *sales tax* (no IVA) · ✅ un solo usuario por empresa · ✅ sincronización privada con iCloud entre los dispositivos del usuario.
 
@@ -17,19 +19,19 @@ Principios de producto:
 2. **Nada se borra, todo se corrige.** Un asiento contabilizado es inmutable. Las correcciones se hacen con asientos de reversión o anulaciones con rastro de auditoría.
 3. **Nativa de Apple.** SwiftUI en iPhone, iPad y Mac, con atajos de teclado, arrastrar y soltar recibos, Face ID y modo oscuro desde el primer día.
 4. **Datos del usuario, en dispositivos del usuario.** Funciona sin conexión; la sincronización en la nube es opcional y privada.
-5. **Identidad propia.** Nombre, marca, diseño visual, iconografía y textos son originales de Chirogra. No se reutilizan la interfaz, los logos, la terminología de marca ni los flujos distintivos de ningún producto competidor (QuickBooks, Xero, Holded, etc.). Los términos contables genéricos (factura, asiento, balance) son de uso común y sí se usan.
+5. **Identidad propia.** Nombre, marca, diseño visual (definido en Claude Design), iconografía y textos son originales de Chirogra. No se reutilizan la interfaz, los logos, la terminología de marca ni los flujos distintivos de ningún producto competidor (QuickBooks, Xero, Holded, etc.). Los términos contables genéricos (factura, asiento, balance) son de uso común y sí se usan.
 
 ---
 
 ## 2. Plataformas objetivo
 
-| Plataforma | Rol | Navegación |
-|---|---|---|
-| **macOS** | Puesto principal de trabajo: captura masiva, conciliación, reportes | `NavigationSplitView` de 3 columnas, barra de herramientas, menús y atajos |
-| **iPadOS** | Igual que Mac, con táctil y Pencil para notas en recibos | `NavigationSplitView` |
-| **iOS (iPhone)** | Consulta rápida, facturar en movimiento, fotografiar recibos | `TabView` con 5 pestañas + pilas de navegación |
+| Plataforma | Uso previsto |
+|---|---|
+| **macOS** | Puesto principal de trabajo: captura masiva, conciliación, reportes |
+| **iPadOS** | Igual que Mac, con pantalla táctil |
+| **iOS (iPhone)** | Consulta rápida, facturar en movimiento, fotografiar recibos |
 
-- **Un solo código SwiftUI multiplataforma** (un target de app multiplataforma en Xcode), con ajustes condicionales por tamaño de clase y plataforma.
+- **Un solo código SwiftUI multiplataforma** (un target de app multiplataforma en Xcode). La estructura de navegación de cada plataforma sale del diseño de Claude Design (§7).
 - ✅ **Las tres plataformas en el MVP.** Versión mínima propuesta: iOS 26 / iPadOS 26 / macOS 26.
   - Motivo: SwiftData es notablemente más estable y completo a partir de la generación 26 (herencia de modelos, mejoras en predicados e historial). Con Xcode 27 se compila contra el SDK 27; soportar una versión hacia atrás cubre la gran mayoría de dispositivos activos.
   - Alternativa: iOS 18 / macOS 15 para más alcance, a cambio de evitar algunas APIs de SwiftData.
@@ -348,55 +350,21 @@ Usuario guarda factura ─► ChirograUI (InvoiceEditor)
 
 ---
 
-## 7. Diseño visual e identidad (original de Chirogra)
+## 7. UI: según el diseño en Claude Design (pendiente de enlace)
 
-- **Concepto:** "el cuaderno de cuentas, ordenado". Superficies limpias, mucha tipografía y números legibles.
-- **Paleta propuesta:** tinta azul petróleo profundo (`#0F4C5C`) como color principal, acento ámbar cálido (`#E9A23B`) para acciones, verde salvia para saldos a favor y terracota para vencidos/negativos; neutros cálidos de papel. Se evita deliberadamente el verde característico de otras apps contables. 🔶
-- **Tipografía:** SF Pro con cifras tabulares (`.monospacedDigit()`) en todas las columnas de importes; SF Pro Rounded solo para cifras grandes del panel.
-- **Iconografía:** SF Symbols + un monograma propio "C" con forma de pluma/renglón para el ícono de app (a diseñar).
-- **Idiomas:** español e inglés desde el primer día con String Catalogs; formatos de moneda, fecha y número según la configuración regional (por defecto en-US/es-US).
-- **Tono de los textos:** cercano y claro (en español, de tú), sin jerga innecesaria; la jerga contable aparece donde aporta precisión ("asiento", "saldo"), siempre con ayuda contextual.
-- **Accesibilidad:** Dynamic Type, VoiceOver con importes leídos como moneda, contraste AA, no depender solo del color para positivo/negativo.
+El diseño visual, las pantallas, la navegación, la paleta, la tipografía, la iconografía y los textos de interfaz de Chirogra **se definen en Claude Design**, no en este documento.
 
----
-
-## 8. Pantallas principales y navegación
-
-### 8.1 Estructura
-
-| Sección (Mac/iPad: barra lateral) | iPhone (pestaña) | Contenido |
-|---|---|---|
-| **Inicio** | Inicio | Panel: efectivo disponible, por cobrar, por pagar, resultado del mes, facturas vencidas, acciones rápidas |
-| **Ventas** | Ventas | Facturas · Cobros · Clientes · Notas de crédito |
-| **Compras** | Compras | Facturas por pagar · Pagos · Gastos · Proveedores |
-| **Banco** *(fase 2)* | (dentro de Contabilidad) | Cuentas bancarias · Importar extracto · Conciliar |
-| **Contabilidad** | Libros | Plan de cuentas · Asientos · Libro mayor · Impuestos |
-| **Reportes** | Reportes | Catálogo de reportes con filtros de periodo |
-| **Ajustes** | (desde Inicio, menú de perfil) | Empresa · Impuestos · Numeración · Seguridad · iCloud · Exportar/Copia de seguridad |
-
-### 8.2 Pantallas del MVP
-
-1. **Bienvenida y alta de empresa** (asistente de 4 pasos: datos fiscales → moneda y ejercicio → plantilla de cuentas → impuestos).
-2. **Panel de inicio** con tarjetas de indicadores y lista de "pendiente hoy".
-3. **Plan de cuentas:** árbol con saldos; detalle de cuenta = libro mayor de esa cuenta.
-4. **Editor de asiento:** tabla de líneas con totales de debe/haber en vivo y diferencia resaltada hasta cuadrar; botón "Contabilizar" deshabilitado mientras no cuadre.
-5. **Lista de asientos** con búsqueda y filtros por origen, estado y fecha.
-6. **Clientes:** lista + ficha con saldo, facturas y cobros.
-7. **Editor de factura:** cabecera, líneas, impuestos calculados, vista previa PDF, emitir.
-8. **Registrar cobro:** seleccionar cliente → facturas abiertas → repartir importe.
-9. **Proveedores / Facturas por pagar / Registrar pago:** simétricos a ventas.
-10. **Nuevo gasto:** cámara o arrastrar recibo, cuenta de pago, líneas de gasto.
-11. **Reportes:** visor con selector de periodo, comparativo, profundizar (tocar un importe abre los movimientos que lo componen), exportar.
-12. **Ajustes.**
-
-### 8.3 Acciones rápidas y teclado (Mac)
-
-- Botón global "Nuevo…" (factura, gasto, cobro, asiento) y atajos: ⌘N factura, ⇧⌘E gasto, ⇧⌘J asiento, ⌘F buscar.
-- Búsqueda global por número, cliente, importe o concepto.
+- **Enlace al diseño:** _pendiente_.
+- Cuando esté disponible, las vistas de `ChirograUI` se construirán a partir de ese diseño; este documento solo enlazará la versión usada.
+- Lo que la parte técnica sí le exige a cualquier interfaz, sea cual sea su diseño:
+  - Ninguna lógica contable en las vistas: la UI llama a `ChirograCore` / `ChirograData` (§6.2).
+  - Textos localizables con String Catalogs (español + inglés, §9.2) y formatos de moneda/fecha según la configuración regional.
+  - Accesibilidad: Dynamic Type, VoiceOver con importes leídos como moneda y estados que no dependan solo del color.
+  - Los módulos del MVP (§3.1 y §4) necesitan pantalla para: alta de empresa, plan de cuentas y libro mayor, asientos, clientes y facturas con cobros, proveedores y facturas por pagar con pagos, gastos con recibo, impuestos, reportes y ajustes (empresa, impuestos, numeración, seguridad, iCloud, copia de seguridad).
 
 ---
 
-## 9. Estrategia de pruebas
+## 8. Estrategia de pruebas
 
 - **ChirograCore (Swift Testing):**
   - Asiento válido cuadra; asiento descuadrado, con una sola línea, con importes negativos o con debe y haber en la misma línea → rechazado con error específico.
@@ -410,9 +378,9 @@ Usuario guarda factura ─► ChirograUI (InvoiceEditor)
 
 ---
 
-## 10. Riesgos y decisiones abiertas
+## 9. Riesgos y decisiones abiertas
 
-### 10.1 Riesgos
+### 9.1 Riesgos
 
 | Riesgo | Impacto | Mitigación |
 |---|---|---|
@@ -420,10 +388,10 @@ Usuario guarda factura ─► ChirograUI (InvoiceEditor)
 | Conflictos de sincronización (numeración, ediciones simultáneas) | Alto | Inmutabilidad de asientos, numeración al contabilizar con validación, verificación de integridad |
 | Tasas de sales tax cambiantes y reglas de gravabilidad distintas por estado | Alto | MVP con tasas que introduce el usuario y vigencias; avisar que la app no determina la gravabilidad; servicio de tasas automático en fase 3 |
 | Pérdida de datos del usuario | Alto | Copias de seguridad exportables, iCloud opcional, migraciones versionadas probadas |
-| Parecido con productos competidores (marca/interfaz) | Medio | Identidad original (§7), revisión de diseño antes de publicar, búsqueda de marca "Chirogra" en registros (USPTO/EUIPO/IMPI) |
+| Parecido con productos competidores (marca/interfaz) | Medio | Identidad original (diseño en Claude Design, §7), revisión antes de publicar, búsqueda de marca "Chirogra" en registros (USPTO/EUIPO/IMPI) |
 | Errores contables silenciosos | Alto | Invariantes en el dominio, pruebas de propiedad, balanza visible en la app |
 
-### 10.2 Decisiones
+### 9.2 Decisiones
 
 Confirmadas ✅:
 
@@ -433,19 +401,19 @@ Confirmadas ✅:
 4. Sincronización: iCloud privado entre los dispositivos del usuario, desactivable.
 5. Numeración: serie única validada tras sincronizar (no hay obligación legal de numeración sin huecos en EE. UU.).
 
-Pendientes 🔶 (tienen valor por defecto; se pueden cambiar sin rehacer el diseño):
+Pendientes 🔶 (tienen valor por defecto; se pueden cambiar sin rehacer el diseño técnico):
 
 6. **Alcance del MVP:** conciliación bancaria, flujo de efectivo, base caja y 1099 en fase 2 (por defecto: sí, fase 2).
 7. **Idiomas:** español + inglés desde el inicio (por defecto: sí).
-8. **Identidad visual:** paleta azul petróleo + ámbar como punto de partida (por defecto: sí).
+8. **Diseño de UI:** enlace a Claude Design (pendiente).
 
 ---
 
-## 11. Plan de la fase 2 de este proyecto (tras aprobar el diseño)
+## 10. Plan de la fase 2 de este proyecto (tras aprobar el diseño)
 
 1. Crear el Swift Package `ChirograKit` (Core, Data, UI) y el proyecto Xcode multiplataforma que lo usa.
 2. Implementar en `ChirograCore`: `Money`, `AccountType`, `JournalEntryDraft`, `JournalValidator` y las reglas de contabilización de factura, cobro, factura de proveedor, pago y gasto.
 3. Pruebas unitarias que verifican débito = crédito y el resto de invariantes.
 4. Modelos SwiftData del MVP con esquema versionado y plantilla de plan de cuentas.
-5. Pantallas base: navegación, plan de cuentas, lista/editor de asientos, clientes, facturas, proveedores, gastos y un reporte (balanza de comprobación).
+5. Pantallas base del MVP construidas a partir del diseño de Claude Design (§7), una vez que esté enlazado.
 6. `swift test` y `xcodebuild` en verde para iOS y macOS; commits en `main`.
