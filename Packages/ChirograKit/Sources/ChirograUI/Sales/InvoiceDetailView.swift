@@ -9,6 +9,7 @@ struct InvoiceDetailView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     @State private var showingPayment = false
+    @State private var editingDraft = false
     @State private var confirmingVoid = false
     @State private var errorMessage: String?
 
@@ -67,6 +68,7 @@ struct InvoiceDetailView: View {
                 switch invoice.status {
                 case .draft:
                     Button("Emitir factura", action: issue).buttonStyle(.primary)
+                    Button("Editar borrador") { editingDraft = true }.buttonStyle(.secondary)
                     Button("Eliminar borrador", role: .destructive, action: deleteDraft).buttonStyle(.destructive)
                 case .sent, .partiallyPaid:
                     Button("Registrar pago") { showingPayment = true }.buttonStyle(.primary)
@@ -83,6 +85,9 @@ struct InvoiceDetailView: View {
         .screenBackground()
         .navigationTitle(invoice.number.isEmpty ? "Borrador" : invoice.number)
         .inlineTitle()
+        .sheet(isPresented: $editingDraft) {
+            NavigationStack { InvoiceEditorView(editing: invoice) }
+        }
         .sheet(isPresented: $showingPayment) {
             NavigationStack { RecordPaymentView(invoice: invoice) }
         }

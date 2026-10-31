@@ -3,8 +3,8 @@ import ChirograData
 import SwiftData
 import SwiftUI
 
-/// Nueva factura (canvas: `FacturaNueva`). Trabaja con estado local y solo crea modelos al guardar,
-/// así cancelar no deja nada a medias.
+/// Nueva factura o edición de un borrador (canvas: `FacturaNueva`). Trabaja con estado local y solo
+/// escribe en el modelo al guardar, así cancelar no deja nada a medias.
 struct InvoiceEditorView: View {
     struct LineDraft: Identifiable {
         let id = UUID()
@@ -18,6 +18,8 @@ struct InvoiceEditorView: View {
     }
 
     var preselectedCustomer: Customer?
+    /// Borrador existente que se edita; `nil` para una factura nueva.
+    var editing: Invoice?
 
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
@@ -34,6 +36,9 @@ struct InvoiceEditorView: View {
     @State private var errorMessage: String?
     @State private var savedInvoice: Invoice?
     @State private var showingNewCustomer = false
+    @State private var loadedDraft = false
+    /// Al cargar un borrador no se aplican los valores por defecto del cliente (impuesto, vencimiento).
+    @State private var skipCustomerDefaults = false
 
     private var books: Bookkeeper { Bookkeeper(context: context) }
     private var customer: Customer? { customers.first { $0.id == customerID } }
@@ -68,7 +73,8 @@ struct InvoiceEditorView: View {
             }
 
             Section {
-                LabeledContent("Número", value: (try? books.peekDocumentNumber(.invoice)) ?? "—")
+                LabeledContent("Número", value: savedInvoice.map { $0.number.isEmpty ? "Se asigna al emitir" : $0.number }
+                    ?? (try? books.peekDocumentNumber(.invoice)) ?? "—")
                 DatePicker("Fecha", selection: $issueDate, displayedComponents: .date)
                 DatePicker("Vence", selection: $dueDate, in: issueDate..., displayedComponents: .date)
             }
@@ -129,7 +135,7 @@ struct InvoiceEditorView: View {
             }
         }
         .screenBackground()
-        .navigationTitle("Nueva factura")
+        .navigationTitle(editing == nil ? "Nueva factura" : "Editar borrador")
         .inlineTitle()
         .toolbar {
             ToolbarItem(placement: .cancellationAction) { Button("Cancelar") { dismiss() } }
@@ -138,10 +144,12 @@ struct InvoiceEditorView: View {
             }
         }
         .onAppear {
+            if let editing, !loadedDraft { load(editing) }
             if customerID == nil { customerID = preselectedCustomer?.id }
             if lines.first?.incomeAccountID == nil { lines[0].incomeAccountID = incomeAccounts.first?.id }
         }
         .onChange(of: customerID) {
+            if skipCustomerDefaults { skipCustomerDefaults = false; return }
             guard let customer else { return }
             taxGroupID = customer.defaultTaxGroupID
             dueDate = Calendar.current.date(byAdding: .day, value: customer.paymentTermsDays, to: issueDate) ?? issueDate
@@ -149,6 +157,22 @@ struct InvoiceEditorView: View {
         .sheet(isPresented: $showingNewCustomer) {
             NavigationStack { CustomerEditorView { customerID = $0.id } }
         }
+    }
+
+    private func load(_ invoice: Invoice) {
+        loadedDraft = true
+        savedInvoice = invoice
+        skipCustomerDefaults = invoice.customer != nil
+        customerID = invoice.customer?.id
+        issueDate = invoice.issueDate
+        dueDate = invoice.dueDate
+        taxGroupID = invoice.taxGroupID
+        customerMessage = invoice.customerMessage
+        lines = invoice.sortedLines.map {
+            LineDraft(details: $0.details, quantity: $0.quantity, unitPrice: $0.unitPrice,
+                      isTaxable: $0.isTaxable, incomeAccountID: $0.incomeAccountID)
+        }
+        if lines.isEmpty { lines = [LineDraft(incomeAccountID: incomeAccounts.first?.id)] }
     }
 
     private var input: InvoiceDraftInput {

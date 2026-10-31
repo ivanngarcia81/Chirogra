@@ -240,6 +240,29 @@ struct InvoiceDraftTests {
         #expect(try context.fetchCount(FetchDescriptor<Invoice>()) == 1)
     }
 
+    @Test("Editar un borrador reemplaza líneas y campos sin crear otra factura ni asientos")
+    func editDraft() throws {
+        let context = container.mainContext
+        let first = Customer(name: "Café Aurora"), second = Customer(name: "Hotel Mirador")
+        context.insert(first)
+        context.insert(second)
+        let income = try #require(try books.accounts().first { $0.code == "4000" })
+        let draft = try books.saveDraft(InvoiceDraftInput(customer: first, issueDate: .now, dueDate: .now, lines: [
+            .init(details: "A", unitPrice: 1_000, incomeAccountID: income.id),
+            .init(details: "B", unitPrice: 2_000, incomeAccountID: income.id),
+        ]))
+        try books.saveDraft(InvoiceDraftInput(customer: second, issueDate: .now, dueDate: .now, customerMessage: "Gracias",
+                                              lines: [.init(details: "C", quantity: 3, unitPrice: 500, incomeAccountID: income.id)]),
+                            into: draft)
+        #expect(draft.customer === second)
+        #expect(draft.customerMessage == "Gracias")
+        #expect(draft.sortedLines.map(\.details) == ["C"])
+        #expect(draft.linesSubtotal == 1_500)
+        #expect(try context.fetchCount(FetchDescriptor<InvoiceLine>()) == 1)
+        #expect(try context.fetchCount(FetchDescriptor<Invoice>()) == 1)
+        #expect(try context.fetchCount(FetchDescriptor<JournalEntry>()) == 0)
+    }
+
     @Test("Una factura emitida ya no se puede reescribir como borrador")
     func issuedInvoiceIsNotEditable() throws {
         let customer = Customer(name: "Hotel Mirador")
