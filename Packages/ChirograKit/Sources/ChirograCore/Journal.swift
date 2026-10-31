@@ -10,6 +10,7 @@ public enum EntrySource: String, CaseIterable, Sendable, Codable {
     case billPayment
     case expense
     case salesTaxPayment
+    case customerRefund
     case reversal
     case opening
 }

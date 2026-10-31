@@ -127,7 +127,7 @@ struct BookkeeperTests {
         #expect(try books.entry(id: note.journalEntryID)?.source == .creditNote)
         #expect(try allEntriesBalanced())
         #expect(throws: BookkeepingError.self) { try books.void(invoice) }
-        #expect(throws: BookkeepingError.overpayment(balanceDue: 162_375)) {
+        #expect(throws: BookkeepingError.exceedsCreditable(162_375)) {
             try books.issueCreditNote(for: invoice, amount: 160_000, isTaxable: true, reason: "Demasiado")
         }
         try books.issueCreditNote(for: invoice, amount: 150_000, isTaxable: true, reason: "Resto")
@@ -198,6 +198,68 @@ struct BookkeeperTests {
         #expect(report.nonTaxableSales == 0)
         #expect(report.totalTax == taxed.taxTotal - 825)                    // 8.25 % de 100.00
         #expect(report.totalTax == ReportBuilder.balance(of: try account("2200").ledgerAccount, lines: try books.ledgerLines()))
+    }
+
+    @Test("Nota de crédito sobre una factura pagada: queda como saldo a favor del cliente")
+    func creditNoteOnPaidInvoiceBecomesCustomerCredit() throws {
+        let customer = Customer(name: "Café Aurora")
+        let invoice = try makeInvoice(amount: 100_000, customer: customer)
+        try books.issue(invoice)
+        try books.recordPayment(for: invoice, amount: 100_000, depositAccount: try account("1010"))
+
+        let note = try books.issueCreditNote(for: invoice, amount: 30_000, isTaxable: false, reason: "Devolución")
+        #expect(invoice.status == .paid)
+        #expect(invoice.balanceDue == 0)
+        #expect(note.unappliedAmount == 30_000)
+        #expect(customer.creditBalance == 30_000)
+        // En libros, el saldo a favor es un saldo acreedor en cuentas por cobrar.
+        #expect(ReportBuilder.balance(of: try account("1100").ledgerAccount, lines: try books.ledgerLines()) == -30_000)
+        #expect(throws: BookkeepingError.exceedsCreditable(70_000)) {
+            try books.issueCreditNote(for: invoice, amount: 70_001, isTaxable: false, reason: "Demasiado")
+        }
+    }
+
+    @Test("Una nota mayor que el saldo pendiente se aplica en parte y el resto queda a favor")
+    func creditNotePartlyApplied() throws {
+        let customer = Customer(name: "Hotel Mirador")
+        let invoice = try makeInvoice(amount: 100_000, customer: customer)
+        try books.issue(invoice)
+        try books.recordPayment(for: invoice, amount: 50_000, depositAccount: try account("1010"))
+        let note = try books.issueCreditNote(for: invoice, amount: 80_000, isTaxable: false, reason: "Ajuste")
+        #expect(invoice.balanceDue == 0)
+        #expect(invoice.status == .paid)
+        #expect(note.unappliedAmount == 30_000)
+        #expect(invoice.creditApplications?.first?.amount == 50_000)
+    }
+
+    @Test("El saldo a favor se aplica a una factura futura sin asiento, o se reembolsa desde el banco")
+    func applyAndRefundCustomerCredit() throws {
+        let customer = Customer(name: "Clínica Del Valle")
+        let first = try makeInvoice(amount: 100_000, customer: customer)
+        try books.issue(first)
+        try books.recordPayment(for: first, amount: 100_000, depositAccount: try account("1010"))
+        try books.issueCreditNote(for: first, amount: 40_000, isTaxable: false, reason: "Devolución")
+
+        let second = try makeInvoice(amount: 25_000, customer: customer)
+        try books.issue(second)
+        let entriesBefore = try context.fetchCount(FetchDescriptor<JournalEntry>())
+        #expect(throws: BookkeepingError.self) { try books.applyCustomerCredit(to: second, amount: 25_001) }
+        try books.applyCustomerCredit(to: second, amount: 25_000)
+        #expect(second.status == .paid)
+        #expect(customer.creditBalance == 15_000)
+        #expect(try context.fetchCount(FetchDescriptor<JournalEntry>()) == entriesBefore)
+        #expect(ReportBuilder.balance(of: try account("1100").ledgerAccount, lines: try books.ledgerLines()) == -15_000)
+
+        let bank = try account("1010")
+        #expect(throws: BookkeepingError.overpayment(balanceDue: 15_000)) {
+            try books.refundCustomerCredit(customer, amount: 15_001, from: bank)
+        }
+        let refund = try books.refundCustomerCredit(customer, amount: 15_000, from: bank)
+        #expect(refund.source == .customerRefund)
+        #expect(customer.creditBalance == 0)
+        #expect(ReportBuilder.balance(of: try account("1100").ledgerAccount, lines: try books.ledgerLines()) == 0)
+        #expect(ReportBuilder.balance(of: bank.ledgerAccount, lines: try books.ledgerLines()) == 100_000 - 15_000)
+        #expect(try allEntriesBalanced())
     }
 
     @Test("Cobros parciales y totales actualizan el estado; no se puede cobrar de más")

@@ -127,6 +127,14 @@ public enum PostingRules {
                      debit: depositAccountID, credit: receivableAccountID)
     }
 
+    /// Reembolso de un saldo a favor del cliente: Debe CxC / Haber Banco.
+    public static func customerRefund(
+        date: Date, memo: String, amount: Int64, receivableAccountID: UUID, paymentAccountID: UUID
+    ) throws(PostingError) -> JournalEntryDraft {
+        try transfer(date: date, memo: memo, source: .customerRefund, amount: amount,
+                     debit: receivableAccountID, credit: paymentAccountID)
+    }
+
     /// Factura de proveedor: Debe Gastos/Activos / Haber CxP (total).
     public static func bill(
         date: Date, memo: String, payableAccountID: UUID, lines: [CostLine]

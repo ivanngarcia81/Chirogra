@@ -191,6 +191,7 @@ extension EntrySource {
         case .billPayment: "Pago a proveedor"
         case .expense: "Gasto"
         case .salesTaxPayment: "Pago de sales tax"
+        case .customerRefund: "Reembolso a cliente"
         case .reversal: "Reversión"
         case .opening: "Saldos iniciales"
         }

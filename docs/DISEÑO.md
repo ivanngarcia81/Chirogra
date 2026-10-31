@@ -127,7 +127,7 @@ Principios de producto:
 - **Factura:** cliente, número (correlativo con prefijo opcional), fecha, vencimiento, líneas (descripción, cantidad, precio unitario, descuento, cuenta de ingreso, código de impuesto), subtotal, impuestos, total, saldo pendiente, notas, adjuntos.
 - **Estados:** borrador → emitida → parcialmente cobrada → cobrada; o anulada. "Vencida" es un estado derivado (fecha > vencimiento y saldo > 0).
 - **Cobro:** fecha, cliente, cuenta de destino (banco/caja o *Fondos no depositados*), importe, método, aplicación a una o varias facturas.
-- **Nota de crédito:** documento negativo vinculado a una factura; genera el asiento inverso.
+- **Nota de crédito:** documento vinculado a una factura emitida (pendiente o ya pagada); genera el asiento inverso. Se aplica primero al saldo de esa factura; lo que sobre (p. ej. una devolución sobre una factura pagada) queda como **saldo a favor del cliente**, que en libros es un saldo acreedor en Cuentas por cobrar. Ese saldo se **aplica** a otra factura del cliente (sin asiento, porque todo ocurre dentro de CxC; queda registrada la aplicación) o se **reembolsa** con un pago desde el banco.
 - **Asientos automáticos:**
 
   | Evento | Debe | Haber |
@@ -135,6 +135,7 @@ Principios de producto:
   | Emitir factura | Cuentas por cobrar (total) | Ingresos (subtotal por línea) · Sales Tax Payable (impuesto) |
   | Cobro | Banco / Caja / Fondos no depositados | Cuentas por cobrar |
   | Nota de crédito | Ingresos · Sales Tax Payable | Cuentas por cobrar |
+  | Reembolso de saldo a favor | Cuentas por cobrar | Banco / Caja |
   | Anular factura | Asiento de reversión del original | |
 
 ### 4.4 Proveedores y facturas por pagar (cuentas por pagar)

@@ -18,7 +18,7 @@ public enum SchemaV1: VersionedSchema {
         [
             Company.self, Account.self, JournalEntry.self, JournalLine.self,
             Customer.self, Vendor.self, Item.self,
-            Invoice.self, InvoiceLine.self, InvoiceTaxLine.self, CreditNote.self, PaymentReceived.self, PaymentApplication.self,
+            Invoice.self, InvoiceLine.self, InvoiceTaxLine.self, CreditNote.self, CreditApplication.self, PaymentReceived.self, PaymentApplication.self,
             Bill.self, BillLine.self, BillPayment.self, Expense.self, ExpenseLine.self, Attachment.self,
             TaxAgency.self, TaxRate.self, TaxGroup.self,
             NumberSequence.self, AuditEvent.self,
@@ -42,6 +42,7 @@ public typealias Invoice = SchemaV1.Invoice
 public typealias InvoiceLine = SchemaV1.InvoiceLine
 public typealias InvoiceTaxLine = SchemaV1.InvoiceTaxLine
 public typealias CreditNote = SchemaV1.CreditNote
+public typealias CreditApplication = SchemaV1.CreditApplication
 public typealias PaymentReceived = SchemaV1.PaymentReceived
 public typealias PaymentApplication = SchemaV1.PaymentApplication
 public typealias Bill = SchemaV1.Bill
@@ -269,6 +270,11 @@ extension SchemaV1 {
             (invoices ?? []).filter(\.isOpen).reduce(0) { $0 + $1.balanceDue }
         }
 
+        /// Saldo a favor: notas de crédito aún no aplicadas a una factura ni reembolsadas.
+        public var creditBalance: Int64 {
+            (creditNotes ?? []).reduce(0) { $0 + $1.unappliedAmount }
+        }
+
         public var initials: String {
             Initials.from(name)
         }
@@ -350,6 +356,9 @@ extension SchemaV1 {
         public var customer: Customer?
         @Relationship(deleteRule: .nullify, inverse: \CreditNote.invoice)
         public var creditNotes: [CreditNote]? = []
+        /// Notas de crédito (de esta factura o saldo a favor de otras) aplicadas a su saldo.
+        @Relationship(deleteRule: .nullify, inverse: \CreditApplication.invoice)
+        public var creditApplications: [CreditApplication]? = []
         @Relationship(deleteRule: .cascade, inverse: \InvoiceLine.invoice)
         public var lines: [InvoiceLine]? = []
         @Relationship(deleteRule: .cascade, inverse: \InvoiceTaxLine.invoice)
@@ -448,11 +457,17 @@ extension SchemaV1 {
         public var incomeAccountID: UUID?
         public var taxTotal: Int64 = 0
         public var total: Int64 = 0
+        /// Parte del total que queda como saldo a favor del cliente (no aplicada ni reembolsada).
+        public var unappliedAmount: Int64 = 0
+        public var refundedAmount: Int64 = 0
         public var journalEntryID: UUID?
         public var createdAt: Date = Date()
 
         public var customer: Customer?
+        /// Factura de origen de la nota.
         public var invoice: Invoice?
+        @Relationship(deleteRule: .cascade, inverse: \CreditApplication.note)
+        public var applications: [CreditApplication]? = []
 
         public init(invoice: Invoice, date: Date, amount: Int64, isTaxable: Bool, reason: String) {
             self.invoice = invoice
@@ -461,6 +476,25 @@ extension SchemaV1 {
             self.amount = amount
             self.isTaxable = isTaxable
             self.reason = reason
+        }
+    }
+
+    /// Aplicación de (parte de) una nota de crédito al saldo de una factura. No genera asiento:
+    /// el saldo a favor y la factura viven en la misma cuenta por cobrar.
+    @Model
+    public final class CreditApplication {
+        public var id: UUID = UUID()
+        public var date: Date = Date()
+        public var amount: Int64 = 0
+
+        public var note: CreditNote?
+        public var invoice: Invoice?
+
+        public init(note: CreditNote, invoice: Invoice, amount: Int64, date: Date) {
+            self.note = note
+            self.invoice = invoice
+            self.amount = amount
+            self.date = date
         }
     }
 

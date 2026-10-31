@@ -70,14 +70,26 @@ struct InvoiceDetailView: View {
             }
 
             if let notes = invoice.creditNotes, !notes.isEmpty {
-                Section("Notas de crédito") {
+                Section("Notas de crédito de esta factura") {
                     ForEach(notes.sorted { $0.date < $1.date }) { note in
                         LabeledContent {
                             Text("−\(note.total.money)").monospacedDigit()
                         } label: {
                             Text(note.number)
                             Text("\(note.date.shortDate)\(note.reason.isEmpty ? "" : " · \(note.reason)")")
+                            if note.unappliedAmount > 0 {
+                                Text("\(note.unappliedAmount.money) quedan a favor del cliente").foregroundStyle(Palette.positive)
+                            }
                         }
+                    }
+                }
+            }
+
+            if let applications = invoice.creditApplications, !applications.isEmpty {
+                Section("Créditos aplicados") {
+                    ForEach(applications.sorted { $0.date < $1.date }) { application in
+                        LabeledContent("\(application.note?.number ?? "Nota") · \(application.date.shortDate)",
+                                       value: "−\(application.amount.money)")
                     }
                 }
             }
@@ -90,11 +102,17 @@ struct InvoiceDetailView: View {
                     Button("Eliminar borrador", role: .destructive, action: deleteDraft).buttonStyle(.destructive)
                 case .sent, .partiallyPaid:
                     Button("Registrar pago") { showingPayment = true }.buttonStyle(.primary)
+                    if let credit = invoice.customer?.creditBalance, credit > 0 {
+                        Button("Aplicar saldo a favor (\(min(credit, invoice.balanceDue).money))", action: applyCredit)
+                            .buttonStyle(.secondary)
+                    }
                     Button("Nota de crédito") { showingCreditNote = true }.buttonStyle(.secondary)
                     if invoice.amountPaid == 0 && invoice.creditsApplied == 0 {
                         Button("Anular factura", role: .destructive) { confirmingVoid = true }.buttonStyle(.destructive)
                     }
-                case .paid, .void:
+                case .paid:
+                    Button("Nota de crédito o devolución") { showingCreditNote = true }.buttonStyle(.secondary)
+                case .void:
                     EmptyView()
                 }
             }
@@ -130,6 +148,12 @@ struct InvoiceDetailView: View {
 
     private func issue() {
         do { try books.issue(invoice); errorMessage = nil } catch { errorMessage = error.localizedDescription }
+    }
+
+    private func applyCredit() {
+        guard let credit = invoice.customer?.creditBalance else { return }
+        do { try books.applyCustomerCredit(to: invoice, amount: min(credit, invoice.balanceDue)); errorMessage = nil }
+        catch { errorMessage = error.localizedDescription }
     }
 
     private func void() {
@@ -245,10 +269,19 @@ struct CreditNoteEditorView: View {
                 DatePicker("Fecha", selection: $date, displayedComponents: .date)
             }
             Section {
+                let total = preview?.total ?? 0
                 LabeledContent("Sales tax", value: (preview?.totalTax ?? 0).money)
-                LabeledContent("Total de la nota", value: (preview?.total ?? 0).money).fontWeight(.semibold)
+                LabeledContent("Total de la nota", value: total.money).fontWeight(.semibold)
+                if total > 0 {
+                    LabeledContent("Se aplica a esta factura", value: min(total, invoice.balanceDue).money)
+                    if total > invoice.balanceDue {
+                        LabeledContent("Queda a favor del cliente", value: (total - invoice.balanceDue).money)
+                            .foregroundStyle(Palette.positive)
+                    }
+                }
             } footer: {
-                Text("Se registra un asiento que reduce ingresos, sales tax por pagar y la cuenta por cobrar del cliente.")
+                Text("Se registra un asiento que reduce ingresos, sales tax por pagar y la cuenta por cobrar del cliente. "
+                     + "Lo que no cubra el saldo de esta factura queda a favor del cliente: puedes aplicarlo a otra factura o reembolsarlo desde su ficha.")
             }
         }
         .screenBackground()

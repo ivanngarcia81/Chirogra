@@ -11,6 +11,7 @@ public enum BookkeepingError: Error, Equatable, LocalizedError {
     case invalidDocument(PostingError)
     case invalidState(String)
     case overpayment(balanceDue: Int64)
+    case exceedsCreditable(Int64)
 
     public var errorDescription: String? {
         switch self {
@@ -22,6 +23,8 @@ public enum BookkeepingError: Error, Equatable, LocalizedError {
         case .invalidDocument(let error): error.localizedMessage
         case .invalidState(let message): message
         case .overpayment(let balance): "El importe supera el saldo pendiente (\(Money(minorUnits: balance).formatted()))."
+        case .exceedsCreditable(let available):
+            "La nota supera lo que queda por acreditar de la factura (\(Money(minorUnits: available).formatted()))."
         }
     }
 }
@@ -327,13 +330,19 @@ public struct Bookkeeper {
         return payment
     }
 
-    /// Emite una nota de crédito contra una factura pendiente: Debe Ingresos (+ Sales Tax Payable) / Haber CxC.
-    /// El impuesto se calcula con el grupo de la factura en su fecha de emisión; el total no puede superar el saldo.
+    /// Emite una nota de crédito contra una factura emitida: Debe Ingresos (+ Sales Tax Payable) / Haber CxC.
+    /// El impuesto se calcula con el grupo de la factura en su fecha de emisión.
+    ///
+    /// Se aplica primero al saldo pendiente de la factura; lo que sobra (p. ej. una devolución sobre una factura
+    /// ya pagada) queda como **saldo a favor** del cliente: un saldo acreedor en CxC que luego se aplica a otra
+    /// factura (`applyCustomerCredit`) o se reembolsa (`refundCustomerCredit`).
     @discardableResult
     public func issueCreditNote(
         for invoice: Invoice, amount: Int64, isTaxable: Bool, reason: String, date: Date = Date(), incomeAccountID: UUID? = nil
     ) throws -> CreditNote {
-        guard invoice.isOpen else { throw BookkeepingError.invalidState("Solo se acreditan facturas emitidas con saldo pendiente.") }
+        guard [.sent, .partiallyPaid, .paid].contains(invoice.status) else {
+            throw BookkeepingError.invalidState("Solo se acreditan facturas emitidas.")
+        }
         let receivable = try systemAccount(.accountsReceivable)
         let income = try incomeAccountID ?? invoice.sortedLines.first?.incomeAccountID ?? systemAccount(.sales).id
         let components = try taxComponents(groupID: invoice.taxGroupID, on: invoice.issueDate)
@@ -349,7 +358,8 @@ public struct Bookkeeper {
         } catch {
             throw BookkeepingError.invalidDocument(error)
         }
-        guard posting.total <= invoice.balanceDue else { throw BookkeepingError.overpayment(balanceDue: invoice.balanceDue) }
+        let creditable = invoice.total - (invoice.creditNotes ?? []).reduce(0) { $0 + $1.total }
+        guard posting.total <= creditable else { throw BookkeepingError.exceedsCreditable(creditable) }
         try validate(posting.entry)
 
         let note = CreditNote(invoice: invoice, date: date, amount: amount, isTaxable: isTaxable, reason: reason)
@@ -357,14 +367,72 @@ public struct Bookkeeper {
         note.incomeAccountID = income
         note.taxTotal = posting.totalTax
         note.total = posting.total
+        note.unappliedAmount = posting.total
         let entry = try post(posting.entry, sourceDocumentID: note.id, save: false)
         entry.lines?.forEach { $0.customerID = invoice.customer?.id }
         note.journalEntryID = entry.id
         context.insert(note)
-        invoice.creditsApplied += posting.total
-        invoice.status = invoice.balanceDue == 0 ? .paid : .partiallyPaid
+        if invoice.isOpen { apply(note, to: invoice, amount: min(posting.total, invoice.balanceDue), date: date) }
         try saveOrRollback()
         return note
+    }
+
+    /// Aplica saldo a favor del cliente a una de sus facturas pendientes, consumiendo sus notas de crédito
+    /// de la más antigua a la más reciente. No genera asiento.
+    public func applyCustomerCredit(to invoice: Invoice, amount: Int64, date: Date = Date()) throws {
+        guard let customer = invoice.customer, invoice.isOpen else {
+            throw BookkeepingError.invalidState("Solo se aplica saldo a favor a facturas pendientes de un cliente.")
+        }
+        guard amount > 0, amount <= customer.creditBalance, amount <= invoice.balanceDue else {
+            throw BookkeepingError.overpayment(balanceDue: min(customer.creditBalance, invoice.balanceDue))
+        }
+        var remaining = amount
+        for note in openCredits(of: customer) where remaining > 0 {
+            let portion = min(note.unappliedAmount, remaining)
+            apply(note, to: invoice, amount: portion, date: date)
+            remaining -= portion
+        }
+        audit("Invoice", invoice.id, "applyCredit", "Saldo a favor aplicado a \(invoice.number): \(Money(minorUnits: amount).formatted())")
+        try saveOrRollback()
+    }
+
+    /// Reembolsa saldo a favor al cliente: Debe CxC / Haber Banco.
+    @discardableResult
+    public func refundCustomerCredit(
+        _ customer: Customer, amount: Int64, date: Date = Date(), from paymentAccount: Account
+    ) throws -> JournalEntry {
+        guard amount > 0, amount <= customer.creditBalance else { throw BookkeepingError.overpayment(balanceDue: customer.creditBalance) }
+        let receivable = try systemAccount(.accountsReceivable)
+        let draft: JournalEntryDraft
+        do {
+            draft = try PostingRules.customerRefund(date: date, memo: "Reembolso a \(customer.name)", amount: amount,
+                                                    receivableAccountID: receivable.id, paymentAccountID: paymentAccount.id)
+        } catch {
+            throw BookkeepingError.invalidDocument(error)
+        }
+        let entry = try post(draft, sourceDocumentID: customer.id, save: false)
+        entry.lines?.forEach { $0.customerID = customer.id }
+        var remaining = amount
+        for note in openCredits(of: customer) where remaining > 0 {
+            let portion = min(note.unappliedAmount, remaining)
+            note.unappliedAmount -= portion
+            note.refundedAmount += portion
+            remaining -= portion
+        }
+        try saveOrRollback()
+        return entry
+    }
+
+    private func openCredits(of customer: Customer) -> [CreditNote] {
+        (customer.creditNotes ?? []).filter { $0.unappliedAmount > 0 }.sorted { $0.date < $1.date }
+    }
+
+    private func apply(_ note: CreditNote, to invoice: Invoice, amount: Int64, date: Date) {
+        guard amount > 0 else { return }
+        context.insert(CreditApplication(note: note, invoice: invoice, amount: amount, date: date))
+        note.unappliedAmount -= amount
+        invoice.creditsApplied += amount
+        invoice.status = invoice.balanceDue == 0 ? .paid : .partiallyPaid
     }
 
     /// Anula una factura sin cobros ni notas de crédito revirtiendo su asiento.
