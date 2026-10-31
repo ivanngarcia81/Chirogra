@@ -56,6 +56,7 @@ enum AppSection: String, Hashable, CaseIterable, Identifiable {
 /// Raíz de la app: alta de empresa la primera vez, bloqueo opcional con Face ID y navegación principal.
 public struct ChirograRootView: View {
     @Query private var companies: [Company]
+    @Environment(\.scenePhase) private var scenePhase
     @AppStorage("appLockEnabled") private var appLockEnabled = false
     @State private var isUnlocked = false
 
@@ -73,6 +74,19 @@ public struct ChirograRootView: View {
         }
         .tint(Palette.brand)
         .background(Palette.background)
+        .onChange(of: scenePhase) { _, phase in
+            // Al pasar a segundo plano se vuelve a bloquear; al volver se pide Face ID otra vez.
+            if phase == .background { isUnlocked = false }
+        }
+    }
+}
+
+/// Bloqueo de la app con Face ID / Touch ID o, si no hay biometría, con el código del dispositivo.
+enum AppLock {
+    /// `true` si el dispositivo puede autenticar (biometría o código). Sin código configurado no se puede
+    /// bloquear la app: el usuario quedaría fuera.
+    static var isAvailable: Bool {
+        LAContext().canEvaluatePolicy(.deviceOwnerAuthentication, error: nil)
     }
 }
 
@@ -175,6 +189,7 @@ struct MoreView: View {
 
 struct LockView: View {
     @Binding var isUnlocked: Bool
+    @AppStorage("appLockEnabled") private var appLockEnabled = false
     @State private var failed = false
 
     var body: some View {
@@ -192,6 +207,12 @@ struct LockView: View {
 
     private func unlock() {
         let context = LAContext()
+        guard AppLock.isAvailable else {
+            // El dispositivo ya no tiene código ni biometría: desactivar el bloqueo antes que dejar fuera al usuario.
+            appLockEnabled = false
+            isUnlocked = true
+            return
+        }
         context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: "Desbloquear tus libros") { success, _ in
             Task { @MainActor in
                 isUnlocked = success

@@ -82,6 +82,7 @@ struct FormatsView: View {
 struct DataAndSecurityView: View {
     @AppStorage("iCloudSyncEnabled") private var iCloudSyncEnabled = false
     @AppStorage("appLockEnabled") private var appLockEnabled = false
+    @State private var lockUnavailable = false
 
     var body: some View {
         Form {
@@ -91,7 +92,20 @@ struct DataAndSecurityView: View {
                 Text("Tus libros viajan cifrados en tu cuenta privada de iCloud entre tu iPhone, iPad y Mac. El cambio se aplica al volver a abrir la app. Requiere que la app esté firmada con la capacidad de iCloud.")
             }
             Section {
-                Toggle("Bloquear con Face ID o Touch ID", isOn: $appLockEnabled)
+                Toggle("Bloquear con Face ID o Touch ID", isOn: Binding(
+                    get: { appLockEnabled },
+                    set: { enabled in
+                        lockUnavailable = enabled && !AppLock.isAvailable
+                        appLockEnabled = enabled && !lockUnavailable
+                    }
+                ))
+            } footer: {
+                if lockUnavailable {
+                    Text("Para bloquear Chirogra, primero configura un código, Face ID o Touch ID en los ajustes del dispositivo.")
+                        .foregroundStyle(Palette.negative)
+                } else {
+                    Text("Chirogra se bloquea cada vez que pasa a segundo plano.")
+                }
             }
             Section {
                 LabeledContent("Copia de seguridad exportable", value: "Próximamente")
