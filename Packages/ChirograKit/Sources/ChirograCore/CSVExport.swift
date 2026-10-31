@@ -90,3 +90,17 @@ public enum CSVExport {
         return lines(rows)
     }
 }
+
+extension CSVExport {
+    public static func salesTaxSummary(_ report: SalesTaxSummary, calendar: Calendar = .current) -> String {
+        var rows: [[String]] = [["Resumen de sales tax"], ["Periodo", date(report.from, calendar: calendar), date(report.to, calendar: calendar)], [],
+                                ["Ventas totales", amount(report.totalSales)],
+                                ["Ventas gravables", amount(report.taxableSales)],
+                                ["Ventas no gravables", amount(report.nonTaxableSales)],
+                                ["Ventas exentas", amount(report.exemptSales)], [],
+                                ["Tasa", "Porcentaje", "Ventas gravables", "Impuesto"]]
+        rows += report.rows.map { [$0.name, "\($0.percent)", amount($0.taxableSales), amount($0.tax)] }
+        rows.append(["Total impuesto", "", "", amount(report.totalTax)])
+        return lines(rows)
+    }
+}

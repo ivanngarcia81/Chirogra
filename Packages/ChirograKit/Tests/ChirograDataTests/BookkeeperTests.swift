@@ -180,6 +180,26 @@ struct BookkeeperTests {
         #expect(try books.receivablesAging().total == 0)
     }
 
+    @Test("Resumen de sales tax con factura, cliente exento, descuento y nota de crédito")
+    func salesTaxSummary() throws {
+        let group = try austinTaxGroup()                                   // Texas 6.25 % + Austin 2 %
+        let taxed = try makeInvoice(amount: 200_000, taxGroup: group)
+        taxed.discount = 20_000
+        try books.issue(taxed)                                             // base 180,000
+        let exemptCustomer = Customer(name: "Escuela pública")
+        exemptCustomer.isTaxExempt = true
+        try books.issue(try makeInvoice(amount: 50_000, taxGroup: group, customer: exemptCustomer))
+        try books.issueCreditNote(for: taxed, amount: 10_000, isTaxable: true, reason: "Ajuste")
+
+        let report = try books.salesTaxSummary(from: .distantPast, to: .distantFuture)
+        #expect(report.totalSales == 180_000 + 50_000 - 10_000)
+        #expect(report.taxableSales == 170_000)
+        #expect(report.exemptSales == 50_000)
+        #expect(report.nonTaxableSales == 0)
+        #expect(report.totalTax == taxed.taxTotal - 825)                    // 8.25 % de 100.00
+        #expect(report.totalTax == ReportBuilder.balance(of: try account("2200").ledgerAccount, lines: try books.ledgerLines()))
+    }
+
     @Test("Cobros parciales y totales actualizan el estado; no se puede cobrar de más")
     func payments() throws {
         let invoice = try makeInvoice(amount: 100_000)

@@ -21,10 +21,7 @@ struct TaxesView: View {
         let ledger = Ledger(accounts: accounts, lines: journalLines)
         let payable = accounts.filter { $0.subtype == .salesTaxPayable }.reduce(0) { $0 + ledger.balance(of: $1) }
         let quarter = Calendar.current.dateInterval(of: .quarter, for: .now)
-        let collected = taxLines.filter { line in
-            guard let invoice = line.invoice, invoice.status != .void, let quarter else { return false }
-            return quarter.contains(invoice.issueDate)
-        }
+        let _ = taxLines.count   // se observa para recalcular el resumen al emitir facturas
         List {
             Section {
                 HeroCard(title: "Sales tax por pagar", value: payable.money, detail: "Saldo de la cuenta según libros")
@@ -48,19 +45,18 @@ struct TaxesView: View {
                 Text("Pagos a la agencia")
             }
 
-            Section("Cobrado este trimestre") {
-                let byRate = Dictionary(grouping: collected, by: \.name)
-                if byRate.isEmpty { Text("Sin ventas gravables este trimestre.").foregroundStyle(Palette.ink3) }
-                ForEach(byRate.keys.sorted(), id: \.self) { name in
-                    let lines = byRate[name] ?? []
-                    LabeledContent(name) {
-                        VStack(alignment: .trailing) {
-                            Text(lines.reduce(0) { $0 + $1.amount }.money).monospacedDigit()
-                            Text("sobre \(lines.reduce(0) { $0 + $1.taxableBase }.money)").font(.caption).foregroundStyle(Palette.ink3)
-                        }
+            Section("Este trimestre") {
+                if let quarter, let summary = try? Bookkeeper(context: context).salesTaxSummary(
+                    from: quarter.start, to: quarter.end.addingTimeInterval(-1)) {
+                    LabeledContent("Ventas gravables", value: summary.taxableSales.money)
+                    LabeledContent("No gravables y exentas", value: (summary.nonTaxableSales + summary.exemptSales).money)
+                    ForEach(summary.rows) { row in
+                        LabeledContent("\(row.name) · \(row.percent.formatted())%", value: row.tax.money)
                     }
+                    LabeledContent("Total cobrado", value: summary.totalTax.money).fontWeight(.semibold)
                 }
             }
+            .monospacedDigit()
 
             Section("Grupos (lo que se aplica en la factura)") {
                 ForEach(groups) { group in

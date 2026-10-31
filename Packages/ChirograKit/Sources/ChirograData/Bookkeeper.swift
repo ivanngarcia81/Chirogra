@@ -471,6 +471,37 @@ public struct Bookkeeper {
 
     // MARK: - Impuestos
 
+    /// Resumen de sales tax del periodo con facturas emitidas (no anuladas) y notas de crédito.
+    public func salesTaxSummary(from: Date, to: Date) throws -> SalesTaxSummary {
+        let invoices = try context.fetch(FetchDescriptor<Invoice>()).filter { $0.status != .draft && $0.status != .void }
+        var documents = invoices.map { invoice in
+            let exempt = invoice.customer?.isTaxExempt ?? false
+            let taxes = (invoice.taxLines ?? []).map {
+                SalesTaxDocument.Tax(rateID: $0.taxRateID, name: $0.name, rateMillionths: $0.rateMillionths,
+                                     taxableBase: $0.taxableBase, amount: $0.amount)
+            }
+            // Misma base que al emitir: líneas gravables menos su parte proporcional del descuento.
+            let taxableLines = invoice.sortedLines.filter(\.isTaxable).reduce(0) { $0 + $1.amount }
+            let taxableDiscount = invoice.subtotal == 0 ? 0
+                : (invoice.discount * taxableLines).dividedRoundingHalfAwayFromZero(by: invoice.subtotal)
+            return SalesTaxDocument(date: invoice.issueDate, netSales: invoice.subtotal - invoice.discount,
+                                    taxableBase: exempt ? 0 : taxableLines - taxableDiscount, isExempt: exempt, taxes: taxes)
+        }
+        for note in try context.fetch(FetchDescriptor<CreditNote>()) {
+            guard let invoice = note.invoice else { continue }
+            let exempt = invoice.customer?.isTaxExempt ?? false
+            let base = note.isTaxable && !exempt ? note.amount : 0
+            // Mismo cálculo que al emitir la nota: grupo de la factura en su fecha.
+            let taxes = base > 0
+                ? SalesTaxCalculator.taxes(onTaxableBase: base, components: try taxComponents(groupID: invoice.taxGroupID, on: invoice.issueDate))
+                    .map { SalesTaxDocument.Tax(rateID: $0.component.id, name: $0.component.name, rateMillionths: $0.component.rateMillionths,
+                                                taxableBase: -$0.taxableBase, amount: -$0.amount) }
+                : []
+            documents.append(SalesTaxDocument(date: note.date, netSales: -note.amount, taxableBase: -base, isExempt: exempt, taxes: taxes))
+        }
+        return ReportBuilder.salesTaxSummary(documents: documents, from: from, to: to)
+    }
+
     /// Pago de sales tax a la agencia: Debe Sales Tax Payable (cuenta de la agencia) / Haber Banco.
     /// No puede superar el saldo pendiente de esa cuenta.
     @discardableResult

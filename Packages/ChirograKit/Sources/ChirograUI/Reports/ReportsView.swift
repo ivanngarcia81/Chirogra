@@ -11,6 +11,7 @@ struct ReportsView: View {
         case trial = "Balanza"
         case receivables = "Por cobrar"
         case payables = "Por pagar"
+        case salesTax = "Sales tax"
         var id: String { rawValue }
     }
 
@@ -44,7 +45,7 @@ struct ReportsView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: Metrics.cardSpacing) {
                 kindChips
-                if kind == .income {
+                if kind == .income || kind == .salesTax {
                     HStack {
                         Picker("Periodo", selection: $period) {
                             ForEach(Period.allCases) { Text($0.rawValue).tag($0) }
@@ -52,7 +53,7 @@ struct ReportsView: View {
                         .pickerStyle(.segmented)
                         .fixedSize()
                         Spacer()
-                        Toggle("Comparar", isOn: $compare).fixedSize()
+                        if kind == .income { Toggle("Comparar", isOn: $compare).fixedSize() }
                     }
                 }
                 switch kind {
@@ -61,6 +62,7 @@ struct ReportsView: View {
                 case .trial: trialBalance
                 case .receivables: aging(receivablesReport, total: "Total por cobrar", empty: "No hay facturas pendientes de cobro.")
                 case .payables: aging(payablesReport, total: "Total por pagar", empty: "No hay facturas de proveedores pendientes.")
+                case .salesTax: SalesTaxSummaryCard(report: salesTaxReport)
                 }
             }
             .padding(Metrics.gutter)
@@ -259,6 +261,13 @@ struct ReportsView: View {
         return (try? Bookkeeper(context: context).receivablesAging()) ?? ReportBuilder.aging(items: [], asOf: .now)
     }
 
+    private var salesTaxReport: SalesTaxSummary {
+        _ = invoices.count
+        let interval = period.interval()
+        return (try? Bookkeeper(context: context).salesTaxSummary(from: interval.start, to: interval.end.addingTimeInterval(-1)))
+            ?? ReportBuilder.salesTaxSummary(documents: [], from: interval.start, to: interval.end)
+    }
+
     private var payablesReport: AgingReport {
         _ = bills.count
         return (try? Bookkeeper(context: context).payablesAging()) ?? ReportBuilder.aging(items: [], asOf: .now)
@@ -281,6 +290,8 @@ struct ReportsView: View {
         case .receivables:
             CSVFile(name: "Antigüedad de cuentas por cobrar",
                     text: CSVExport.aging(receivablesReport, title: "Antigüedad de cuentas por cobrar", partyTitle: "Cliente"))
+        case .salesTax:
+            CSVFile(name: "Resumen de sales tax", text: CSVExport.salesTaxSummary(salesTaxReport))
         case .payables:
             CSVFile(name: "Antigüedad de cuentas por pagar",
                     text: CSVExport.aging(payablesReport, title: "Antigüedad de cuentas por pagar", partyTitle: "Proveedor"))
@@ -301,4 +312,38 @@ struct CSVFile: Transferable {
 
 #Preview {
     NavigationStack { ReportsView() }.modelContainer(SampleData.makeContainer())
+}
+
+/// Resumen de sales tax: ventas gravables, no gravables y exentas, e impuesto por tasa (DISEÑO §4.7).
+struct SalesTaxSummaryCard: View {
+    let report: SalesTaxSummary
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Metrics.cardSpacing) {
+            HeroCard(title: "Sales tax cobrado", value: report.totalTax.money,
+                     detail: "\(report.from.shortDate) – \(report.to.shortDate)")
+            VStack(alignment: .leading, spacing: 8) {
+                LabeledContent("Ventas totales", value: report.totalSales.money).fontWeight(.semibold)
+                LabeledContent("Gravables", value: report.taxableSales.money)
+                LabeledContent("No gravables", value: report.nonTaxableSales.money)
+                LabeledContent("Exentas (clientes exentos)", value: report.exemptSales.money)
+            }
+            .monospacedDigit()
+            .card()
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Por tasa").font(.cardTitle)
+                if report.rows.isEmpty { Text("Sin impuesto cobrado en el periodo.").foregroundStyle(Palette.ink3) }
+                ForEach(report.rows) { row in
+                    LabeledContent {
+                        Text(row.tax.money).monospacedDigit()
+                    } label: {
+                        Text("\(row.name) · \(row.percent.formatted())%")
+                        Text("sobre \(row.taxableSales.money)")
+                    }
+                    .accessibilityElement(children: .combine)
+                }
+            }
+            .card()
+        }
+    }
 }
