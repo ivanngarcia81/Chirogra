@@ -151,6 +151,35 @@ struct BookkeeperTests {
         #expect(ReportBuilder.balance(of: bank.ledgerAccount, lines: try books.ledgerLines()) == -16_500)
     }
 
+    @Test("Antigüedad de cuentas por pagar por proveedor y tramo; las pagadas no cuentan")
+    func payablesAging() throws {
+        let calendar = Calendar.current
+        func bill(_ vendor: Vendor, _ number: String, dueInDays: Int, amount: Int64) throws -> Bill {
+            let bill = Bill(vendor: vendor, vendorNumber: number, billDate: .now,
+                            dueDate: calendar.date(byAdding: .day, value: dueInDays, to: .now))
+            context.insert(bill)
+            let line = BillLine(details: number, amount: amount, accountID: try account("6400").id)
+            line.bill = bill
+            context.insert(line)
+            try books.record(bill)
+            return bill
+        }
+        let lumber = Vendor(name: "Maderas del Norte"), landlord = Vendor(name: "Renta del taller")
+        context.insert(lumber)
+        context.insert(landlord)
+        _ = try bill(lumber, "B-1", dueInDays: 10, amount: 84_230)
+        _ = try bill(lumber, "B-2", dueInDays: -45, amount: 10_000)
+        let paid = try bill(landlord, "R-1", dueInDays: -5, amount: 120_000)
+        try books.pay(paid, amount: 120_000, from: try account("1010"))
+
+        let report = try books.payablesAging()
+        #expect(report.total == 94_230)
+        #expect(report.total(for: .current) == 84_230)
+        #expect(report.total(for: .days31to60) == 10_000)
+        #expect(report.rows.map(\.party) == ["Maderas del Norte"])
+        #expect(try books.receivablesAging().total == 0)
+    }
+
     @Test("Cobros parciales y totales actualizan el estado; no se puede cobrar de más")
     func payments() throws {
         let invoice = try makeInvoice(amount: 100_000)

@@ -451,6 +451,24 @@ public struct Bookkeeper {
         return entry
     }
 
+    // MARK: - Antigüedad
+
+    /// Antigüedad de cuentas por cobrar: facturas emitidas con saldo, por cliente.
+    public func receivablesAging(asOf date: Date = Date(), calendar: Calendar = .current) throws -> AgingReport {
+        let items = try context.fetch(FetchDescriptor<Invoice>()).filter { $0.isOpen && $0.balanceDue != 0 }.map {
+            AgingReport.OpenItem(party: $0.customer?.name ?? "Sin cliente", document: $0.number, dueDate: $0.dueDate, balance: $0.balanceDue)
+        }
+        return ReportBuilder.aging(items: items, asOf: date, calendar: calendar)
+    }
+
+    /// Antigüedad de cuentas por pagar: facturas de proveedor registradas con saldo, por proveedor.
+    public func payablesAging(asOf date: Date = Date(), calendar: Calendar = .current) throws -> AgingReport {
+        let items = try context.fetch(FetchDescriptor<Bill>()).filter { $0.isOpen && $0.journalEntryID != nil && $0.balanceDue != 0 }.map {
+            AgingReport.OpenItem(party: $0.vendor?.name ?? "Sin proveedor", document: $0.vendorNumber, dueDate: $0.dueDate, balance: $0.balanceDue)
+        }
+        return ReportBuilder.aging(items: items, asOf: date, calendar: calendar)
+    }
+
     // MARK: - Impuestos
 
     /// Pago de sales tax a la agencia: Debe Sales Tax Payable (cuenta de la agencia) / Haber Banco.

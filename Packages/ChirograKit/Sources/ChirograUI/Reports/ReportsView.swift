@@ -9,7 +9,8 @@ struct ReportsView: View {
         case income = "Resultados"
         case balance = "Balance general"
         case trial = "Balanza"
-        case aging = "Antigüedad"
+        case receivables = "Por cobrar"
+        case payables = "Por pagar"
         var id: String { rawValue }
     }
 
@@ -31,6 +32,7 @@ struct ReportsView: View {
     @Query(sort: \Account.code) private var accounts: [Account]
     @Query private var journalLines: [JournalLine]
     @Query private var invoices: [Invoice]
+    @Query private var bills: [Bill]
 
     @State private var kind: Kind = .income
     @State private var period: Period = .month
@@ -57,7 +59,8 @@ struct ReportsView: View {
                 case .income: incomeStatement
                 case .balance: balanceSheet
                 case .trial: trialBalance
-                case .aging: aging
+                case .receivables: aging(receivablesReport, total: "Total por cobrar", empty: "No hay facturas pendientes de cobro.")
+                case .payables: aging(payablesReport, total: "Total por pagar", empty: "No hay facturas de proveedores pendientes.")
                 }
             }
             .padding(Metrics.gutter)
@@ -143,10 +146,9 @@ struct ReportsView: View {
         .card(padding: 0)
     }
 
-    // MARK: Antigüedad de cuentas por cobrar
+    // MARK: Antigüedad de cuentas por cobrar y por pagar
 
-    private var aging: some View {
-        let report = agingReport
+    private func aging(_ report: AgingReport, total: String, empty: String) -> some View {
         let titles: [AgingReport.Bucket: String] = [.current: "Corriente", .days1to30: "1–30", .days31to60: "31–60", .days61to90: "61–90", .over90: "> 90"]
         return VStack(alignment: .leading, spacing: Metrics.cardSpacing) {
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 110), spacing: 8)], spacing: 8) {
@@ -160,9 +162,9 @@ struct ReportsView: View {
                     let overdue = row.total - (row.amounts[.current] ?? 0)
                     rowView(row.party, [overdue.money, row.total.money])
                 }
-                if report.rows.isEmpty { Text("No hay facturas pendientes.").foregroundStyle(Palette.ink3).padding() }
+                if report.rows.isEmpty { Text(empty).foregroundStyle(Palette.ink3).padding() }
                 Divider()
-                rowView("Total por cobrar", ["", report.total.money], bold: true)
+                rowView(total, ["", report.total.money], bold: true)
             }
             .card(padding: 0)
         }
@@ -251,11 +253,15 @@ struct ReportsView: View {
         return ReportBuilder.balanceSheet(accounts: ledger.ledgerAccounts, lines: ledger.lines, asOf: .now, fiscalYearStart: fiscalStart)
     }
 
-    private var agingReport: AgingReport {
-        let items = invoices.filter(\.isOpen).map {
-            AgingReport.OpenItem(party: $0.customer?.name ?? "Sin cliente", document: $0.number, dueDate: $0.dueDate, balance: $0.balanceDue)
-        }
-        return ReportBuilder.aging(items: items, asOf: .now)
+    // Las listas de facturas y de facturas de proveedor se observan para que los reportes se actualicen solos.
+    private var receivablesReport: AgingReport {
+        _ = invoices.count
+        return (try? Bookkeeper(context: context).receivablesAging()) ?? ReportBuilder.aging(items: [], asOf: .now)
+    }
+
+    private var payablesReport: AgingReport {
+        _ = bills.count
+        return (try? Bookkeeper(context: context).payablesAging()) ?? ReportBuilder.aging(items: [], asOf: .now)
     }
 
     // MARK: Exportar
@@ -272,9 +278,12 @@ struct ReportsView: View {
         case .trial:
             CSVFile(name: "Balanza de comprobación",
                     text: CSVExport.trialBalance(ReportBuilder.trialBalance(accounts: ledger.ledgerAccounts, lines: ledger.lines, asOf: .now)))
-        case .aging:
+        case .receivables:
             CSVFile(name: "Antigüedad de cuentas por cobrar",
-                    text: CSVExport.aging(agingReport, title: "Antigüedad de cuentas por cobrar", partyTitle: "Cliente"))
+                    text: CSVExport.aging(receivablesReport, title: "Antigüedad de cuentas por cobrar", partyTitle: "Cliente"))
+        case .payables:
+            CSVFile(name: "Antigüedad de cuentas por pagar",
+                    text: CSVExport.aging(payablesReport, title: "Antigüedad de cuentas por pagar", partyTitle: "Proveedor"))
         }
     }
 }
