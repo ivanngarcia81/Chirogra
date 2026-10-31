@@ -163,6 +163,7 @@ struct InvoiceEditorView: View {
     }
 
     /// Guarda (o reescribe) el borrador con lo que hay ahora en pantalla.
+    @discardableResult
     private func persistDraft() throws -> Invoice {
         let invoice = try books.saveDraft(input, into: savedInvoice)
         savedInvoice = invoice
