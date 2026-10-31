@@ -202,6 +202,33 @@ public struct Bookkeeper {
 
     // MARK: - Ventas
 
+    /// Guarda un borrador de factura. Si `existing` ya existe, reescribe **todos** sus campos y
+    /// reemplaza sus líneas, para que un reintento de emisión use siempre los datos actuales del editor.
+    @discardableResult
+    public func saveDraft(_ input: InvoiceDraftInput, into existing: Invoice? = nil) throws -> Invoice {
+        if let existing, existing.status != .draft {
+            throw BookkeepingError.invalidState("Solo se pueden editar facturas en borrador.")
+        }
+        let invoice = existing ?? Invoice(customer: input.customer, issueDate: input.issueDate, dueDate: input.dueDate)
+        if existing == nil { context.insert(invoice) }
+
+        invoice.customer = input.customer
+        invoice.issueDate = input.issueDate
+        invoice.dueDate = input.dueDate
+        invoice.taxGroupID = input.taxGroupID
+        invoice.customerMessage = input.customerMessage
+        for line in invoice.lines ?? [] { context.delete(line) }
+        invoice.lines = []
+        for (index, line) in input.lines.enumerated() {
+            let model = InvoiceLine(details: line.details, quantity: line.quantity, unitPrice: line.unitPrice,
+                                    isTaxable: line.isTaxable, incomeAccountID: line.incomeAccountID, order: index)
+            model.invoice = invoice
+            context.insert(model)
+        }
+        try saveOrRollback()
+        return invoice
+    }
+
     /// Componentes de impuesto de un grupo, con la cuenta de pasivo de cada agencia.
     public func taxComponents(groupID: UUID?, on date: Date) throws -> [TaxComponent] {
         guard let groupID else { return [] }

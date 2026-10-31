@@ -151,28 +151,27 @@ struct InvoiceEditorView: View {
         }
     }
 
-    @discardableResult
-    private func makeInvoice() -> Invoice? {
-        if let savedInvoice { return savedInvoice }
-        guard let customer else { return nil }
-        let invoice = Invoice(customer: customer, issueDate: issueDate, dueDate: dueDate)
-        invoice.taxGroupID = taxGroupID
-        invoice.customerMessage = customerMessage
-        context.insert(invoice)
-        for (index, line) in validLines.enumerated() {
-            let model = InvoiceLine(details: line.details, quantity: line.quantity, unitPrice: line.unitPrice,
-                                    isTaxable: line.isTaxable, incomeAccountID: line.incomeAccountID, order: index)
-            model.invoice = invoice
-            context.insert(model)
-        }
+    private var input: InvoiceDraftInput {
+        InvoiceDraftInput(
+            customer: customer, issueDate: issueDate, dueDate: dueDate, taxGroupID: taxGroupID,
+            customerMessage: customerMessage,
+            lines: validLines.map {
+                .init(details: $0.details, quantity: $0.quantity, unitPrice: $0.unitPrice,
+                      isTaxable: $0.isTaxable, incomeAccountID: $0.incomeAccountID)
+            }
+        )
+    }
+
+    /// Guarda (o reescribe) el borrador con lo que hay ahora en pantalla.
+    private func persistDraft() throws -> Invoice {
+        let invoice = try books.saveDraft(input, into: savedInvoice)
         savedInvoice = invoice
         return invoice
     }
 
     private func saveDraft() {
         do {
-            makeInvoice()
-            try context.save()
+            try persistDraft()
             dismiss()
         } catch {
             errorMessage = error.localizedDescription
@@ -180,13 +179,11 @@ struct InvoiceEditorView: View {
     }
 
     private func issue() {
-        guard let invoice = makeInvoice() else { return }
         do {
-            try books.issue(invoice)
+            // Si un intento anterior falló, el borrador se reescribe con las correcciones antes de emitir.
+            try books.issue(try persistDraft())
             dismiss()
         } catch {
-            // La factura queda como borrador; el usuario puede corregir y volver a emitir.
-            try? context.save()
             errorMessage = error.localizedDescription
         }
     }

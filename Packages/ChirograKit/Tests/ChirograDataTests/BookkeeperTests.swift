@@ -192,3 +192,63 @@ struct BookkeeperTests {
         #expect(report.totalDebit > 0)
     }
 }
+
+@MainActor
+@Suite("Borradores de factura")
+struct InvoiceDraftTests {
+    let container: ModelContainer
+    let books: Bookkeeper
+
+    init() throws {
+        container = try ChirograStore.makeContainer(inMemory: true)
+        books = Bookkeeper(context: container.mainContext)
+        try books.setUpCompany(legalName: "Prueba LLC", locale: Locale(identifier: "es_US"))
+    }
+
+    @Test("Reintentar la emisión tras un fallo usa los datos corregidos, no los del primer intento")
+    func retryAfterFailureUsesCorrectedData() throws {
+        let context = container.mainContext
+        let customer = Customer(name: "Café Aurora")
+        context.insert(customer)
+        let income = try #require(try books.accounts().first { $0.code == "4000" })
+        let company = try #require(try books.company())
+        let calendar = Calendar.current
+        let lockedDay = calendar.date(byAdding: .day, value: -10, to: .now)!
+        company.lockDate = calendar.date(byAdding: .day, value: -5, to: .now)
+
+        // Primer intento: fecha dentro del periodo cerrado y una línea de $100.
+        var input = InvoiceDraftInput(customer: customer, issueDate: lockedDay, dueDate: lockedDay,
+                                      lines: [.init(details: "Diseño", unitPrice: 10_000, incomeAccountID: income.id)])
+        let draft = try books.saveDraft(input)
+        #expect(throws: BookkeepingError.self) { try books.issue(draft) }
+        #expect(draft.status == .draft)
+
+        // El usuario corrige la fecha y las líneas, y vuelve a emitir.
+        input.issueDate = .now
+        input.dueDate = .now
+        input.lines = [.init(details: "Diseño", unitPrice: 25_000, incomeAccountID: income.id),
+                       .init(details: "Instalación", quantity: 2, unitPrice: 5_000, incomeAccountID: income.id)]
+        let corrected = try books.saveDraft(input, into: draft)
+        #expect(corrected === draft)
+        #expect(corrected.lines?.count == 2)
+        try books.issue(corrected)
+
+        #expect(corrected.status == .sent)
+        #expect(corrected.total == 35_000)
+        #expect(calendar.isDate(corrected.issueDate, inSameDayAs: .now))
+        #expect(try context.fetchCount(FetchDescriptor<InvoiceLine>()) == 2)
+        #expect(try context.fetchCount(FetchDescriptor<Invoice>()) == 1)
+    }
+
+    @Test("Una factura emitida ya no se puede reescribir como borrador")
+    func issuedInvoiceIsNotEditable() throws {
+        let customer = Customer(name: "Hotel Mirador")
+        container.mainContext.insert(customer)
+        let income = try #require(try books.accounts().first { $0.code == "4000" })
+        let input = InvoiceDraftInput(customer: customer, issueDate: .now, dueDate: .now,
+                                      lines: [.init(details: "X", unitPrice: 1_000, incomeAccountID: income.id)])
+        let invoice = try books.saveDraft(input)
+        try books.issue(invoice)
+        #expect(throws: BookkeepingError.self) { try books.saveDraft(input, into: invoice) }
+    }
+}
