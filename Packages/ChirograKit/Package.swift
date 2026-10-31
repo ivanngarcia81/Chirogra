@@ -22,9 +22,10 @@ let package = Package(
         .target(
             name: "ChirograUI",
             dependencies: ["ChirograCore", "ChirograData"],
-            resources: [.process("Resources")]
+            swiftSettings: [.defaultIsolation(MainActor.self)]
         ),
         .testTarget(name: "ChirograCoreTests", dependencies: ["ChirograCore"]),
         .testTarget(name: "ChirograDataTests", dependencies: ["ChirograData"]),
+        .testTarget(name: "ChirograUITests", dependencies: ["ChirograUI", "ChirograData"]),
     ]
 )
