@@ -1,6 +1,6 @@
 # Chirogra — Documento de diseño
 
-> Estado: **borrador para revisión** (v0.4, 31 oct 2026).
+> Estado: **aprobado por el usuario** (v1.0, 31 oct 2026).
 > Nada de este documento está implementado todavía. Las secciones marcadas con 🔶 son decisiones abiertas; las marcadas con ✅ ya las confirmó el usuario.
 >
 > **Alcance de este documento:** solo la parte técnica (alcance, módulos, modelo de datos, arquitectura, persistencia, sincronización y riesgos). El diseño visual, las pantallas y la navegación se definen en **Claude Design** (resumido en §7).
@@ -67,6 +67,7 @@ Principios de producto:
 - **Seguimiento 1099:** marcar proveedores sujetos a 1099-NEC/1099-MISC y reporte anual de pagos por proveedor (con su W-9 adjunto).
 - Mapeo de cuentas a líneas del Schedule C / Form 1120-S para preparar la declaración.
 - Transacciones recurrentes (facturas y gastos periódicos).
+- Estimados / cotizaciones que se convierten en factura.
 - Lectura automática de recibos (Vision / OCR en el dispositivo) para prellenar gastos.
 - Presupuestos y comparación real vs. presupuesto.
 - Múltiples empresas en la misma app.
@@ -407,19 +408,19 @@ Se implementan en `ChirograUI/DesignSystem` como colores de un Asset Catalog con
 - **Logotipo:** cuadrado redondeado en `brand` con una "C" abierta en `onBrand` y un punto en `accent`. Se exportará del canvas a vectores para el ícono de app y el Asset Catalog.
 - **Iconos:** el canvas usa trazos de línea propios; en SwiftUI se usarán SF Symbols equivalentes salvo donde el diseño exija un dibujo propio.
 
-### 7.4 Diferencias entre el canvas y el diseño técnico 🔶
+### 7.4 Diferencias entre el canvas y el diseño técnico ✅
 
-El canvas muestra algunas funciones que el diseño técnico (§3) había dejado fuera del MVP o que no tenía. Hay que decidir cada una antes de programar:
+El canvas muestra algunas funciones que el diseño técnico (§3) deja fuera del MVP. **Decisión del usuario: lo que es de fase 2 se diseña y construye en la fase 2.** En el MVP esas pantallas no se implementan (la pestaña Banca muestra un estado vacío que lo explica).
 
-| En el canvas | En el diseño técnico | Propuesta |
+| En el canvas | En el diseño técnico | Decisión |
 |---|---|---|
-| Banca como pestaña principal: importar CSV/OFX en el alta, bandeja "por revisar", categorizar, conciliación | Fase 2 | **Pasar al MVP** la importación CSV/OFX, la bandeja por revisar con reglas y la conciliación (el modelo ya existe, §4.6). La conexión bancaria en línea sigue en fase 3 (el canvas ya la marca "Pronto"). |
-| Escanear recibo con datos extraídos | OCR en fase 2 | **Pasar al MVP** con Vision en el dispositivo (sin servicios externos). |
-| Estimados que se convierten en factura | No existía | **Añadir al MVP** la entidad `Estimate` (sin efecto contable hasta convertirse en factura). |
-| Usuarios y permisos (dueño, contador, solo lectura, invitaciones) | Un solo usuario (decisión confirmada) | Mantener un usuario: la pantalla se construye más adelante; en el MVP Ajustes no la muestra o la muestra como "Próximamente". |
-| Selector de empresa en Inicio | Multiempresa en fase 2 | MVP con una empresa; el selector aparece cuando haya más de una. |
-| Estado de factura "Vista" (el cliente la abrió) | Sin servidor no se puede saber | Omitir en el MVP; se mantiene el token de color para el futuro. |
-| Pagos "Programados" y "Recurrentes" en por pagar | Recurrentes en fase 2 | En el MVP, solo facturas por pagar con vencimiento; recurrentes en fase 2. |
+| Banca como pestaña principal: importar CSV/OFX en el alta, bandeja "por revisar", categorizar, conciliación | Fase 2 | Fase 2 (el modelo de §4.6 se diseña entonces). La conexión bancaria en línea, fase 3. El paso 3 del alta queda fuera del MVP. |
+| Escanear recibo con datos extraídos | OCR en fase 2 | Fase 2. En el MVP, el gasto admite adjuntar foto o PDF sin lectura automática. |
+| Estimados que se convierten en factura | No existía | Fase 2: entidad `Estimate`, sin efecto contable hasta convertirse en factura. |
+| Usuarios y permisos (dueño, contador, solo lectura, invitaciones) | Un solo usuario (decisión confirmada) | Un usuario; la pantalla no se muestra en el MVP. |
+| Selector de empresa en Inicio | Multiempresa en fase 2 | Una empresa en el MVP; selector en fase 2. |
+| Estado de factura "Vista" (el cliente la abrió) | Sin servidor no se puede saber | Se omite; se conserva el token de color. |
+| Pagos "Programados" y "Recurrentes" en por pagar | Recurrentes en fase 2 | Solo facturas por pagar con vencimiento; recurrentes en fase 2. |
 | Impuestos · "Deducibles" | Mapeo a Schedule C en fase 2 | Fase 2. |
 | Formato "USD · dd/mm" en Ajustes | EE. UU. usa mm/dd | Por defecto el formato de la región del dispositivo, configurable. |
 
@@ -469,11 +470,11 @@ Confirmadas ✅:
 4. Sincronización: iCloud privado entre los dispositivos del usuario, desactivable.
 5. Numeración: serie única validada tras sincronizar (no hay obligación legal de numeración sin huecos en EE. UU.).
 
-Pendientes 🔶 (tienen valor por defecto; se pueden cambiar sin rehacer el diseño técnico):
+Resto de decisiones:
 
-6. **Alcance del MVP:** conciliación bancaria, flujo de efectivo, base caja y 1099 en fase 2 (por defecto: sí, fase 2).
-7. **Idiomas:** español + inglés desde el inicio (por defecto: sí).
-8. **Diseño de UI:** enlazado (§7). Quedan por decidir las diferencias de §7.4 con el alcance del MVP.
+6. ✅ **Alcance del MVP:** conciliación bancaria, OCR de recibos, estimados, flujo de efectivo, base caja y 1099 en fase 2.
+7. **Idiomas:** español + inglés desde el inicio (valor por defecto aceptado).
+8. ✅ **Diseño de UI:** enlazado (§7); lo que el canvas muestra de fase 2 se hace en fase 2 (§7.4).
 
 ---
 
