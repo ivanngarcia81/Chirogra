@@ -36,3 +36,14 @@ struct SalesTaxSummaryTests {
         #expect(CSVExport.salesTaxSummary(report).contains("Total impuesto,,,24.75"))
     }
 }
+
+@Suite("Posición de sales tax")
+struct SalesTaxPositionTests {
+    @Test("Saldo acreedor = por pagar; deudor = a favor; cero = saldado")
+    func position() {
+        #expect(SalesTaxPosition(liabilityBalance: 1_650) == .owed(1_650))
+        #expect(SalesTaxPosition(liabilityBalance: -762) == .credit(762))
+        #expect(SalesTaxPosition(liabilityBalance: -762).amount == 762)
+        #expect(SalesTaxPosition(liabilityBalance: 0) == .settled)
+    }
+}

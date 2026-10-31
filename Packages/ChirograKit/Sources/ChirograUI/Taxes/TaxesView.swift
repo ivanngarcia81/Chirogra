@@ -24,7 +24,8 @@ struct TaxesView: View {
         let _ = taxLines.count   // se observa para recalcular el resumen al emitir facturas
         List {
             Section {
-                HeroCard(title: "Sales tax por pagar", value: payable.money, detail: "Saldo de la cuenta según libros")
+                let position = SalesTaxPosition(liabilityBalance: payable)
+                HeroCard(title: position.title, value: position.amount.money, detail: position.detail)
                     .listRowInsets(EdgeInsets())
             }
             .listRowBackground(Color.clear)
@@ -237,6 +238,23 @@ struct SalesTaxPaymentView: View {
             dismiss()
         } catch {
             errorMessage = error.localizedDescription
+        }
+    }
+}
+
+extension SalesTaxPosition {
+    var title: String {
+        switch self {
+        case .owed: "Sales tax por pagar"
+        case .settled: "Sales tax al día"
+        case .credit: "Sales tax a favor"
+        }
+    }
+
+    var detail: String {
+        switch self {
+        case .owed, .settled: "Saldo de la cuenta según libros"
+        case .credit: "Pagaste más de lo cobrado (p. ej. por una nota de crédito): se descuenta de la próxima declaración"
         }
     }
 }

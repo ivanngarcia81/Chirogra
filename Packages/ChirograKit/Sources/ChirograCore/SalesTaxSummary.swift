@@ -83,3 +83,23 @@ extension ReportBuilder {
         )
     }
 }
+
+/// Posición frente a la agencia según el saldo de Sales Tax Payable: se debe, está saldado o hay saldo a favor
+/// (p. ej. se pagó el periodo y después una nota de crédito devolvió impuesto).
+public enum SalesTaxPosition: Hashable, Sendable {
+    case owed(Int64)
+    case settled
+    case credit(Int64)
+
+    public init(liabilityBalance: Int64) {
+        self = liabilityBalance > 0 ? .owed(liabilityBalance) : liabilityBalance < 0 ? .credit(-liabilityBalance) : .settled
+    }
+
+    /// Importe siempre positivo para mostrar junto a «por pagar» o «a favor».
+    public var amount: Int64 {
+        switch self {
+        case .owed(let value), .credit(let value): value
+        case .settled: 0
+        }
+    }
+}
