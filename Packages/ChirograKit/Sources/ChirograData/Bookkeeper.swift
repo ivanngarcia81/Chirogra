@@ -451,6 +451,28 @@ public struct Bookkeeper {
         return entry
     }
 
+    // MARK: - Impuestos
+
+    /// Pago de sales tax a la agencia: Debe Sales Tax Payable (cuenta de la agencia) / Haber Banco.
+    /// No puede superar el saldo pendiente de esa cuenta.
+    @discardableResult
+    public func paySalesTax(
+        to agency: TaxAgency?, amount: Int64, date: Date = Date(), from paymentAccount: Account, reference: String = ""
+    ) throws -> JournalEntry {
+        let liability = try account(id: agency?.liabilityAccountID) ?? systemAccount(.salesTaxPayable)
+        let owed = ReportBuilder.balance(of: liability.ledgerAccount, lines: try ledgerLines())
+        guard amount <= owed else { throw BookkeepingError.overpayment(balanceDue: owed) }
+        let memo = ["Pago de sales tax", agency?.name, reference.isEmpty ? nil : reference].compactMap { $0 }.joined(separator: " · ")
+        let draft: JournalEntryDraft
+        do {
+            draft = try PostingRules.salesTaxPayment(date: date, memo: memo, amount: amount,
+                                                     liabilityAccountID: liability.id, paymentAccountID: paymentAccount.id)
+        } catch {
+            throw BookkeepingError.invalidDocument(error)
+        }
+        return try post(draft, sourceDocumentID: agency?.id)
+    }
+
     // MARK: - Auxiliares
 
     private func costLines(_ raw: [(UUID?, Int64, String)]) throws -> [CostLine] {

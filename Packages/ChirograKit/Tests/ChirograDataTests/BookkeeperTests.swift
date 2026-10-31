@@ -135,6 +135,22 @@ struct BookkeeperTests {
         #expect(invoice.status == .paid)
     }
 
+    @Test("Pago de sales tax a la agencia: salda el pasivo y no admite pagar de más")
+    func salesTaxPayment() throws {
+        let group = try austinTaxGroup()
+        try books.issue(try makeInvoice(amount: 200_000, taxGroup: group))      // 16,500 de impuesto
+        let agency = try #require(try context.fetch(FetchDescriptor<TaxAgency>()).first)
+        let bank = try account("1010")
+        #expect(throws: BookkeepingError.overpayment(balanceDue: 16_500)) {
+            try books.paySalesTax(to: agency, amount: 16_501, from: bank)
+        }
+        let entry = try books.paySalesTax(to: agency, amount: 16_500, from: bank, reference: "Q4")
+        #expect(entry.source == .salesTaxPayment)
+        #expect(entry.memo == "Pago de sales tax · Texas Comptroller · Q4")
+        #expect(ReportBuilder.balance(of: try account("2200").ledgerAccount, lines: try books.ledgerLines()) == 0)
+        #expect(ReportBuilder.balance(of: bank.ledgerAccount, lines: try books.ledgerLines()) == -16_500)
+    }
+
     @Test("Cobros parciales y totales actualizan el estado; no se puede cobrar de más")
     func payments() throws {
         let invoice = try makeInvoice(amount: 100_000)

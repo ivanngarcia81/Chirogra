@@ -12,7 +12,9 @@ struct TaxesView: View {
     @Query(sort: \TaxGroup.name) private var groups: [TaxGroup]
     @Query private var taxLines: [InvoiceTaxLine]
 
+    @Query(sort: \JournalEntry.date, order: .reverse) private var entries: [JournalEntry]
     @State private var showingRate = false
+    @State private var showingPayment = false
     @State private var showingGroup = false
 
     var body: some View {
@@ -29,6 +31,22 @@ struct TaxesView: View {
                     .listRowInsets(EdgeInsets())
             }
             .listRowBackground(Color.clear)
+
+            Section {
+                Button("Registrar pago a la agencia", systemImage: "building.columns") { showingPayment = true }
+                    .disabled(payable <= 0)
+                let payments = entries.filter { $0.source == .salesTaxPayment && $0.reversesEntryID == nil }
+                ForEach(payments.prefix(5)) { entry in
+                    LabeledContent {
+                        Text(entry.totalDebits.money).monospacedDigit()
+                    } label: {
+                        Text(entry.memo)
+                        Text(entry.date.shortDate)
+                    }
+                }
+            } header: {
+                Text("Pagos a la agencia")
+            }
 
             Section("Cobrado este trimestre") {
                 let byRate = Dictionary(grouping: collected, by: \.name)
@@ -68,6 +86,7 @@ struct TaxesView: View {
         .screenBackground()
         .navigationTitle("Impuestos")
         .sheet(isPresented: $showingRate) { NavigationStack { TaxRateEditorView() } }
+        .sheet(isPresented: $showingPayment) { NavigationStack { SalesTaxPaymentView(owed: payable) } }
         .sheet(isPresented: $showingGroup) { NavigationStack { TaxGroupEditorView() } }
     }
 }
@@ -165,6 +184,63 @@ struct TaxGroupEditorView: View {
                 }
                 .disabled(name.isEmpty || selected.isEmpty)
             }
+        }
+    }
+}
+
+/// Registrar el pago del sales tax cobrado a la agencia (Debe Sales Tax Payable / Haber Banco).
+struct SalesTaxPaymentView: View {
+    let owed: Int64
+    @Environment(\.modelContext) private var context
+    @Environment(\.dismiss) private var dismiss
+    @Query(sort: \TaxAgency.name) private var agencies: [TaxAgency]
+    @Query(sort: \Account.code) private var accounts: [Account]
+    @State private var agencyID: UUID?
+    @State private var amount: Int64 = 0
+    @State private var date = Date()
+    @State private var accountID: UUID?
+    @State private var reference = ""
+    @State private var errorMessage: String?
+
+    var body: some View {
+        Form {
+            if let errorMessage { ErrorBanner(message: errorMessage) }
+            Section {
+                Picker("Agencia", selection: $agencyID) {
+                    Text("Sin agencia").tag(UUID?.none)
+                    ForEach(agencies) { Text($0.name).tag(Optional($0.id)) }
+                }
+                LabeledContent("Pendiente según libros", value: owed.money)
+            }
+            Section {
+                MoneyField(title: "Importe pagado", minorUnits: $amount)
+                DatePicker("Fecha", selection: $date, displayedComponents: .date)
+                AccountPicker(title: "Pagado desde", accounts: accounts.filtered { $0 == .bank || $0 == .cash }, selection: $accountID)
+                TextField("Periodo o referencia (p. ej. Q3 2026)", text: $reference)
+            }
+        }
+        .screenBackground()
+        .navigationTitle("Pago de sales tax")
+        .inlineTitle()
+        .toolbar {
+            ToolbarItem(placement: .cancellationAction) { Button("Cancelar") { dismiss() } }
+            ToolbarItem(placement: .confirmationAction) { Button("Registrar", action: save).disabled(amount <= 0 || accountID == nil) }
+        }
+        .onAppear {
+            amount = owed
+            agencyID = agencyID ?? agencies.first?.id
+            accountID = accountID ?? accounts.first { $0.subtype == .bank }?.id
+        }
+    }
+
+    private func save() {
+        guard let account = accounts.first(where: { $0.id == accountID }) else { return }
+        do {
+            try Bookkeeper(context: context).paySalesTax(to: agencies.first { $0.id == agencyID }, amount: amount, date: date,
+                                                         from: account, reference: reference)
+            dismiss()
+        } catch {
+            errorMessage = error.localizedDescription
         }
     }
 }
