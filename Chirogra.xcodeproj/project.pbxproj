@@ -1,0 +1,379 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0F6D88651207F8C4A4AF5A7B /* ChirograApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53FB421440D95AA4F9DB69E7 /* ChirograApp.swift */; };
+		8D366A0BEB2A3A1EFFBABAA0 /* ChirograCore in Frameworks */ = {isa = PBXBuildFile; productRef = 5222374F4B8B70EB983F946B /* ChirograCore */; };
+		9CB3DF906D7BB2FA485CB8E9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7364B1960027C08F87F64E1F /* Assets.xcassets */; };
+		A4D4D4C3591851EB343D3923 /* ChirograUI in Frameworks */ = {isa = PBXBuildFile; productRef = 1AC0F11095AE088BEA25F7A2 /* ChirograUI */; };
+		AAAFE5E41281334BDA89E4BD /* ChirograData in Frameworks */ = {isa = PBXBuildFile; productRef = AF41D00F410173B547718E3A /* ChirograData */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		53FB421440D95AA4F9DB69E7 /* ChirograApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChirograApp.swift; sourceTree = "<group>"; };
+		5CC24A74A69DD9CDC364AE58 /* ChirograKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ChirograKit; path = Packages/ChirograKit; sourceTree = SOURCE_ROOT; };
+		5E80BC58C6541FB633123F25 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		7364B1960027C08F87F64E1F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		89B034281E78B27BB74D6F66 /* Chirogra.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Chirogra.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		F91FBE4371331E99B040AA20 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A4D4D4C3591851EB343D3923 /* ChirograUI in Frameworks */,
+				AAAFE5E41281334BDA89E4BD /* ChirograData in Frameworks */,
+				8D366A0BEB2A3A1EFFBABAA0 /* ChirograCore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		388BF6302C6A145D29949E3F /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				5CC24A74A69DD9CDC364AE58 /* ChirograKit */,
+			);
+			path = Packages;
+			sourceTree = "<group>";
+		};
+		3A848B582470A3285F3DA76C /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				89B034281E78B27BB74D6F66 /* Chirogra.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		4AF2C8E367AFD5E4BFCEC674 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				7364B1960027C08F87F64E1F /* Assets.xcassets */,
+				53FB421440D95AA4F9DB69E7 /* ChirograApp.swift */,
+				5E80BC58C6541FB633123F25 /* Info.plist */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		DD25423463D6889FBC19DE87 = {
+			isa = PBXGroup;
+			children = (
+				4AF2C8E367AFD5E4BFCEC674 /* App */,
+				388BF6302C6A145D29949E3F /* Packages */,
+				3A848B582470A3285F3DA76C /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		D82DD003B0D91DD5FD3AF19E /* Chirogra */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9726C24E75BD8534897EAEE7 /* Build configuration list for PBXNativeTarget "Chirogra" */;
+			buildPhases = (
+				FF4ED1A3D969F0E0C549AB17 /* Sources */,
+				D2E5FB3641438E21C4CF447A /* Resources */,
+				F91FBE4371331E99B040AA20 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Chirogra;
+			packageProductDependencies = (
+				1AC0F11095AE088BEA25F7A2 /* ChirograUI */,
+				AF41D00F410173B547718E3A /* ChirograData */,
+				5222374F4B8B70EB983F946B /* ChirograCore */,
+			);
+			productName = Chirogra;
+			productReference = 89B034281E78B27BB74D6F66 /* Chirogra.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A71A09469FB98600A3259300 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					D82DD003B0D91DD5FD3AF19E = {
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 38004CA3D507E62C080C92FF /* Build configuration list for PBXProject "Chirogra" */;
+			developmentRegion = es;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				es,
+			);
+			mainGroup = DD25423463D6889FBC19DE87;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				25496F9248FE463C726F978A /* XCLocalSwiftPackageReference "Packages/ChirograKit" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 3A848B582470A3285F3DA76C /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				D82DD003B0D91DD5FD3AF19E /* Chirogra */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		D2E5FB3641438E21C4CF447A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9CB3DF906D7BB2FA485CB8E9 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		FF4ED1A3D969F0E0C549AB17 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0F6D88651207F8C4A4AF5A7B /* ChirograApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		7BE6168E0B5D2D8AA6B1DCE6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 0.1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		7CD6B69DB4559BC9017417F1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_USER_SELECTED_FILES = readwrite;
+				INFOPLIST_FILE = App/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.chirogra.app;
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		92D2EB7DB71E3E178164D226 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_USER_SELECTED_FILES = readwrite;
+				INFOPLIST_FILE = App/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.chirogra.app;
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		F80807312698884A59B1CA3E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 0.1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		38004CA3D507E62C080C92FF /* Build configuration list for PBXProject "Chirogra" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7BE6168E0B5D2D8AA6B1DCE6 /* Debug */,
+				F80807312698884A59B1CA3E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		9726C24E75BD8534897EAEE7 /* Build configuration list for PBXNativeTarget "Chirogra" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7CD6B69DB4559BC9017417F1 /* Debug */,
+				92D2EB7DB71E3E178164D226 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		25496F9248FE463C726F978A /* XCLocalSwiftPackageReference "Packages/ChirograKit" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/ChirograKit;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		1AC0F11095AE088BEA25F7A2 /* ChirograUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ChirograUI;
+		};
+		5222374F4B8B70EB983F946B /* ChirograCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ChirograCore;
+		};
+		AF41D00F410173B547718E3A /* ChirograData */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ChirograData;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = A71A09469FB98600A3259300 /* Project object */;
+}
