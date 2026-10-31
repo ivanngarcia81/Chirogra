@@ -79,14 +79,7 @@ struct ReportsView: View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
                 ForEach(Kind.allCases) { option in
-                    Button(option.rawValue) { kind = option }
-                        .font(.subheadline.weight(.semibold))
-                        .padding(.horizontal, 12)
-                        .frame(height: 34)
-                        .foregroundStyle(kind == option ? Palette.background : Palette.ink2)
-                        .background(kind == option ? Palette.ink : Palette.surface, in: Capsule())
-                        .overlay(Capsule().stroke(kind == option ? Palette.ink : Palette.separator))
-                        .buttonStyle(.plain)
+                    FilterChip(title: option.rawValue, isSelected: kind == option) { kind = option }
                 }
             }
         }

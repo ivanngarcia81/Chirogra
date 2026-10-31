@@ -83,17 +83,8 @@ struct InvoiceListView: View {
                     HStack(spacing: 8) {
                         ForEach(Filter.allCases) { option in
                             let count = invoices.filter(option.matches).count
-                            Button { filter = option } label: {
-                                Text("\(option.rawValue) \(Text("\(count)").foregroundStyle(.secondary))").fontWeight(.semibold)
-                            }
-                            .font(.subheadline)
-                            .padding(.horizontal, 12)
-                            .frame(height: 34)
-                            .foregroundStyle(filter == option ? Palette.background : Palette.ink2)
-                            .background(filter == option ? Palette.ink : Palette.surface, in: Capsule())
-                            .overlay(Capsule().stroke(filter == option ? Palette.ink : Palette.separator))
-                            .buttonStyle(.plain)
-                            .accessibilityAddTraits(filter == option ? .isSelected : [])
+                            FilterChip(title: option.rawValue, count: count, isSelected: filter == option) { filter = option }
+                                .accessibilityHint("Filtra la lista de facturas")
                         }
                     }
                 }

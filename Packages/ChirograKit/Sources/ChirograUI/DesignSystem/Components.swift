@@ -145,6 +145,33 @@ extension StatusChip {
     }
 }
 
+/// Chip de filtro o de tipo de reporte: área táctil de 44 pt como mínimo y rasgo de seleccionado.
+struct FilterChip: View {
+    let title: String
+    var count: Int? = nil
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 4) {
+                Text(title).fontWeight(.semibold)
+                if let count { Text("\(count)").foregroundStyle(isSelected ? Palette.background.opacity(0.8) : Palette.ink3) }
+            }
+            .font(.subheadline)
+            .padding(.horizontal, 14)
+            .frame(minHeight: 44)
+            .foregroundStyle(isSelected ? Palette.background : Palette.ink2)
+            .background(isSelected ? Palette.ink : Palette.surface, in: Capsule())
+            .overlay(Capsule().stroke(isSelected ? Palette.ink : Palette.separator))
+            .contentShape(Capsule())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(count.map { "\(title), \($0)" } ?? title)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+}
+
 // MARK: - Piezas de lista
 
 struct InitialsTile: View {
