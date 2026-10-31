@@ -17,7 +17,7 @@ public enum Palette {
     public static let accent = Color(light: 0xF2B33D, dark: 0xF2B33D)
     public static let onAccent = Color(light: 0x2A1C00, dark: 0x2A1C00)
     /// Cobre: salidas de dinero.
-    public static let outflow = Color(light: 0xB4500F, dark: 0xFF9F66)
+    public static let outflow = Color(light: 0xA84A0C, dark: 0xFF9F66)
     public static let outflowWash = Color(light: 0xFCEBDD, dark: 0x3A2416)
     public static let expenseBar = Color(light: 0xE58A4E, dark: 0xE58A4E)
 
@@ -29,7 +29,7 @@ public enum Palette {
 
     public static let ink = Color(light: 0x12142B, dark: 0xF1F2F8)
     public static let ink2 = Color(light: 0x4F546E, dark: 0xB6BAD0)
-    public static let ink3 = Color(light: 0x666B88, dark: 0x959BB8)
+    public static let ink3 = Color(light: 0x5F6480, dark: 0x959BB8)
 
     public static let positive = Color(light: 0x17704A, dark: 0x52C893)
     public static let positiveWash = Color(light: 0xDDF3E8, dark: 0x14301F)

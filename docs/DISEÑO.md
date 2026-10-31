@@ -395,17 +395,19 @@ Se implementan en `ChirograUI/DesignSystem` como colores de un Asset Catalog con
 | `brandWash` | `#E7E8FB` | `#252960` | Botón secundario, avatar, estado "Enviada" |
 | `onBrand` | `#FFFFFF` | `#0D0E18` | Texto sobre `brand` |
 | `accent` (Azafrán) | `#F2B33D` | `#F2B33D` | Puntos de aviso, insignias, detalle del logotipo |
-| `outflow` (Cobre) / `outflowWash` | `#B4500F` / `#FCEBDD` | `#FF9F66` / `#3A2416` | Importes de salida |
+| `outflow` (Cobre) / `outflowWash` | `#A84A0C`¹ / `#FCEBDD` | `#FF9F66` / `#3A2416` | Importes de salida |
 | `expenseBar` | `#E58A4E` | `#E58A4E` | Gastos en gráficas |
 | `background` | `#F4F5F9` | `#0D0E18` | Fondo de pantalla |
 | `surface` / `surface2` | `#FFFFFF` / `#ECEEF5` | `#171928` / `#212438` | Tarjetas / controles segmentados, chips neutros |
 | `sidebar` | `#E9EBF3` | `#12131F` | Barra lateral iPad/Mac |
 | `separator` | `#E1E4EE` | `#2B2F47` | Líneas y bordes |
-| `ink` / `ink2` / `ink3` | `#12142B` / `#4F546E` / `#666B88` | `#F1F2F8` / `#B6BAD0` / `#959BB8` | Texto principal / secundario / terciario |
+| `ink` / `ink2` / `ink3` | `#12142B` / `#4F546E` / `#5F6480`¹ | `#F1F2F8` / `#B6BAD0` / `#959BB8` | Texto principal / secundario / terciario |
 | `positive` + wash | `#17704A` / `#DDF3E8` | `#52C893` / `#14301F` | "Pagada", variaciones favorables |
 | `warning` + wash | `#8A5A00` / `#FBF0D6` | `#F2C065` / `#33280F` | "Pago parcial", pendientes de revisar |
 | `negative` + wash | `#B42833` / `#FBE3E5` | `#FF8088` / `#3A1A1E` | "Vencida", acciones destructivas |
 | `info` + wash | `#0E6A86` / `#DCEFF5` | `#6FD0EE` / `#123039` | "Vista" |
+
+¹ Oscurecidos respecto al canvas (`#B4500F`, `#666B88`) para llegar a contraste WCAG AA ≥ 4.5:1 sobre `outflowWash` y `surface2` (quedan en 4.95:1 y 5.0:1). El azafrán (`accent`) solo se usa como punto decorativo junto a texto, nunca como único indicador.
 
 - **Tipografía:** SF Pro del sistema con estilos dinámicos: `.largeTitle` 34 bold (títulos de pantalla; 28 en Mac), `.title2` 22 semibold, `.headline` 17 semibold (títulos de tarjeta), `.body` 17, `.subheadline` 15, `.caption` 12 semibold en mayúsculas con tracking para etiquetas. **Todas las cifras con `.monospacedDigit()`**; importes destacados de 28–38 pt bold con tracking negativo.
 - **Espaciado y forma:** margen lateral 16 pt en iPhone (24–28 pt en Mac); separación entre tarjetas 8–16 pt; relleno de tarjeta 12–20 pt. Radios: tarjetas 16–22 pt, botones 14 pt (altura 48 pt; CTA de onboarding 54 pt), campos 12 pt, chips de estado en cápsula, iconos de fila 40 pt con radio 12. Áreas táctiles ≥ 44 pt.
