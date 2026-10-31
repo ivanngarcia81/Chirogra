@@ -66,7 +66,7 @@ struct ReportsView: View {
         .navigationTitle("Reportes")
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                ShareLink(item: csv, preview: SharePreview("\(kind.rawValue).csv")) {
+                ShareLink(item: csvFile, preview: SharePreview("\(csvFile.name).csv")) {
                     Label("Exportar", systemImage: "square.and.arrow.up")
                 }
             }
@@ -115,9 +115,7 @@ struct ReportsView: View {
     // MARK: Balance general
 
     private var balanceSheet: some View {
-        let fiscalStart = (try? Bookkeeper(context: context).fiscalYearStart(containing: .now))
-            ?? Calendar.current.dateInterval(of: .year, for: .now)?.start
-        let report = ReportBuilder.balanceSheet(accounts: ledger.ledgerAccounts, lines: ledger.lines, asOf: .now, fiscalYearStart: fiscalStart)
+        let report = balanceSheetReport
         return VStack(spacing: 0) {
             header(columns: ["AL \(Date.now.shortDate.uppercased())"])
             group("Activos", report.assets, nil)
@@ -153,10 +151,7 @@ struct ReportsView: View {
     // MARK: Antigüedad de cuentas por cobrar
 
     private var aging: some View {
-        let items = invoices.filter(\.isOpen).map {
-            AgingReport.OpenItem(party: $0.customer?.name ?? "Sin cliente", document: $0.number, dueDate: $0.dueDate, balance: $0.balanceDue)
-        }
-        let report = ReportBuilder.aging(items: items, asOf: .now)
+        let report = agingReport
         let titles: [AgingReport.Bucket: String] = [.current: "Corriente", .days1to30: "1–30", .days31to60: "31–60", .days61to90: "61–90", .over90: "> 90"]
         return VStack(alignment: .leading, spacing: Metrics.cardSpacing) {
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 110), spacing: 8)], spacing: 8) {
@@ -237,25 +232,50 @@ struct ReportsView: View {
             .background(balanced ? Palette.positiveWash : Palette.negativeWash)
     }
 
+    // MARK: Datos de los reportes
+
+    private var balanceSheetReport: BalanceSheet {
+        let fiscalStart = (try? Bookkeeper(context: context).fiscalYearStart(containing: .now))
+            ?? Calendar.current.dateInterval(of: .year, for: .now)?.start
+        return ReportBuilder.balanceSheet(accounts: ledger.ledgerAccounts, lines: ledger.lines, asOf: .now, fiscalYearStart: fiscalStart)
+    }
+
+    private var agingReport: AgingReport {
+        let items = invoices.filter(\.isOpen).map {
+            AgingReport.OpenItem(party: $0.customer?.name ?? "Sin cliente", document: $0.number, dueDate: $0.dueDate, balance: $0.balanceDue)
+        }
+        return ReportBuilder.aging(items: items, asOf: .now)
+    }
+
     // MARK: Exportar
 
-    private var csv: String {
-        var rows: [[String]] = []
+    /// Cada tipo de reporte exporta su propio contenido (antes "Balance general" exportaba la balanza).
+    private var csvFile: CSVFile {
         switch kind {
         case .income:
-            let report = ledger.incomeStatement(period.interval())
-            rows = [["Cuenta", "Importe"]]
-                + (report.income + report.costOfGoodsSold + report.expenses).map { [$0.account.name, Money(minorUnits: $0.amount).decimalValue.description] }
-                + [["Ganancia neta", Money(minorUnits: report.netIncome).decimalValue.description]]
-        case .balance, .trial:
-            let report = ReportBuilder.trialBalance(accounts: ledger.ledgerAccounts, lines: ledger.lines, asOf: .now)
-            rows = [["Código", "Cuenta", "Debe", "Haber"]]
-                + report.rows.map { [$0.account.code, $0.account.name, Money(minorUnits: $0.debit).decimalValue.description, Money(minorUnits: $0.credit).decimalValue.description] }
+            CSVFile(name: "Estado de resultados",
+                    text: CSVExport.incomeStatement(ledger.incomeStatement(period.interval()),
+                                                    previous: compare ? ledger.incomeStatement(period.interval(offset: -1)) : nil))
+        case .balance:
+            CSVFile(name: "Balance general", text: CSVExport.balanceSheet(balanceSheetReport))
+        case .trial:
+            CSVFile(name: "Balanza de comprobación",
+                    text: CSVExport.trialBalance(ReportBuilder.trialBalance(accounts: ledger.ledgerAccounts, lines: ledger.lines, asOf: .now)))
         case .aging:
-            rows = [["Cliente", "Factura", "Vence", "Saldo"]]
-                + invoices.filter(\.isOpen).map { [$0.customer?.name ?? "", $0.number, $0.dueDate.ISO8601Format(.iso8601.year().month().day()), Money(minorUnits: $0.balanceDue).decimalValue.description] }
+            CSVFile(name: "Antigüedad de cuentas por cobrar",
+                    text: CSVExport.aging(agingReport, title: "Antigüedad de cuentas por cobrar", partyTitle: "Cliente"))
         }
-        return rows.map { $0.map { "\"\($0.replacingOccurrences(of: "\"", with: "\"\""))\"" }.joined(separator: ",") }.joined(separator: "\n")
+    }
+}
+
+/// Archivo .csv para compartir (no texto suelto), con nombre sugerido.
+struct CSVFile: Transferable {
+    let name: String
+    let text: String
+
+    static var transferRepresentation: some TransferRepresentation {
+        DataRepresentation(exportedContentType: .commaSeparatedText) { Data($0.text.utf8) }
+            .suggestedFileName { "\($0.name).csv" }
     }
 }
 
