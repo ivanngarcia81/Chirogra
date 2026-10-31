@@ -327,10 +327,50 @@ public struct Bookkeeper {
         return payment
     }
 
-    /// Anula una factura sin cobros revirtiendo su asiento.
+    /// Emite una nota de crédito contra una factura pendiente: Debe Ingresos (+ Sales Tax Payable) / Haber CxC.
+    /// El impuesto se calcula con el grupo de la factura en su fecha de emisión; el total no puede superar el saldo.
+    @discardableResult
+    public func issueCreditNote(
+        for invoice: Invoice, amount: Int64, isTaxable: Bool, reason: String, date: Date = Date(), incomeAccountID: UUID? = nil
+    ) throws -> CreditNote {
+        guard invoice.isOpen else { throw BookkeepingError.invalidState("Solo se acreditan facturas emitidas con saldo pendiente.") }
+        let receivable = try systemAccount(.accountsReceivable)
+        let income = try incomeAccountID ?? invoice.sortedLines.first?.incomeAccountID ?? systemAccount(.sales).id
+        let components = try taxComponents(groupID: invoice.taxGroupID, on: invoice.issueDate)
+        let number = try peekDocumentNumber(.creditNote)
+        let posting: InvoicePosting
+        do {
+            posting = try PostingRules.creditNote(
+                date: date, memo: "Nota de crédito \(number) · \(invoice.number) · \(invoice.customer?.name ?? "")",
+                receivableAccountID: receivable.id,
+                lines: [SalesLine(incomeAccountID: income, amount: amount, isTaxable: isTaxable, memo: reason)],
+                taxComponents: components, customerIsTaxExempt: invoice.customer?.isTaxExempt ?? false
+            )
+        } catch {
+            throw BookkeepingError.invalidDocument(error)
+        }
+        guard posting.total <= invoice.balanceDue else { throw BookkeepingError.overpayment(balanceDue: invoice.balanceDue) }
+        try validate(posting.entry)
+
+        let note = CreditNote(invoice: invoice, date: date, amount: amount, isTaxable: isTaxable, reason: reason)
+        note.number = try nextDocumentNumber(.creditNote)
+        note.incomeAccountID = income
+        note.taxTotal = posting.totalTax
+        note.total = posting.total
+        let entry = try post(posting.entry, sourceDocumentID: note.id, save: false)
+        entry.lines?.forEach { $0.customerID = invoice.customer?.id }
+        note.journalEntryID = entry.id
+        context.insert(note)
+        invoice.creditsApplied += posting.total
+        invoice.status = invoice.balanceDue == 0 ? .paid : .partiallyPaid
+        try saveOrRollback()
+        return note
+    }
+
+    /// Anula una factura sin cobros ni notas de crédito revirtiendo su asiento.
     public func void(_ invoice: Invoice, on date: Date = Date()) throws {
-        guard invoice.status == .sent, invoice.amountPaid == 0 else {
-            throw BookkeepingError.invalidState("Solo se anulan facturas emitidas sin cobros.")
+        guard invoice.status == .sent, invoice.amountPaid == 0, invoice.creditsApplied == 0 else {
+            throw BookkeepingError.invalidState("Solo se anulan facturas emitidas sin cobros ni notas de crédito.")
         }
         if let entry = try entry(id: invoice.journalEntryID) {
             try reverse(entry, on: date, memo: "Anulación factura \(invoice.number)", save: false)

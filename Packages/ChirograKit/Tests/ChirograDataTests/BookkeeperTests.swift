@@ -109,6 +109,32 @@ struct BookkeeperTests {
         #expect(try books.systemAccount(.salesDiscount).code == "4900")
     }
 
+    @Test("Nota de crédito: revierte ingreso e impuesto, reduce el saldo y bloquea la anulación")
+    func creditNote() throws {
+        let invoice = try makeInvoice(amount: 200_000, taxGroup: try austinTaxGroup())
+        try books.issue(invoice)                                   // total 216,500
+        let note = try books.issueCreditNote(for: invoice, amount: 50_000, isTaxable: true, reason: "Devolución")
+        #expect(note.number == "NC-0001")
+        #expect(note.taxTotal == 4_125)
+        #expect(note.total == 54_125)
+        #expect(invoice.creditsApplied == 54_125)
+        #expect(invoice.balanceDue == 162_375)
+        #expect(invoice.status == .partiallyPaid)
+        let lines = try books.ledgerLines()
+        #expect(ReportBuilder.balance(of: try account("1100").ledgerAccount, lines: lines) == 162_375)
+        #expect(ReportBuilder.balance(of: try account("4000").ledgerAccount, lines: lines) == 150_000)
+        #expect(ReportBuilder.balance(of: try account("2200").ledgerAccount, lines: lines) == 12_375)
+        #expect(try books.entry(id: note.journalEntryID)?.source == .creditNote)
+        #expect(try allEntriesBalanced())
+        #expect(throws: BookkeepingError.self) { try books.void(invoice) }
+        #expect(throws: BookkeepingError.overpayment(balanceDue: 162_375)) {
+            try books.issueCreditNote(for: invoice, amount: 160_000, isTaxable: true, reason: "Demasiado")
+        }
+        try books.issueCreditNote(for: invoice, amount: 150_000, isTaxable: true, reason: "Resto")
+        #expect(invoice.balanceDue == 0)
+        #expect(invoice.status == .paid)
+    }
+
     @Test("Cobros parciales y totales actualizan el estado; no se puede cobrar de más")
     func payments() throws {
         let invoice = try makeInvoice(amount: 100_000)

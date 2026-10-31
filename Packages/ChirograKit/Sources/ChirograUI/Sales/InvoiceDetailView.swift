@@ -9,6 +9,7 @@ struct InvoiceDetailView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     @State private var showingPayment = false
+    @State private var showingCreditNote = false
     @State private var editingDraft = false
     @State private var confirmingVoid = false
     @State private var errorMessage: String?
@@ -62,6 +63,20 @@ struct InvoiceDetailView: View {
                     }
                     LabeledContent("Total", value: invoice.total.money).fontWeight(.semibold)
                     LabeledContent("Cobrado", value: invoice.amountPaid.money)
+                    if invoice.creditsApplied > 0 { LabeledContent("Notas de crédito", value: "−\(invoice.creditsApplied.money)") }
+                }
+            }
+
+            if let notes = invoice.creditNotes, !notes.isEmpty {
+                Section("Notas de crédito") {
+                    ForEach(notes.sorted { $0.date < $1.date }) { note in
+                        LabeledContent {
+                            Text("−\(note.total.money)").monospacedDigit()
+                        } label: {
+                            Text(note.number)
+                            Text("\(note.date.shortDate)\(note.reason.isEmpty ? "" : " · \(note.reason)")")
+                        }
+                    }
                 }
             }
 
@@ -73,7 +88,8 @@ struct InvoiceDetailView: View {
                     Button("Eliminar borrador", role: .destructive, action: deleteDraft).buttonStyle(.destructive)
                 case .sent, .partiallyPaid:
                     Button("Registrar pago") { showingPayment = true }.buttonStyle(.primary)
-                    if invoice.amountPaid == 0 {
+                    Button("Nota de crédito") { showingCreditNote = true }.buttonStyle(.secondary)
+                    if invoice.amountPaid == 0 && invoice.creditsApplied == 0 {
                         Button("Anular factura", role: .destructive) { confirmingVoid = true }.buttonStyle(.destructive)
                     }
                 case .paid, .void:
@@ -88,6 +104,9 @@ struct InvoiceDetailView: View {
         .inlineTitle()
         .sheet(isPresented: $editingDraft) {
             NavigationStack { InvoiceEditorView(editing: invoice) }
+        }
+        .sheet(isPresented: $showingCreditNote) {
+            NavigationStack { CreditNoteEditorView(invoice: invoice) }
         }
         .sheet(isPresented: $showingPayment) {
             NavigationStack { RecordPaymentView(invoice: invoice) }
@@ -178,6 +197,68 @@ extension PaymentMethod {
         case .bankTransfer: "Transferencia"
         case .card: "Tarjeta"
         case .other: "Otro"
+        }
+    }
+}
+
+/// Nota de crédito contra la factura: importe neto, si es gravable y motivo. El impuesto usa el grupo de la factura.
+struct CreditNoteEditorView: View {
+    let invoice: Invoice
+    @Environment(\.modelContext) private var context
+    @Environment(\.dismiss) private var dismiss
+    @State private var amount: Int64 = 0
+    @State private var isTaxable = true
+    @State private var reason = ""
+    @State private var date = Date()
+    @State private var errorMessage: String?
+
+    private var books: Bookkeeper { Bookkeeper(context: context) }
+
+    private var preview: InvoicePosting? {
+        let components = (try? books.taxComponents(groupID: invoice.taxGroupID, on: invoice.issueDate)) ?? []
+        return try? PostingRules.creditNote(date: date, memo: "", receivableAccountID: UUID(),
+                                            lines: [SalesLine(incomeAccountID: UUID(), amount: amount, isTaxable: isTaxable)],
+                                            taxComponents: components, customerIsTaxExempt: invoice.customer?.isTaxExempt ?? false)
+    }
+
+    var body: some View {
+        Form {
+            if let errorMessage { ErrorBanner(message: errorMessage) }
+            Section {
+                LabeledContent("Factura", value: "\(invoice.number) · \(invoice.customer?.name ?? "")")
+                LabeledContent("Saldo pendiente", value: invoice.balanceDue.money)
+            }
+            Section {
+                MoneyField(title: "Importe a acreditar (sin impuesto)", minorUnits: $amount)
+                Toggle("Incluye sales tax", isOn: $isTaxable)
+                TextField("Motivo (devolución, ajuste de precio…)", text: $reason)
+                DatePicker("Fecha", selection: $date, displayedComponents: .date)
+            }
+            Section {
+                LabeledContent("Sales tax", value: (preview?.totalTax ?? 0).money)
+                LabeledContent("Total de la nota", value: (preview?.total ?? 0).money).fontWeight(.semibold)
+            } footer: {
+                Text("Se registra un asiento que reduce ingresos, sales tax por pagar y la cuenta por cobrar del cliente.")
+            }
+        }
+        .screenBackground()
+        .navigationTitle("Nota de crédito")
+        .inlineTitle()
+        .toolbar {
+            ToolbarItem(placement: .cancellationAction) { Button("Cancelar") { dismiss() } }
+            ToolbarItem(placement: .confirmationAction) {
+                Button("Emitir", action: save).disabled(amount <= 0 || reason.trimmingCharacters(in: .whitespaces).isEmpty)
+            }
+        }
+        .onAppear { isTaxable = !(invoice.taxLines ?? []).isEmpty }
+    }
+
+    private func save() {
+        do {
+            try books.issueCreditNote(for: invoice, amount: amount, isTaxable: isTaxable, reason: reason, date: date)
+            dismiss()
+        } catch {
+            errorMessage = error.localizedDescription
         }
     }
 }

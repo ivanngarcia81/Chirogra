@@ -18,7 +18,7 @@ public enum SchemaV1: VersionedSchema {
         [
             Company.self, Account.self, JournalEntry.self, JournalLine.self,
             Customer.self, Vendor.self, Item.self,
-            Invoice.self, InvoiceLine.self, InvoiceTaxLine.self, PaymentReceived.self, PaymentApplication.self,
+            Invoice.self, InvoiceLine.self, InvoiceTaxLine.self, CreditNote.self, PaymentReceived.self, PaymentApplication.self,
             Bill.self, BillLine.self, BillPayment.self, Expense.self, ExpenseLine.self, Attachment.self,
             TaxAgency.self, TaxRate.self, TaxGroup.self,
             NumberSequence.self, AuditEvent.self,
@@ -41,6 +41,7 @@ public typealias Item = SchemaV1.Item
 public typealias Invoice = SchemaV1.Invoice
 public typealias InvoiceLine = SchemaV1.InvoiceLine
 public typealias InvoiceTaxLine = SchemaV1.InvoiceTaxLine
+public typealias CreditNote = SchemaV1.CreditNote
 public typealias PaymentReceived = SchemaV1.PaymentReceived
 public typealias PaymentApplication = SchemaV1.PaymentApplication
 public typealias Bill = SchemaV1.Bill
@@ -254,6 +255,8 @@ extension SchemaV1 {
         public var invoices: [Invoice]? = []
         @Relationship(deleteRule: .nullify, inverse: \PaymentReceived.customer)
         public var payments: [PaymentReceived]? = []
+        @Relationship(deleteRule: .nullify, inverse: \CreditNote.customer)
+        public var creditNotes: [CreditNote]? = []
 
         public init(name: String, email: String = "", paymentTermsDays: Int = 30) {
             self.name = name
@@ -340,9 +343,13 @@ extension SchemaV1 {
         public var taxTotal: Int64 = 0
         public var total: Int64 = 0
         public var amountPaid: Int64 = 0
+        /// Suma de las notas de crédito aplicadas a esta factura.
+        public var creditsApplied: Int64 = 0
         public var createdAt: Date = Date()
 
         public var customer: Customer?
+        @Relationship(deleteRule: .nullify, inverse: \CreditNote.invoice)
+        public var creditNotes: [CreditNote]? = []
         @Relationship(deleteRule: .cascade, inverse: \InvoiceLine.invoice)
         public var lines: [InvoiceLine]? = []
         @Relationship(deleteRule: .cascade, inverse: \InvoiceTaxLine.invoice)
@@ -363,7 +370,7 @@ extension SchemaV1 {
         }
 
         public var sortedLines: [InvoiceLine] { (lines ?? []).sorted { $0.order < $1.order } }
-        public var balanceDue: Int64 { total - amountPaid }
+        public var balanceDue: Int64 { total - amountPaid - creditsApplied }
         public var isOpen: Bool { status == .sent || status == .partiallyPaid }
 
         /// Vencida es un estado derivado: emitida, con saldo y pasada la fecha de vencimiento.
@@ -425,6 +432,35 @@ extension SchemaV1 {
             self.rateMillionths = rateMillionths
             self.taxableBase = taxableBase
             self.amount = amount
+        }
+    }
+
+    /// Nota de crédito contra una factura emitida (DISEÑO §4.3): revierte ingreso e impuesto y reduce lo que se debe.
+    @Model
+    public final class CreditNote {
+        public var id: UUID = UUID()
+        public var number: String = ""
+        public var date: Date = Date()
+        public var reason: String = ""
+        /// Importe neto acreditado, antes de impuesto.
+        public var amount: Int64 = 0
+        public var isTaxable: Bool = true
+        public var incomeAccountID: UUID?
+        public var taxTotal: Int64 = 0
+        public var total: Int64 = 0
+        public var journalEntryID: UUID?
+        public var createdAt: Date = Date()
+
+        public var customer: Customer?
+        public var invoice: Invoice?
+
+        public init(invoice: Invoice, date: Date, amount: Int64, isTaxable: Bool, reason: String) {
+            self.invoice = invoice
+            self.customer = invoice.customer
+            self.date = date
+            self.amount = amount
+            self.isTaxable = isTaxable
+            self.reason = reason
         }
     }
 
