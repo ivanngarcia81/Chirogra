@@ -75,7 +75,11 @@ Principios de producto:
 
 ### 3.3 Fase 3 y posteriores
 
-- Conexión bancaria automática vía agregador (Plaid, GoCardless/Nordigen, Belvo…) — requiere backend.
+- **Conexión bancaria automática con Plaid** ✅ (agregador elegido; el usuario ya tiene cuenta de desarrollador). Requisitos:
+  - **Backend propio** que guarda `client_id` y `secret` y hace el intercambio `public_token` → `access_token`; las credenciales y los `access_token` nunca viven dentro de la app.
+  - **Plaid Link** en iOS y macOS para que el usuario conecte su banco; la app solo recibe el `public_token` y se lo pasa al backend.
+  - **Webhooks de transacciones** (`SYNC_UPDATES_AVAILABLE` / `/transactions/sync`) en el backend, que avisa a la app (notificación push silenciosa o consulta al abrir).
+  - Los movimientos que llegan de Plaid entran a la **bandeja «Por revisar»** de la fase 2, igual que los importados por archivo; nunca se contabilizan solos.
 - Multimoneda con revaluación cambiaria.
 - Multiusuario con roles (dueño, contador, solo lectura) — ver §6.5.
 - Cálculo automático de sales tax por dirección con un servicio de tasas (Avalara, TaxJar, Stripe Tax…) y presentación de declaraciones.
@@ -156,6 +160,7 @@ Principios de producto:
 
 - **Cuenta bancaria:** vinculada 1:1 a una cuenta contable de subtipo banco o tarjeta.
 - **Importación de extracto** (CSV con mapeo de columnas guardado, OFX, CAMT.053) → `BankTransaction` (fecha, descripción, importe con signo, identificador único del banco para evitar duplicados).
+- **Fuentes de movimientos desacopladas:** cada origen (CSV, OFX, CAMT.053 y, en fase 3, Plaid) implementa una misma interfaz `BankTransactionSource` que produce movimientos normalizados con su `idExterno`. La deduplicación, las reglas, la bandeja «Por revisar» y la conciliación no saben de qué fuente viene cada movimiento, así que Plaid se añade como una fuente más sin tocar el resto.
 - **Coincidencia:** para cada movimiento bancario se proponen líneas del diario no conciliadas de esa cuenta con mismo importe y fecha cercana (±5 días). El usuario confirma, o crea un gasto/cobro/transferencia desde el propio movimiento.
 - **Reglas** ("si la descripción contiene X, categorizar en cuenta Y").
 - **Sesión de conciliación:** fecha y saldo final del extracto; la diferencia (saldo según libros − saldo según banco) debe llegar a 0 para cerrarla. Las líneas conciliadas quedan marcadas y no deben editarse sin advertencia.
@@ -285,7 +290,7 @@ Los saldos **no se almacenan**: se calculan sumando líneas contabilizadas. Para
 | **SwiftData** | Nativo, integración directa con SwiftUI (`@Query`), sincronización CloudKit privada casi gratuita, macros `@Model` concisas | Rendimiento con decenas de miles de líneas por verificar, predicados limitados, sin compartir CloudKit entre usuarios | ✅ **Elegida para el MVP** |
 | Core Data + `NSPersistentCloudKitContainer` | Maduro, soporta compartir (CKShare) entre Apple IDs, más control | Más código, menos ergonómico con Swift 6 concurrency | Plan B si se necesita multiusuario sin backend |
 | SQLite (GRDB) | SQL real (agregados rápidos para reportes), control total, portable | Sincronización a mano, más código de UI | Plan B si SwiftData no rinde en reportes |
-| Backend propio (Postgres + API) | Multiusuario, web, Android, conexiones bancarias | Infraestructura, costos, seguridad, cuentas de usuario | Fase 3 si el producto lo exige |
+| Backend propio (Postgres + API) | Multiusuario, web, Android, conexiones bancarias | Infraestructura, costos, seguridad, cuentas de usuario | Fase 3: obligatorio para Plaid (§3.3); el resto si el producto lo exige |
 
 **Mitigación del riesgo de SwiftData:** el dominio no depende de SwiftData. Los reportes y validaciones trabajan con *structs* de valor (`LedgerLine`, `Money`) producidos por un repositorio; cambiar la persistencia sólo afecta a la capa de datos.
 
