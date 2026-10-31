@@ -137,7 +137,7 @@ struct InvoiceRow: View {
     private var amount: String {
         switch invoice.status {
         case .draft: invoice.draftAmount.money
-        case .partiallyPaid: "\(invoice.balanceDue.money) de \(invoice.total.money)"
+        case .partiallyPaid: invoice.balanceDue.money
         default: invoice.total.money
         }
     }
@@ -147,7 +147,9 @@ struct InvoiceRow: View {
         switch invoice.status {
         case .draft: return "\(number) · borrador"
         case .paid: return "\(number) · pagada"
-        default: return "\(number) · vence \(invoice.dueDate.dayMonth)"
+        case .void: return "\(number) · anulada"
+        case .partiallyPaid: return "\(number) · vence \(invoice.dueDate.dayMonth) · de \(invoice.total.money)"
+        case .sent: return "\(number) · vence \(invoice.dueDate.dayMonth)"
         }
     }
 }

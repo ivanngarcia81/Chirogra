@@ -207,24 +207,40 @@ struct IconTile: View {
 }
 
 /// Fila del canvas: icono o iniciales, título, subtítulo e importe con chip opcional.
+/// El texto tiene prioridad sobre el importe y puede ir en dos líneas, para que datos como el vencimiento
+/// no se corten en iPhone; con tamaños de accesibilidad el importe pasa debajo del texto.
 struct LedgerRow<Leading: View, Trailing: View>: View {
     let title: String
     let subtitle: String
     @ViewBuilder var leading: Leading
     @ViewBuilder var trailing: Trailing
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
-        HStack(spacing: 12) {
-            leading
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title).font(.body.weight(.semibold)).foregroundStyle(Palette.ink).lineLimit(1)
-                Text(subtitle).font(.subheadline).foregroundStyle(Palette.ink3).lineLimit(1)
+        Group {
+            if dynamicTypeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(spacing: 12) { leading; texts }
+                    trailing
+                }
+            } else {
+                HStack(spacing: 12) {
+                    leading
+                    texts.layoutPriority(1)
+                    Spacer(minLength: 8)
+                    trailing.fixedSize()
+                }
             }
-            Spacer(minLength: 8)
-            trailing
         }
         .padding(.vertical, 6)
         .accessibilityElement(children: .combine)
+    }
+
+    private var texts: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(title).font(.body.weight(.semibold)).foregroundStyle(Palette.ink).lineLimit(2)
+            Text(subtitle).font(.subheadline).foregroundStyle(Palette.ink3).lineLimit(2)
+        }
     }
 }
 
