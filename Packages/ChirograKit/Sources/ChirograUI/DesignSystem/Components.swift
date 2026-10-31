@@ -251,7 +251,14 @@ struct KPITile: View {
             if let note { Text(note).font(.caption.weight(.semibold)).foregroundStyle(noteColor) }
         }
         .card(padding: 12)
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(title)
+        .accessibilityValue([value, note.map(Self.spoken)].compactMap { $0 }.joined(separator: ", "))
+    }
+
+    /// Las flechas de variación se leen como palabras («sube», «baja»), no como símbolos.
+    static func spoken(_ note: String) -> String {
+        note.replacingOccurrences(of: "↑", with: "sube").replacingOccurrences(of: "↓", with: "baja")
     }
 }
 
@@ -293,6 +300,7 @@ struct EmptyStateView: View {
         VStack(spacing: 12) {
             Image(systemName: systemImage)
                 .font(.largeTitle)
+                .accessibilityHidden(true)
                 .foregroundStyle(Palette.ink3)
             Text(title).font(.headline).foregroundStyle(Palette.ink)
             Text(message).font(.subheadline).foregroundStyle(Palette.ink3).multilineTextAlignment(.center)

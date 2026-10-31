@@ -109,6 +109,7 @@ struct HomeView: View {
                     .frame(width: quickActionSide, height: quickActionSide)
                     .foregroundStyle(prominent ? Palette.onBrand : Palette.brand)
                     .background(prominent ? Palette.brand : Palette.surface, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                    .accessibilityHidden(true)
                 Text(title).font(.footnote.weight(.semibold)).foregroundStyle(Palette.ink)
             }
             .frame(maxWidth: .infinity)
@@ -135,6 +136,18 @@ struct HomeView: View {
         }
     }
 
+    /// Resumen hablado de la gráfica: cifras de cada mes, como en la etiqueta del canvas.
+    private var chartSummary: String {
+        let months = Dictionary(grouping: chartPoints, by: \.month).sorted { $0.key < $1.key }
+        return months.map { month, points in
+            let income = points.first { $0.series == "Ingresos" }?.amount ?? 0
+            let expense = points.first { $0.series == "Gastos" }?.amount ?? 0
+            return "\(month.formatted(.dateTime.month(.wide))): ingresos \(income.formatted(.currency(code: "USD"))), "
+                + "gastos \(expense.formatted(.currency(code: "USD")))"
+        }
+        .joined(separator: ". ")
+    }
+
     private var chart: some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack {
@@ -157,6 +170,7 @@ struct HomeView: View {
             .chartXAxis { AxisMarks(values: .stride(by: .month)) { _ in AxisValueLabel(format: .dateTime.month(.narrow)) } }
             .frame(height: 150)
             .accessibilityLabel("Ingresos y gastos de los últimos \(months) meses")
+            .accessibilityValue(chartSummary)
         }
         .card()
     }
@@ -180,6 +194,7 @@ struct HomeView: View {
                 }
                 .frame(height: 8)
                 .clipShape(RoundedRectangle(cornerRadius: 4))
+                .accessibilityHidden(true)
                 HStack {
                     Text("Vencidas · \(overdueTotal.money) (\(overdue.count))").foregroundStyle(Palette.negative).fontWeight(.semibold)
                     Spacer()
@@ -222,6 +237,8 @@ struct HomeView: View {
                         Text(bill.dueDate.formatted(.dateTime.day())).font(.headline)
                     }
                     .frame(minWidth: dateTileWidth)
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel("Vence el \(bill.dueDate.dayMonth)")
                     .padding(.vertical, 4)
                     .background(Palette.surface2, in: RoundedRectangle(cornerRadius: 10))
                 } trailing: {

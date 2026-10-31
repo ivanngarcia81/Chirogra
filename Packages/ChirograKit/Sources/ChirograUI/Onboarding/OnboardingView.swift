@@ -18,7 +18,11 @@ struct OnboardingView: View {
         VStack(alignment: .leading, spacing: 18) {
             HStack(spacing: 6) {
                 if step > 1 {
-                    Button { step -= 1 } label: { Image(systemName: "chevron.left").font(.title3.weight(.semibold)) }
+                    Button { step -= 1 } label: {
+                        Image(systemName: "chevron.left").font(.title3.weight(.semibold))
+                            .frame(minWidth: 44, minHeight: 44)
+                            .contentShape(Rectangle())
+                    }
                         .accessibilityLabel("Atrás")
                 }
                 ForEach(1...2, id: \.self) { index in
@@ -95,6 +99,7 @@ struct OnboardingView: View {
                             Spacer()
                             Image(systemName: sector == option ? "checkmark.circle.fill" : "circle")
                                 .foregroundStyle(sector == option ? Palette.brand : Palette.ink3)
+                                .accessibilityHidden(true)
                         }
                         .padding(14)
                         .background(Palette.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous))

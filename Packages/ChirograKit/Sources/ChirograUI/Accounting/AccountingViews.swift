@@ -314,6 +314,34 @@ struct JournalEntryEditorView: View {
 struct JournalEntryDetailView: View {
     let entry: JournalEntry
     @Environment(\.modelContext) private var context
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @ScaledMetric(relativeTo: .body) private var columnWidth: CGFloat = 100
+
+    /// Fila con columnas Debe/Haber; con tamaños de accesibilidad los importes van debajo, rotulados.
+    @ViewBuilder
+    private func entryRow(_ title: String, memo: String, debit: Int64, credit: Int64, bold: Bool = false) -> some View {
+        if dynamicTypeSize.isAccessibilitySize {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title).fontWeight(bold ? .semibold : .regular)
+                if !memo.isEmpty { Text(memo).font(.caption).foregroundStyle(Palette.ink3) }
+                if debit > 0 { Text("Debe \(debit.money)") }
+                if credit > 0 { Text("Haber \(credit.money)") }
+            }
+            .monospacedDigit()
+        } else {
+            HStack {
+                VStack(alignment: .leading) {
+                    Text(title).fontWeight(bold ? .semibold : .regular)
+                    if !memo.isEmpty { Text(memo).font(.caption).foregroundStyle(Palette.ink3) }
+                }
+                Spacer()
+                Text(debit > 0 ? debit.money : "").frame(width: columnWidth, alignment: .trailing)
+                Text(credit > 0 ? credit.money : "").frame(width: columnWidth, alignment: .trailing)
+            }
+            .fontWeight(bold ? .semibold : .regular)
+            .monospacedDigit()
+        }
+    }
     @State private var errorMessage: String?
     @State private var confirming = false
 
@@ -326,26 +354,27 @@ struct JournalEntryDetailView: View {
                 LabeledContent("Origen", value: entry.source.title)
                 if !entry.memo.isEmpty { LabeledContent("Concepto", value: entry.memo) }
             }
-            Section("Líneas") {
+            Section {
                 ForEach(entry.sortedLines) { line in
-                    HStack {
-                        VStack(alignment: .leading) {
-                            Text(line.account?.displayName ?? "Cuenta eliminada")
-                            if !line.memo.isEmpty { Text(line.memo).font(.caption).foregroundStyle(Palette.ink3) }
-                        }
-                        Spacer()
-                        Text(line.debit > 0 ? line.debit.money : "").frame(width: 100, alignment: .trailing)
-                        Text(line.credit > 0 ? line.credit.money : "").frame(width: 100, alignment: .trailing)
-                    }
-                    .monospacedDigit()
+                    let account = line.account?.displayName ?? "Cuenta eliminada"
+                    entryRow(account, memo: line.memo, debit: line.debit, credit: line.credit)
+                        .accessibilityElement(children: .ignore)
+                        .accessibilityLabel("\(account)\(line.memo.isEmpty ? "" : ", \(line.memo)"), "
+                            + (line.debit > 0 ? "debe \(line.debit.money)" : "haber \(line.credit.money)"))
                 }
+                entryRow("Totales", memo: "", debit: entry.totalDebits, credit: entry.totalCredits, bold: true)
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel("Totales: debe \(entry.totalDebits.money), haber \(entry.totalCredits.money)")
+            } header: {
                 HStack {
-                    Text("Totales").bold()
+                    Text("Cuenta")
                     Spacer()
-                    Text(entry.totalDebits.money).frame(width: 100, alignment: .trailing)
-                    Text(entry.totalCredits.money).frame(width: 100, alignment: .trailing)
+                    if !dynamicTypeSize.isAccessibilitySize {
+                        Text("Debe").frame(width: columnWidth, alignment: .trailing)
+                        Text("Haber").frame(width: columnWidth, alignment: .trailing)
+                    }
                 }
-                .monospacedDigit()
+                .accessibilityHidden(true)
             }
             if entry.source == .manual && !entry.isReversed && entry.reversesEntryID == nil {
                 Section {
