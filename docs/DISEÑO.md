@@ -361,7 +361,7 @@ El diseño visual, las pantallas, la navegación, la paleta, la tipografía, la 
 
 | Plataforma | Estructura (según el canvas) |
 |---|---|
-| **iPhone** | `TabView` de 6 pestañas: **Inicio · Ventas · Gastos · Banca · Reportes · Más**. Cada pestaña con su `NavigationStack`. "Más" agrupa Contabilidad (plan de cuentas, asientos, libro mayor, cierre de periodo), Impuestos (tasas, resumen, deducibles) y Ajustes. |
+| **iPhone** | El canvas propone 6 pestañas (**Inicio · Ventas · Gastos · Banca · Reportes · Más**), pero iPhone muestra como máximo 5 y agrupa el resto en un "Más" del sistema. **MVP: 5 pestañas — Inicio · Ventas · Gastos · Reportes · Más**; Banca va dentro de "Más" mientras sea casi toda de fase 2, y vuelve a la barra cuando llegue la bandeja de movimientos (sustituyendo a Reportes, que pasaría a "Más"). Cada pestaña con su `NavigationStack`. "Más" agrupa Banca, Contabilidad (plan de cuentas, asientos, libro mayor, cierre de periodo), Impuestos y Ajustes. |
 | **iPad y Mac** | `NavigationSplitView` con barra lateral: logotipo, búsqueda global (⌘K), **Inicio · Ventas · Gastos · Banca** (con insignia de pendientes) **· Reportes**, encabezado "MÁS" con **Contabilidad · Impuestos · Ajustes**, y al pie la tarjeta de la empresa con estado de sincronización. |
 | **Acciones rápidas** | iPhone: botones Factura · Gasto · Recibo (cámara, destacado) · Cliente en Inicio. Mac: botones "+ Gasto" y "+ Factura" en la barra de la pantalla. |
 

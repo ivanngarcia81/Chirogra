@@ -36,6 +36,9 @@ enum AppSection: String, Hashable, CaseIterable, Identifiable {
     }
 
     static let primary: [AppSection] = [.home, .sales, .expenses, .banking, .reports]
+    /// iPhone muestra como máximo 5 pestañas sin que el sistema agrupe el resto en su propio "Más".
+    /// Banca (casi todo de fase 2) vive dentro de "Más" hasta que llegue la bandeja de movimientos.
+    static let phoneTabs: [AppSection] = [.home, .sales, .expenses, .reports]
     static let more: [AppSection] = [.accounting, .taxes, .settings]
 
     @ViewBuilder
@@ -105,10 +108,10 @@ struct AppShell: View {
         #endif
     }
 
-    /// iPhone: 6 pestañas (Inicio · Ventas · Gastos · Banca · Reportes · Más).
+    /// iPhone: 5 pestañas (Inicio · Ventas · Gastos · Reportes · Más).
     private var tabs: some View {
         TabView(selection: $tab) {
-            ForEach(AppSection.primary) { section in
+            ForEach(AppSection.phoneTabs) { section in
                 Tab(section.title, systemImage: section.systemImage, value: section) {
                     NavigationStack { section.destination }
                 }
@@ -168,6 +171,9 @@ struct MoreView: View {
                         } trailing: { EmptyView() }
                     }
                 }
+            }
+            Section("Banca") {
+                NavigationLink { BankingView() } label: { Label("Cuentas y saldos", systemImage: "building.columns") }
             }
             Section("Contabilidad") {
                 NavigationLink { ChartOfAccountsView() } label: { Label("Plan de cuentas", systemImage: "list.bullet.indent") }
