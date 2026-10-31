@@ -14,11 +14,15 @@ struct SettingsView: View {
 }
 
 struct SettingsLinks: View {
+    /// En «Más» del iPhone el perfil ya se abre desde la tarjeta de la empresa.
+    var showsCompanyProfile = true
     @Query private var companies: [Company]
 
     var body: some View {
         if let company = companies.first {
-            NavigationLink { CompanyProfileView(company: company) } label: { Label("Perfil de la empresa", systemImage: "building.2") }
+            if showsCompanyProfile {
+                NavigationLink { CompanyProfileView(company: company) } label: { Label("Perfil de la empresa", systemImage: "building.2") }
+            }
             NavigationLink { FormatsView(company: company) } label: { Label("Moneda y formatos", systemImage: "dollarsign.circle") }
         }
         NavigationLink { DataAndSecurityView() } label: { Label("iCloud, copias y seguridad", systemImage: "icloud") }

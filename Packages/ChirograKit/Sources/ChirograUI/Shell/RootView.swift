@@ -186,7 +186,7 @@ struct MoreView: View {
                 NavigationLink { TaxesView() } label: { Label("Sales tax", systemImage: "percent") }
             }
             Section("Ajustes") {
-                SettingsLinks()
+                SettingsLinks(showsCompanyProfile: false)
             }
         }
         .screenBackground()
