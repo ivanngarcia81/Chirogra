@@ -128,7 +128,8 @@ struct OnboardingView: View {
             Text(title).font(.footnote.weight(.semibold)).foregroundStyle(Palette.ink2)
             TextField(title, text: text, prompt: Text(prompt))
                 .padding(.horizontal, 14)
-                .frame(height: 48)
+                .padding(.vertical, 12)
+                .frame(minHeight: 48)
                 .background(Palette.surface, in: RoundedRectangle(cornerRadius: Metrics.fieldRadius, style: .continuous))
                 .overlay(RoundedRectangle(cornerRadius: Metrics.fieldRadius, style: .continuous).stroke(Palette.separator))
         }

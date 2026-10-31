@@ -26,6 +26,8 @@ struct ReportsView: View {
     }
 
     @Environment(\.modelContext) private var context
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @ScaledMetric(relativeTo: .subheadline) private var columnWidth: CGFloat = 110
     @Query(sort: \Account.code) private var accounts: [Account]
     @Query private var journalLines: [JournalLine]
     @Query private var invoices: [Invoice]
@@ -178,7 +180,9 @@ struct ReportsView: View {
     private func header(columns: [String]) -> some View {
         HStack {
             Text("CUENTA").frame(maxWidth: .infinity, alignment: .leading)
-            ForEach(columns, id: \.self) { Text($0).frame(width: 110, alignment: .trailing) }
+            if !dynamicTypeSize.isAccessibilitySize {
+                ForEach(columns, id: \.self) { Text($0).frame(width: columnWidth, alignment: .trailing) }
+            }
         }
         .font(.label)
         .foregroundStyle(Palette.ink3)
@@ -209,18 +213,32 @@ struct ReportsView: View {
         }
     }
 
+    /// Con tamaños de accesibilidad los importes pasan debajo del nombre en vez de ir en columnas fijas.
     private func rowView(_ title: String, _ values: [String], bold: Bool = false, indent: Bool = false) -> some View {
-        HStack {
-            Text(title).padding(.leading, indent ? 8 : 0).frame(maxWidth: .infinity, alignment: .leading)
-            ForEach(Array(values.enumerated()), id: \.offset) { index, value in
-                Text(value).frame(width: 110, alignment: .trailing)
-                    .foregroundStyle(index == 0 ? Palette.ink : Palette.ink3)
+        let valueViews = ForEach(Array(values.enumerated()), id: \.offset) { index, value in
+            Text(value)
+                .frame(minWidth: dynamicTypeSize.isAccessibilitySize ? nil : columnWidth, alignment: .trailing)
+                .foregroundStyle(index == 0 ? Palette.ink : Palette.ink3)
+        }
+        return Group {
+            if dynamicTypeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(title).padding(.leading, indent ? 8 : 0)
+                    HStack(spacing: 16) { valueViews }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            } else {
+                HStack {
+                    Text(title).padding(.leading, indent ? 8 : 0).frame(maxWidth: .infinity, alignment: .leading)
+                    valueViews
+                }
             }
         }
         .font(bold ? .subheadline.weight(.semibold) : .subheadline)
         .monospacedDigit()
         .padding(.horizontal, 16)
         .padding(.vertical, 6)
+        .accessibilityElement(children: .combine)
     }
 
     private func balanceCheck(_ balanced: Bool, ok: String, bad: String) -> some View {

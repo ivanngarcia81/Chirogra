@@ -17,8 +17,18 @@ extension Date {
 // MARK: - Tipografía
 
 extension Font {
-    /// Cifras destacadas (tarjeta de efectivo, totales).
-    static func amount(_ size: CGFloat) -> Font { .system(size: size, weight: .bold).monospacedDigit() }
+    /// Cifras destacadas (tarjeta de efectivo, totales). El tamaño del canvas se traduce al estilo de texto
+    /// más cercano para que escale con Dynamic Type.
+    static func amount(_ size: CGFloat) -> Font {
+        let style: Font.TextStyle = switch size {
+        case 34...: .largeTitle
+        case 26..<34: .title
+        case 21..<26: .title2
+        case 18..<21: .title3
+        default: .headline
+        }
+        return .system(style, weight: .bold).monospacedDigit()
+    }
     static let cardTitle = Font.headline
     static let label = Font.caption.weight(.semibold)
 }
@@ -141,11 +151,12 @@ struct InitialsTile: View {
     let text: String
     var foreground: Color = Palette.brand
     var background: Color = Palette.brandWash
+    @ScaledMetric(relativeTo: .subheadline) private var side = Metrics.iconTile
 
     var body: some View {
         Text(text)
             .font(.subheadline.weight(.bold))
-            .frame(width: Metrics.iconTile, height: Metrics.iconTile)
+            .frame(width: side, height: side)
             .foregroundStyle(foreground)
             .background(background, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
             .accessibilityHidden(true)
@@ -156,11 +167,12 @@ struct IconTile: View {
     let systemImage: String
     var foreground: Color = Palette.brand
     var background: Color = Palette.brandWash
+    @ScaledMetric(relativeTo: .body) private var side = Metrics.iconTile
 
     var body: some View {
         Image(systemName: systemImage)
-            .font(.system(size: 18, weight: .medium))
-            .frame(width: Metrics.iconTile, height: Metrics.iconTile)
+            .font(.body.weight(.medium))
+            .frame(width: side, height: side)
             .foregroundStyle(foreground)
             .background(background, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
             .accessibilityHidden(true)
@@ -208,7 +220,7 @@ struct KPITile: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(title).font(.caption.weight(.semibold)).foregroundStyle(Palette.ink3)
-            Text(value).font(.amount(17)).foregroundStyle(Palette.ink).minimumScaleFactor(0.7).lineLimit(1)
+            Text(value).font(.amount(17)).foregroundStyle(Palette.ink).minimumScaleFactor(0.7).lineLimit(2)
             if let note { Text(note).font(.caption.weight(.semibold)).foregroundStyle(noteColor) }
         }
         .card(padding: 12)
@@ -225,7 +237,7 @@ struct HeroCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title.uppercased()).font(.caption.weight(.semibold)).tracking(0.5).opacity(0.85)
-            Text(value).font(.amount(38)).tracking(-0.5).minimumScaleFactor(0.6).lineLimit(1)
+            Text(value).font(.amount(38)).tracking(-0.5).minimumScaleFactor(0.6).lineLimit(2)
             if let detail {
                 HStack(spacing: 8) {
                     Circle().fill(Palette.accent).frame(width: 8, height: 8)
@@ -253,7 +265,7 @@ struct EmptyStateView: View {
     var body: some View {
         VStack(spacing: 12) {
             Image(systemName: systemImage)
-                .font(.system(size: 36, weight: .regular))
+                .font(.largeTitle)
                 .foregroundStyle(Palette.ink3)
             Text(title).font(.headline).foregroundStyle(Palette.ink)
             Text(message).font(.subheadline).foregroundStyle(Palette.ink3).multilineTextAlignment(.center)

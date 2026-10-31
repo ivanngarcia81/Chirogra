@@ -14,6 +14,8 @@ struct HomeView: View {
     @Query(sort: \Bill.dueDate) private var bills: [Bill]
 
     @State private var months = 6
+    @ScaledMetric(relativeTo: .title2) private var quickActionSide: CGFloat = 56
+    @ScaledMetric(relativeTo: .headline) private var dateTileWidth: CGFloat = 44
     @State private var sheet: QuickAction?
 
     enum QuickAction: String, Identifiable {
@@ -103,8 +105,8 @@ struct HomeView: View {
         Button { sheet = action } label: {
             VStack(spacing: 6) {
                 Image(systemName: image)
-                    .font(.system(size: 22))
-                    .frame(width: 56, height: 56)
+                    .font(.title2)
+                    .frame(width: quickActionSide, height: quickActionSide)
                     .foregroundStyle(prominent ? Palette.onBrand : Palette.brand)
                     .background(prominent ? Palette.brand : Palette.surface, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
                 Text(title).font(.footnote.weight(.semibold)).foregroundStyle(Palette.ink)
@@ -216,10 +218,10 @@ struct HomeView: View {
                 LedgerRow(title: bill.vendor?.name ?? "Proveedor", subtitle: "Factura por pagar \(bill.vendorNumber)") {
                     VStack(spacing: 0) {
                         Text(bill.dueDate.formatted(.dateTime.month(.abbreviated)).uppercased())
-                            .font(.system(size: 10, weight: .bold)).foregroundStyle(Palette.outflow)
+                            .font(.caption2.weight(.bold)).foregroundStyle(Palette.outflow)
                         Text(bill.dueDate.formatted(.dateTime.day())).font(.headline)
                     }
-                    .frame(width: 44)
+                    .frame(minWidth: dateTileWidth)
                     .padding(.vertical, 4)
                     .background(Palette.surface2, in: RoundedRectangle(cornerRadius: 10))
                 } trailing: {

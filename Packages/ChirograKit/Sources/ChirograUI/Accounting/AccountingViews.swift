@@ -61,6 +61,7 @@ extension AccountSubtype {
 
 struct ChartOfAccountsView: View {
     @Query(sort: \Account.code) private var accounts: [Account]
+    @ScaledMetric(relativeTo: .body) private var codeWidth: CGFloat = 48
     @Query private var journalLines: [JournalLine]
     @State private var showingNew = false
     @State private var showArchived = false
@@ -73,7 +74,7 @@ struct ChartOfAccountsView: View {
                     ForEach(accounts.filter { $0.type == type && (showArchived || !$0.isArchived) }) { account in
                         NavigationLink { LedgerView(account: account) } label: {
                             HStack {
-                                Text(account.code).foregroundStyle(Palette.ink3).frame(width: 48, alignment: .leading)
+                                Text(account.code).foregroundStyle(Palette.ink3).frame(minWidth: codeWidth, alignment: .leading)
                                 VStack(alignment: .leading, spacing: 1) {
                                     Text(account.name).strikethrough(account.isArchived)
                                     Text(account.subtype.title).font(.caption).foregroundStyle(Palette.ink3)
