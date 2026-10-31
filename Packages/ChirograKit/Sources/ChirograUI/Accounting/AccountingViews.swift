@@ -413,23 +413,45 @@ struct LedgerAccountPickerView: View {
 /// un crédito aumenta el saldo (+); en activo y gasto lo aumenta un débito.
 struct LedgerView: View {
     let account: Account
+    @State private var filterByDate = false
+    @State private var from = DateInterval.month(containing: .now).start
+    @State private var to = Date()
+
+    /// Rango de fechas completo de los días elegidos (del inicio de `from` al final de `to`).
+    private var range: (from: Date, to: Date)? {
+        guard filterByDate else { return nil }
+        let calendar = Calendar.current
+        let end = calendar.date(byAdding: DateComponents(day: 1, second: -1), to: calendar.startOfDay(for: to)) ?? to
+        return (calendar.startOfDay(for: from), end)
+    }
 
     private var ledger: AccountLedger {
         let movements = (account.lines ?? []).compactMap { line -> LedgerMovement? in
             guard let entry = line.entry, entry.status == .posted else { return nil }
             return LedgerMovement(id: line.id, date: entry.date, memo: entry.memo, debit: line.debit, credit: line.credit)
         }
-        return ReportBuilder.accountLedger(account: account.ledgerAccount, movements: movements)
+        return ReportBuilder.accountLedger(account: account.ledgerAccount, movements: movements, from: range?.from, to: range?.to)
     }
 
     var body: some View {
         let ledger = ledger
         List {
             Section {
-                LabeledContent("Saldo", value: ledger.closingBalance.money).font(.headline)
                 LabeledContent("Tipo", value: "\(account.type.title) · \(account.subtype.title)")
                 LabeledContent("Aumenta con", value: account.type.normalBalance == .debit ? "Débitos" : "Créditos")
+                Toggle("Filtrar por fechas", isOn: $filterByDate)
+                if filterByDate {
+                    DatePicker("Desde", selection: $from, in: ...to, displayedComponents: .date)
+                    DatePicker("Hasta", selection: $to, in: from..., displayedComponents: .date)
+                }
             }
+            Section {
+                if filterByDate { LabeledContent("Saldo inicial", value: ledger.openingBalance.money) }
+                LabeledContent("Débitos", value: ledger.totalDebit.money)
+                LabeledContent("Créditos", value: ledger.totalCredit.money)
+                LabeledContent(filterByDate ? "Saldo final" : "Saldo", value: ledger.closingBalance.money).font(.headline)
+            }
+            .monospacedDigit()
             Section {
                 if ledger.rows.isEmpty { Text("Sin movimientos").foregroundStyle(Palette.ink3) }
                 ForEach(ledger.rows.reversed()) { row in
