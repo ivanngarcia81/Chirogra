@@ -27,6 +27,9 @@ struct CustomerListView: View {
                         VStack(alignment: .trailing, spacing: 2) {
                             Text(customer.openBalance.money).font(.body.weight(.semibold)).monospacedDigit()
                             Text("por cobrar").font(.caption).foregroundStyle(Palette.ink3)
+                            if customer.creditBalance > 0 {
+                                Text("\(customer.creditBalance.money) a favor").font(.caption.weight(.semibold)).foregroundStyle(Palette.positive)
+                            }
                         }
                     }
                 }
@@ -43,6 +46,7 @@ struct CustomerDetailView: View {
     @Bindable var customer: Customer
     @State private var editing = false
     @State private var newInvoice = false
+    @State private var refunding = false
 
     var body: some View {
         List {
@@ -57,6 +61,15 @@ struct CustomerDetailView: View {
                 LabeledContent("Saldo por cobrar", value: customer.openBalance.money)
                 LabeledContent("Condiciones", value: customer.paymentTermsDays == 0 ? "Al recibir" : "Neto \(customer.paymentTermsDays)")
                 if customer.isTaxExempt { LabeledContent("Sales tax", value: "Exento") }
+            }
+            if customer.creditBalance > 0 {
+                Section {
+                    LabeledContent("Saldo a favor", value: customer.creditBalance.money)
+                        .foregroundStyle(Palette.positive).fontWeight(.semibold)
+                    Button("Reembolsar", systemImage: "arrow.uturn.backward") { refunding = true }
+                } footer: {
+                    Text("Viene de notas de crédito que superaron lo que debía. Para usarlo en una factura, abre la factura pendiente y elige «Aplicar saldo a favor».")
+                }
             }
             Section {
                 Button("Nueva factura", systemImage: "doc.badge.plus") { newInvoice = true }
@@ -75,6 +88,7 @@ struct CustomerDetailView: View {
         .toolbar { Button("Editar") { editing = true } }
         .sheet(isPresented: $editing) { NavigationStack { CustomerEditorView(customer: customer) } }
         .sheet(isPresented: $newInvoice) { NavigationStack { InvoiceEditorView(preselectedCustomer: customer) } }
+        .sheet(isPresented: $refunding) { NavigationStack { CustomerRefundView(customer: customer) } }
     }
 }
 
@@ -152,5 +166,59 @@ struct CustomerEditorView: View {
         try? context.save()
         if customer == nil { onCreate?(target) }
         dismiss()
+    }
+}
+
+/// Reembolso del saldo a favor del cliente: Debe Cuentas por cobrar / Haber Banco.
+struct CustomerRefundView: View {
+    let customer: Customer
+    @Environment(\.modelContext) private var context
+    @Environment(\.dismiss) private var dismiss
+    @Query(sort: \Account.code) private var accounts: [Account]
+    @State private var amount: Int64 = 0
+    @State private var date = Date()
+    @State private var accountID: UUID?
+    @State private var errorMessage: String?
+
+    private var paymentAccounts: [Account] { accounts.filtered { $0 == .bank || $0 == .cash } }
+
+    var body: some View {
+        Form {
+            if let errorMessage { ErrorBanner(message: errorMessage) }
+            Section {
+                LabeledContent("Cliente", value: customer.name)
+                LabeledContent("Saldo a favor", value: customer.creditBalance.money)
+            }
+            Section {
+                MoneyField(title: "Importe a reembolsar", minorUnits: $amount)
+                DatePicker("Fecha", selection: $date, displayedComponents: .date)
+                AccountPicker(title: "Pagar desde", accounts: paymentAccounts, selection: $accountID)
+            } footer: {
+                Text("Se registra la salida de dinero del banco y se cancela ese saldo a favor en cuentas por cobrar.")
+            }
+        }
+        .screenBackground()
+        .navigationTitle("Reembolso")
+        .inlineTitle()
+        .toolbar {
+            ToolbarItem(placement: .cancellationAction) { Button("Cancelar") { dismiss() } }
+            ToolbarItem(placement: .confirmationAction) {
+                Button("Reembolsar", action: save).disabled(amount <= 0 || accountID == nil)
+            }
+        }
+        .onAppear {
+            amount = customer.creditBalance
+            accountID = accountID ?? paymentAccounts.first { $0.subtype == .bank }?.id
+        }
+    }
+
+    private func save() {
+        guard let account = accounts.first(where: { $0.id == accountID }) else { return }
+        do {
+            try Bookkeeper(context: context).refundCustomerCredit(customer, amount: amount, date: date, from: account)
+            dismiss()
+        } catch {
+            errorMessage = error.localizedDescription
+        }
     }
 }
