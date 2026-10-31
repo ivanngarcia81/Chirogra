@@ -30,8 +30,13 @@ public struct CostLine: Hashable, Sendable {
 
 public struct InvoicePosting: Hashable, Sendable {
     public var entry: JournalEntryDraft
+    /// Suma de las líneas antes del descuento.
     public var subtotal: Int64
+    public var discount: Int64
+    /// Líneas gravables antes del descuento.
     public var taxableSubtotal: Int64
+    /// Base sobre la que se calcula el impuesto: gravable menos su parte del descuento.
+    public var taxableBase: Int64
     public var taxes: [TaxComponentAmount]
     public var total: Int64
 
@@ -42,39 +47,52 @@ public enum PostingError: Error, Hashable, Sendable {
     case noLines
     case nonPositiveAmount
     case sameAccount
+    case invalidDiscount
 }
 
 /// Reglas que convierten documentos de negocio en asientos de doble partida (§4.3–4.5).
 /// Todas devuelven asientos cuadrados por construcción; las pruebas lo verifican.
 public enum PostingRules {
 
-    /// Factura de venta: Debe CxC (total) / Haber Ingresos (por cuenta) + Sales Tax Payable (por componente).
+    /// Factura de venta: Debe CxC (total) + Descuentos (si hay) / Haber Ingresos (por cuenta) + Sales Tax Payable (por componente).
+    ///
+    /// El descuento es del documento y se aplica **antes** del impuesto (DISEÑO §4.8): la base gravable se reduce
+    /// en la proporción de líneas gravables sobre el subtotal. Los ingresos se registran en bruto y el descuento
+    /// va al debe de una cuenta de descuentos, que resta en el estado de resultados.
     public static func invoice(
         date: Date,
         memo: String,
         receivableAccountID: UUID,
         lines: [SalesLine],
         taxComponents: [TaxComponent],
-        customerIsTaxExempt: Bool = false
+        customerIsTaxExempt: Bool = false,
+        discount: Int64 = 0,
+        discountAccountID: UUID? = nil
     ) throws(PostingError) -> InvoicePosting {
         guard !lines.isEmpty else { throw .noLines }
         guard lines.allSatisfy({ $0.amount > 0 }) else { throw .nonPositiveAmount }
 
         let subtotal = lines.reduce(0) { $0 + $1.amount }
+        guard discount >= 0, discount <= subtotal, discount == 0 || discountAccountID != nil else { throw .invalidDiscount }
         let taxableSubtotal = customerIsTaxExempt ? 0 : lines.filter(\.isTaxable).reduce(0) { $0 + $1.amount }
-        let taxes = taxableSubtotal > 0
-            ? SalesTaxCalculator.taxes(onTaxableBase: taxableSubtotal, components: taxComponents).filter { $0.amount != 0 }
+        let taxableDiscount = subtotal == 0 ? 0 : (discount * taxableSubtotal).dividedRoundingHalfAwayFromZero(by: subtotal)
+        let taxableBase = taxableSubtotal - taxableDiscount
+        let taxes = taxableBase > 0
+            ? SalesTaxCalculator.taxes(onTaxableBase: taxableBase, components: taxComponents).filter { $0.amount != 0 }
             : []
-        let total = subtotal + taxes.reduce(0) { $0 + $1.amount }
+        let total = subtotal - discount + taxes.reduce(0) { $0 + $1.amount }
 
-        var entryLines: [JournalLineDraft] = [.debit(receivableAccountID, total)]
+        var entryLines: [JournalLineDraft] = total > 0 ? [.debit(receivableAccountID, total)] : []
+        if discount > 0, let discountAccountID { entryLines.append(.debit(discountAccountID, discount)) }
         entryLines += grouped(lines.map { ($0.incomeAccountID, $0.amount) }).map { .credit($0.0, $0.1) }
         entryLines += grouped(taxes.map { ($0.component.liabilityAccountID, $0.amount) }).map { .credit($0.0, $0.1) }
 
         return InvoicePosting(
             entry: JournalEntryDraft(date: date, memo: memo, source: .invoice, lines: entryLines),
             subtotal: subtotal,
+            discount: discount,
             taxableSubtotal: taxableSubtotal,
+            taxableBase: taxableBase,
             taxes: taxes,
             total: total
         )
@@ -87,11 +105,14 @@ public enum PostingRules {
         receivableAccountID: UUID,
         lines: [SalesLine],
         taxComponents: [TaxComponent],
-        customerIsTaxExempt: Bool = false
+        customerIsTaxExempt: Bool = false,
+        discount: Int64 = 0,
+        discountAccountID: UUID? = nil
     ) throws(PostingError) -> InvoicePosting {
         var posting = try invoice(
             date: date, memo: memo, receivableAccountID: receivableAccountID,
-            lines: lines, taxComponents: taxComponents, customerIsTaxExempt: customerIsTaxExempt
+            lines: lines, taxComponents: taxComponents, customerIsTaxExempt: customerIsTaxExempt,
+            discount: discount, discountAccountID: discountAccountID
         )
         posting.entry.lines = posting.entry.lines.map(\.swapped)
         posting.entry.source = .creditNote

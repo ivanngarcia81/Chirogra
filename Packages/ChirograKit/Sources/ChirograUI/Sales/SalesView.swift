@@ -136,7 +136,7 @@ struct InvoiceRow: View {
 
     private var amount: String {
         switch invoice.status {
-        case .draft: invoice.linesSubtotal.money
+        case .draft: invoice.draftAmount.money
         case .partiallyPaid: "\(invoice.balanceDue.money) de \(invoice.total.money)"
         default: invoice.total.money
         }

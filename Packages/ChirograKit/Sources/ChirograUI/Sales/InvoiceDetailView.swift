@@ -28,9 +28,9 @@ struct InvoiceDetailView: View {
                         Spacer()
                         StatusChip(invoice: invoice, compact: false)
                     }
-                    Text(invoice.status == .draft ? invoice.linesSubtotal.money : invoice.balanceDue.money)
+                    Text(invoice.status == .draft ? invoice.draftAmount.money : invoice.balanceDue.money)
                         .font(.amount(34))
-                    Text(invoice.status == .draft ? "Subtotal del borrador" : "Saldo pendiente de \(invoice.total.money)")
+                    Text(invoice.status == .draft ? "Borrador: líneas menos descuento, sin impuesto" : "Saldo pendiente de \(invoice.total.money)")
                         .font(.subheadline).foregroundStyle(Palette.ink3)
                 }
                 .padding(.vertical, 6)
@@ -56,6 +56,7 @@ struct InvoiceDetailView: View {
             if invoice.status != .draft {
                 Section {
                     LabeledContent("Subtotal", value: invoice.subtotal.money)
+                    if invoice.discount > 0 { LabeledContent("Descuento", value: "−\(invoice.discount.money)") }
                     ForEach(invoice.taxLines ?? []) { tax in
                         LabeledContent("\(tax.name) · \((Decimal(tax.rateMillionths) / 10_000).formatted())%", value: tax.amount.money)
                     }

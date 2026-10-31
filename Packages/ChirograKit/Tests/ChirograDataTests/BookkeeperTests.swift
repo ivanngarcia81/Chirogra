@@ -95,6 +95,20 @@ struct BookkeeperTests {
         #expect(ReportBuilder.balance(of: try account("2200").ledgerAccount, lines: try books.ledgerLines()) == 16_500)
     }
 
+    @Test("Factura con descuento: el ingreso neto del estado de resultados descuenta el descuento")
+    func issueWithDiscount() throws {
+        let invoice = try makeInvoice(amount: 200_000, taxGroup: try austinTaxGroup())
+        invoice.discount = 20_000
+        try books.issue(invoice)
+        #expect(invoice.discount == 20_000)
+        #expect(invoice.taxTotal == 14_850)     // 8.25 % de 1,800.00
+        #expect(invoice.total == 194_850)
+        let statement = ReportBuilder.incomeStatement(accounts: try books.ledgerAccounts(), lines: try books.ledgerLines(),
+                                                      from: .distantPast, to: .distantFuture)
+        #expect(statement.totalIncome == 180_000)
+        #expect(try books.systemAccount(.salesDiscount).code == "4900")
+    }
+
     @Test("Cobros parciales y totales actualizan el estado; no se puede cobrar de más")
     func payments() throws {
         let invoice = try makeInvoice(amount: 100_000)

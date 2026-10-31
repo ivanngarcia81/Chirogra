@@ -335,6 +335,8 @@ extension SchemaV1 {
         public var journalEntryID: UUID?
         // Totales guardados al emitir, para listas rápidas.
         public var subtotal: Int64 = 0
+        /// Descuento del documento, antes de impuesto.
+        public var discount: Int64 = 0
         public var taxTotal: Int64 = 0
         public var total: Int64 = 0
         public var amountPaid: Int64 = 0
@@ -373,6 +375,9 @@ extension SchemaV1 {
 
         /// Subtotal provisional (borradores) a partir de las líneas.
         public var linesSubtotal: Int64 { (lines ?? []).reduce(0) { $0 + $1.amount } }
+
+        /// Importe provisional de un borrador: líneas menos descuento, sin impuesto.
+        public var draftAmount: Int64 { linesSubtotal - discount }
     }
 
     @Model

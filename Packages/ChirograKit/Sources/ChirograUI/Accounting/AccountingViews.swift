@@ -51,6 +51,7 @@ extension AccountSubtype {
         case .retainedEarnings: "Resultados acumulados"
         case .openingBalanceEquity: "Saldos de apertura"
         case .sales: "Ventas"
+        case .salesDiscount: "Descuentos sobre ventas"
         case .otherIncome: "Otros ingresos"
         case .costOfGoodsSold: "Costo de ventas"
         case .operatingExpense: "Gasto operativo"

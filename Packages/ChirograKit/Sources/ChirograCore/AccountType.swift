@@ -59,6 +59,8 @@ public enum AccountSubtype: String, CaseIterable, Sendable, Codable {
     case openingBalanceEquity
     // Ingreso
     case sales
+    /// Descuentos y devoluciones sobre ventas: cuenta de ingreso que se carga (resta de los ingresos).
+    case salesDiscount
     case otherIncome
     // Gasto
     case costOfGoodsSold
@@ -74,7 +76,7 @@ public enum AccountSubtype: String, CaseIterable, Sendable, Codable {
             .liability
         case .ownersEquity, .ownersDraw, .retainedEarnings, .openingBalanceEquity:
             .equity
-        case .sales, .otherIncome:
+        case .sales, .salesDiscount, .otherIncome:
             .income
         case .costOfGoodsSold, .operatingExpense, .otherExpense:
             .expense

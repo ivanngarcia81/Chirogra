@@ -145,3 +145,52 @@ struct SeededGenerator: RandomNumberGenerator {
         return z ^ (z >> 31)
     }
 }
+
+@Suite("Descuento en facturas")
+struct InvoiceDiscountTests {
+    let receivable = UUID(), discountAccount = UUID(), services = UUID(), materials = UUID(), tax = UUID()
+    let date = Date(timeIntervalSince1970: 1_790_000_000)
+    var texas: [TaxComponent] { [TaxComponent(name: "TX", rateMillionths: 82_500, liabilityAccountID: tax)] }
+
+    @Test("El descuento reduce la base gravable en proporción y el asiento cuadra")
+    func discountBeforeTax() throws {
+        // $1,800 de servicio no gravable + $200 de materiales gravables; descuento de $100 (5 %).
+        let posting = try PostingRules.invoice(
+            date: date, memo: "", receivableAccountID: receivable,
+            lines: [SalesLine(incomeAccountID: services, amount: 180_000, isTaxable: false),
+                    SalesLine(incomeAccountID: materials, amount: 20_000, isTaxable: true)],
+            taxComponents: texas, discount: 10_000, discountAccountID: discountAccount
+        )
+        #expect(posting.taxableSubtotal == 20_000)
+        #expect(posting.taxableBase == 19_000)      // 200 − 5 % de 200
+        #expect(posting.totalTax == 1_568)          // 8.25 % de 190.00 = 15.675 → 15.68
+        #expect(posting.total == 200_000 - 10_000 + 1_568)
+        #expect(posting.entry.isBalanced)
+        #expect(posting.entry.lines.contains(.debit(discountAccount, 10_000)))
+        #expect(posting.entry.lines.contains(.credit(services, 180_000)))
+        try JournalValidator().validate(posting.entry)
+    }
+
+    @Test("Descuento total: sin cuenta por cobrar y aún cuadrado")
+    func fullDiscount() throws {
+        let posting = try PostingRules.invoice(date: date, memo: "", receivableAccountID: receivable,
+                                               lines: [SalesLine(incomeAccountID: services, amount: 5_000)],
+                                               taxComponents: texas, discount: 5_000, discountAccountID: discountAccount)
+        #expect(posting.total == 0)
+        #expect(posting.entry.lines == [.debit(discountAccount, 5_000), .credit(services, 5_000)])
+    }
+
+    @Test("Descuento mayor que el subtotal, negativo o sin cuenta se rechaza", arguments: [Int64(5_001), -1])
+    func invalidDiscount(discount: Int64) {
+        #expect(throws: PostingError.invalidDiscount) {
+            try PostingRules.invoice(date: date, memo: "", receivableAccountID: receivable,
+                                     lines: [SalesLine(incomeAccountID: services, amount: 5_000)],
+                                     taxComponents: [], discount: discount, discountAccountID: discountAccount)
+        }
+        #expect(throws: PostingError.invalidDiscount) {
+            try PostingRules.invoice(date: date, memo: "", receivableAccountID: receivable,
+                                     lines: [SalesLine(incomeAccountID: services, amount: 5_000)],
+                                     taxComponents: [], discount: 100)
+        }
+    }
+}

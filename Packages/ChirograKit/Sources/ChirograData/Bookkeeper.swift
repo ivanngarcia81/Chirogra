@@ -49,6 +49,7 @@ extension PostingError {
         case .noLines: "El documento no tiene líneas."
         case .nonPositiveAmount: "Todos los importes deben ser mayores que cero."
         case .sameAccount: "La cuenta de origen y la de destino no pueden ser la misma."
+        case .invalidDiscount: "El descuento no puede ser negativo ni mayor que el subtotal."
         }
     }
 }
@@ -217,6 +218,7 @@ public struct Bookkeeper {
         invoice.issueDate = input.issueDate
         invoice.dueDate = input.dueDate
         invoice.taxGroupID = input.taxGroupID
+        invoice.discount = input.discount
         invoice.customerMessage = input.customerMessage
         for line in invoice.lines ?? [] { context.delete(line) }
         invoice.lines = []
@@ -257,6 +259,7 @@ public struct Bookkeeper {
         let number = invoice.number.isEmpty ? try peekDocumentNumber(.invoice) : invoice.number
 
         let components = try taxComponents(groupID: invoice.taxGroupID, on: invoice.issueDate)
+        let discountAccountID = invoice.discount > 0 ? try systemAccount(.salesDiscount).id : nil
         let posting: InvoicePosting
         do {
             posting = try PostingRules.invoice(
@@ -265,7 +268,9 @@ public struct Bookkeeper {
                 receivableAccountID: receivable.id,
                 lines: lines,
                 taxComponents: components,
-                customerIsTaxExempt: invoice.customer?.isTaxExempt ?? false
+                customerIsTaxExempt: invoice.customer?.isTaxExempt ?? false,
+                discount: invoice.discount,
+                discountAccountID: discountAccountID
             )
         } catch {
             throw BookkeepingError.invalidDocument(error)

@@ -80,7 +80,7 @@ public struct ChartTemplate: Sendable {
         // 4000 Ingresos
         Entry("4000", "Ingresos por servicios", "Service Revenue", .sales),
         Entry("4100", "Venta de productos y materiales", "Product & Materials Sales", .sales),
-        Entry("4900", "Descuentos y devoluciones", "Discounts & Refunds", .sales),
+        Entry("4900", "Descuentos y devoluciones", "Discounts & Refunds", .salesDiscount, system: true),
         Entry("7000", "Otros ingresos", "Other Income", .otherIncome),
         Entry("7010", "Intereses ganados", "Interest Earned", .otherIncome),
         // 5000 Costo de ventas

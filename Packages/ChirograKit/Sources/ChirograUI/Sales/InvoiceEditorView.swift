@@ -32,6 +32,7 @@ struct InvoiceEditorView: View {
     @State private var dueDate = Calendar.current.date(byAdding: .day, value: 30, to: .now) ?? .now
     @State private var taxGroupID: UUID?
     @State private var lines: [LineDraft] = [LineDraft()]
+    @State private var discount: Int64 = 0
     @State private var customerMessage = ""
     @State private var errorMessage: String?
     @State private var savedInvoice: Invoice?
@@ -51,7 +52,8 @@ struct InvoiceEditorView: View {
         return try? PostingRules.invoice(
             date: issueDate, memo: "", receivableAccountID: UUID(),
             lines: validLines.map { SalesLine(incomeAccountID: $0.incomeAccountID ?? defaultIncome, amount: $0.amount, isTaxable: $0.isTaxable) },
-            taxComponents: components, customerIsTaxExempt: customer?.isTaxExempt ?? false
+            taxComponents: components, customerIsTaxExempt: customer?.isTaxExempt ?? false,
+            discount: discount, discountAccountID: discount > 0 ? UUID() : nil
         )
     }
 
@@ -113,7 +115,14 @@ struct InvoiceEditorView: View {
                         Text("\(group.name) · \(group.percent.formatted())%").tag(Optional(group.id))
                     }
                 }
-                LabeledContent("Subtotal", value: (preview?.subtotal ?? 0).money)
+                LabeledContent("Subtotal", value: validLines.reduce(0) { $0 + $1.amount }.money)
+                LabeledContent("Descuento") {
+                    MoneyField(title: "Descuento", minorUnits: $discount)
+                        .multilineTextAlignment(.trailing)
+                }
+                if discount > validLines.reduce(0, { $0 + $1.amount }) {
+                    Text("El descuento no puede ser mayor que el subtotal.").font(.footnote).foregroundStyle(Palette.negative)
+                }
                 LabeledContent("Sales tax", value: (preview?.totalTax ?? 0).money)
                 LabeledContent {
                     Text((preview?.total ?? 0).money).font(.amount(24))
@@ -167,6 +176,7 @@ struct InvoiceEditorView: View {
         issueDate = invoice.issueDate
         dueDate = invoice.dueDate
         taxGroupID = invoice.taxGroupID
+        discount = invoice.discount
         customerMessage = invoice.customerMessage
         lines = invoice.sortedLines.map {
             LineDraft(details: $0.details, quantity: $0.quantity, unitPrice: $0.unitPrice,
@@ -178,7 +188,7 @@ struct InvoiceEditorView: View {
     private var input: InvoiceDraftInput {
         InvoiceDraftInput(
             customer: customer, issueDate: issueDate, dueDate: dueDate, taxGroupID: taxGroupID,
-            customerMessage: customerMessage,
+            discount: discount, customerMessage: customerMessage,
             lines: validLines.map {
                 .init(details: $0.details, quantity: $0.quantity, unitPrice: $0.unitPrice,
                       isTaxable: $0.isTaxable, incomeAccountID: $0.incomeAccountID)

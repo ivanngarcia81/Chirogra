@@ -23,10 +23,13 @@ public struct InvoiceDraftInput {
     public var issueDate: Date
     public var dueDate: Date
     public var taxGroupID: UUID?
+    public var discount: Int64
     public var customerMessage: String
     public var lines: [Line]
 
-    public init(customer: Customer?, issueDate: Date, dueDate: Date, taxGroupID: UUID? = nil, customerMessage: String = "", lines: [Line]) {
+    public init(customer: Customer?, issueDate: Date, dueDate: Date, taxGroupID: UUID? = nil, discount: Int64 = 0,
+                customerMessage: String = "", lines: [Line]) {
+        self.discount = discount
         self.customer = customer
         self.issueDate = issueDate
         self.dueDate = dueDate
