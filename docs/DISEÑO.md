@@ -1,9 +1,9 @@
 # Chirogra — Documento de diseño
 
-> Estado: **borrador para revisión** (v0.3, 31 oct 2026).
+> Estado: **borrador para revisión** (v0.4, 31 oct 2026).
 > Nada de este documento está implementado todavía. Las secciones marcadas con 🔶 son decisiones abiertas; las marcadas con ✅ ya las confirmó el usuario.
 >
-> **Alcance de este documento:** solo la parte técnica (alcance, módulos, modelo de datos, arquitectura, persistencia, sincronización y riesgos). El diseño visual, las pantallas y la navegación se definen en **Claude Design** (ver §7).
+> **Alcance de este documento:** solo la parte técnica (alcance, módulos, modelo de datos, arquitectura, persistencia, sincronización y riesgos). El diseño visual, las pantallas y la navegación se definen en **Claude Design** (resumido en §7).
 >
 > **Decisiones confirmadas (v0.2):** ✅ iPhone + iPad + Mac con SwiftUI multiplataforma · ✅ Estados Unidos, USD, *sales tax* (no IVA) · ✅ un solo usuario por empresa · ✅ sincronización privada con iCloud entre los dispositivos del usuario.
 
@@ -350,17 +350,85 @@ Usuario guarda factura ─► ChirograUI (InvoiceEditor)
 
 ---
 
-## 7. UI: según el diseño en Claude Design (pendiente de enlace)
+## 7. UI: según el diseño en Claude Design
 
-El diseño visual, las pantallas, la navegación, la paleta, la tipografía, la iconografía y los textos de interfaz de Chirogra **se definen en Claude Design**, no en este documento.
+El diseño visual, las pantallas, la navegación, la paleta, la tipografía, la iconografía y los textos de interfaz **se definen en Claude Design**. Esta sección resume lo que se llevará a SwiftUI; ante cualquier duda manda el canvas.
 
-- **Enlace al diseño:** _pendiente_.
-- Cuando esté disponible, las vistas de `ChirograUI` se construirán a partir de ese diseño; este documento solo enlazará la versión usada.
-- Lo que la parte técnica sí le exige a cualquier interfaz, sea cual sea su diseño:
-  - Ninguna lógica contable en las vistas: la UI llama a `ChirograCore` / `ChirograData` (§6.2).
-  - Textos localizables con String Catalogs (español + inglés, §9.2) y formatos de moneda/fecha según la configuración regional.
-  - Accesibilidad: Dynamic Type, VoiceOver con importes leídos como moneda y estados que no dependan solo del color.
-  - Los módulos del MVP (§3.1 y §4) necesitan pantalla para: alta de empresa, plan de cuentas y libro mayor, asientos, clientes y facturas con cobros, proveedores y facturas por pagar con pagos, gastos con recibo, impuestos, reportes y ajustes (empresa, impuestos, numeración, seguridad, iCloud, copia de seguridad).
+- **Enlace al diseño:** [Chirogra — Diseño de app](https://claude.ai/artifact/Ai344mUq54BECC4Pw4quV9) (canvas de Claude Design, versión `1793481833-1df2`, leída el 31 oct 2026).
+
+### 7.1 Navegación
+
+| Plataforma | Estructura (según el canvas) |
+|---|---|
+| **iPhone** | `TabView` de 6 pestañas: **Inicio · Ventas · Gastos · Banca · Reportes · Más**. Cada pestaña con su `NavigationStack`. "Más" agrupa Contabilidad (plan de cuentas, asientos, libro mayor, cierre de periodo), Impuestos (tasas, resumen, deducibles) y Ajustes. |
+| **iPad y Mac** | `NavigationSplitView` con barra lateral: logotipo, búsqueda global (⌘K), **Inicio · Ventas · Gastos · Banca** (con insignia de pendientes) **· Reportes**, encabezado "MÁS" con **Contabilidad · Impuestos · Ajustes**, y al pie la tarjeta de la empresa con estado de sincronización. |
+| **Acciones rápidas** | iPhone: botones Factura · Gasto · Recibo (cámara, destacado) · Cliente en Inicio. Mac: botones "+ Gasto" y "+ Factura" en la barra de la pantalla. |
+
+### 7.2 Pantallas del canvas
+
+| Grupo | Pantallas (nombre del archivo en el canvas) |
+|---|---|
+| Marca y sistema | `Main` (colores, tipografía, botones, estados, campos, filas) |
+| Alta (onboarding) | 1 Crear empresa (`OnbEmpresa`) · 2 Tipo de negocio (`OnbTipo`) · 3 Traer movimientos: importar CSV/OFX, banco en línea "Pronto", cuenta manual (`OnbBanco`) |
+| Navegación principal iPhone | Inicio claro/oscuro (`Home`, `HomeOscuro`) · Ventas con búsqueda y filtros (`Ventas`) · Gastos (`Gastos`) · Banca "por revisar" (`Banca`) · Más (`Mas`) |
+| Flujo factura | Nueva factura (`FacturaNueva`) · Vista previa y envío (`FacturaEnviar`) · Factura enviada / registrar pago (`FacturaDetalle`) |
+| Flujo recibo | Escanear recibo (`ReciboCamara`) · Datos extraídos → gasto (`ReciboGasto`) |
+| Banco y resultados | Categorizar transacción (`BancaRevisar`) · Conciliación (`Conciliacion`) · Estado de resultados (`ReportePyG`) |
+| Estados de pantalla | Vacío / primera vez (`EstadoVacio`) · Cargando (`EstadoCargando`) · Error de importación (`EstadoError`) |
+| iPad y Mac | Mac Inicio (`MacInicio`) · iPad bandeja por revisar (`iPadBanca`) · Mac Estado de resultados (`MacPyG`) · Mac Asiento de diario (`MacDiario`) · Mac Libro mayor (`MacLibroMayor`) |
+| Fichas y catálogo | Clientes (`Clientes`) · Ficha de cliente (`ClienteFicha`) · Productos y servicios (`Productos`) · Estimado → factura (`Estimado`) · Ficha de proveedor (`ProveedorFicha`) |
+| Impuestos y ajustes | Impuestos (`Impuestos`) · Perfil de la empresa (`AjustesEmpresa`) · Plantilla de factura (`AjustesPlantilla`) · Moneda y formatos (`AjustesFormatos`) · Usuarios y permisos (`AjustesUsuarios`) · iCloud, copias y seguridad (`AjustesDatos`) |
+
+### 7.3 Tokens visuales → SwiftUI
+
+Se implementan en `ChirograUI/DesignSystem` como colores de un Asset Catalog con variantes clara/oscura (o `Color` dinámicos) y estilos de texto; ninguna vista usa valores sueltos.
+
+| Token | Claro | Oscuro | Uso |
+|---|---|---|---|
+| `brand` (Tinta) | `#3A3FD1` | `#8F93FF` | Color principal, botones primarios, pestaña activa, ingresos en gráficas |
+| `brandWash` | `#E7E8FB` | `#252960` | Botón secundario, avatar, estado "Enviada" |
+| `onBrand` | `#FFFFFF` | `#0D0E18` | Texto sobre `brand` |
+| `accent` (Azafrán) | `#F2B33D` | `#F2B33D` | Puntos de aviso, insignias, detalle del logotipo |
+| `outflow` (Cobre) / `outflowWash` | `#B4500F` / `#FCEBDD` | `#FF9F66` / `#3A2416` | Importes de salida |
+| `expenseBar` | `#E58A4E` | `#E58A4E` | Gastos en gráficas |
+| `background` | `#F4F5F9` | `#0D0E18` | Fondo de pantalla |
+| `surface` / `surface2` | `#FFFFFF` / `#ECEEF5` | `#171928` / `#212438` | Tarjetas / controles segmentados, chips neutros |
+| `sidebar` | `#E9EBF3` | `#12131F` | Barra lateral iPad/Mac |
+| `separator` | `#E1E4EE` | `#2B2F47` | Líneas y bordes |
+| `ink` / `ink2` / `ink3` | `#12142B` / `#4F546E` / `#666B88` | `#F1F2F8` / `#B6BAD0` / `#959BB8` | Texto principal / secundario / terciario |
+| `positive` + wash | `#17704A` / `#DDF3E8` | `#52C893` / `#14301F` | "Pagada", variaciones favorables |
+| `warning` + wash | `#8A5A00` / `#FBF0D6` | `#F2C065` / `#33280F` | "Pago parcial", pendientes de revisar |
+| `negative` + wash | `#B42833` / `#FBE3E5` | `#FF8088` / `#3A1A1E` | "Vencida", acciones destructivas |
+| `info` + wash | `#0E6A86` / `#DCEFF5` | `#6FD0EE` / `#123039` | "Vista" |
+
+- **Tipografía:** SF Pro del sistema con estilos dinámicos: `.largeTitle` 34 bold (títulos de pantalla; 28 en Mac), `.title2` 22 semibold, `.headline` 17 semibold (títulos de tarjeta), `.body` 17, `.subheadline` 15, `.caption` 12 semibold en mayúsculas con tracking para etiquetas. **Todas las cifras con `.monospacedDigit()`**; importes destacados de 28–38 pt bold con tracking negativo.
+- **Espaciado y forma:** margen lateral 16 pt en iPhone (24–28 pt en Mac); separación entre tarjetas 8–16 pt; relleno de tarjeta 12–20 pt. Radios: tarjetas 16–22 pt, botones 14 pt (altura 48 pt; CTA de onboarding 54 pt), campos 12 pt, chips de estado en cápsula, iconos de fila 40 pt con radio 12. Áreas táctiles ≥ 44 pt.
+- **Componentes base:** botón primario / secundario (wash) / neutro con borde / destructivo (wash rojo); chip de estado de factura (Borrador, Enviada, Vista, Pago parcial, Vencida · N días, Pagada); campo con etiqueta superior; control segmentado (Mes / Trimestre / Año); fila de lista con avatar de iniciales o icono, título, subtítulo e importe con chip; tarjeta KPI; gráfica de barras ingresos vs. gastos (Swift Charts); estados vacío / cargando / error.
+- **Logotipo:** cuadrado redondeado en `brand` con una "C" abierta en `onBrand` y un punto en `accent`. Se exportará del canvas a vectores para el ícono de app y el Asset Catalog.
+- **Iconos:** el canvas usa trazos de línea propios; en SwiftUI se usarán SF Symbols equivalentes salvo donde el diseño exija un dibujo propio.
+
+### 7.4 Diferencias entre el canvas y el diseño técnico 🔶
+
+El canvas muestra algunas funciones que el diseño técnico (§3) había dejado fuera del MVP o que no tenía. Hay que decidir cada una antes de programar:
+
+| En el canvas | En el diseño técnico | Propuesta |
+|---|---|---|
+| Banca como pestaña principal: importar CSV/OFX en el alta, bandeja "por revisar", categorizar, conciliación | Fase 2 | **Pasar al MVP** la importación CSV/OFX, la bandeja por revisar con reglas y la conciliación (el modelo ya existe, §4.6). La conexión bancaria en línea sigue en fase 3 (el canvas ya la marca "Pronto"). |
+| Escanear recibo con datos extraídos | OCR en fase 2 | **Pasar al MVP** con Vision en el dispositivo (sin servicios externos). |
+| Estimados que se convierten en factura | No existía | **Añadir al MVP** la entidad `Estimate` (sin efecto contable hasta convertirse en factura). |
+| Usuarios y permisos (dueño, contador, solo lectura, invitaciones) | Un solo usuario (decisión confirmada) | Mantener un usuario: la pantalla se construye más adelante; en el MVP Ajustes no la muestra o la muestra como "Próximamente". |
+| Selector de empresa en Inicio | Multiempresa en fase 2 | MVP con una empresa; el selector aparece cuando haya más de una. |
+| Estado de factura "Vista" (el cliente la abrió) | Sin servidor no se puede saber | Omitir en el MVP; se mantiene el token de color para el futuro. |
+| Pagos "Programados" y "Recurrentes" en por pagar | Recurrentes en fase 2 | En el MVP, solo facturas por pagar con vencimiento; recurrentes en fase 2. |
+| Impuestos · "Deducibles" | Mapeo a Schedule C en fase 2 | Fase 2. |
+| Formato "USD · dd/mm" en Ajustes | EE. UU. usa mm/dd | Por defecto el formato de la región del dispositivo, configurable. |
+
+### 7.5 Requisitos técnicos de la UI
+
+- Ninguna lógica contable en las vistas: la UI llama a `ChirograCore` / `ChirograData` (§6.2).
+- Textos localizables con String Catalogs (español + inglés, §9.2) y formatos de moneda/fecha según la configuración regional.
+- Accesibilidad: Dynamic Type, VoiceOver con importes leídos como moneda (el canvas ya define etiquetas accesibles para gráficas y botones) y estados que no dependan solo del color (los chips llevan texto).
+- Modo claro y oscuro con los tokens de §7.3.
 
 ---
 
@@ -405,7 +473,7 @@ Pendientes 🔶 (tienen valor por defecto; se pueden cambiar sin rehacer el dise
 
 6. **Alcance del MVP:** conciliación bancaria, flujo de efectivo, base caja y 1099 en fase 2 (por defecto: sí, fase 2).
 7. **Idiomas:** español + inglés desde el inicio (por defecto: sí).
-8. **Diseño de UI:** enlace a Claude Design (pendiente).
+8. **Diseño de UI:** enlazado (§7). Quedan por decidir las diferencias de §7.4 con el alcance del MVP.
 
 ---
 
@@ -415,5 +483,5 @@ Pendientes 🔶 (tienen valor por defecto; se pueden cambiar sin rehacer el dise
 2. Implementar en `ChirograCore`: `Money`, `AccountType`, `JournalEntryDraft`, `JournalValidator` y las reglas de contabilización de factura, cobro, factura de proveedor, pago y gasto.
 3. Pruebas unitarias que verifican débito = crédito y el resto de invariantes.
 4. Modelos SwiftData del MVP con esquema versionado y plantilla de plan de cuentas.
-5. Pantallas base del MVP construidas a partir del diseño de Claude Design (§7), una vez que esté enlazado.
+5. Sistema de diseño (`DesignSystem`: tokens y componentes de §7.3) y pantallas base del MVP según el canvas: navegación (pestañas en iPhone, barra lateral en iPad/Mac), Inicio, Ventas y nueva factura, Gastos, Clientes, plan de cuentas, asiento de diario y estado de resultados.
 6. `swift test` y `xcodebuild` en verde para iOS y macOS; commits en `main`.
