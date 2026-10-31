@@ -53,6 +53,25 @@ Sin la capacidad, la app usa un almacén local aunque el interruptor esté activ
 
 ## Estado
 
-Esqueleto del MVP (ver DISEÑO §3.1 y §10). Funciona: alta de empresa, plan de cuentas, asientos manuales y reversiones, clientes, facturas con sales tax, cobros, anulación, proveedores, facturas por pagar y pagos, gastos, tasas y grupos de impuesto, reportes (resultados, balance general, balanza, antigüedad) con exportación CSV, cierre de periodo, bloqueo con Face ID y datos de ejemplo.
+Esqueleto del MVP (ver DISEÑO §3.1 y §10). Funciona:
 
-Pendiente del MVP: PDF y envío de facturas, notas de crédito en la interfaz, adjuntar recibos, copia de seguridad exportable, traducción al inglés y el ícono definitivo exportado del canvas.
+- **Alta de empresa** con sector, que define la plantilla del plan de cuentas.
+- **Contabilidad:** plan de cuentas, asientos manuales con aviso de cuadre, reversiones, libro mayor con filtro de fechas y cierre de periodo.
+- **Ventas:**
+  - clientes;
+  - facturas con descuento y sales tax, con edición de borradores;
+  - PDF con vista previa y compartir;
+  - cobros, notas de crédito y anulación.
+- **Compras:** proveedores, facturas por pagar y pagos; gastos con foto o PDF del recibo.
+- **Sales tax:** tasas, grupos, resumen por periodo y pago a la agencia.
+- **Reportes:** resultados, balance general, balanza, antigüedad por cobrar y por pagar, y sales tax, todos con CSV.
+- **Seguridad y datos:** bloqueo con Face ID y datos de ejemplo.
+
+Pendiente del MVP:
+
+- copia de seguridad exportable;
+- traducción al inglés;
+- envío de facturas por correo desde la app (hoy se comparten como PDF);
+- ícono definitivo exportado del canvas.
+
+Fase 2: conciliación bancaria, lectura automática de recibos, estimados y flujo de efectivo. Fase 3: conexión bancaria con Plaid (DISEÑO §3.3).
