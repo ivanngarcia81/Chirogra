@@ -2,6 +2,7 @@ import ChirograCore
 import ChirograData
 import SwiftData
 import SwiftUI
+import UniformTypeIdentifiers
 
 /// Gastos (canvas: `Gastos`, `ProveedorFicha`): gastos pagados, facturas por pagar y proveedores.
 struct ExpensesView: View {
@@ -79,10 +80,13 @@ struct ExpenseListView: View {
             }
             Section {
                 ForEach(expenses) { expense in
-                    LedgerRow(title: expense.payee, subtitle: "\(categoryName(expense)) · \(expense.date.dayMonth)") {
-                        IconTile(systemImage: "receipt", foreground: Palette.outflow, background: Palette.outflowWash)
-                    } trailing: {
-                        Text("−\(expense.total.money)").font(.body.weight(.semibold)).monospacedDigit().foregroundStyle(Palette.outflow)
+                    NavigationLink { ExpenseDetailView(expense: expense) } label: {
+                        LedgerRow(title: expense.payee, subtitle: "\(categoryName(expense)) · \(expense.date.dayMonth)") {
+                            IconTile(systemImage: (expense.attachments ?? []).isEmpty ? "receipt" : "paperclip",
+                                     foreground: Palette.outflow, background: Palette.outflowWash)
+                        } trailing: {
+                            Text("−\(expense.total.money)").font(.body.weight(.semibold)).monospacedDigit().foregroundStyle(Palette.outflow)
+                        }
                     }
                 }
             }
@@ -105,6 +109,7 @@ struct ExpenseEditorView: View {
     @State private var categoryID: UUID?
     @State private var paymentAccountID: UUID?
     @State private var memo = ""
+    @State private var receipts: [(data: Data, name: String, type: UTType)] = []
     @State private var errorMessage: String?
 
     private var expenseAccounts: [Account] { accounts.filtered { $0.accountType == .expense || $0 == .fixedAsset || $0 == .otherCurrentAsset } }
@@ -128,6 +133,16 @@ struct ExpenseEditorView: View {
                 TextField("Nota", text: $memo, axis: .vertical)
             } footer: {
                 Text("En EE. UU. el sales tax de tus compras forma parte del gasto. La lectura automática de recibos llega en la fase 2.")
+            }
+            Section("Recibo") {
+                ForEach(receipts.indices, id: \.self) { index in
+                    HStack {
+                        ReceiptThumbnail(data: receipts[index].data, contentType: receipts[index].type.identifier, side: 48)
+                        Text(receipts[index].name).lineLimit(1)
+                    }
+                }
+                .onDelete { receipts.remove(atOffsets: $0) }
+                ReceiptPickerButtons { data, name, type in receipts.append((data, name, type)) }
             }
         }
         .screenBackground()
@@ -156,12 +171,22 @@ struct ExpenseEditorView: View {
         context.insert(expense)
         line.expense = expense
         context.insert(line)
+        let books = Bookkeeper(context: context)
         do {
-            try Bookkeeper(context: context).record(expense)
-            dismiss()
+            try books.record(expense)
         } catch {
             context.delete(expense)
             errorMessage = error.localizedDescription
+            return
+        }
+        // El gasto ya está registrado; un recibo ilegible no lo deshace, solo se avisa.
+        var failed: [String] = []
+        for receipt in receipts {
+            do { try books.attachReceipt(receipt.data, filename: receipt.name, contentType: receipt.type, to: expense) }
+            catch { failed.append(receipt.name) }
+        }
+        if failed.isEmpty { dismiss() } else {
+            errorMessage = "El gasto se guardó, pero no se pudo adjuntar: \(failed.joined(separator: ", ")). Ábrelo desde la lista para reintentar."
         }
     }
 }
