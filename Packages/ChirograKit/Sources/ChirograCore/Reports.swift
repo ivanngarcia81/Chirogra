@@ -221,3 +221,66 @@ public enum ReportBuilder {
         return AgingReport(asOf: asOf, rows: rows)
     }
 }
+
+/// Movimiento de una cuenta tal como lo necesita el libro mayor.
+public struct LedgerMovement: Hashable, Sendable, Identifiable {
+    public var id: UUID
+    public var date: Date
+    public var memo: String
+    public var debit: Int64
+    public var credit: Int64
+
+    public init(id: UUID = UUID(), date: Date, memo: String = "", debit: Int64, credit: Int64) {
+        self.id = id
+        self.date = date
+        self.memo = memo
+        self.debit = debit
+        self.credit = credit
+    }
+}
+
+/// Libro mayor de una cuenta: saldo inicial, movimientos del rango con su efecto y saldo acumulado.
+public struct AccountLedger: Hashable, Sendable {
+    public struct Row: Hashable, Sendable, Identifiable {
+        public var movement: LedgerMovement
+        /// Efecto sobre el saldo de la cuenta según su naturaleza: positivo si lo aumenta.
+        /// Un crédito aumenta pasivo, patrimonio e ingreso; un débito aumenta activo y gasto.
+        public var effect: Int64
+        public var balance: Int64
+        public var id: UUID { movement.id }
+        public var increasesBalance: Bool { effect > 0 }
+    }
+
+    public var account: LedgerAccount
+    public var from: Date?
+    public var to: Date?
+    public var openingBalance: Int64
+    public var rows: [Row]
+
+    public var closingBalance: Int64 { rows.last?.balance ?? openingBalance }
+    public var totalDebit: Int64 { rows.reduce(0) { $0 + $1.movement.debit } }
+    public var totalCredit: Int64 { rows.reduce(0) { $0 + $1.movement.credit } }
+}
+
+extension ReportBuilder {
+    /// - Parameters:
+    ///   - from: inicio del rango (incluido); lo anterior se suma al saldo inicial.
+    ///   - to: fin del rango (incluido).
+    public static func accountLedger(
+        account: LedgerAccount, movements: [LedgerMovement], from: Date? = nil, to: Date? = nil
+    ) -> AccountLedger {
+        let sorted = movements.sorted { $0.date < $1.date }
+        let opening = sorted
+            .filter { movement in from.map { movement.date < $0 } ?? false }
+            .reduce(0) { $0 + account.type.naturalBalance(debit: $1.debit, credit: $1.credit) }
+        var running = opening
+        let rows = sorted
+            .filter { movement in (from.map { movement.date >= $0 } ?? true) && (to.map { movement.date <= $0 } ?? true) }
+            .map { movement -> AccountLedger.Row in
+                let effect = account.type.naturalBalance(debit: movement.debit, credit: movement.credit)
+                running += effect
+                return AccountLedger.Row(movement: movement, effect: effect, balance: running)
+            }
+        return AccountLedger(account: account, from: from, to: to, openingBalance: opening, rows: rows)
+    }
+}

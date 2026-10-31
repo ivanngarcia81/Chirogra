@@ -378,57 +378,53 @@ struct LedgerAccountPickerView: View {
 }
 
 /// Libro mayor de una cuenta con saldo acumulado (canvas: `MacLibroMayor`).
+/// El signo de cada movimiento sigue la naturaleza de la cuenta: en pasivo, patrimonio e ingreso
+/// un crédito aumenta el saldo (+); en activo y gasto lo aumenta un débito.
 struct LedgerView: View {
     let account: Account
 
-    private struct Movement: Identifiable {
-        let id: UUID
-        let date: Date
-        let memo: String
-        let debit: Int64
-        let credit: Int64
-        var balance: Int64 = 0
-    }
-
-    private var movements: [Movement] {
-        let raw = (account.lines ?? []).compactMap { line -> Movement? in
+    private var ledger: AccountLedger {
+        let movements = (account.lines ?? []).compactMap { line -> LedgerMovement? in
             guard let entry = line.entry, entry.status == .posted else { return nil }
-            return Movement(id: line.id, date: entry.date, memo: entry.memo, debit: line.debit, credit: line.credit)
+            return LedgerMovement(id: line.id, date: entry.date, memo: entry.memo, debit: line.debit, credit: line.credit)
         }
-        .sorted { $0.date < $1.date }
-        var running: Int64 = 0
-        return raw.map { movement in
-            var movement = movement
-            running += account.type.naturalBalance(debit: movement.debit, credit: movement.credit)
-            movement.balance = running
-            return movement
-        }
+        return ReportBuilder.accountLedger(account: account.ledgerAccount, movements: movements)
     }
 
     var body: some View {
-        let items = movements
+        let ledger = ledger
         List {
             Section {
-                LabeledContent("Saldo", value: (items.last?.balance ?? 0).money).font(.headline)
+                LabeledContent("Saldo", value: ledger.closingBalance.money).font(.headline)
                 LabeledContent("Tipo", value: "\(account.type.title) · \(account.subtype.title)")
+                LabeledContent("Aumenta con", value: account.type.normalBalance == .debit ? "Débitos" : "Créditos")
             }
-            Section("Movimientos") {
-                if items.isEmpty { Text("Sin movimientos").foregroundStyle(Palette.ink3) }
-                ForEach(items.reversed()) { movement in
-                    HStack {
+            Section {
+                if ledger.rows.isEmpty { Text("Sin movimientos").foregroundStyle(Palette.ink3) }
+                ForEach(ledger.rows.reversed()) { row in
+                    HStack(alignment: .firstTextBaseline) {
                         VStack(alignment: .leading, spacing: 2) {
-                            Text(movement.memo.isEmpty ? "Asiento" : movement.memo).lineLimit(1)
-                            Text(movement.date.shortDate).font(.caption).foregroundStyle(Palette.ink3)
+                            Text(row.movement.memo.isEmpty ? "Asiento" : row.movement.memo).lineLimit(2)
+                            Text("\(row.movement.date.shortDate) · \(row.movement.debit > 0 ? "Débito" : "Crédito")")
+                                .font(.caption).foregroundStyle(Palette.ink3)
                         }
                         Spacer()
                         VStack(alignment: .trailing, spacing: 2) {
-                            Text(movement.debit > 0 ? "+\(movement.debit.money) D" : "−\(movement.credit.money) H")
-                                .foregroundStyle(movement.debit > 0 ? Palette.ink : Palette.outflow)
-                            Text(movement.balance.money).font(.caption).foregroundStyle(Palette.ink3)
+                            Text("\(row.increasesBalance ? "+" : "−")\(abs(row.effect).money)")
+                                .foregroundStyle(row.increasesBalance ? Palette.ink : Palette.outflow)
+                            Text("Saldo \(row.balance.money)").font(.caption).foregroundStyle(Palette.ink3)
                         }
                         .monospacedDigit()
                     }
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel("\(row.movement.memo), \(row.movement.date.shortDate), "
+                        + "\(row.movement.debit > 0 ? "débito" : "crédito") de \(max(row.movement.debit, row.movement.credit).money), "
+                        + "\(row.increasesBalance ? "aumenta" : "reduce") el saldo a \(row.balance.money)")
                 }
+            } header: {
+                Text("Movimientos")
+            } footer: {
+                Text("+ aumenta el saldo de la cuenta y − lo reduce, según su naturaleza.")
             }
         }
         .listRowBackground(Palette.surface)
