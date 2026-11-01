@@ -22,7 +22,7 @@ enum AccountingPage: String, CaseIterable, Identifiable {
         switch self {
         case .chart: ChartOfAccountsView()
         case .journal: JournalListView()
-        case .ledger: LedgerAccountPickerView()
+        case .ledger: LedgerBrowserView()
         case .close: PeriodCloseView()
         }
     }

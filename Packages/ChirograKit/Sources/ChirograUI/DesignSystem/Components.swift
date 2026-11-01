@@ -63,6 +63,15 @@ struct CardModifier: ViewModifier {
 extension View {
     func card(padding: CGFloat = Metrics.cardPadding) -> some View { modifier(CardModifier(padding: padding)) }
 
+    /// Campo con borde de los tableros de Mac (`MacDiario`): alto 38, radio 10, fondo de superficie.
+    func fieldBox() -> some View {
+        textFieldStyle(.plain)
+            .padding(.horizontal, 10)
+            .frame(minHeight: 38)
+            .background(Palette.surface, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).stroke(Palette.separator))
+    }
+
     /// Fondo de pantalla del canvas, en listas y en vistas con scroll.
     func screenBackground() -> some View {
         scrollContentBackground(.hidden).background(Palette.background)

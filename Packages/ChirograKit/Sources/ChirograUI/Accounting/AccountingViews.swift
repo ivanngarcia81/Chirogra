@@ -144,13 +144,75 @@ struct AccountEditorView: View {
     }
 }
 
+/// Asientos de diario. En iPhone, lista; en iPad y Mac, tabla Nº · FECHA · CONCEPTO · ORIGEN · IMPORTE.
 struct JournalListView: View {
     @Query(sort: [SortDescriptor(\JournalEntry.date, order: .reverse), SortDescriptor(\JournalEntry.number, order: .reverse)])
     private var entries: [JournalEntry]
     @State private var showingEditor = false
+    @State private var selection: JournalEntry.ID?
+    @State private var opened: JournalEntry?
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    #if os(iOS)
+    @Environment(\.horizontalSizeClass) private var sizeClass
+    #endif
+
+    private var isWide: Bool {
+        #if os(iOS)
+        if sizeClass == .compact { return false }
+        #endif
+        return dynamicTypeSize < .accessibility4 && !entries.isEmpty
+    }
 
     var body: some View {
+        Group {
+            if isWide { table } else { list }
+        }
+        .navigationTitle("Asientos de diario")
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) { AddButton(title: "Nuevo asiento") { showingEditor = true } }
+        }
+        .sheet(isPresented: $showingEditor) {
+            NavigationStack { JournalEntryEditorView() }
+                .presentationSizing(.page)
+        }
+        .navigationDestination(item: $opened) { JournalEntryDetailView(entry: $0) }
+    }
+
+    private var table: some View {
+        Table(entries, selection: $selection) {
+            TableColumn("Nº") { entry in
+                Text("#\(entry.number)").monospacedDigit().foregroundStyle(Palette.ink3)
+            }
+            .width(min: 50, ideal: 64, max: 90)
+            TableColumn("Fecha") { entry in Text(entry.date.shortDate).monospacedDigit().foregroundStyle(Palette.ink) }
+                .width(min: 90, ideal: 120, max: 160)
+            TableColumn("Concepto") { entry in
+                HStack(spacing: 8) {
+                    Text(entry.memo.isEmpty ? String(localized: "Asiento \(entry.number)") : entry.memo).lineLimit(1).foregroundStyle(Palette.ink)
+                    if entry.isReversed || entry.reversesEntryID != nil {
+                        StatusChip(text: entry.isReversed ? String(localized: "Revertido") : String(localized: "Reversión"),
+                                   foreground: Palette.ink3, background: Palette.surface2)
+                    }
+                }
+            }
+            TableColumn("Origen") { entry in Text(entry.source.title).foregroundStyle(Palette.ink2).lineLimit(1) }
+                .width(min: 100, ideal: 160, max: 220)
+            TableColumn("Importe") { entry in
+                Text(entry.totalDebits.money).monospacedDigit().foregroundStyle(Palette.ink).frame(maxWidth: .infinity, alignment: .trailing)
+            }
+            .width(min: 100, ideal: 130, max: 180)
+        }
+        // Tocar (iPad) o doble clic (Mac) abre el asiento.
+        .contextMenu(forSelectionType: JournalEntry.ID.self) { _ in
+            EmptyView()
+        } primaryAction: { ids in
+            opened = entries.first { ids.contains($0.id) }
+        }
+        .scrollContentBackground(.hidden)
+        .background(Palette.background)
+    }
+
+    private var list: some View {
         List {
             if entries.isEmpty {
                 EmptyStateView(systemImage: "doc.plaintext", title: String(localized: "Sin asientos"), message: String(localized: "Los documentos generan asientos automáticamente; también puedes crear uno manual."))
@@ -174,11 +236,6 @@ struct JournalListView: View {
         }
         .screenBackground()
         .navigationLinkIndicatorVisibility(.hidden)
-        .navigationTitle("Asientos de diario")
-        .toolbar {
-            ToolbarItem(placement: .primaryAction) { AddButton(title: "Nuevo asiento") { showingEditor = true } }
-        }
-        .sheet(isPresented: $showingEditor) { NavigationStack { JournalEntryEditorView() } }
     }
 }
 
@@ -200,7 +257,8 @@ extension EntrySource {
     }
 }
 
-/// Editor de asiento (canvas: `MacDiario`): totales en vivo y aviso hasta que débitos = créditos.
+/// Editor de asiento: totales en vivo y aviso hasta que débitos = créditos. En iPhone es un formulario; en iPad y
+/// Mac sigue `MacDiario`: tabla de líneas a la izquierda y el plan de cuentas a la derecha.
 struct JournalEntryEditorView: View {
     struct LineDraft: Identifiable {
         let id = UUID()
@@ -212,9 +270,17 @@ struct JournalEntryEditorView: View {
 
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    #if os(iOS)
+    @Environment(\.horizontalSizeClass) private var sizeClass
+    #endif
+    @ScaledMetric(relativeTo: .body) private var amountWidth: CGFloat = 120
     @Query(sort: \Account.code) private var accounts: [Account]
+    @Query private var journalLines: [JournalLine]
+    @Query private var companies: [Company]
 
     @State private var date = Date()
+    @State private var editorWidth: CGFloat = 0
     @State private var memo = ""
     @State private var lines: [LineDraft] = [LineDraft(), LineDraft()]
     @State private var errorMessage: String?
@@ -234,9 +300,29 @@ struct JournalEntryEditorView: View {
         return validator.errors(for: draft)
     }
 
+    /// Diseño de `MacDiario` en iPad y Mac, salvo con los dos tamaños de accesibilidad más grandes.
+    private var isWide: Bool {
+        #if os(iOS)
+        if sizeClass == .compact { return false }
+        #endif
+        return dynamicTypeSize < .accessibility4
+    }
+
     var body: some View {
         let entry = draft
         let isValid = validationErrors.isEmpty && lines.allSatisfy { $0.accountID != nil || ($0.debit == 0 && $0.credit == 0) }
+        Group {
+            if isWide { wideEditor(entry) } else { formEditor(entry) }
+        }
+        .navigationTitle("Nuevo asiento")
+        .inlineTitle()
+        .toolbar {
+            ToolbarItem(placement: .cancellationAction) { Button("Cancelar") { dismiss() } }
+            ToolbarItem(placement: .confirmationAction) { Button("Registrar asiento", action: save).disabled(!isValid) }
+        }
+    }
+
+    private func formEditor(_ entry: JournalEntryDraft) -> some View {
         Form {
             if let errorMessage { ErrorBanner(message: errorMessage) }
             Section {
@@ -275,12 +361,138 @@ struct JournalEntryEditorView: View {
             .listRowBackground(Color.clear)
         }
         .screenBackground()
-        .navigationTitle("Nuevo asiento")
-        .inlineTitle()
-        .toolbar {
-            ToolbarItem(placement: .cancellationAction) { Button("Cancelar") { dismiss() } }
-            ToolbarItem(placement: .confirmationAction) { Button("Registrar asiento", action: save).disabled(!isValid) }
+    }
+
+    // MARK: iPad y Mac (`MacDiario`)
+
+    private func wideEditor(_ entry: JournalEntryDraft) -> some View {
+        ScrollView {
+            HStack(alignment: .top, spacing: 20) {
+                VStack(alignment: .leading, spacing: 16) {
+                    if let errorMessage { ErrorBanner(message: errorMessage) }
+                    HStack(alignment: .bottom, spacing: 12) {
+                        fieldLabel(String(localized: "Fecha")) {
+                            DatePicker("Fecha", selection: $date, displayedComponents: .date).labelsHidden()
+                        }
+                        .fixedSize()
+                        fieldLabel(String(localized: "Concepto")) {
+                            TextField("Concepto", text: $memo).fieldBox()
+                        }
+                    }
+                    linesTable(entry)
+                    statusBanner(entry)
+                    if let lockDate = companies.first?.lockDate {
+                        Label("El periodo está cerrado hasta el \(lockDate.shortDate). Para registrar con una fecha anterior, cambia el cierre en Cierre de periodo.",
+                              systemImage: "lock")
+                            .font(.footnote)
+                            .foregroundStyle(Palette.ink2)
+                            .padding(14)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(Palette.surface, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    }
+                }
+                // El plan de cuentas de consulta sólo si queda sitio para la tabla (en la hoja del iPad, no).
+                if editorWidth >= 1000 { chartOfAccounts.frame(width: 300) }
+            }
+            .padding(20)
         }
+        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { editorWidth = $0 }
+        .background(Palette.background)
+    }
+
+    private func fieldLabel<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title).font(.caption.weight(.semibold)).foregroundStyle(Palette.ink2)
+            content()
+        }
+    }
+
+    /// Tabla de líneas: # · CUENTA · DESCRIPCIÓN · DÉBITO · CRÉDITO, con «Añadir línea» y totales al pie.
+    private func linesTable(_ entry: JournalEntryDraft) -> some View {
+        VStack(spacing: 0) {
+            HStack(spacing: 12) {
+                Text("#").frame(width: 24, alignment: .leading)
+                Text("Cuenta").frame(maxWidth: .infinity, alignment: .leading)
+                Text("Descripción").frame(maxWidth: .infinity, alignment: .leading)
+                Text("Débito").frame(width: amountWidth, alignment: .trailing)
+                Text("Crédito").frame(width: amountWidth, alignment: .trailing)
+                Color.clear.frame(width: 28, height: 1)
+            }
+            .font(.label).tracking(0.6).textCase(.uppercase).foregroundStyle(Palette.ink3)
+            .padding(.horizontal, 16).padding(.vertical, 12)
+            .accessibilityHidden(true)
+
+            ForEach(Array($lines.enumerated()), id: \.element.id) { index, $line in
+                Divider()
+                HStack(spacing: 12) {
+                    Text("\(index + 1)").foregroundStyle(Palette.ink3).frame(width: 24, alignment: .leading)
+                        .accessibilityHidden(true)
+                    AccountPicker(title: String(localized: "Cuenta"), accounts: postable, selection: $line.accountID)
+                        .labelsHidden()
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    TextField("Descripción", text: $line.memo).fieldBox().frame(maxWidth: .infinity)
+                    MoneyField(title: String(localized: "Débito"), minorUnits: $line.debit)
+                        .multilineTextAlignment(.trailing).fieldBox().frame(width: amountWidth)
+                    MoneyField(title: String(localized: "Crédito"), minorUnits: $line.credit)
+                        .multilineTextAlignment(.trailing).fieldBox().frame(width: amountWidth)
+                    Button { lines.remove(at: index) } label: {
+                        Image(systemName: "minus.circle").frame(width: 28, height: 44)
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(Palette.ink3)
+                    .disabled(lines.count <= 2)
+                    .accessibilityLabel("Quitar la línea \(index + 1)")
+                }
+                .padding(.horizontal, 16).padding(.vertical, 8)
+            }
+
+            Divider()
+            HStack(spacing: 12) {
+                Button("Añadir línea", systemImage: "plus") { lines.append(LineDraft()) }
+                    .buttonStyle(.plain)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(Palette.brand)
+                    .frame(minHeight: 44)
+                Spacer()
+                Text("Totales").fontWeight(.semibold).foregroundStyle(Palette.ink2)
+                Text(entry.totalDebits.money).fontWeight(.bold).frame(width: amountWidth, alignment: .trailing)
+                Text(entry.totalCredits.money).fontWeight(.bold).frame(width: amountWidth, alignment: .trailing)
+                Color.clear.frame(width: 28, height: 1)
+            }
+            .monospacedDigit()
+            .padding(.horizontal, 16).padding(.vertical, 6)
+            .accessibilityElement(children: .contain)
+        }
+        .card(padding: 0)
+    }
+
+    /// Plan de cuentas de consulta (`MacDiario`, columna derecha): grupos por tipo con código, nombre y saldo.
+    private var chartOfAccounts: some View {
+        let ledger = Ledger(accounts: accounts, lines: journalLines)
+        let active = accounts.filter { !$0.isArchived }
+        return VStack(alignment: .leading, spacing: 6) {
+            HStack(alignment: .firstTextBaseline) {
+                Text("Plan de cuentas").font(.subheadline.weight(.semibold)).foregroundStyle(Palette.ink)
+                Spacer()
+                Text("\(active.count) cuentas").font(.caption).foregroundStyle(Palette.ink3)
+            }
+            ForEach(AccountType.allCases, id: \.self) { type in
+                Text(type.title).font(.footnote.weight(.semibold)).foregroundStyle(Palette.ink).padding(.top, 6)
+                ForEach(active.filter { $0.type == type }) { account in
+                    HStack(spacing: 8) {
+                        Text(account.code).foregroundStyle(Palette.ink3).frame(width: 40, alignment: .leading)
+                        Text(account.name).foregroundStyle(Palette.ink2).lineLimit(1)
+                        Spacer(minLength: 4)
+                        Text(ledger.balance(of: account).money).foregroundStyle(Palette.ink3).lineLimit(1)
+                    }
+                    .font(.footnote)
+                    .monospacedDigit()
+                    .padding(.leading, 12)
+                    .accessibilityElement(children: .combine)
+                }
+            }
+        }
+        .card()
     }
 
     @ViewBuilder
@@ -447,12 +659,15 @@ struct LedgerView: View {
         }
     }
 
-    private var ledger: AccountLedger {
+    private var ledger: AccountLedger { Self.ledger(for: account, from: range?.from, to: range?.to) }
+
+    /// Movimientos contabilizados de la cuenta con saldo acumulado; también lo usa `LedgerBrowserView`.
+    static func ledger(for account: Account, from: Date?, to: Date?) -> AccountLedger {
         let movements = (account.lines ?? []).compactMap { line -> LedgerMovement? in
             guard let entry = line.entry, entry.status == .posted else { return nil }
             return LedgerMovement(id: line.id, date: entry.date, memo: entry.memo, debit: line.debit, credit: line.credit)
         }
-        return ReportBuilder.accountLedger(account: account.ledgerAccount, movements: movements, from: range?.from, to: range?.to)
+        return ReportBuilder.accountLedger(account: account.ledgerAccount, movements: movements, from: from, to: to)
     }
 
     var body: some View {

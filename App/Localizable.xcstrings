@@ -1,6 +1,12 @@
 {
   "sourceLanguage" : "es",
   "strings" : {
+    "#" : {
+      "shouldTranslate" : false
+    },
+    "#%lld" : {
+      "shouldTranslate" : false
+    },
     "%" : {
       "shouldTranslate" : false
     },
@@ -111,6 +117,16 @@
         }
       }
     },
+    "%@ · saldo %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · balance %@"
+          }
+        }
+      }
+    },
     "%@ × %@" : {
       "shouldTranslate" : false
     },
@@ -208,6 +224,46 @@
     },
     "%lld" : {
       "shouldTranslate" : false
+    },
+    "%lld cuentas" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld account"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld accounts"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld cuenta"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld cuentas"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "%lld de 2" : {
       "localizations" : {
@@ -1550,6 +1606,16 @@
         }
       }
     },
+    "Detalle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Details"
+          }
+        }
+      }
+    },
     "Dirección" : {
       "localizations" : {
         "en" : {
@@ -1810,6 +1876,16 @@
         }
       }
     },
+    "El periodo está cerrado hasta el %@. Para registrar con una fecha anterior, cambia el cierre en Cierre de periodo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The period is closed through %@. To post with an earlier date, change it in Period close."
+          }
+        }
+      }
+    },
     "Elegir cliente…" : {
       "localizations" : {
         "en" : {
@@ -1987,6 +2063,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "This entry was already reversed or is a reversal."
+          }
+        }
+      }
+    },
+    "Este año" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This year"
+          }
+        }
+      }
+    },
+    "Este mes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This month"
           }
         }
       }
@@ -2874,6 +2970,16 @@
         }
       }
     },
+    "Mes anterior" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last month"
+          }
+        }
+      }
+    },
     "Moneda" : {
       "localizations" : {
         "en" : {
@@ -3370,6 +3476,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "New vendor"
+          }
+        }
+      }
+    },
+    "Nº" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No."
           }
         }
       }
@@ -4006,6 +4122,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Clear filters"
+          }
+        }
+      }
+    },
+    "Quitar la línea %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove line %lld"
           }
         }
       }
@@ -5075,6 +5201,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No company is set up yet."
+          }
+        }
+      }
+    },
+    "Todo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All"
           }
         }
       }
