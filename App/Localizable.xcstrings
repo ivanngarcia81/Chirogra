@@ -340,24 +340,6 @@
     },
     "%lld borradores de factura sin emitir" : {
       "localizations" : {
-        "es" : {
-          "variations" : {
-            "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld borrador de factura sin emitir"
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld borradores de factura sin emitir"
-                }
-              }
-            }
-          }
-        },
         "en" : {
           "variations" : {
             "plural" : {
@@ -371,6 +353,24 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "%lld invoice drafts not issued"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld borrador de factura sin emitir"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld borradores de factura sin emitir"
                 }
               }
             }
@@ -696,24 +696,6 @@
     },
     "%lld gastos sin recibo adjunto" : {
       "localizations" : {
-        "es" : {
-          "variations" : {
-            "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld gasto sin recibo adjunto"
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld gastos sin recibo adjunto"
-                }
-              }
-            }
-          }
-        },
         "en" : {
           "variations" : {
             "plural" : {
@@ -727,6 +709,24 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "%lld expenses without a receipt"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld gasto sin recibo adjunto"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld gastos sin recibo adjunto"
                 }
               }
             }
@@ -973,6 +973,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Current"
+          }
+        }
+      }
+    },
+    "Adjunta la foto o el PDF del recibo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Attach the photo or PDF of the receipt"
           }
         }
       }
@@ -1347,6 +1357,26 @@
         }
       }
     },
+    "Añade tus cuentas para verlo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add your accounts to see it"
+          }
+        }
+      }
+    },
+    "Añadir" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add"
+          }
+        }
+      }
+    },
     "Añadir línea" : {
       "localizations" : {
         "en" : {
@@ -1377,6 +1407,16 @@
         }
       }
     },
+    "Añadir tus cuentas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add your accounts"
+          }
+        }
+      }
+    },
     "Añadir una nota…" : {
       "localizations" : {
         "en" : {
@@ -1394,6 +1434,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Year"
+          }
+        }
+      }
+    },
+    "Aún no hay facturas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No invoices yet"
+          }
+        }
+      }
+    },
+    "Aún no hay gastos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No expenses yet"
           }
         }
       }
@@ -2154,12 +2214,32 @@
         }
       }
     },
+    "Corriente, ahorro y tarjetas con su saldo inicial" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checking, savings and cards with their opening balance"
+          }
+        }
+      }
+    },
     "Costo de ventas" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cost of goods sold"
+          }
+        }
+      }
+    },
+    "Crea tu empresa" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create your company"
           }
         }
       }
@@ -2194,6 +2274,26 @@
         }
       }
     },
+    "Crear" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create"
+          }
+        }
+      }
+    },
+    "Crear empresa" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create company"
+          }
+        }
+      }
+    },
     "Crear tu empresa" : {
       "localizations" : {
         "en" : {
@@ -2210,6 +2310,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Create your first invoice"
+          }
+        }
+      }
+    },
+    "Crear una empresa nueva" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create a new company"
           }
         }
       }
@@ -2565,6 +2675,26 @@
       }
     },
     "Detalle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Details"
+          }
+        }
+      }
+    },
+    "Detalle técnico" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Technical detail"
+          }
+        }
+      }
+    },
+    "Detalles" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3045,6 +3175,16 @@
         }
       }
     },
+    "Envíala por correo o como PDF" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send it by email or as a PDF"
+          }
+        }
+      }
+    },
     "Escribe las tasas de tu estado, condado y ciudad. Chirogra no determina qué es gravable: consúltalo con tu agencia o tu contador." : {
       "localizations" : {
         "en" : {
@@ -3095,6 +3235,16 @@
         }
       }
     },
+    "Estamos trayendo tus libros desde iCloud. Si es la primera vez que usas Chirogra, puedes crear tu empresa." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "We are bringing your books from iCloud. If this is your first time using Chirogra, you can create your company."
+          }
+        }
+      }
+    },
     "Este asiento ya fue revertido o es una reversión." : {
       "localizations" : {
         "en" : {
@@ -3131,6 +3281,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "These details appear on your invoices. You can change them anytime in Settings."
+          }
+        }
+      }
+    },
+    "Estos datos aparecen en tus facturas. Puedes cambiarlos después en Ajustes." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "These details appear on your invoices. You can change them later in Settings."
           }
         }
       }
@@ -3338,16 +3498,16 @@
     },
     "Facturas de %@ emitidas (%lld)" : {
       "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Facturas de %1$@ emitidas (%2$lld)"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ invoices issued (%lld)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Facturas de %1$@ emitidas (%2$lld)"
           }
         }
       }
@@ -3364,16 +3524,16 @@
     },
     "Facturas de proveedor de %@ (%lld)" : {
       "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Facturas de proveedor de %1$@ (%2$lld)"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ vendor bills (%lld)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Facturas de proveedor de %1$@ (%2$lld)"
           }
         }
       }
@@ -3410,24 +3570,6 @@
     },
     "Faltan %lld días" : {
       "localizations" : {
-        "es" : {
-          "variations" : {
-            "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Falta %lld día"
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Faltan %lld días"
-                }
-              }
-            }
-          }
-        },
         "en" : {
           "variations" : {
             "plural" : {
@@ -3441,6 +3583,24 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "%lld days left"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Falta %lld día"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Faltan %lld días"
                 }
               }
             }
@@ -3661,16 +3821,16 @@
     },
     "Gastos de %@ registrados (%lld)" : {
       "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Gastos de %1$@ registrados (%2$lld)"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ expenses recorded (%lld)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Gastos de %1$@ registrados (%2$lld)"
           }
         }
       }
@@ -4306,6 +4466,16 @@
         }
       }
     },
+    "La moneda base queda fija cuando registras la primera transacción. El estado decide el sales tax que cobras; es obligatorio." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The base currency is locked when you record the first transaction. The state determines the sales tax you charge; it is required."
+          }
+        }
+      }
+    },
     "La nota supera lo que queda por acreditar de la factura (%@)." : {
       "localizations" : {
         "en" : {
@@ -4372,6 +4542,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Done"
+          }
+        }
+      }
+    },
+    "Listo para usar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ready to use"
           }
         }
       }
@@ -4817,6 +4997,26 @@
         }
       }
     },
+    "No pudimos sincronizar con iCloud. Tus datos siguen guardados en este dispositivo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "We couldn’t sync with iCloud. Your data is still saved on this device."
+          }
+        }
+      }
+    },
+    "No pudimos sincronizar tus datos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "We couldn’t sync your data"
+          }
+        }
+      }
+    },
     "No requiere 1099" : {
       "localizations" : {
         "en" : {
@@ -4963,6 +5163,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Name, email, or phone"
+          }
+        }
+      }
+    },
+    "Nombre, moneda y plan de cuentas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Name, currency and chart of accounts"
           }
         }
       }
@@ -5657,6 +5867,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Liabilities"
+          }
+        }
+      }
+    },
+    "Paso %lld de 2" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Step %lld of 2"
           }
         }
       }
@@ -6617,6 +6837,16 @@
         }
       }
     },
+    "Revisar tu plan de cuentas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Review your chart of accounts"
+          }
+        }
+      }
+    },
     "Ríos Diseño & Obra" : {
       "shouldTranslate" : false
     },
@@ -6891,6 +7121,16 @@
         }
       }
     },
+    "Se calcula sola" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Calculated automatically"
+          }
+        }
+      }
+    },
     "Se registra la salida de dinero del banco y se cancela ese saldo a favor en cuentas por cobrar." : {
       "localizations" : {
         "en" : {
@@ -6937,6 +7177,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Keep editing"
+          }
+        }
+      }
+    },
+    "Seguir sin conexión" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continue offline"
           }
         }
       }
@@ -7067,6 +7317,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No purchases yet"
+          }
+        }
+      }
+    },
+    "Sin conexión con iCloud" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No connection to iCloud"
+          }
+        }
+      }
+    },
+    "Sin conexión con iCloud. Estás trabajando con los datos guardados en este dispositivo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No connection to iCloud. You are working with the data saved on this device."
           }
         }
       }
@@ -7291,6 +7561,26 @@
         }
       }
     },
+    "Sincronizando con iCloud" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Syncing with iCloud"
+          }
+        }
+      }
+    },
+    "Sincronizando con iCloud…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Syncing with iCloud…"
+          }
+        }
+      }
+    },
     "Sincronizar con iCloud" : {
       "localizations" : {
         "en" : {
@@ -7377,6 +7667,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Subtotal"
+          }
+        }
+      }
+    },
+    "Sugerido para %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suggested for %@"
           }
         }
       }
@@ -7528,6 +7828,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Rates by jurisdiction"
+          }
+        }
+      }
+    },
+    "Te damos la bienvenida a Chirogra, %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Welcome to Chirogra, %@"
+          }
+        }
+      }
+    },
+    "Te preparamos un plan de cuentas listo para usar. Puedes editarlo cuando quieras." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "We set up a ready-to-use chart of accounts. You can edit it anytime."
           }
         }
       }
@@ -7895,6 +8215,26 @@
         }
       }
     },
+    "Tus cambios están a salvo en este dispositivo y se enviarán solos cuando vuelva la conexión. Revisa tu red." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your changes are safe on this device and will be sent automatically when the connection returns. Check your network."
+          }
+        }
+      }
+    },
+    "Tus cambios están a salvo en este dispositivo. Revisa tu sesión de iCloud en los ajustes del sistema." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your changes are safe on this device. Check your iCloud sign-in in System Settings."
+          }
+        }
+      }
+    },
     "Tus libros se llevan en dólares (USD). El estado decide el sales tax que cobras; es obligatorio." : {
       "localizations" : {
         "en" : {
@@ -8220,24 +8560,6 @@
     },
     "Venció hace %lld días" : {
       "localizations" : {
-        "es" : {
-          "variations" : {
-            "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Venció hace %lld día"
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Venció hace %lld días"
-                }
-              }
-            }
-          }
-        },
         "en" : {
           "variations" : {
             "plural" : {
@@ -8251,6 +8573,24 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "%lld days overdue"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Venció hace %lld día"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Venció hace %lld días"
                 }
               }
             }
@@ -8314,6 +8654,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Total sales"
+          }
+        }
+      }
+    },
+    "Ver" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View"
           }
         }
       }
@@ -8600,6 +8950,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Last purchase"
+          }
+        }
+      }
+    },
+    "Última sincronización" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last sync"
           }
         }
       }

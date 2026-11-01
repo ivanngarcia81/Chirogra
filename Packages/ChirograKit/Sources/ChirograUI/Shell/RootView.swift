@@ -63,6 +63,9 @@ public struct ChirograRootView: View {
     @Environment(\.scenePhase) private var scenePhase
     @AppStorage("appLockEnabled") private var appLockEnabled = false
     @State private var lock = AppLockState()
+    @State private var sync = SyncMonitor.shared
+    /// «Crear una empresa nueva» desde la pantalla de sincronización.
+    @State private var skipsSyncWait = false
     #if os(iOS)
     @State private var lockWindow = LockWindow()
     #endif
@@ -74,7 +77,13 @@ public struct ChirograRootView: View {
     public var body: some View {
         Group {
             if companies.isEmpty {
-                OnboardingView()
+                // Con iCloud, en un dispositivo nuevo los libros tardan en llegar: no se pide crear la empresa
+                // mientras se importan (`MacCargando`).
+                if sync.isSyncing && !skipsSyncWait {
+                    SyncLoadingView { skipsSyncWait = true }
+                } else {
+                    OnboardingView()
+                }
             } else {
                 #if os(iOS)
                 // La app sigue montada debajo de la ventana de bloqueo: al desbloquear, todo está donde estaba.
@@ -86,6 +95,7 @@ public struct ChirograRootView: View {
         }
         .tint(Palette.brand)
         .background(Palette.background)
+        .monitorsCloudSync()
         // Fechas y selectores de fecha en el idioma de la app, con el orden de su región (B3).
         .environment(\.locale, .appText)
         #if os(iOS)
@@ -226,6 +236,7 @@ struct AppShell: View {
                 }
             }
             .id(selection)
+            .safeAreaInset(edge: .top, spacing: 0) { SyncErrorBanner() }
         }
         .onChange(of: selection) { detailPath = NavigationPath() }
     }

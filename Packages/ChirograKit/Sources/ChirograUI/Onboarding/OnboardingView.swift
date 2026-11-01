@@ -44,6 +44,9 @@ struct OnboardingView: View {
 
     @Environment(\.modelContext) private var context
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    #if os(iOS)
+    @Environment(\.horizontalSizeClass) private var sizeClass
+    #endif
     @State private var step = 1
     @State private var displayName = ""
     @State private var legalName = ""
@@ -54,7 +57,19 @@ struct OnboardingView: View {
     @State private var kind: Kind = .construction
     @State private var errorMessage: String?
 
+    /// `AltaPaso1`/`AltaPaso2` en iPad y Mac (hasta AX3): una tarjeta centrada; en el iPhone, los pasos a pantalla completa.
+    private var isWide: Bool {
+        #if os(iOS)
+        if sizeClass != .regular { return false }
+        #endif
+        return dynamicTypeSize < .accessibility4
+    }
+
     var body: some View {
+        if isWide { wideBody } else { compactBody }
+    }
+
+    private var compactBody: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 if step == 1 { companyStep } else { typeStep }
@@ -269,6 +284,144 @@ struct OnboardingView: View {
         Text(text).font(.footnote).foregroundStyle(Palette.ink2)
             .padding(.horizontal, 10).padding(.vertical, 5)
             .background(Palette.surface2, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+    }
+
+    // MARK: iPad y Mac (`AltaPaso1`, `AltaPaso2`)
+
+    private var wideBody: some View {
+        GeometryReader { proxy in
+            ScrollView {
+                VStack(spacing: 20) {
+                    HStack(spacing: 10) {
+                        LogoMark(size: 34)
+                        Text("Chirogra").font(.title3.weight(.bold)).foregroundStyle(Palette.ink)
+                    }
+                    .accessibilityElement(children: .combine)
+                    VStack(alignment: .leading, spacing: 20) {
+                        HStack(spacing: 8) {
+                            ForEach(1...2, id: \.self) { index in
+                                Capsule().fill(index <= step ? Palette.brand : Palette.separator).frame(height: 5)
+                            }
+                            Text("Paso \(step) de 2").font(.footnote.weight(.semibold)).foregroundStyle(Palette.ink3).padding(.leading, 6)
+                        }
+                        .accessibilityElement(children: .combine)
+                        if step == 1 { wideCompanyStep } else { wideTypeStep }
+                        if let errorMessage { ErrorBanner(message: errorMessage) }
+                        HStack(spacing: 10) {
+                            if step == 2 {
+                                Button("Atrás") { step = 1 }
+                                    .buttonStyle(.secondary)
+                                    .fixedSize(horizontal: true, vertical: false)
+                            }
+                            Button(step == 1 ? "Continuar" : "Crear empresa") {
+                                if step == 1 { step = 2 } else { createCompany() }
+                            }
+                            .buttonStyle(.primary)
+                            .disabled(!canContinue)
+                        }
+                    }
+                    .padding(32)
+                    .frame(maxWidth: 560)
+                    .background(Palette.surface, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+                    .shadow(color: .black.opacity(0.1), radius: 20, y: 10)
+                    if step == 1 {
+                        Button("Probar con datos de ejemplo", action: loadSample)
+                            .font(.body.weight(.semibold))
+                            .frame(minHeight: 44)
+                    }
+                }
+                .padding(.horizontal, 16).padding(.vertical, 40)
+                .frame(maxWidth: .infinity, minHeight: proxy.size.height)
+            }
+            .scrollDismissesKeyboard(.interactively)
+        }
+        .background(Palette.background)
+    }
+
+    private func wideField<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title).font(.footnote.weight(.semibold)).foregroundStyle(Palette.ink2)
+            content()
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    /// Caja de 44 pt del canvas para un valor fijo o un menú.
+    private func wideBox<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
+        content()
+            .padding(.horizontal, 12)
+            .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+            .background(Palette.background, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).stroke(Palette.separator))
+    }
+
+    private var wideCompanyStep: some View {
+        let columns = [GridItem(.flexible(), spacing: 14, alignment: .topLeading), GridItem(.flexible(), spacing: 14, alignment: .topLeading)]
+        return VStack(alignment: .leading, spacing: 20) {
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Crea tu empresa").font(.system(.largeTitle, weight: .bold)).foregroundStyle(Palette.ink).accessibilityAddTraits(.isHeader)
+                Text("Estos datos aparecen en tus facturas. Puedes cambiarlos después en Ajustes.").foregroundStyle(Palette.ink2)
+            }
+            wideField(String(localized: "Nombre de la empresa")) {
+                wideBox { TextField("Nombre de la empresa", text: $displayName, prompt: Text("Ríos Diseño & Obra")).textFieldStyle(.plain) }
+            }
+            LazyVGrid(columns: columns, alignment: .leading, spacing: 14) {
+                wideField(String(localized: "País o región")) { wideBox { Text("Estados Unidos").foregroundStyle(Palette.ink) } }
+                wideField(String(localized: "Moneda")) { wideBox { Text("USD · Dólar").foregroundStyle(Palette.ink) } }
+                wideField(String(localized: "Estado")) {
+                    wideBox {
+                        Picker("Estado", selection: $state) {
+                            Text("Elige tu estado").tag("")
+                            ForEach(USState.all, id: \.self) { Text($0).tag($0) }
+                        }
+                        .labelsHidden().pickerStyle(.menu)
+                        .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                    }
+                }
+                wideField(String(localized: "Inicio del año fiscal")) {
+                    wideBox {
+                        Picker("Inicio del año fiscal", selection: $fiscalStartMonth) {
+                            ForEach(1...12, id: \.self) { month in
+                                Text(Calendar.current.standaloneMonthSymbols[month - 1].sentenceCased).tag(month)
+                            }
+                        }
+                        .labelsHidden().pickerStyle(.menu)
+                        .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                    }
+                }
+                wideField(String(localized: "Razón social")) {
+                    wideBox { TextField("Razón social", text: $legalName, prompt: Text("Opcional")).textFieldStyle(.plain) }
+                }
+                wideField(String(localized: "ID fiscal (EIN)")) {
+                    wideBox { TextField("ID fiscal (EIN)", text: $ein, prompt: Text("Opcional")).textFieldStyle(.plain) }
+                }
+            }
+            Text("La moneda base queda fija cuando registras la primera transacción. El estado decide el sales tax que cobras; es obligatorio.")
+                .font(.footnote).foregroundStyle(Palette.ink3)
+        }
+    }
+
+    private var wideTypeStep: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            VStack(alignment: .leading, spacing: 6) {
+                Text("¿A qué se dedica tu negocio?").font(.system(.largeTitle, weight: .bold)).foregroundStyle(Palette.ink)
+                    .accessibilityAddTraits(.isHeader)
+                Text("Te preparamos un plan de cuentas listo para usar. Puedes editarlo cuando quieras.").foregroundStyle(Palette.ink2)
+            }
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 3), spacing: 10) {
+                ForEach(Kind.allCases) { option in kindCard(option) }
+            }
+            suggestedPlan
+            wideField(String(localized: "Tipo de entidad")) {
+                wideBox {
+                    Picker("Tipo de entidad", selection: $entityType) {
+                        ForEach(EntityType.allCases, id: \.self) { Text($0.title).tag($0) }
+                    }
+                    .labelsHidden().pickerStyle(.menu)
+                    .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                }
+            }
+        }
     }
 
     // MARK: Acciones

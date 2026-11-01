@@ -70,10 +70,13 @@ struct HomeView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: isWide ? 16 : Metrics.cardSpacing) {
-                Text(isFirstUse ? companies.first?.displayName ?? "" : Date.now.monthYear)
+                Text(isFirstUse ? (isWide ? String(localized: "Te damos la bienvenida a Chirogra, \(companies.first?.displayName ?? "")")
+                                          : companies.first?.displayName ?? "") : Date.now.monthYear)
                     .font(.subheadline).foregroundStyle(Palette.ink3)
 
-                if isFirstUse {
+                if isFirstUse && isWide {
+                    wideFirstUse
+                } else if isFirstUse {
                     firstSteps
                     emptyDashboard
                 } else if isWide {
@@ -93,7 +96,7 @@ struct HomeView: View {
             }
             .padding(.horizontal, margin)
             .padding(.vertical, Metrics.gutter)
-            .frame(maxWidth: isFirstUse ? 720 : isWide ? .infinity : 1100, alignment: .leading)
+            .frame(maxWidth: isWide ? .infinity : isFirstUse ? 720 : 1100, alignment: .leading)
             .frame(maxWidth: .infinity, alignment: isWide ? .leading : .center)
         }
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
@@ -194,7 +197,110 @@ struct HomeView: View {
         .background(Palette.surface, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
     }
 
-    private var emptyDashboard: some View {
+    // MARK: Primera vez en iPad y Mac (`MacVacio`)
+
+    /// Cuatro cifras en blanco con borde punteado, «Primeros pasos» con un botón por paso y el tablero vacío al lado.
+    private var wideFirstUse: some View {
+        VStack(spacing: 16) {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 200), spacing: 12)], spacing: 12) {
+                placeholderKPI(String(localized: "Efectivo disponible"), String(localized: "Añade tus cuentas para verlo"))
+                placeholderKPI(String(localized: "Ingresos del mes"), String(localized: "Aún no hay facturas"))
+                placeholderKPI(String(localized: "Gastos del mes"), String(localized: "Aún no hay gastos"))
+                placeholderKPI(String(localized: "Ganancia neta"), String(localized: "Se calcula sola"))
+            }
+            pair(secondShare: 0.4) { wideFirstSteps } and: { emptyDashboard(showsButton: false) }
+        }
+    }
+
+    private func placeholderKPI(_ title: String, _ detail: String) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title).font(.footnote.weight(.semibold))
+            Text(Int64(0).money).font(.amount(26))
+            Text(detail).font(.caption)
+        }
+        .foregroundStyle(Palette.ink3)
+        .padding(.horizontal, 18).padding(.vertical, 16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Palette.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).strokeBorder(Palette.separator, style: StrokeStyle(lineWidth: 1, dash: [5, 4])))
+        .accessibilityElement(children: .combine)
+    }
+
+    private enum WideStep { case company, invoice, expense, accounts, chart }
+
+    private var wideFirstSteps: some View {
+        let sector = companies.first.flatMap { BusinessSector(rawValue: $0.sectorRaw) }
+        let rows: [(step: WideStep, title: String, detail: String, cta: String, done: Bool)] = [
+            (.company, String(localized: "Crear tu empresa"), String(localized: "Nombre, moneda y plan de cuentas"), String(localized: "Revisar"), true),
+            (.invoice, String(localized: "Crear tu primera factura"), String(localized: "Envíala por correo o como PDF"), String(localized: "Crear"), !invoices.isEmpty),
+            (.expense, String(localized: "Registrar un gasto"), String(localized: "Adjunta la foto o el PDF del recibo"), String(localized: "Registrar"), !expenses.isEmpty),
+            (.accounts, String(localized: "Añadir tus cuentas"), String(localized: "Corriente, ahorro y tarjetas con su saldo inicial"), String(localized: "Añadir"), false),
+            (.chart, String(localized: "Revisar tu plan de cuentas"),
+             sector.map { String(localized: "Sugerido para \($0.title)") } ?? String(localized: "Listo para usar"), String(localized: "Ver"), false),
+        ]
+        let done = rows.filter(\.done).count
+        return VStack(alignment: .leading, spacing: 14) {
+            HStack(spacing: 14) {
+                LogoMark(size: 44)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Primeros pasos").font(.title3.weight(.semibold)).foregroundStyle(Palette.ink).accessibilityAddTraits(.isHeader)
+                    Text("\(done) de \(rows.count) completados").font(.subheadline).foregroundStyle(Palette.ink3)
+                }
+            }
+            ProgressView(value: Double(done), total: Double(rows.count)).tint(Palette.brand).accessibilityLabel("Progreso")
+            VStack(spacing: 0) {
+                ForEach(rows.indices, id: \.self) { index in
+                    let row = rows[index]
+                    Divider()
+                    HStack(spacing: 12) {
+                        Image(systemName: "checkmark")
+                            .font(.caption.weight(.bold))
+                            .foregroundStyle(row.done ? Palette.positive : .clear)
+                            .frame(width: 26, height: 26)
+                            .background(row.done ? Palette.positiveWash : .clear, in: Circle())
+                            .overlay(Circle().stroke(row.done ? .clear : Palette.separator, lineWidth: 2))
+                            .accessibilityHidden(true)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(row.title).fontWeight(.semibold).strikethrough(row.done)
+                                .foregroundStyle(row.done ? Palette.ink3 : Palette.ink)
+                            Text(row.detail).font(.footnote).foregroundStyle(Palette.ink3)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .accessibilityElement(children: .combine)
+                        .accessibilityValue(row.done ? Text("Completado") : Text("Pendiente"))
+                        stepButton(row.step, row.cta)
+                    }
+                    .frame(minHeight: 56)
+                }
+            }
+            Button("Crear tu primera factura") { sheet = .invoice }
+                .buttonStyle(.primary)
+                .fixedSize(horizontal: true, vertical: false)
+        }
+        .padding(.horizontal, 24).padding(.vertical, 22)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Palette.surface, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+    }
+
+    @ViewBuilder
+    private func stepButton(_ step: WideStep, _ title: String) -> some View {
+        let label = Text(title).font(.footnote.weight(.semibold)).foregroundStyle(Palette.brand)
+            .padding(.horizontal, 12).frame(minHeight: 32)
+            .overlay(RoundedRectangle(cornerRadius: 9, style: .continuous).stroke(Palette.separator))
+            .frame(minHeight: 44)
+            .contentShape(Rectangle())
+        switch step {
+        case .company: NavigationLink { SettingsView() } label: { label }.buttonStyle(.plain)
+        case .invoice: Button { sheet = .invoice } label: { label }.buttonStyle(.plain)
+        case .expense: Button { sheet = .expense } label: { label }.buttonStyle(.plain)
+        case .accounts: NavigationLink { BankingView() } label: { label }.buttonStyle(.plain)
+        case .chart: NavigationLink { ChartOfAccountsView() } label: { label }.buttonStyle(.plain)
+        }
+    }
+
+    private var emptyDashboard: some View { emptyDashboard(showsButton: true) }
+
+    private func emptyDashboard(showsButton: Bool) -> some View {
         VStack(spacing: 12) {
             HStack(alignment: .bottom, spacing: 6) {
                 ForEach(Array([24, 40, 30, 52, 44, 62].enumerated()), id: \.offset) { index, height in
@@ -206,12 +312,15 @@ struct HomeView: View {
             Text("Aquí verás cómo va tu negocio").font(.headline).foregroundStyle(Palette.ink)
             Text("Cuando registres ventas y gastos, aparecerán tu efectivo, tus ingresos del mes y lo que te deben.")
                 .font(.subheadline).foregroundStyle(Palette.ink2).multilineTextAlignment(.center)
-            Button("Crear tu primera factura") { sheet = .invoice }
-                .buttonStyle(.primary)
-                .fixedSize(horizontal: true, vertical: false)
+            if showsButton {
+                Button("Crear tu primera factura") { sheet = .invoice }
+                    .buttonStyle(.primary)
+                    .fixedSize(horizontal: true, vertical: false)
+            }
         }
         .padding(.horizontal, 20).padding(.vertical, 22)
-        .frame(maxWidth: .infinity)
+        // Junto a «Primeros pasos» (`MacVacio`) ocupa la misma altura.
+        .frame(maxWidth: .infinity, maxHeight: showsButton ? nil : .infinity)
         .overlay(RoundedRectangle(cornerRadius: 22, style: .continuous).strokeBorder(Palette.separator, style: StrokeStyle(lineWidth: 1.5, dash: [6, 4])))
     }
 

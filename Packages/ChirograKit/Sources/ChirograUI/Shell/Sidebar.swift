@@ -80,6 +80,26 @@ struct Sidebar: View {
     @Binding var query: String
     @Query private var companies: [Company]
     @AppStorage("iCloudSyncEnabled") private var iCloudSyncEnabled = false
+    @State private var sync = SyncMonitor.shared
+
+    /// Estado de iCloud al pie: sincronizando, sin conexión o sincronizado (`MacCargando`, `MacError`).
+    private var syncText: String {
+        guard iCloudSyncEnabled else { return String(localized: "Solo en este dispositivo") }
+        switch sync.state {
+        case .syncing: return String(localized: "Sincronizando con iCloud…")
+        case .failed: return String(localized: "Sin conexión con iCloud")
+        case .off, .synced: return String(localized: "Sincronizado con iCloud")
+        }
+    }
+
+    private var syncColor: Color {
+        guard iCloudSyncEnabled else { return Palette.ink3 }
+        switch sync.state {
+        case .syncing: return Palette.brand
+        case .failed: return Palette.negative
+        case .off, .synced: return Palette.positive
+        }
+    }
     @FocusState private var searching: Bool
 
     var body: some View {
@@ -244,9 +264,9 @@ struct Sidebar: View {
                         Text(name).font(.footnote.weight(.semibold)).foregroundStyle(Palette.ink)
                         // Punto verde con iCloud activado, como el canvas («● iCloud»).
                         HStack(spacing: 5) {
-                            Circle().fill(iCloudSyncEnabled ? Palette.positive : Palette.ink3).frame(width: 7, height: 7)
+                            Circle().fill(syncColor).frame(width: 7, height: 7)
                                 .accessibilityHidden(true)
-                            Text(iCloudSyncEnabled ? String(localized: "Sincronizado con iCloud") : String(localized: "Solo en este dispositivo"))
+                            Text(syncText)
                         }
                         .font(.caption).foregroundStyle(Palette.ink3)
                     }
