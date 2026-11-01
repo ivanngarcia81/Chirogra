@@ -28,9 +28,11 @@ enum AccountingPage: String, CaseIterable, Identifiable {
     }
 }
 
-/// Entrada de la barra lateral de iPad y Mac: una sección, un reporte o una página de Contabilidad.
+/// Entrada de la barra lateral de iPad y Mac: una sección o una subsección (Ventas, Gastos, Reportes, Contabilidad).
 enum SidebarItem: Hashable {
     case section(AppSection)
+    case sales(SalesView.Segment)
+    case expenses(ExpensesView.Segment)
     case report(ReportsView.Kind)
     case accounting(AccountingPage)
 
@@ -38,6 +40,8 @@ enum SidebarItem: Hashable {
     var section: AppSection {
         switch self {
         case .section(let section): section
+        case .sales: .sales
+        case .expenses: .expenses
         case .report: .reports
         case .accounting: .accounting
         }
@@ -47,14 +51,30 @@ enum SidebarItem: Hashable {
     var destination: some View {
         switch self {
         case .section(let section): section.destination
+        case .sales(let segment): SalesView(fixedSegment: segment)
+        case .expenses(let segment): ExpensesView(fixedSegment: segment)
         case .report(let kind): ReportsView(fixedKind: kind)
         case .accounting(let page): page.destination
         }
     }
+
+    /// Subsecciones de una sección, en el orden del canvas `Sidebar`; vacío si no tiene.
+    static func subsections(of section: AppSection) -> [(title: String, item: SidebarItem)] {
+        switch section {
+        case .sales:
+            [(String(localized: "Facturas"), .sales(.invoices)), (String(localized: "Clientes"), .sales(.customers))]
+        case .expenses:
+            [(String(localized: "Gastos"), .expenses(.expenses)), (String(localized: "Proveedores"), .expenses(.vendors)),
+             (String(localized: "Facturas por pagar"), .expenses(.bills))]
+        case .reports: ReportsView.Kind.allCases.map { ($0.fullTitle, .report($0)) }
+        case .accounting: AccountingPage.allCases.map { ($0.title, .accounting($0)) }
+        default: []
+        }
+    }
 }
 
-/// Barra lateral de iPad y Mac (canvas `MacInicio`, `iPadBanca`, `MacPyG`, `MacDiario`): logotipo, búsqueda,
-/// secciones con la activa en índigo lavado, subsecciones de la sección activa y la empresa al pie.
+/// Barra lateral de iPad y Mac (canvas `Sidebar`): logotipo, búsqueda, secciones con la activa en índigo lavado,
+/// «MÁS», un grupo con las subsecciones de la sección activa y la empresa al pie con el estado de iCloud.
 struct Sidebar: View {
     @Binding var selection: SidebarItem
     @Binding var query: String
@@ -75,28 +95,15 @@ struct Sidebar: View {
 
                 searchField.padding(.bottom, 10)
 
-                ForEach(AppSection.primary) { section in
-                    sectionRow(section)
-                    if section == .reports && selection.section == .reports {
-                        ForEach(ReportsView.Kind.allCases) { kind in
-                            subRow(kind.fullTitle, item: .report(kind))
-                        }
-                    }
-                }
+                ForEach(AppSection.primary) { section in sectionRow(section) }
 
-                SectionLabel(text: String(localized: "Más"))
-                    .padding(.horizontal, 12)
-                    .padding(.top, 16)
-                    .padding(.bottom, 6)
-                    .accessibilityAddTraits(.isHeader)
+                groupHeader(String(localized: "Más"))
+                ForEach(AppSection.more) { section in sectionRow(section) }
 
-                ForEach(AppSection.more) { section in
-                    sectionRow(section)
-                    if section == .accounting && selection.section == .accounting {
-                        ForEach(AccountingPage.allCases) { page in
-                            subRow(page.title, item: .accounting(page))
-                        }
-                    }
+                let subsections = SidebarItem.subsections(of: selection.section)
+                if !subsections.isEmpty {
+                    groupHeader(selection.section.title)
+                    ForEach(subsections, id: \.item) { subRow($0.title, item: $0.item) }
                 }
             }
             .padding(.horizontal, 12)
@@ -114,21 +121,25 @@ struct Sidebar: View {
         }
     }
 
+    private func groupHeader(_ title: String) -> some View {
+        SectionLabel(text: title)
+            .padding(.horizontal, 10)
+            .padding(.top, 16)
+            .padding(.bottom, 4)
+            .accessibilityAddTraits(.isHeader)
+    }
+
     // MARK: Búsqueda
 
     private var searchField: some View {
         HStack(spacing: 8) {
             Image(systemName: "magnifyingglass").foregroundStyle(Palette.ink3).accessibilityHidden(true)
-            TextField("Buscar", text: $query)
+            TextField("Buscar", text: $query, prompt: Text(Self.searchPrompt))
                 .focused($searching)
                 .textFieldStyle(.plain)
                 .autocorrectionDisabled()
                 .submitLabel(.search)
-            if query.isEmpty {
-                #if os(macOS)
-                Text("⌘K").font(.caption).foregroundStyle(Palette.ink3).accessibilityHidden(true)
-                #endif
-            } else {
+            if !query.isEmpty {
                 Button { query = "" } label: {
                     Image(systemName: "xmark.circle.fill").foregroundStyle(Palette.ink3)
                 }
@@ -138,19 +149,21 @@ struct Sidebar: View {
         }
         .font(.subheadline)
         .padding(.horizontal, 10)
-        .frame(minHeight: 36)
-        .background(Palette.surface, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+        .frame(minHeight: Self.rowHeight)
+        .background(Palette.surface, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
     }
+
+    #if os(macOS)
+    private static let searchPrompt = String(localized: "Buscar ⌘K")
+    #else
+    private static let searchPrompt = String(localized: "Buscar")
+    #endif
 
     // MARK: Filas
 
-    /// Reportes y Contabilidad abren su primera subsección, para que siempre se vea marcada la página abierta.
+    /// Las secciones con subsecciones abren la primera, para que siempre se vea marcada la página abierta.
     private func target(for section: AppSection) -> SidebarItem {
-        switch section {
-        case .reports: .report(.income)
-        case .accounting: .accounting(.chart)
-        default: .section(section)
-        }
+        SidebarItem.subsections(of: section).first?.item ?? .section(section)
     }
 
     private func sectionRow(_ section: AppSection) -> some View {
@@ -182,11 +195,11 @@ struct Sidebar: View {
         } label: {
             // Hasta dos líneas en vez de encogerse: «Balanza de comprobación» quedaba más pequeña que las demás.
             Text(title)
-                .font(.subheadline.weight(isActive ? .semibold : .regular))
+                .font(.footnote.weight(isActive ? .semibold : .medium))
                 .lineLimit(2)
                 .fixedSize(horizontal: false, vertical: true)
                 .foregroundStyle(isActive ? Palette.ink : Palette.ink2)
-                .padding(.leading, 41)
+                .padding(.leading, 38)
                 .padding(.trailing, 12)
                 .padding(.vertical, 4)
                 .frame(maxWidth: .infinity, minHeight: Self.subRowHeight, alignment: .leading)
@@ -224,20 +237,25 @@ struct Sidebar: View {
                         .font(.caption.weight(.bold))
                         .foregroundStyle(Palette.background)
                         .dynamicTypeSize(...DynamicTypeSize.xxLarge)
-                        .frame(width: 30, height: 30)
+                        .frame(width: 32, height: 32)
                         .background(Palette.ink, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
                         .accessibilityHidden(true)
                     VStack(alignment: .leading, spacing: 1) {
                         Text(name).font(.footnote.weight(.semibold)).foregroundStyle(Palette.ink)
-                        Text(iCloudSyncEnabled ? String(localized: "Sincronizado con iCloud") : String(localized: "Solo en este dispositivo"))
-                            .font(.caption).foregroundStyle(Palette.ink3)
+                        // Punto verde con iCloud activado, como el canvas («● iCloud»).
+                        HStack(spacing: 5) {
+                            Circle().fill(iCloudSyncEnabled ? Palette.positive : Palette.ink3).frame(width: 7, height: 7)
+                                .accessibilityHidden(true)
+                            Text(iCloudSyncEnabled ? String(localized: "Sincronizado con iCloud") : String(localized: "Solo en este dispositivo"))
+                        }
+                        .font(.caption).foregroundStyle(Palette.ink3)
                     }
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
                     Spacer(minLength: 0)
                 }
                 .padding(10)
-                .background(Palette.surface, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                .background(Palette.surface, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)

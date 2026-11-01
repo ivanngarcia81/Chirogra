@@ -83,7 +83,7 @@ public enum CSVExport {
 
     public static func aging(_ report: AgingReport, title: String, partyTitle: String, calendar: Calendar = .current) -> String {
         let buckets = AgingReport.Bucket.allCases
-        var rows: [[String]] = [[title], ["Al", date(report.asOf, calendar: calendar)], [],
+        var rows: [[String]] = [[title], [String(localized: "Al"), date(report.asOf, calendar: calendar)], [],
                                 [partyTitle, String(localized: "Corriente"), "1-30", "31-60", "61-90", String(localized: "Más de 90"), String(localized: "Total")]]
         rows += report.rows.map { row in [row.party] + buckets.map { amount(row.amounts[$0] ?? 0) } + [amount(row.total)] }
         rows.append([String(localized: "Total")] + buckets.map { amount(report.total(for: $0)) } + [amount(report.total)])

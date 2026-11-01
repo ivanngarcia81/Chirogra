@@ -11,13 +11,20 @@ struct SalesView: View {
         var id: String { rawValue }
     }
 
-    @State private var segment: Segment = .invoices
+    /// En iPad y Mac la subsección la elige la barra lateral (canvas `Sidebar`) y no se muestran las pestañas.
+    var fixedSegment: Segment? = nil
+
+    @State private var selectedSegment: Segment = .invoices
     @State private var showingEditor = false
     @State private var query = ""
 
+    private var segment: Segment { fixedSegment ?? selectedSegment }
+
     var body: some View {
         VStack(spacing: 0) {
-            UnderlineTabs(options: Segment.allCases, selection: $segment) { $0.localizedTitle }
+            if fixedSegment == nil {
+                UnderlineTabs(options: Segment.allCases, selection: $selectedSegment) { $0.localizedTitle }
+            }
 
             switch segment {
             case .invoices: InvoiceListView(query: $query)

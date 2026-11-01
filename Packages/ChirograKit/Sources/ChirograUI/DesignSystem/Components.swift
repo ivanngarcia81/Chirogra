@@ -601,9 +601,16 @@ struct KPIGrid: View {
 
     private var spacing: CGFloat { large ? 14 : 12 }
 
+    /// Cifra de las tarjetas grandes: 24 pt en iPad (`iPadInicio`), 28 en Mac (`MacInicio`).
+    #if os(macOS)
+    private static let largeAmount: CGFloat = 28
+    #else
+    private static let largeAmount: CGFloat = 24
+    #endif
+
     private var columns: Int {
         let available = width + spacing
-        let minimum = (large ? minimumWidth * 1.2 : minimumWidth) + spacing
+        let minimum = (large ? minimumWidth * 1.25 : minimumWidth) + spacing
         if available >= CGFloat(items.count) * minimum { return items.count }
         if items.count == 4 { return 2 }
         return max(1, min(items.count, Int(available / minimum)))
@@ -615,7 +622,7 @@ struct KPIGrid: View {
                 VStack(alignment: .leading, spacing: large ? 6 : 4) {
                     Text(item.title).font((large ? Font.footnote : .caption).weight(.semibold))
                         .foregroundStyle(item.isBrand ? Palette.onBrand.opacity(0.85) : Palette.ink3)
-                    Text(item.value).font(.amount(large ? 28 : 22)).minimumScaleFactor(0.6).lineLimit(1)
+                    Text(item.value).font(.amount(large ? Self.largeAmount : 22)).minimumScaleFactor(0.6).lineLimit(1)
                         .foregroundStyle(item.isBrand ? Palette.onBrand : Palette.ink)
                     // Siempre una línea de pie, aunque esté vacía, para que todas las tarjetas midan lo mismo.
                     Text(item.foot ?? " ").font((large ? Font.footnote : .caption).weight(.semibold)).lineLimit(1)

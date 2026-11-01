@@ -12,7 +12,7 @@ struct HomeView: View {
     @Query(sort: \Account.code) private var accounts: [Account]
     @Query private var journalLines: [JournalLine]
     @Query(sort: \Invoice.dueDate) private var invoices: [Invoice]
-    @Query(sort: \Bill.dueDate) private var bills: [Bill]
+    @Query(sort: \Bill.dueDate) fileprivate var bills: [Bill]
     @Query private var expenses: [Expense]
     @Query private var customers: [Customer]
 
@@ -20,8 +20,8 @@ struct HomeView: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @ScaledMetric(relativeTo: .title2) private var quickActionSide: CGFloat = 56
     @ScaledMetric(relativeTo: .headline) private var dateTileWidth: CGFloat = 44
-    @ScaledMetric(relativeTo: .subheadline) private var tableNumberWidth: CGFloat = 62
-    @ScaledMetric(relativeTo: .subheadline) private var tableAmountWidth: CGFloat = 90
+    @ScaledMetric(relativeTo: .subheadline) fileprivate var tableNumberWidth: CGFloat = 62
+    @ScaledMetric(relativeTo: .subheadline) fileprivate var tableAmountWidth: CGFloat = 90
     @State private var sheet: QuickAction?
     @State private var width: CGFloat = 0
     #if os(iOS)
@@ -33,11 +33,11 @@ struct HomeView: View {
         var id: String { rawValue }
     }
 
-    private var ledger: Ledger { Ledger(accounts: accounts, lines: journalLines) }
+    fileprivate var ledger: Ledger { Ledger(accounts: accounts, lines: journalLines) }
     private var thisMonth: IncomeStatement { ledger.incomeStatement(.month(containing: .now)) }
     private var lastMonth: IncomeStatement { ledger.incomeStatement(.month(containing: .now, offset: -1)) }
-    private var openInvoices: [Invoice] { invoices.filter { $0.isOpen && $0.balanceDue > 0 } }
-    private var overdue: [Invoice] { openInvoices.filter { $0.daysOverdue() != nil } }
+    fileprivate var openInvoices: [Invoice] { invoices.filter { $0.isOpen && $0.balanceDue > 0 } }
+    fileprivate var overdue: [Invoice] { openInvoices.filter { $0.daysOverdue() != nil } }
 
     private var isNarrow: Bool {
         #if os(iOS)
@@ -47,13 +47,15 @@ struct HomeView: View {
         #endif
     }
 
-    /// Diseño de `MacInicio`: en iPad y Mac con al menos 600 pt (iPad vertical con la barra lateral), hasta AX3.
+    /// Diseño de `iPadInicio` / `MacInicio`: en iPad y Mac con al menos 480 pt (también iPad de 11" vertical con la
+    /// barra lateral, `iPadInicioV`), hasta AX3.
     private var isWide: Bool {
-        !isNarrow && dynamicTypeSize < .accessibility4 && (width == 0 || width - 2 * margin >= 600)
+        !isNarrow && dynamicTypeSize < .accessibility4 && (width == 0 || width - 2 * margin >= 480)
     }
 
     /// Tarjetas de dos en dos cuando hay sitio (y sin tamaños de accesibilidad, que necesitan todo el ancho).
-    private var pairsCards: Bool { isWide && !dynamicTypeSize.isAccessibilitySize && width - 2 * margin >= 860 }
+    /// Como el `flex-wrap` del canvas: las tarjetas van de dos en dos si caben (gráfica 420 + cuentas 260).
+    private var pairsCards: Bool { isWide && !dynamicTypeSize.isAccessibilitySize && width - 2 * margin >= 690 }
 
     /// En pantallas anchas el margen coincide con el del título grande.
     private var margin: CGFloat { isNarrow ? Metrics.gutter : 20 }
@@ -76,9 +78,9 @@ struct HomeView: View {
                     emptyDashboard
                 } else if isWide {
                     KPIGrid(items: wideKPIs, large: true)
-                    pair { chart } and: { bankAccounts }
+                    pair(secondShare: 1.0 / 3) { chart } and: { wideAccounts }
                     // Por pagar no se estira: con una sola fila quedaba una tarjeta casi vacía.
-                    pair(fill: false) { receivables } and: { payables }
+                    pair(fill: false) { wideReceivables } and: { widePayables }
                 } else {
                     HeroCard(title: String(localized: "Efectivo disponible"), value: ledger.availableCash.money, detail: cashDetail)
                     kpis
@@ -215,18 +217,20 @@ struct HomeView: View {
 
     /// Dos tarjetas lado a lado si hay sitio; si no, una debajo de otra.
     @ViewBuilder
-    private func pair<First: View, Second: View>(fill: Bool = true, @ViewBuilder _ first: () -> First,
+    /// `secondShare`: parte del ancho para la segunda (gráfica 2 : cuentas 1 en `iPadInicio`); `nil`, mitad y mitad.
+    private func pair<First: View, Second: View>(fill: Bool = true, secondShare: CGFloat? = nil, @ViewBuilder _ first: () -> First,
                                                  @ViewBuilder and second: () -> Second) -> some View {
+        let secondWidth = secondShare.map { max(260, (width - 2 * margin - 16) * $0) }
         if pairsCards && !fill {
             HStack(alignment: .top, spacing: 16) {
                 first().frame(maxWidth: .infinity)
-                second().frame(maxWidth: .infinity)
+                second().frame(maxWidth: secondWidth ?? .infinity).frame(width: secondWidth)
             }
         } else if pairsCards {
             // Las dos tarjetas con la altura de la más alta, sin hueco debajo de la más baja.
             HStack(alignment: .top, spacing: 16) {
                 first().frame(maxWidth: .infinity, maxHeight: .infinity)
-                second().frame(maxWidth: .infinity, maxHeight: .infinity)
+                second().frame(maxWidth: secondWidth ?? .infinity, maxHeight: .infinity).frame(width: secondWidth)
             }
             .environment(\.cardFillsHeight, true)
             .fixedSize(horizontal: false, vertical: true)
@@ -236,14 +240,16 @@ struct HomeView: View {
         }
     }
 
-    /// `MacInicio`: efectivo disponible (destacada), ingresos, gastos y ganancia neta del mes.
+    /// `iPadInicio` / `MacInicio`: efectivo disponible (destacada), ingresos, gastos y ganancia neta del mes.
     private var wideKPIs: [KPIItem] {
         let expenses = thisMonth.totalExpenses + thisMonth.totalCostOfGoodsSold
         let previousExpenses = lastMonth.totalExpenses + lastMonth.totalCostOfGoodsSold
-        let income = change(thisMonth.totalIncome, lastMonth.totalIncome, higherIsBetter: true)
-        let spent = change(expenses, previousExpenses, higherIsBetter: false)
+        let income = change(thisMonth.totalIncome, lastMonth.totalIncome, higherIsBetter: true, longMonth: true)
+        let spent = change(expenses, previousExpenses, higherIsBetter: false, longMonth: true)
+        let count = ledger.moneyAccounts.filter { $0.subtype != .undepositedFunds }.count
         return [
-            KPIItem(title: String(localized: "Efectivo disponible"), value: ledger.availableCash.money, foot: cashDetail, isBrand: true),
+            KPIItem(title: String(localized: "Efectivo disponible"), value: ledger.availableCash.money,
+                    foot: String(localized: "\(count) cuentas · según libros"), isBrand: true),
             KPIItem(title: String(localized: "Ingresos del mes"), value: thisMonth.totalIncome.money, foot: income.text, footColor: income.color),
             KPIItem(title: String(localized: "Gastos del mes"), value: expenses.money, foot: spent.text, footColor: spent.color),
             KPIItem(title: String(localized: "Ganancia neta"), value: thisMonth.netIncome.money,
@@ -271,12 +277,14 @@ struct HomeView: View {
         .fixedSize(horizontal: false, vertical: !dynamicTypeSize.isAccessibilitySize)
     }
 
-    private func change(_ current: Int64, _ previous: Int64, higherIsBetter: Bool) -> (text: String?, color: Color) {
+    /// «↑ 12% vs. oct» (iPhone) o «↑ 12% vs. octubre» (`longMonth`, iPad y Mac).
+    private func change(_ current: Int64, _ previous: Int64, higherIsBetter: Bool, longMonth: Bool = false) -> (text: String?, color: Color) {
         guard previous != 0 else { return (nil, Palette.ink3) }
         let percent = (current - previous) * 100 / abs(previous)
         let good = higherIsBetter ? percent >= 0 : percent <= 0
         let arrow = percent >= 0 ? "↑" : "↓"
-        let month = Calendar.current.date(byAdding: .month, value: -1, to: .now)?.shortMonth ?? ""
+        let previousMonth = Calendar.current.date(byAdding: .month, value: -1, to: .now)
+        let month = (longMonth ? previousMonth?.formatted(.appDateTime.month(.wide)) : previousMonth?.shortMonth) ?? ""
         return (String(localized: "\(arrow) \(abs(percent))% vs. \(month)"), good ? Palette.positive : Palette.negative)
     }
 
@@ -440,28 +448,6 @@ struct HomeView: View {
                 }
                 .font(.footnote)
             }
-            if isWide {
-                // `MacInicio`: tabla Nº · cliente · estado · importe, las vencidas primero.
-                ForEach(openInvoices.sorted { ($0.daysOverdue() ?? -1) > ($1.daysOverdue() ?? -1) }.prefix(5)) { invoice in
-                    Divider()
-                    NavigationLink { InvoiceDetailView(invoice: invoice) } label: {
-                        HStack(spacing: 12) {
-                            Text(invoice.number).foregroundStyle(Palette.ink3).frame(width: tableNumberWidth, alignment: .leading)
-                            Text(invoice.customer?.name ?? String(localized: "Sin cliente")).fontWeight(.semibold).lineLimit(1)
-                            Spacer(minLength: 8)
-                            StatusChip(invoice: invoice)
-                            Text(invoice.balanceDue.money).fontWeight(.semibold).frame(minWidth: tableAmountWidth, alignment: .trailing)
-                        }
-                        .font(.subheadline)
-                        .monospacedDigit()
-                        .foregroundStyle(Palette.ink)
-                        .frame(minHeight: 36)
-                        .contentShape(Rectangle())
-                        .accessibilityElement(children: .combine)
-                    }
-                    .buttonStyle(.plain)
-                }
-            } else {
             ForEach(openInvoices.prefix(3)) { invoice in
                 Divider()
                 NavigationLink { InvoiceDetailView(invoice: invoice) } label: {
@@ -476,7 +462,6 @@ struct HomeView: View {
                     }
                 }
                 .buttonStyle(.plain)
-            }
             }
             if openInvoices.isEmpty {
                 Text("No tienes facturas pendientes de cobro.").font(.subheadline).foregroundStyle(Palette.ink3)
@@ -501,24 +486,6 @@ struct HomeView: View {
         let soon = bills.filter { $0.isOpen && $0.dueDate <= Calendar.current.date(byAdding: .day, value: 14, to: .now)! }
         return VStack(alignment: .leading, spacing: 8) {
             Text("Por pagar · próximos 14 días").font(.cardTitle)
-            if isWide {
-                // `MacInicio`: tabla fecha · proveedor · número · importe.
-                ForEach(soon) { bill in
-                    Divider()
-                    HStack(spacing: 12) {
-                        Text(bill.dueDate.dayMonth).foregroundStyle(Palette.ink3).frame(width: tableNumberWidth, alignment: .leading)
-                        Text(bill.vendor?.name ?? String(localized: "Proveedor")).fontWeight(.semibold).lineLimit(1)
-                        Spacer(minLength: 8)
-                        Text(bill.vendorNumber).font(.caption).foregroundStyle(Palette.ink3).lineLimit(1)
-                        Text(bill.balanceDue.money).fontWeight(.semibold).frame(minWidth: tableAmountWidth, alignment: .trailing)
-                    }
-                    .font(.subheadline)
-                    .monospacedDigit()
-                    .foregroundStyle(Palette.ink)
-                    .frame(minHeight: 36)
-                    .accessibilityElement(children: .combine)
-                }
-            } else {
             ForEach(soon) { bill in
                 Divider()
                 LedgerRow(title: bill.vendor?.name ?? String(localized: "Proveedor"), subtitle: String(localized: "Factura por pagar \(bill.vendorNumber)")) {
@@ -535,7 +502,6 @@ struct HomeView: View {
                 } trailing: {
                     Text(bill.balanceDue.money).font(.body.weight(.semibold)).monospacedDigit()
                 }
-            }
             }
             if soon.isEmpty {
                 Text("Nada por pagar en las próximas dos semanas.").font(.subheadline).foregroundStyle(Palette.ink3)
@@ -558,6 +524,126 @@ struct HomeView: View {
                 } trailing: {
                     Text(ledger.cashBalance(of: account).money).font(.body.weight(.semibold)).monospacedDigit()
                 }
+            }
+        }
+        .card()
+    }
+}
+
+// MARK: - iPad y Mac (`iPadInicio`)
+
+extension HomeView {
+    /// Título de tarjeta con un dato o enlace a la derecha.
+    fileprivate func wideHeader<Trailing: View>(_ title: LocalizedStringKey, @ViewBuilder trailing: () -> Trailing) -> some View {
+        ViewThatFits(in: .horizontal) {
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                Text(title).font(.headline).foregroundStyle(Palette.ink).fixedSize()
+                Spacer(minLength: 8)
+                trailing()
+            }
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title).font(.headline).foregroundStyle(Palette.ink)
+                trailing()
+            }
+        }
+        .accessibilityElement(children: .contain)
+    }
+
+    fileprivate func wideRow<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
+        VStack(spacing: 0) {
+            Divider()
+            HStack(spacing: 10) { content() }
+                .font(.subheadline)
+                .monospacedDigit()
+                .foregroundStyle(Palette.ink)
+                .frame(minHeight: 44)
+                .contentShape(Rectangle())
+        }
+    }
+
+    /// Cuentas con enlace a Banca: nombre, subtítulo e importe, sin iconos.
+    var wideAccounts: some View {
+        let shown = ledger.moneyAccounts.filter { $0.subtype == .bank || $0.subtype == .creditCard || ledger.balance(of: $0) != 0 }
+        return VStack(alignment: .leading, spacing: 0) {
+            wideHeader("Cuentas") {
+                NavigationLink("Banca") { BankingView() }
+                    .font(.subheadline.weight(.semibold)).foregroundStyle(Palette.brand).frame(minHeight: 44)
+            }
+            ForEach(shown) { account in
+                NavigationLink { LedgerView(account: account) } label: {
+                    VStack(spacing: 0) {
+                        Divider()
+                        HStack(spacing: 8) {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(account.name).font(.subheadline.weight(.semibold)).lineLimit(1)
+                                Text("\(account.code) · \(account.subtype.title)").font(.caption).foregroundStyle(Palette.ink3).lineLimit(1)
+                            }
+                            Spacer(minLength: 8)
+                            Text(ledger.cashBalance(of: account).money).font(.subheadline.weight(.semibold)).monospacedDigit()
+                        }
+                        .foregroundStyle(Palette.ink)
+                        .frame(minHeight: 52)
+                        .contentShape(Rectangle())
+                    }
+                }
+                .buttonStyle(.plain)
+                .accessibilityElement(children: .combine)
+            }
+        }
+        .card()
+    }
+
+    /// Por cobrar: vencido y por vencer arriba a la derecha; filas cliente · estado · importe, las vencidas primero.
+    var wideReceivables: some View {
+        let overdueTotal = overdue.reduce(0) { $0 + $1.balanceDue }
+        let total = openInvoices.reduce(0) { $0 + $1.balanceDue }
+        return VStack(alignment: .leading, spacing: 0) {
+            wideHeader("Por cobrar") {
+                (Text("\(overdueTotal.money) vencido").foregroundStyle(Palette.negative).bold()
+                 + Text(" · \(String(localized: "\((total - overdueTotal).money) por vencer"))").foregroundStyle(Palette.ink3))
+                    .font(.footnote)
+            }
+            .padding(.bottom, 8)
+            ForEach(openInvoices.sorted { ($0.daysOverdue() ?? -1) > ($1.daysOverdue() ?? -1) }.prefix(5)) { invoice in
+                NavigationLink { InvoiceDetailView(invoice: invoice) } label: {
+                    wideRow {
+                        Text(invoice.customer?.name ?? String(localized: "Sin cliente")).fontWeight(.semibold).lineLimit(1)
+                        Spacer(minLength: 8)
+                        StatusChip(invoice: invoice)
+                        Text(invoice.balanceDue.money).fontWeight(.semibold).frame(minWidth: tableAmountWidth, alignment: .trailing)
+                    }
+                }
+                .buttonStyle(.plain)
+                .accessibilityElement(children: .combine)
+            }
+            if openInvoices.isEmpty {
+                Text("No tienes facturas pendientes de cobro.").font(.subheadline).foregroundStyle(Palette.ink3).padding(.top, 4)
+            }
+        }
+        .card()
+    }
+
+    /// Por pagar: las próximas facturas de proveedores con «Ver todo».
+    var widePayables: some View {
+        let upcoming = bills.filter(\.isOpen).sorted { $0.dueDate < $1.dueDate }.prefix(5)
+        return VStack(alignment: .leading, spacing: 0) {
+            wideHeader("Por pagar · próximos") {
+                NavigationLink("Ver todo") { ExpensesView(fixedSegment: .bills) }
+                    .font(.footnote.weight(.semibold)).foregroundStyle(Palette.brand).frame(minHeight: 44)
+            }
+            ForEach(Array(upcoming)) { bill in
+                wideRow {
+                    Text(bill.dueDate.dayMonth).foregroundStyle(Palette.ink3).frame(width: tableNumberWidth, alignment: .leading)
+                    Text(bill.vendorNumber.isEmpty ? bill.vendor?.name ?? String(localized: "Proveedor")
+                         : "\(bill.vendor?.name ?? String(localized: "Proveedor")) · \(bill.vendorNumber)")
+                        .fontWeight(.semibold).lineLimit(1)
+                    Spacer(minLength: 8)
+                    Text(bill.balanceDue.money).fontWeight(.semibold).frame(minWidth: tableAmountWidth, alignment: .trailing)
+                }
+                .accessibilityElement(children: .combine)
+            }
+            if upcoming.isEmpty {
+                Text("Nada por pagar en las próximas dos semanas.").font(.subheadline).foregroundStyle(Palette.ink3).padding(.top, 4)
             }
         }
         .card()

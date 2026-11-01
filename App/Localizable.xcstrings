@@ -1,6 +1,16 @@
 {
   "sourceLanguage" : "es",
   "strings" : {
+    " · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : " · %@"
+          }
+        }
+      }
+    },
     "#" : {
       "shouldTranslate" : false
     },
@@ -57,6 +67,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ to pay"
+          }
+        }
+      }
+    },
+    "%@ por vencer" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ not yet due"
           }
         }
       }
@@ -368,6 +388,46 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "%lld cuentas"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld cuentas · según libros" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld account · per books"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld accounts · per books"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld cuenta · según libros"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld cuentas · según libros"
                 }
               }
             }
@@ -1211,6 +1271,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Search"
+          }
+        }
+      }
+    },
+    "Buscar ⌘K" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search ⌘K"
           }
         }
       }
@@ -2805,6 +2876,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Invoices"
+          }
+        }
+      }
+    },
+    "Facturas por pagar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bills to pay"
           }
         }
       }
@@ -4725,6 +4806,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Payables"
+          }
+        }
+      }
+    },
+    "Por pagar · próximos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To pay · upcoming"
           }
         }
       }
@@ -6768,6 +6859,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "See all invoices"
+          }
+        }
+      }
+    },
+    "Ver todo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "See all"
           }
         }
       }

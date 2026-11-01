@@ -13,21 +13,28 @@ struct ExpensesView: View {
         var id: String { rawValue }
     }
 
-    @State private var segment: Segment = .expenses
+    /// En iPad y Mac la subsección la elige la barra lateral (canvas `Sidebar`) y no se muestra el segmentado.
+    var fixedSegment: Segment? = nil
+
+    @State private var selectedSegment: Segment = .expenses
     @State private var showingEditor = false
+
+    private var segment: Segment { fixedSegment ?? selectedSegment }
 
     var body: some View {
         VStack(spacing: 0) {
-            Picker("Sección", selection: $segment) {
-                ForEach(Segment.allCases) { Text($0.localizedTitle).tag($0) }
+            if fixedSegment == nil {
+                Picker("Sección", selection: $selectedSegment) {
+                    ForEach(Segment.allCases) { Text($0.localizedTitle).tag($0) }
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                .padding(.horizontal, Metrics.gutter)
+                .padding(.bottom, 8)
             }
-            .pickerStyle(.segmented)
-            .labelsHidden()
-            .padding(.horizontal, Metrics.gutter)
-            .padding(.bottom, 8)
 
             switch segment {
-            case .expenses: ExpenseListView { segment = .bills }
+            case .expenses: ExpenseListView { selectedSegment = .bills }
             case .bills: BillListView()
             case .vendors: VendorListView()
             }

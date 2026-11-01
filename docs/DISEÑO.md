@@ -361,7 +361,7 @@ Usuario guarda factura ─► ChirograUI (InvoiceEditor)
 
 El diseño visual, las pantallas, la navegación, la paleta, la tipografía, la iconografía y los textos de interfaz **se definen en Claude Design**. Esta sección resume lo que se llevará a SwiftUI; ante cualquier duda manda el canvas.
 
-- **Enlace al diseño:** [Chirogra — Diseño de app](https://claude.ai/artifact/Ai344mUq54BECC4Pw4quV9) (canvas de Claude Design, versión `1793481833-1df2`, leída el 31 oct 2026).
+- **Enlace al diseño:** [Chirogra — Diseño de app](https://claude.ai/artifact/Ai344mUq54BECC4Pw4quV9) (canvas de Claude Design, versión `1793507119-3bd8`, leída el 1 nov 2026; la `1793481833-1df2` del 31 oct no tenía los tableros de iPad y Mac del grupo 6).
 
 ### 7.1 Navegación
 
@@ -385,6 +385,15 @@ El diseño visual, las pantallas, la navegación, la paleta, la tipografía, la 
 | iPad y Mac | Mac Inicio (`MacInicio`) · iPad bandeja por revisar (`iPadBanca`) · Mac Estado de resultados (`MacPyG`) · Mac Asiento de diario (`MacDiario`) · Mac Libro mayor (`MacLibroMayor`) |
 | Fichas y catálogo | Clientes (`Clientes`) · Ficha de cliente (`ClienteFicha`) · Productos y servicios (`Productos`) · Estimado → factura (`Estimado`) · Ficha de proveedor (`ProveedorFicha`) |
 | Impuestos y ajustes | Impuestos (`Impuestos`) · Perfil de la empresa (`AjustesEmpresa`) · Plantilla de factura (`AjustesPlantilla`) · Moneda y formatos (`AjustesFormatos`) · Usuarios y permisos (`AjustesUsuarios`) · iCloud, copias y seguridad (`AjustesDatos`) |
+| iPad y Mac · Inicio | iPad Inicio horizontal, oscuro y vertical (`iPadInicio`, `iPadInicioOscuro`, `iPadInicioV`) · Componente barra lateral (`Sidebar`: búsqueda, secciones, «MÁS», subsecciones de la sección activa en su propio grupo y empresa al pie) |
+| iPad y Mac · Ventas | Mac Ventas claro y oscuro (`MacVentas`, `MacVentasOscuro`) · iPad lista y detalle horizontal y vertical (`iPadVentas`, `iPadVentasV`) · Mac Nueva factura (`MacFacturaNueva`) · Mac Clientes (`MacClientes`) · Mac Ficha de cliente (`MacClienteFicha`) |
+| iPad y Mac · Gastos | Mac Gastos (`MacGastos`) · Mac Nuevo gasto (`MacGastoNuevo`) · Mac Proveedores (`MacProveedores`) · Mac Ficha de proveedor (`MacProveedorFicha`) · Mac Facturas por pagar (`MacPorPagar`) |
+| iPad y Mac · Banca | Mac Banca MVP (`BancaCuentas`) · iPad Banca MVP (`iPadBancaCuentas`) |
+| iPad y Mac · Reportes | Mac Balance general (`MacBalance`) · Mac Balanza (`MacBalanza`) · Mac Antigüedad por cobrar y por pagar (`MacAntigCobrar`, `MacAntigPagar`) · Mac Impuesto sobre ventas (`MacSalesTax`) · iPad Estado de resultados horizontal y vertical (`iPadPyG`, `iPadPyGV`) |
+| iPad y Mac · Contabilidad, Impuestos y Ajustes | Mac Plan de cuentas (`MacPlanCuentas`) · Mac Cierre de periodo (`MacCierre`) · Mac Impuestos (`MacImpuestos`) · Mac Ajustes (`MacAjustes`) |
+| iPad y Mac · Alta y estados | Mac Alta pasos 1 y 2 (`AltaPaso1`, `AltaPaso2`) · iPad Alta paso 1 (`iPadAltaPaso1`) · Mac Vacío / primera vez (`MacVacio`) · Mac Cargando (`MacCargando`) · Mac Error de sincronización (`MacError`) |
+
+En iPad y Mac, lo que los tableros muestran de la fase 2 (escanear, bandeja «por revisar» y conciliación, estimados, usuarios, varias empresas) no se implementa, igual que en iPhone; tampoco el logotipo de la empresa (§7.4).
 
 ### 7.3 Tokens visuales → SwiftUI
 
@@ -431,6 +440,7 @@ El canvas muestra algunas funciones que el diseño técnico (§3) deja fuera del
 | Pagos "Programados" y "Recurrentes" en por pagar | Recurrentes en fase 2 | Solo facturas por pagar con vencimiento; recurrentes en fase 2. |
 | Impuestos · "Deducibles" | Mapeo a Schedule C en fase 2 | Fase 2. |
 | Formato "USD · dd/mm" en Ajustes | EE. UU. usa mm/dd | Por defecto el formato de la región del dispositivo, configurable. |
+| Logotipo de la empresa (selector en el alta y en Ajustes, logotipo en la factura) | No se guarda en el modelo | Más adelante, decisión del usuario. Donde el canvas pone el selector, la pantalla se compone sin él (sin hueco). |
 
 ### 7.5 Requisitos técnicos de la UI
 
