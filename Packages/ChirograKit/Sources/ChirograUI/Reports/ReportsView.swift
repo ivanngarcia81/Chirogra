@@ -319,7 +319,7 @@ struct ReportsView: View {
 
     private var rangeLabel: String {
         let current = interval()
-        return (current.start..<current.end.addingTimeInterval(-1)).formatted(.interval.day().month(.abbreviated).year().locale(.app))
+        return (current.start..<current.end.addingTimeInterval(-1)).formatted(.interval.day().month(.abbreviated).year().locale(.appText))
     }
 
     /// Periodo mostrado, o el anterior de igual duración (`offset: -1`).

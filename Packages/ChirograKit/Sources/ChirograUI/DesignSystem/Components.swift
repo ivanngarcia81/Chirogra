@@ -18,20 +18,31 @@ extension Int64 {
 }
 
 extension Locale {
-    /// Locale de las fechas: el idioma de la app con la región del dispositivo. En español de EE. UU. se usa el de
-    /// Latinoamérica, que escribe «20 ene 2027» como el canvas (es_US escribe «ene 20, 2027»). También se pone en el
-    /// entorno de SwiftUI, así los selectores de fecha salen en el idioma de la app y no en el del sistema.
-    nonisolated static let app: Locale = {
-        let language = Bundle.main.preferredLocalizations.first ?? Locale.current.language.languageCode?.identifier ?? "es"
-        let region = Locale.current.region?.identifier ?? "US"
-        if language.hasPrefix("es") && region == "US" { return Locale(identifier: "es_419") }
-        return Locale(identifier: "\(language)_\(region)")
+    /// Locales de las fechas para un idioma y una región. `numeric` es el idioma con la región del dispositivo,
+    /// así el orden de las fechas en cifras sigue la región (DISEÑO §7.4: en EE. UU., «11/16/2026» también en
+    /// español). `text`, para fechas con el mes en letra, es igual salvo en español de EE. UU., donde se usa el de
+    /// Latinoamérica: escribe «16 nov 2026» como el canvas (es_US escribe «nov 16, 2026»).
+    nonisolated static func dateLocales(language: String, region: String) -> (numeric: Locale, text: Locale) {
+        let numeric = Locale(identifier: "\(language)_\(region)")
+        return (numeric, language == "es" && region == "US" ? Locale(identifier: "es_419") : numeric)
+    }
+
+    nonisolated private static let appDates: (numeric: Locale, text: Locale) = {
+        let language = (Bundle.main.preferredLocalizations.first ?? Locale.current.language.languageCode?.identifier ?? "es")
+            .prefix(2)
+        return dateLocales(language: String(language), region: Locale.current.region?.identifier ?? "US")
     }()
+
+    /// Fechas en cifras («11/16/2026»): idioma de la app y región del dispositivo.
+    nonisolated static var app: Locale { appDates.numeric }
+    /// Fechas con el mes en letra («16 nov 2026»). También va en el entorno de SwiftUI, para que los selectores de
+    /// fecha salgan en el idioma de la app y no en el del sistema.
+    nonisolated static var appText: Locale { appDates.text }
 }
 
 extension FormatStyle where Self == Date.FormatStyle {
-    /// Como `.dateTime`, pero con `Locale.app`.
-    nonisolated static var appDateTime: Date.FormatStyle { Date.FormatStyle(locale: .app) }
+    /// Como `.dateTime`, pero con `Locale.appText` (las fechas de la app llevan el mes en letra).
+    nonisolated static var appDateTime: Date.FormatStyle { Date.FormatStyle(locale: .appText) }
 }
 
 extension Date {

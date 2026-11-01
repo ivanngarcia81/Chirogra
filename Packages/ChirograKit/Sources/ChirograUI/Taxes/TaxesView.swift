@@ -65,7 +65,7 @@ struct TaxesView: View {
     private func quarterTitle(_ interval: DateInterval) -> String {
         let calendar = Calendar.current
         let number = (calendar.component(.month, from: interval.start) - 1) / 3 + 1
-        let months = (interval.start..<interval.end.addingTimeInterval(-1)).formatted(.interval.month(.abbreviated).locale(.app))
+        let months = (interval.start..<interval.end.addingTimeInterval(-1)).formatted(.interval.month(.abbreviated).locale(.appText))
         return String(localized: "T\(number) \(interval.start.formatted(.appDateTime.year())) · \(months)")
     }
 

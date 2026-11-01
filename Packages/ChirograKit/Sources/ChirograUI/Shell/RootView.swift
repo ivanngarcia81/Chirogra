@@ -87,7 +87,7 @@ public struct ChirograRootView: View {
         .tint(Palette.brand)
         .background(Palette.background)
         // Fechas y selectores de fecha en el idioma de la app, con el orden de su región (B3).
-        .environment(\.locale, .app)
+        .environment(\.locale, .appText)
         #if os(iOS)
         // Valores de las filas en `ink`, como en el canvas. En el Mac los formularios usan este estilo también
         // para sus controles, así que allí se deja el del sistema.
