@@ -41,6 +41,16 @@
         }
       }
     },
+    "%@ por pagar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ to pay"
+          }
+        }
+      }
+    },
     "%@ quedan a favor del cliente" : {
       "localizations" : {
         "en" : {
@@ -225,6 +235,46 @@
     "%lld" : {
       "shouldTranslate" : false
     },
+    "%lld activas" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld active"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld active"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld activa"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld activas"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld cuentas" : {
       "localizations" : {
         "en" : {
@@ -315,6 +365,46 @@
         }
       }
     },
+    "%lld este mes" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld this month"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld this month"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld este mes"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld este mes"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld facturas" : {
       "localizations" : {
         "en" : {
@@ -348,6 +438,46 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "%lld facturas"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld facturas por pagar esta semana" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld bill due this week"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld bills due this week"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld factura por pagar esta semana"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld facturas por pagar esta semana"
                 }
               }
             }
@@ -527,6 +657,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "As of"
+          }
+        }
+      }
+    },
+    "Al día" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Up to date"
           }
         }
       }
@@ -1095,6 +1235,16 @@
         }
       }
     },
+    "Cerrado hasta %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Closed through %@"
+          }
+        }
+      }
+    },
     "Cerrar" : {
       "localizations" : {
         "en" : {
@@ -1236,6 +1386,16 @@
         }
       }
     },
+    "Cobrado en el periodo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Collected in the period"
+          }
+        }
+      }
+    },
     "Cobro" : {
       "localizations" : {
         "en" : {
@@ -1252,6 +1412,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Payment %@ · %@"
+          }
+        }
+      }
+    },
+    "Combinada" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Combined"
           }
         }
       }
@@ -1312,6 +1482,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Share PDF"
+          }
+        }
+      }
+    },
+    "Componente" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Component"
           }
         }
       }
@@ -1666,6 +1846,16 @@
         }
       }
     },
+    "Declarar y pagar antes del %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "File and pay by %@"
+          }
+        }
+      }
+    },
     "Depositar en" : {
       "localizations" : {
         "en" : {
@@ -1996,6 +2186,16 @@
         }
       }
     },
+    "El día 20 del mes siguiente es la fecha habitual en Texas y otros estados; confírmala con tu agencia." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The 20th of the following month is the usual due date in Texas and other states; confirm it with your agency."
+          }
+        }
+      }
+    },
     "El gasto se guardó, pero no se pudo adjuntar: %@. Ábrelo desde la lista para reintentar." : {
       "localizations" : {
         "en" : {
@@ -2277,16 +2477,6 @@
         }
       }
     },
-    "Este trimestre" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "This quarter"
-          }
-        }
-      }
-    },
     "Exentas (clientes exentos)" : {
       "localizations" : {
         "en" : {
@@ -2353,6 +2543,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "BILL TO"
+          }
+        }
+      }
+    },
+    "Face ID" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Face ID"
           }
         }
       }
@@ -2564,16 +2764,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Spent %@"
-          }
-        }
-      }
-    },
-    "Gastado este mes" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Spent this month"
           }
         }
       }
@@ -3491,16 +3681,6 @@
         }
       }
     },
-    "No gravables y exentas" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Non-taxable and exempt"
-          }
-        }
-      }
-    },
     "No hay facturas de proveedores pendientes." : {
       "localizations" : {
         "en" : {
@@ -3922,6 +4102,16 @@
         }
       }
     },
+    "Otros" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Other"
+          }
+        }
+      }
+    },
     "Otros ingresos" : {
       "localizations" : {
         "en" : {
@@ -3999,6 +4189,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Paid to (business or person)"
+          }
+        }
+      }
+    },
+    "Pagado a la autoridad" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paid to the agency"
           }
         }
       }
@@ -4313,6 +4513,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Receivable %@"
+          }
+        }
+      }
+    },
+    "Por cuenta" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "By account"
           }
         }
       }
@@ -4659,6 +4869,16 @@
         }
       }
     },
+    "Recientes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recent"
+          }
+        }
+      }
+    },
     "Recordar pago" : {
       "localizations" : {
         "en" : {
@@ -4789,12 +5009,12 @@
         }
       }
     },
-    "Registrar pago a la agencia" : {
+    "Registrar pago de impuesto" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Record payment to agency"
+            "value" : "Record tax payment"
           }
         }
       }
@@ -4866,6 +5086,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Search results"
+          }
+        }
+      }
+    },
+    "Resumen" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Summary"
           }
         }
       }
@@ -5187,6 +5418,16 @@
         }
       }
     },
+    "Seguridad" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Security"
+          }
+        }
+      }
+    },
     "Serie" : {
       "localizations" : {
         "en" : {
@@ -5233,6 +5474,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Uncategorized"
+          }
+        }
+      }
+    },
+    "Sin cerrar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not closed"
           }
         }
       }
@@ -5313,6 +5564,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No bills"
+          }
+        }
+      }
+    },
+    "Sin gastos este mes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No expenses this month"
           }
         }
       }
@@ -5527,6 +5788,16 @@
         }
       }
     },
+    "T%lld %@ · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Q%lld %@ · %@"
+          }
+        }
+      }
+    },
     "TASA" : {
       "localizations" : {
         "en" : {
@@ -5583,6 +5854,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Combined rate"
+          }
+        }
+      }
+    },
+    "Tasas" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rates"
           }
         }
       }
@@ -5734,16 +6016,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Total assets"
-          }
-        }
-      }
-    },
-    "Total cobrado" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Total collected"
           }
         }
       }
@@ -6160,6 +6432,16 @@
         }
       }
     },
+    "Ventas no gravables y exentas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non-taxable and exempt sales"
+          }
+        }
+      }
+    },
     "Ventas totales" : {
       "localizations" : {
         "en" : {
@@ -6236,6 +6518,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "since %@"
+          }
+        }
+      }
+    },
+    "iCloud y copias" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud and backups"
           }
         }
       }

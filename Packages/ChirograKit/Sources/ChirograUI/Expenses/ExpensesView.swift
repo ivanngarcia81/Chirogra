@@ -27,7 +27,7 @@ struct ExpensesView: View {
             .padding(.bottom, 8)
 
             switch segment {
-            case .expenses: ExpenseListView()
+            case .expenses: ExpenseListView { segment = .bills }
             case .bills: BillListView()
             case .vendors: VendorListView()
             }
@@ -51,50 +51,140 @@ struct ExpensesView: View {
     }
 }
 
+/// Gastos (canvas `Gastos`): tarjeta del mes con barra por categoría, aviso de facturas por pagar esta semana y la
+/// lista de gastos con un icono por categoría.
 struct ExpenseListView: View {
+    /// Abre «Por pagar» desde el aviso.
+    var showBills: () -> Void = {}
     @Query(sort: \Expense.date, order: .reverse) private var expenses: [Expense]
-    @Query private var accounts: [Account]
+    @Query(sort: \Account.code) private var accounts: [Account]
+    @Query private var journalLines: [JournalLine]
+    @Query(sort: \Bill.dueDate) private var bills: [Bill]
 
-    private func categoryName(_ expense: Expense) -> String {
+    /// Colores de la barra del canvas, de la categoría mayor a «Otros».
+    private static let barColors: [Color] = [
+        Color(light: 0x3A3FD1, dark: 0x8F93FF), Color(light: 0x7C80E8, dark: 0x5C61C9),
+        Color(light: 0xE58A4E, dark: 0xE58A4E), Color(light: 0xF2B33D, dark: 0xF2B33D), Color(light: 0xB9BCCF, dark: 0x6B7090),
+    ]
+
+    private func category(_ expense: Expense) -> Account? {
         let id = expense.sortedLines.first?.accountID
-        return accounts.first { $0.id == id }?.name ?? String(localized: "Sin categoría")
+        return accounts.first { $0.id == id }
     }
 
     var body: some View {
         List {
-            let thisMonth = DateInterval.month(containing: .now)
-            Section {
-                HStack {
-                    VStack(alignment: .leading) {
-                        Text("Gastado este mes").font(.caption.weight(.semibold)).foregroundStyle(Palette.ink3)
-                        Text(expenses.filter { thisMonth.contains($0.date) }.reduce(0) { $0 + $1.total }.money).font(.amount(28))
+            Section { monthCard }
+                .listRowBackground(Palette.surface)
+
+            let dueSoon = bills.filter { $0.isOpen && $0.dueDate <= Calendar.current.date(byAdding: .day, value: 7, to: .now)! }
+            if !dueSoon.isEmpty {
+                Section {
+                    Button(action: showBills) {
+                        HStack(spacing: 10) {
+                            Image(systemName: "exclamationmark.circle.fill").font(.title3).accessibilityHidden(true)
+                            Text("\(dueSoon.count) facturas por pagar esta semana").font(.subheadline.weight(.semibold))
+                            Spacer(minLength: 8)
+                            Text(dueSoon.reduce(0) { $0 + $1.balanceDue }.money).font(.subheadline.weight(.bold)).monospacedDigit()
+                        }
+                        .foregroundStyle(Palette.warning)
                     }
-                    Spacer()
+                    .buttonStyle(.plain)
                 }
+                .listRowBackground(Palette.warningWash)
             }
-            .listRowBackground(Palette.surface)
 
             if expenses.isEmpty {
                 EmptyStateView(systemImage: "wallet.bifold", title: String(localized: "Sin gastos todavía"),
                                message: String(localized: "Registra un gasto con el botón + y adjunta el recibo."))
                     .listRowBackground(Palette.surface)
-            }
-            Section {
-                ForEach(expenses) { expense in
-                    NavigationLink { ExpenseDetailView(expense: expense) } label: {
-                        LedgerRow(title: expense.payee, subtitle: "\(categoryName(expense)) · \(expense.date.dayMonth)") {
-                            IconTile(systemImage: (expense.attachments ?? []).isEmpty ? "receipt" : "paperclip",
-                                     foreground: Palette.outflow, background: Palette.outflowWash)
-                        } trailing: {
-                            Text("−\(expense.total.money)").font(.body.weight(.semibold)).monospacedDigit().foregroundStyle(Palette.outflow)
+            } else {
+                Section {
+                    ForEach(expenses) { expense in
+                        NavigationLink { ExpenseDetailView(expense: expense) } label: {
+                            LedgerRow(title: expense.payee, subtitle: "\(category(expense)?.name ?? String(localized: "Sin categoría")) · \(expense.date.dayMonth)") {
+                                IconTile(systemImage: Self.symbol(for: category(expense)), foreground: Palette.outflow, background: Palette.outflowWash)
+                            } trailing: {
+                                HStack(spacing: 6) {
+                                    if !(expense.attachments ?? []).isEmpty {
+                                        Image(systemName: "paperclip").foregroundStyle(Palette.ink3).accessibilityLabel("Recibo adjunto")
+                                    }
+                                    Text("−\(expense.total.money)").font(.body.weight(.semibold)).monospacedDigit().foregroundStyle(Palette.outflow)
+                                }
+                            }
                         }
                     }
+                } header: {
+                    Text("Recientes").font(.title3.weight(.semibold)).foregroundStyle(Palette.ink).textCase(nil)
                 }
+                .listRowBackground(Palette.surface)
             }
-            .listRowBackground(Palette.surface)
         }
         .screenBackground()
         .navigationLinkIndicatorVisibility(.hidden)
+    }
+
+    /// Gasto del mes por categoría: las mismas cifras que el estado de resultados (gastos y costo de ventas),
+    /// para que coincida con «Gastos» de Inicio. Las cuatro mayores y el resto en «Otros».
+    private var monthCard: some View {
+        let month = DateInterval.month(containing: .now)
+        let statement = Ledger(accounts: accounts, lines: journalLines).incomeStatement(month)
+        let rows = (statement.costOfGoodsSold + statement.expenses).filter { $0.amount > 0 }.sorted { $0.amount > $1.amount }
+        let total = rows.reduce(0) { $0 + $1.amount }
+        var slices = rows.prefix(4).map { (name: $0.account.name, amount: $0.amount) }
+        let rest = rows.dropFirst(4).reduce(0) { $0 + $1.amount }
+        if rest > 0 { slices.append((String(localized: "Otros"), rest)) }
+        return VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(Date.now.formatted(.dateTime.month(.wide)).sentenceCased).font(.footnote.weight(.semibold)).foregroundStyle(Palette.ink3)
+                Text(total.money).font(.amount(24)).foregroundStyle(Palette.ink)
+            }
+            if total > 0 {
+                GeometryReader { proxy in
+                    HStack(spacing: 2) {
+                        ForEach(slices.indices, id: \.self) { index in
+                            Rectangle().fill(Self.barColors[index])
+                                .frame(width: max(2, (proxy.size.width - CGFloat(slices.count - 1) * 2) * CGFloat(slices[index].amount) / CGFloat(total)))
+                        }
+                    }
+                }
+                .frame(height: 10)
+                .clipShape(RoundedRectangle(cornerRadius: 5))
+                .accessibilityHidden(true)
+                LazyVGrid(columns: [GridItem(.flexible(), alignment: .leading), GridItem(.flexible(), alignment: .leading)], spacing: 6) {
+                    ForEach(slices.indices, id: \.self) { index in
+                        HStack(spacing: 6) {
+                            RoundedRectangle(cornerRadius: 3).fill(Self.barColors[index]).frame(width: 9, height: 9).accessibilityHidden(true)
+                            Text(slices[index].name).foregroundStyle(Palette.ink2).lineLimit(1)
+                            Text(slices[index].amount.money).fontWeight(.semibold).foregroundStyle(Palette.ink).monospacedDigit()
+                        }
+                        .font(.footnote)
+                        .accessibilityElement(children: .combine)
+                    }
+                }
+            } else {
+                Text("Sin gastos este mes").font(.subheadline).foregroundStyle(Palette.ink3)
+            }
+        }
+        .padding(.vertical, 4)
+    }
+
+    /// Icono por categoría, por palabras del nombre (en español o en inglés) o por el tipo de cuenta.
+    static func symbol(for account: Account?) -> String {
+        let name = account?.name.lowercased() ?? ""
+        let table: [(keys: [String], symbol: String)] = [
+            (["material", "suministro", "suppl", "job"], "shippingbox"),
+            (["vehí", "vehic", "transport", "car ", "truck", "combustible", "fuel", "gas"], "car"),
+            (["software", "suscrip", "subscri"], "laptopcomputer"),
+            (["renta", "alquiler", "rent", "lease"], "house"),
+            (["seguro", "insurance"], "shield"),
+            (["publicidad", "advertis", "marketing"], "megaphone"),
+            (["comida", "meal", "restaur"], "fork.knife"),
+            (["teléfono", "phone", "internet", "utilit", "servicios públicos"], "bolt"),
+            (["subcontrat", "contract labor", "professional", "profesional"], "person.2"),
+            (["banco", "bank", "comisi", "fee"], "building.columns"),
+        ]
+        return table.first { entry in entry.keys.contains { name.contains($0) } }?.symbol ?? "receipt"
     }
 }
 

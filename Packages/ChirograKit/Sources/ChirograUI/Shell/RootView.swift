@@ -228,37 +228,159 @@ struct AppShell: View {
 /// Pestaña "Más" del iPhone: Contabilidad, Impuestos y Ajustes.
 struct MoreView: View {
     @Query private var companies: [Company]
+    @Query(sort: \Account.code) private var accounts: [Account]
+    @Query private var journalLines: [JournalLine]
+    @Query private var entries: [JournalEntry]
+    @Query private var rates: [TaxRate]
+    @AppStorage("iCloudSyncEnabled") private var iCloudSyncEnabled = false
+    @AppStorage("appLockEnabled") private var appLockEnabled = false
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    private var columns: [GridItem] {
+        Array(repeating: GridItem(.flexible(), spacing: 8), count: dynamicTypeSize.isAccessibilitySize ? 1 : 2)
+    }
 
     var body: some View {
-        List {
-            if let company = companies.first {
-                Section {
-                    NavigationLink { CompanyProfileView(company: company) } label: {
-                        LedgerRow(title: company.displayName, subtitle: company.legalName) {
-                            InitialsTile(text: Initials.from(company.displayName),
-                                         foreground: Palette.background, background: Palette.ink)
-                        } trailing: { EmptyView() }
-                    }
+        ScrollView {
+            VStack(alignment: .leading, spacing: 14) {
+                if let company = companies.first { companyCard(company) }
+
+                section(String(localized: "Banca"))
+                MoreTile(title: String(localized: "Cuentas y saldos"), subtitle: String(localized: "\(bankCount) cuentas"),
+                         systemImage: "building.columns") { BankingView() }
+
+                section(String(localized: "Contabilidad"))
+                LazyVGrid(columns: columns, spacing: 8) {
+                    MoreTile(title: String(localized: "Plan de cuentas"), subtitle: String(localized: "\(accounts.filter { !$0.isArchived }.count) cuentas"),
+                             systemImage: "list.bullet.indent") { ChartOfAccountsView() }
+                    MoreTile(title: String(localized: "Asientos de diario"), subtitle: String(localized: "\(entriesThisMonth) este mes"),
+                             systemImage: "doc.plaintext") { JournalListView() }
+                    MoreTile(title: String(localized: "Libro mayor"), subtitle: String(localized: "Por cuenta"),
+                             systemImage: "book.closed") { LedgerAccountPickerView() }
+                    MoreTile(title: String(localized: "Cierre de periodo"), subtitle: closeSubtitle,
+                             systemImage: "lock") { PeriodCloseView() }
                 }
+
+                section(String(localized: "Impuestos"))
+                LazyVGrid(columns: columns, spacing: 8) {
+                    MoreTile(title: String(localized: "Resumen"), subtitle: taxSubtitle, subtitleColor: taxOwed > 0 ? Palette.warning : Palette.ink3,
+                             systemImage: "percent") { TaxesView() }
+                    MoreTile(title: String(localized: "Tasas"), subtitle: String(localized: "\(rates.count) activas"),
+                             systemImage: "list.number") { TaxesView(tab: .rates) }
+                }
+
+                section(String(localized: "Ajustes"))
+                VStack(spacing: 0) {
+                    if let company = companies.first {
+                        settingsRow(String(localized: "Perfil de la empresa"), "building.2", value: nil) { CompanyProfileView(company: company) }
+                        Divider().padding(.leading, 52)
+                        settingsRow(String(localized: "Moneda y formatos"), "dollarsign.circle", value: company.currencyCode) { FormatsView(company: company) }
+                        Divider().padding(.leading, 52)
+                    }
+                    settingsRow(String(localized: "iCloud y copias"), "icloud",
+                                value: iCloudSyncEnabled ? String(localized: "Activado") : String(localized: "Desactivado")) { DataAndSecurityView() }
+                    Divider().padding(.leading, 52)
+                    settingsRow(String(localized: "Seguridad"), "faceid",
+                                value: appLockEnabled ? String(localized: "Face ID") : String(localized: "Desactivado")) { DataAndSecurityView() }
+                }
+                .padding(.horizontal, 12)
+                .background(Palette.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
             }
-            Section(title: "Banca") {
-                NavigationLink { BankingView() } label: { Label("Cuentas y saldos", systemImage: "building.columns") }
-            }
-            Section(title: "Contabilidad") {
-                NavigationLink { ChartOfAccountsView() } label: { Label("Plan de cuentas", systemImage: "list.bullet.indent") }
-                NavigationLink { JournalListView() } label: { Label("Asientos de diario", systemImage: "doc.plaintext") }
-                NavigationLink { LedgerAccountPickerView() } label: { Label("Libro mayor", systemImage: "book.closed") }
-                NavigationLink { PeriodCloseView() } label: { Label("Cierre de periodo", systemImage: "lock") }
-            }
-            Section(title: "Impuestos") {
-                NavigationLink { TaxesView() } label: { Label("Sales tax", systemImage: "percent") }
-            }
-            Section(title: "Ajustes") {
-                SettingsLinks(showsCompanyProfile: false)
-            }
+            .padding(Metrics.gutter)
         }
-        .screenBackground()
+        .background(Palette.background)
         .navigationTitle("Más")
+    }
+
+    private var bankCount: Int { accounts.filter { !$0.isArchived && ($0.subtype == .bank || $0.subtype == .creditCard) }.count }
+
+    private var entriesThisMonth: Int {
+        let month = DateInterval.month(containing: .now)
+        return entries.filter { month.contains($0.date) }.count
+    }
+
+    private var closeSubtitle: String {
+        companies.first?.lockDate.map { String(localized: "Cerrado hasta \($0.dayMonth)") } ?? String(localized: "Sin cerrar")
+    }
+
+    private var taxOwed: Int64 {
+        let ledger = Ledger(accounts: accounts, lines: journalLines)
+        return accounts.filter { $0.subtype == .salesTaxPayable }.reduce(0) { $0 + ledger.balance(of: $1) }
+    }
+
+    private var taxSubtitle: String {
+        taxOwed > 0 ? String(localized: "\(taxOwed.money) por pagar") : String(localized: "Al día")
+    }
+
+    private func section(_ title: String) -> some View {
+        SectionLabel(text: title).padding(.top, 4).accessibilityAddTraits(.isHeader)
+    }
+
+    private func companyCard(_ company: Company) -> some View {
+        NavigationLink { CompanyProfileView(company: company) } label: {
+            HStack(spacing: 12) {
+                Text(Initials.from(company.displayName))
+                    .font(.headline.weight(.bold)).foregroundStyle(Palette.background)
+                    .frame(width: 44, height: 44)
+                    .background(Palette.ink, in: RoundedRectangle(cornerRadius: 13, style: .continuous))
+                    .accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(company.displayName).font(.headline).foregroundStyle(Palette.ink)
+                    Text(company.legalName).font(.footnote).foregroundStyle(Palette.ink3)
+                }
+                .lineLimit(1)
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right").font(.footnote.weight(.semibold)).foregroundStyle(Palette.ink3)
+            }
+            .padding(.horizontal, 14).padding(.vertical, 12)
+            .background(Palette.surface, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func settingsRow<Destination: View>(_ title: String, _ image: String, value: String?,
+                                                 @ViewBuilder destination: @escaping () -> Destination) -> some View {
+        NavigationLink(destination: destination) {
+            HStack(spacing: 12) {
+                Image(systemName: image).font(.subheadline).foregroundStyle(Palette.ink2)
+                    .frame(width: 30, height: 30)
+                    .background(Palette.surface2, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+                    .accessibilityHidden(true)
+                Text(title).foregroundStyle(Palette.ink).lineLimit(1)
+                Spacer(minLength: 8)
+                if let value { Text(value).font(.subheadline).foregroundStyle(Palette.ink3).lineLimit(1) }
+                Image(systemName: "chevron.right").font(.caption.weight(.semibold)).foregroundStyle(Palette.ink3)
+            }
+            .frame(minHeight: 52)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+/// Tarjeta de «Más» (canvas `Mas`): icono, título y subtítulo con un dato.
+struct MoreTile<Destination: View>: View {
+    let title: String
+    let subtitle: String
+    var subtitleColor: Color = Palette.ink3
+    let systemImage: String
+    @ViewBuilder let destination: () -> Destination
+
+    var body: some View {
+        NavigationLink(destination: destination) {
+            VStack(alignment: .leading, spacing: 6) {
+                Image(systemName: systemImage).font(.title3).foregroundStyle(Palette.brand)
+                    .frame(height: 26, alignment: .leading).accessibilityHidden(true)
+                Text(title).font(.subheadline.weight(.semibold)).foregroundStyle(Palette.ink).lineLimit(2)
+                Text(subtitle).font(.caption.weight(.semibold)).foregroundStyle(subtitleColor).lineLimit(1)
+            }
+            .padding(12)
+            .frame(maxWidth: .infinity, minHeight: 96, alignment: .topLeading)
+            .background(Palette.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 }
 

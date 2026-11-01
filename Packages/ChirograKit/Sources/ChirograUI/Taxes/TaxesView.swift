@@ -3,16 +3,25 @@ import ChirograData
 import SwiftData
 import SwiftUI
 
-/// Impuestos (canvas: `Impuestos`): saldo de sales tax por pagar, tasas por jurisdicción y grupos.
+/// Impuestos (canvas `Impuestos`): Resumen del trimestre elegido (lo que se debe, cuándo, desglose y pago) y Tasas.
+/// «Deducibles» del canvas no está en el MVP.
 struct TaxesView: View {
+    enum Tab: String, CaseIterable, Identifiable {
+        case summary = "Resumen", rates = "Tasas"
+        var id: String { rawValue }
+    }
+
     @Environment(\.modelContext) private var context
     @Query(sort: \Account.code) private var accounts: [Account]
     @Query private var journalLines: [JournalLine]
     @Query(sort: \TaxAgency.name) private var agencies: [TaxAgency]
     @Query(sort: \TaxGroup.name) private var groups: [TaxGroup]
     @Query private var taxLines: [InvoiceTaxLine]
-
     @Query(sort: \JournalEntry.date, order: .reverse) private var entries: [JournalEntry]
+
+    @State var tab: Tab = .summary
+    /// Trimestre mostrado: 0 el actual, −1 el anterior…
+    @State private var quarterOffset = 0
     @State private var showingRate = false
     @State private var showingPayment = false
     @State private var showingGroup = false
@@ -20,21 +29,103 @@ struct TaxesView: View {
     var body: some View {
         let ledger = Ledger(accounts: accounts, lines: journalLines)
         let payable = accounts.filter { $0.subtype == .salesTaxPayable }.reduce(0) { $0 + ledger.balance(of: $1) }
-        let quarter = Calendar.current.dateInterval(of: .quarter, for: .now)
         let _ = taxLines.count   // se observa para recalcular el resumen al emitir facturas
-        List {
-            Section {
-                let position = SalesTaxPosition(liabilityBalance: payable)
-                HeroCard(title: position.title, value: position.amount.money, detail: position.detail)
-                    .listRowInsets(EdgeInsets())
+        ScrollView {
+            VStack(alignment: .leading, spacing: Metrics.cardSpacing) {
+                Picker("Sección", selection: $tab) {
+                    ForEach(Tab.allCases) { Text($0.localizedTitle).tag($0) }
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                switch tab {
+                case .summary: summary(payable: payable)
+                case .rates: ratesTab
+                }
             }
-            .listRowBackground(Color.clear)
+            .padding(Metrics.gutter)
+            .frame(maxWidth: 720, alignment: .leading)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .background(Palette.background)
+        .navigationTitle("Impuestos")
+        .sheet(isPresented: $showingRate) { NavigationStack { TaxRateEditorView() } }
+        .sheet(isPresented: $showingPayment) { NavigationStack { SalesTaxPaymentView(owed: payable) } }
+        .sheet(isPresented: $showingGroup) { NavigationStack { TaxGroupEditorView() } }
+    }
 
-            Section {
-                Button("Registrar pago a la agencia", systemImage: "building.columns") { showingPayment = true }
-                    .disabled(payable <= 0)
-                let payments = entries.filter { $0.source == .salesTaxPayment && $0.reversesEntryID == nil }
-                ForEach(payments.prefix(5)) { entry in
+    // MARK: Resumen
+
+    private func quarter(_ offset: Int) -> DateInterval {
+        let calendar = Calendar.current
+        let date = calendar.date(byAdding: .month, value: offset * 3, to: .now) ?? .now
+        return calendar.dateInterval(of: .quarter, for: date) ?? DateInterval(start: date, duration: 0)
+    }
+
+    /// «T4 2026 · oct–dic».
+    private func quarterTitle(_ interval: DateInterval) -> String {
+        let calendar = Calendar.current
+        let number = (calendar.component(.month, from: interval.start) - 1) / 3 + 1
+        let months = (interval.start..<interval.end.addingTimeInterval(-1)).formatted(.interval.month(.abbreviated))
+        return String(localized: "T\(number) \(interval.start.formatted(.dateTime.year())) · \(months)")
+    }
+
+    /// Fecha habitual de declaración: el día 20 del mes siguiente al trimestre (Texas y muchos estados).
+    private func dueDate(_ interval: DateInterval) -> Date {
+        Calendar.current.date(byAdding: .day, value: 19, to: interval.end) ?? interval.end
+    }
+
+    @ViewBuilder
+    private func summary(payable: Int64) -> some View {
+        let interval = quarter(quarterOffset)
+        let position = SalesTaxPosition(liabilityBalance: payable)
+        Menu {
+            ForEach(0..<4) { index in
+                Button(quarterTitle(quarter(-index))) { quarterOffset = -index }
+            }
+        } label: {
+            HStack(spacing: 6) {
+                Text(quarterTitle(interval)).font(.subheadline.weight(.semibold))
+                Image(systemName: "chevron.down").font(.caption.weight(.bold))
+            }
+            .foregroundStyle(Palette.ink)
+            .padding(.horizontal, 14)
+            .frame(minHeight: 44)
+            .background(Palette.surface, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+        }
+        .accessibilityLabel("Trimestre")
+        .accessibilityValue(quarterTitle(interval))
+
+        HeroCard(title: position.title, value: position.amount.money,
+                 detail: payable > 0 ? String(localized: "Declarar y pagar antes del \(dueDate(interval).shortDate)") : position.detail)
+
+        if let summary = try? Bookkeeper(context: context).salesTaxSummary(from: interval.start, to: interval.end.addingTimeInterval(-1)) {
+            let paid = entries.filter { $0.source == .salesTaxPayment && $0.reversesEntryID == nil && interval.contains($0.date) }
+                .reduce(0) { $0 + $1.totalDebits }
+            VStack(spacing: 0) {
+                breakdownRow(String(localized: "Ventas gravables"), summary.taxableSales.money)
+                breakdownRow(String(localized: "Ventas no gravables y exentas"), (summary.nonTaxableSales + summary.exemptSales).money)
+                ForEach(summary.rows) { row in
+                    breakdownRow("\(row.name) · \(row.percent.formatted())%", row.tax.money)
+                }
+                breakdownRow(String(localized: "Cobrado en el periodo"), summary.totalTax.money, bold: true)
+                breakdownRow(String(localized: "Pagado a la autoridad"), paid.money, last: true)
+            }
+            .padding(.horizontal, 14)
+            .background(Palette.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        }
+
+        Button("Registrar pago de impuesto") { showingPayment = true }
+            .buttonStyle(.secondary)
+            .disabled(payable <= 0)
+        Text("El día 20 del mes siguiente es la fecha habitual en Texas y otros estados; confírmala con tu agencia.")
+            .font(.caption).foregroundStyle(Palette.ink3)
+
+        let payments = entries.filter { $0.source == .salesTaxPayment && $0.reversesEntryID == nil }
+        if !payments.isEmpty {
+            SectionLabel(text: String(localized: "Pagos a la agencia")).padding(.top, 4)
+            VStack(spacing: 0) {
+                ForEach(Array(payments.prefix(5).enumerated()), id: \.element.id) { index, entry in
+                    if index > 0 { Divider() }
                     LabeledContent {
                         Text(entry.totalDebits.money).monospacedDigit()
                     } label: {
@@ -43,50 +134,70 @@ struct TaxesView: View {
                             Text(entry.date.shortDate).font(.subheadline).foregroundStyle(Palette.ink3)
                         }
                     }
-                }
-            } header: {
-                SectionLabel(text: String(localized: "Pagos a la agencia"))
-            }
-
-            Section(title: "Este trimestre") {
-                if let quarter, let summary = try? Bookkeeper(context: context).salesTaxSummary(
-                    from: quarter.start, to: quarter.end.addingTimeInterval(-1)) {
-                    LabeledContent("Ventas gravables", value: summary.taxableSales.money)
-                    LabeledContent("No gravables y exentas", value: (summary.nonTaxableSales + summary.exemptSales).money)
-                    ForEach(summary.rows) { row in
-                        LabeledContent("\(row.name) · \(row.percent.formatted())%", value: row.tax.money)
-                    }
-                    LabeledContent("Total cobrado", value: summary.totalTax.money).fontWeight(.semibold)
+                    .frame(minHeight: 48)
                 }
             }
-            .monospacedDigit()
-
-            Section(title: "Grupos (lo que se aplica en la factura)") {
-                ForEach(groups) { group in
-                    LabeledContent(group.name, value: "\(group.percent.formatted())%")
-                }
-                Button("Nuevo grupo", systemImage: "plus") { showingGroup = true }.disabled(agencies.flatMap { $0.rates ?? [] }.isEmpty)
-            }
-
-            ForEach(agencies) { agency in
-                Section(heading: agency.name) {
-                    ForEach(agency.rates ?? []) { rate in
-                        LabeledContent(rate.name, value: "\(rate.percent.formatted())%")
-                    }
-                }
-            }
-            Section {
-                Button("Nueva tasa", systemImage: "plus") { showingRate = true }
-            } footer: {
-                Text("Escribe las tasas de tu estado, condado y ciudad. Chirogra no determina qué es gravable: consúltalo con tu agencia o tu contador.")
-            }
+            .padding(.horizontal, 14)
+            .background(Palette.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
         }
-        .listRowBackground(Palette.surface)
-        .screenBackground()
-        .navigationTitle("Impuestos")
-        .sheet(isPresented: $showingRate) { NavigationStack { TaxRateEditorView() } }
-        .sheet(isPresented: $showingPayment) { NavigationStack { SalesTaxPaymentView(owed: payable) } }
-        .sheet(isPresented: $showingGroup) { NavigationStack { TaxGroupEditorView() } }
+    }
+
+    private func breakdownRow(_ title: String, _ value: String, bold: Bool = false, last: Bool = false) -> some View {
+        VStack(spacing: 0) {
+            LabeledContent(title, value: value)
+                .font(.subheadline.weight(bold ? .semibold : .regular))
+                .monospacedDigit()
+                .frame(minHeight: 44)
+            if !last { Divider() }
+        }
+    }
+
+    // MARK: Tasas
+
+    @ViewBuilder
+    private var ratesTab: some View {
+        SectionLabel(text: String(localized: "Grupos (lo que se aplica en la factura)"))
+        VStack(spacing: 0) {
+            ForEach(Array(groups.enumerated()), id: \.element.id) { index, group in
+                if index > 0 { Divider() }
+                rateRow(group.name, String(localized: "Combinada"), group.percent)
+            }
+            if !groups.isEmpty { Divider() }
+            Button("Nuevo grupo", systemImage: "plus") { showingGroup = true }
+                .fontWeight(.semibold)
+                .frame(maxWidth: .infinity, minHeight: 48, alignment: .leading)
+                .disabled(agencies.flatMap { $0.rates ?? [] }.isEmpty)
+        }
+        .padding(.horizontal, 14)
+        .background(Palette.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+
+        ForEach(agencies) { agency in
+            SectionLabel(text: agency.name).padding(.top, 4)
+            VStack(spacing: 0) {
+                ForEach(Array((agency.rates ?? []).enumerated()), id: \.element.id) { index, rate in
+                    if index > 0 { Divider() }
+                    rateRow(rate.name, String(localized: "Componente"), rate.percent)
+                }
+            }
+            .padding(.horizontal, 14)
+            .background(Palette.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        }
+        Button("Nueva tasa", systemImage: "plus") { showingRate = true }.buttonStyle(.secondary)
+        Text("Escribe las tasas de tu estado, condado y ciudad. Chirogra no determina qué es gravable: consúltalo con tu agencia o tu contador.")
+            .font(.caption).foregroundStyle(Palette.ink3)
+    }
+
+    private func rateRow(_ name: String, _ kind: String, _ percent: Decimal) -> some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(name).font(.body.weight(.semibold)).foregroundStyle(Palette.ink)
+                Text(kind).font(.caption).foregroundStyle(Palette.ink3)
+            }
+            Spacer(minLength: 8)
+            Text("\(percent.formatted())%").font(.body.weight(.bold)).monospacedDigit().foregroundStyle(Palette.ink)
+        }
+        .frame(minHeight: 52)
+        .accessibilityElement(children: .combine)
     }
 }
 
