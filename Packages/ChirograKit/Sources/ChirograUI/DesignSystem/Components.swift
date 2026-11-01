@@ -70,6 +70,33 @@ extension String {
     nonisolated var sentenceCased: String { prefix(1).uppercased() + dropFirst() }
 }
 
+extension View {
+    /// Hoja de un editor: con texto de accesibilidad, del tamaño de página (en el iPad la hoja de formulario se
+    /// quedaba pequeña y solo cabían dos o tres campos).
+    func editorSheetSizing() -> some View { modifier(EditorSheetSizing()) }
+}
+
+private struct EditorSheetSizing: ViewModifier {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    func body(content: Content) -> some View {
+        if dynamicTypeSize.isAccessibilitySize { content.presentationSizing(.page) } else { content }
+    }
+}
+
+/// Cambios sin guardar del editor abierto en la columna de detalle. Lo consulta la barra lateral antes de cambiar de
+/// pantalla: rehacer la vista dividida cierra el editor y se perdería lo escrito.
+@Observable
+final class UnsavedChanges {
+    var hasChanges = false
+    /// Lo que hace el editor al descartar (p. ej. borrar el borrador que guardó la vista previa).
+    var discard: (() -> Void)?
+}
+
+extension EnvironmentValues {
+    @Entry var unsavedChanges: UnsavedChanges?
+}
+
 /// Título grande dentro del contenido en el Mac (`MacInicio`, `MacVentas`, `MacGastos`…), donde el de la ventana
 /// es pequeño. En iOS no se dibuja: el título va en la barra de navegación.
 struct MacPageTitle: View {

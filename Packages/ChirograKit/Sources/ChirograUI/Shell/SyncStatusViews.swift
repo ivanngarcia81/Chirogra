@@ -285,7 +285,8 @@ struct SyncErrorBanner: View {
                 if sizeClass == .compact {
                     ScrollView { details(code: code, network: network) }.presentationDetents([.medium, .large])
                 } else {
-                    details(code: code, network: network).presentationSizing(.fitted)
+                    // Ancho fijo: con `.fitted` y sin él, el texto se medía en una sola línea y se cortaba.
+                    details(code: code, network: network).frame(width: 440).presentationSizing(.fitted)
                 }
             }
             #endif
@@ -301,9 +302,11 @@ struct SyncErrorBanner: View {
                 .background(Palette.negativeWash, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
                 .accessibilityHidden(true)
             Text("No pudimos sincronizar tus datos").font(.title3.weight(.bold)).multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
             Text(network ? String(localized: "Tus cambios están a salvo en este dispositivo y se enviarán solos cuando vuelva la conexión. Revisa tu red.")
                          : String(localized: "Tus cambios están a salvo en este dispositivo. Revisa tu sesión de iCloud en los ajustes del sistema."))
                 .font(.subheadline).foregroundStyle(Palette.ink2).multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
             VStack(spacing: 0) {
                 detailRow(String(localized: "Última sincronización")) {
                     Text(monitor.lastSync?.formatted(.appDateTime.day().month(.abbreviated).hour().minute()) ?? "—")

@@ -2634,6 +2634,16 @@
         }
       }
     },
+    "Descartar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discard"
+          }
+        }
+      }
+    },
     "Descartar borrador" : {
       "localizations" : {
         "en" : {
@@ -7271,6 +7281,16 @@
         }
       }
     },
+    "Si cambias de pantalla se pierde lo que escribiste." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "If you leave this screen, what you typed will be lost."
+          }
+        }
+      }
+    },
     "Si le pagas $600 o más en el año, envíale el 1099-NEC antes del 31 de enero." : {
       "localizations" : {
         "en" : {
@@ -8960,6 +8980,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Keep the draft?"
+          }
+        }
+      }
+    },
+    "¿Descartar los cambios?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discard changes?"
           }
         }
       }

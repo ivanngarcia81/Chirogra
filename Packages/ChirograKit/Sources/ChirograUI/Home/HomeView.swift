@@ -133,6 +133,7 @@ struct HomeView: View {
                 case .customer: CustomerEditorView()
                 }
             }
+            .editorSheetSizing()
         }
     }
 

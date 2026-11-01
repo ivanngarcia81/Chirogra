@@ -84,6 +84,7 @@ struct SalesView: View {
             NavigationStack {
                 if segment == .invoices { InvoiceEditorView() } else { CustomerEditorView() }
             }
+            .editorSheetSizing()
         }
         .navigationDestination(isPresented: Binding(get: { showingEditor && editorInline }, set: { showingEditor = $0 })) {
             InvoiceEditorView()

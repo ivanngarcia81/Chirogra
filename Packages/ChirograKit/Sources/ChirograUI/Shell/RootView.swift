@@ -199,6 +199,9 @@ struct AppShell: View {
     @State private var tab: AppSection = .home
     @State private var selection: SidebarItem = .section(.home)
     @State private var query = ""
+    /// Cambios sin guardar del editor de la columna de detalle: antes de cambiar de pantalla se pregunta.
+    @State private var unsavedChanges = UnsavedChanges()
+    @State private var pendingSelection: SidebarItem?
     /// Se guarda aquí para que la barra lateral siga abierta o cerrada al rehacer la vista dividida.
     @State private var columnVisibility: NavigationSplitViewVisibility = .automatic
 
@@ -213,6 +216,14 @@ struct AppShell: View {
     #if os(iOS)
     private var isDetailNarrow: Bool { detailWidth < (dynamicTypeSize.isAccessibilitySize ? 960 : 760) }
     #endif
+
+    /// Con un editor con cambios abierto, la barra lateral pregunta antes de cambiar de pantalla (como «Cancelar»).
+    private var sidebarSelection: Binding<SidebarItem> {
+        Binding(get: { selection }, set: { item in
+            guard item != selection else { return }
+            if unsavedChanges.hasChanges { pendingSelection = item } else { selection = item }
+        })
+    }
 
     /// iPhone: 5 pestañas (Inicio · Ventas · Gastos · Reportes · Más).
     private var tabs: some View {
@@ -235,7 +246,7 @@ struct AppShell: View {
     /// iPad y Mac: barra lateral propia (`Sidebar`); con texto en la búsqueda, el detalle muestra los resultados.
     private var split: some View {
         NavigationSplitView(columnVisibility: $columnVisibility) {
-            Sidebar(selection: $selection, query: $query)
+            Sidebar(selection: sidebarSelection, query: $query)
                 .navigationSplitViewColumnWidth(min: 200, ideal: 240)
                 #if os(iOS)
                 .toolbar(removing: .title)
@@ -260,6 +271,18 @@ struct AppShell: View {
         // toman el entorno de aquí.
         .environment(\.isNarrowColumn, isDetailNarrow)
         #endif
+        .environment(\.unsavedChanges, unsavedChanges)
+        .alert("¿Descartar los cambios?", isPresented: Binding(get: { pendingSelection != nil }, set: { if !$0 { pendingSelection = nil } })) {
+            Button("Descartar", role: .destructive) {
+                unsavedChanges.discard?()
+                unsavedChanges.hasChanges = false
+                if let pendingSelection { selection = pendingSelection }
+                pendingSelection = nil
+            }
+            Button("Seguir editando", role: .cancel) { pendingSelection = nil }
+        } message: {
+            Text("Si cambias de pantalla se pierde lo que escribiste.")
+        }
         // Al elegir otro elemento de la barra lateral se rehace la vista dividida entera: las pantallas abiertas con
         // `NavigationLink(destination:)` quedan en la pila propia de la columna de detalle, que no se vacía al
         // cambiar la raíz ni con `.id` en el `NavigationStack` interior.

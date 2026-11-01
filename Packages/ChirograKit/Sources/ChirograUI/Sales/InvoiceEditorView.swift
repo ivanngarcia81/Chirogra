@@ -45,6 +45,10 @@ struct InvoiceEditorView: View {
     @State private var showingNewCustomer = false
     @State private var previewing: Invoice?
     @State private var confirmingCancel = false
+    @State private var confirmingDiscardChanges = false
+    /// Lo que había al abrir el editor, para saber si hay cambios sin guardar.
+    @State private var baseline: String?
+    @Environment(\.unsavedChanges) private var unsavedChanges
     @State private var loadedDraft = false
     /// Al cargar un borrador no se aplican los valores por defecto del cliente (impuesto, vencimiento).
     @State private var skipCustomerDefaults = false
@@ -65,6 +69,16 @@ struct InvoiceEditorView: View {
         )
     }
 
+    /// Lo que escribe el usuario (no los valores por defecto que pone el cliente).
+    private var signature: String {
+        let lineText = lines.map { "\($0.details)|\($0.quantity)|\($0.unitPrice)|\($0.isTaxable)" }.joined(separator: ";")
+        return "\(customerID?.uuidString ?? "")#\(lineText)#\(discount)#\(customerMessage)"
+    }
+
+    private var editorTitle: String { editing == nil ? String(localized: "Nueva factura") : String(localized: "Editar borrador") }
+
+    private var hasChanges: Bool { hasNewDraft || (baseline.map { $0 != signature } ?? false) }
+
     var body: some View {
         Group {
             if isWide { wideForm } else { compactForm }
@@ -72,7 +86,7 @@ struct InvoiceEditorView: View {
         .sheet(item: $previewing) { invoice in
             NavigationStack { InvoicePreviewView(invoice: invoice, company: companies.first) }
         }
-        .navigationTitle(editing == nil ? "Nueva factura" : "Editar borrador")
+        .navigationTitle(editorTitle)
         .modifier(InlineTitleUnless(wide: isWide))
         // En pantalla ancha se abre en la navegación: «Cancelar» hace de «Atrás» (y pregunta por el borrador).
         .navigationBarBackButtonHidden(isWide)
@@ -103,10 +117,23 @@ struct InvoiceEditorView: View {
         } message: {
             Text("Al ver la vista previa se guardó como borrador.")
         }
+        .confirmationDialog("¿Descartar los cambios?", isPresented: $confirmingDiscardChanges, titleVisibility: .visible) {
+            Button("Descartar", role: .destructive) { dismiss() }
+            Button("Seguir editando", role: .cancel) {}
+        }
         .onAppear {
             if let editing, !loadedDraft { load(editing) }
             if customerID == nil { customerID = preselectedCustomer?.id }
             if lines.first?.incomeAccountID == nil { lines[0].incomeAccountID = incomeAccounts.first?.id }
+            if baseline == nil { baseline = signature }
+        }
+        // La barra lateral pregunta antes de cambiar de pantalla si hay cambios (y al descartar borra el borrador
+        // que guardó la vista previa).
+        .onChange(of: hasChanges, initial: true) { reportUnsavedChanges() }
+        .onChange(of: savedInvoice?.id) { reportUnsavedChanges() }
+        .onDisappear {
+            unsavedChanges?.hasChanges = false
+            unsavedChanges?.discard = nil
         }
         .onChange(of: customerID) {
             if skipCustomerDefaults { skipCustomerDefaults = false; return }
@@ -234,6 +261,14 @@ struct InvoiceEditorView: View {
     private var wideForm: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
+                #if os(macOS)
+                // `MacFacturaNueva`: ruta «Ventas › Nueva factura» y título grande dentro del contenido.
+                VStack(alignment: .leading, spacing: 2) {
+                    // Con textos que ya están en el catálogo: la sincronización solo compila para iOS.
+                    Text(verbatim: "\(String(localized: "Ventas")) › \(editorTitle)").font(.subheadline).foregroundStyle(Palette.ink3)
+                    MacPageTitle(editorTitle)
+                }
+                #endif
                 if let errorMessage { ErrorBanner(message: errorMessage) }
                 wideHeaderCard
                 wideLinesCard
@@ -536,8 +571,17 @@ struct InvoiceEditorView: View {
     /// Borrador creado en esta pantalla (por la vista previa) al hacer una factura nueva.
     private var hasNewDraft: Bool { editing == nil && savedInvoice != nil }
 
+    private func reportUnsavedChanges() {
+        unsavedChanges?.hasChanges = hasChanges
+        unsavedChanges?.discard = { [savedInvoice, editing, context] in
+            guard editing == nil, let savedInvoice else { return }
+            context.delete(savedInvoice)
+            try? context.save()
+        }
+    }
+
     private func cancel() {
-        if hasNewDraft { confirmingCancel = true } else { dismiss() }
+        if hasNewDraft { confirmingCancel = true } else if hasChanges { confirmingDiscardChanges = true } else { dismiss() }
     }
 
     private func discardDraft() {

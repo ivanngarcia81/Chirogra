@@ -117,6 +117,7 @@ struct ExpensesView: View {
                 case .vendors: VendorEditorView()
                 }
             }
+            .editorSheetSizing()
         }
     }
 }
@@ -602,12 +603,15 @@ struct BillEditorView: View {
             }
             Section {
                 LabeledContent("Importe total") {
-                    MoneyField(title: String(localized: "Importe total"), minorUnits: $amount).multilineTextAlignment(.trailing)
+                    // Sin su propia etiqueta: en el Mac salía «Importe total Importe total».
+                    MoneyField(title: String(localized: "Importe total"), minorUnits: $amount).multilineTextAlignment(.trailing).labelsHidden()
                 }
                 AccountPicker(title: String(localized: "Categoría"), accounts: costAccounts, selection: $accountID)
                 TextField("Descripción", text: $details)
             }
         }
+        // Agrupado también en el Mac: con el estilo por defecto los campos llegaban a los bordes de la hoja.
+        .formStyle(.grouped)
         .screenBackground()
         .navigationTitle("Factura por pagar")
         .inlineTitle()
@@ -659,12 +663,13 @@ struct PayBillView: View {
             }
             Section {
                 LabeledContent("Monto") {
-                    MoneyField(title: String(localized: "Monto"), minorUnits: $amount).multilineTextAlignment(.trailing)
+                    MoneyField(title: String(localized: "Monto"), minorUnits: $amount).multilineTextAlignment(.trailing).labelsHidden()
                 }
                 DatePicker("Fecha", selection: $date, displayedComponents: .date)
                 AccountPicker(title: String(localized: "Pagar desde"), accounts: accounts.filtered { $0.isMoneyAccount && $0 != .undepositedFunds }, selection: $accountID)
             }
         }
+        .formStyle(.grouped)
         .screenBackground()
         .navigationTitle("Pagar factura")
         .inlineTitle()
