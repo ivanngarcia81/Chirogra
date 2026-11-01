@@ -33,7 +33,7 @@ struct HomeView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Metrics.cardSpacing) {
-                Text(Date.now.formatted(.dateTime.month(.wide).year()).capitalized)
+                Text(Date.now.monthYear)
                     .font(.subheadline).foregroundStyle(Palette.ink3)
 
                 HeroCard(title: "Efectivo disponible", value: ledger.availableCash.money,

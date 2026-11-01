@@ -55,7 +55,7 @@ struct CompanyProfileView: View {
             Section {
                 Picker("Inicio del año fiscal", selection: $company.fiscalYearStartMonth) {
                     ForEach(1...12, id: \.self) { month in
-                        Text(Calendar.current.monthSymbols[month - 1].capitalized).tag(month)
+                        Text(Calendar.current.standaloneMonthSymbols[month - 1].sentenceCased).tag(month)
                     }
                 }
             }

@@ -12,8 +12,15 @@ extension Int64 {
 extension Date {
     var shortDate: String { formatted(.dateTime.day().month(.abbreviated).year()) }
     var dayMonth: String { formatted(.dateTime.day().month(.abbreviated)) }
+    /// «Octubre de 2026»: solo la primera letra en mayúscula (`capitalized` daría «Octubre De 2026»).
+    var monthYear: String { formatted(.dateTime.month(.wide).year()).sentenceCased }
     /// «vence Oct 28» con espacios de no separación: en una fila estrecha se parte antes, nunca dentro.
     var dueLabel: String { "vence \(dayMonth)".replacingOccurrences(of: " ", with: "\u{00A0}") }
+}
+
+extension String {
+    /// Primera letra en mayúscula y el resto tal cual, como se escribe en español.
+    nonisolated var sentenceCased: String { prefix(1).uppercased() + dropFirst() }
 }
 
 // MARK: - Tipografía
