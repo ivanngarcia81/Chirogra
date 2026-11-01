@@ -278,14 +278,21 @@ struct LockView: View {
     @State private var isEvaluating = false
     /// Face ID se pide solo una vez por sí solo; si el usuario cancela, queda el botón «Desbloquear».
     @State private var didPromptAutomatically = false
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         VStack(spacing: 20) {
             LogoMark(size: 64)
             Text("Chirogra está bloqueada").font(.title2.weight(.semibold))
             if failed { Text("No se pudo verificar tu identidad.").foregroundStyle(Palette.negative) }
-            Button("Desbloquear", action: unlock).buttonStyle(.primary).frame(maxWidth: 280)
+            // Con texto grande el botón ocupa todo el ancho: a 280 pt «Desbloquear» se partía en dos líneas.
+            Button(action: unlock) {
+                Text("Desbloquear").lineLimit(1).minimumScaleFactor(0.7)
+            }
+            .buttonStyle(.primary)
+                .frame(maxWidth: dynamicTypeSize.isAccessibilitySize ? .infinity : 280)
         }
+        .multilineTextAlignment(.center)
         .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Palette.background)
