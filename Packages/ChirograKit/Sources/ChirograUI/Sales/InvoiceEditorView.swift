@@ -66,49 +66,55 @@ struct InvoiceEditorView: View {
                 Section { ErrorBanner(message: errorMessage) }.listRowBackground(Color.clear).listRowInsets(EdgeInsets())
             }
 
-            Section(title: "Cliente") {
-                Picker("Cliente", selection: $customerID) {
-                    Text("Elegir cliente…").tag(UUID?.none)
-                    ForEach(customers.filter { !$0.isArchived }) { Text($0.name).tag(Optional($0.id)) }
+            // Canvas `FacturaNueva`: tarjeta del cliente con iniciales y correo; al tocarla se elige otro.
+            Section {
+                Menu {
+                    Picker("Cliente", selection: $customerID) {
+                        Text("Elegir cliente…").tag(UUID?.none)
+                        ForEach(customers.filter { !$0.isArchived }) { Text($0.name).tag(Optional($0.id)) }
+                    }
+                    Button("Nuevo cliente", systemImage: "person.badge.plus") { showingNewCustomer = true }
+                } label: {
+                    HStack(spacing: 12) {
+                        InitialsTile(text: customer?.initials ?? "+")
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text("Cliente").font(.footnote).foregroundStyle(Palette.ink3)
+                            Text(customer?.name ?? String(localized: "Elegir cliente…"))
+                                .font(.body.weight(.semibold)).foregroundStyle(customer == nil ? Palette.brand : Palette.ink)
+                            if let email = customer?.email, !email.isEmpty {
+                                Text(email).font(.footnote).foregroundStyle(Palette.ink3).lineLimit(1).truncationMode(.middle)
+                            }
+                        }
+                        Spacer(minLength: 0)
+                        Image(systemName: "chevron.up.chevron.down").font(.footnote).foregroundStyle(Palette.ink3)
+                    }
+                    .contentShape(Rectangle())
                 }
-                Button("Nuevo cliente", systemImage: "person.badge.plus") { showingNewCustomer = true }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Cliente")
+                .accessibilityValue(customer?.name ?? String(localized: "Sin elegir"))
                 if let customer, customer.isTaxExempt {
                     Label("Cliente exento de sales tax", systemImage: "checkmark.seal").foregroundStyle(Palette.positive)
                 }
             }
 
+            // Número · Fecha · Vence en una franja; si no caben, una debajo de otra.
             Section {
-                LabeledContent("Número", value: savedInvoice.map { $0.number.isEmpty ? String(localized: "Se asigna al emitir") : $0.number }
-                    ?? (try? books.peekDocumentNumber(.invoice)) ?? "—")
-                DatePicker("Fecha", selection: $issueDate, displayedComponents: .date)
-                DatePicker("Vence", selection: $dueDate, in: issueDate..., displayedComponents: .date)
+                ViewThatFits(in: .horizontal) {
+                    HStack(alignment: .top, spacing: 8) { numberCell; Divider(); dateCell; Divider(); dueCell }
+                    VStack(alignment: .leading, spacing: 10) { numberCell; dateCell; dueCell }
+                }
             }
 
             Section(title: "Productos y servicios") {
                 ForEach($lines) { $line in
-                    VStack(alignment: .leading, spacing: 8) {
-                        TextField("Descripción", text: $line.details).font(.body.weight(.semibold))
-                        HStack {
-                            MoneyField(title: String(localized: "Precio"), minorUnits: $line.unitPrice)
-                            Stepper(value: $line.quantity, in: 1...9_999) {
-                                Text("× \(line.quantity.formatted())").monospacedDigit()
-                            }
-                            .fixedSize()
-                        }
-                        HStack {
-                            Toggle("Gravable", isOn: $line.isTaxable).fixedSize()
-                            Spacer()
-                            Text(line.amount.money).font(.body.weight(.semibold)).monospacedDigit()
-                        }
-                        AccountPicker(title: String(localized: "Cuenta de ingreso"), accounts: incomeAccounts, selection: $line.incomeAccountID)
-                            .font(.subheadline)
-                    }
-                    .padding(.vertical, 4)
+                    lineRow($line)
                 }
                 .onDelete { lines.remove(atOffsets: $0) }
                 Button("Añadir producto o servicio", systemImage: "plus") {
                     lines.append(LineDraft(incomeAccountID: incomeAccounts.first?.id))
                 }
+                .fontWeight(.semibold)
             }
 
             Section {
@@ -128,11 +134,12 @@ struct InvoiceEditorView: View {
                 }
                 LabeledContent("Sales tax", value: (preview?.totalTax ?? 0).money)
                 LabeledContent {
-                    Text((preview?.total ?? 0).money).font(.amount(24))
+                    Text((preview?.total ?? 0).money).font(.amount(28)).monospacedDigit()
                 } label: {
                     Text("Total").font(.headline)
                 }
             }
+            .font(.subheadline)
 
             Section(title: "Mensaje para el cliente") {
                 TextField("Notas y términos", text: $customerMessage, axis: .vertical)
@@ -188,6 +195,76 @@ struct InvoiceEditorView: View {
         .sheet(isPresented: $showingNewCustomer) {
             NavigationStack { CustomerEditorView { customerID = $0.id } }
         }
+    }
+
+    // MARK: Celdas y líneas
+
+    private func cell<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title).font(.caption).foregroundStyle(Palette.ink3)
+            content()
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var numberCell: some View {
+        cell(String(localized: "Número")) {
+            Text(savedInvoice.map { $0.number.isEmpty ? String(localized: "Al emitir") : $0.number }
+                 ?? (try? books.peekDocumentNumber(.invoice)) ?? "—")
+                .font(.subheadline.weight(.semibold)).foregroundStyle(Palette.ink).lineLimit(1)
+        }
+    }
+
+    private var dateCell: some View {
+        cell(String(localized: "Fecha")) {
+            DatePicker("Fecha", selection: $issueDate, displayedComponents: .date).labelsHidden().fixedSize()
+        }
+    }
+
+    /// El título es el plazo del cliente («Neto 15») cuando el vencimiento coincide con él.
+    private var dueCell: some View {
+        let days = Calendar.current.dateComponents([.day], from: Calendar.current.startOfDay(for: issueDate),
+                                                   to: Calendar.current.startOfDay(for: dueDate)).day ?? 0
+        let title = days == 0 ? String(localized: "Al recibir") : String(localized: "Neto \(days)")
+        return cell(title) {
+            DatePicker("Vence", selection: $dueDate, in: issueDate..., displayedComponents: .date).labelsHidden().fixedSize()
+        }
+    }
+
+    /// Línea compacta: descripción y total; precio, impuesto y cantidad con −/+; la cuenta de ingreso en un menú.
+    private func lineRow(_ line: Binding<LineDraft>) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(alignment: .firstTextBaseline) {
+                TextField("Descripción", text: line.details).font(.body.weight(.semibold))
+                Text(line.wrappedValue.amount.money).font(.body.weight(.semibold)).monospacedDigit()
+            }
+            HStack(spacing: 8) {
+                MoneyField(title: String(localized: "Precio"), minorUnits: line.unitPrice)
+                    .font(.subheadline).foregroundStyle(Palette.ink2)
+                    .fixedSize()
+                Text("·").foregroundStyle(Palette.ink3).accessibilityHidden(true)
+                Button(line.wrappedValue.isTaxable ? String(localized: "Gravable") : String(localized: "Sin impuesto")) {
+                    line.wrappedValue.isTaxable.toggle()
+                }
+                .buttonStyle(.plain)
+                .font(.subheadline)
+                .foregroundStyle(Palette.brand)
+                .accessibilityLabel("Gravable")
+                .accessibilityValue(line.wrappedValue.isTaxable ? Text("Sí") : Text("No"))
+                Spacer(minLength: 4)
+                QuantityStepper(quantity: line.quantity)
+            }
+            Menu {
+                Picker("Cuenta de ingreso", selection: line.incomeAccountID) {
+                    ForEach(incomeAccounts) { Text($0.displayName).tag(Optional($0.id)) }
+                }
+            } label: {
+                Text(incomeAccounts.first { $0.id == line.wrappedValue.incomeAccountID }?.displayName ?? String(localized: "Cuenta de ingreso"))
+                    .font(.footnote).foregroundStyle(Palette.ink3).lineLimit(1)
+            }
+            .accessibilityLabel("Cuenta de ingreso")
+        }
+        .padding(.vertical, 4)
     }
 
     private func load(_ invoice: Invoice) {
@@ -272,4 +349,28 @@ struct InvoiceEditorView: View {
 
 #Preview {
     NavigationStack { InvoiceEditorView() }.modelContainer(SampleData.makeContainer())
+}
+
+/// Cantidad con «−» y «+» en una píldora (canvas `FacturaNueva`); para VoiceOver es un `Stepper`.
+struct QuantityStepper: View {
+    @Binding var quantity: Decimal
+
+    var body: some View {
+        HStack(spacing: 0) {
+            Button { quantity = max(1, quantity - 1) } label: {
+                Image(systemName: "minus").frame(width: 36, height: 32)
+            }
+            .disabled(quantity <= 1)
+            Text(quantity.formatted()).font(.subheadline.weight(.semibold)).monospacedDigit().frame(minWidth: 24)
+            Button { quantity += 1 } label: {
+                Image(systemName: "plus").frame(width: 36, height: 32)
+            }
+        }
+        .buttonStyle(.plain)
+        .foregroundStyle(Palette.ink)
+        .background(Palette.surface2, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .accessibilityRepresentation {
+            Stepper("Cantidad", value: $quantity, in: 1...9_999)
+        }
+    }
 }

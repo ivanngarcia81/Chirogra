@@ -3,76 +3,339 @@ import ChirograData
 import SwiftData
 import SwiftUI
 
-/// Factura emitida / registrar pago (canvas: `FacturaDetalle`).
+/// Factura (canvas: `FacturaDetalle`): aviso de estado, tarjeta con saldo y línea de tiempo, tres acciones,
+/// la tarjeta «Registrar pago» en la misma pantalla y, debajo, las líneas, los totales y las notas de crédito.
 struct InvoiceDetailView: View {
     @Bindable var invoice: Invoice
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
-    @State private var showingPayment = false
+    @Query private var companies: [Company]
+    @Query(sort: \Account.code) private var accounts: [Account]
     @State private var showingCreditNote = false
     @State private var showingPreview = false
-    @Query private var companies: [Company]
     @State private var editingDraft = false
+    @State private var duplicate: Invoice?
     @State private var confirmingVoid = false
     @State private var errorMessage: String?
 
+    // Registrar pago
+    enum PaymentMode: String, CaseIterable, Identifiable {
+        case total = "Total", partial = "Parcial"
+        var id: String { rawValue }
+    }
+    @State private var paymentMode: PaymentMode = .total
+    @State private var paymentAmount: Int64 = 0
+    @State private var paymentDate = Date()
+    @State private var depositAccountID: UUID?
+    @State private var method: PaymentMethod = .bankTransfer
+
     private var books: Bookkeeper { Bookkeeper(context: context) }
+    private var depositAccounts: [Account] { accounts.filtered { $0.isMoneyAccount && $0 != .creditCard } }
+    private var amountToRecord: Int64 { paymentMode == .total ? invoice.balanceDue : paymentAmount }
 
     var body: some View {
-        List {
-            if let errorMessage {
-                Section { ErrorBanner(message: errorMessage) }.listRowBackground(Color.clear).listRowInsets(EdgeInsets())
+        ScrollView {
+            VStack(alignment: .leading, spacing: Metrics.cardSpacing) {
+                if let errorMessage { ErrorBanner(message: errorMessage) }
+                statusBanner
+                statusCard
+                actionButtons
+                if invoice.isOpen { paymentCard }
+                linesCard
+                if invoice.status != .draft { totalsCard }
+                creditNotesCard
             }
+            .padding(Metrics.gutter)
+            // En iPad, ancho de lectura hasta que llegue su tablero.
+            .frame(maxWidth: 720, alignment: .leading)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .background(Palette.background)
+        .navigationTitle(invoice.number.isEmpty ? String(localized: "Borrador") : invoice.number)
+        .inlineTitle()
+        .toolbar {
+            if invoice.status != .draft && invoice.status != .void {
+                ToolbarItem(placement: .primaryAction) { moreMenu }
+            }
+        }
+        .sheet(isPresented: $showingPreview) {
+            NavigationStack { InvoicePreviewView(invoice: invoice, company: companies.first) }
+        }
+        .sheet(isPresented: $editingDraft) {
+            NavigationStack { InvoiceEditorView(editing: invoice) }
+        }
+        .sheet(item: $duplicate) { copy in
+            NavigationStack { InvoiceEditorView(editing: copy) }
+        }
+        .sheet(isPresented: $showingCreditNote) {
+            NavigationStack { CreditNoteEditorView(invoice: invoice) }
+        }
+        .confirmationDialog("¿Anular la factura?", isPresented: $confirmingVoid, titleVisibility: .visible) {
+            Button("Anular", role: .destructive, action: void)
+        } message: {
+            Text("Se registrará un asiento de reversión. La factura queda en el historial como anulada.")
+        }
+        .onAppear {
+            paymentAmount = invoice.balanceDue
+            depositAccountID = depositAccountID ?? depositAccounts.first { $0.subtype == .bank }?.id
+        }
+    }
 
-            Section {
-                VStack(alignment: .leading, spacing: 8) {
-                    AdaptiveRow {
-                        Text(invoice.customer?.name ?? String(localized: "Sin cliente")).font(.title2.weight(.semibold))
-                    } trailing: {
-                        StatusChip(invoice: invoice, compact: false)
-                    }
-                    Text(invoice.status == .draft ? invoice.draftAmount.money : invoice.balanceDue.money)
-                        .font(.amount(34))
-                    Text(invoice.status == .draft ? "Borrador: líneas menos descuento, sin impuesto" : "Saldo pendiente de \(invoice.total.money)")
-                        .font(.subheadline).foregroundStyle(Palette.ink3)
+    // MARK: Estado
+
+    @ViewBuilder
+    private var statusBanner: some View {
+        switch invoice.status {
+        case .paid:
+            banner(String(localized: "Factura pagada por completo"), systemImage: "checkmark.circle.fill",
+                   foreground: Palette.positive, background: Palette.positiveWash)
+        case .void:
+            banner(String(localized: "Factura anulada"), systemImage: "xmark.circle.fill",
+                   foreground: Palette.negative, background: Palette.negativeWash)
+        case .draft:
+            banner(String(localized: "Borrador: todavía no se ha emitido"), systemImage: "pencil.circle.fill",
+                   foreground: Palette.info, background: Palette.infoWash)
+        case .sent, .partiallyPaid:
+            if let days = invoice.daysOverdue() {
+                banner(String(localized: "Vencida hace \(days) días"), systemImage: "exclamationmark.circle.fill",
+                       foreground: Palette.negative, background: Palette.negativeWash)
+            }
+        }
+    }
+
+    private func banner(_ text: String, systemImage: String, foreground: Color, background: Color) -> some View {
+        Label(text, systemImage: systemImage)
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(foreground)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 10)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(background, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+    }
+
+    private var statusCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            AdaptiveRow {
+                Text(invoice.customer?.name ?? String(localized: "Sin cliente")).font(.subheadline).foregroundStyle(Palette.ink2)
+            } trailing: {
+                StatusChip(invoice: invoice, compact: false)
+            }
+            Text(invoice.status == .draft ? invoice.draftAmount.money : invoice.balanceDue.money)
+                .font(.amount(34)).tracking(-0.5).foregroundStyle(Palette.ink)
+                .minimumScaleFactor(0.6).lineLimit(1)
+            Text(summary).font(.subheadline).foregroundStyle(Palette.ink3)
+            if invoice.status != .draft && invoice.status != .void { timeline }
+        }
+        .card()
+    }
+
+    private var summary: String {
+        switch invoice.status {
+        case .draft: String(localized: "Borrador: líneas menos descuento, sin impuesto")
+        case .paid, .void: String(localized: "Total de \(invoice.total.money)")
+        case .sent, .partiallyPaid: String(localized: "Saldo pendiente de \(invoice.total.money) · vence \(invoice.dueDate.dayMonth)")
+        }
+    }
+
+    /// Creada → Enviada → Pago → Pagada, con la fecha de cada paso cumplido.
+    private var timeline: some View {
+        let payments = (invoice.paymentApplications ?? []).compactMap(\.payment?.date).sorted()
+        let steps: [(String, String?)] = [
+            (String(localized: "Creada"), min(invoice.createdAt, invoice.issueDate).dayMonth),
+            (String(localized: "Enviada"), invoice.issueDate.dayMonth),
+            (String(localized: "Pago"), payments.first?.dayMonth),
+            (String(localized: "Pagada"), invoice.status == .paid ? (payments.last ?? invoice.issueDate).dayMonth : nil),
+        ]
+        return HStack(alignment: .top, spacing: 6) {
+            ForEach(steps.indices, id: \.self) { index in
+                let (title, date) = steps[index]
+                VStack(alignment: .leading, spacing: 4) {
+                    Capsule().fill(date == nil ? Palette.separator : Palette.brand).frame(height: 4)
+                    Text(title).font(.caption.weight(.semibold)).foregroundStyle(Palette.ink)
+                    Text(date ?? (index == 2 ? String(localized: "Pendiente") : "—"))
+                        .font(.caption2).foregroundStyle(Palette.ink3)
                 }
-                .padding(.vertical, 6)
-                LabeledContent("Número", value: invoice.number.isEmpty ? String(localized: "Se asigna al emitir") : invoice.number)
-                LabeledContent("Fecha", value: invoice.issueDate.shortDate)
-                LabeledContent("Vence", value: invoice.dueDate.shortDate)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .accessibilityElement(children: .combine)
             }
+        }
+        .lineLimit(1)
+        .minimumScaleFactor(0.8)
+    }
 
-            Section(title: "Productos y servicios") {
-                ForEach(invoice.sortedLines) { line in
-                    AdaptiveRow(alignment: .firstTextBaseline) {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(line.details.isEmpty ? String(localized: "Sin descripción") : line.details)
-                            Text(line.isTaxable ? "\(line.quantity.formatted()) × \(line.unitPrice.money) · gravable"
-                                                 : "\(line.quantity.formatted()) × \(line.unitPrice.money)")
-                                .font(.footnote).foregroundStyle(Palette.ink3)
-                        }
-                    } trailing: {
-                        Text(line.amount.money).monospacedDigit().fontWeight(.semibold)
+    // MARK: Acciones
+
+    @ViewBuilder
+    private var actionButtons: some View {
+        if invoice.status == .draft {
+            VStack(spacing: 8) {
+                Button("Emitir factura", action: issue).buttonStyle(.primary)
+                HStack(spacing: 8) {
+                    Button("Editar borrador") { editingDraft = true }.buttonStyle(.secondary)
+                    Button("Vista previa") { showingPreview = true }.buttonStyle(.secondary)
+                }
+                Button("Eliminar borrador", role: .destructive, action: deleteDraft).buttonStyle(.destructive)
+            }
+        } else {
+            HStack(spacing: 8) {
+                actionTile(String(localized: "Duplicar"), "plus.square.on.square", action: duplicateInvoice)
+                actionTile(String(localized: "PDF"), "doc.richtext") { showingPreview = true }
+                if invoice.isOpen {
+                    ShareLink(item: reminderText, subject: Text("Recordatorio de pago")) {
+                        tileLabel(String(localized: "Recordatorio"), "bell")
                     }
+                    .buttonStyle(.plain)
                 }
             }
+        }
+    }
 
-            if invoice.status != .draft {
-                Section {
-                    LabeledContent("Subtotal", value: invoice.subtotal.money)
-                    if invoice.discount > 0 { LabeledContent("Descuento", value: "−\(invoice.discount.money)") }
-                    ForEach(invoice.taxLines ?? []) { tax in
-                        LabeledContent("\(tax.name) · \((Decimal(tax.rateMillionths) / 10_000).formatted())%", value: tax.amount.money)
+    private func actionTile(_ title: String, _ image: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) { tileLabel(title, image) }.buttonStyle(.plain)
+    }
+
+    private func tileLabel(_ title: String, _ image: String) -> some View {
+        VStack(spacing: 6) {
+            Image(systemName: image).font(.title3).foregroundStyle(Palette.brand).accessibilityHidden(true)
+            Text(title).font(.footnote.weight(.semibold)).foregroundStyle(Palette.ink).lineLimit(1).minimumScaleFactor(0.8)
+        }
+        .frame(maxWidth: .infinity, minHeight: 64)
+        .background(Palette.surface, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .contentShape(Rectangle())
+    }
+
+    /// Texto del recordatorio: se comparte por Mensajes o Mail (el envío desde la app llega más adelante).
+    private var reminderText: String {
+        let customer = invoice.customer?.name ?? ""
+        return invoice.daysOverdue() == nil
+            ? String(localized: "Hola, \(customer): te recordamos que la factura \(invoice.number) por \(invoice.balanceDue.money) vence el \(invoice.dueDate.dayMonth). ¡Gracias!")
+            : String(localized: "Hola, \(customer): la factura \(invoice.number) por \(invoice.balanceDue.money) venció el \(invoice.dueDate.dayMonth). ¿Nos ayudas con el pago? ¡Gracias!")
+    }
+
+    private var moreMenu: some View {
+        Menu {
+            if invoice.isOpen, let credit = invoice.customer?.creditBalance, credit > 0 {
+                Button("Aplicar saldo a favor (\(min(credit, invoice.balanceDue).money))", systemImage: "arrow.uturn.left", action: applyCredit)
+            }
+            Button(invoice.status == .paid ? "Nota de crédito o devolución" : "Nota de crédito", systemImage: "minus.circle") {
+                showingCreditNote = true
+            }
+            if invoice.isOpen && invoice.amountPaid == 0 && invoice.creditsApplied == 0 {
+                Button("Anular factura", systemImage: "xmark.circle", role: .destructive) { confirmingVoid = true }
+            }
+        } label: {
+            Label("Más acciones", systemImage: "ellipsis")
+        }
+    }
+
+    // MARK: Registrar pago
+
+    private var paymentCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Registrar pago").font(.cardTitle)
+            Picker("Tipo de pago", selection: $paymentMode) {
+                ForEach(PaymentMode.allCases) { Text($0.localizedTitle).tag($0) }
+            }
+            .pickerStyle(.segmented)
+            .labelsHidden()
+            VStack(spacing: 0) {
+                paymentRow(String(localized: "Monto")) {
+                    if paymentMode == .partial {
+                        MoneyField(title: String(localized: "Monto"), minorUnits: $paymentAmount)
+                            .multilineTextAlignment(.trailing).font(.body.weight(.semibold))
+                    } else {
+                        Text(invoice.balanceDue.money).font(.body.weight(.semibold)).monospacedDigit()
                     }
-                    LabeledContent("Total", value: invoice.total.money).fontWeight(.semibold)
-                    LabeledContent("Cobrado", value: invoice.amountPaid.money)
-                    if invoice.creditsApplied > 0 { LabeledContent("Notas de crédito", value: "−\(invoice.creditsApplied.money)") }
+                }
+                Divider()
+                paymentRow(String(localized: "Método")) {
+                    Picker("Método", selection: $method) {
+                        ForEach(PaymentMethod.allCases, id: \.self) { Text($0.title).tag($0) }
+                    }
+                    .labelsHidden()
+                }
+                Divider()
+                paymentRow(String(localized: "Depositar en")) {
+                    AccountPicker(title: String(localized: "Depositar en"), accounts: depositAccounts, selection: $depositAccountID)
+                        .labelsHidden()
+                }
+                Divider()
+                paymentRow(String(localized: "Fecha")) {
+                    DatePicker("Fecha", selection: $paymentDate, displayedComponents: .date).labelsHidden()
                 }
             }
+            .padding(.horizontal, 12)
+            .background(Palette.background, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+            Button("Registrar \(amountToRecord.money)", action: recordPayment)
+                .buttonStyle(.primary)
+                .disabled(amountToRecord <= 0 || amountToRecord > invoice.balanceDue || depositAccountID == nil)
+        }
+        .card()
+    }
 
-            if let notes = invoice.creditNotes, !notes.isEmpty {
-                Section(title: "Notas de crédito de esta factura") {
-                    ForEach(notes.sorted { $0.date < $1.date }) { note in
+    private func paymentRow<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
+        ViewThatFits(in: .horizontal) {
+            HStack {
+                Text(title).foregroundStyle(Palette.ink2).fixedSize()
+                Spacer(minLength: 8)
+                content()
+            }
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title).foregroundStyle(Palette.ink2)
+                content()
+            }
+        }
+        .frame(minHeight: 48)
+    }
+
+    // MARK: Líneas, totales y créditos
+
+    private var linesCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            SectionLabel(text: String(localized: "Productos y servicios"))
+            ForEach(invoice.sortedLines) { line in
+                AdaptiveRow(alignment: .firstTextBaseline) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(line.details.isEmpty ? String(localized: "Sin descripción") : line.details).fontWeight(.semibold)
+                        Text(line.isTaxable ? "\(line.quantity.formatted()) × \(line.unitPrice.money) · gravable"
+                                             : "\(line.quantity.formatted()) × \(line.unitPrice.money)")
+                            .font(.footnote).foregroundStyle(Palette.ink3)
+                    }
+                } trailing: {
+                    Text(line.amount.money).monospacedDigit().fontWeight(.semibold)
+                }
+                .foregroundStyle(Palette.ink)
+            }
+        }
+        .card()
+    }
+
+    private var totalsCard: some View {
+        VStack(spacing: 8) {
+            LabeledContent("Subtotal", value: invoice.subtotal.money)
+            if invoice.discount > 0 { LabeledContent("Descuento", value: "−\(invoice.discount.money)") }
+            ForEach(invoice.taxLines ?? []) { tax in
+                LabeledContent("\(tax.name) · \((Decimal(tax.rateMillionths) / 10_000).formatted())%", value: tax.amount.money)
+            }
+            Divider()
+            LabeledContent("Total", value: invoice.total.money).fontWeight(.semibold)
+            LabeledContent("Cobrado", value: invoice.amountPaid.money)
+            if invoice.creditsApplied > 0 { LabeledContent("Notas de crédito", value: "−\(invoice.creditsApplied.money)") }
+        }
+        .font(.subheadline)
+        .monospacedDigit()
+        .card()
+    }
+
+    @ViewBuilder
+    private var creditNotesCard: some View {
+        let notes = (invoice.creditNotes ?? []).sorted { $0.date < $1.date }
+        let applications = (invoice.creditApplications ?? []).sorted { $0.date < $1.date }
+        if !notes.isEmpty || !applications.isEmpty {
+            VStack(alignment: .leading, spacing: 10) {
+                if !notes.isEmpty {
+                    SectionLabel(text: String(localized: "Notas de crédito de esta factura"))
+                    ForEach(notes) { note in
                         LabeledContent {
                             Text("−\(note.total.money)").monospacedDigit()
                         } label: {
@@ -88,72 +351,48 @@ struct InvoiceDetailView: View {
                         }
                     }
                 }
-            }
-
-            if let applications = invoice.creditApplications, !applications.isEmpty {
-                Section(title: "Créditos aplicados") {
-                    ForEach(applications.sorted { $0.date < $1.date }) { application in
+                if !applications.isEmpty {
+                    SectionLabel(text: String(localized: "Créditos aplicados"))
+                    ForEach(applications) { application in
                         LabeledContent("\(application.note?.number ?? String(localized: "Nota")) · \(application.date.shortDate)",
                                        value: "−\(application.amount.money)")
                     }
                 }
             }
-
-            Section {
-                switch invoice.status {
-                case .draft:
-                    Button("Emitir factura", action: issue).buttonStyle(.primary)
-                    Button("Editar borrador") { editingDraft = true }.buttonStyle(.secondary)
-                    Button("Eliminar borrador", role: .destructive, action: deleteDraft).buttonStyle(.destructive)
-                case .sent, .partiallyPaid:
-                    Button("Registrar pago") { showingPayment = true }.buttonStyle(.primary)
-                    if let credit = invoice.customer?.creditBalance, credit > 0 {
-                        Button("Aplicar saldo a favor (\(min(credit, invoice.balanceDue).money))", action: applyCredit)
-                            .buttonStyle(.secondary)
-                    }
-                    Button("Nota de crédito") { showingCreditNote = true }.buttonStyle(.secondary)
-                    if invoice.amountPaid == 0 && invoice.creditsApplied == 0 {
-                        Button("Anular factura", role: .destructive) { confirmingVoid = true }.buttonStyle(.destructive)
-                    }
-                case .paid:
-                    Button("Nota de crédito o devolución") { showingCreditNote = true }.buttonStyle(.secondary)
-                case .void:
-                    EmptyView()
-                }
-            }
-            .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
-            .listRowBackground(Color.clear)
-            .listRowSeparator(.hidden)
-        }
-        .screenBackground()
-        .navigationTitle(invoice.number.isEmpty ? String(localized: "Borrador") : invoice.number)
-        .inlineTitle()
-        .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Button("Vista previa", systemImage: "doc.text.magnifyingglass") { showingPreview = true }
-            }
-        }
-        .sheet(isPresented: $showingPreview) {
-            NavigationStack { InvoicePreviewView(invoice: invoice, company: companies.first) }
-        }
-        .sheet(isPresented: $editingDraft) {
-            NavigationStack { InvoiceEditorView(editing: invoice) }
-        }
-        .sheet(isPresented: $showingCreditNote) {
-            NavigationStack { CreditNoteEditorView(invoice: invoice) }
-        }
-        .sheet(isPresented: $showingPayment) {
-            NavigationStack { RecordPaymentView(invoice: invoice) }
-        }
-        .confirmationDialog("¿Anular la factura?", isPresented: $confirmingVoid, titleVisibility: .visible) {
-            Button("Anular", role: .destructive, action: void)
-        } message: {
-            Text("Se registrará un asiento de reversión. La factura queda en el historial como anulada.")
+            .card()
         }
     }
 
+    // MARK: Operaciones
+
     private func issue() {
         do { try books.issue(invoice); errorMessage = nil } catch { errorMessage = error.localizedDescription }
+    }
+
+    private func recordPayment() {
+        guard let account = accounts.first(where: { $0.id == depositAccountID }) else { return }
+        do {
+            try books.recordPayment(for: invoice, amount: amountToRecord, date: paymentDate, depositAccount: account, method: method)
+            errorMessage = nil
+            paymentAmount = invoice.balanceDue
+            paymentMode = .total
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    /// Nuevo borrador con el mismo cliente, líneas, impuesto y mensaje, fechado hoy; se abre para revisarlo.
+    private func duplicateInvoice() {
+        let terms = invoice.customer?.paymentTermsDays ?? 30
+        let input = InvoiceDraftInput(
+            customer: invoice.customer, issueDate: .now,
+            dueDate: Calendar.current.date(byAdding: .day, value: terms, to: .now) ?? .now,
+            taxGroupID: invoice.taxGroupID, discount: invoice.discount, customerMessage: invoice.customerMessage,
+            lines: invoice.sortedLines.map {
+                .init(details: $0.details, quantity: $0.quantity, unitPrice: $0.unitPrice, isTaxable: $0.isTaxable, incomeAccountID: $0.incomeAccountID)
+            }
+        )
+        do { duplicate = try books.saveDraft(input, into: nil) } catch { errorMessage = error.localizedDescription }
     }
 
     private func applyCredit() {
@@ -170,62 +409,6 @@ struct InvoiceDetailView: View {
         context.delete(invoice)
         try? context.save()
         dismiss()
-    }
-}
-
-struct RecordPaymentView: View {
-    let invoice: Invoice
-    @Environment(\.modelContext) private var context
-    @Environment(\.dismiss) private var dismiss
-    @Query(sort: \Account.code) private var accounts: [Account]
-
-    @State private var amount: Int64 = 0
-    @State private var date = Date()
-    @State private var depositAccountID: UUID?
-    @State private var method: PaymentMethod = .bankTransfer
-    @State private var errorMessage: String?
-
-    private var depositAccounts: [Account] { accounts.filtered { $0.isMoneyAccount && $0 != .creditCard } }
-
-    var body: some View {
-        Form {
-            if let errorMessage { ErrorBanner(message: errorMessage) }
-            Section {
-                LabeledContent("Factura", value: "\(invoice.number) · \(invoice.customer?.name ?? "")")
-                LabeledContent("Saldo pendiente", value: invoice.balanceDue.money)
-            }
-            Section {
-                MoneyField(title: String(localized: "Importe"), minorUnits: $amount)
-                DatePicker("Fecha", selection: $date, displayedComponents: .date)
-                AccountPicker(title: String(localized: "Depositar en"), accounts: depositAccounts, selection: $depositAccountID)
-                Picker("Método", selection: $method) {
-                    ForEach(PaymentMethod.allCases, id: \.self) { Text($0.title).tag($0) }
-                }
-            }
-        }
-        .screenBackground()
-        .navigationTitle("Registrar pago")
-        .inlineTitle()
-        .toolbar {
-            ToolbarItem(placement: .cancellationAction) { Button("Cancelar") { dismiss() } }
-            ToolbarItem(placement: .confirmationAction) {
-                Button("Registrar", action: save).disabled(amount <= 0 || depositAccountID == nil)
-            }
-        }
-        .onAppear {
-            amount = invoice.balanceDue
-            depositAccountID = depositAccountID ?? depositAccounts.first { $0.subtype == .bank }?.id
-        }
-    }
-
-    private func save() {
-        guard let account = accounts.first(where: { $0.id == depositAccountID }) else { return }
-        do {
-            try Bookkeeper(context: context).recordPayment(for: invoice, amount: amount, date: date, depositAccount: account, method: method)
-            dismiss()
-        } catch {
-            errorMessage = error.localizedDescription
-        }
     }
 }
 

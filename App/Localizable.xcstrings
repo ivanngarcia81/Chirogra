@@ -491,6 +491,16 @@
         }
       }
     },
+    "Al emitir" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "When issued"
+          }
+        }
+      }
+    },
     "Al emitirla se registra el asiento contable: débito a cuentas por cobrar, crédito a ingresos y sales tax." : {
       "localizations" : {
         "en" : {
@@ -885,6 +895,16 @@
         }
       }
     },
+    "Borrador: todavía no se ha emitido" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Draft: not issued yet"
+          }
+        }
+      }
+    },
     "Borrar búsqueda" : {
       "localizations" : {
         "en" : {
@@ -961,6 +981,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cancel"
+          }
+        }
+      }
+    },
+    "Cantidad" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quantity"
           }
         }
       }
@@ -1386,6 +1416,16 @@
         }
       }
     },
+    "Creada" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Created"
+          }
+        }
+      }
+    },
     "Crédito" : {
       "localizations" : {
         "en" : {
@@ -1672,6 +1712,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Billing address"
+          }
+        }
+      }
+    },
+    "Duplicar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Duplicate"
           }
         }
       }
@@ -2247,6 +2297,16 @@
         }
       }
     },
+    "Factura anulada" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invoice voided"
+          }
+        }
+      }
+    },
     "Factura borrador.pdf" : {
       "localizations" : {
         "en" : {
@@ -2263,6 +2323,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bill"
+          }
+        }
+      }
+    },
+    "Factura pagada por completo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invoice paid in full"
           }
         }
       }
@@ -2555,6 +2625,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Made with Chirogra"
+          }
+        }
+      }
+    },
+    "Hola, %@: la factura %@ por %@ venció el %@. ¿Nos ayudas con el pago? ¡Gracias!" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hi %@, invoice %@ for %@ was due on %@. Could you help us with the payment? Thank you!"
+          }
+        }
+      }
+    },
+    "Hola, %@: te recordamos que la factura %@ por %@ vence el %@. ¡Gracias!" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hi %@, a friendly reminder that invoice %@ for %@ is due on %@. Thank you!"
           }
         }
       }
@@ -3060,6 +3150,16 @@
         }
       }
     },
+    "Monto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Amount"
+          }
+        }
+      }
+    },
     "Motivo (devolución, ajuste de precio…)" : {
       "localizations" : {
         "en" : {
@@ -3096,6 +3196,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "More"
+          }
+        }
+      }
+    },
+    "Más acciones" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "More actions"
           }
         }
       }
@@ -3186,6 +3296,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "None"
+          }
+        }
+      }
+    },
+    "No" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No"
           }
         }
       }
@@ -3650,6 +3770,16 @@
         }
       }
     },
+    "PDF" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PDF"
+          }
+        }
+      }
+    },
     "PRECIO" : {
       "localizations" : {
         "en" : {
@@ -3761,6 +3891,16 @@
         }
       }
     },
+    "Pago" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Payment"
+          }
+        }
+      }
+    },
     "Pago %@ · %@" : {
       "localizations" : {
         "en" : {
@@ -3822,6 +3962,17 @@
         }
       }
     },
+    "Parcial" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Partial"
+          }
+        }
+      }
+    },
     "Pasivo + patrimonio" : {
       "localizations" : {
         "en" : {
@@ -3858,6 +4009,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Equity"
+          }
+        }
+      }
+    },
+    "Pendiente" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pending"
           }
         }
       }
@@ -4286,6 +4447,26 @@
         }
       }
     },
+    "Recordatorio" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reminder"
+          }
+        }
+      }
+    },
+    "Recordatorio de pago" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Payment reminder"
+          }
+        }
+      }
+    },
     "Reembolsar" : {
       "localizations" : {
         "en" : {
@@ -4352,6 +4533,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Record"
+          }
+        }
+      }
+    },
+    "Registrar %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Record %@"
           }
         }
       }
@@ -4623,12 +4814,12 @@
         }
       }
     },
-    "Saldo pendiente de %@" : {
+    "Saldo pendiente de %@ · vence %@" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Balance due of %@"
+            "value" : "Balance due of %@ · due %@"
           }
         }
       }
@@ -4730,16 +4921,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Applied to this invoice"
-          }
-        }
-      }
-    },
-    "Se asigna al emitir" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Assigned when issued"
           }
         }
       }
@@ -4880,6 +5061,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No description"
+          }
+        }
+      }
+    },
+    "Sin elegir" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not chosen"
           }
         }
       }
@@ -5094,6 +5285,16 @@
         }
       }
     },
+    "Sí" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yes"
+          }
+        }
+      }
+    },
     "T%lld %@" : {
       "localizations" : {
         "en" : {
@@ -5224,6 +5425,16 @@
         }
       }
     },
+    "Tipo de pago" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Payment type"
+          }
+        }
+      }
+    },
     "Todas" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -5321,6 +5532,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Total cost of goods sold"
+          }
+        }
+      }
+    },
+    "Total de %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total of %@"
           }
         }
       }
@@ -5577,6 +5798,46 @@
         }
       }
     },
+    "Vencida hace %lld días" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Overdue by %lld day"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Overdue by %lld days"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Vencida hace %lld día"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Vencida hace %lld días"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "Vencida · %lld días" : {
       "localizations" : {
         "en" : {
@@ -5797,6 +6058,9 @@
         }
       }
     },
+    "·" : {
+      "shouldTranslate" : false
+    },
     "¿Anular la factura?" : {
       "localizations" : {
         "en" : {
@@ -5836,9 +6100,6 @@
           }
         }
       }
-    },
-    "× %@" : {
-      "shouldTranslate" : false
     },
     "Últimos 4 dígitos del TIN" : {
       "localizations" : {
