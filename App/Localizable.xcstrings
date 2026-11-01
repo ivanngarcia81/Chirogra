@@ -2293,6 +2293,16 @@
         }
       }
     },
+    "Gastos del mes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Expenses this month"
+          }
+        }
+      }
+    },
     "Gastos operativos" : {
       "localizations" : {
         "en" : {
@@ -2539,6 +2549,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Income"
+          }
+        }
+      }
+    },
+    "Ingresos del mes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Income this month"
           }
         }
       }

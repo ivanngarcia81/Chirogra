@@ -4,8 +4,9 @@ import ChirograData
 import SwiftData
 import SwiftUI
 
-/// Inicio (canvas: `Home`, `MacInicio`): efectivo, resultado del mes, acciones rápidas,
-/// ingresos vs. gastos, por cobrar, por pagar y cuentas.
+/// Inicio. iPhone sigue el tablero `Home`: efectivo, resultado del mes, acciones rápidas, gráfica, por cobrar,
+/// por pagar y cuentas. iPad y Mac siguen `MacInicio`: cuatro cifras clave iguales, gráfica y cuentas lado a lado,
+/// y por cobrar y por pagar lado a lado.
 struct HomeView: View {
     @Query private var companies: [Company]
     @Query(sort: \Account.code) private var accounts: [Account]
@@ -18,6 +19,10 @@ struct HomeView: View {
     @ScaledMetric(relativeTo: .title2) private var quickActionSide: CGFloat = 56
     @ScaledMetric(relativeTo: .headline) private var dateTileWidth: CGFloat = 44
     @State private var sheet: QuickAction?
+    @State private var width: CGFloat = 0
+    #if os(iOS)
+    @Environment(\.horizontalSizeClass) private var sizeClass
+    #endif
 
     enum QuickAction: String, Identifiable {
         case invoice, expense, customer
@@ -30,38 +35,71 @@ struct HomeView: View {
     private var openInvoices: [Invoice] { invoices.filter { $0.isOpen && $0.balanceDue > 0 } }
     private var overdue: [Invoice] { openInvoices.filter { $0.daysOverdue() != nil } }
 
+    private var isNarrow: Bool {
+        #if os(iOS)
+        sizeClass == .compact
+        #else
+        false
+        #endif
+    }
+
+    /// Diseño de `MacInicio`: en iPad y Mac con al menos 700 pt, hasta AX3 incluido.
+    private var isWide: Bool {
+        !isNarrow && dynamicTypeSize < .accessibility4 && (width == 0 || width - 2 * margin >= 700)
+    }
+
+    /// Tarjetas de dos en dos cuando hay sitio (y sin tamaños de accesibilidad, que necesitan todo el ancho).
+    private var pairsCards: Bool { isWide && !dynamicTypeSize.isAccessibilitySize && width - 2 * margin >= 860 }
+
+    /// En pantallas anchas el margen coincide con el del título grande.
+    private var margin: CGFloat { isNarrow ? Metrics.gutter : 20 }
+
+    private var cashDetail: String {
+        String(localized: "En \(ledger.moneyAccounts.filter { $0.subtype != .undepositedFunds }.count) cuentas")
+    }
+
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: Metrics.cardSpacing) {
+            VStack(alignment: .leading, spacing: isWide ? 16 : Metrics.cardSpacing) {
                 Text(Date.now.monthYear)
                     .font(.subheadline).foregroundStyle(Palette.ink3)
 
-                HeroCard(title: String(localized: "Efectivo disponible"), value: ledger.availableCash.money,
-                         detail: String(localized: "En \(ledger.moneyAccounts.filter { $0.subtype != .undepositedFunds }.count) cuentas"))
-
-                kpis
-                quickActions
-                chart
-                receivables
-                payables
-                bankAccounts
+                if isWide {
+                    KPIGrid(items: wideKPIs, large: true)
+                    pair { chart } and: { bankAccounts }
+                    pair { receivables } and: { payables }
+                } else {
+                    HeroCard(title: String(localized: "Efectivo disponible"), value: ledger.availableCash.money, detail: cashDetail)
+                    kpis
+                    quickActions
+                    chart
+                    receivables
+                    payables
+                    bankAccounts
+                }
             }
-            .padding(Metrics.gutter)
-            .frame(maxWidth: 1100)
-            .frame(maxWidth: .infinity)
+            .padding(.horizontal, margin)
+            .padding(.vertical, Metrics.gutter)
+            .frame(maxWidth: isWide ? .infinity : 1100, alignment: .leading)
+            .frame(maxWidth: .infinity, alignment: isWide ? .leading : .center)
         }
+        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
         .background(Palette.background)
         .navigationTitle("Inicio")
         .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Menu {
-                    Button("Factura", systemImage: "doc.badge.plus") { sheet = .invoice }
-                    Button("Gasto", systemImage: "wallet.bifold") { sheet = .expense }
-                    Button("Cliente", systemImage: "person.badge.plus") { sheet = .customer }
-                } label: { Label("Nuevo", systemImage: "plus").labelStyle(.iconOnly) }
-                .menuStyle(.button)
-                .buttonStyle(.borderedProminent)
-                .tint(Palette.brand)
+            if isWide {
+                // `MacInicio`: «+ Gasto» neutro y «+ Factura» en color de marca junto al título.
+                ToolbarItemGroup(placement: .primaryAction) {
+                    // Icono y texto juntos: con `Label` la barra del iPad deja sólo el icono.
+                    Button { sheet = .expense } label: { HStack(spacing: 4) { Image(systemName: "plus"); Text("Gasto") } }
+                        .accessibilityLabel("Nuevo gasto")
+                    Button { sheet = .invoice } label: { HStack(spacing: 4) { Image(systemName: "plus"); Text("Factura") } }
+                        .buttonStyle(.borderedProminent)
+                        .tint(Palette.brand)
+                        .accessibilityLabel("Nueva factura")
+                }
+            } else {
+                ToolbarItem(placement: .primaryAction) { newMenu }
             }
         }
         .sheet(item: $sheet) { action in
@@ -73,6 +111,46 @@ struct HomeView: View {
                 }
             }
         }
+    }
+
+    private var newMenu: some View {
+        Menu {
+            Button("Factura", systemImage: "doc.badge.plus") { sheet = .invoice }
+            Button("Gasto", systemImage: "wallet.bifold") { sheet = .expense }
+            Button("Cliente", systemImage: "person.badge.plus") { sheet = .customer }
+        } label: { Label("Nuevo", systemImage: "plus").labelStyle(.iconOnly) }
+        .menuStyle(.button)
+        .buttonStyle(.borderedProminent)
+        .tint(Palette.brand)
+    }
+
+    /// Dos tarjetas lado a lado si hay sitio; si no, una debajo de otra.
+    @ViewBuilder
+    private func pair<First: View, Second: View>(@ViewBuilder _ first: () -> First, @ViewBuilder and second: () -> Second) -> some View {
+        if pairsCards {
+            HStack(alignment: .top, spacing: 16) {
+                first().frame(maxWidth: .infinity)
+                second().frame(maxWidth: .infinity)
+            }
+        } else {
+            first()
+            second()
+        }
+    }
+
+    /// `MacInicio`: efectivo disponible (destacada), ingresos, gastos y ganancia neta del mes.
+    private var wideKPIs: [KPIItem] {
+        let expenses = thisMonth.totalExpenses + thisMonth.totalCostOfGoodsSold
+        let previousExpenses = lastMonth.totalExpenses + lastMonth.totalCostOfGoodsSold
+        let income = change(thisMonth.totalIncome, lastMonth.totalIncome, higherIsBetter: true)
+        let spent = change(expenses, previousExpenses, higherIsBetter: false)
+        return [
+            KPIItem(title: String(localized: "Efectivo disponible"), value: ledger.availableCash.money, foot: cashDetail, isBrand: true),
+            KPIItem(title: String(localized: "Ingresos del mes"), value: thisMonth.totalIncome.money, foot: income.text, footColor: income.color),
+            KPIItem(title: String(localized: "Gastos del mes"), value: expenses.money, foot: spent.text, footColor: spent.color),
+            KPIItem(title: String(localized: "Ganancia neta"), value: thisMonth.netIncome.money,
+                    foot: thisMonth.totalIncome > 0 ? String(localized: "Margen \(thisMonth.netIncome * 100 / thisMonth.totalIncome)%") : nil),
+        ]
     }
 
     private var kpis: some View {
@@ -189,7 +267,7 @@ struct HomeView: View {
             .chartXAxis { AxisMarks(values: .stride(by: .month)) { _ in AxisValueLabel(format: .dateTime.month(.narrow)) } }
             // Los ejes no crecen más allá de xxxLarge (se amontonaban); las cifras completas están en el resumen de VoiceOver.
             .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
-            .frame(height: dynamicTypeSize.isAccessibilitySize ? 220 : 150)
+            .frame(height: dynamicTypeSize.isAccessibilitySize || isWide ? 220 : 150)
             .accessibilityLabel("Ingresos y gastos de los últimos \(months) meses")
             .accessibilityValue(chartSummary)
         }

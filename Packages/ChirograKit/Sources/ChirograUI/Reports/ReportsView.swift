@@ -43,16 +43,6 @@ struct ReportsView: View {
         }
     }
 
-    /// Una cifra clave encima de la tabla (`MacPyG`: etiqueta, importe y pie).
-    private struct KPI: Identifiable {
-        let title: String
-        let value: String
-        var foot: String? = nil
-        var footColor: Color = Palette.ink3
-        var isBrand = false
-        var id: String { title }
-    }
-
     /// Qué dirección es favorable para colorear la variación.
     private enum Trend { case upIsGood, downIsGood }
 
@@ -300,36 +290,6 @@ struct ReportsView: View {
         }
     }
 
-    // MARK: Cifras clave
-
-    /// Como `auto-fit minmax(180px, 1fr)` del canvas, siempre a todo el ancho.
-    private func kpiGrid(_ kpis: [KPI]) -> some View {
-        // Todas en una fila si caben a 160 pt o más; si no, cuatro tarjetas van en 2×2 (nunca 3 + 1 sola).
-        let available = width - 2 * margin + 12
-        let count = available >= CGFloat(kpis.count) * (160 + 12) ? kpis.count
-            : kpis.count == 4 ? 2 : max(1, min(kpis.count, Int(available / (160 + 12))))
-        return LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: count), spacing: 12) {
-            ForEach(kpis) { kpi in
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(kpi.title).font(.caption.weight(.semibold))
-                        .foregroundStyle(kpi.isBrand ? Palette.onBrand.opacity(0.85) : Palette.ink3)
-                    Text(kpi.value).font(.amount(22)).minimumScaleFactor(0.6).lineLimit(1)
-                        .foregroundStyle(kpi.isBrand ? Palette.onBrand : Palette.ink)
-                    // Siempre una línea de pie, aunque esté vacía, para que todas las tarjetas midan lo mismo.
-                    Text(kpi.foot ?? " ").font(.caption.weight(.semibold))
-                        .foregroundStyle(kpi.isBrand ? Palette.onBrand.opacity(0.9) : kpi.footColor)
-                }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 14)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(kpi.isBrand ? Palette.brand : Palette.surface, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-                .accessibilityElement(children: .ignore)
-                .accessibilityLabel(kpi.title)
-                .accessibilityValue([kpi.value, kpi.foot].compactMap { $0 }.joined(separator: ", "))
-            }
-        }
-    }
-
     // MARK: Estado de resultados
 
     private var incomeStatement: some View {
@@ -340,7 +300,7 @@ struct ReportsView: View {
                 HeroCard(title: String(localized: "Ganancia neta"), value: current.netIncome.money,
                          detail: String(localized: "\(interval().start.shortDate) – \(interval().end.addingTimeInterval(-1).shortDate)"))
             } else {
-                kpiGrid(incomeKPIs(current, previous))
+                KPIGrid(items: incomeKPIs(current, previous))
             }
             VStack(spacing: 0) {
                 header(columns: compare ? [columnTitle(offset: 0), columnTitle(offset: -1)] : [columnTitle(offset: 0)], variation: compare)
@@ -357,7 +317,7 @@ struct ReportsView: View {
         }
     }
 
-    private func incomeKPIs(_ current: IncomeStatement, _ previous: IncomeStatement) -> [KPI] {
+    private func incomeKPIs(_ current: IncomeStatement, _ previous: IncomeStatement) -> [KPIItem] {
         func change(_ now: Int64, _ before: Int64, _ trend: Trend) -> (String?, Color) {
             guard compare, let percent = percentChange(now, before) else { return (nil, Palette.ink3) }
             return (percent, color(for: now - before, trend))
@@ -369,10 +329,10 @@ struct ReportsView: View {
         let expenses = change(current.totalExpenses, previous.totalExpenses, .downIsGood)
         let net = change(current.netIncome, previous.netIncome, .upIsGood)
         return [
-            KPI(title: String(localized: "Ingresos"), value: current.totalIncome.money, foot: income.0, footColor: income.1),
-            KPI(title: String(localized: "Utilidad bruta"), value: current.grossProfit.money, foot: margin(current.grossProfit)),
-            KPI(title: String(localized: "Gastos operativos"), value: current.totalExpenses.money, foot: expenses.0, footColor: expenses.1),
-            KPI(title: String(localized: "Ganancia neta"), value: current.netIncome.money,
+            KPIItem(title: String(localized: "Ingresos"), value: current.totalIncome.money, foot: income.0, footColor: income.1),
+            KPIItem(title: String(localized: "Utilidad bruta"), value: current.grossProfit.money, foot: margin(current.grossProfit)),
+            KPIItem(title: String(localized: "Gastos operativos"), value: current.totalExpenses.money, foot: expenses.0, footColor: expenses.1),
+            KPIItem(title: String(localized: "Ganancia neta"), value: current.netIncome.money,
                 foot: [margin(current.netIncome), net.0].compactMap { $0 }.joined(separator: " · "), isBrand: true),
         ]
     }
@@ -383,9 +343,9 @@ struct ReportsView: View {
         let report = balanceSheetReport
         return VStack(spacing: 16) {
             if !isCompact {
-                kpiGrid([KPI(title: String(localized: "Total activos"), value: report.totalAssets.money),
-                         KPI(title: String(localized: "Total pasivos"), value: report.totalLiabilities.money),
-                         KPI(title: String(localized: "Total patrimonio"), value: report.totalEquity.money)])
+                KPIGrid(items: [KPIItem(title: String(localized: "Total activos"), value: report.totalAssets.money),
+                         KPIItem(title: String(localized: "Total pasivos"), value: report.totalLiabilities.money),
+                         KPIItem(title: String(localized: "Total patrimonio"), value: report.totalEquity.money)])
             }
             VStack(spacing: 0) {
                 header(columns: [String(localized: "AL \(Date.now.shortDate.uppercased())")])
@@ -410,8 +370,8 @@ struct ReportsView: View {
         let report = ReportBuilder.trialBalance(accounts: ledger.ledgerAccounts, lines: ledger.lines, asOf: .now)
         return VStack(spacing: 16) {
             if !isCompact {
-                kpiGrid([KPI(title: String(localized: "Total debe"), value: report.totalDebit.money),
-                         KPI(title: String(localized: "Total haber"), value: report.totalCredit.money)])
+                KPIGrid(items: [KPIItem(title: String(localized: "Total debe"), value: report.totalDebit.money),
+                         KPIItem(title: String(localized: "Total haber"), value: report.totalCredit.money)])
             }
             VStack(spacing: 0) {
                 header(columns: [String(localized: "DEBE"), String(localized: "HABER")])
@@ -441,7 +401,7 @@ struct ReportsView: View {
                     }
                 }
             } else {
-                kpiGrid(AgingReport.Bucket.allCases.map { KPI(title: titles[$0]!, value: report.total(for: $0).money) })
+                KPIGrid(items: AgingReport.Bucket.allCases.map { KPIItem(title: titles[$0]!, value: report.total(for: $0).money) })
             }
             VStack(spacing: 0) {
                 if byBucket {
@@ -481,11 +441,11 @@ struct ReportsView: View {
             SalesTaxSummaryCard(report: summary)
         } else {
             VStack(spacing: 16) {
-                kpiGrid([KPI(title: String(localized: "Sales tax cobrado"), value: summary.totalTax.money, isBrand: true),
-                         KPI(title: String(localized: "Ventas totales"), value: summary.totalSales.money),
-                         KPI(title: String(localized: "Gravables"), value: summary.taxableSales.money),
-                         KPI(title: String(localized: "No gravables"), value: summary.nonTaxableSales.money),
-                         KPI(title: String(localized: "Exentas (clientes exentos)"), value: summary.exemptSales.money)])
+                KPIGrid(items: [KPIItem(title: String(localized: "Sales tax cobrado"), value: summary.totalTax.money, isBrand: true),
+                         KPIItem(title: String(localized: "Ventas totales"), value: summary.totalSales.money),
+                         KPIItem(title: String(localized: "Gravables"), value: summary.taxableSales.money),
+                         KPIItem(title: String(localized: "No gravables"), value: summary.nonTaxableSales.money),
+                         KPIItem(title: String(localized: "Exentas (clientes exentos)"), value: summary.exemptSales.money)])
                 // «Por tasa» con el mismo estilo de tabla que el resto de reportes: TASA · BASE · IMPUESTO.
                 VStack(spacing: 0) {
                     header(String(localized: "TASA"), columns: [String(localized: "BASE"), String(localized: "IMPUESTO")])

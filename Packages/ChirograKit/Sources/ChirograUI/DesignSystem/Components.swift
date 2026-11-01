@@ -425,6 +425,60 @@ struct AddButton: View {
     }
 }
 
+/// Cifra clave de iPad y Mac (canvas `MacInicio`, `MacPyG`): etiqueta, importe y pie; la destacada en color de marca.
+struct KPIItem: Identifiable {
+    let title: String
+    let value: String
+    var foot: String? = nil
+    var footColor: Color = Palette.ink3
+    var isBrand = false
+    var id: String { title }
+}
+
+/// Rejilla de cifras clave a todo el ancho, como `auto-fit minmax(…, 1fr)` del canvas: todas en una fila si caben
+/// al ancho mínimo; si no, cuatro tarjetas van en 2×2 (nunca 3 + 1 sola). `large` usa las medidas de `MacInicio`.
+struct KPIGrid: View {
+    let items: [KPIItem]
+    var large = false
+    @State private var width: CGFloat = 0
+    @ScaledMetric(relativeTo: .title2) private var minimumWidth: CGFloat = 160
+
+    private var spacing: CGFloat { large ? 14 : 12 }
+
+    private var columns: Int {
+        let available = width + spacing
+        let minimum = (large ? minimumWidth * 1.2 : minimumWidth) + spacing
+        if available >= CGFloat(items.count) * minimum { return items.count }
+        if items.count == 4 { return 2 }
+        return max(1, min(items.count, Int(available / minimum)))
+    }
+
+    var body: some View {
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: spacing), count: columns), spacing: spacing) {
+            ForEach(items) { item in
+                VStack(alignment: .leading, spacing: large ? 6 : 4) {
+                    Text(item.title).font((large ? Font.footnote : .caption).weight(.semibold))
+                        .foregroundStyle(item.isBrand ? Palette.onBrand.opacity(0.85) : Palette.ink3)
+                    Text(item.value).font(.amount(large ? 28 : 22)).minimumScaleFactor(0.6).lineLimit(1)
+                        .foregroundStyle(item.isBrand ? Palette.onBrand : Palette.ink)
+                    // Siempre una línea de pie, aunque esté vacía, para que todas las tarjetas midan lo mismo.
+                    Text(item.foot ?? " ").font((large ? Font.footnote : .caption).weight(.semibold)).lineLimit(1)
+                        .foregroundStyle(item.isBrand ? Palette.onBrand.opacity(0.9) : item.footColor)
+                }
+                .padding(.horizontal, large ? 18 : 16)
+                .padding(.vertical, large ? 16 : 14)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(item.isBrand ? Palette.brand : Palette.surface,
+                            in: RoundedRectangle(cornerRadius: large ? 16 : 14, style: .continuous))
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(item.title)
+                .accessibilityValue([item.value, item.foot].compactMap { $0 }.joined(separator: ", "))
+            }
+        }
+        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
+    }
+}
+
 struct KPITile: View {
     let title: String
     let value: String
