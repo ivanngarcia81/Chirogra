@@ -20,6 +20,27 @@ final class SyncMonitor {
 
     var state: State = .off
 
+    /// Solo en Debug, para QA sin iCloud: lanzar con `-ChirograForceSync loading` (esqueleto «Sincronizando con iCloud»,
+    /// también con empresa) o `-ChirograForceSync error` (franja de sin conexión). En Release no existe.
+    #if DEBUG
+    static let forced = UserDefaults.standard.string(forKey: "ChirograForceSync")
+    #else
+    static let forced: String? = nil
+    #endif
+
+    /// El esqueleto forzado se muestra aunque ya haya empresa.
+    static var forcesLoading: Bool { forced == "loading" }
+
+    init() {
+        switch Self.forced {
+        case "loading": state = .syncing
+        case "error":
+            state = .failed(code: "CKError.networkUnavailable", network: true)
+            lastSync = Calendar.current.date(byAdding: .day, value: -1, to: .now)
+        default: break
+        }
+    }
+
     var isSyncing: Bool { state == .syncing }
 
     var isFailed: Bool {
@@ -27,6 +48,7 @@ final class SyncMonitor {
     }
 
     func apply(_ event: NSPersistentCloudKitContainer.Event) {
+        guard Self.forced == nil else { return }
         if event.endDate == nil {
             state = .syncing
         } else if let error = event.error {
@@ -174,11 +196,13 @@ struct SyncErrorBanner: View {
                          : String(localized: "Tus cambios están a salvo en este dispositivo. Revisa tu sesión de iCloud en los ajustes del sistema."))
                 .font(.subheadline).foregroundStyle(Palette.ink2).multilineTextAlignment(.center)
             VStack(spacing: 0) {
-                LabeledContent("Última sincronización", value: monitor.lastSync?.formatted(.appDateTime.day().month(.abbreviated).hour().minute()) ?? "—")
-                    .frame(minHeight: 40)
+                detailRow(String(localized: "Última sincronización")) {
+                    Text(monitor.lastSync?.formatted(.appDateTime.day().month(.abbreviated).hour().minute()) ?? "—")
+                }
                 Divider()
-                LabeledContent("Detalle técnico") { Text(code).font(.caption.monospaced()).foregroundStyle(Palette.ink2) }
-                    .frame(minHeight: 40)
+                detailRow(String(localized: "Detalle técnico")) {
+                    Text(code).font(.caption.monospaced()).foregroundStyle(Palette.ink2)
+                }
             }
             .font(.subheadline)
             .padding(.horizontal, 14)
@@ -189,5 +213,15 @@ struct SyncErrorBanner: View {
         .padding(24)
         .frame(width: 420)
         .presentationCompactAdaptation(.sheet)
+    }
+
+    private func detailRow<Value: View>(_ title: String, @ViewBuilder value: () -> Value) -> some View {
+        HStack(spacing: 8) {
+            Text(title).foregroundStyle(Palette.ink3)
+            Spacer(minLength: 8)
+            value().foregroundStyle(Palette.ink)
+        }
+        .frame(minHeight: 40)
+        .accessibilityElement(children: .combine)
     }
 }

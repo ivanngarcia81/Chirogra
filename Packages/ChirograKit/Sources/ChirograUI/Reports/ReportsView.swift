@@ -807,6 +807,8 @@ struct ReportsView: View {
         let taxableSales: Int64
         let collected: Int64
         let paid: Int64
+        /// Tasas de la agencia (estatal, ciudad, transporte…) para desglosar la combinada.
+        let components: [SalesTaxSummary.RateRow]
         var balance: Int64 { collected - paid }
     }
 
@@ -840,7 +842,8 @@ struct ReportsView: View {
                              rateMillionths: rows.reduce(0) { $0 + $1.rateMillionths },
                              taxableSales: rows.map(\.taxableSales).max() ?? 0,
                              collected: rows.reduce(0) { $0 + $1.tax },
-                             paid: payments.filter { $0.agency == id }.reduce(0) { $0 + $1.amount })
+                             paid: payments.filter { $0.agency == id }.reduce(0) { $0 + $1.amount },
+                             components: rows)
         }
     }
 
@@ -891,7 +894,11 @@ struct ReportsView: View {
                     TableRow {
                         VStack(alignment: .leading, spacing: 1) {
                             Text(row.name).fontWeight(.semibold)
-                            if !row.rates.isEmpty { Text(row.rates).font(.caption).foregroundStyle(Palette.ink3) }
+                            if row.components.count > 1 {
+                                Text("Tasa combinada").font(.caption).foregroundStyle(Palette.ink3)
+                            } else if !row.rates.isEmpty {
+                                Text(row.rates).font(.caption).foregroundStyle(Palette.ink3)
+                            }
                         }
                         .lineLimit(1)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -900,6 +907,20 @@ struct ReportsView: View {
                         Text(row.collected.money).frame(width: wideColumnWidth, alignment: .trailing)
                         Text(row.paid.money).frame(width: wideColumnWidth, alignment: .trailing)
                         Text(row.balance.money).fontWeight(.bold).frame(width: wideColumnWidth, alignment: .trailing)
+                    }
+                    // Desglose por jurisdicción de la tasa combinada; lo pagado se registra por agencia.
+                    if row.components.count > 1 {
+                        ForEach(row.components) { component in
+                            TableRow {
+                                Text(component.name).foregroundStyle(Palette.ink2).lineLimit(1).padding(.leading, 16)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                Text(percent(component.rateMillionths)).foregroundStyle(Palette.ink2).frame(width: 70, alignment: .trailing)
+                                Text(component.taxableSales.money).foregroundStyle(Palette.ink2).frame(width: 150, alignment: .trailing)
+                                Text(component.tax.money).foregroundStyle(Palette.ink2).frame(width: wideColumnWidth, alignment: .trailing)
+                                Text("—").foregroundStyle(Palette.ink3).frame(width: wideColumnWidth, alignment: .trailing)
+                                Text("—").foregroundStyle(Palette.ink3).frame(width: wideColumnWidth, alignment: .trailing)
+                            }
+                        }
                     }
                 }
                 if rows.isEmpty {

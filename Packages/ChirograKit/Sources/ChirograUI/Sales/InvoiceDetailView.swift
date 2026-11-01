@@ -267,8 +267,19 @@ struct InvoiceDetailView: View {
                 }
                 Divider()
                 paymentRow(String(localized: "Depositar en")) {
-                    AccountPicker(title: String(localized: "Depositar en"), accounts: depositAccounts, selection: $depositAccountID)
-                        .labelsHidden()
+                    // Menú con etiqueta propia: con AX3 el nombre de la cuenta baja de línea sin cortarse.
+                    Menu {
+                        AccountPicker(title: String(localized: "Depositar en"), accounts: depositAccounts, selection: $depositAccountID)
+                    } label: {
+                        HStack(spacing: 4) {
+                            Text(depositAccounts.first { $0.id == depositAccountID }?.displayName ?? String(localized: "Elegir…"))
+                                .multilineTextAlignment(.trailing)
+                                .fixedSize(horizontal: false, vertical: true)
+                            Image(systemName: "chevron.up.chevron.down").font(.caption).accessibilityHidden(true)
+                        }
+                        .foregroundStyle(Palette.brand)
+                    }
+                    .accessibilityLabel("Depositar en")
                 }
                 Divider()
                 paymentRow(String(localized: "Fecha")) {

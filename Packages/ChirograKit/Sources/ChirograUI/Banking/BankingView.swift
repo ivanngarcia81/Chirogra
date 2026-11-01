@@ -116,6 +116,7 @@ struct BankingWideView: View {
                     .labelStyle(.titleAndIcon)
                     .font(.footnote.weight(.semibold))
                     .foregroundStyle(Palette.ink3)
+                    .fixedSize()
                     .accessibilityLabel("Importar y conciliar, disponible en una próxima versión")
                 Menu {
                     Button("Gasto", systemImage: "wallet.bifold") { adding = .expense }

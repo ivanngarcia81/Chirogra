@@ -647,7 +647,9 @@ struct PayBillView: View {
                 LabeledContent("Saldo", value: bill.balanceDue.money)
             }
             Section {
-                MoneyField(title: String(localized: "Importe"), minorUnits: $amount)
+                LabeledContent("Monto") {
+                    MoneyField(title: String(localized: "Monto"), minorUnits: $amount).multilineTextAlignment(.trailing)
+                }
                 DatePicker("Fecha", selection: $date, displayedComponents: .date)
                 AccountPicker(title: String(localized: "Pagar desde"), accounts: accounts.filtered { $0.isMoneyAccount && $0 != .undepositedFunds }, selection: $accountID)
             }

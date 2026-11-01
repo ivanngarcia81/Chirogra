@@ -99,7 +99,8 @@ struct ExpenseTableView: View {
                     .frame(width: 26, height: 26)
                     .background(Palette.outflowWash, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
                     .accessibilityHidden(true)
-                Text(category?.name ?? String(localized: "Sin categoría")).lineLimit(1)
+                // Dos líneas: las categorías largas («Materiales y suministros del trabajo») se cortaban.
+                Text(category?.name ?? String(localized: "Sin categoría")).lineLimit(2).fixedSize(horizontal: false, vertical: true)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             Text(accounts.first { $0.id == expense.paymentAccountID }?.name ?? "—").foregroundStyle(Palette.ink2).lineLimit(1)

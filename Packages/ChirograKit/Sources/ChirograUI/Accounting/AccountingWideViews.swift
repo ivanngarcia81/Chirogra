@@ -244,6 +244,8 @@ struct PeriodCloseWideView: View {
                            displayedComponents: .date)
                     .labelsHidden()
                     .fixedSize()
+                    // En cifras sigue la región (1e6efbf): «10/31/26» en EE. UU.
+                    .environment(\.locale, .app)
             }
             HStack(spacing: 10) {
                 Button(String(localized: "Cerrar hasta el \(target.shortDate)")) {

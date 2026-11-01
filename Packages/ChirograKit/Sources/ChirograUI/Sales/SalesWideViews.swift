@@ -182,6 +182,7 @@ struct InvoiceSplitView: View {
     @Query(sort: \Invoice.createdAt, order: .reverse) private var invoices: [Invoice]
     @State private var scope: Scope = .open
     @State private var selectedID: Invoice.ID?
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @ScaledMetric(relativeTo: .body) private var listWidth: CGFloat = 300
 
     private var filtered: [Invoice] {
@@ -203,12 +204,22 @@ struct InvoiceSplitView: View {
         HStack(alignment: .top, spacing: 16) {
             VStack(spacing: 10) {
                 WideSearchField(prompt: "Buscar", text: $query)
-                Picker("Filtrar", selection: $scope) {
-                    ForEach(Scope.allCases) { Text($0.localizedTitle).tag($0) }
+                // Con tamaños de accesibilidad, chips: el segmentado no crece con el texto.
+                if dynamicTypeSize.isAccessibilitySize {
+                    FlowLayout(spacing: 6) {
+                        ForEach(Scope.allCases) { option in
+                            FilterChip(title: option.localizedTitle, isSelected: scope == option) { scope = option }
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                } else {
+                    Picker("Filtrar", selection: $scope) {
+                        ForEach(Scope.allCases) { Text($0.localizedTitle).tag($0) }
+                    }
+                    .pickerStyle(.segmented)
+                    .labelsHidden()
+                    .controlSize(.large)
                 }
-                .pickerStyle(.segmented)
-                .labelsHidden()
-                .controlSize(.large)
                 ScrollView {
                     LazyVStack(spacing: 0) {
                         ForEach(filtered) { invoice in row(invoice) }

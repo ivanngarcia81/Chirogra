@@ -265,7 +265,8 @@ struct InvoiceEditorView: View {
     private var wideHeaderCard: some View {
         let days = Calendar.current.dateComponents([.day], from: Calendar.current.startOfDay(for: issueDate),
                                                    to: Calendar.current.startOfDay(for: dueDate)).day ?? 0
-        return LazyVGrid(columns: [GridItem(.adaptive(minimum: 170), spacing: 14, alignment: .topLeading)], alignment: .leading, spacing: 14) {
+        // El cliente va en su propia fila, a todo el ancho: en la rejilla se cortaba («Café A… · hola@…»).
+        return VStack(alignment: .leading, spacing: 14) {
             fieldLabel(String(localized: "Cliente")) {
                 Menu {
                     Picker("Cliente", selection: $customerID) {
@@ -276,7 +277,7 @@ struct InvoiceEditorView: View {
                 } label: {
                     HStack(spacing: 6) {
                         if let customer {
-                            Text(customer.name).fontWeight(.semibold).foregroundStyle(Palette.ink)
+                            Text(customer.name).fontWeight(.semibold).foregroundStyle(Palette.ink).layoutPriority(1)
                             if !customer.email.isEmpty { Text("· \(customer.email)").foregroundStyle(Palette.ink3) }
                         } else {
                             Text("Elegir cliente…").foregroundStyle(Palette.brand)
@@ -295,16 +296,18 @@ struct InvoiceEditorView: View {
                 .accessibilityLabel("Cliente")
                 .accessibilityValue(customer?.name ?? String(localized: "Sin elegir"))
             }
-            fieldLabel(String(localized: "Número")) {
-                Text(savedInvoice.map { $0.number.isEmpty ? String(localized: "Al emitir") : $0.number }
-                     ?? (try? books.peekDocumentNumber(.invoice)) ?? "—")
-                    .font(.subheadline.weight(.semibold)).foregroundStyle(Palette.ink).frame(minHeight: 38)
-            }
-            fieldLabel(String(localized: "Fecha")) {
-                DatePicker("Fecha", selection: $issueDate, displayedComponents: .date).labelsHidden().frame(minHeight: 38)
-            }
-            fieldLabel(days == 0 ? String(localized: "Al recibir") : String(localized: "Neto \(days)")) {
-                DatePicker("Vence", selection: $dueDate, in: issueDate..., displayedComponents: .date).labelsHidden().frame(minHeight: 38)
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 170), spacing: 14, alignment: .topLeading)], alignment: .leading, spacing: 14) {
+                fieldLabel(String(localized: "Número")) {
+                    Text(savedInvoice.map { $0.number.isEmpty ? String(localized: "Al emitir") : $0.number }
+                         ?? (try? books.peekDocumentNumber(.invoice)) ?? "—")
+                        .font(.subheadline.weight(.semibold)).foregroundStyle(Palette.ink).frame(minHeight: 38)
+                }
+                fieldLabel(String(localized: "Fecha")) {
+                    DatePicker("Fecha", selection: $issueDate, displayedComponents: .date).labelsHidden().frame(minHeight: 38)
+                }
+                fieldLabel(days == 0 ? String(localized: "Al recibir") : String(localized: "Neto \(days)")) {
+                    DatePicker("Vence", selection: $dueDate, in: issueDate..., displayedComponents: .date).labelsHidden().frame(minHeight: 38)
+                }
             }
         }
         .padding(.horizontal, 18).padding(.vertical, 16)

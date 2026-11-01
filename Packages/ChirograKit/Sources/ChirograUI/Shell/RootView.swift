@@ -76,14 +76,12 @@ public struct ChirograRootView: View {
 
     public var body: some View {
         Group {
-            if companies.isEmpty {
-                // Con iCloud, en un dispositivo nuevo los libros tardan en llegar: no se pide crear la empresa
-                // mientras se importan (`MacCargando`).
-                if sync.isSyncing && !skipsSyncWait {
-                    SyncLoadingView { skipsSyncWait = true }
-                } else {
-                    OnboardingView()
-                }
+            // Con iCloud, en un dispositivo nuevo los libros tardan en llegar: no se pide crear la empresa
+            // mientras se importan (`MacCargando`).
+            if sync.isSyncing && !skipsSyncWait && (companies.isEmpty || SyncMonitor.forcesLoading) {
+                SyncLoadingView { skipsSyncWait = true }
+            } else if companies.isEmpty {
+                OnboardingView()
             } else {
                 #if os(iOS)
                 // La app sigue montada debajo de la ventana de bloqueo: al desbloquear, todo está donde estaba.
@@ -193,9 +191,10 @@ struct AppShell: View {
     @State private var tab: AppSection = .home
     @State private var selection: SidebarItem = .section(.home)
     @State private var query = ""
-    /// Pila del detalle: se vacía al cambiar de sección. Con solo `.id(selection)` la columna de detalle conservaba
-    /// la pantalla abierta (una ficha, el editor) al elegir otra sección en la barra lateral.
-    @State private var detailPath = NavigationPath()
+    /// Al elegir otro elemento de la barra lateral la pila del detalle se retira un instante y vuelve a crearse:
+    /// con `.id(selection)` o vaciando su `path`, la columna conservaba la ficha o el editor que se había abierto
+    /// con `NavigationLink(destination:)`, dentro de una sección y entre secciones.
+    @State private var showsDetail = true
 
     var body: some View {
         #if os(iOS)
@@ -228,17 +227,24 @@ struct AppShell: View {
                 .toolbar(removing: .title)
                 #endif
         } detail: {
-            NavigationStack(path: $detailPath) {
-                if query.trimmingCharacters(in: .whitespaces).isEmpty {
-                    selection.destination
-                } else {
-                    SearchResultsView(query: query)
+            if showsDetail {
+                NavigationStack {
+                    if query.trimmingCharacters(in: .whitespaces).isEmpty {
+                        selection.destination
+                    } else {
+                        SearchResultsView(query: query)
+                    }
                 }
+                .id(selection)
+                .safeAreaInset(edge: .top, spacing: 0) { SyncErrorBanner() }
+            } else {
+                Palette.background.ignoresSafeArea()
             }
-            .id(selection)
-            .safeAreaInset(edge: .top, spacing: 0) { SyncErrorBanner() }
         }
-        .onChange(of: selection) { detailPath = NavigationPath() }
+        .onChange(of: selection) {
+            showsDetail = false
+            Task { @MainActor in showsDetail = true }
+        }
     }
 }
 

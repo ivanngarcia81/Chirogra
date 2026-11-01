@@ -84,7 +84,7 @@ struct Sidebar: View {
 
     /// Estado de iCloud al pie: sincronizando, sin conexión o sincronizado (`MacCargando`, `MacError`).
     private var syncText: String {
-        guard iCloudSyncEnabled else { return String(localized: "Solo en este dispositivo") }
+        guard iCloudSyncEnabled || SyncMonitor.forced != nil else { return String(localized: "Solo en este dispositivo") }
         switch sync.state {
         case .syncing: return String(localized: "Sincronizando con iCloud…")
         case .failed: return String(localized: "Sin conexión con iCloud")
@@ -93,7 +93,7 @@ struct Sidebar: View {
     }
 
     private var syncColor: Color {
-        guard iCloudSyncEnabled else { return Palette.ink3 }
+        guard iCloudSyncEnabled || SyncMonitor.forced != nil else { return Palette.ink3 }
         switch sync.state {
         case .syncing: return Palette.brand
         case .failed: return Palette.negative
