@@ -97,6 +97,7 @@ struct PrimaryButtonStyle: ButtonStyle {
 
 struct SecondaryButtonStyle: ButtonStyle {
     var destructive = false
+    @Environment(\.isEnabled) private var isEnabled
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.body.weight(.semibold))
@@ -104,8 +105,8 @@ struct SecondaryButtonStyle: ButtonStyle {
             .padding(.vertical, 10)
             .frame(maxWidth: .infinity, minHeight: Metrics.buttonHeight)
             .padding(.horizontal, 22)
-            .foregroundStyle(destructive ? Palette.negative : Palette.brand)
-            .background(destructive ? Palette.negativeWash : Palette.brandWash,
+            .foregroundStyle(!isEnabled ? Palette.ink3 : destructive ? Palette.negative : Palette.brand)
+            .background(!isEnabled ? Palette.surface2 : destructive ? Palette.negativeWash : Palette.brandWash,
                         in: RoundedRectangle(cornerRadius: Metrics.buttonRadius, style: .continuous))
             .opacity(configuration.isPressed ? 0.85 : 1)
     }
@@ -225,9 +226,9 @@ struct IconTile: View {
     }
 }
 
-/// Fila del canvas: icono o iniciales, título, subtítulo e importe con chip opcional.
-/// El texto tiene prioridad sobre el importe y puede ir en dos líneas, para que datos como el vencimiento
-/// no se corten en iPhone; con tamaños de accesibilidad icono, texto e importe van en columna.
+/// Fila del canvas: icono o iniciales, título, subtítulo e importe con chip opcional, sin chevron
+/// (`navigationLinkIndicatorVisibility(.hidden)` en la lista). Con tamaños de accesibilidad icono, texto e
+/// importe van en columna.
 struct LedgerRow<Leading: View, Trailing: View>: View {
     let title: String
     let subtitle: String
@@ -257,11 +258,18 @@ struct LedgerRow<Leading: View, Trailing: View>: View {
         .accessibilityElement(children: .combine)
     }
 
+    /// Una línea por dato, como en el canvas («F-1047 · vence 12 nov»). Si no cabe, el subtítulo se encoge un poco
+    /// antes de recortarse por el medio, así no se pierde el vencimiento del final. Con tamaños de accesibilidad
+    /// se permiten varias líneas.
     private var texts: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(title).font(.body.weight(.semibold)).foregroundStyle(Palette.ink).lineLimit(2)
-            // Sin límite de líneas: el subtítulo (número, vencimiento) nunca se corta con «…».
-            Text(subtitle).font(.subheadline).foregroundStyle(Palette.ink3).fixedSize(horizontal: false, vertical: true)
+        let lines = dynamicTypeSize.isAccessibilitySize ? nil : 1 as Int?
+        return VStack(alignment: .leading, spacing: 2) {
+            Text(title).font(.body.weight(.semibold)).foregroundStyle(Palette.ink).lineLimit(lines)
+            Text(subtitle).font(.subheadline).foregroundStyle(Palette.ink3)
+                .lineLimit(lines)
+                .minimumScaleFactor(0.85)
+                .truncationMode(.middle)
+                .fixedSize(horizontal: false, vertical: lines == nil)
         }
     }
 }
@@ -295,6 +303,7 @@ extension DynamicTypeSize {
     var amountAlignment: HorizontalAlignment { isAccessibilitySize ? .leading : .trailing }
 }
 
+/// Encabezado de sección del canvas: mayúsculas 12/600 con espaciado, en `ink3` («CONTABILIDAD»).
 struct SectionLabel: View {
     let text: String
     var body: some View {
@@ -302,6 +311,117 @@ struct SectionLabel: View {
             .font(.label)
             .tracking(0.6)
             .foregroundStyle(Palette.ink3)
+    }
+}
+
+extension Section where Parent == SectionLabel, Footer == EmptyView, Content: View {
+    /// Sección de lista con el encabezado del canvas en vez del de iOS (tipo oración, 17 pt).
+    init(title: LocalizedStringResource, @ViewBuilder content: () -> Content) {
+        self.init(content: content) { SectionLabel(text: String(localized: title)) }
+    }
+
+    /// Igual, para títulos que vienen de los datos (tipo de cuenta, agencia).
+    init(heading: String, @ViewBuilder content: () -> Content) {
+        self.init(content: content) { SectionLabel(text: heading) }
+    }
+}
+
+/// Fila «etiqueta · valor» con el valor en `ink`, como en el canvas (iOS lo pinta en gris secundario).
+/// Con tamaños de accesibilidad el valor pasa debajo de la etiqueta.
+struct InkValueLabeledContentStyle: LabeledContentStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        Row(configuration: configuration)
+    }
+
+    private struct Row: View {
+        let configuration: LabeledContentStyleConfiguration
+        @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+        var body: some View {
+            if dynamicTypeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: 4) {
+                    configuration.label
+                    configuration.content.foregroundStyle(Palette.ink)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            } else {
+                // Centrado: los interruptores y selectores también usan este estilo y no tienen línea base.
+                HStack(alignment: .center, spacing: 12) {
+                    configuration.label
+                    Spacer(minLength: 0)
+                    configuration.content.foregroundStyle(Palette.ink).multilineTextAlignment(.trailing)
+                }
+            }
+        }
+    }
+}
+
+/// Pestañas de texto subrayadas (canvas `Ventas`): la activa en color de marca con un subrayado de 2.5 pt,
+/// el resto en `ink2`, y una línea fina debajo de todas.
+struct UnderlineTabs<Value: Hashable>: View {
+    let options: [Value]
+    @Binding var selection: Value
+    let title: (Value) -> String
+
+    var body: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 18) {
+                ForEach(options, id: \.self) { option in
+                    let isSelected = option == selection
+                    Button { selection = option } label: {
+                        Text(title(option))
+                            .font(.subheadline.weight(isSelected ? .semibold : .medium))
+                            .foregroundStyle(isSelected ? Palette.brand : Palette.ink2)
+                            .frame(minHeight: 44)
+                            .overlay(alignment: .bottom) {
+                                Rectangle().fill(isSelected ? Palette.brand : .clear).frame(height: 2.5)
+                            }
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityAddTraits(isSelected ? [.isSelected, .isButton] : .isButton)
+                }
+            }
+            .padding(.horizontal, Metrics.gutter)
+        }
+        .overlay(alignment: .bottom) { Rectangle().fill(Palette.separator).frame(height: 1) }
+    }
+}
+
+/// Barra de acciones fija abajo (canvas `FacturaNueva`, `FacturaEnviar`): fondo de superficie con una línea
+/// arriba, botones uno al lado del otro; con tamaños de accesibilidad, uno debajo del otro.
+struct BottomActionBar<Content: View>: View {
+    @ViewBuilder var content: Content
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    var body: some View {
+        let layout = dynamicTypeSize.isAccessibilitySize ? AnyLayout(VStackLayout(spacing: 10)) : AnyLayout(HStackLayout(spacing: 10))
+        layout { content }
+            .padding(.horizontal, Metrics.gutter)
+            .padding(.top, 12)
+            .padding(.bottom, 8)
+            .background(Palette.surface)
+            .overlay(alignment: .top) { Rectangle().fill(Palette.separator).frame(height: 1) }
+    }
+}
+
+extension View {
+    /// Fija `BottomActionBar` sobre el borde inferior: los botones no se van con el scroll.
+    func bottomActionBar<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
+        safeAreaInset(edge: .bottom, spacing: 0) { BottomActionBar(content: content) }
+    }
+}
+
+/// Botón «+» de las pantallas de lista: círculo relleno en color de marca (canvas `Ventas`, `Clientes`).
+struct AddButton: View {
+    let title: LocalizedStringResource
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Label(String(localized: title), systemImage: "plus").labelStyle(.iconOnly)
+        }
+        .buttonStyle(.borderedProminent)
+        .tint(Palette.brand)
     }
 }
 

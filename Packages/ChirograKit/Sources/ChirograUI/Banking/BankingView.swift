@@ -11,7 +11,7 @@ struct BankingView: View {
     var body: some View {
         let ledger = Ledger(accounts: accounts, lines: journalLines)
         List {
-            Section("Saldos según libros") {
+            Section(title: "Saldos según libros") {
                 ForEach(ledger.moneyAccounts) { account in
                     NavigationLink { LedgerView(account: account) } label: {
                         LedgerRow(title: account.name, subtitle: account.code) {
@@ -26,12 +26,13 @@ struct BankingView: View {
 
             Section {
                 EmptyStateView(systemImage: "tray.and.arrow.down",
-                               title: String(localized: "Importar y conciliar llega en la fase 2"),
+                               title: String(localized: "Próximamente: importar y conciliar"),
                                message: String(localized: "Podrás traer tus movimientos en CSV u OFX, categorizarlos desde una bandeja y conciliar con el extracto del banco."))
             }
             .listRowBackground(Palette.surface)
         }
         .screenBackground()
+        .navigationLinkIndicatorVisibility(.hidden)
         .navigationTitle("Banca")
     }
 }

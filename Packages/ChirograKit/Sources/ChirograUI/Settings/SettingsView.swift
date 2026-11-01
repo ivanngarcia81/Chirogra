@@ -47,7 +47,7 @@ struct CompanyProfileView: View {
                     ForEach(USState.all, id: \.self) { Text($0).tag($0) }
                 }
             }
-            Section("Contacto") {
+            Section(title: "Contacto") {
                 TextField("Correo", text: $company.email)
                 TextField("Teléfono", text: $company.phone)
                 TextField("Dirección", text: $company.address, axis: .vertical)
@@ -95,7 +95,7 @@ struct DataAndSecurityView: View {
             Section {
                 Toggle("Sincronizar con iCloud", isOn: $iCloudSyncEnabled)
             } footer: {
-                Text("Tus libros viajan cifrados en tu cuenta privada de iCloud entre tu iPhone, iPad y Mac. El cambio se aplica al volver a abrir la app. Requiere que la app esté firmada con la capacidad de iCloud.")
+                Text("Tus libros viajan cifrados en tu cuenta privada de iCloud entre tu iPhone, iPad y Mac. El cambio se aplica al volver a abrir la app.")
             }
             Section {
                 Toggle("Bloquear con Face ID o Touch ID", isOn: Binding(
@@ -116,7 +116,7 @@ struct DataAndSecurityView: View {
             Section {
                 LabeledContent("Copia de seguridad exportable", value: String(localized: "Próximamente"))
             } footer: {
-                Text("Exportar e importar un archivo de copia independiente de iCloud está en el plan del MVP (DISEÑO §6.4).")
+                Text("Pronto podrás guardar una copia de tus libros en un archivo y restaurarla, sin depender de iCloud.")
             }
         }
         .screenBackground()

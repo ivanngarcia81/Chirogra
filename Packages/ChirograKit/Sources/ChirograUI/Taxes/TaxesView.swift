@@ -38,15 +38,17 @@ struct TaxesView: View {
                     LabeledContent {
                         Text(entry.totalDebits.money).monospacedDigit()
                     } label: {
-                        Text(entry.memo)
-                        Text(entry.date.shortDate)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(entry.memo)
+                            Text(entry.date.shortDate).font(.subheadline).foregroundStyle(Palette.ink3)
+                        }
                     }
                 }
             } header: {
-                Text("Pagos a la agencia")
+                SectionLabel(text: String(localized: "Pagos a la agencia"))
             }
 
-            Section("Este trimestre") {
+            Section(title: "Este trimestre") {
                 if let quarter, let summary = try? Bookkeeper(context: context).salesTaxSummary(
                     from: quarter.start, to: quarter.end.addingTimeInterval(-1)) {
                     LabeledContent("Ventas gravables", value: summary.taxableSales.money)
@@ -59,7 +61,7 @@ struct TaxesView: View {
             }
             .monospacedDigit()
 
-            Section("Grupos (lo que se aplica en la factura)") {
+            Section(title: "Grupos (lo que se aplica en la factura)") {
                 ForEach(groups) { group in
                     LabeledContent(group.name, value: "\(group.percent.formatted())%")
                 }
@@ -67,7 +69,7 @@ struct TaxesView: View {
             }
 
             ForEach(agencies) { agency in
-                Section(agency.name) {
+                Section(heading: agency.name) {
                     ForEach(agency.rates ?? []) { rate in
                         LabeledContent(rate.name, value: "\(rate.percent.formatted())%")
                     }
@@ -102,14 +104,14 @@ struct TaxRateEditorView: View {
     var body: some View {
         Form {
             if let errorMessage { ErrorBanner(message: errorMessage) }
-            Section("Agencia") {
+            Section(title: "Agencia") {
                 Picker("Agencia", selection: $agencyID) {
                     Text("Nueva agencia…").tag(UUID?.none)
                     ForEach(agencies) { Text($0.name).tag(Optional($0.id)) }
                 }
                 if agencyID == nil { TextField("Nombre (p. ej. Texas Comptroller)", text: $newAgencyName) }
             }
-            Section("Tasa") {
+            Section(title: "Tasa") {
                 TextField("Nombre (p. ej. Travis County)", text: $name)
                 TextField("Porcentaje", value: $percent, format: .number.precision(.fractionLength(0...4)))
                     #if os(iOS)
@@ -157,7 +159,7 @@ struct TaxGroupEditorView: View {
     var body: some View {
         Form {
             TextField("Nombre (p. ej. Austin, TX)", text: $name)
-            Section("Tasas incluidas") {
+            Section(title: "Tasas incluidas") {
                 ForEach(rates.filter { !$0.isArchived }) { rate in
                     Toggle(isOn: Binding(get: { selected.contains(rate.id) },
                                          set: { if $0 { selected.insert(rate.id) } else { selected.remove(rate.id) } })) {

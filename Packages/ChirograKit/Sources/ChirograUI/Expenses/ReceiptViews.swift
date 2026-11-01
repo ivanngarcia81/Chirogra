@@ -136,7 +136,7 @@ struct ExpenseDetailView: View {
                     }
                 }
             } header: {
-                Text("Recibos")
+                SectionLabel(text: String(localized: "Recibos"))
             }
         }
         .listRowBackground(Palette.surface)

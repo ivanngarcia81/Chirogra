@@ -71,7 +71,7 @@ struct ChartOfAccountsView: View {
         let ledger = Ledger(accounts: accounts, lines: journalLines)
         List {
             ForEach(AccountType.allCases, id: \.self) { type in
-                Section(type.title) {
+                Section(heading: type.title) {
                     ForEach(accounts.filter { $0.type == type && (showArchived || !$0.isArchived) }) { account in
                         NavigationLink { LedgerView(account: account) } label: {
                             HStack {
@@ -97,7 +97,7 @@ struct ChartOfAccountsView: View {
         .screenBackground()
         .navigationTitle("Plan de cuentas")
         .toolbar {
-            ToolbarItem(placement: .primaryAction) { Button { showingNew = true } label: { Label("Nueva cuenta", systemImage: "plus") } }
+            ToolbarItem(placement: .primaryAction) { AddButton(title: "Nueva cuenta") { showingNew = true } }
             ToolbarItem { Toggle("Archivadas", isOn: $showArchived) }
         }
         .sheet(isPresented: $showingNew) { NavigationStack { AccountEditorView() } }
@@ -121,7 +121,7 @@ struct AccountEditorView: View {
             TextField("Nombre", text: $name)
             Picker("Tipo", selection: $subtype) {
                 ForEach(AccountType.allCases, id: \.self) { type in
-                    Section(type.title) {
+                    Section(heading: type.title) {
                         ForEach(AccountSubtype.allCases.filter { $0.accountType == type }, id: \.self) { Text($0.title).tag($0) }
                     }
                 }
@@ -173,9 +173,10 @@ struct JournalListView: View {
             .listRowBackground(Palette.surface)
         }
         .screenBackground()
+        .navigationLinkIndicatorVisibility(.hidden)
         .navigationTitle("Asientos de diario")
         .toolbar {
-            ToolbarItem(placement: .primaryAction) { Button { showingEditor = true } label: { Label("Nuevo asiento", systemImage: "plus") } }
+            ToolbarItem(placement: .primaryAction) { AddButton(title: "Nuevo asiento") { showingEditor = true } }
         }
         .sheet(isPresented: $showingEditor) { NavigationStack { JournalEntryEditorView() } }
     }
@@ -257,7 +258,7 @@ struct JournalEntryEditorView: View {
                 .onDelete { lines.remove(atOffsets: $0) }
                 Button("Añadir línea", systemImage: "plus") { lines.append(LineDraft()) }
             } header: {
-                Text("Líneas")
+                SectionLabel(text: String(localized: "Líneas"))
             } footer: {
                 HStack {
                     Text("Totales")
@@ -382,6 +383,7 @@ struct JournalEntryDetailView: View {
                         Text("Haber").frame(width: columnWidth, alignment: .trailing)
                     }
                 }
+                .font(.label).tracking(0.6).textCase(.uppercase).foregroundStyle(Palette.ink3)
                 .accessibilityHidden(true)
             }
             if entry.source == .manual && !entry.isReversed && entry.reversesEntryID == nil {
@@ -495,7 +497,7 @@ struct LedgerView: View {
                     .accessibilityLabel(Self.spokenMovement(row))
                 }
             } header: {
-                Text("Movimientos")
+                SectionLabel(text: String(localized: "Movimientos"))
             } footer: {
                 Text("+ aumenta el saldo de la cuenta y − lo reduce, según su naturaleza.")
             }

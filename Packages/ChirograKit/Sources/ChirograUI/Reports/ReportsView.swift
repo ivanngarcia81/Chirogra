@@ -217,6 +217,7 @@ struct ReportsView: View {
             ForEach(options) { Text($0.localizedTitle).tag($0) }
         }
         .pickerStyle(.segmented)
+        .labelsHidden()
         .fixedSize()
         .controlSize(isNarrow ? .regular : .large)
     }
@@ -707,8 +708,10 @@ struct SalesTaxRatesCard: View {
                 LabeledContent {
                     Text(row.tax.money).monospacedDigit()
                 } label: {
-                    Text("\(row.name) · \(row.percent.formatted())%")
-                    Text("sobre \(row.taxableSales.money)")
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("\(row.name) · \(row.percent.formatted())%")
+                        Text("sobre \(row.taxableSales.money)").font(.subheadline).foregroundStyle(Palette.ink3)
+                    }
                 }
                 .frame(minHeight: wide ? rowHeight : nil)
                 .padding(.vertical, wide ? 6 : 0)

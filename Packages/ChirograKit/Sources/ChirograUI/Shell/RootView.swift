@@ -87,6 +87,9 @@ public struct ChirograRootView: View {
         .tint(Palette.brand)
         .background(Palette.background)
         #if os(iOS)
+        // Valores de las filas en `ink`, como en el canvas. En el Mac los formularios usan este estilo también
+        // para sus controles, así que allí se deja el del sistema.
+        .labeledContentStyle(InkValueLabeledContentStyle())
         .background(WindowSceneReader { lockWindow.scene = $0 })
         .onChange(of: isLocked, initial: true) { _, locked in lockWindow.update(isLocked: locked, lock: lock) }
         #endif
@@ -222,14 +225,14 @@ struct AppShell: View {
                     .padding(.bottom, 6)
                     .textCase(nil)
                 }
-                Section("Más") {
+                Section(title: "Más") {
                     ForEach(AppSection.more) { section in
                         Label(section.title, systemImage: section.systemImage).tag(SidebarItem.section(section))
                     }
                 }
                 #if os(macOS)
                 // `MacPyG`: en el Mac cada reporte es una entrada de la barra lateral, bajo «REPORTES».
-                Section("Reportes") {
+                Section(title: "Reportes") {
                     ForEach(ReportsView.Kind.allCases) { kind in
                         Text(kind.fullTitle).padding(.leading, 26).tag(SidebarItem.report(kind))
                     }
@@ -273,19 +276,19 @@ struct MoreView: View {
                     }
                 }
             }
-            Section("Banca") {
+            Section(title: "Banca") {
                 NavigationLink { BankingView() } label: { Label("Cuentas y saldos", systemImage: "building.columns") }
             }
-            Section("Contabilidad") {
+            Section(title: "Contabilidad") {
                 NavigationLink { ChartOfAccountsView() } label: { Label("Plan de cuentas", systemImage: "list.bullet.indent") }
                 NavigationLink { JournalListView() } label: { Label("Asientos de diario", systemImage: "doc.plaintext") }
                 NavigationLink { LedgerAccountPickerView() } label: { Label("Libro mayor", systemImage: "book.closed") }
                 NavigationLink { PeriodCloseView() } label: { Label("Cierre de periodo", systemImage: "lock") }
             }
-            Section("Impuestos") {
+            Section(title: "Impuestos") {
                 NavigationLink { TaxesView() } label: { Label("Sales tax", systemImage: "percent") }
             }
-            Section("Ajustes") {
+            Section(title: "Ajustes") {
                 SettingsLinks(showsCompanyProfile: false)
             }
         }

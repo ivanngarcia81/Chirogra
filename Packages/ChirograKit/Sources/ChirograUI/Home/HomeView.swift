@@ -58,7 +58,10 @@ struct HomeView: View {
                     Button("Factura", systemImage: "doc.badge.plus") { sheet = .invoice }
                     Button("Gasto", systemImage: "wallet.bifold") { sheet = .expense }
                     Button("Cliente", systemImage: "person.badge.plus") { sheet = .customer }
-                } label: { Label("Nuevo", systemImage: "plus") }
+                } label: { Label("Nuevo", systemImage: "plus").labelStyle(.iconOnly) }
+                .menuStyle(.button)
+                .buttonStyle(.borderedProminent)
+                .tint(Palette.brand)
             }
         }
         .sheet(item: $sheet) { action in
@@ -199,6 +202,7 @@ struct HomeView: View {
             Text("12 M").tag(12)
         }
         .pickerStyle(.segmented)
+        .labelsHidden()
         .fixedSize()
     }
 

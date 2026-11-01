@@ -22,6 +22,7 @@ struct ExpensesView: View {
                 ForEach(Segment.allCases) { Text($0.localizedTitle).tag($0) }
             }
             .pickerStyle(.segmented)
+            .labelsHidden()
             .padding(.horizontal, Metrics.gutter)
             .padding(.bottom, 8)
 
@@ -35,7 +36,7 @@ struct ExpensesView: View {
         .navigationTitle("Gastos")
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                Button { showingEditor = true } label: { Label("Nuevo", systemImage: "plus") }
+                AddButton(title: "Nuevo") { showingEditor = true }
             }
         }
         .sheet(isPresented: $showingEditor) {
@@ -93,6 +94,7 @@ struct ExpenseListView: View {
             .listRowBackground(Palette.surface)
         }
         .screenBackground()
+        .navigationLinkIndicatorVisibility(.hidden)
     }
 }
 
@@ -132,9 +134,9 @@ struct ExpenseEditorView: View {
                 AccountPicker(title: String(localized: "Pagado con"), accounts: paymentAccounts, selection: $paymentAccountID)
                 TextField("Nota", text: $memo, axis: .vertical)
             } footer: {
-                Text("En EE. UU. el sales tax de tus compras forma parte del gasto. La lectura automática de recibos llega en la fase 2.")
+                Text("En EE. UU. el sales tax de tus compras forma parte del gasto.")
             }
-            Section("Recibo") {
+            Section(title: "Recibo") {
                 ForEach(receipts.indices, id: \.self) { index in
                     HStack {
                         ReceiptThumbnail(data: receipts[index].data, contentType: receipts[index].type.identifier, side: 48)
@@ -362,6 +364,7 @@ struct VendorListView: View {
             .listRowBackground(Palette.surface)
         }
         .screenBackground()
+        .navigationLinkIndicatorVisibility(.hidden)
     }
 }
 

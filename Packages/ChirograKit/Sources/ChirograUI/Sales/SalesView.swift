@@ -16,12 +16,7 @@ struct SalesView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Picker("Sección", selection: $segment) {
-                ForEach(Segment.allCases) { Text($0.localizedTitle).tag($0) }
-            }
-            .pickerStyle(.segmented)
-            .padding(.horizontal, Metrics.gutter)
-            .padding(.bottom, 8)
+            UnderlineTabs(options: Segment.allCases, selection: $segment) { $0.localizedTitle }
 
             switch segment {
             case .invoices: InvoiceListView()
@@ -32,9 +27,7 @@ struct SalesView: View {
         .navigationTitle("Ventas")
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                Button { showingEditor = true } label: {
-                    Label(segment == .invoices ? "Nueva factura" : "Nuevo cliente", systemImage: "plus")
-                }
+                AddButton(title: segment == .invoices ? "Nueva factura" : "Nuevo cliente") { showingEditor = true }
             }
         }
         .sheet(isPresented: $showingEditor) {
@@ -124,6 +117,9 @@ struct InvoiceListView: View {
             }
         }
         .screenBackground()
+        .navigationLinkIndicatorVisibility(.hidden)
+        // Sin el margen superior de la lista: los chips van justo debajo de las pestañas, como en el canvas.
+        .contentMargins(.top, 8, for: .scrollContent)
         .searchable(text: $query, prompt: "Cliente, número o monto")
     }
 }

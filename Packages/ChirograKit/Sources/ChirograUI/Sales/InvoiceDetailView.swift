@@ -42,7 +42,7 @@ struct InvoiceDetailView: View {
                 LabeledContent("Vence", value: invoice.dueDate.shortDate)
             }
 
-            Section("Productos y servicios") {
+            Section(title: "Productos y servicios") {
                 ForEach(invoice.sortedLines) { line in
                     AdaptiveRow(alignment: .firstTextBaseline) {
                         VStack(alignment: .leading, spacing: 2) {
@@ -71,15 +71,19 @@ struct InvoiceDetailView: View {
             }
 
             if let notes = invoice.creditNotes, !notes.isEmpty {
-                Section("Notas de crédito de esta factura") {
+                Section(title: "Notas de crédito de esta factura") {
                     ForEach(notes.sorted { $0.date < $1.date }) { note in
                         LabeledContent {
                             Text("−\(note.total.money)").monospacedDigit()
                         } label: {
-                            Text(note.number)
-                            Text("\(note.date.shortDate)\(note.reason.isEmpty ? "" : " · \(note.reason)")")
-                            if note.unappliedAmount > 0 {
-                                Text("\(note.unappliedAmount.money) quedan a favor del cliente").foregroundStyle(Palette.positive)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(note.number)
+                                Text("\(note.date.shortDate)\(note.reason.isEmpty ? "" : " · \(note.reason)")")
+                                    .font(.subheadline).foregroundStyle(Palette.ink3)
+                                if note.unappliedAmount > 0 {
+                                    Text("\(note.unappliedAmount.money) quedan a favor del cliente")
+                                        .font(.subheadline).foregroundStyle(Palette.positive)
+                                }
                             }
                         }
                     }
@@ -87,7 +91,7 @@ struct InvoiceDetailView: View {
             }
 
             if let applications = invoice.creditApplications, !applications.isEmpty {
-                Section("Créditos aplicados") {
+                Section(title: "Créditos aplicados") {
                     ForEach(applications.sorted { $0.date < $1.date }) { application in
                         LabeledContent("\(application.note?.number ?? String(localized: "Nota")) · \(application.date.shortDate)",
                                        value: "−\(application.amount.money)")

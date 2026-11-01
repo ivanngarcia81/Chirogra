@@ -1860,12 +1860,12 @@
         }
       }
     },
-    "En EE. UU. el sales tax de tus compras forma parte del gasto. La lectura automática de recibos llega en la fase 2." : {
+    "En EE. UU. el sales tax de tus compras forma parte del gasto." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "In the US, sales tax you pay on purchases is part of the expense. Automatic receipt scanning arrives in phase 2."
+            "value" : "In the US, the sales tax on your purchases is part of the expense."
           }
         }
       }
@@ -1997,16 +1997,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Export CSV"
-          }
-        }
-      }
-    },
-    "Exportar e importar un archivo de copia independiente de iCloud está en el plan del MVP (DISEÑO §6.4)." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Exporting and importing a backup file independent of iCloud is planned for the MVP."
           }
         }
       }
@@ -2369,16 +2359,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "AMOUNT"
-          }
-        }
-      }
-    },
-    "Importar y conciliar llega en la fase 2" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Import and reconcile arrive in phase 2"
           }
         }
       }
@@ -3809,6 +3789,16 @@
         }
       }
     },
+    "Pronto podrás guardar una copia de tus libros en un archivo y restaurarla, sin depender de iCloud." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Soon you’ll be able to save a copy of your books to a file and restore it, without relying on iCloud."
+          }
+        }
+      }
+    },
     "Proveedor" : {
       "localizations" : {
         "en" : {
@@ -3856,6 +3846,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Coming soon"
+          }
+        }
+      }
+    },
+    "Próximamente: importar y conciliar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Coming soon: import and reconcile"
           }
         }
       }
@@ -5140,12 +5140,12 @@
         }
       }
     },
-    "Tus libros viajan cifrados en tu cuenta privada de iCloud entre tu iPhone, iPad y Mac. El cambio se aplica al volver a abrir la app. Requiere que la app esté firmada con la capacidad de iCloud." : {
+    "Tus libros viajan cifrados en tu cuenta privada de iCloud entre tu iPhone, iPad y Mac. El cambio se aplica al volver a abrir la app." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Your books travel encrypted in your private iCloud account between your iPhone, iPad, and Mac. The change takes effect the next time you open the app. Requires the app to be signed with the iCloud capability."
+            "value" : "Your books travel encrypted in your private iCloud account between your iPhone, iPad, and Mac. The change takes effect the next time you open the app."
           }
         }
       }

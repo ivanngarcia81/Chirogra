@@ -26,6 +26,7 @@ struct InvoiceEditorView: View {
     @Query(sort: \Customer.name) private var customers: [Customer]
     @Query(sort: \Account.code) private var accounts: [Account]
     @Query(sort: \TaxGroup.name) private var taxGroups: [TaxGroup]
+    @Query private var companies: [Company]
 
     @State private var customerID: UUID?
     @State private var issueDate = Date()
@@ -37,6 +38,7 @@ struct InvoiceEditorView: View {
     @State private var errorMessage: String?
     @State private var savedInvoice: Invoice?
     @State private var showingNewCustomer = false
+    @State private var previewing: Invoice?
     @State private var loadedDraft = false
     /// Al cargar un borrador no se aplican los valores por defecto del cliente (impuesto, vencimiento).
     @State private var skipCustomerDefaults = false
@@ -63,7 +65,7 @@ struct InvoiceEditorView: View {
                 Section { ErrorBanner(message: errorMessage) }.listRowBackground(Color.clear).listRowInsets(EdgeInsets())
             }
 
-            Section("Cliente") {
+            Section(title: "Cliente") {
                 Picker("Cliente", selection: $customerID) {
                     Text("Elegir cliente…").tag(UUID?.none)
                     ForEach(customers.filter { !$0.isArchived }) { Text($0.name).tag(Optional($0.id)) }
@@ -81,7 +83,7 @@ struct InvoiceEditorView: View {
                 DatePicker("Vence", selection: $dueDate, in: issueDate..., displayedComponents: .date)
             }
 
-            Section("Productos y servicios") {
+            Section(title: "Productos y servicios") {
                 ForEach($lines) { $line in
                     VStack(alignment: .leading, spacing: 8) {
                         TextField("Descripción", text: $line.details).font(.body.weight(.semibold))
@@ -131,19 +133,26 @@ struct InvoiceEditorView: View {
                 }
             }
 
-            Section("Mensaje para el cliente") {
+            Section(title: "Mensaje para el cliente") {
                 TextField("Notas y términos", text: $customerMessage, axis: .vertical)
             }
 
             Section {
-                Button("Emitir factura", action: issue).buttonStyle(.primary)
-                    .disabled(customerID == nil || validLines.isEmpty)
-                    .listRowInsets(EdgeInsets()).listRowBackground(Color.clear)
             } footer: {
                 Text("Al emitirla se registra el asiento contable: débito a cuentas por cobrar, crédito a ingresos y sales tax.")
             }
         }
         .screenBackground()
+        // Canvas `FacturaNueva`: «Vista previa» y la acción principal fijas abajo.
+        .bottomActionBar {
+            Button("Vista previa", action: showPreview).buttonStyle(.secondary)
+                .disabled(customerID == nil || validLines.isEmpty)
+            Button("Emitir factura", action: issue).buttonStyle(.primary)
+                .disabled(customerID == nil || validLines.isEmpty)
+        }
+        .sheet(item: $previewing) { invoice in
+            NavigationStack { InvoicePreviewView(invoice: invoice, company: companies.first) }
+        }
         .navigationTitle(editing == nil ? "Nueva factura" : "Editar borrador")
         .inlineTitle()
         .toolbar {
@@ -208,6 +217,15 @@ struct InvoiceEditorView: View {
         do {
             try persistDraft()
             dismiss()
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    /// La vista previa sale del PDF real, así que primero se guarda el borrador.
+    private func showPreview() {
+        do {
+            previewing = try persistDraft()
         } catch {
             errorMessage = error.localizedDescription
         }

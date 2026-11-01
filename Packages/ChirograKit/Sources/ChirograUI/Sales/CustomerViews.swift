@@ -38,6 +38,8 @@ struct CustomerListView: View {
             .listRowBackground(Palette.surface)
         }
         .screenBackground()
+        .navigationLinkIndicatorVisibility(.hidden)
+        .contentMargins(.top, 8, for: .scrollContent)
         .searchable(text: $query, prompt: "Buscar clientes")
     }
 }
@@ -75,7 +77,7 @@ struct CustomerDetailView: View {
             Section {
                 Button("Nueva factura", systemImage: "doc.badge.plus") { newInvoice = true }
             }
-            Section("Facturas") {
+            Section(title: "Facturas") {
                 let invoices = (customer.invoices ?? []).sorted { $0.issueDate > $1.issueDate }
                 if invoices.isEmpty { Text("Sin facturas").foregroundStyle(Palette.ink3) }
                 ForEach(invoices) { invoice in
@@ -84,6 +86,7 @@ struct CustomerDetailView: View {
             }
         }
         .screenBackground()
+        .navigationLinkIndicatorVisibility(.hidden)
         .navigationTitle(customer.name)
         .inlineTitle()
         .toolbar { Button("Editar") { editing = true } }
@@ -124,7 +127,7 @@ struct CustomerEditorView: View {
                 TextField("Teléfono", text: $phone)
                 TextField("Dirección de facturación", text: $billingAddress, axis: .vertical)
             }
-            Section("Cobro") {
+            Section(title: "Cobro") {
                 Picker("Condiciones de pago", selection: $terms) {
                     Text("Al recibir").tag(0)
                     Text("Neto 15").tag(15)
