@@ -95,6 +95,7 @@ struct ChartOfAccountsView: View {
             }
         }
         .screenBackground()
+        .navigationLinkIndicatorVisibility(.hidden)
         .navigationTitle("Plan de cuentas")
         .toolbar {
             ToolbarItem(placement: .primaryAction) { AddButton(title: "Nueva cuenta") { showingNew = true } }

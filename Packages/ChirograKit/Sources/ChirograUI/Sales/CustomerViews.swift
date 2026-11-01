@@ -5,12 +5,16 @@ import SwiftUI
 
 /// Clientes con búsqueda y saldo (canvas: `Clientes`).
 struct CustomerListView: View {
+    /// Texto de la búsqueda de Ventas (`SalesView`).
+    var query = ""
     @Query(sort: \Customer.name) private var customers: [Customer]
-    @State private var query = ""
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     private var filtered: [Customer] {
-        customers.filter { !$0.isArchived && (query.isEmpty || $0.name.localizedCaseInsensitiveContains(query)) }
+        let text = query.trimmingCharacters(in: .whitespaces)
+        return customers.filter {
+            !$0.isArchived && (text.isEmpty || $0.name.localizedCaseInsensitiveContains(text) || $0.email.localizedCaseInsensitiveContains(text))
+        }
     }
 
     var body: some View {
@@ -40,7 +44,6 @@ struct CustomerListView: View {
         .screenBackground()
         .navigationLinkIndicatorVisibility(.hidden)
         .contentMargins(.top, 8, for: .scrollContent)
-        .searchable(text: $query, prompt: "Buscar clientes")
     }
 }
 

@@ -16,7 +16,9 @@ struct ScreenSmokeTests {
     }
 
     @Test func home() { #expect(render(HomeView())) }
-    @Test func invoices() { #expect(render(InvoiceListView())) }
+    @Test func invoices() { #expect(render(InvoiceListView(query: .constant("")))) }
+    @Test func sales() { #expect(render(NavigationStack { SalesView() })) }
+    @Test func ledgerBrowser() { #expect(render(NavigationStack { LedgerBrowserView() })) }
     @Test func newInvoice() { #expect(render(InvoiceEditorView())) }
     @Test func expenses() { #expect(render(ExpenseListView())) }
     @Test func reports() { #expect(render(ReportsView())) }

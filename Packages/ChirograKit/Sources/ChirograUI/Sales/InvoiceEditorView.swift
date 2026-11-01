@@ -39,6 +39,7 @@ struct InvoiceEditorView: View {
     @State private var savedInvoice: Invoice?
     @State private var showingNewCustomer = false
     @State private var previewing: Invoice?
+    @State private var confirmingCancel = false
     @State private var loadedDraft = false
     /// Al cargar un borrador no se aplican los valores por defecto del cliente (impuesto, vencimiento).
     @State private var skipCustomerDefaults = false
@@ -156,10 +157,22 @@ struct InvoiceEditorView: View {
         .navigationTitle(editing == nil ? "Nueva factura" : "Editar borrador")
         .inlineTitle()
         .toolbar {
-            ToolbarItem(placement: .cancellationAction) { Button("Cancelar") { dismiss() } }
+            ToolbarItem(placement: .cancellationAction) { Button("Cancelar", action: cancel) }
+            // «Guardar» y no «Guardar borrador»: con el texto largo el título se cortaba en «Nueva f…».
             ToolbarItem(placement: .confirmationAction) {
-                Button("Guardar borrador", action: saveDraft).disabled(customerID == nil)
+                Button("Guardar", action: saveDraft)
+                    .disabled(customerID == nil)
+                    .accessibilityLabel("Guardar borrador")
             }
+        }
+        // La vista previa guarda la factura como borrador: al cancelar se pregunta qué hacer con él.
+        .interactiveDismissDisabled(hasNewDraft)
+        .confirmationDialog("¿Conservar el borrador?", isPresented: $confirmingCancel, titleVisibility: .visible) {
+            Button("Conservar borrador", action: saveDraft)
+            Button("Descartar borrador", role: .destructive, action: discardDraft)
+            Button("Seguir editando", role: .cancel) {}
+        } message: {
+            Text("Al ver la vista previa se guardó como borrador.")
         }
         .onAppear {
             if let editing, !loadedDraft { load(editing) }
@@ -211,6 +224,21 @@ struct InvoiceEditorView: View {
         let invoice = try books.saveDraft(input, into: savedInvoice)
         savedInvoice = invoice
         return invoice
+    }
+
+    /// Borrador creado en esta pantalla (por la vista previa) al hacer una factura nueva.
+    private var hasNewDraft: Bool { editing == nil && savedInvoice != nil }
+
+    private func cancel() {
+        if hasNewDraft { confirmingCancel = true } else { dismiss() }
+    }
+
+    private func discardDraft() {
+        if let savedInvoice {
+            context.delete(savedInvoice)
+            try? context.save()
+        }
+        dismiss()
     }
 
     private func saveDraft() {

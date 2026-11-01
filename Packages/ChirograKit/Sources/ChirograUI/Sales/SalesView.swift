@@ -13,18 +13,23 @@ struct SalesView: View {
 
     @State private var segment: Segment = .invoices
     @State private var showingEditor = false
+    @State private var query = ""
 
     var body: some View {
         VStack(spacing: 0) {
             UnderlineTabs(options: Segment.allCases, selection: $segment) { $0.localizedTitle }
 
             switch segment {
-            case .invoices: InvoiceListView()
-            case .customers: CustomerListView()
+            case .invoices: InvoiceListView(query: $query)
+            case .customers: CustomerListView(query: query)
             }
         }
         .background(Palette.background)
         .navigationTitle("Ventas")
+        // Una sola búsqueda en el contenedor y siempre visible: puesta en cada lista, desaparecía al volver de
+        // una factura, porque la barra ya no encontraba la lista debajo de las pestañas.
+        .searchable(text: $query, placement: Self.searchPlacement,
+                    prompt: segment == .invoices ? Text("Cliente, número o monto") : Text("Buscar clientes"))
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 AddButton(title: segment == .invoices ? "Nueva factura" : "Nuevo cliente") { showingEditor = true }
@@ -36,6 +41,12 @@ struct SalesView: View {
             }
         }
     }
+
+    #if os(iOS)
+    private static let searchPlacement = SearchFieldPlacement.navigationBarDrawer(displayMode: .always)
+    #else
+    private static let searchPlacement = SearchFieldPlacement.automatic
+    #endif
 }
 
 struct InvoiceListView: View {
@@ -55,8 +66,9 @@ struct InvoiceListView: View {
         }
     }
 
+    /// Texto de la búsqueda de Ventas (`SalesView`).
+    @Binding var query: String
     @Query(sort: \Invoice.createdAt, order: .reverse) private var invoices: [Invoice]
-    @State private var query = ""
     @State private var filter: Filter = .all
 
     private var filtered: [Invoice] {
@@ -120,7 +132,6 @@ struct InvoiceListView: View {
         .navigationLinkIndicatorVisibility(.hidden)
         // Sin el margen superior de la lista: los chips van justo debajo de las pestañas, como en el canvas.
         .contentMargins(.top, 8, for: .scrollContent)
-        .searchable(text: $query, prompt: "Cliente, número o monto")
     }
 }
 

@@ -316,7 +316,9 @@ extension DynamicTypeSize {
 struct SectionLabel: View {
     let text: String
     var body: some View {
-        Text(text.uppercased())
+        // `textCase` y no `uppercased()`: se ve igual, pero VoiceOver lee el texto original (no deletrea «MÁS»).
+        Text(text)
+            .textCase(.uppercase)
             .font(.label)
             .tracking(0.6)
             .foregroundStyle(Palette.ink3)
@@ -336,7 +338,9 @@ extension Section where Parent == SectionLabel, Footer == EmptyView, Content: Vi
 }
 
 /// Fila «etiqueta · valor» con el valor en `ink`, como en el canvas (iOS lo pinta en gris secundario).
-/// Con tamaños de accesibilidad el valor pasa debajo de la etiqueta.
+/// Los selectores de menú y los interruptores de los formularios también pasan por este estilo, así que nunca
+/// se recorta nada: si etiqueta y valor no caben en una línea, el valor baja a la siguiente (siempre, con
+/// tamaños de accesibilidad).
 struct InkValueLabeledContentStyle: LabeledContentStyle {
     func makeBody(configuration: Configuration) -> some View {
         Row(configuration: configuration)
@@ -348,19 +352,26 @@ struct InkValueLabeledContentStyle: LabeledContentStyle {
 
         var body: some View {
             if dynamicTypeSize.isAccessibilitySize {
-                VStack(alignment: .leading, spacing: 4) {
-                    configuration.label
-                    configuration.content.foregroundStyle(Palette.ink)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
+                stacked
             } else {
-                // Centrado: los interruptores y selectores también usan este estilo y no tienen línea base.
-                HStack(alignment: .center, spacing: 12) {
-                    configuration.label
-                    Spacer(minLength: 0)
-                    configuration.content.foregroundStyle(Palette.ink).multilineTextAlignment(.trailing)
+                ViewThatFits(in: .horizontal) {
+                    // Centrado: los interruptores y selectores no tienen línea base.
+                    HStack(alignment: .center, spacing: 12) {
+                        configuration.label.fixedSize()
+                        Spacer(minLength: 0)
+                        configuration.content.foregroundStyle(Palette.ink).fixedSize()
+                    }
+                    stacked
                 }
             }
+        }
+
+        private var stacked: some View {
+            VStack(alignment: .leading, spacing: 4) {
+                configuration.label
+                configuration.content.foregroundStyle(Palette.ink)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 }

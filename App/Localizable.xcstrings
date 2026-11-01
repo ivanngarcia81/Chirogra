@@ -511,6 +511,16 @@
         }
       }
     },
+    "Al ver la vista previa se guardó como borrador." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "It was saved as a draft when you opened the preview."
+          }
+        }
+      }
+    },
     "Algunas cuentas que crearemos" : {
       "localizations" : {
         "en" : {
@@ -1246,6 +1256,16 @@
         }
       }
     },
+    "Conservar borrador" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keep draft"
+          }
+        }
+      }
+    },
     "Construcción y oficios" : {
       "localizations" : {
         "en" : {
@@ -1562,6 +1582,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Unlock your books"
+          }
+        }
+      }
+    },
+    "Descartar borrador" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discard draft"
           }
         }
       }
@@ -4734,6 +4764,16 @@
         }
       }
     },
+    "Seguir editando" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keep editing"
+          }
+        }
+      }
+    },
     "Serie" : {
       "localizations" : {
         "en" : {
@@ -5743,6 +5783,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Void the invoice?"
+          }
+        }
+      }
+    },
+    "¿Conservar el borrador?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keep the draft?"
           }
         }
       }
