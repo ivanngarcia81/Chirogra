@@ -183,6 +183,9 @@ struct AppShell: View {
     @State private var tab: AppSection = .home
     @State private var selection: SidebarItem = .section(.home)
     @State private var query = ""
+    /// Pila del detalle: se vacía al cambiar de sección. Con solo `.id(selection)` la columna de detalle conservaba
+    /// la pantalla abierta (una ficha, el editor) al elegir otra sección en la barra lateral.
+    @State private var detailPath = NavigationPath()
 
     var body: some View {
         #if os(iOS)
@@ -215,7 +218,7 @@ struct AppShell: View {
                 .toolbar(removing: .title)
                 #endif
         } detail: {
-            NavigationStack {
+            NavigationStack(path: $detailPath) {
                 if query.trimmingCharacters(in: .whitespaces).isEmpty {
                     selection.destination
                 } else {
@@ -224,6 +227,7 @@ struct AppShell: View {
             }
             .id(selection)
         }
+        .onChange(of: selection) { detailPath = NavigationPath() }
     }
 }
 

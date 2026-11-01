@@ -448,6 +448,22 @@
         }
       }
     },
+    "%lld de %lld gastos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld of %lld expenses"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld de %2$lld gastos"
+          }
+        }
+      }
+    },
     "%lld de 2" : {
       "localizations" : {
         "en" : {
@@ -618,6 +634,46 @@
         }
       }
     },
+    "%lld proveedores requieren formulario 1099-NEC para %@" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld vendor needs a 1099-NEC form for %@"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld vendors need a 1099-NEC form for %@"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld proveedor requiere formulario 1099-NEC para %@"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld proveedores requieren formulario 1099-NEC para %@"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "* Gravable con sales tax" : {
       "localizations" : {
         "en" : {
@@ -644,6 +700,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "+ increases the account balance and − decreases it, according to its normal balance."
+          }
+        }
+      }
+    },
+    "1099" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1099"
           }
         }
       }
@@ -715,6 +781,16 @@
         }
       }
     },
+    "Acción" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Action"
+          }
+        }
+      }
+    },
     "Activado" : {
       "localizations" : {
         "en" : {
@@ -771,6 +847,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Current"
+          }
+        }
+      }
+    },
+    "Adjunta una foto o un PDF" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Attach a photo or a PDF"
           }
         }
       }
@@ -851,6 +937,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Issuing it posts the journal entry: debit accounts receivable, credit income and sales tax."
+          }
+        }
+      }
+    },
+    "Al guardarlo se registra el asiento contable: débito a la categoría y crédito a la cuenta de pago." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saving it records the journal entry: a debit to the category and a credit to the payment account."
           }
         }
       }
@@ -2002,6 +2098,16 @@
         }
       }
     },
+    "Cuenta de pago" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Payment account"
+          }
+        }
+      }
+    },
     "Cuenta eliminada" : {
       "localizations" : {
         "en" : {
@@ -2382,6 +2488,16 @@
         }
       }
     },
+    "El archivo se guarda junto al gasto tal como lo subes." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The file is stored with the expense exactly as you upload it."
+          }
+        }
+      }
+    },
     "El asiento cuadra: débitos = créditos" : {
       "localizations" : {
         "en" : {
@@ -2532,12 +2648,32 @@
         }
       }
     },
+    "Elegir archivo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose file"
+          }
+        }
+      }
+    },
     "Elegir cliente…" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Choose customer…"
+          }
+        }
+      }
+    },
+    "Elegir foto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose photo"
           }
         }
       }
@@ -3064,6 +3200,16 @@
         }
       }
     },
+    "Formulario 1099" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Form 1099"
+          }
+        }
+      }
+    },
     "Foto del recibo" : {
       "localizations" : {
         "en" : {
@@ -3090,6 +3236,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Spent %@"
+          }
+        }
+      }
+    },
+    "Gastado en %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spent in %@"
           }
         }
       }
@@ -3131,6 +3287,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Expenses"
+          }
+        }
+      }
+    },
+    "Gastos de %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ expenses"
           }
         }
       }
@@ -3201,6 +3367,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Save draft"
+          }
+        }
+      }
+    },
+    "Guardar gasto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save expense"
+          }
+        }
+      }
+    },
+    "Guardar y nuevo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save and new"
           }
         }
       }
@@ -3412,6 +3598,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tax"
+          }
+        }
+      }
+    },
+    "Impuesto incluido" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tax included"
           }
         }
       }
@@ -3917,6 +4113,26 @@
         }
       }
     },
+    "Método de pago" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Payment method"
+          }
+        }
+      }
+    },
+    "Nada por pagar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing to pay"
+          }
+        }
+      }
+    },
     "Nada por pagar en las próximas dos semanas." : {
       "localizations" : {
         "en" : {
@@ -4007,6 +4223,26 @@
         }
       }
     },
+    "Ningún gasto coincide" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No matching expenses"
+          }
+        }
+      }
+    },
+    "Ningún proveedor coincide" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No matching vendors"
+          }
+        }
+      }
+    },
     "No" : {
       "localizations" : {
         "en" : {
@@ -4063,6 +4299,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No open invoices."
+          }
+        }
+      }
+    },
+    "No requiere 1099" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No 1099 required"
           }
         }
       }
@@ -4173,6 +4419,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Company name"
+          }
+        }
+      }
+    },
+    "Nombre o categoría" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Name or category"
           }
         }
       }
@@ -4304,6 +4560,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "New invoice"
+          }
+        }
+      }
+    },
+    "Nueva factura de proveedor" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New vendor bill"
           }
         }
       }
@@ -4922,6 +5188,16 @@
         }
       }
     },
+    "Plazo de pago" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Payment terms"
+          }
+        }
+      }
+    },
     "Podrás traer tus movimientos en CSV u OFX, categorizarlos desde una bandeja y conciliar con el extracto del banco." : {
       "localizations" : {
         "en" : {
@@ -5130,6 +5406,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Vendor"
+          }
+        }
+      }
+    },
+    "Proveedor, categoría o importe" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vendor, category or amount"
           }
         }
       }
@@ -5485,6 +5771,16 @@
         }
       }
     },
+    "Registrar pago de %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Record payment for %@"
+          }
+        }
+      }
+    },
     "Registrar pago de impuesto" : {
       "localizations" : {
         "en" : {
@@ -5511,6 +5807,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Reports"
+          }
+        }
+      }
+    },
+    "Requiere 1099" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Requires 1099"
           }
         }
       }
@@ -5961,6 +6267,16 @@
         }
       }
     },
+    "Si le pagas $600 o más en el año, envíale el 1099-NEC antes del 31 de enero." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "If you pay them $600 or more in the year, send them a 1099-NEC by January 31."
+          }
+        }
+      }
+    },
     "Sin agencia" : {
       "localizations" : {
         "en" : {
@@ -6071,6 +6387,16 @@
         }
       }
     },
+    "Sin facturas en esta vista" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No bills in this view"
+          }
+        }
+      }
+    },
     "Sin facturas por pagar" : {
       "localizations" : {
         "en" : {
@@ -6157,6 +6483,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No vendors"
+          }
+        }
+      }
+    },
+    "Sin recibo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No receipt"
           }
         }
       }
@@ -6271,6 +6607,16 @@
         }
       }
     },
+    "Solo sin recibo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Only without receipt"
+          }
+        }
+      }
+    },
     "Subtotal" : {
       "localizations" : {
         "en" : {
@@ -6337,6 +6683,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "RATE"
+          }
+        }
+      }
+    },
+    "TIN" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TIN"
           }
         }
       }
@@ -6855,6 +7211,16 @@
         }
       }
     },
+    "Vence esta semana" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Due this week"
+          }
+        }
+      }
+    },
     "Vence: %@" : {
       "localizations" : {
         "en" : {
@@ -7350,6 +7716,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Reverse this entry?"
+          }
+        }
+      }
+    },
+    "Última compra" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last purchase"
           }
         }
       }

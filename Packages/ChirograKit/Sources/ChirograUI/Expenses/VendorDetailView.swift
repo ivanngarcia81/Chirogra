@@ -10,6 +10,19 @@ struct VendorDetailView: View {
     @Query(sort: \Account.code) private var accounts: [Account]
     @State private var editing = false
     @State private var paying: Bill?
+    @State private var addingExpense = false
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    #if os(iOS)
+    @Environment(\.horizontalSizeClass) private var sizeClass
+    #endif
+
+    /// `MacProveedorFicha` en iPad y Mac (hasta AX3); la ficha del iPhone en pantallas estrechas.
+    private var isWide: Bool {
+        #if os(iOS)
+        if sizeClass != .regular { return false }
+        #endif
+        return dynamicTypeSize < .accessibility4
+    }
 
     private var year: Int { Calendar.current.component(.year, from: .now) }
     private var bills: [Bill] { (vendor.bills ?? []).filter { $0.status != .void } }
@@ -18,6 +31,27 @@ struct VendorDetailView: View {
     private var nextBill: Bill? { bills.filter(\.isOpen).min { $0.dueDate < $1.dueDate } }
 
     var body: some View {
+        Group {
+            if isWide { wideBody } else { compactBody }
+        }
+        .background(Palette.background)
+        .inlineTitle()
+        .toolbar {
+            Button("Editar") { editing = true }
+            if isWide {
+                Button { addingExpense = true } label: {
+                    HStack(spacing: 4) { Image(systemName: "plus"); Text("Gasto") }
+                }
+                .buttonStyle(.borderedProminent).tint(Palette.brand)
+                .accessibilityLabel("Nuevo gasto")
+            }
+        }
+        .sheet(isPresented: $editing) { NavigationStack { VendorEditorView(vendor: vendor) } }
+        .sheet(item: $paying) { bill in NavigationStack { PayBillView(bill: bill) } }
+        .navigationDestination(isPresented: $addingExpense) { ExpenseEditorView(preselectedVendor: vendor) }
+    }
+
+    private var compactBody: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Metrics.cardSpacing) {
                 ProfileHeader(systemImage: "shippingbox", name: vendor.name, detail: headerDetail,
@@ -39,11 +73,151 @@ struct VendorDetailView: View {
             .frame(maxWidth: 720, alignment: .leading)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .background(Palette.background)
-        .inlineTitle()
-        .toolbar { Button("Editar") { editing = true } }
-        .sheet(isPresented: $editing) { NavigationStack { VendorEditorView(vendor: vendor) } }
-        .sheet(item: $paying) { bill in NavigationStack { PayBillView(bill: bill) } }
+    }
+
+    // MARK: iPad y Mac (`MacProveedorFicha`)
+
+    private var wideBody: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                wideHeader
+                KPIGrid(items: [
+                    KPIItem(title: String(localized: "Por pagar"), value: vendor.openBalance.money),
+                    KPIItem(title: String(localized: "Gastado en \(Date.now.formatted(.appDateTime.year()))"), value: spentThisYear.money),
+                    KPIItem(title: String(localized: "Compras"), value: (bills.count + expenses.count).formatted()),
+                ])
+                ViewThatFits(in: .horizontal) {
+                    HStack(alignment: .top, spacing: 16) {
+                        VStack(spacing: 16) { openBillsTable; historyTable }.frame(maxWidth: .infinity)
+                        VStack(spacing: 16) { form1099Card; contactCard }.frame(width: 300)
+                    }
+                    VStack(spacing: 16) { openBillsTable; historyTable; form1099Card; contactCard }
+                }
+            }
+            .padding(20)
+        }
+    }
+
+    private var wideHeader: some View {
+        HStack(spacing: 14) {
+            Text(Initials.from(vendor.name))
+                .font(.title3.weight(.bold))
+                .frame(width: 52, height: 52)
+                .foregroundStyle(Palette.outflow)
+                .background(Palette.outflowWash, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 3) {
+                HStack(spacing: 8) {
+                    Text(vendor.name).font(.title2.weight(.bold)).foregroundStyle(Palette.ink).accessibilityAddTraits(.isHeader)
+                    if vendor.is1099 { StatusChip(text: "1099", foreground: Palette.info, background: Palette.infoWash) }
+                }
+                Text([category, headerDetail].compactMap { $0 }.joined(separator: " · "))
+                    .font(.subheadline).foregroundStyle(Palette.ink3)
+            }
+        }
+    }
+
+    private var openBillsTable: some View {
+        let open = bills.filter(\.isOpen).sorted { $0.dueDate < $1.dueDate }
+        return VStack(alignment: .leading, spacing: 8) {
+            Text("Facturas por pagar").font(.headline).foregroundStyle(Palette.ink).accessibilityAddTraits(.isHeader)
+            TableCard {
+                Text("Nº").frame(width: 90, alignment: .leading)
+                Text("Concepto").frame(maxWidth: .infinity, alignment: .leading)
+                Text("Vence").frame(width: 80, alignment: .leading)
+                Text("Importe").frame(width: 100, alignment: .trailing)
+                Text("Acción").frame(width: 80, alignment: .trailing)
+            } rows: {
+                ForEach(open) { bill in
+                    TableRow {
+                        Text(bill.vendorNumber).fontWeight(.semibold).frame(width: 90, alignment: .leading)
+                        Text(bill.memo.isEmpty ? (bill.sortedLines.first?.details ?? "—") : bill.memo).foregroundStyle(Palette.ink2)
+                            .lineLimit(1).frame(maxWidth: .infinity, alignment: .leading)
+                        Text(bill.dueDate.dayMonth).foregroundStyle(bill.isOverdue ? Palette.negative : Palette.ink2)
+                            .frame(width: 80, alignment: .leading)
+                        Text(bill.balanceDue.money).fontWeight(.semibold).frame(width: 100, alignment: .trailing)
+                        Button("Pagar") { paying = bill }
+                            .buttonStyle(.borderedProminent).tint(Palette.brand).foregroundStyle(Palette.onBrand).controlSize(.small)
+                            .accessibilityLabel("Registrar pago de \(bill.vendorNumber)")
+                            .frame(width: 80, alignment: .trailing)
+                    }
+                }
+                if open.isEmpty {
+                    Text("Nada por pagar").font(.subheadline).foregroundStyle(Palette.ink3).frame(maxWidth: .infinity).padding(.vertical, 24)
+                }
+            }
+        }
+    }
+
+    private var historyTable: some View {
+        let items = (bills.map(Item.bill) + expenses.map(Item.expense)).sorted { $0.date > $1.date }
+        return VStack(alignment: .leading, spacing: 8) {
+            Text("Historial").font(.headline).foregroundStyle(Palette.ink).accessibilityAddTraits(.isHeader)
+            TableCard {
+                Text("Fecha").frame(width: 70, alignment: .leading)
+                Text("Concepto").frame(maxWidth: .infinity, alignment: .leading)
+                Text("Cuenta").frame(width: 160, alignment: .leading)
+                Text("Importe").frame(width: 100, alignment: .trailing)
+            } rows: {
+                ForEach(items) { item in
+                    switch item {
+                    case .bill(let bill):
+                        historyRow(date: bill.billDate,
+                                   concept: String(localized: "Factura \(bill.vendorNumber) · \(bill.status == .paid ? String(localized: "pagada") : String(localized: "por pagar"))"),
+                                   account: String(localized: "Cuentas por pagar"), amount: bill.total)
+                    case .expense(let expense):
+                        NavigationLink { ExpenseDetailView(expense: expense) } label: {
+                            historyRow(date: expense.date,
+                                       concept: expense.memo.isEmpty ? String(localized: "Gasto") : String(localized: "Gasto · \(expense.memo)"),
+                                       account: accounts.first { $0.id == expense.paymentAccountID }?.name ?? "—", amount: expense.total)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                if items.isEmpty {
+                    Text("Sin compras todavía").font(.subheadline).foregroundStyle(Palette.ink3).frame(maxWidth: .infinity).padding(.vertical, 24)
+                }
+            }
+        }
+    }
+
+    private func historyRow(date: Date, concept: String, account: String, amount: Int64) -> some View {
+        TableRow {
+            Text(date.dayMonth).foregroundStyle(Palette.ink2).frame(width: 70, alignment: .leading)
+            Text(concept).lineLimit(1).frame(maxWidth: .infinity, alignment: .leading)
+            Text(account).foregroundStyle(Palette.ink2).lineLimit(1).frame(width: 160, alignment: .leading)
+            Text(amount.money).fontWeight(.semibold).frame(width: 100, alignment: .trailing)
+        }
+    }
+
+    /// Solo lectura: se cambia desde «Editar». El W-9 no se guarda todavía.
+    private var form1099Card: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Formulario 1099").font(.headline).foregroundStyle(Palette.ink).accessibilityAddTraits(.isHeader)
+            Label(vendor.is1099 ? String(localized: "Requiere 1099") : String(localized: "No requiere 1099"),
+                  systemImage: vendor.is1099 ? "checkmark.square.fill" : "square")
+                .font(.subheadline).foregroundStyle(vendor.is1099 ? Palette.brand : Palette.ink2)
+            LabeledContent("TIN", value: vendor.tinLast4.isEmpty ? "—" : "•••–••–\(vendor.tinLast4)").font(.subheadline)
+            if vendor.is1099 {
+                Text("Si le pagas $600 o más en el año, envíale el 1099-NEC antes del 31 de enero.")
+                    .font(.caption).foregroundStyle(Palette.ink3)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .card()
+    }
+
+    private var contactCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Contacto").font(.headline).foregroundStyle(Palette.ink).accessibilityAddTraits(.isHeader)
+            LabeledContent("Correo", value: vendor.email.isEmpty ? "—" : vendor.email.replacingOccurrences(of: "@", with: "@\u{200B}"))
+            LabeledContent("Teléfono", value: vendor.phone.isEmpty ? "—" : vendor.phone)
+            LabeledContent("Categoría", value: category ?? "—")
+            LabeledContent("Plazo de pago", value: vendor.paymentTermsDays == 0 ? String(localized: "Al recibir") : String(localized: "Neto \(vendor.paymentTermsDays)"))
+        }
+        .font(.subheadline)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .card()
     }
 
     /// «Neto 30 · desde 2024». La categoría va debajo de «Historial»: aquí, con nombres largos, partía el subtítulo.

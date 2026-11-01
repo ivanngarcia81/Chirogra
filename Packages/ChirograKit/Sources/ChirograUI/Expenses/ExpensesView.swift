@@ -19,7 +19,45 @@ struct ExpensesView: View {
     @State private var selectedSegment: Segment = .expenses
     @State private var showingEditor = false
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    #if os(iOS)
+    @Environment(\.horizontalSizeClass) private var sizeClass
+    #endif
+
     private var segment: Segment { fixedSegment ?? selectedSegment }
+
+    /// Tablas (`MacGastos`, `MacPorPagar`, `MacProveedores`) en iPad y Mac hasta AX3.
+    private var isWide: Bool {
+        #if os(iOS)
+        if sizeClass != .regular { return false }
+        #endif
+        return dynamicTypeSize < .accessibility4
+    }
+
+    private var title: String {
+        guard isWide else { return String(localized: "Gastos") }
+        return switch segment {
+        case .expenses: String(localized: "Gastos")
+        case .bills: String(localized: "Facturas por pagar")
+        case .vendors: String(localized: "Proveedores")
+        }
+    }
+
+    private var addTitle: String {
+        switch segment {
+        case .expenses: String(localized: "Gasto")
+        case .bills: String(localized: "Factura de proveedor")
+        case .vendors: String(localized: "Proveedor")
+        }
+    }
+
+    private var addLabel: String {
+        switch segment {
+        case .expenses: String(localized: "Nuevo gasto")
+        case .bills: String(localized: "Nueva factura de proveedor")
+        case .vendors: String(localized: "Nuevo proveedor")
+        }
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -33,20 +71,36 @@ struct ExpensesView: View {
                 .padding(.bottom, 8)
             }
 
-            switch segment {
-            case .expenses: ExpenseListView { selectedSegment = .bills }
-            case .bills: BillListView()
-            case .vendors: VendorListView()
+            switch (segment, isWide) {
+            case (.expenses, false): ExpenseListView { selectedSegment = .bills }
+            case (.bills, false): BillListView()
+            case (.vendors, false): VendorListView()
+            case (.expenses, true): ExpenseTableView()
+            case (.bills, true): BillTableView()
+            case (.vendors, true): VendorTableView()
             }
         }
         .background(Palette.background)
-        .navigationTitle("Gastos")
+        .navigationTitle(title)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                AddButton(title: "Nuevo") { showingEditor = true }
+                if isWide {
+                    Button { showingEditor = true } label: {
+                        HStack(spacing: 4) { Image(systemName: "plus"); Text(addTitle) }
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(Palette.brand)
+                    .accessibilityLabel(addLabel)
+                } else {
+                    AddButton(title: "Nuevo") { showingEditor = true }
+                }
             }
         }
-        .sheet(isPresented: $showingEditor) {
+        // `MacGastoNuevo`: en pantallas anchas el gasto nuevo se abre a pantalla completa, junto a la barra lateral.
+        .navigationDestination(isPresented: Binding(get: { showingEditor && isWide && segment == .expenses }, set: { showingEditor = $0 })) {
+            ExpenseEditorView()
+        }
+        .sheet(isPresented: Binding(get: { showingEditor && !(isWide && segment == .expenses) }, set: { showingEditor = $0 })) {
             NavigationStack {
                 switch segment {
                 case .expenses: ExpenseEditorView()
@@ -75,7 +129,7 @@ struct ExpenseListView: View {
     @Query(sort: \Bill.dueDate) private var bills: [Bill]
 
     /// Colores de la barra del canvas, de la categoría mayor a «Otros».
-    private static let barColors: [Color] = [
+    static let barColors: [Color] = [
         Color(light: 0x3A3FD1, dark: 0x8F93FF), Color(light: 0x7C80E8, dark: 0x5C61C9),
         Color(light: 0xE58A4E, dark: 0xE58A4E), Color(light: 0xF2B33D, dark: 0xF2B33D), Color(light: 0xB9BCCF, dark: 0x6B7090),
     ]
@@ -204,6 +258,8 @@ struct ExpenseListView: View {
 }
 
 struct ExpenseEditorView: View {
+    /// Desde la ficha de un proveedor («+ Gasto»).
+    var preselectedVendor: Vendor? = nil
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     @Query(sort: \Account.code) private var accounts: [Account]
@@ -217,12 +273,61 @@ struct ExpenseEditorView: View {
     @State private var paymentAccountID: UUID?
     @State private var memo = ""
     @State private var receipts: [(data: Data, name: String, type: UTType)] = []
+    @State private var method: PaymentMethod = .card
     @State private var errorMessage: String?
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    #if os(iOS)
+    @Environment(\.horizontalSizeClass) private var sizeClass
+    #endif
+
+    /// `MacGastoNuevo` en iPad y Mac (hasta AX3); el formulario del iPhone en pantallas estrechas.
+    private var isWide: Bool {
+        #if os(iOS)
+        if sizeClass != .regular { return false }
+        #endif
+        return dynamicTypeSize < .accessibility4
+    }
+
+    private var canSave: Bool { amount > 0 && categoryID != nil && paymentAccountID != nil && !(payee.isEmpty && vendorID == nil) }
 
     private var expenseAccounts: [Account] { accounts.filtered { $0.accountType == .expense || $0 == .fixedAsset || $0 == .otherCurrentAsset } }
     private var paymentAccounts: [Account] { accounts.filtered { $0.isMoneyAccount && $0 != .undepositedFunds } }
 
     var body: some View {
+        Group {
+            if isWide { wideForm } else { compactForm }
+        }
+        .navigationTitle("Nuevo gasto")
+        .modifier(InlineTitleUnless(wide: isWide))
+        // En pantalla ancha se abre en la navegación: «Cancelar» hace de «Atrás».
+        .navigationBarBackButtonHidden(isWide)
+        .toolbar {
+            ToolbarItem(placement: .cancellationAction) { Button("Cancelar") { dismiss() } }
+            if isWide {
+                ToolbarItemGroup(placement: .primaryAction) {
+                    Button("Guardar y nuevo") { save(another: true) }.disabled(!canSave)
+                    Button("Guardar gasto") { save() }
+                        .buttonStyle(.borderedProminent).tint(Palette.brand)
+                        .disabled(!canSave)
+                }
+            } else {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Guardar") { save() }.disabled(!canSave)
+                }
+            }
+        }
+        .onChange(of: vendorID) {
+            guard let vendor = vendors.first(where: { $0.id == vendorID }) else { return }
+            if payee.isEmpty { payee = vendor.name }
+            if let defaultAccount = vendor.defaultExpenseAccountID { categoryID = defaultAccount }
+        }
+        .onAppear {
+            paymentAccountID = paymentAccountID ?? paymentAccounts.first { $0.subtype == .bank }?.id
+            if vendorID == nil, let preselectedVendor { vendorID = preselectedVendor.id }
+        }
+    }
+
+    private var compactForm: some View {
         Form {
             if let errorMessage { ErrorBanner(message: errorMessage) }
             Section {
@@ -253,27 +358,145 @@ struct ExpenseEditorView: View {
             }
         }
         .screenBackground()
-        .navigationTitle("Nuevo gasto")
-        .inlineTitle()
-        .toolbar {
-            ToolbarItem(placement: .cancellationAction) { Button("Cancelar") { dismiss() } }
-            ToolbarItem(placement: .confirmationAction) {
-                Button("Guardar", action: save)
-                    .disabled(amount <= 0 || categoryID == nil || paymentAccountID == nil || (payee.isEmpty && vendorID == nil))
-            }
-        }
-        .onChange(of: vendorID) {
-            guard let vendor = vendors.first(where: { $0.id == vendorID }) else { return }
-            if payee.isEmpty { payee = vendor.name }
-            if let defaultAccount = vendor.defaultExpenseAccountID { categoryID = defaultAccount }
-        }
-        .onAppear { paymentAccountID = paymentAccountID ?? paymentAccounts.first { $0.subtype == .bank }?.id }
     }
 
-    private func save() {
+    // MARK: iPad y Mac (`MacGastoNuevo`)
+
+    /// Datos del gasto en una rejilla de dos columnas y el recibo a la derecha. «Gasto recurrente» y «Cliente o
+    /// proyecto» quedan para la fase 2.
+    private var wideForm: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                if let errorMessage { ErrorBanner(message: errorMessage) }
+                ViewThatFits(in: .horizontal) {
+                    HStack(alignment: .top, spacing: 16) {
+                        wideDataCard.frame(maxWidth: .infinity)
+                        wideReceiptCard.frame(width: 320)
+                    }
+                    VStack(spacing: 16) { wideDataCard; wideReceiptCard }
+                }
+                Text("Al guardarlo se registra el asiento contable: débito a la categoría y crédito a la cuenta de pago.")
+                    .font(.footnote).foregroundStyle(Palette.ink3)
+            }
+            .padding(20)
+            .frame(maxWidth: 1100, alignment: .leading)
+        }
+        .scrollDismissesKeyboard(.interactively)
+        .background(Palette.background)
+    }
+
+    private func fieldLabel<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title).font(.caption.weight(.semibold)).foregroundStyle(Palette.ink2)
+            content()
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func menuBox<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
+        content()
+            .labelsHidden()
+            .pickerStyle(.menu)
+            .frame(maxWidth: .infinity, minHeight: 38, alignment: .leading)
+            .padding(.horizontal, 4)
+            .background(Palette.background, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).stroke(Palette.separator))
+    }
+
+    private var wideDataCard: some View {
+        let columns = [GridItem(.flexible(), spacing: 14, alignment: .topLeading), GridItem(.flexible(), spacing: 14, alignment: .topLeading)]
+        return VStack(alignment: .leading, spacing: 14) {
+            LazyVGrid(columns: columns, alignment: .leading, spacing: 14) {
+                fieldLabel(String(localized: "Monto")) {
+                    MoneyField(title: String(localized: "Monto"), minorUnits: $amount).font(.amount(24)).fieldBox()
+                }
+                fieldLabel(String(localized: "Fecha")) {
+                    DatePicker("Fecha", selection: $date, displayedComponents: .date).labelsHidden()
+                        .frame(minHeight: 38, alignment: .leading)
+                }
+                fieldLabel(String(localized: "Proveedor")) {
+                    menuBox {
+                        Picker("Proveedor", selection: $vendorID) {
+                            Text("Ninguno").tag(UUID?.none)
+                            ForEach(vendors.filter { !$0.isArchived }) { Text($0.name).tag(Optional($0.id)) }
+                        }
+                    }
+                }
+                fieldLabel(String(localized: "Pagado a (comercio o persona)")) {
+                    TextField("Pagado a (comercio o persona)", text: $payee).fieldBox()
+                }
+                fieldLabel(String(localized: "Categoría")) {
+                    menuBox { AccountPicker(title: String(localized: "Categoría"), accounts: expenseAccounts, selection: $categoryID) }
+                }
+                fieldLabel(String(localized: "Cuenta de pago")) {
+                    menuBox { AccountPicker(title: String(localized: "Cuenta de pago"), accounts: paymentAccounts, selection: $paymentAccountID) }
+                }
+            }
+            fieldLabel(String(localized: "Método de pago")) {
+                Picker("Método de pago", selection: $method) {
+                    ForEach(Self.methods, id: \.self) { Text(Self.title(for: $0)).tag($0) }
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+            }
+            fieldLabel(String(localized: "Impuesto incluido")) {
+                Text("En EE. UU. el sales tax de tus compras forma parte del gasto.")
+                    .font(.subheadline).foregroundStyle(Palette.ink2)
+            }
+            fieldLabel(String(localized: "Nota")) {
+                TextField("Nota", text: $memo, axis: .vertical).lineLimit(2...4).fieldBox()
+            }
+        }
+        .card()
+    }
+
+    private var wideReceiptCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Recibo").font(.headline).foregroundStyle(Palette.ink).accessibilityAddTraits(.isHeader)
+            VStack(spacing: 10) {
+                Image(systemName: "doc.viewfinder").font(.title).foregroundStyle(Palette.ink3).accessibilityHidden(true)
+                Text("Adjunta una foto o un PDF").font(.subheadline.weight(.semibold)).foregroundStyle(Palette.ink2)
+                HStack(spacing: 8) {
+                    ReceiptPickerButtons(short: true) { data, name, type in receipts.append((data, name, type)) }
+                }
+                .buttonStyle(.bordered)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 22)
+            .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).stroke(Palette.separator, style: StrokeStyle(lineWidth: 1.5, dash: [6, 4])))
+            ForEach(receipts.indices, id: \.self) { index in
+                HStack(spacing: 10) {
+                    ReceiptThumbnail(data: receipts[index].data, contentType: receipts[index].type.identifier, side: 44)
+                    Text(receipts[index].name).font(.subheadline).lineLimit(1)
+                    Spacer(minLength: 6)
+                    Button("Quitar") { receipts.remove(at: index) }
+                        .buttonStyle(.borderless).foregroundStyle(Palette.negative)
+                        .accessibilityLabel("Quitar \(receipts[index].name)")
+                }
+            }
+            Text("El archivo se guarda junto al gasto tal como lo subes.").font(.caption).foregroundStyle(Palette.ink3)
+        }
+        .card()
+    }
+
+    private static let methods: [PaymentMethod] = [.card, .bankTransfer, .cash, .check]
+
+    private static func title(for method: PaymentMethod) -> String {
+        switch method {
+        case .card: String(localized: "Tarjeta")
+        case .bankTransfer: String(localized: "Transferencia")
+        case .cash: String(localized: "Efectivo")
+        case .check: String(localized: "Cheque")
+        case .other: String(localized: "Otro")
+        }
+    }
+
+    /// Con `another`, deja el formulario limpio para el siguiente gasto («Guardar y nuevo»).
+    private func save(another: Bool = false) {
         let vendor = vendors.first { $0.id == vendorID }
         let expense = Expense(date: date, payee: payee.isEmpty ? (vendor?.name ?? "") : payee, paymentAccountID: paymentAccountID, vendor: vendor)
         expense.memo = memo
+        expense.methodRaw = method.rawValue
         let line = ExpenseLine(details: memo.isEmpty ? expense.payee : memo, amount: amount, accountID: categoryID)
         context.insert(expense)
         line.expense = expense
@@ -292,7 +515,9 @@ struct ExpenseEditorView: View {
             do { try books.attachReceipt(receipt.data, filename: receipt.name, contentType: receipt.type, to: expense) }
             catch { failed.append(receipt.name) }
         }
-        if failed.isEmpty { dismiss() } else {
+        if failed.isEmpty, another {
+            amount = 0; payee = ""; vendorID = nil; memo = ""; receipts = []; categoryID = nil; errorMessage = nil
+        } else if failed.isEmpty { dismiss() } else {
             errorMessage = String(localized: "El gasto se guardó, pero no se pudo adjuntar: \(failed.joined(separator: ", ")). Ábrelo desde la lista para reintentar.")
         }
     }

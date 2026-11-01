@@ -8,13 +8,15 @@ import UniformTypeIdentifiers
 /// Botones para adjuntar un recibo: foto de la fototeca o archivo (imagen o PDF).
 /// La lectura automática del recibo (OCR) es de la fase 2.
 struct ReceiptPickerButtons: View {
+    /// Textos cortos para la tarjeta «Recibo» de pantallas anchas (`MacGastoNuevo`).
+    var short = false
     let onPick: (Data, String, UTType) -> Void
     @State private var photo: PhotosPickerItem?
     @State private var importing = false
 
     var body: some View {
         PhotosPicker(selection: $photo, matching: .images) {
-            Label("Adjuntar foto del recibo", systemImage: "photo.on.rectangle")
+            Label(short ? String(localized: "Elegir foto") : String(localized: "Adjuntar foto del recibo"), systemImage: "photo.on.rectangle")
         }
         .onChange(of: photo) {
             guard let photo else { return }
@@ -25,7 +27,7 @@ struct ReceiptPickerButtons: View {
                 self.photo = nil
             }
         }
-        Button("Adjuntar archivo (PDF o imagen)", systemImage: "doc.badge.plus") { importing = true }
+        Button(short ? String(localized: "Elegir archivo") : String(localized: "Adjuntar archivo (PDF o imagen)"), systemImage: "doc.badge.plus") { importing = true }
             .fileImporter(isPresented: $importing, allowedContentTypes: [.pdf, .image]) { result in
                 guard case .success(let url) = result else { return }
                 let scoped = url.startAccessingSecurityScopedResource()
