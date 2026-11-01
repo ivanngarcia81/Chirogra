@@ -17,6 +17,7 @@ struct HomeView: View {
     @Query private var customers: [Customer]
 
     @State private var months = 6
+    @ScaledMetric(relativeTo: .footnote) private var legendDot: CGFloat = 8
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @ScaledMetric(relativeTo: .title2) private var quickActionSide: CGFloat = 56
     @ScaledMetric(relativeTo: .headline) private var dateTileWidth: CGFloat = 44
@@ -61,7 +62,7 @@ struct HomeView: View {
     private var margin: CGFloat { isNarrow ? Metrics.gutter : 20 }
 
     private var cashDetail: String {
-        String(localized: "En \(ledger.moneyAccounts.filter { $0.subtype != .undepositedFunds }.count) cuentas")
+        String(localized: "En \(shownAccounts.count) cuentas")
     }
 
     /// Primera vez (canvas `EstadoVacio`): todavía no hay movimientos ni facturas.
@@ -70,6 +71,12 @@ struct HomeView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: isWide ? 16 : Metrics.cardSpacing) {
+                #if os(macOS)
+                // `MacInicio`: título grande dentro del contenido; el de la ventana es pequeño.
+                Text("Inicio").font(.system(size: 28, weight: .bold)).foregroundStyle(Palette.ink)
+                    .accessibilityAddTraits(.isHeader)
+                    .padding(.bottom, -12)
+                #endif
                 Text(isFirstUse ? (isWide ? String(localized: "Te damos la bienvenida a Chirogra, \(companies.first?.displayName ?? "")")
                                           : companies.first?.displayName ?? "") : Date.now.monthYear)
                     .font(.subheadline).foregroundStyle(Palette.ink3)
@@ -355,7 +362,8 @@ struct HomeView: View {
         let previousExpenses = lastMonth.totalExpenses + lastMonth.totalCostOfGoodsSold
         let income = change(thisMonth.totalIncome, lastMonth.totalIncome, higherIsBetter: true, longMonth: true)
         let spent = change(expenses, previousExpenses, higherIsBetter: false, longMonth: true)
-        let count = ledger.moneyAccounts.filter { $0.subtype != .undepositedFunds }.count
+        // Las mismas cuentas que la tarjeta «Cuentas» (sin caja ni fondos no depositados en cero).
+        let count = shownAccounts.count
         return [
             KPIItem(title: String(localized: "Efectivo disponible"), value: ledger.availableCash.money,
                     foot: String(localized: "\(count) cuentas · según libros"), isBrand: true),
@@ -482,6 +490,8 @@ struct HomeView: View {
                     .cornerRadius(4)
             }
             .chartForegroundStyleScale([String(localized: "Ingresos"): Palette.brand, String(localized: "Gastos"): Palette.expenseBar])
+            // Leyenda propia debajo: la de Charts quedaba limitada con los ejes y no crecía con AX3.
+            .chartLegend(.hidden)
             .chartXAxis { AxisMarks(values: .stride(by: .month)) { _ in AxisValueLabel(format: .dateTime.month(.narrow)) } }
             // `Home`: pocas guías discontinuas con cifras redondas («$10K»).
             .chartYAxis {
@@ -500,18 +510,44 @@ struct HomeView: View {
             .frame(height: dynamicTypeSize.isAccessibilitySize || isWide ? 220 : 150)
             .accessibilityLabel("Ingresos y gastos de los últimos \(months) meses")
             .accessibilityValue(chartSummary)
+            HStack(spacing: 16) {
+                legendItem(String(localized: "Ingresos"), Palette.brand)
+                legendItem(String(localized: "Gastos"), Palette.expenseBar)
+            }
+            .font(.footnote)
+            .foregroundStyle(Palette.ink2)
+            .accessibilityHidden(true)
         }
         .card()
     }
 
-    private var chartPeriodPicker: some View {
-        Picker("Periodo de la gráfica", selection: $months) {
-            Text("6 M").tag(6)
-            Text("12 M").tag(12)
+    private func legendItem(_ title: String, _ color: Color) -> some View {
+        HStack(spacing: 6) {
+            Circle().fill(color).frame(width: legendDot, height: legendDot)
+            Text(title)
         }
-        .pickerStyle(.segmented)
-        .labelsHidden()
-        .fixedSize()
+    }
+
+    /// Segmentado; con tamaños de accesibilidad, chips (el segmentado no crece con el texto).
+    @ViewBuilder
+    private var chartPeriodPicker: some View {
+        if dynamicTypeSize.isAccessibilitySize {
+            HStack(spacing: 6) {
+                ForEach([6, 12], id: \.self) { value in
+                    FilterChip(title: value == 6 ? String(localized: "6 M") : String(localized: "12 M"), isSelected: months == value) { months = value }
+                }
+            }
+            .accessibilityElement(children: .contain)
+            .accessibilityLabel("Periodo de la gráfica")
+        } else {
+            Picker("Periodo de la gráfica", selection: $months) {
+                Text("6 M").tag(6)
+                Text("12 M").tag(12)
+            }
+            .pickerStyle(.segmented)
+            .labelsHidden()
+            .fixedSize()
+        }
     }
 
     private var receivables: some View {
@@ -620,10 +656,15 @@ struct HomeView: View {
     }
 
     /// Cuentas bancarias y tarjetas; caja y fondos no depositados sólo si tienen saldo (M4).
-    private var bankAccounts: some View {
-        let shown = ledger.moneyAccounts.filter { account in
+    /// Cuentas de las tarjetas de Inicio: bancos y tarjetas siempre; caja y fondos no depositados si tienen saldo.
+    fileprivate var shownAccounts: [Account] {
+        ledger.moneyAccounts.filter { account in
             account.subtype == .bank || account.subtype == .creditCard || ledger.balance(of: account) != 0
         }
+    }
+
+    private var bankAccounts: some View {
+        let shown = shownAccounts
         return VStack(alignment: .leading, spacing: 8) {
             Text("Cuentas bancarias").font(.cardTitle)
             ForEach(shown) { account in
@@ -672,10 +713,12 @@ extension HomeView {
 
     /// Cuentas con enlace a Banca: nombre, subtítulo e importe, sin iconos.
     var wideAccounts: some View {
-        let shown = ledger.moneyAccounts.filter { $0.subtype == .bank || $0.subtype == .creditCard || ledger.balance(of: $0) != 0 }
+        let shown = shownAccounts
         return VStack(alignment: .leading, spacing: 0) {
             wideHeader("Cuentas") {
+                // Enlace de texto: sin `.plain`, el Mac lo dibuja como botón relleno.
                 NavigationLink("Banca") { BankingView() }
+                    .buttonStyle(.plain)
                     .font(.subheadline.weight(.semibold)).foregroundStyle(Palette.brand).frame(minHeight: 44)
             }
             ForEach(shown) { account in
@@ -741,6 +784,7 @@ extension HomeView {
         return VStack(alignment: .leading, spacing: 0) {
             wideHeader("Por pagar · próximos") {
                 NavigationLink("Ver todo") { ExpensesView(fixedSegment: .bills) }
+                    .buttonStyle(.plain)
                     .font(.footnote.weight(.semibold)).foregroundStyle(Palette.brand).frame(minHeight: 44)
             }
             ForEach(Array(upcoming)) { bill in

@@ -31,7 +31,7 @@ enum AppSection: String, Hashable, CaseIterable, Identifiable {
         case .banking: "building.columns"
         case .reports: "chart.bar"
         case .accounting: "book.closed"
-        case .taxes: "percent"
+        case .taxes: "receipt"
         case .settings: "gearshape"
         }
     }
