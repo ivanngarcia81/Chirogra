@@ -256,7 +256,8 @@ struct SearchResultsView: View {
     @Query(sort: \Account.code) private var accounts: [Account]
 
     private var text: String { query.trimmingCharacters(in: .whitespaces) }
-    private func matches(_ value: String) -> Bool { value.localizedCaseInsensitiveContains(text) }
+    /// Sin distinguir mayúsculas ni tildes.
+    private func matches(_ value: String) -> Bool { value.localizedStandardContains(text) }
 
     var body: some View {
         let foundInvoices = invoices.filter { matches($0.number) || matches($0.customer?.name ?? "") || $0.total.money.contains(text) }

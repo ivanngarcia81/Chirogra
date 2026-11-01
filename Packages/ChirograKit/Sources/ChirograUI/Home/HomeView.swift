@@ -13,6 +13,8 @@ struct HomeView: View {
     @Query private var journalLines: [JournalLine]
     @Query(sort: \Invoice.dueDate) private var invoices: [Invoice]
     @Query(sort: \Bill.dueDate) private var bills: [Bill]
+    @Query private var expenses: [Expense]
+    @Query private var customers: [Customer]
 
     @State private var months = 6
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
@@ -60,13 +62,19 @@ struct HomeView: View {
         String(localized: "En \(ledger.moneyAccounts.filter { $0.subtype != .undepositedFunds }.count) cuentas")
     }
 
+    /// Primera vez (canvas `EstadoVacio`): todavía no hay movimientos ni facturas.
+    private var isFirstUse: Bool { journalLines.isEmpty && invoices.isEmpty && expenses.isEmpty }
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: isWide ? 16 : Metrics.cardSpacing) {
-                Text(Date.now.monthYear)
+                Text(isFirstUse ? companies.first?.displayName ?? "" : Date.now.monthYear)
                     .font(.subheadline).foregroundStyle(Palette.ink3)
 
-                if isWide {
+                if isFirstUse {
+                    firstSteps
+                    emptyDashboard
+                } else if isWide {
                     KPIGrid(items: wideKPIs, large: true)
                     pair { chart } and: { bankAccounts }
                     pair { receivables } and: { payables }
@@ -82,7 +90,7 @@ struct HomeView: View {
             }
             .padding(.horizontal, margin)
             .padding(.vertical, Metrics.gutter)
-            .frame(maxWidth: isWide ? .infinity : 1100, alignment: .leading)
+            .frame(maxWidth: isFirstUse ? 720 : isWide ? .infinity : 1100, alignment: .leading)
             .frame(maxWidth: .infinity, alignment: isWide ? .leading : .center)
         }
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
@@ -124,6 +132,84 @@ struct HomeView: View {
         .menuStyle(.button)
         .buttonStyle(.borderedProminent)
         .tint(Palette.brand)
+    }
+
+    // MARK: Primera vez (`EstadoVacio`)
+
+    /// Pasos del MVP (el canvas incluye importar el banco y escanear recibos, que son de la fase 2).
+    private var steps: [(title: String, done: Bool, action: QuickAction?)] {
+        [(String(localized: "Crear tu empresa"), true, nil),
+         (String(localized: "Añadir tu primer cliente"), !customers.isEmpty, .customer),
+         (String(localized: "Crear tu primera factura"), !invoices.isEmpty, .invoice),
+         (String(localized: "Registrar un gasto"), !expenses.isEmpty, .expense)]
+    }
+
+    private var firstSteps: some View {
+        let done = steps.filter(\.done).count
+        return VStack(alignment: .leading, spacing: 14) {
+            HStack(spacing: 12) {
+                LogoMark(size: 40)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("Primeros pasos").font(.headline).foregroundStyle(Palette.ink)
+                    Text("\(done) de \(steps.count) completados").font(.footnote).foregroundStyle(Palette.ink3)
+                }
+            }
+            ProgressView(value: Double(done), total: Double(steps.count))
+                .tint(Palette.brand)
+                .accessibilityLabel("Progreso")
+            VStack(spacing: 0) {
+                ForEach(steps.indices, id: \.self) { index in
+                    let step = steps[index]
+                    if index > 0 { Divider() }
+                    Button { if let action = step.action, !step.done { sheet = action } } label: {
+                        HStack(spacing: 12) {
+                            Image(systemName: step.done ? "checkmark" : "circle")
+                                .font(.caption.weight(.bold))
+                                .foregroundStyle(step.done ? Palette.positive : .clear)
+                                .frame(width: 26, height: 26)
+                                .background(step.done ? Palette.positiveWash : .clear, in: Circle())
+                                .overlay(Circle().stroke(step.done ? .clear : Palette.separator, lineWidth: 2))
+                                .accessibilityHidden(true)
+                            Text(step.title).fontWeight(step.done ? .regular : .semibold)
+                                .foregroundStyle(step.done ? Palette.ink3 : Palette.ink)
+                            Spacer(minLength: 8)
+                            if !step.done {
+                                Image(systemName: "chevron.right").font(.caption.weight(.semibold)).foregroundStyle(Palette.ink3)
+                            }
+                        }
+                        .frame(minHeight: 48)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(step.done)
+                    .accessibilityValue(step.done ? Text("Completado") : Text("Pendiente"))
+                }
+            }
+        }
+        .padding(18)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Palette.surface, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+    }
+
+    private var emptyDashboard: some View {
+        VStack(spacing: 12) {
+            HStack(alignment: .bottom, spacing: 6) {
+                ForEach(Array([24, 40, 30, 52, 44, 62].enumerated()), id: \.offset) { index, height in
+                    RoundedRectangle(cornerRadius: 4).fill(index >= 4 ? Palette.brandWash : Palette.surface2)
+                        .frame(width: 14, height: CGFloat(height))
+                }
+            }
+            .accessibilityHidden(true)
+            Text("Aquí verás cómo va tu negocio").font(.headline).foregroundStyle(Palette.ink)
+            Text("Cuando registres ventas y gastos, aparecerán tu efectivo, tus ingresos del mes y lo que te deben.")
+                .font(.subheadline).foregroundStyle(Palette.ink2).multilineTextAlignment(.center)
+            Button("Crear tu primera factura") { sheet = .invoice }
+                .buttonStyle(.primary)
+                .fixedSize(horizontal: true, vertical: false)
+        }
+        .padding(.horizontal, 20).padding(.vertical, 22)
+        .frame(maxWidth: .infinity)
+        .overlay(RoundedRectangle(cornerRadius: 22, style: .continuous).strokeBorder(Palette.separator, style: StrokeStyle(lineWidth: 1.5, dash: [6, 4])))
     }
 
     /// Dos tarjetas lado a lado si hay sitio; si no, una debajo de otra.

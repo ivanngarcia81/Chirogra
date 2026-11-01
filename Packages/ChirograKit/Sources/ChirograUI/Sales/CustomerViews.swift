@@ -13,7 +13,7 @@ struct CustomerListView: View {
     private var filtered: [Customer] {
         let text = query.trimmingCharacters(in: .whitespaces)
         return customers.filter {
-            !$0.isArchived && (text.isEmpty || $0.name.localizedCaseInsensitiveContains(text) || $0.email.localizedCaseInsensitiveContains(text))
+            !$0.isArchived && (text.isEmpty || $0.name.localizedStandardContains(text) || $0.email.localizedStandardContains(text))
         }
     }
 

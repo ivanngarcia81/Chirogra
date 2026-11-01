@@ -315,6 +315,16 @@
         }
       }
     },
+    "%lld de %lld completados" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld of %lld completed"
+          }
+        }
+      }
+    },
     "%lld de 2" : {
       "localizations" : {
         "en" : {
@@ -491,6 +501,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "* Subject to sales tax"
+          }
+        }
+      }
+    },
+    "+ %lld más" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "+ %lld more"
           }
         }
       }
@@ -711,16 +731,6 @@
         }
       }
     },
-    "Algunas cuentas que crearemos" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Some accounts we'll create"
-          }
-        }
-      }
-    },
     "Alta de %@" : {
       "localizations" : {
         "en" : {
@@ -827,6 +837,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Apply customer credit (%@)"
+          }
+        }
+      }
+    },
+    "Aquí verás cómo va tu negocio" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This is where you’ll see how your business is doing"
           }
         }
       }
@@ -957,6 +977,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Add product or service"
+          }
+        }
+      }
+    },
+    "Añadir tu primer cliente" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add your first customer"
           }
         }
       }
@@ -1436,6 +1466,16 @@
         }
       }
     },
+    "Comercio o tienda" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retail or store"
+          }
+        }
+      }
+    },
     "Comparar" : {
       "localizations" : {
         "en" : {
@@ -1486,6 +1526,16 @@
         }
       }
     },
+    "Completado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Completed"
+          }
+        }
+      }
+    },
     "Componente" : {
       "localizations" : {
         "en" : {
@@ -1502,16 +1552,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Purchases"
-          }
-        }
-      }
-    },
-    "Con estos datos preparamos tu plan de cuentas y tus facturas." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "We use this to set up your chart of accounts and your invoices."
           }
         }
       }
@@ -1646,16 +1686,6 @@
         }
       }
     },
-    "Crea tu empresa" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Create your company"
-          }
-        }
-      }
-    },
     "Crea tu primera factura con el botón +." : {
       "localizations" : {
         "en" : {
@@ -1672,6 +1702,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Created"
+          }
+        }
+      }
+    },
+    "Crear tu empresa" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create your company"
+          }
+        }
+      }
+    },
+    "Crear tu primera factura" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create your first invoice"
+          }
+        }
+      }
+    },
+    "Creemos tu empresa" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Let’s set up your company"
           }
         }
       }
@@ -1702,6 +1762,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Credits applied"
+          }
+        }
+      }
+    },
+    "Cuando registres ventas y gastos, aparecerán tu efectivo, tus ingresos del mes y lo que te deben." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Once you record sales and expenses, you’ll see your cash, this month’s income, and what you’re owed."
           }
         }
       }
@@ -2437,12 +2507,12 @@
         }
       }
     },
-    "Estado donde operas" : {
+    "Estados Unidos" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "State where you operate"
+            "value" : "United States"
           }
         }
       }
@@ -2473,6 +2543,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "This month"
+          }
+        }
+      }
+    },
+    "Estos datos aparecen en tus facturas. Puedes cambiarlos cuando quieras en Ajustes." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "These details appear on your invoices. You can change them anytime in Settings."
           }
         }
       }
@@ -2980,6 +3060,16 @@
         }
       }
     },
+    "ID fiscal (EIN)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tax ID (EIN)"
+          }
+        }
+      }
+    },
     "IMPORTE" : {
       "localizations" : {
         "en" : {
@@ -3110,6 +3200,16 @@
         }
       }
     },
+    "Independiente" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Freelancer"
+          }
+        }
+      }
+    },
     "Ingresos" : {
       "localizations" : {
         "en" : {
@@ -3176,16 +3276,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Inventory"
-          }
-        }
-      }
-    },
-    "Ir a mi panel" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Go to my dashboard"
           }
         }
       }
@@ -3801,12 +3891,12 @@
         }
       }
     },
-    "Nombre del negocio" : {
+    "Nombre de la empresa" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Business name"
+            "value" : "Company name"
           }
         }
       }
@@ -4032,12 +4122,12 @@
         }
       }
     },
-    "Obligatorio: define el sales tax que cobras." : {
+    "Opcional" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Required: it determines the sales tax you collect."
+            "value" : "Optional"
           }
         }
       }
@@ -4405,6 +4495,16 @@
         }
       }
     },
+    "País o región" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Country or region"
+          }
+        }
+      }
+    },
     "Pendiente" : {
       "localizations" : {
         "en" : {
@@ -4482,6 +4582,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Chart of accounts"
+          }
+        }
+      }
+    },
+    "Plan de cuentas sugerido" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suggested chart of accounts"
           }
         }
       }
@@ -4598,12 +4708,12 @@
         }
       }
     },
-    "Preparamos un plan de cuentas pensado para tu sector. Podrás añadir o archivar cuentas después." : {
+    "Primeros pasos" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "We'll prepare a chart of accounts for your industry. You can add or archive accounts later."
+            "value" : "Getting started"
           }
         }
       }
@@ -4624,6 +4734,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Products and services"
+          }
+        }
+      }
+    },
+    "Progreso" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Progress"
           }
         }
       }
@@ -4795,16 +4915,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Legal name"
-          }
-        }
-      }
-    },
-    "Razón social (opcional)" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Legal name (optional)"
           }
         }
       }
@@ -5019,12 +5129,32 @@
         }
       }
     },
+    "Registrar un gasto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Record an expense"
+          }
+        }
+      }
+    },
     "Reportes" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Reports"
+          }
+        }
+      }
+    },
+    "Restaurante y comida" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restaurant and food"
           }
         }
       }
@@ -5172,9 +5302,6 @@
       }
     },
     "Ríos Diseño & Obra" : {
-      "shouldTranslate" : false
-    },
-    "Ríos Diseño & Obra LLC" : {
       "shouldTranslate" : false
     },
     "S corporation" : {
@@ -5358,6 +5485,16 @@
         }
       }
     },
+    "Salud y bienestar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Health and wellness"
+          }
+        }
+      }
+    },
     "Se aplica a esta factura" : {
       "localizations" : {
         "en" : {
@@ -5444,6 +5581,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Services"
+          }
+        }
+      }
+    },
+    "Servicios profesionales" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Professional services"
           }
         }
       }
@@ -5879,6 +6026,16 @@
         }
       }
     },
+    "Te sugerimos un plan de cuentas listo para usar." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "We’ll suggest a ready-to-use chart of accounts."
+          }
+        }
+      }
+    },
     "Teléfono" : {
       "localizations" : {
         "en" : {
@@ -5915,16 +6072,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Entity type"
-          }
-        }
-      }
-    },
-    "Tipo de negocio" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Business type"
           }
         }
       }
@@ -6201,6 +6348,16 @@
         }
       }
     },
+    "Tus libros se llevan en dólares (USD). El estado decide el sales tax que cobras; es obligatorio." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your books are kept in US dollars (USD). Your state determines the sales tax you charge; it’s required."
+          }
+        }
+      }
+    },
     "Tus libros viajan cifrados en tu cuenta privada de iCloud entre tu iPhone, iPad y Mac. El cambio se aplica al volver a abrir la app." : {
       "localizations" : {
         "en" : {
@@ -6211,12 +6368,32 @@
         }
       }
     },
+    "USD · Dólar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "USD · Dollar"
+          }
+        }
+      }
+    },
     "Un asiento necesita al menos dos líneas." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "A journal entry needs at least two lines."
+          }
+        }
+      }
+    },
+    "Usar este plan" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use this plan"
           }
         }
       }
@@ -6614,6 +6791,16 @@
     },
     "·" : {
       "shouldTranslate" : false
+    },
+    "¿A qué se dedica tu negocio?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What does your business do?"
+          }
+        }
+      }
     },
     "¿Anular la factura?" : {
       "localizations" : {

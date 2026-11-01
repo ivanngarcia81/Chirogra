@@ -72,11 +72,12 @@ struct InvoiceListView: View {
     @State private var filter: Filter = .all
 
     private var filtered: [Invoice] {
-        let text = query.trimmingCharacters(in: .whitespaces).lowercased()
+        // Sin distinguir mayúsculas ni tildes: «clinica» encuentra «Clínica Del Valle».
+        let text = query.trimmingCharacters(in: .whitespaces)
         return invoices.filter { invoice in
             filter.matches(invoice) && (text.isEmpty
-                || invoice.number.lowercased().contains(text)
-                || (invoice.customer?.name.lowercased().contains(text) ?? false)
+                || invoice.number.localizedStandardContains(text)
+                || (invoice.customer?.name.localizedStandardContains(text) ?? false)
                 || invoice.total.money.contains(text))
         }
     }
