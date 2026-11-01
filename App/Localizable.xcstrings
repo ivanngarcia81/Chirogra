@@ -1,6 +1,9 @@
 {
   "sourceLanguage" : "es",
   "strings" : {
+    "%" : {
+      "shouldTranslate" : false
+    },
     "%@ %@%%" : {
       "localizations" : {
         "es" : {
@@ -74,6 +77,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ · void"
+          }
+        }
+      }
+    },
+    "%@ · base devengado · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · accrual basis · %@"
           }
         }
       }
@@ -312,6 +325,16 @@
         }
       }
     },
+    "Activado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On"
+          }
+        }
+      }
+    },
     "Activo = Pasivo + Patrimonio" : {
       "localizations" : {
         "en" : {
@@ -452,16 +475,6 @@
         }
       }
     },
-    "Anterior: %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Previous: %@"
-          }
-        }
-      }
-    },
     "Antigüedad de cuentas por cobrar" : {
       "localizations" : {
         "en" : {
@@ -478,6 +491,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "A/P aging"
+          }
+        }
+      }
+    },
+    "Antigüedad por cobrar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Receivables aging"
+          }
+        }
+      }
+    },
+    "Antigüedad por pagar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Payables aging"
           }
         }
       }
@@ -1027,6 +1060,16 @@
         }
       }
     },
+    "Comparar con periodo anterior" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compare with previous period"
+          }
+        }
+      }
+    },
     "Compartir" : {
       "localizations" : {
         "en" : {
@@ -1383,6 +1426,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Deposit to"
+          }
+        }
+      }
+    },
+    "Desactivado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Off"
           }
         }
       }
@@ -1938,6 +1991,16 @@
         }
       }
     },
+    "Exportar CSV" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Export CSV"
+          }
+        }
+      }
+    },
     "Exportar e importar un archivo de copia independiente de iCloud está en el plan del MVP (DISEÑO §6.4)." : {
       "localizations" : {
         "en" : {
@@ -2075,6 +2138,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Date: %@"
+          }
+        }
+      }
+    },
+    "Fechas del periodo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Period dates"
           }
         }
       }
@@ -3593,6 +3666,17 @@
         }
       }
     },
+    "Personalizado" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Custom"
+          }
+        }
+      }
+    },
     "Plan de cuentas" : {
       "localizations" : {
         "en" : {
@@ -4694,6 +4778,16 @@
         }
       }
     },
+    "T%lld %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Q%lld %@"
+          }
+        }
+      }
+    },
     "TOTAL" : {
       "localizations" : {
         "en" : {
@@ -5072,6 +5166,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gross profit"
+          }
+        }
+      }
+    },
+    "VARIACIÓN" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CHANGE"
           }
         }
       }

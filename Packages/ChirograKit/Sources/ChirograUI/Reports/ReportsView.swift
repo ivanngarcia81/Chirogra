@@ -3,7 +3,9 @@ import ChirograData
 import SwiftData
 import SwiftUI
 
-/// Reportes (canvas: `ReportePyG`, `MacPyG`). Todos se calculan con `ReportBuilder` a partir de las líneas contabilizadas.
+/// Reportes. iPhone sigue el tablero `ReportePyG` del canvas; iPad y Mac, `MacPyG`: cabecera con la empresa y
+/// exportar, filtros, cuatro cifras clave y la tabla con variación frente al periodo anterior.
+/// Todos se calculan con `ReportBuilder` a partir de las líneas contabilizadas.
 struct ReportsView: View {
     enum Kind: String, CaseIterable, Identifiable {
         case income = "Resultados"
@@ -13,31 +15,56 @@ struct ReportsView: View {
         case payables = "Por pagar"
         case salesTax = "Sales tax"
         var id: String { rawValue }
+
+        /// Nombre completo: título en iPad y Mac, y lista «Reportes» de la barra lateral del Mac.
+        var fullTitle: String {
+            switch self {
+            case .income: String(localized: "Estado de resultados")
+            case .balance: String(localized: "Balance general")
+            case .trial: String(localized: "Balanza de comprobación")
+            case .receivables: String(localized: "Antigüedad por cobrar")
+            case .payables: String(localized: "Antigüedad por pagar")
+            case .salesTax: String(localized: "Resumen de sales tax")
+            }
+        }
     }
 
     enum Period: String, CaseIterable, Identifiable {
-        case month = "Mes", quarter = "Trimestre", year = "Año"
+        case month = "Mes", quarter = "Trimestre", year = "Año", custom = "Personalizado"
         var id: String { rawValue }
 
+        /// Periodo de calendario que contiene hoy, desplazado `offset` periodos. `custom` no tiene uno propio:
+        /// lo resuelve la vista con las fechas elegidas.
         func interval(offset: Int = 0, calendar: Calendar = .current) -> DateInterval {
-            let component: Calendar.Component = switch self { case .month: .month; case .quarter: .quarter; case .year: .year }
+            let component: Calendar.Component = switch self { case .month, .custom: .month; case .quarter: .quarter; case .year: .year }
             let step = self == .quarter ? 3 : 1
             let date = calendar.date(byAdding: self == .quarter ? .month : component, value: offset * step, to: .now) ?? .now
             return calendar.dateInterval(of: component, for: date) ?? DateInterval(start: date, duration: 0)
         }
     }
 
-    /// iPhone: una columna como en el canvas. iPad y Mac: el resumen va en fila encima de la tabla o, si hay ancho,
-    /// en una columna a la izquierda de la tabla.
-    private enum Layout { case compact, stacked, sideBySide }
-
-    /// Una cifra del resumen de un reporte (total de ingresos, un tramo de antigüedad…).
-    private struct Tile: Identifiable {
+    /// Una cifra clave encima de la tabla (`MacPyG`: etiqueta, importe y pie).
+    private struct KPI: Identifiable {
         let title: String
         let value: String
-        var note: String? = nil
+        var foot: String? = nil
+        var footColor: Color = Palette.ink3
+        var isBrand = false
         var id: String { title }
     }
+
+    /// Qué dirección es favorable para colorear la variación.
+    private enum Trend { case upIsGood, downIsGood }
+
+    /// Una celda de importe en una fila de la tabla.
+    private struct Cell {
+        let text: String
+        var color: Color = Palette.ink
+        var isNarrow = false
+    }
+
+    /// En la barra lateral del Mac cada reporte es una entrada propia; entonces no se muestran las pestañas.
+    var fixedKind: Kind? = nil
 
     @Environment(\.modelContext) private var context
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
@@ -45,18 +72,24 @@ struct ReportsView: View {
     @Environment(\.horizontalSizeClass) private var sizeClass
     #endif
     @ScaledMetric(relativeTo: .subheadline) private var columnWidth: CGFloat = 110
-    @ScaledMetric(relativeTo: .body) private var wideColumnWidth: CGFloat = 150
+    @ScaledMetric(relativeTo: .body) private var wideColumnWidth: CGFloat = 120
+    @ScaledMetric(relativeTo: .body) private var percentColumnWidth: CGFloat = 84
     @ScaledMetric(relativeTo: .body) private var wideRowHeight: CGFloat = Self.minimumRowHeight
     @Query(sort: \Account.code) private var accounts: [Account]
     @Query private var journalLines: [JournalLine]
     @Query private var invoices: [Invoice]
     @Query private var bills: [Bill]
+    @Query private var companies: [Company]
 
-    @State private var kind: Kind = .income
+    @State private var selectedKind: Kind = .income
     @State private var period: Period = .month
     @State private var compare = true
+    @State private var customStart = Period.month.interval().start
+    @State private var customEnd = Period.month.interval().end.addingTimeInterval(-1)
+    @State private var editingRange = false
     @State private var width: CGFloat = 0
 
+    private var kind: Kind { fixedKind ?? selectedKind }
     private var ledger: Ledger { Ledger(accounts: accounts, lines: journalLines) }
 
     // MARK: Medidas
@@ -66,9 +99,6 @@ struct ReportsView: View {
     #else
     private static let minimumRowHeight: CGFloat = 44
     #endif
-    /// Ancho mínimo del contenido para poner el resumen al lado de la tabla.
-    private static let sideBySideWidth: CGFloat = 1000
-    private static let summaryColumnWidth: CGFloat = 320
 
     /// Ancho de iPhone (o de iPad en Split View estrecho).
     private var isNarrow: Bool {
@@ -79,30 +109,18 @@ struct ReportsView: View {
         #endif
     }
 
-    /// Una sola columna, como en iPhone: en pantallas estrechas y con tamaños de accesibilidad.
+    /// Una sola columna como en iPhone: en pantallas estrechas y con tamaños de accesibilidad.
     private var isCompact: Bool { isNarrow || dynamicTypeSize.isAccessibilitySize }
 
-    private var layout: Layout {
-        if isCompact { return .compact }
-        return width - 2 * margin >= Self.sideBySideWidth ? .sideBySide : .stacked
-    }
-
-    /// En pantallas anchas el margen coincide con el del título grande, para que el reporte empiece donde empieza «Reportes».
+    /// En pantallas anchas el margen coincide con el del título grande, para que el reporte empiece donde empieza el título.
     private var margin: CGFloat { isNarrow ? Metrics.gutter : 20 }
-    private var maxContentWidth: CGFloat {
-        switch layout {
-        case .compact: isNarrow ? 900 : 1240
-        case .stacked: 1000
-        case .sideBySide: 1240
-        }
-    }
-    private var amountColumnWidth: CGFloat { isCompact ? columnWidth : wideColumnWidth }
     private var rowFont: Font { isCompact ? .subheadline : .body }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: isCompact ? Metrics.cardSpacing : 16) {
-                kindChips
+                if !isNarrow { pageHeader }
+                if fixedKind == nil { kindChips }
                 if kind == .income || kind == .salesTax { periodControls }
                 switch kind {
                 case .income: incomeStatement
@@ -115,92 +133,186 @@ struct ReportsView: View {
             }
             .padding(.horizontal, margin)
             .padding(.vertical, Metrics.gutter)
-            .frame(maxWidth: maxContentWidth, alignment: .leading)
+            .frame(maxWidth: isNarrow ? 900 : .infinity, alignment: .leading)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
         .background(Palette.background)
-        .navigationTitle("Reportes")
+        .navigationTitle(isNarrow ? String(localized: "Reportes") : kind.fullTitle)
         .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                ShareLink(item: csvFile, preview: SharePreview("\(csvFile.name).csv")) {
-                    Label("Exportar", systemImage: "square.and.arrow.up")
+            if isNarrow {
+                ToolbarItem(placement: .primaryAction) {
+                    ShareLink(item: csvFile, preview: SharePreview("\(csvFile.name).csv")) {
+                        Label("Exportar", systemImage: "square.and.arrow.up")
+                    }
                 }
             }
         }
+    }
+
+    // MARK: Cabecera y filtros
+
+    /// `MacPyG`: empresa · base · moneda, y «Exportar CSV» a la derecha. En el Mac el título va también aquí,
+    /// porque el de la ventana es pequeño.
+    private var pageHeader: some View {
+        HStack(alignment: .center, spacing: 12) {
+            VStack(alignment: .leading, spacing: 2) {
+                #if os(macOS)
+                Text(kind.fullTitle).font(.system(size: 28, weight: .bold)).foregroundStyle(Palette.ink)
+                #endif
+                Text(subtitle).font(.subheadline).foregroundStyle(Palette.ink3)
+            }
+            Spacer(minLength: 8)
+            ShareLink(item: csvFile, preview: SharePreview("\(csvFile.name).csv")) {
+                Text("Exportar CSV")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(Palette.ink)
+                    .padding(.horizontal, 14)
+                    .frame(minHeight: 36)
+                    .background(Palette.surface, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).stroke(Palette.separator))
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
+    private var subtitle: String {
+        let company = companies.first
+        let name = company.map { $0.displayName.isEmpty ? $0.legalName : $0.displayName } ?? ""
+        return String(localized: "\(name) · base devengado · \(company?.currencyCode ?? "USD")")
     }
 
     private var kindChips: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
                 ForEach(Kind.allCases) { option in
-                    FilterChip(title: option.localizedTitle, isSelected: kind == option) { kind = option }
+                    FilterChip(title: option.localizedTitle, isSelected: kind == option) { selectedKind = option }
                 }
             }
         }
     }
 
-    private var periodControls: some View {
-        HStack {
-            Picker("Periodo", selection: $period) {
-                ForEach(Period.allCases) { Text($0.localizedTitle).tag($0) }
-            }
-            .pickerStyle(.segmented)
-            .fixedSize()
-            Spacer()
-            if kind == .income { Toggle("Comparar", isOn: $compare).fixedSize() }
-        }
-        .controlSize(isNarrow ? .regular : .large)
-        .font(isCompact ? nil : .body)
-    }
-
-    // MARK: Resumen y tabla
-
-    /// Coloca el resumen (tarjeta destacada y cifras) y la tabla según el ancho disponible. En iPhone sólo se
-    /// muestran las cifras de los reportes que ya las tenían (`tilesWhenCompact`).
     @ViewBuilder
-    private func report<Detail: View>(hero: HeroCard? = nil, tiles: [Tile], tilesWhenCompact: Bool = false,
-                                      @ViewBuilder detail: () -> Detail) -> some View {
-        switch layout {
-        case .compact:
-            VStack(alignment: .leading, spacing: Metrics.cardSpacing) {
-                hero
-                if tilesWhenCompact {
-                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 110), spacing: 8)], spacing: 8) {
-                        ForEach(tiles) { KPITile(title: $0.title, value: $0.value, note: $0.note) }
-                    }
-                }
-                detail()
+    private var periodControls: some View {
+        if isNarrow {
+            HStack {
+                periodPicker(Period.allCases.filter { $0 != .custom })
+                Spacer()
+                if kind == .income { Toggle("Comparar", isOn: $compare).fixedSize() }
             }
-        case .stacked:
-            VStack(spacing: 12) {
-                if let hero { HeroCard(title: hero.title, value: hero.value, detail: hero.detail, prominent: true) }
-                tileGrid(tiles, columns: tiles.count)
-                    .fixedSize(horizontal: false, vertical: true)
-                detail().padding(.top, 4)
-            }
-        case .sideBySide:
-            HStack(alignment: .top, spacing: 16) {
-                VStack(spacing: 12) {
-                    if let hero { HeroCard(title: hero.title, value: hero.value, detail: hero.detail, prominent: true) }
-                    tileGrid(tiles, columns: tiles.count == 3 ? 1 : 2)
+        } else {
+            // `MacPyG`: segmentado con «Personalizado», botón con el rango y casilla «Comparar con periodo anterior».
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 12) { periodPicker(Period.allCases); rangeButton; compareBox }
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack(spacing: 12) { periodPicker(Period.allCases); rangeButton }
+                    compareBox
                 }
-                // Alto natural: sin esto la columna se estira hasta el alto de la tabla.
-                .fixedSize(horizontal: false, vertical: true)
-                .frame(width: Self.summaryColumnWidth)
-                detail().frame(maxWidth: .infinity)
             }
         }
     }
 
-    private func tileGrid(_ tiles: [Tile], columns: Int) -> some View {
-        let count = max(columns, 1)
-        let rows = stride(from: 0, to: tiles.count, by: count).map { Array(tiles[$0..<min($0 + count, tiles.count)]) }
-        return Grid(horizontalSpacing: 12, verticalSpacing: 12) {
-            ForEach(rows.indices, id: \.self) { index in
-                GridRow {
-                    ForEach(rows[index]) { SummaryTile(title: $0.title, value: $0.value, note: $0.note) }
+    private func periodPicker(_ options: [Period]) -> some View {
+        Picker("Periodo", selection: $period) {
+            ForEach(options) { Text($0.localizedTitle).tag($0) }
+        }
+        .pickerStyle(.segmented)
+        .fixedSize()
+        .controlSize(isNarrow ? .regular : .large)
+    }
+
+    private var rangeButton: some View {
+        Button { editingRange = true } label: {
+            HStack(spacing: 6) {
+                Text(rangeLabel).font(.subheadline.weight(.semibold))
+                Image(systemName: "chevron.down").font(.caption2.weight(.bold))
+            }
+            .foregroundStyle(Palette.ink)
+            .padding(.horizontal, 14)
+            .frame(minHeight: 36)
+            .background(Palette.surface, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).stroke(Palette.separator))
+        }
+        .buttonStyle(.plain)
+        .fixedSize()
+        .accessibilityLabel(String(localized: "Fechas del periodo"))
+        .accessibilityValue(rangeLabel)
+        .popover(isPresented: $editingRange) { rangeEditor }
+    }
+
+    /// Elegir fechas pasa el periodo a «Personalizado».
+    private var rangeEditor: some View {
+        let start = Binding(get: { interval().start }, set: { customStart = $0; customEnd = max(customEnd, $0); period = .custom })
+        let end = Binding(get: { interval().end.addingTimeInterval(-1) }, set: { customEnd = $0; customStart = min(customStart, $0); period = .custom })
+        return VStack(alignment: .leading, spacing: 12) {
+            DatePicker("Desde", selection: start, displayedComponents: .date)
+            DatePicker("Hasta", selection: end, displayedComponents: .date)
+        }
+        .padding(20)
+        .frame(minWidth: 320)
+        .presentationCompactAdaptation(.popover)
+    }
+
+    private var compareBox: some View {
+        Toggle(isOn: $compare) { Text("Comparar con periodo anterior").foregroundStyle(Palette.ink2) }
+            .toggleStyle(CheckboxStyle())
+            .opacity(kind == .income ? 1 : 0)
+            .accessibilityHidden(kind != .income)
+            .fixedSize()
+    }
+
+    private var rangeLabel: String {
+        let current = interval()
+        return (current.start..<current.end.addingTimeInterval(-1)).formatted(.interval.day().month(.abbreviated).year())
+    }
+
+    /// Periodo mostrado, o el anterior de igual duración (`offset: -1`).
+    private func interval(offset: Int = 0) -> DateInterval {
+        guard period == .custom else { return period.interval(offset: offset) }
+        let calendar = Calendar.current
+        let start = calendar.startOfDay(for: min(customStart, customEnd))
+        let end = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: max(customStart, customEnd))) ?? start
+        let length = end.timeIntervalSince(start)
+        return DateInterval(start: start.addingTimeInterval(Double(offset) * length), duration: length)
+    }
+
+    /// Encabezado de columna del periodo: «OCT 2026», «T4 2026», «2026»; en rangos personalizados, «ACTUAL»/«ANTERIOR».
+    private func columnTitle(offset: Int) -> String {
+        let start = interval(offset: offset).start
+        let year = start.formatted(.dateTime.year())
+        switch period {
+        case .month: return start.formatted(.dateTime.month(.abbreviated).year()).uppercased()
+        case .quarter: return String(localized: "T\((Calendar.current.component(.month, from: start) - 1) / 3 + 1) \(year)")
+        case .year: return year
+        case .custom: return offset == 0 ? String(localized: "ACTUAL") : String(localized: "ANTERIOR")
+        }
+    }
+
+    // MARK: Cifras clave
+
+    /// Como `auto-fit minmax(180px, 1fr)` del canvas: tantas columnas de 180 pt o más como quepan, sin pasar del
+    /// número de tarjetas, para que siempre ocupen todo el ancho.
+    private func kpiGrid(_ kpis: [KPI]) -> some View {
+        let fitting = Int((width - 2 * margin + 12) / (180 + 12))
+        let count = max(1, min(kpis.count, fitting))
+        return LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: count), spacing: 12) {
+            ForEach(kpis) { kpi in
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(kpi.title).font(.caption.weight(.semibold))
+                        .foregroundStyle(kpi.isBrand ? Palette.onBrand.opacity(0.85) : Palette.ink3)
+                    Text(kpi.value).font(.amount(22)).minimumScaleFactor(0.6).lineLimit(1)
+                        .foregroundStyle(kpi.isBrand ? Palette.onBrand : Palette.ink)
+                    // Siempre una línea de pie, aunque esté vacía, para que todas las tarjetas midan lo mismo.
+                    Text(kpi.foot ?? " ").font(.caption.weight(.semibold))
+                        .foregroundStyle(kpi.isBrand ? Palette.onBrand.opacity(0.9) : kpi.footColor)
                 }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 14)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(kpi.isBrand ? Palette.brand : Palette.surface, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(kpi.title)
+                .accessibilityValue([kpi.value, kpi.foot].compactMap { $0 }.joined(separator: ", "))
             }
         }
     }
@@ -208,37 +320,59 @@ struct ReportsView: View {
     // MARK: Estado de resultados
 
     private var incomeStatement: some View {
-        let current = ledger.incomeStatement(period.interval())
-        let previous = ledger.incomeStatement(period.interval(offset: -1))
-        let note: (Int64) -> String? = { compare ? String(localized: "Anterior: \($0.money)") : nil }
-        return report(
-            hero: HeroCard(title: String(localized: "Ganancia neta"), value: current.netIncome.money,
-                           detail: String(localized: "\(period.interval().start.shortDate) – \(period.interval().end.addingTimeInterval(-1).shortDate)")),
-            tiles: [Tile(title: String(localized: "Total ingresos"), value: current.totalIncome.money, note: note(previous.totalIncome)),
-                    Tile(title: String(localized: "Utilidad bruta"), value: current.grossProfit.money, note: note(previous.grossProfit)),
-                    Tile(title: String(localized: "Total gastos"), value: current.totalExpenses.money, note: note(previous.totalExpenses))]
-        ) {
+        let current = ledger.incomeStatement(interval())
+        let previous = ledger.incomeStatement(interval(offset: -1))
+        return VStack(spacing: isCompact ? Metrics.cardSpacing : 16) {
+            if isCompact {
+                HeroCard(title: String(localized: "Ganancia neta"), value: current.netIncome.money,
+                         detail: String(localized: "\(interval().start.shortDate) – \(interval().end.addingTimeInterval(-1).shortDate)"))
+            } else {
+                kpiGrid(incomeKPIs(current, previous))
+            }
             VStack(spacing: 0) {
-                header(columns: compare ? [String(localized: "ACTUAL"), String(localized: "ANTERIOR")] : [String(localized: "ACTUAL")])
-                group(String(localized: "Ingresos"), current.income, previous.income)
-                totalRow(String(localized: "Total ingresos"), current.totalIncome, previous.totalIncome)
-                group(String(localized: "Costo de ventas"), current.costOfGoodsSold, previous.costOfGoodsSold)
-                totalRow(String(localized: "Utilidad bruta"), current.grossProfit, previous.grossProfit)
-                group(String(localized: "Gastos operativos"), current.expenses, previous.expenses)
-                totalRow(String(localized: "Total gastos"), current.totalExpenses, previous.totalExpenses)
-                totalRow(String(localized: "Ganancia neta"), current.netIncome, previous.netIncome, highlighted: true)
+                header(columns: compare ? [columnTitle(offset: 0), columnTitle(offset: -1)] : [columnTitle(offset: 0)], variation: compare)
+                group(String(localized: "Ingresos"), current.income, previous.income, trend: .upIsGood)
+                totalRow(String(localized: "Total ingresos"), current.totalIncome, previous.totalIncome, trend: .upIsGood)
+                group(String(localized: "Costo de ventas"), current.costOfGoodsSold, previous.costOfGoodsSold, trend: .downIsGood)
+                totalRow(String(localized: "Utilidad bruta"), current.grossProfit, previous.grossProfit, trend: .upIsGood)
+                group(String(localized: "Gastos operativos"), current.expenses, previous.expenses, trend: .downIsGood)
+                totalRow(String(localized: "Total gastos"), current.totalExpenses, previous.totalExpenses, trend: .downIsGood)
+                totalRow(String(localized: "Ganancia neta"), current.netIncome, previous.netIncome, trend: .upIsGood, highlighted: true)
             }
             .card(padding: 0)
         }
+    }
+
+    private func incomeKPIs(_ current: IncomeStatement, _ previous: IncomeStatement) -> [KPI] {
+        func change(_ now: Int64, _ before: Int64, _ trend: Trend) -> (String?, Color) {
+            guard compare, let percent = percentChange(now, before) else { return (nil, Palette.ink3) }
+            return (percent, color(for: now - before, trend))
+        }
+        func margin(_ amount: Int64) -> String? {
+            current.totalIncome > 0 ? String(localized: "Margen \(amount * 100 / current.totalIncome)%") : nil
+        }
+        let income = change(current.totalIncome, previous.totalIncome, .upIsGood)
+        let expenses = change(current.totalExpenses, previous.totalExpenses, .downIsGood)
+        let net = change(current.netIncome, previous.netIncome, .upIsGood)
+        return [
+            KPI(title: String(localized: "Ingresos"), value: current.totalIncome.money, foot: income.0, footColor: income.1),
+            KPI(title: String(localized: "Utilidad bruta"), value: current.grossProfit.money, foot: margin(current.grossProfit)),
+            KPI(title: String(localized: "Gastos operativos"), value: current.totalExpenses.money, foot: expenses.0, footColor: expenses.1),
+            KPI(title: String(localized: "Ganancia neta"), value: current.netIncome.money,
+                foot: [margin(current.netIncome), net.0].compactMap { $0 }.joined(separator: " · "), isBrand: true),
+        ]
     }
 
     // MARK: Balance general
 
     private var balanceSheet: some View {
         let report = balanceSheetReport
-        return self.report(tiles: [Tile(title: String(localized: "Total activos"), value: report.totalAssets.money),
-                                   Tile(title: String(localized: "Total pasivos"), value: report.totalLiabilities.money),
-                                   Tile(title: String(localized: "Total patrimonio"), value: report.totalEquity.money)]) {
+        return VStack(spacing: 16) {
+            if !isCompact {
+                kpiGrid([KPI(title: String(localized: "Total activos"), value: report.totalAssets.money),
+                         KPI(title: String(localized: "Total pasivos"), value: report.totalLiabilities.money),
+                         KPI(title: String(localized: "Total patrimonio"), value: report.totalEquity.money)])
+            }
             VStack(spacing: 0) {
                 header(columns: [String(localized: "AL \(Date.now.shortDate.uppercased())")])
                 group(String(localized: "Activos"), report.assets, nil)
@@ -260,15 +394,19 @@ struct ReportsView: View {
 
     private var trialBalance: some View {
         let report = ReportBuilder.trialBalance(accounts: ledger.ledgerAccounts, lines: ledger.lines, asOf: .now)
-        return self.report(tiles: [Tile(title: String(localized: "Total debe"), value: report.totalDebit.money),
-                                   Tile(title: String(localized: "Total haber"), value: report.totalCredit.money)]) {
+        return VStack(spacing: 16) {
+            if !isCompact {
+                kpiGrid([KPI(title: String(localized: "Total debe"), value: report.totalDebit.money),
+                         KPI(title: String(localized: "Total haber"), value: report.totalCredit.money)])
+            }
             VStack(spacing: 0) {
                 header(columns: [String(localized: "DEBE"), String(localized: "HABER")])
                 ForEach(report.rows) { row in
-                    rowView(row.account.name, [row.debit == 0 ? "" : row.debit.money, row.credit == 0 ? "" : row.credit.money])
+                    rowView(row.account.name, [Cell(text: row.debit == 0 ? "" : row.debit.money),
+                                               Cell(text: row.credit == 0 ? "" : row.credit.money, color: Palette.ink3)])
                 }
                 Divider()
-                rowView(String(localized: "Totales"), [report.totalDebit.money, report.totalCredit.money], bold: true)
+                rowView(String(localized: "Totales"), [Cell(text: report.totalDebit.money), Cell(text: report.totalCredit.money, color: Palette.ink3)], bold: true)
                 balanceCheck(report.isBalanced, ok: String(localized: "Débitos = créditos"), bad: String(localized: "La balanza no cuadra"))
             }
             .card(padding: 0)
@@ -279,17 +417,25 @@ struct ReportsView: View {
 
     private func aging(_ report: AgingReport, total: String, empty: String) -> some View {
         let titles: [AgingReport.Bucket: String] = [.current: String(localized: "Corriente"), .days1to30: "1–30", .days31to60: "31–60", .days61to90: "61–90", .over90: "> 90"]
-        return self.report(tiles: AgingReport.Bucket.allCases.map { Tile(title: titles[$0]!, value: report.total(for: $0).money) },
-                           tilesWhenCompact: true) {
+        return VStack(alignment: .leading, spacing: isCompact ? Metrics.cardSpacing : 16) {
+            if isCompact {
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 110), spacing: 8)], spacing: 8) {
+                    ForEach(AgingReport.Bucket.allCases, id: \.self) { bucket in
+                        KPITile(title: titles[bucket]!, value: report.total(for: bucket).money)
+                    }
+                }
+            } else {
+                kpiGrid(AgingReport.Bucket.allCases.map { KPI(title: titles[$0]!, value: report.total(for: $0).money) })
+            }
             VStack(spacing: 0) {
                 header(columns: [String(localized: "VENCIDO"), String(localized: "TOTAL")])
                 ForEach(report.rows) { row in
                     let overdue = row.total - (row.amounts[.current] ?? 0)
-                    rowView(row.party, [overdue.money, row.total.money])
+                    rowView(row.party, [Cell(text: overdue.money), Cell(text: row.total.money, color: Palette.ink3)])
                 }
                 if report.rows.isEmpty { Text(empty).foregroundStyle(Palette.ink3).padding() }
                 Divider()
-                rowView(total, ["", report.total.money], bold: true)
+                rowView(total, [Cell(text: ""), Cell(text: report.total.money, color: Palette.ink3)], bold: true)
             }
             .card(padding: 0)
         }
@@ -300,15 +446,15 @@ struct ReportsView: View {
     @ViewBuilder
     private var salesTax: some View {
         let summary = salesTaxReport
-        if layout == .compact {
+        if isCompact {
             SalesTaxSummaryCard(report: summary)
         } else {
-            report(hero: HeroCard(title: String(localized: "Sales tax cobrado"), value: summary.totalTax.money,
-                                  detail: "\(summary.from.shortDate) – \(summary.to.shortDate)"),
-                   tiles: [Tile(title: String(localized: "Ventas totales"), value: summary.totalSales.money),
-                           Tile(title: String(localized: "Gravables"), value: summary.taxableSales.money),
-                           Tile(title: String(localized: "No gravables"), value: summary.nonTaxableSales.money),
-                           Tile(title: String(localized: "Exentas (clientes exentos)"), value: summary.exemptSales.money)]) {
+            VStack(spacing: 16) {
+                kpiGrid([KPI(title: String(localized: "Sales tax cobrado"), value: summary.totalTax.money, isBrand: true),
+                         KPI(title: String(localized: "Ventas totales"), value: summary.totalSales.money),
+                         KPI(title: String(localized: "Gravables"), value: summary.taxableSales.money),
+                         KPI(title: String(localized: "No gravables"), value: summary.nonTaxableSales.money),
+                         KPI(title: String(localized: "Exentas (clientes exentos)"), value: summary.exemptSales.money)])
                 SalesTaxRatesCard(report: summary, wide: true)
             }
         }
@@ -316,14 +462,18 @@ struct ReportsView: View {
 
     // MARK: Filas
 
-    private func header(columns: [String]) -> some View {
-        HStack {
+    /// `variation`: añade «VARIACIÓN» y «%» (sólo en pantallas anchas, como en `MacPyG`).
+    private func header(columns: [String], variation: Bool = false) -> some View {
+        let showsVariation = variation && !isCompact
+        let titles = columns + (showsVariation ? [String(localized: "VARIACIÓN")] : [])
+        return HStack {
             Text("CUENTA").frame(maxWidth: .infinity, alignment: .leading)
             if !dynamicTypeSize.isAccessibilitySize {
                 // En una línea: si el título es más ancho que la columna («AL 31 OCT 2026»), la columna crece.
-                ForEach(columns, id: \.self) {
-                    Text($0).lineLimit(1).fixedSize().frame(minWidth: amountColumnWidth, alignment: .trailing)
+                ForEach(titles, id: \.self) {
+                    Text($0).lineLimit(1).fixedSize().frame(minWidth: amountWidth(narrow: false), alignment: .trailing)
                 }
+                if showsVariation { Text("%").frame(minWidth: amountWidth(narrow: true), alignment: .trailing) }
             }
         }
         .font(.label)
@@ -332,36 +482,72 @@ struct ReportsView: View {
         .padding(.vertical, isCompact ? 10 : 14)
     }
 
+    private func amountWidth(narrow: Bool) -> CGFloat {
+        isCompact ? columnWidth : (narrow ? percentColumnWidth : wideColumnWidth)
+    }
+
     @ViewBuilder
-    private func group(_ title: String, _ rows: [ReportRow], _ previous: [ReportRow]?) -> some View {
-        Text(title).font(isCompact ? .footnote.weight(.semibold) : .subheadline.weight(.semibold)).foregroundStyle(Palette.ink3)
+    private func group(_ title: String, _ rows: [ReportRow], _ previous: [ReportRow]?, trend: Trend? = nil) -> some View {
+        Text(title).font(isCompact ? .footnote.weight(.semibold) : .body.weight(.semibold)).foregroundStyle(Palette.ink3)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 16).padding(.top, isCompact ? 10 : 20).padding(.bottom, isCompact ? 2 : 4)
         ForEach(rows) { row in
-            line(row.account.name, row.amount, previous.map { list in list.first { $0.account.id == row.account.id }?.amount ?? 0 }, indent: true)
+            line(row.account.name, row.amount, previous.map { list in list.first { $0.account.id == row.account.id }?.amount ?? 0 },
+                 trend: trend, indent: true)
         }
         if rows.isEmpty { line(String(localized: "Sin movimientos"), 0, nil, indent: true).foregroundStyle(Palette.ink3) }
     }
 
-    private func line(_ title: String, _ amount: Int64, _ previous: Int64?, indent: Bool = false) -> some View {
-        rowView(title, compare && previous != nil ? [amount.money, previous!.money] : [amount.money], indent: indent)
+    private func line(_ title: String, _ amount: Int64, _ previous: Int64?, trend: Trend? = nil, indent: Bool = false) -> some View {
+        rowView(title, cells(amount, previous, trend: trend), indent: indent)
     }
 
-    private func totalRow(_ title: String, _ amount: Int64, _ previous: Int64?, highlighted: Bool = false) -> some View {
+    private func totalRow(_ title: String, _ amount: Int64, _ previous: Int64?, trend: Trend? = nil, highlighted: Bool = false) -> some View {
         VStack(spacing: 0) {
             Divider()
-            rowView(title, compare && previous != nil ? [amount.money, previous!.money] : [amount.money], bold: true)
+            rowView(title, cells(amount, previous, trend: trend), bold: true)
                 .background(highlighted ? Palette.brandWash : .clear)
         }
     }
 
+    /// Importe actual y, si se compara, el anterior; en pantallas anchas también la variación y el %.
+    private func cells(_ amount: Int64, _ previous: Int64?, trend: Trend?) -> [Cell] {
+        guard compare, let previous else { return [Cell(text: amount.money)] }
+        var cells = [Cell(text: amount.money), Cell(text: previous.money, color: Palette.ink3)]
+        if let trend, !isCompact {
+            let delta = amount - previous
+            let tint = color(for: delta, trend)
+            cells.append(Cell(text: signedMoney(delta), color: tint))
+            cells.append(Cell(text: percentChange(amount, previous) ?? "—", color: tint, isNarrow: true))
+        }
+        return cells
+    }
+
+    private func color(for delta: Int64, _ trend: Trend) -> Color {
+        if delta == 0 { return Palette.ink3 }
+        return (delta > 0) == (trend == .upIsGood) ? Palette.positive : Palette.negative
+    }
+
+    /// «+$1,770.00», «−$360.00» (signo menos tipográfico) o «$0.00».
+    private func signedMoney(_ amount: Int64) -> String {
+        amount == 0 ? amount.money : (amount > 0 ? "+" : "−") + abs(amount).money
+    }
+
+    /// «+12.6%», «−1.8%», «0.0%»; `nil` si el periodo anterior es cero.
+    private func percentChange(_ now: Int64, _ before: Int64) -> String? {
+        guard before != 0 else { return nil }
+        let percent = Double(now - before) / Double(abs(before)) * 100
+        let text = abs(percent).formatted(.number.precision(.fractionLength(1)))
+        return (percent > 0.05 ? "+" : percent < -0.05 ? "−" : "") + text + "%"
+    }
+
     /// Con tamaños de accesibilidad los importes pasan debajo del nombre en vez de ir en columnas fijas.
     /// En pantallas anchas cada fila mide al menos 44 pt (34 en Mac).
-    private func rowView(_ title: String, _ values: [String], bold: Bool = false, indent: Bool = false) -> some View {
-        let valueViews = ForEach(Array(values.enumerated()), id: \.offset) { index, value in
-            Text(value)
-                .frame(minWidth: dynamicTypeSize.isAccessibilitySize ? nil : amountColumnWidth, alignment: .trailing)
-                .foregroundStyle(index == 0 ? Palette.ink : Palette.ink3)
+    private func rowView(_ title: String, _ cells: [Cell], bold: Bool = false, indent: Bool = false) -> some View {
+        let valueViews = ForEach(Array(cells.enumerated()), id: \.offset) { _, cell in
+            Text(cell.text)
+                .frame(minWidth: dynamicTypeSize.isAccessibilitySize ? nil : amountWidth(narrow: cell.isNarrow), alignment: .trailing)
+                .foregroundStyle(cell.color)
         }
         return Group {
             if dynamicTypeSize.isAccessibilitySize {
@@ -372,7 +558,7 @@ struct ReportsView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
             } else {
                 HStack {
-                    Text(title).padding(.leading, indent ? 8 : 0).frame(maxWidth: .infinity, alignment: .leading)
+                    Text(title).padding(.leading, indent ? (isCompact ? 8 : 16) : 0).frame(maxWidth: .infinity, alignment: .leading)
                     valueViews
                 }
             }
@@ -410,7 +596,7 @@ struct ReportsView: View {
 
     private var salesTaxReport: SalesTaxSummary {
         _ = invoices.count
-        let interval = period.interval()
+        let interval = interval()
         return (try? Bookkeeper(context: context).salesTaxSummary(from: interval.start, to: interval.end.addingTimeInterval(-1)))
             ?? ReportBuilder.salesTaxSummary(documents: [], from: interval.start, to: interval.end)
     }
@@ -427,8 +613,8 @@ struct ReportsView: View {
         switch kind {
         case .income:
             CSVFile(name: String(localized: "Estado de resultados"),
-                    text: CSVExport.incomeStatement(ledger.incomeStatement(period.interval()),
-                                                    previous: compare ? ledger.incomeStatement(period.interval(offset: -1)) : nil))
+                    text: CSVExport.incomeStatement(ledger.incomeStatement(interval()),
+                                                    previous: compare ? ledger.incomeStatement(interval(offset: -1)) : nil))
         case .balance:
             CSVFile(name: String(localized: "Balance general"), text: CSVExport.balanceSheet(balanceSheetReport))
         case .trial:
@@ -443,6 +629,30 @@ struct ReportsView: View {
             CSVFile(name: String(localized: "Antigüedad de cuentas por pagar"),
                     text: CSVExport.aging(payablesReport, title: String(localized: "Antigüedad de cuentas por pagar"), partyTitle: String(localized: "Proveedor")))
         }
+    }
+}
+
+/// Casilla de verificación (`MacPyG`: «Comparar con periodo anterior»). En el Mac se usa la del sistema.
+private struct CheckboxStyle: ToggleStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        #if os(macOS)
+        Toggle(configuration).toggleStyle(.checkbox)
+        #else
+        Button { configuration.isOn.toggle() } label: {
+            HStack(spacing: 8) {
+                Image(systemName: configuration.isOn ? "checkmark.square.fill" : "square")
+                    .font(.title3)
+                    .foregroundStyle(configuration.isOn ? Palette.brand : Palette.ink3)
+                configuration.label.font(.subheadline)
+            }
+            .frame(minHeight: 44)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(.isToggle)
+        .accessibilityValue(configuration.isOn ? Text("Activado") : Text("Desactivado"))
+        #endif
     }
 }
 
@@ -507,26 +717,5 @@ struct SalesTaxRatesCard: View {
         }
         .font(wide ? .body : nil)
         .card(padding: wide ? 20 : Metrics.cardPadding)
-    }
-}
-
-/// Cifra del resumen de un reporte en iPad y Mac: como `KPITile`, pero ocupa todo el alto de su fila para
-/// quedar a la par de la tarjeta destacada.
-struct SummaryTile: View {
-    let title: String
-    let value: String
-    var note: String? = nil
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(title).font(.subheadline.weight(.semibold)).foregroundStyle(Palette.ink3)
-            Text(value).font(.amount(22)).foregroundStyle(Palette.ink).minimumScaleFactor(0.6).lineLimit(1)
-            if let note { Text(note).font(.footnote).foregroundStyle(Palette.ink3).lineLimit(2) }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .card(padding: 16)
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(title)
-        .accessibilityValue([value, note].compactMap { $0 }.joined(separator: ", "))
     }
 }

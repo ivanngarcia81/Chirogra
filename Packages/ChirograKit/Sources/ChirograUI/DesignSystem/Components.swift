@@ -330,31 +330,26 @@ struct KPITile: View {
 }
 
 /// Tarjeta destacada en color de marca (efectivo disponible, ganancia neta).
-/// `prominent`: versión más grande para pantallas anchas (iPad, Mac), que además ocupa todo el alto que le den.
 struct HeroCard: View {
     let title: String
     let value: String
     var detail: String? = nil
-    var prominent = false
-    @ScaledMetric(relativeTo: .largeTitle) private var prominentSize: CGFloat = 48
 
     var body: some View {
-        VStack(alignment: .leading, spacing: prominent ? 10 : 6) {
-            Text(title.uppercased()).font(prominent ? .subheadline.weight(.semibold) : .caption.weight(.semibold)).tracking(0.5).opacity(0.85)
-            Text(value)
-                .font(prominent ? .system(size: prominentSize, weight: .bold).monospacedDigit() : .amount(38))
-                .tracking(-0.5).minimumScaleFactor(0.6).lineLimit(2)
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title.uppercased()).font(.caption.weight(.semibold)).tracking(0.5).opacity(0.85)
+            Text(value).font(.amount(38)).tracking(-0.5).minimumScaleFactor(0.6).lineLimit(2)
             if let detail {
                 HStack(spacing: 8) {
                     Circle().fill(Palette.accent).frame(width: 8, height: 8)
-                    Text(detail).font(prominent ? .body : .subheadline)
+                    Text(detail).font(.subheadline)
                 }
                 .opacity(0.9)
             }
         }
         .foregroundStyle(Palette.onBrand)
-        .padding(prominent ? 24 : 20)
-        .frame(maxWidth: .infinity, maxHeight: prominent ? .infinity : nil, alignment: .topLeading)
+        .padding(20)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background(Palette.brand, in: RoundedRectangle(cornerRadius: Metrics.heroRadius, style: .continuous))
         .accessibilityElement(children: .combine)
     }

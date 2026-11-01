@@ -171,12 +171,18 @@ enum AppLock {
     }
 }
 
+/// Entrada de la barra lateral de iPad y Mac: una sección o, en el Mac, un reporte concreto.
+enum SidebarItem: Hashable {
+    case section(AppSection)
+    case report(ReportsView.Kind)
+}
+
 struct AppShell: View {
     #if os(iOS)
     @Environment(\.horizontalSizeClass) private var sizeClass
     #endif
     @State private var tab: AppSection = .home
-    @State private var selection: AppSection? = .home
+    @State private var selection: SidebarItem? = .section(.home)
 
     var body: some View {
         #if os(iOS)
@@ -206,7 +212,7 @@ struct AppShell: View {
             List(selection: $selection) {
                 Section {
                     ForEach(AppSection.primary) { section in
-                        Label(section.title, systemImage: section.systemImage).tag(section)
+                        Label(section.title, systemImage: section.systemImage).tag(SidebarItem.section(section))
                     }
                 } header: {
                     HStack(spacing: 10) {
@@ -218,16 +224,33 @@ struct AppShell: View {
                 }
                 Section("Más") {
                     ForEach(AppSection.more) { section in
-                        Label(section.title, systemImage: section.systemImage).tag(section)
+                        Label(section.title, systemImage: section.systemImage).tag(SidebarItem.section(section))
                     }
                 }
+                #if os(macOS)
+                // `MacPyG`: en el Mac cada reporte es una entrada de la barra lateral, bajo «REPORTES».
+                Section("Reportes") {
+                    ForEach(ReportsView.Kind.allCases) { kind in
+                        Text(kind.fullTitle).padding(.leading, 26).tag(SidebarItem.report(kind))
+                    }
+                }
+                #endif
             }
             .navigationSplitViewColumnWidth(min: 200, ideal: 230)
             .scrollContentBackground(.hidden)
             .background(Palette.sidebar)
+            #if os(macOS)
+            // «Reportes» abre el primero de la lista, para que quede marcado el reporte que se ve.
+            .onChange(of: selection) { _, new in
+                if new == .section(.reports) { selection = .report(.income) }
+            }
+            #endif
         } detail: {
             NavigationStack {
-                (selection ?? .home).destination
+                switch selection ?? .section(.home) {
+                case .section(let section): section.destination
+                case .report(let kind): ReportsView(fixedKind: kind)
+                }
             }
             .id(selection)
         }
