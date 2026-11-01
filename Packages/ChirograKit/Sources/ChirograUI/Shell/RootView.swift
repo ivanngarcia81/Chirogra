@@ -174,18 +174,13 @@ enum AppLock {
     }
 }
 
-/// Entrada de la barra lateral de iPad y Mac: una sección o, en el Mac, un reporte concreto.
-enum SidebarItem: Hashable {
-    case section(AppSection)
-    case report(ReportsView.Kind)
-}
-
 struct AppShell: View {
     #if os(iOS)
     @Environment(\.horizontalSizeClass) private var sizeClass
     #endif
     @State private var tab: AppSection = .home
-    @State private var selection: SidebarItem? = .section(.home)
+    @State private var selection: SidebarItem = .section(.home)
+    @State private var query = ""
 
     var body: some View {
         #if os(iOS)
@@ -209,50 +204,20 @@ struct AppShell: View {
         }
     }
 
-    /// iPad y Mac: barra lateral con la sección "MÁS".
+    /// iPad y Mac: barra lateral propia (`Sidebar`); con texto en la búsqueda, el detalle muestra los resultados.
     private var split: some View {
         NavigationSplitView {
-            List(selection: $selection) {
-                Section {
-                    ForEach(AppSection.primary) { section in
-                        Label(section.title, systemImage: section.systemImage).tag(SidebarItem.section(section))
-                    }
-                } header: {
-                    HStack(spacing: 10) {
-                        LogoMark(size: 24)
-                        Text("Chirogra").font(.headline).foregroundStyle(Palette.ink)
-                    }
-                    .padding(.bottom, 6)
-                    .textCase(nil)
-                }
-                Section(title: "Más") {
-                    ForEach(AppSection.more) { section in
-                        Label(section.title, systemImage: section.systemImage).tag(SidebarItem.section(section))
-                    }
-                }
-                #if os(macOS)
-                // `MacPyG`: en el Mac cada reporte es una entrada de la barra lateral, bajo «REPORTES».
-                Section(title: "Reportes") {
-                    ForEach(ReportsView.Kind.allCases) { kind in
-                        Text(kind.fullTitle).padding(.leading, 26).tag(SidebarItem.report(kind))
-                    }
-                }
+            Sidebar(selection: $selection, query: $query)
+                .navigationSplitViewColumnWidth(min: 200, ideal: 240)
+                #if os(iOS)
+                .toolbar(removing: .title)
                 #endif
-            }
-            .navigationSplitViewColumnWidth(min: 200, ideal: 230)
-            .scrollContentBackground(.hidden)
-            .background(Palette.sidebar)
-            #if os(macOS)
-            // «Reportes» abre el primero de la lista, para que quede marcado el reporte que se ve.
-            .onChange(of: selection) { _, new in
-                if new == .section(.reports) { selection = .report(.income) }
-            }
-            #endif
         } detail: {
             NavigationStack {
-                switch selection ?? .section(.home) {
-                case .section(let section): section.destination
-                case .report(let kind): ReportsView(fixedKind: kind)
+                if query.trimmingCharacters(in: .whitespaces).isEmpty {
+                    selection.destination
+                } else {
+                    SearchResultsView(query: query)
                 }
             }
             .id(selection)
