@@ -21,11 +21,11 @@ struct AccountingView: View {
 extension AccountType {
     var title: String {
         switch self {
-        case .asset: "Activos"
-        case .liability: "Pasivos"
-        case .equity: "Patrimonio"
-        case .income: "Ingresos"
-        case .expense: "Gastos"
+        case .asset: String(localized: "Activos")
+        case .liability: String(localized: "Pasivos")
+        case .equity: String(localized: "Patrimonio")
+        case .income: String(localized: "Ingresos")
+        case .expense: String(localized: "Gastos")
         }
     }
 }
@@ -33,29 +33,29 @@ extension AccountType {
 extension AccountSubtype {
     var title: String {
         switch self {
-        case .cash: "Efectivo"
-        case .bank: "Banco"
-        case .accountsReceivable: "Cuentas por cobrar"
-        case .undepositedFunds: "Fondos no depositados"
-        case .inventory: "Inventario"
-        case .otherCurrentAsset: "Otro activo corriente"
-        case .fixedAsset: "Activo fijo"
-        case .otherAsset: "Otro activo"
-        case .accountsPayable: "Cuentas por pagar"
-        case .creditCard: "Tarjeta de crédito"
-        case .salesTaxPayable: "Sales tax por pagar"
-        case .otherCurrentLiability: "Otro pasivo corriente"
-        case .longTermLiability: "Pasivo a largo plazo"
-        case .ownersEquity: "Capital"
-        case .ownersDraw: "Retiros"
-        case .retainedEarnings: "Resultados acumulados"
-        case .openingBalanceEquity: "Saldos de apertura"
-        case .sales: "Ventas"
-        case .salesDiscount: "Descuentos sobre ventas"
-        case .otherIncome: "Otros ingresos"
-        case .costOfGoodsSold: "Costo de ventas"
-        case .operatingExpense: "Gasto operativo"
-        case .otherExpense: "Otro gasto"
+        case .cash: String(localized: "Efectivo")
+        case .bank: String(localized: "Banco")
+        case .accountsReceivable: String(localized: "Cuentas por cobrar")
+        case .undepositedFunds: String(localized: "Fondos no depositados")
+        case .inventory: String(localized: "Inventario")
+        case .otherCurrentAsset: String(localized: "Otro activo corriente")
+        case .fixedAsset: String(localized: "Activo fijo")
+        case .otherAsset: String(localized: "Otro activo")
+        case .accountsPayable: String(localized: "Cuentas por pagar")
+        case .creditCard: String(localized: "Tarjeta de crédito")
+        case .salesTaxPayable: String(localized: "Sales tax por pagar")
+        case .otherCurrentLiability: String(localized: "Otro pasivo corriente")
+        case .longTermLiability: String(localized: "Pasivo a largo plazo")
+        case .ownersEquity: String(localized: "Capital")
+        case .ownersDraw: String(localized: "Retiros")
+        case .retainedEarnings: String(localized: "Resultados acumulados")
+        case .openingBalanceEquity: String(localized: "Saldos de apertura")
+        case .sales: String(localized: "Ventas")
+        case .salesDiscount: String(localized: "Descuentos sobre ventas")
+        case .otherIncome: String(localized: "Otros ingresos")
+        case .costOfGoodsSold: String(localized: "Costo de ventas")
+        case .operatingExpense: String(localized: "Gasto operativo")
+        case .otherExpense: String(localized: "Otro gasto")
         }
     }
 }
@@ -153,18 +153,18 @@ struct JournalListView: View {
     var body: some View {
         List {
             if entries.isEmpty {
-                EmptyStateView(systemImage: "doc.plaintext", title: "Sin asientos", message: "Los documentos generan asientos automáticamente; también puedes crear uno manual.")
+                EmptyStateView(systemImage: "doc.plaintext", title: String(localized: "Sin asientos"), message: String(localized: "Los documentos generan asientos automáticamente; también puedes crear uno manual."))
             }
             ForEach(entries) { entry in
                 NavigationLink { JournalEntryDetailView(entry: entry) } label: {
-                    LedgerRow(title: entry.memo.isEmpty ? "Asiento \(entry.number)" : entry.memo,
+                    LedgerRow(title: entry.memo.isEmpty ? String(localized: "Asiento \(entry.number)") : entry.memo,
                               subtitle: "#\(entry.number) · \(entry.date.shortDate) · \(entry.source.title)") {
                         EmptyView()
                     } trailing: {
                         VStack(alignment: dynamicTypeSize.amountAlignment, spacing: 3) {
                             Text(entry.totalDebits.money).monospacedDigit()
                             if entry.isReversed || entry.reversesEntryID != nil {
-                                StatusChip(text: entry.isReversed ? "Revertido" : "Reversión", foreground: Palette.ink3, background: Palette.surface2)
+                                StatusChip(text: entry.isReversed ? String(localized: "Revertido") : String(localized: "Reversión"), foreground: Palette.ink3, background: Palette.surface2)
                             }
                         }
                     }
@@ -184,17 +184,17 @@ struct JournalListView: View {
 extension EntrySource {
     var title: String {
         switch self {
-        case .manual: "Manual"
-        case .invoice: "Factura"
-        case .creditNote: "Nota de crédito"
-        case .paymentReceived: "Cobro"
-        case .bill: "Factura de proveedor"
-        case .billPayment: "Pago a proveedor"
-        case .expense: "Gasto"
-        case .salesTaxPayment: "Pago de sales tax"
-        case .customerRefund: "Reembolso a cliente"
-        case .reversal: "Reversión"
-        case .opening: "Saldos iniciales"
+        case .manual: String(localized: "Manual")
+        case .invoice: String(localized: "Factura")
+        case .creditNote: String(localized: "Nota de crédito")
+        case .paymentReceived: String(localized: "Cobro")
+        case .bill: String(localized: "Factura de proveedor")
+        case .billPayment: String(localized: "Pago a proveedor")
+        case .expense: String(localized: "Gasto")
+        case .salesTaxPayment: String(localized: "Pago de sales tax")
+        case .customerRefund: String(localized: "Reembolso a cliente")
+        case .reversal: String(localized: "Reversión")
+        case .opening: String(localized: "Saldos iniciales")
         }
     }
 }
@@ -245,11 +245,11 @@ struct JournalEntryEditorView: View {
             Section {
                 ForEach($lines) { $line in
                     VStack(alignment: .leading, spacing: 8) {
-                        AccountPicker(title: "Cuenta", accounts: postable, selection: $line.accountID)
+                        AccountPicker(title: String(localized: "Cuenta"), accounts: postable, selection: $line.accountID)
                         TextField("Descripción", text: $line.memo).font(.subheadline)
                         HStack {
-                            MoneyField(title: "Débito", minorUnits: $line.debit)
-                            MoneyField(title: "Crédito", minorUnits: $line.credit)
+                            MoneyField(title: String(localized: "Débito"), minorUnits: $line.debit)
+                            MoneyField(title: String(localized: "Crédito"), minorUnits: $line.credit)
                         }
                     }
                     .padding(.vertical, 4)
@@ -286,13 +286,13 @@ struct JournalEntryEditorView: View {
     private func statusBanner(_ entry: JournalEntryDraft) -> some View {
         let balanced = entry.isBalanced && entry.totalDebits > 0
         let message: String = if balanced {
-            validationErrors.first?.localizedMessage ?? "El asiento cuadra: débitos = créditos"
+            validationErrors.first?.localizedMessage ?? String(localized: "El asiento cuadra: débitos = créditos")
         } else if entry.difference > 0 {
-            "No cuadra: faltan créditos por \(abs(entry.difference).money)"
+            String(localized: "No cuadra: faltan créditos por \(abs(entry.difference).money)")
         } else if entry.difference < 0 {
-            "No cuadra: faltan débitos por \(abs(entry.difference).money)"
+            String(localized: "No cuadra: faltan débitos por \(abs(entry.difference).money)")
         } else {
-            "Escribe los importes al debe y al haber"
+            String(localized: "Escribe los importes al debe y al haber")
         }
         let ok = balanced && validationErrors.isEmpty
         Label(message, systemImage: ok ? "checkmark.circle" : "exclamationmark.triangle")
@@ -315,6 +315,12 @@ struct JournalEntryEditorView: View {
 }
 
 struct JournalEntryDetailView: View {
+    /// Lo que lee VoiceOver de una línea del asiento, como frase completa para traducirla entera.
+    static func spokenLine(account: String, memo: String, debit: Int64, credit: Int64) -> String {
+        let name = memo.isEmpty ? account : "\(account), \(memo)"
+        return debit > 0 ? String(localized: "\(name), debe \(debit.money)") : String(localized: "\(name), haber \(credit.money)")
+    }
+
     let entry: JournalEntry
     @Environment(\.modelContext) private var context
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
@@ -359,13 +365,12 @@ struct JournalEntryDetailView: View {
             }
             Section {
                 ForEach(entry.sortedLines) { line in
-                    let account = line.account?.displayName ?? "Cuenta eliminada"
+                    let account = line.account?.displayName ?? String(localized: "Cuenta eliminada")
                     entryRow(account, memo: line.memo, debit: line.debit, credit: line.credit)
                         .accessibilityElement(children: .ignore)
-                        .accessibilityLabel("\(account)\(line.memo.isEmpty ? "" : ", \(line.memo)"), "
-                            + (line.debit > 0 ? "debe \(line.debit.money)" : "haber \(line.credit.money)"))
+                        .accessibilityLabel(Self.spokenLine(account: account, memo: line.memo, debit: line.debit, credit: line.credit))
                 }
-                entryRow("Totales", memo: "", debit: entry.totalDebits, credit: entry.totalCredits, bold: true)
+                entryRow(String(localized: "Totales"), memo: "", debit: entry.totalDebits, credit: entry.totalCredits, bold: true)
                     .accessibilityElement(children: .ignore)
                     .accessibilityLabel("Totales: debe \(entry.totalDebits.money), haber \(entry.totalCredits.money)")
             } header: {
@@ -428,6 +433,18 @@ struct LedgerView: View {
         return (calendar.startOfDay(for: from), end)
     }
 
+    /// Lo que lee VoiceOver de un movimiento: una frase completa por caso, para que se traduzca entera.
+    static func spokenMovement(_ row: AccountLedger.Row) -> String {
+        let memo = row.movement.memo, date = row.movement.date.shortDate, balance = row.balance.money
+        let amount = max(row.movement.debit, row.movement.credit).money
+        switch (row.movement.debit > 0, row.increasesBalance) {
+        case (true, true): return String(localized: "\(memo), \(date), débito de \(amount), aumenta el saldo a \(balance)")
+        case (true, false): return String(localized: "\(memo), \(date), débito de \(amount), reduce el saldo a \(balance)")
+        case (false, true): return String(localized: "\(memo), \(date), crédito de \(amount), aumenta el saldo a \(balance)")
+        case (false, false): return String(localized: "\(memo), \(date), crédito de \(amount), reduce el saldo a \(balance)")
+        }
+    }
+
     private var ledger: AccountLedger {
         let movements = (account.lines ?? []).compactMap { line -> LedgerMovement? in
             guard let entry = line.entry, entry.status == .posted else { return nil }
@@ -462,8 +479,8 @@ struct LedgerView: View {
                 ForEach(ledger.rows.reversed()) { row in
                     AdaptiveRow(alignment: .firstTextBaseline) {
                         VStack(alignment: .leading, spacing: 2) {
-                            Text(row.movement.memo.isEmpty ? "Asiento" : row.movement.memo).lineLimit(2)
-                            Text("\(row.movement.date.shortDate) · \(row.movement.debit > 0 ? "Débito" : "Crédito")")
+                            Text(row.movement.memo.isEmpty ? String(localized: "Asiento") : row.movement.memo).lineLimit(2)
+                            Text(row.movement.debit > 0 ? "\(row.movement.date.shortDate) · Débito" : "\(row.movement.date.shortDate) · Crédito")
                                 .font(.caption).foregroundStyle(Palette.ink3)
                         }
                     } trailing: {
@@ -475,9 +492,7 @@ struct LedgerView: View {
                         .monospacedDigit()
                     }
                     .accessibilityElement(children: .combine)
-                    .accessibilityLabel("\(row.movement.memo), \(row.movement.date.shortDate), "
-                        + "\(row.movement.debit > 0 ? "débito" : "crédito") de \(max(row.movement.debit, row.movement.credit).money), "
-                        + "\(row.increasesBalance ? "aumenta" : "reduce") el saldo a \(row.balance.money)")
+                    .accessibilityLabel(Self.spokenMovement(row))
                 }
             } header: {
                 Text("Movimientos")

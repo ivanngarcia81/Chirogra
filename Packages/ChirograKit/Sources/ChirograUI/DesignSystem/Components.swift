@@ -15,7 +15,13 @@ extension Date {
     /// «Octubre de 2026»: solo la primera letra en mayúscula (`capitalized` daría «Octubre De 2026»).
     var monthYear: String { formatted(.dateTime.month(.wide).year()).sentenceCased }
     /// «vence Oct 28» con espacios de no separación: en una fila estrecha se parte antes, nunca dentro.
-    var dueLabel: String { "vence \(dayMonth)".replacingOccurrences(of: " ", with: "\u{00A0}") }
+    var dueLabel: String { String(localized: "vence \(dayMonth)").replacingOccurrences(of: " ", with: "\u{00A0}") }
+}
+
+extension RawRepresentable where RawValue == String {
+    /// Texto visible de un enum cuyo `rawValue` es la etiqueta en español: se busca en el catálogo en tiempo de ejecución.
+    /// El compilador no extrae estos textos; están añadidos a mano en `App/Localizable.xcstrings`.
+    var localizedTitle: String { String(localized: String.LocalizationValue(rawValue)) }
 }
 
 extension String {
@@ -136,24 +142,24 @@ extension StatusChip {
     /// Estados de factura del canvas: Borrador, Enviada, Pago parcial, Vencida · N días, Pagada (+ Anulada).
     init(invoice: Invoice, compact: Bool = true) {
         if let days = invoice.daysOverdue() {
-            self.init(text: "Vencida · \(days) \(days == 1 ? "día" : "días")", foreground: Palette.negative, background: Palette.negativeWash, compact: compact)
+            self.init(text: String(localized: "Vencida · \(days) días"), foreground: Palette.negative, background: Palette.negativeWash, compact: compact)
             return
         }
         switch invoice.status {
-        case .draft: self.init(text: "Borrador", foreground: Palette.ink2, background: Palette.surface2, compact: compact)
-        case .sent: self.init(text: "Enviada", foreground: Palette.brand, background: Palette.brandWash, compact: compact)
-        case .partiallyPaid: self.init(text: "Pago parcial", foreground: Palette.warning, background: Palette.warningWash, compact: compact)
-        case .paid: self.init(text: "Pagada", foreground: Palette.positive, background: Palette.positiveWash, compact: compact)
-        case .void: self.init(text: "Anulada", foreground: Palette.ink3, background: Palette.surface2, compact: compact)
+        case .draft: self.init(text: String(localized: "Borrador"), foreground: Palette.ink2, background: Palette.surface2, compact: compact)
+        case .sent: self.init(text: String(localized: "Enviada"), foreground: Palette.brand, background: Palette.brandWash, compact: compact)
+        case .partiallyPaid: self.init(text: String(localized: "Pago parcial"), foreground: Palette.warning, background: Palette.warningWash, compact: compact)
+        case .paid: self.init(text: String(localized: "Pagada"), foreground: Palette.positive, background: Palette.positiveWash, compact: compact)
+        case .void: self.init(text: String(localized: "Anulada"), foreground: Palette.ink3, background: Palette.surface2, compact: compact)
         }
     }
 
     init(bill: Bill, compact: Bool = true) {
         switch bill.status {
-        case .open: self.init(text: "Por pagar", foreground: Palette.brand, background: Palette.brandWash, compact: compact)
-        case .partiallyPaid: self.init(text: "Pago parcial", foreground: Palette.warning, background: Palette.warningWash, compact: compact)
-        case .paid: self.init(text: "Pagada", foreground: Palette.positive, background: Palette.positiveWash, compact: compact)
-        case .void: self.init(text: "Anulada", foreground: Palette.ink3, background: Palette.surface2, compact: compact)
+        case .open: self.init(text: String(localized: "Por pagar"), foreground: Palette.brand, background: Palette.brandWash, compact: compact)
+        case .partiallyPaid: self.init(text: String(localized: "Pago parcial"), foreground: Palette.warning, background: Palette.warningWash, compact: compact)
+        case .paid: self.init(text: String(localized: "Pagada"), foreground: Palette.positive, background: Palette.positiveWash, compact: compact)
+        case .void: self.init(text: String(localized: "Anulada"), foreground: Palette.ink3, background: Palette.surface2, compact: compact)
         }
     }
 }
@@ -319,7 +325,7 @@ struct KPITile: View {
 
     /// Las flechas de variación se leen como palabras («sube», «baja»), no como símbolos.
     static func spoken(_ note: String) -> String {
-        note.replacingOccurrences(of: "↑", with: "sube").replacingOccurrences(of: "↓", with: "baja")
+        note.replacingOccurrences(of: "↑", with: String(localized: "sube")).replacingOccurrences(of: "↓", with: String(localized: "baja"))
     }
 }
 

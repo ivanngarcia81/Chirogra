@@ -166,7 +166,7 @@ struct TaxGroupEditorView: View {
                 }
             }
             LabeledContent("Tasa combinada",
-                           value: "\((Decimal(rates.filter { selected.contains($0.id) }.reduce(0) { $0 + $1.rateMillionths }) / 10_000).formatted())%")
+                           value: String(localized: "\((Decimal(rates.filter { selected.contains($0.id) }.reduce(0) { $0 + $1.rateMillionths }) / 10_000).formatted())%"))
         }
         .screenBackground()
         .navigationTitle("Nuevo grupo")
@@ -210,9 +210,9 @@ struct SalesTaxPaymentView: View {
                 LabeledContent("Pendiente según libros", value: owed.money)
             }
             Section {
-                MoneyField(title: "Importe pagado", minorUnits: $amount)
+                MoneyField(title: String(localized: "Importe pagado"), minorUnits: $amount)
                 DatePicker("Fecha", selection: $date, displayedComponents: .date)
-                AccountPicker(title: "Pagado desde", accounts: accounts.filtered { $0 == .bank || $0 == .cash }, selection: $accountID)
+                AccountPicker(title: String(localized: "Pagado desde"), accounts: accounts.filtered { $0 == .bank || $0 == .cash }, selection: $accountID)
                 TextField("Periodo o referencia (p. ej. Q3 2026)", text: $reference)
             }
         }
@@ -245,16 +245,16 @@ struct SalesTaxPaymentView: View {
 extension SalesTaxPosition {
     var title: String {
         switch self {
-        case .owed: "Sales tax por pagar"
-        case .settled: "Sales tax al día"
-        case .credit: "Sales tax a favor"
+        case .owed: String(localized: "Sales tax por pagar")
+        case .settled: String(localized: "Sales tax al día")
+        case .credit: String(localized: "Sales tax a favor")
         }
     }
 
     var detail: String {
         switch self {
-        case .owed, .settled: "Saldo de la cuenta según libros"
-        case .credit: "Pagaste más de lo cobrado (p. ej. por una nota de crédito): se descuenta de la próxima declaración"
+        case .owed, .settled: String(localized: "Saldo de la cuenta según libros")
+        case .credit: String(localized: "Pagaste más de lo cobrado (p. ej. por una nota de crédito): se descuenta de la próxima declaración")
         }
     }
 }

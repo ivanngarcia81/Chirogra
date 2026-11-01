@@ -16,13 +16,13 @@ struct CustomerListView: View {
     var body: some View {
         List {
             if filtered.isEmpty {
-                EmptyStateView(systemImage: "person.2", title: customers.isEmpty ? "Sin clientes todavía" : "Sin resultados",
-                               message: customers.isEmpty ? "Añade tu primer cliente con el botón +." : "Prueba con otro nombre.")
+                EmptyStateView(systemImage: "person.2", title: customers.isEmpty ? String(localized: "Sin clientes todavía") : String(localized: "Sin resultados"),
+                               message: customers.isEmpty ? String(localized: "Añade tu primer cliente con el botón +.") : String(localized: "Prueba con otro nombre."))
                     .listRowBackground(Palette.surface)
             }
             ForEach(filtered) { customer in
                 NavigationLink { CustomerDetailView(customer: customer) } label: {
-                    LedgerRow(title: customer.name, subtitle: customer.email.isEmpty ? "Sin correo" : customer.email) {
+                    LedgerRow(title: customer.name, subtitle: customer.email.isEmpty ? String(localized: "Sin correo") : customer.email) {
                         InitialsTile(text: customer.initials)
                     } trailing: {
                         VStack(alignment: dynamicTypeSize.amountAlignment, spacing: 2) {
@@ -191,9 +191,9 @@ struct CustomerRefundView: View {
                 LabeledContent("Saldo a favor", value: customer.creditBalance.money)
             }
             Section {
-                MoneyField(title: "Importe a reembolsar", minorUnits: $amount)
+                MoneyField(title: String(localized: "Importe a reembolsar"), minorUnits: $amount)
                 DatePicker("Fecha", selection: $date, displayedComponents: .date)
-                AccountPicker(title: "Pagar desde", accounts: paymentAccounts, selection: $accountID)
+                AccountPicker(title: String(localized: "Pagar desde"), accounts: paymentAccounts, selection: $accountID)
             } footer: {
                 Text("Se registra la salida de dinero del banco y se cancela ese saldo a favor en cuentas por cobrar.")
             }

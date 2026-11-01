@@ -67,7 +67,7 @@ public struct JournalEntryDraft: Hashable, Sendable {
     public func reversal(on date: Date, memo: String? = nil) -> JournalEntryDraft {
         JournalEntryDraft(
             date: date,
-            memo: memo ?? "Reversión: \(self.memo)",
+            memo: memo ?? String(localized: "Reversión: \(self.memo)"),
             source: .reversal,
             lines: lines.map(\.swapped)
         )

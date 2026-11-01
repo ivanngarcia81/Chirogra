@@ -7,17 +7,17 @@ public enum BusinessSector: String, CaseIterable, Sendable, Codable {
 
     public var title: String {
         switch self {
-        case .services: "Servicios"
-        case .retail: "Comercio"
-        case .construction: "Construcción y oficios"
+        case .services: String(localized: "Servicios")
+        case .retail: String(localized: "Comercio")
+        case .construction: String(localized: "Construcción y oficios")
         }
     }
 
     public var summary: String {
         switch self {
-        case .services: "Consultoría, diseño, salud, educación, agencias…"
-        case .retail: "Tienda física o en línea que vende productos con inventario."
-        case .construction: "Contratistas, remodelación, electricistas, plomeros…"
+        case .services: String(localized: "Consultoría, diseño, salud, educación, agencias…")
+        case .retail: String(localized: "Tienda física o en línea que vende productos con inventario.")
+        case .construction: String(localized: "Contratistas, remodelación, electricistas, plomeros…")
         }
     }
 

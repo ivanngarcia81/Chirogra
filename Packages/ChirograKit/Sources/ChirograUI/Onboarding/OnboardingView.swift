@@ -67,8 +67,8 @@ struct OnboardingView: View {
             Text("Crea tu empresa").font(.largeTitle.bold())
             Text("Con estos datos preparamos tu plan de cuentas y tus facturas.").foregroundStyle(Palette.ink2)
             VStack(spacing: 12) {
-                field("Nombre del negocio", text: $displayName, prompt: "Ríos Diseño & Obra")
-                field("Razón social (opcional)", text: $legalName, prompt: "Ríos Diseño & Obra LLC")
+                field(String(localized: "Nombre del negocio"), text: $displayName, prompt: String(localized: "Ríos Diseño & Obra"))
+                field(String(localized: "Razón social (opcional)"), text: $legalName, prompt: String(localized: "Ríos Diseño & Obra LLC"))
                 VStack(alignment: .leading, spacing: 6) {
                     Picker("Estado donde operas", selection: $state) {
                         Text("Elige tu estado").tag("")
@@ -111,7 +111,7 @@ struct OnboardingView: View {
                 }
             }
             VStack(alignment: .leading, spacing: 6) {
-                SectionLabel(text: "Algunas cuentas que crearemos")
+                SectionLabel(text: String(localized: "Algunas cuentas que crearemos"))
                 Text(previewAccounts.joined(separator: " · ")).font(.footnote).foregroundStyle(Palette.ink2)
             }
             Picker("Tipo de entidad", selection: $entityType) {

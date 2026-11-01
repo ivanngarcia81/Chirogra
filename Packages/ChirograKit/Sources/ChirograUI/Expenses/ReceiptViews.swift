@@ -99,7 +99,7 @@ struct ExpenseDetailView: View {
                 LabeledContent("Fecha", value: expense.date.shortDate)
                 LabeledContent("Pagado con", value: accounts.first { $0.id == expense.paymentAccountID }?.name ?? "—")
                 ForEach(expense.sortedLines) { line in
-                    LabeledContent(accounts.first { $0.id == line.accountID }?.name ?? "Sin categoría", value: line.amount.money)
+                    LabeledContent(accounts.first { $0.id == line.accountID }?.name ?? String(localized: "Sin categoría"), value: line.amount.money)
                 }
                 if !expense.memo.isEmpty { LabeledContent("Nota", value: expense.memo) }
             }
@@ -132,7 +132,7 @@ struct ExpenseDetailView: View {
                         try Bookkeeper(context: context).attachReceipt(data, filename: name, contentType: type, to: expense)
                         errorMessage = nil
                     } catch {
-                        errorMessage = "No se pudo adjuntar el archivo: usa una foto o un PDF."
+                        errorMessage = String(localized: "No se pudo adjuntar el archivo: usa una foto o un PDF.")
                     }
                 }
             } header: {
@@ -172,7 +172,7 @@ struct ExpenseDetailView: View {
             try Bookkeeper(context: context).removeAttachment(attachment)
             errorMessage = nil
         } catch {
-            errorMessage = "No se pudo quitar el recibo."
+            errorMessage = String(localized: "No se pudo quitar el recibo.")
         }
     }
 }

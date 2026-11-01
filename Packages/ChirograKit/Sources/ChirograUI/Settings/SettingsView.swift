@@ -125,11 +125,11 @@ struct DataAndSecurityView: View {
 extension EntityType {
     var title: String {
         switch self {
-        case .soleProprietorship: "Negocio propio (sole proprietorship)"
-        case .llc: "LLC"
-        case .sCorp: "S corporation"
-        case .cCorp: "C corporation"
-        case .partnership: "Sociedad (partnership)"
+        case .soleProprietorship: String(localized: "Negocio propio (sole proprietorship)")
+        case .llc: String(localized: "LLC")
+        case .sCorp: String(localized: "S corporation")
+        case .cCorp: String(localized: "C corporation")
+        case .partnership: String(localized: "Sociedad (partnership)")
         }
     }
 }

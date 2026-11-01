@@ -36,8 +36,8 @@ struct HomeView: View {
                 Text(Date.now.monthYear)
                     .font(.subheadline).foregroundStyle(Palette.ink3)
 
-                HeroCard(title: "Efectivo disponible", value: ledger.availableCash.money,
-                         detail: "En \(ledger.moneyAccounts.filter { $0.subtype != .undepositedFunds }.count) cuentas")
+                HeroCard(title: String(localized: "Efectivo disponible"), value: ledger.availableCash.money,
+                         detail: String(localized: "En \(ledger.moneyAccounts.filter { $0.subtype != .undepositedFunds }.count) cuentas"))
 
                 kpis
                 quickActions
@@ -78,16 +78,16 @@ struct HomeView: View {
             ? [GridItem(.flexible())]
             : [GridItem(.adaptive(minimum: 100), spacing: 8)]
         return LazyVGrid(columns: columns, spacing: 8) {
-            KPITile(title: "Ingresos", value: thisMonth.totalIncome.money,
+            KPITile(title: String(localized: "Ingresos"), value: thisMonth.totalIncome.money,
                     note: change(thisMonth.totalIncome, lastMonth.totalIncome, higherIsBetter: true).text,
                     noteColor: change(thisMonth.totalIncome, lastMonth.totalIncome, higherIsBetter: true).color)
-            KPITile(title: "Gastos", value: (thisMonth.totalExpenses + thisMonth.totalCostOfGoodsSold).money,
+            KPITile(title: String(localized: "Gastos"), value: (thisMonth.totalExpenses + thisMonth.totalCostOfGoodsSold).money,
                     note: change(thisMonth.totalExpenses + thisMonth.totalCostOfGoodsSold,
                                  lastMonth.totalExpenses + lastMonth.totalCostOfGoodsSold, higherIsBetter: false).text,
                     noteColor: change(thisMonth.totalExpenses + thisMonth.totalCostOfGoodsSold,
                                       lastMonth.totalExpenses + lastMonth.totalCostOfGoodsSold, higherIsBetter: false).color)
-            KPITile(title: "Ganancia neta", value: thisMonth.netIncome.money,
-                    note: thisMonth.totalIncome > 0 ? "Margen \(thisMonth.netIncome * 100 / thisMonth.totalIncome)%" : nil)
+            KPITile(title: String(localized: "Ganancia neta"), value: thisMonth.netIncome.money,
+                    note: thisMonth.totalIncome > 0 ? String(localized: "Margen \(thisMonth.netIncome * 100 / thisMonth.totalIncome)%") : nil)
         }
     }
 
@@ -95,7 +95,8 @@ struct HomeView: View {
         guard previous != 0 else { return (nil, Palette.ink3) }
         let percent = (current - previous) * 100 / abs(previous)
         let good = higherIsBetter ? percent >= 0 : percent <= 0
-        return ("\(percent >= 0 ? "↑" : "↓") \(abs(percent))% vs. mes ant.", good ? Palette.positive : Palette.negative)
+        let arrow = percent >= 0 ? "↑" : "↓"
+        return (String(localized: "\(arrow) \(abs(percent))% vs. mes ant."), good ? Palette.positive : Palette.negative)
     }
 
     private var quickActions: some View {
@@ -103,9 +104,9 @@ struct HomeView: View {
             ? AnyLayout(VStackLayout(alignment: .leading, spacing: 8))
             : AnyLayout(HStackLayout(spacing: 8))
         return layout {
-            quickAction("Factura", "doc.badge.plus", .invoice, prominent: true)
-            quickAction("Gasto", "wallet.bifold", .expense)
-            quickAction("Cliente", "person.badge.plus", .customer)
+            quickAction(String(localized: "Factura"), "doc.badge.plus", .invoice, prominent: true)
+            quickAction(String(localized: "Gasto"), "wallet.bifold", .expense)
+            quickAction(String(localized: "Cliente"), "person.badge.plus", .customer)
         }
     }
 
@@ -141,8 +142,8 @@ struct HomeView: View {
             let interval = DateInterval.month(containing: .now, offset: -offset)
             let statement = ledger.incomeStatement(interval)
             return [
-                MonthPoint(month: interval.start, series: "Ingresos", amount: Money(minorUnits: statement.totalIncome).decimalValue.doubleValue),
-                MonthPoint(month: interval.start, series: "Gastos",
+                MonthPoint(month: interval.start, series: String(localized: "Ingresos"), amount: Money(minorUnits: statement.totalIncome).decimalValue.doubleValue),
+                MonthPoint(month: interval.start, series: String(localized: "Gastos"),
                            amount: Money(minorUnits: statement.totalExpenses + statement.totalCostOfGoodsSold).decimalValue.doubleValue),
             ]
         }
@@ -152,10 +153,12 @@ struct HomeView: View {
     private var chartSummary: String {
         let months = Dictionary(grouping: chartPoints, by: \.month).sorted { $0.key < $1.key }
         return months.map { month, points in
-            let income = points.first { $0.series == "Ingresos" }?.amount ?? 0
-            let expense = points.first { $0.series == "Gastos" }?.amount ?? 0
-            return "\(month.formatted(.dateTime.month(.wide))): ingresos \(income.formatted(.currency(code: "USD"))), "
-                + "gastos \(expense.formatted(.currency(code: "USD")))"
+            let income = points.first { $0.series == String(localized: "Ingresos") }?.amount ?? 0
+            let expense = points.first { $0.series == String(localized: "Gastos") }?.amount ?? 0
+            let name = month.formatted(.dateTime.month(.wide))
+            let incomeText = income.formatted(.currency(code: "USD"))
+            let expenseText = expense.formatted(.currency(code: "USD"))
+            return String(localized: "\(name): ingresos \(incomeText), gastos \(expenseText)")
         }
         .joined(separator: ". ")
     }
@@ -179,7 +182,7 @@ struct HomeView: View {
                     .position(by: .value("Serie", point.series))
                     .cornerRadius(4)
             }
-            .chartForegroundStyleScale(["Ingresos": Palette.brand, "Gastos": Palette.expenseBar])
+            .chartForegroundStyleScale([String(localized: "Ingresos"): Palette.brand, String(localized: "Gastos"): Palette.expenseBar])
             .chartXAxis { AxisMarks(values: .stride(by: .month)) { _ in AxisValueLabel(format: .dateTime.month(.narrow)) } }
             // Los ejes no crecen más allá de xxxLarge (se amontonaban); las cifras completas están en el resumen de VoiceOver.
             .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
@@ -245,7 +248,7 @@ struct HomeView: View {
             ForEach(openInvoices.prefix(3)) { invoice in
                 Divider()
                 NavigationLink { InvoiceDetailView(invoice: invoice) } label: {
-                    LedgerRow(title: invoice.customer?.name ?? "Sin cliente",
+                    LedgerRow(title: invoice.customer?.name ?? String(localized: "Sin cliente"),
                               subtitle: "\(invoice.number) · \(invoice.dueDate.dueLabel)") {
                         EmptyView()
                     } trailing: {
@@ -270,7 +273,7 @@ struct HomeView: View {
             Text("Por pagar · próximos 14 días").font(.cardTitle)
             ForEach(soon) { bill in
                 Divider()
-                LedgerRow(title: bill.vendor?.name ?? "Proveedor", subtitle: "Factura por pagar \(bill.vendorNumber)") {
+                LedgerRow(title: bill.vendor?.name ?? String(localized: "Proveedor"), subtitle: String(localized: "Factura por pagar \(bill.vendorNumber)")) {
                     VStack(spacing: 0) {
                         Text(bill.dueDate.formatted(.dateTime.month(.abbreviated)).uppercased())
                             .font(.caption2.weight(.bold)).foregroundStyle(Palette.outflow)
@@ -297,7 +300,7 @@ struct HomeView: View {
             Text("Cuentas").font(.cardTitle)
             ForEach(ledger.moneyAccounts) { account in
                 Divider()
-                LedgerRow(title: account.name, subtitle: account.subtype == .creditCard ? "Tarjeta de crédito" : "Saldo según libros") {
+                LedgerRow(title: account.name, subtitle: account.subtype == .creditCard ? String(localized: "Tarjeta de crédito") : String(localized: "Saldo según libros")) {
                     IconTile(systemImage: account.subtype == .creditCard ? "creditcard" : "building.columns")
                 } trailing: {
                     let balance = ledger.balance(of: account)

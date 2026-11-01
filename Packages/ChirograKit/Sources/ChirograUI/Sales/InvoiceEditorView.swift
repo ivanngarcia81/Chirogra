@@ -86,7 +86,7 @@ struct InvoiceEditorView: View {
                     VStack(alignment: .leading, spacing: 8) {
                         TextField("Descripción", text: $line.details).font(.body.weight(.semibold))
                         HStack {
-                            MoneyField(title: "Precio", minorUnits: $line.unitPrice)
+                            MoneyField(title: String(localized: "Precio"), minorUnits: $line.unitPrice)
                             Stepper(value: $line.quantity, in: 1...9_999) {
                                 Text("× \(line.quantity.formatted())").monospacedDigit()
                             }
@@ -97,7 +97,7 @@ struct InvoiceEditorView: View {
                             Spacer()
                             Text(line.amount.money).font(.body.weight(.semibold)).monospacedDigit()
                         }
-                        AccountPicker(title: "Cuenta de ingreso", accounts: incomeAccounts, selection: $line.incomeAccountID)
+                        AccountPicker(title: String(localized: "Cuenta de ingreso"), accounts: incomeAccounts, selection: $line.incomeAccountID)
                             .font(.subheadline)
                     }
                     .padding(.vertical, 4)
@@ -117,7 +117,7 @@ struct InvoiceEditorView: View {
                 }
                 LabeledContent("Subtotal", value: validLines.reduce(0) { $0 + $1.amount }.money)
                 LabeledContent("Descuento") {
-                    MoneyField(title: "Descuento", minorUnits: $discount)
+                    MoneyField(title: String(localized: "Descuento"), minorUnits: $discount)
                         .multilineTextAlignment(.trailing)
                 }
                 if discount > validLines.reduce(0, { $0 + $1.amount }) {

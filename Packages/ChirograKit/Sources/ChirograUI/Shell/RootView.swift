@@ -12,14 +12,14 @@ enum AppSection: String, Hashable, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .home: "Inicio"
-        case .sales: "Ventas"
-        case .expenses: "Gastos"
-        case .banking: "Banca"
-        case .reports: "Reportes"
-        case .accounting: "Contabilidad"
-        case .taxes: "Impuestos"
-        case .settings: "Ajustes"
+        case .home: String(localized: "Inicio")
+        case .sales: String(localized: "Ventas")
+        case .expenses: String(localized: "Gastos")
+        case .banking: String(localized: "Banca")
+        case .reports: String(localized: "Reportes")
+        case .accounting: String(localized: "Contabilidad")
+        case .taxes: String(localized: "Impuestos")
+        case .settings: String(localized: "Ajustes")
         }
     }
 
@@ -316,7 +316,7 @@ struct LockView: View {
         Task {
             do {
                 lock.isUnlocked = try await LAContext().evaluatePolicy(.deviceOwnerAuthentication,
-                                                                       localizedReason: "Desbloquear tus libros")
+                                                                       localizedReason: String(localized: "Desbloquear tus libros"))
             } catch {
                 failed = Self.isFailure(error)
             }

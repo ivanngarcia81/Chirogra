@@ -19,7 +19,7 @@ struct ExpensesView: View {
     var body: some View {
         VStack(spacing: 0) {
             Picker("Sección", selection: $segment) {
-                ForEach(Segment.allCases) { Text($0.rawValue).tag($0) }
+                ForEach(Segment.allCases) { Text($0.localizedTitle).tag($0) }
             }
             .pickerStyle(.segmented)
             .padding(.horizontal, Metrics.gutter)
@@ -56,7 +56,7 @@ struct ExpenseListView: View {
 
     private func categoryName(_ expense: Expense) -> String {
         let id = expense.sortedLines.first?.accountID
-        return accounts.first { $0.id == id }?.name ?? "Sin categoría"
+        return accounts.first { $0.id == id }?.name ?? String(localized: "Sin categoría")
     }
 
     var body: some View {
@@ -74,8 +74,8 @@ struct ExpenseListView: View {
             .listRowBackground(Palette.surface)
 
             if expenses.isEmpty {
-                EmptyStateView(systemImage: "wallet.bifold", title: "Sin gastos todavía",
-                               message: "Registra un gasto con el botón + y adjunta el recibo.")
+                EmptyStateView(systemImage: "wallet.bifold", title: String(localized: "Sin gastos todavía"),
+                               message: String(localized: "Registra un gasto con el botón + y adjunta el recibo."))
                     .listRowBackground(Palette.surface)
             }
             Section {
@@ -119,7 +119,7 @@ struct ExpenseEditorView: View {
         Form {
             if let errorMessage { ErrorBanner(message: errorMessage) }
             Section {
-                MoneyField(title: "Importe (impuesto incluido)", minorUnits: $amount).font(.amount(24))
+                MoneyField(title: String(localized: "Importe (impuesto incluido)"), minorUnits: $amount).font(.amount(24))
                 TextField("Pagado a (comercio o persona)", text: $payee)
                 Picker("Proveedor", selection: $vendorID) {
                     Text("Ninguno").tag(UUID?.none)
@@ -128,8 +128,8 @@ struct ExpenseEditorView: View {
                 DatePicker("Fecha", selection: $date, displayedComponents: .date)
             }
             Section {
-                AccountPicker(title: "Categoría", accounts: expenseAccounts, selection: $categoryID)
-                AccountPicker(title: "Pagado con", accounts: paymentAccounts, selection: $paymentAccountID)
+                AccountPicker(title: String(localized: "Categoría"), accounts: expenseAccounts, selection: $categoryID)
+                AccountPicker(title: String(localized: "Pagado con"), accounts: paymentAccounts, selection: $paymentAccountID)
                 TextField("Nota", text: $memo, axis: .vertical)
             } footer: {
                 Text("En EE. UU. el sales tax de tus compras forma parte del gasto. La lectura automática de recibos llega en la fase 2.")
@@ -186,7 +186,7 @@ struct ExpenseEditorView: View {
             catch { failed.append(receipt.name) }
         }
         if failed.isEmpty { dismiss() } else {
-            errorMessage = "El gasto se guardó, pero no se pudo adjuntar: \(failed.joined(separator: ", ")). Ábrelo desde la lista para reintentar."
+            errorMessage = String(localized: "El gasto se guardó, pero no se pudo adjuntar: \(failed.joined(separator: ", ")). Ábrelo desde la lista para reintentar.")
         }
     }
 }
@@ -204,14 +204,14 @@ struct BillListView: View {
             }
             .listRowBackground(Palette.surface)
             if bills.isEmpty {
-                EmptyStateView(systemImage: "doc.text", title: "Sin facturas por pagar",
-                               message: "Registra las facturas de tus proveedores para saber qué vence y cuándo.")
+                EmptyStateView(systemImage: "doc.text", title: String(localized: "Sin facturas por pagar"),
+                               message: String(localized: "Registra las facturas de tus proveedores para saber qué vence y cuándo."))
                     .listRowBackground(Palette.surface)
             }
             Section {
                 ForEach(bills) { bill in
                     Button { if bill.isOpen { paying = bill } } label: {
-                        LedgerRow(title: bill.vendor?.name ?? "Proveedor", subtitle: "\(bill.vendorNumber) · \(bill.dueDate.dueLabel)") {
+                        LedgerRow(title: bill.vendor?.name ?? String(localized: "Proveedor"), subtitle: "\(bill.vendorNumber) · \(bill.dueDate.dueLabel)") {
                             IconTile(systemImage: "doc.text", foreground: Palette.outflow, background: Palette.outflowWash)
                         } trailing: {
                             VStack(alignment: dynamicTypeSize.amountAlignment, spacing: 3) {
@@ -260,8 +260,8 @@ struct BillEditorView: View {
                 DatePicker("Vence", selection: $dueDate, in: billDate..., displayedComponents: .date)
             }
             Section {
-                MoneyField(title: "Importe total", minorUnits: $amount)
-                AccountPicker(title: "Categoría", accounts: costAccounts, selection: $accountID)
+                MoneyField(title: String(localized: "Importe total"), minorUnits: $amount)
+                AccountPicker(title: String(localized: "Categoría"), accounts: costAccounts, selection: $accountID)
                 TextField("Descripción", text: $details)
             }
         }
@@ -315,9 +315,9 @@ struct PayBillView: View {
                 LabeledContent("Saldo", value: bill.balanceDue.money)
             }
             Section {
-                MoneyField(title: "Importe", minorUnits: $amount)
+                MoneyField(title: String(localized: "Importe"), minorUnits: $amount)
                 DatePicker("Fecha", selection: $date, displayedComponents: .date)
-                AccountPicker(title: "Pagar desde", accounts: accounts.filtered { $0.isMoneyAccount && $0 != .undepositedFunds }, selection: $accountID)
+                AccountPicker(title: String(localized: "Pagar desde"), accounts: accounts.filtered { $0.isMoneyAccount && $0 != .undepositedFunds }, selection: $accountID)
             }
         }
         .screenBackground()
@@ -347,12 +347,12 @@ struct VendorListView: View {
     var body: some View {
         List {
             if vendors.isEmpty {
-                EmptyStateView(systemImage: "shippingbox", title: "Sin proveedores", message: "Añade a quienes te venden bienes o servicios.")
+                EmptyStateView(systemImage: "shippingbox", title: String(localized: "Sin proveedores"), message: String(localized: "Añade a quienes te venden bienes o servicios."))
                     .listRowBackground(Palette.surface)
             }
             ForEach(vendors) { vendor in
                 NavigationLink { VendorEditorView(vendor: vendor) } label: {
-                    LedgerRow(title: vendor.name, subtitle: vendor.is1099 ? "Sujeto a 1099" : (vendor.email.isEmpty ? "Proveedor" : vendor.email)) {
+                    LedgerRow(title: vendor.name, subtitle: vendor.is1099 ? String(localized: "Sujeto a 1099") : (vendor.email.isEmpty ? String(localized: "Proveedor") : vendor.email)) {
                         InitialsTile(text: Initials.from(vendor.name), foreground: Palette.outflow, background: Palette.outflowWash)
                     } trailing: {
                         Text(vendor.openBalance.money).font(.body.weight(.semibold)).monospacedDigit()
@@ -390,7 +390,7 @@ struct VendorEditorView: View {
                 Picker("Condiciones de pago", selection: $terms) {
                     Text("Al recibir").tag(0); Text("Neto 15").tag(15); Text("Neto 30").tag(30); Text("Neto 60").tag(60)
                 }
-                AccountPicker(title: "Categoría por defecto", accounts: accounts.filtered { $0.accountType == .expense }, selection: $defaultAccountID)
+                AccountPicker(title: String(localized: "Categoría por defecto"), accounts: accounts.filtered { $0.accountType == .expense }, selection: $defaultAccountID)
                 Toggle("Sujeto a 1099", isOn: $is1099)
                 if is1099 { TextField("Últimos 4 dígitos del TIN", text: $tinLast4) }
             } footer: {
@@ -398,7 +398,7 @@ struct VendorEditorView: View {
             }
         }
         .screenBackground()
-        .navigationTitle(vendor == nil ? "Nuevo proveedor" : vendor!.name)
+        .navigationTitle(vendor == nil ? String(localized: "Nuevo proveedor") : vendor!.name)
         .inlineTitle()
         .toolbar {
             if vendor == nil { ToolbarItem(placement: .cancellationAction) { Button("Cancelar") { dismiss() } } }

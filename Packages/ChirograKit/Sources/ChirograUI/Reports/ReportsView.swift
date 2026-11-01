@@ -48,7 +48,7 @@ struct ReportsView: View {
                 if kind == .income || kind == .salesTax {
                     HStack {
                         Picker("Periodo", selection: $period) {
-                            ForEach(Period.allCases) { Text($0.rawValue).tag($0) }
+                            ForEach(Period.allCases) { Text($0.localizedTitle).tag($0) }
                         }
                         .pickerStyle(.segmented)
                         .fixedSize()
@@ -60,8 +60,8 @@ struct ReportsView: View {
                 case .income: incomeStatement
                 case .balance: balanceSheet
                 case .trial: trialBalance
-                case .receivables: aging(receivablesReport, total: "Total por cobrar", empty: "No hay facturas pendientes de cobro.")
-                case .payables: aging(payablesReport, total: "Total por pagar", empty: "No hay facturas de proveedores pendientes.")
+                case .receivables: aging(receivablesReport, total: String(localized: "Total por cobrar"), empty: String(localized: "No hay facturas pendientes de cobro."))
+                case .payables: aging(payablesReport, total: String(localized: "Total por pagar"), empty: String(localized: "No hay facturas de proveedores pendientes."))
                 case .salesTax: SalesTaxSummaryCard(report: salesTaxReport)
                 }
             }
@@ -84,7 +84,7 @@ struct ReportsView: View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
                 ForEach(Kind.allCases) { option in
-                    FilterChip(title: option.rawValue, isSelected: kind == option) { kind = option }
+                    FilterChip(title: option.localizedTitle, isSelected: kind == option) { kind = option }
                 }
             }
         }
@@ -96,17 +96,17 @@ struct ReportsView: View {
         let current = ledger.incomeStatement(period.interval())
         let previous = ledger.incomeStatement(period.interval(offset: -1))
         return VStack(spacing: Metrics.cardSpacing) {
-            HeroCard(title: "Ganancia neta", value: current.netIncome.money,
-                     detail: "\(period.interval().start.shortDate) – \(period.interval().end.addingTimeInterval(-1).shortDate)")
+            HeroCard(title: String(localized: "Ganancia neta"), value: current.netIncome.money,
+                     detail: String(localized: "\(period.interval().start.shortDate) – \(period.interval().end.addingTimeInterval(-1).shortDate)"))
             VStack(spacing: 0) {
-                header(columns: compare ? ["ACTUAL", "ANTERIOR"] : ["ACTUAL"])
-                group("Ingresos", current.income, previous.income)
-                totalRow("Total ingresos", current.totalIncome, previous.totalIncome)
-                group("Costo de ventas", current.costOfGoodsSold, previous.costOfGoodsSold)
-                totalRow("Utilidad bruta", current.grossProfit, previous.grossProfit)
-                group("Gastos operativos", current.expenses, previous.expenses)
-                totalRow("Total gastos", current.totalExpenses, previous.totalExpenses)
-                totalRow("Ganancia neta", current.netIncome, previous.netIncome, highlighted: true)
+                header(columns: compare ? [String(localized: "ACTUAL"), String(localized: "ANTERIOR")] : [String(localized: "ACTUAL")])
+                group(String(localized: "Ingresos"), current.income, previous.income)
+                totalRow(String(localized: "Total ingresos"), current.totalIncome, previous.totalIncome)
+                group(String(localized: "Costo de ventas"), current.costOfGoodsSold, previous.costOfGoodsSold)
+                totalRow(String(localized: "Utilidad bruta"), current.grossProfit, previous.grossProfit)
+                group(String(localized: "Gastos operativos"), current.expenses, previous.expenses)
+                totalRow(String(localized: "Total gastos"), current.totalExpenses, previous.totalExpenses)
+                totalRow(String(localized: "Ganancia neta"), current.netIncome, previous.netIncome, highlighted: true)
             }
             .card(padding: 0)
         }
@@ -117,17 +117,17 @@ struct ReportsView: View {
     private var balanceSheet: some View {
         let report = balanceSheetReport
         return VStack(spacing: 0) {
-            header(columns: ["AL \(Date.now.shortDate.uppercased())"])
-            group("Activos", report.assets, nil)
-            totalRow("Total activos", report.totalAssets, nil)
-            group("Pasivos", report.liabilities, nil)
-            totalRow("Total pasivos", report.totalLiabilities, nil)
-            group("Patrimonio", report.equity, nil)
-            line("Resultados de años anteriores", report.priorYearsEarnings, nil)
-            line("Resultado del ejercicio", report.currentYearEarnings, nil)
-            totalRow("Total patrimonio", report.totalEquity, nil)
-            totalRow("Pasivo + patrimonio", report.totalLiabilities + report.totalEquity, nil, highlighted: true)
-            balanceCheck(report.isBalanced, ok: "Activo = Pasivo + Patrimonio", bad: "El balance no cuadra")
+            header(columns: [String(localized: "AL \(Date.now.shortDate.uppercased())")])
+            group(String(localized: "Activos"), report.assets, nil)
+            totalRow(String(localized: "Total activos"), report.totalAssets, nil)
+            group(String(localized: "Pasivos"), report.liabilities, nil)
+            totalRow(String(localized: "Total pasivos"), report.totalLiabilities, nil)
+            group(String(localized: "Patrimonio"), report.equity, nil)
+            line(String(localized: "Resultados de años anteriores"), report.priorYearsEarnings, nil)
+            line(String(localized: "Resultado del ejercicio"), report.currentYearEarnings, nil)
+            totalRow(String(localized: "Total patrimonio"), report.totalEquity, nil)
+            totalRow(String(localized: "Pasivo + patrimonio"), report.totalLiabilities + report.totalEquity, nil, highlighted: true)
+            balanceCheck(report.isBalanced, ok: String(localized: "Activo = Pasivo + Patrimonio"), bad: String(localized: "El balance no cuadra"))
         }
         .card(padding: 0)
     }
@@ -137,13 +137,13 @@ struct ReportsView: View {
     private var trialBalance: some View {
         let report = ReportBuilder.trialBalance(accounts: ledger.ledgerAccounts, lines: ledger.lines, asOf: .now)
         return VStack(spacing: 0) {
-            header(columns: ["DEBE", "HABER"])
+            header(columns: [String(localized: "DEBE"), String(localized: "HABER")])
             ForEach(report.rows) { row in
                 rowView(row.account.name, [row.debit == 0 ? "" : row.debit.money, row.credit == 0 ? "" : row.credit.money])
             }
             Divider()
-            rowView("Totales", [report.totalDebit.money, report.totalCredit.money], bold: true)
-            balanceCheck(report.isBalanced, ok: "Débitos = créditos", bad: "La balanza no cuadra")
+            rowView(String(localized: "Totales"), [report.totalDebit.money, report.totalCredit.money], bold: true)
+            balanceCheck(report.isBalanced, ok: String(localized: "Débitos = créditos"), bad: String(localized: "La balanza no cuadra"))
         }
         .card(padding: 0)
     }
@@ -151,7 +151,7 @@ struct ReportsView: View {
     // MARK: Antigüedad de cuentas por cobrar y por pagar
 
     private func aging(_ report: AgingReport, total: String, empty: String) -> some View {
-        let titles: [AgingReport.Bucket: String] = [.current: "Corriente", .days1to30: "1–30", .days31to60: "31–60", .days61to90: "61–90", .over90: "> 90"]
+        let titles: [AgingReport.Bucket: String] = [.current: String(localized: "Corriente"), .days1to30: "1–30", .days31to60: "31–60", .days61to90: "61–90", .over90: "> 90"]
         return VStack(alignment: .leading, spacing: Metrics.cardSpacing) {
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 110), spacing: 8)], spacing: 8) {
                 ForEach(AgingReport.Bucket.allCases, id: \.self) { bucket in
@@ -159,7 +159,7 @@ struct ReportsView: View {
                 }
             }
             VStack(spacing: 0) {
-                header(columns: ["VENCIDO", "TOTAL"])
+                header(columns: [String(localized: "VENCIDO"), String(localized: "TOTAL")])
                 ForEach(report.rows) { row in
                     let overdue = row.total - (row.amounts[.current] ?? 0)
                     rowView(row.party, [overdue.money, row.total.money])
@@ -195,7 +195,7 @@ struct ReportsView: View {
         ForEach(rows) { row in
             line(row.account.name, row.amount, previous.map { list in list.first { $0.account.id == row.account.id }?.amount ?? 0 }, indent: true)
         }
-        if rows.isEmpty { line("Sin movimientos", 0, nil, indent: true).foregroundStyle(Palette.ink3) }
+        if rows.isEmpty { line(String(localized: "Sin movimientos"), 0, nil, indent: true).foregroundStyle(Palette.ink3) }
     }
 
     private func line(_ title: String, _ amount: Int64, _ previous: Int64?, indent: Bool = false) -> some View {
@@ -279,22 +279,22 @@ struct ReportsView: View {
     private var csvFile: CSVFile {
         switch kind {
         case .income:
-            CSVFile(name: "Estado de resultados",
+            CSVFile(name: String(localized: "Estado de resultados"),
                     text: CSVExport.incomeStatement(ledger.incomeStatement(period.interval()),
                                                     previous: compare ? ledger.incomeStatement(period.interval(offset: -1)) : nil))
         case .balance:
-            CSVFile(name: "Balance general", text: CSVExport.balanceSheet(balanceSheetReport))
+            CSVFile(name: String(localized: "Balance general"), text: CSVExport.balanceSheet(balanceSheetReport))
         case .trial:
-            CSVFile(name: "Balanza de comprobación",
+            CSVFile(name: String(localized: "Balanza de comprobación"),
                     text: CSVExport.trialBalance(ReportBuilder.trialBalance(accounts: ledger.ledgerAccounts, lines: ledger.lines, asOf: .now)))
         case .receivables:
-            CSVFile(name: "Antigüedad de cuentas por cobrar",
-                    text: CSVExport.aging(receivablesReport, title: "Antigüedad de cuentas por cobrar", partyTitle: "Cliente"))
+            CSVFile(name: String(localized: "Antigüedad de cuentas por cobrar"),
+                    text: CSVExport.aging(receivablesReport, title: String(localized: "Antigüedad de cuentas por cobrar"), partyTitle: String(localized: "Cliente")))
         case .salesTax:
-            CSVFile(name: "Resumen de sales tax", text: CSVExport.salesTaxSummary(salesTaxReport))
+            CSVFile(name: String(localized: "Resumen de sales tax"), text: CSVExport.salesTaxSummary(salesTaxReport))
         case .payables:
-            CSVFile(name: "Antigüedad de cuentas por pagar",
-                    text: CSVExport.aging(payablesReport, title: "Antigüedad de cuentas por pagar", partyTitle: "Proveedor"))
+            CSVFile(name: String(localized: "Antigüedad de cuentas por pagar"),
+                    text: CSVExport.aging(payablesReport, title: String(localized: "Antigüedad de cuentas por pagar"), partyTitle: String(localized: "Proveedor")))
         }
     }
 }
@@ -320,7 +320,7 @@ struct SalesTaxSummaryCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: Metrics.cardSpacing) {
-            HeroCard(title: "Sales tax cobrado", value: report.totalTax.money,
+            HeroCard(title: String(localized: "Sales tax cobrado"), value: report.totalTax.money,
                      detail: "\(report.from.shortDate) – \(report.to.shortDate)")
             VStack(alignment: .leading, spacing: 8) {
                 LabeledContent("Ventas totales", value: report.totalSales.money).fontWeight(.semibold)

@@ -26,8 +26,8 @@ struct BankingView: View {
 
             Section {
                 EmptyStateView(systemImage: "tray.and.arrow.down",
-                               title: "Importar y conciliar llega en la fase 2",
-                               message: "Podrás traer tus movimientos en CSV u OFX, categorizarlos desde una bandeja y conciliar con el extracto del banco.")
+                               title: String(localized: "Importar y conciliar llega en la fase 2"),
+                               message: String(localized: "Podrás traer tus movimientos en CSV u OFX, categorizarlos desde una bandeja y conciliar con el extracto del banco."))
             }
             .listRowBackground(Palette.surface)
         }

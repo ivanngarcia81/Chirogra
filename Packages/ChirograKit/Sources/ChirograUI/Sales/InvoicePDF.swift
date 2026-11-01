@@ -50,7 +50,7 @@ struct InvoicePDFFile: Transferable {
     @MainActor
     init(invoice: Invoice, company: Company?) {
         data = InvoicePDF.render(invoice, company: company)
-        filename = "Factura \(invoice.number.isEmpty ? "borrador" : invoice.number).pdf"
+        filename = invoice.number.isEmpty ? String(localized: "Factura borrador.pdf") : String(localized: "Factura \(invoice.number).pdf")
     }
 
     static var transferRepresentation: some TransferRepresentation {
@@ -106,7 +106,7 @@ struct InvoiceDocumentView: View {
             Spacer()
             VStack(alignment: .trailing, spacing: 2) {
                 Text("FACTURA").font(.system(size: 20, weight: .bold)).foregroundStyle(Palette.brand)
-                Text(invoice.number.isEmpty ? "Sin número" : invoice.number).font(.system(size: 12, weight: .semibold))
+                Text(invoice.number.isEmpty ? String(localized: "Sin número") : invoice.number).font(.system(size: 12, weight: .semibold))
                 Text("Fecha: \(invoice.issueDate.shortDate)")
                 Text("Vence: \(invoice.dueDate.shortDate)")
             }
@@ -124,7 +124,7 @@ struct InvoiceDocumentView: View {
 
     private var table: some View {
         VStack(spacing: 0) {
-            row("DESCRIPCIÓN", "CANT.", "PRECIO", "IMPORTE", header: true)
+            row(String(localized: "DESCRIPCIÓN"), String(localized: "CANT."), String(localized: "PRECIO"), String(localized: "IMPORTE"), header: true)
             ForEach(lines) { line in
                 row(line.details.isEmpty ? "—" : line.details + (line.isTaxable ? " *" : ""),
                     line.quantity.formatted(), line.unitPrice.money, line.amount.money)
@@ -151,16 +151,16 @@ struct InvoiceDocumentView: View {
         return HStack {
             Spacer()
             VStack(alignment: .trailing, spacing: 4) {
-                total("Subtotal", subtotal.money)
-                if invoice.discount > 0 { total("Descuento", "−\(invoice.discount.money)") }
+                total(String(localized: "Subtotal"), subtotal.money)
+                if invoice.discount > 0 { total(String(localized: "Descuento"), "−\(invoice.discount.money)") }
                 ForEach(invoice.taxLines ?? []) { tax in
-                    total("\(tax.name) \((Decimal(tax.rateMillionths) / 10_000).formatted())%", tax.amount.money)
+                    total(String(localized: "\(tax.name) \((Decimal(tax.rateMillionths) / 10_000).formatted())%"), tax.amount.money)
                 }
-                if !issued { total("Sales tax", "se calcula al emitir") }
-                total("Total", (issued ? invoice.total : invoice.draftAmount).money, bold: true)
-                if invoice.amountPaid > 0 { total("Pagado", "−\(invoice.amountPaid.money)") }
-                if invoice.creditsApplied > 0 { total("Notas de crédito", "−\(invoice.creditsApplied.money)") }
-                if issued { total("Saldo pendiente", invoice.balanceDue.money, bold: true) }
+                if !issued { total(String(localized: "Sales tax"), String(localized: "se calcula al emitir")) }
+                total(String(localized: "Total"), (issued ? invoice.total : invoice.draftAmount).money, bold: true)
+                if invoice.amountPaid > 0 { total(String(localized: "Pagado"), "−\(invoice.amountPaid.money)") }
+                if invoice.creditsApplied > 0 { total(String(localized: "Notas de crédito"), "−\(invoice.creditsApplied.money)") }
+                if issued { total(String(localized: "Saldo pendiente"), invoice.balanceDue.money, bold: true) }
             }
             .frame(width: 240)
         }

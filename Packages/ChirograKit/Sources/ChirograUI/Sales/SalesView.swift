@@ -17,7 +17,7 @@ struct SalesView: View {
     var body: some View {
         VStack(spacing: 0) {
             Picker("Sección", selection: $segment) {
-                ForEach(Segment.allCases) { Text($0.rawValue).tag($0) }
+                ForEach(Segment.allCases) { Text($0.localizedTitle).tag($0) }
             }
             .pickerStyle(.segmented)
             .padding(.horizontal, Metrics.gutter)
@@ -83,7 +83,7 @@ struct InvoiceListView: View {
                     HStack(spacing: 8) {
                         ForEach(Filter.allCases) { option in
                             let count = invoices.filter(option.matches).count
-                            FilterChip(title: option.rawValue, count: count, isSelected: filter == option) { filter = option }
+                            FilterChip(title: option.localizedTitle, count: count, isSelected: filter == option) { filter = option }
                                 .accessibilityHint("Filtra la lista de facturas")
                         }
                     }
@@ -91,7 +91,7 @@ struct InvoiceListView: View {
                 .listRowInsets(EdgeInsets())
                 .listRowBackground(Color.clear)
             } footer: {
-                let count = Text("\(filtered.count) \(filtered.count == 1 ? "factura" : "facturas")")
+                let count = Text("\(filtered.count) facturas")   // singular y plural en el catálogo
                 let receivable = Text("Por cobrar \(Text(invoices.filter(\.isOpen).reduce(0) { $0 + $1.balanceDue }.money).bold())")
                 ViewThatFits(in: .horizontal) {
                     HStack {
@@ -107,9 +107,9 @@ struct InvoiceListView: View {
             }
 
             if filtered.isEmpty {
-                EmptyStateView(systemImage: "magnifyingglass", title: invoices.isEmpty ? "Todavía no hay facturas" : "Sin resultados",
-                               message: invoices.isEmpty ? "Crea tu primera factura con el botón +." : "Prueba con otro cliente, número o estado.",
-                               actionTitle: invoices.isEmpty ? nil : "Quitar filtros") {
+                EmptyStateView(systemImage: "magnifyingglass", title: invoices.isEmpty ? String(localized: "Todavía no hay facturas") : String(localized: "Sin resultados"),
+                               message: invoices.isEmpty ? String(localized: "Crea tu primera factura con el botón +.") : String(localized: "Prueba con otro cliente, número o estado."),
+                               actionTitle: invoices.isEmpty ? nil : String(localized: "Quitar filtros")) {
                     query = ""
                     filter = .all
                 }
@@ -133,7 +133,7 @@ struct InvoiceRow: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
-        LedgerRow(title: invoice.customer?.name ?? "Sin cliente", subtitle: subtitle) {
+        LedgerRow(title: invoice.customer?.name ?? String(localized: "Sin cliente"), subtitle: subtitle) {
             InitialsTile(text: invoice.customer?.initials ?? "?", foreground: Palette.ink2, background: Palette.surface2)
         } trailing: {
             VStack(alignment: dynamicTypeSize.amountAlignment, spacing: 3) {
@@ -155,11 +155,11 @@ struct InvoiceRow: View {
     }
 
     private var subtitle: String {
-        let number = invoice.number.isEmpty ? "Sin número" : invoice.number
+        let number = invoice.number.isEmpty ? String(localized: "Sin número") : invoice.number
         switch invoice.status {
-        case .draft: return "\(number) · borrador"
-        case .paid: return "\(number) · pagada"
-        case .void: return "\(number) · anulada"
+        case .draft: return String(localized: "\(number) · borrador")
+        case .paid: return String(localized: "\(number) · pagada")
+        case .void: return String(localized: "\(number) · anulada")
         case .partiallyPaid, .sent: return "\(number) · \(invoice.dueDate.dueLabel)"
         }
     }

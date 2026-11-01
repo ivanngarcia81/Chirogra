@@ -27,7 +27,7 @@ struct InvoiceDetailView: View {
             Section {
                 VStack(alignment: .leading, spacing: 8) {
                     AdaptiveRow {
-                        Text(invoice.customer?.name ?? "Sin cliente").font(.title2.weight(.semibold))
+                        Text(invoice.customer?.name ?? String(localized: "Sin cliente")).font(.title2.weight(.semibold))
                     } trailing: {
                         StatusChip(invoice: invoice, compact: false)
                     }
@@ -46,7 +46,7 @@ struct InvoiceDetailView: View {
                 ForEach(invoice.sortedLines) { line in
                     AdaptiveRow(alignment: .firstTextBaseline) {
                         VStack(alignment: .leading, spacing: 2) {
-                            Text(line.details.isEmpty ? "Sin descripción" : line.details)
+                            Text(line.details.isEmpty ? String(localized: "Sin descripción") : line.details)
                             Text("\(line.quantity.formatted()) × \(line.unitPrice.money)\(line.isTaxable ? " · gravable" : "")")
                                 .font(.footnote).foregroundStyle(Palette.ink3)
                         }
@@ -121,7 +121,7 @@ struct InvoiceDetailView: View {
             .listRowSeparator(.hidden)
         }
         .screenBackground()
-        .navigationTitle(invoice.number.isEmpty ? "Borrador" : invoice.number)
+        .navigationTitle(invoice.number.isEmpty ? String(localized: "Borrador") : invoice.number)
         .inlineTitle()
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
@@ -190,9 +190,9 @@ struct RecordPaymentView: View {
                 LabeledContent("Saldo pendiente", value: invoice.balanceDue.money)
             }
             Section {
-                MoneyField(title: "Importe", minorUnits: $amount)
+                MoneyField(title: String(localized: "Importe"), minorUnits: $amount)
                 DatePicker("Fecha", selection: $date, displayedComponents: .date)
-                AccountPicker(title: "Depositar en", accounts: depositAccounts, selection: $depositAccountID)
+                AccountPicker(title: String(localized: "Depositar en"), accounts: depositAccounts, selection: $depositAccountID)
                 Picker("Método", selection: $method) {
                     ForEach(PaymentMethod.allCases, id: \.self) { Text($0.title).tag($0) }
                 }
@@ -227,11 +227,11 @@ struct RecordPaymentView: View {
 extension PaymentMethod {
     var title: String {
         switch self {
-        case .cash: "Efectivo"
-        case .check: "Cheque"
-        case .bankTransfer: "Transferencia"
-        case .card: "Tarjeta"
-        case .other: "Otro"
+        case .cash: String(localized: "Efectivo")
+        case .check: String(localized: "Cheque")
+        case .bankTransfer: String(localized: "Transferencia")
+        case .card: String(localized: "Tarjeta")
+        case .other: String(localized: "Otro")
         }
     }
 }
@@ -265,7 +265,7 @@ struct CreditNoteEditorView: View {
     /// Cuánto rebaja la nota en cada cuenta de ingresos, para que se vea antes de emitirla.
     private var incomeByAccount: [(name: String, amount: Int64)] {
         Dictionary(grouping: creditLines, by: \.incomeAccountID)
-            .map { id, lines in (accounts.first { $0.id == id }?.name ?? "Ingresos", lines.reduce(0) { $0 + $1.amount }) }
+            .map { id, lines in (accounts.first { $0.id == id }?.name ?? String(localized: "Ingresos"), lines.reduce(0) { $0 + $1.amount }) }
             .sorted { $0.name < $1.name }
     }
 
@@ -285,7 +285,7 @@ struct CreditNoteEditorView: View {
                         }
                     }
                 }
-                MoneyField(title: "Importe a acreditar (sin impuesto)", minorUnits: $amount)
+                MoneyField(title: String(localized: "Importe a acreditar (sin impuesto)"), minorUnits: $amount)
                 Toggle("Incluye sales tax", isOn: $isTaxable)
                 TextField("Motivo (devolución, ajuste de precio…)", text: $reason)
                 DatePicker("Fecha", selection: $date, displayedComponents: .date)
@@ -305,8 +305,8 @@ struct CreditNoteEditorView: View {
                     }
                 }
             } footer: {
-                Text("Se registra un asiento que reduce ingresos, sales tax por pagar y la cuenta por cobrar del cliente. "
-                     + "Lo que no cubra el saldo de esta factura queda a favor del cliente: puedes aplicarlo a otra factura o reembolsarlo desde su ficha.")
+                Text(String(localized: "Se registra un asiento que reduce ingresos, sales tax por pagar y la cuenta por cobrar del cliente. ")
+                     + String(localized: "Lo que no cubra el saldo de esta factura queda a favor del cliente: puedes aplicarlo a otra factura o reembolsarlo desde su ficha."))
             }
         }
         .screenBackground()

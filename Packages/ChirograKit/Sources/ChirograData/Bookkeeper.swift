@@ -15,16 +15,16 @@ public enum BookkeepingError: Error, Equatable, LocalizedError {
 
     public var errorDescription: String? {
         switch self {
-        case .noCompany: "Todavía no hay una empresa configurada."
-        case .companyAlreadyExists: "La empresa ya está configurada."
-        case .missingSystemAccount(let subtype): "Falta la cuenta de sistema «\(subtype.rawValue)»."
-        case .unknownAccount: "La cuenta indicada no existe."
+        case .noCompany: String(localized: "Todavía no hay una empresa configurada.")
+        case .companyAlreadyExists: String(localized: "La empresa ya está configurada.")
+        case .missingSystemAccount(let subtype): String(localized: "Falta la cuenta de sistema «\(subtype.rawValue)».")
+        case .unknownAccount: String(localized: "La cuenta indicada no existe.")
         case .invalidEntry(let error): error.localizedMessage
         case .invalidDocument(let error): error.localizedMessage
         case .invalidState(let message): message
-        case .overpayment(let balance): "El importe supera el saldo pendiente (\(Money(minorUnits: balance).formatted()))."
+        case .overpayment(let balance): String(localized: "El importe supera el saldo pendiente (\(Money(minorUnits: balance).formatted())).")
         case .exceedsCreditable(let available):
-            "La nota supera lo que queda por acreditar de la factura (\(Money(minorUnits: available).formatted()))."
+            String(localized: "La nota supera lo que queda por acreditar de la factura (\(Money(minorUnits: available).formatted())).")
         }
     }
 }
@@ -32,16 +32,16 @@ public enum BookkeepingError: Error, Equatable, LocalizedError {
 extension JournalValidationError {
     public var localizedMessage: String {
         switch self {
-        case .tooFewLines: "Un asiento necesita al menos dos líneas."
-        case .emptyLine(let index): "La línea \(index + 1) no tiene importe."
-        case .negativeAmount(let index): "La línea \(index + 1) tiene un importe negativo."
-        case .bothSides(let index): "La línea \(index + 1) tiene importe en el debe y en el haber."
-        case .singleAccount: "El asiento necesita al menos dos cuentas distintas."
+        case .tooFewLines: String(localized: "Un asiento necesita al menos dos líneas.")
+        case .emptyLine(let index): String(localized: "La línea \(index + 1) no tiene importe.")
+        case .negativeAmount(let index): String(localized: "La línea \(index + 1) tiene un importe negativo.")
+        case .bothSides(let index): String(localized: "La línea \(index + 1) tiene importe en el debe y en el haber.")
+        case .singleAccount: String(localized: "El asiento necesita al menos dos cuentas distintas.")
         case .unbalanced(let debits, let credits):
-            "El debe (\(Money(minorUnits: debits).formatted())) y el haber (\(Money(minorUnits: credits).formatted())) no cuadran."
-        case .unknownAccount(let index): "La cuenta de la línea \(index + 1) no existe."
-        case .accountNotPostable(let index): "La cuenta de la línea \(index + 1) está archivada o es una cuenta padre."
-        case .periodLocked(let lockDate): "El periodo está cerrado hasta el \(lockDate.formatted(date: .abbreviated, time: .omitted))."
+            String(localized: "El debe (\(Money(minorUnits: debits).formatted())) y el haber (\(Money(minorUnits: credits).formatted())) no cuadran.")
+        case .unknownAccount(let index): String(localized: "La cuenta de la línea \(index + 1) no existe.")
+        case .accountNotPostable(let index): String(localized: "La cuenta de la línea \(index + 1) está archivada o es una cuenta padre.")
+        case .periodLocked(let lockDate): String(localized: "El periodo está cerrado hasta el \(lockDate.formatted(date: .abbreviated, time: .omitted)).")
         }
     }
 }
@@ -49,10 +49,10 @@ extension JournalValidationError {
 extension PostingError {
     public var localizedMessage: String {
         switch self {
-        case .noLines: "El documento no tiene líneas."
-        case .nonPositiveAmount: "Todos los importes deben ser mayores que cero."
-        case .sameAccount: "La cuenta de origen y la de destino no pueden ser la misma."
-        case .invalidDiscount: "El descuento no puede ser negativo ni mayor que el subtotal."
+        case .noLines: String(localized: "El documento no tiene líneas.")
+        case .nonPositiveAmount: String(localized: "Todos los importes deben ser mayores que cero.")
+        case .sameAccount: String(localized: "La cuenta de origen y la de destino no pueden ser la misma.")
+        case .invalidDiscount: String(localized: "El descuento no puede ser negativo ni mayor que el subtotal.")
         }
     }
 }
@@ -152,7 +152,7 @@ public struct Bookkeeper {
         context.insert(NumberSequence(kind: .journalEntry, prefix: "", minimumDigits: 1))
         context.insert(NumberSequence(kind: .invoice, prefix: "F-", nextNumber: 1001))
         context.insert(NumberSequence(kind: .creditNote, prefix: "NC-", nextNumber: 1))
-        audit("Company", company.id, "create", "Alta de \(legalName)")
+        audit("Company", company.id, "create", String(localized: "Alta de \(legalName)"))
         try context.save()
         return company
     }
@@ -187,7 +187,7 @@ public struct Bookkeeper {
             model.entry = entry
             context.insert(model)
         }
-        audit("JournalEntry", entry.id, "post", "Asiento \(entry.number): \(draft.memo)")
+        audit("JournalEntry", entry.id, "post", String(localized: "Asiento \(entry.number): \(draft.memo)"))
         if save { try saveOrRollback() }
         return entry
     }
@@ -196,7 +196,7 @@ public struct Bookkeeper {
     @discardableResult
     public func reverse(_ entry: JournalEntry, on date: Date = Date(), memo: String? = nil, save: Bool = true) throws -> JournalEntry {
         guard entry.status == .posted, !entry.isReversed, entry.reversesEntryID == nil else {
-            throw BookkeepingError.invalidState("Este asiento ya fue revertido o es una reversión.")
+            throw BookkeepingError.invalidState(String(localized: "Este asiento ya fue revertido o es una reversión."))
         }
         let reversal = try post(entry.draft.reversal(on: date, memo: memo), sourceDocumentID: entry.sourceDocumentID, save: false)
         reversal.reversesEntryID = entry.id
@@ -212,7 +212,7 @@ public struct Bookkeeper {
     @discardableResult
     public func saveDraft(_ input: InvoiceDraftInput, into existing: Invoice? = nil) throws -> Invoice {
         if let existing, existing.status != .draft {
-            throw BookkeepingError.invalidState("Solo se pueden editar facturas en borrador.")
+            throw BookkeepingError.invalidState(String(localized: "Solo se pueden editar facturas en borrador."))
         }
         let invoice = existing ?? Invoice(customer: input.customer, issueDate: input.issueDate, dueDate: input.dueDate)
         if existing == nil { context.insert(invoice) }
@@ -252,7 +252,7 @@ public struct Bookkeeper {
     /// Debe CxC / Haber Ingresos + Sales Tax Payable.
     @discardableResult
     public func issue(_ invoice: Invoice) throws -> JournalEntry {
-        guard invoice.status == .draft else { throw BookkeepingError.invalidState("La factura ya fue emitida.") }
+        guard invoice.status == .draft else { throw BookkeepingError.invalidState(String(localized: "La factura ya fue emitida.")) }
         let receivable = try systemAccount(.accountsReceivable)
         let defaultIncome = try systemAccount(.sales).id
         let lines = invoice.sortedLines.map {
@@ -267,7 +267,7 @@ public struct Bookkeeper {
         do {
             posting = try PostingRules.invoice(
                 date: invoice.issueDate,
-                memo: "Factura \(number) · \(invoice.customer?.name ?? "")",
+                memo: String(localized: "Factura \(number) · \(invoice.customer?.name ?? "")"),
                 receivableAccountID: receivable.id,
                 lines: lines,
                 taxComponents: components,
@@ -301,14 +301,14 @@ public struct Bookkeeper {
     public func recordPayment(
         for invoice: Invoice, amount: Int64, date: Date = Date(), depositAccount: Account, method: PaymentMethod = .bankTransfer
     ) throws -> PaymentReceived {
-        guard invoice.isOpen else { throw BookkeepingError.invalidState("La factura no está pendiente de cobro.") }
+        guard invoice.isOpen else { throw BookkeepingError.invalidState(String(localized: "La factura no está pendiente de cobro.")) }
         guard amount <= invoice.balanceDue else { throw BookkeepingError.overpayment(balanceDue: invoice.balanceDue) }
         let receivable = try systemAccount(.accountsReceivable)
 
         let draft: JournalEntryDraft
         do {
             draft = try PostingRules.paymentReceived(
-                date: date, memo: "Cobro \(invoice.number) · \(invoice.customer?.name ?? "")",
+                date: date, memo: String(localized: "Cobro \(invoice.number) · \(invoice.customer?.name ?? "")"),
                 amount: amount, depositAccountID: depositAccount.id, receivableAccountID: receivable.id
             )
         } catch {
@@ -341,7 +341,7 @@ public struct Bookkeeper {
         for invoice: Invoice, amount: Int64, isTaxable: Bool, reason: String, date: Date = Date(), lineID: UUID? = nil
     ) throws -> CreditNote {
         guard [.sent, .partiallyPaid, .paid].contains(invoice.status) else {
-            throw BookkeepingError.invalidState("Solo se acreditan facturas emitidas.")
+            throw BookkeepingError.invalidState(String(localized: "Solo se acreditan facturas emitidas."))
         }
         let receivable = try systemAccount(.accountsReceivable)
         let lines = try creditLines(for: invoice, amount: amount, isTaxable: isTaxable, lineID: lineID)
@@ -350,7 +350,7 @@ public struct Bookkeeper {
         let posting: InvoicePosting
         do {
             posting = try PostingRules.creditNote(
-                date: date, memo: "Nota de crédito \(number) · \(invoice.number) · \(invoice.customer?.name ?? "")",
+                date: date, memo: String(localized: "Nota de crédito \(number) · \(invoice.number) · \(invoice.customer?.name ?? "")"),
                 receivableAccountID: receivable.id,
                 lines: lines, taxComponents: components, customerIsTaxExempt: invoice.customer?.isTaxExempt ?? false
             )
@@ -395,7 +395,7 @@ public struct Bookkeeper {
     /// de la más antigua a la más reciente. No genera asiento.
     public func applyCustomerCredit(to invoice: Invoice, amount: Int64, date: Date = Date()) throws {
         guard let customer = invoice.customer, invoice.isOpen else {
-            throw BookkeepingError.invalidState("Solo se aplica saldo a favor a facturas pendientes de un cliente.")
+            throw BookkeepingError.invalidState(String(localized: "Solo se aplica saldo a favor a facturas pendientes de un cliente."))
         }
         guard amount > 0, amount <= customer.creditBalance, amount <= invoice.balanceDue else {
             throw BookkeepingError.overpayment(balanceDue: min(customer.creditBalance, invoice.balanceDue))
@@ -406,7 +406,7 @@ public struct Bookkeeper {
             apply(note, to: invoice, amount: portion, date: date)
             remaining -= portion
         }
-        audit("Invoice", invoice.id, "applyCredit", "Saldo a favor aplicado a \(invoice.number): \(Money(minorUnits: amount).formatted())")
+        audit("Invoice", invoice.id, "applyCredit", String(localized: "Saldo a favor aplicado a \(invoice.number): \(Money(minorUnits: amount).formatted())"))
         try saveOrRollback()
     }
 
@@ -419,7 +419,7 @@ public struct Bookkeeper {
         let receivable = try systemAccount(.accountsReceivable)
         let draft: JournalEntryDraft
         do {
-            draft = try PostingRules.customerRefund(date: date, memo: "Reembolso a \(customer.name)", amount: amount,
+            draft = try PostingRules.customerRefund(date: date, memo: String(localized: "Reembolso a \(customer.name)"), amount: amount,
                                                     receivableAccountID: receivable.id, paymentAccountID: paymentAccount.id)
         } catch {
             throw BookkeepingError.invalidDocument(error)
@@ -452,10 +452,10 @@ public struct Bookkeeper {
     /// Anula una factura sin cobros ni notas de crédito revirtiendo su asiento.
     public func void(_ invoice: Invoice, on date: Date = Date()) throws {
         guard invoice.status == .sent, invoice.amountPaid == 0, invoice.creditsApplied == 0 else {
-            throw BookkeepingError.invalidState("Solo se anulan facturas emitidas sin cobros ni notas de crédito.")
+            throw BookkeepingError.invalidState(String(localized: "Solo se anulan facturas emitidas sin cobros ni notas de crédito."))
         }
         if let entry = try entry(id: invoice.journalEntryID) {
-            try reverse(entry, on: date, memo: "Anulación factura \(invoice.number)", save: false)
+            try reverse(entry, on: date, memo: String(localized: "Anulación factura \(invoice.number)"), save: false)
         }
         invoice.status = .void
         try saveOrRollback()
@@ -466,12 +466,12 @@ public struct Bookkeeper {
     /// Registra una factura de proveedor: Debe Gastos / Haber CxP.
     @discardableResult
     public func record(_ bill: Bill) throws -> JournalEntry {
-        guard bill.journalEntryID == nil else { throw BookkeepingError.invalidState("La factura del proveedor ya está registrada.") }
+        guard bill.journalEntryID == nil else { throw BookkeepingError.invalidState(String(localized: "La factura del proveedor ya está registrada.")) }
         let payable = try account(id: bill.payableAccountID) ?? systemAccount(.accountsPayable)
         let lines = try costLines(bill.sortedLines.map { ($0.accountID, $0.amount, $0.details) })
         let draft: JournalEntryDraft
         do {
-            draft = try PostingRules.bill(date: bill.billDate, memo: "Factura \(bill.vendorNumber) · \(bill.vendor?.name ?? "")",
+            draft = try PostingRules.bill(date: bill.billDate, memo: String(localized: "Factura \(bill.vendorNumber) · \(bill.vendor?.name ?? "")"),
                                           payableAccountID: payable.id, lines: lines)
         } catch {
             throw BookkeepingError.invalidDocument(error)
@@ -491,12 +491,12 @@ public struct Bookkeeper {
     public func pay(
         _ bill: Bill, amount: Int64, date: Date = Date(), from paymentAccount: Account, method: PaymentMethod = .bankTransfer
     ) throws -> BillPayment {
-        guard bill.isOpen, bill.journalEntryID != nil else { throw BookkeepingError.invalidState("La factura del proveedor no está pendiente.") }
+        guard bill.isOpen, bill.journalEntryID != nil else { throw BookkeepingError.invalidState(String(localized: "La factura del proveedor no está pendiente.")) }
         guard amount <= bill.balanceDue else { throw BookkeepingError.overpayment(balanceDue: bill.balanceDue) }
         let payable = try account(id: bill.payableAccountID) ?? systemAccount(.accountsPayable)
         let draft: JournalEntryDraft
         do {
-            draft = try PostingRules.billPayment(date: date, memo: "Pago \(bill.vendorNumber) · \(bill.vendor?.name ?? "")",
+            draft = try PostingRules.billPayment(date: date, memo: String(localized: "Pago \(bill.vendorNumber) · \(bill.vendor?.name ?? "")"),
                                                  amount: amount, payableAccountID: payable.id, paymentAccountID: paymentAccount.id)
         } catch {
             throw BookkeepingError.invalidDocument(error)
@@ -515,12 +515,12 @@ public struct Bookkeeper {
     /// Registra un gasto pagado al momento: Debe Gastos / Haber cuenta de pago.
     @discardableResult
     public func record(_ expense: Expense) throws -> JournalEntry {
-        guard !expense.isPosted else { throw BookkeepingError.invalidState("El gasto ya está registrado.") }
+        guard !expense.isPosted else { throw BookkeepingError.invalidState(String(localized: "El gasto ya está registrado.")) }
         guard let paymentAccount = try account(id: expense.paymentAccountID) else { throw BookkeepingError.unknownAccount }
         let lines = try costLines(expense.sortedLines.map { ($0.accountID, $0.amount, $0.details) })
         let draft: JournalEntryDraft
         do {
-            draft = try PostingRules.expense(date: expense.date, memo: "Gasto · \(expense.payee)",
+            draft = try PostingRules.expense(date: expense.date, memo: String(localized: "Gasto · \(expense.payee)"),
                                              paymentAccountID: paymentAccount.id, lines: lines)
         } catch {
             throw BookkeepingError.invalidDocument(error)
@@ -538,7 +538,7 @@ public struct Bookkeeper {
     /// Antigüedad de cuentas por cobrar: facturas emitidas con saldo, por cliente.
     public func receivablesAging(asOf date: Date = Date(), calendar: Calendar = .current) throws -> AgingReport {
         let items = try context.fetch(FetchDescriptor<Invoice>()).filter { $0.isOpen && $0.balanceDue != 0 }.map {
-            AgingReport.OpenItem(party: $0.customer?.name ?? "Sin cliente", document: $0.number, dueDate: $0.dueDate, balance: $0.balanceDue)
+            AgingReport.OpenItem(party: $0.customer?.name ?? String(localized: "Sin cliente"), document: $0.number, dueDate: $0.dueDate, balance: $0.balanceDue)
         }
         return ReportBuilder.aging(items: items, asOf: date, calendar: calendar)
     }
@@ -546,7 +546,7 @@ public struct Bookkeeper {
     /// Antigüedad de cuentas por pagar: facturas de proveedor registradas con saldo, por proveedor.
     public func payablesAging(asOf date: Date = Date(), calendar: Calendar = .current) throws -> AgingReport {
         let items = try context.fetch(FetchDescriptor<Bill>()).filter { $0.isOpen && $0.journalEntryID != nil && $0.balanceDue != 0 }.map {
-            AgingReport.OpenItem(party: $0.vendor?.name ?? "Sin proveedor", document: $0.vendorNumber, dueDate: $0.dueDate, balance: $0.balanceDue)
+            AgingReport.OpenItem(party: $0.vendor?.name ?? String(localized: "Sin proveedor"), document: $0.vendorNumber, dueDate: $0.dueDate, balance: $0.balanceDue)
         }
         return ReportBuilder.aging(items: items, asOf: date, calendar: calendar)
     }
@@ -593,7 +593,7 @@ public struct Bookkeeper {
         let liability = try account(id: agency?.liabilityAccountID) ?? systemAccount(.salesTaxPayable)
         let owed = ReportBuilder.balance(of: liability.ledgerAccount, lines: try ledgerLines())
         guard amount <= owed else { throw BookkeepingError.overpayment(balanceDue: owed) }
-        let memo = ["Pago de sales tax", agency?.name, reference.isEmpty ? nil : reference].compactMap { $0 }.joined(separator: " · ")
+        let memo = [String(localized: "Pago de sales tax"), agency?.name, reference.isEmpty ? nil : reference].compactMap { $0 }.joined(separator: " · ")
         let draft: JournalEntryDraft
         do {
             draft = try PostingRules.salesTaxPayment(date: date, memo: memo, amount: amount,
