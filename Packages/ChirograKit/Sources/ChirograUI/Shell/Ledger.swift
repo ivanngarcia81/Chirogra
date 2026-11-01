@@ -22,6 +22,12 @@ struct Ledger {
         ReportBuilder.balance(of: account.ledgerAccount, lines: lines, asOf: asOf)
     }
 
+    /// Saldo como lo ve el usuario en Banca e Inicio: lo que hay en la cuenta, y en negativo lo que se debe de
+    /// una tarjeta de crédito. En el plan de cuentas y el libro mayor se muestra el saldo contable (positivo).
+    func cashBalance(of account: Account) -> Int64 {
+        account.subtype == .creditCard ? -balance(of: account) : balance(of: account)
+    }
+
     var moneyAccounts: [Account] {
         accounts.filter { $0.subtype.isMoneyAccount && !$0.isArchived }
     }

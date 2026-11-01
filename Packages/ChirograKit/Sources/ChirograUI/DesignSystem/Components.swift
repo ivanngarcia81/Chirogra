@@ -7,6 +7,19 @@ import SwiftUI
 extension Int64 {
     /// Centavos → "$1,250.00".
     var money: String { Money(minorUnits: self).formatted() }
+    /// Centavos → "$1,250": cifras clave del canvas, sin centavos (redondeado).
+    var moneyWhole: String {
+        Money(minorUnits: self).decimalValue.formatted(.currency(code: "USD").precision(.fractionLength(0)))
+    }
+    /// Centavos → "1,250.00": columnas de importes del iPhone, donde el "$" de cada fila quitaba sitio al nombre.
+    var amountOnly: String {
+        Money(minorUnits: self).decimalValue.formatted(.number.precision(.fractionLength(2)))
+    }
+}
+
+extension Date {
+    /// Mes en tres letras como en el canvas («sep», «oct»; la abreviatura del sistema en español es «sept.»).
+    var shortMonth: String { formatted(.dateTime.month(.wide)).prefix(3).lowercased() }
 }
 
 extension Date {
@@ -223,10 +236,12 @@ struct FilterChip: View {
 
 // MARK: - Piezas de lista
 
+/// Iniciales en un cuadrado redondeado o, para clientes (canvas `Clientes`), en un círculo.
 struct InitialsTile: View {
     let text: String
     var foreground: Color = Palette.brand
     var background: Color = Palette.brandWash
+    var round = false
     @ScaledMetric(relativeTo: .subheadline) private var side = Metrics.iconTile
 
     var body: some View {
@@ -234,7 +249,7 @@ struct InitialsTile: View {
             .font(.subheadline.weight(.bold))
             .frame(width: side, height: side)
             .foregroundStyle(foreground)
-            .background(background, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .background(background, in: round ? AnyShape(Circle()) : AnyShape(RoundedRectangle(cornerRadius: 12, style: .continuous)))
             .accessibilityHidden(true)
     }
 }
@@ -600,7 +615,8 @@ struct KPITile: View {
         VStack(alignment: .leading, spacing: 4) {
             Text(title).font(.caption.weight(.semibold)).foregroundStyle(Palette.ink3)
             Text(value).font(.amount(17)).foregroundStyle(Palette.ink).minimumScaleFactor(0.7).lineLimit(2)
-            if let note { Text(note).font(.caption.weight(.semibold)).foregroundStyle(noteColor) }
+            // Una línea, como en el canvas («↑ 12% vs. sep»); se encoge un poco antes de cortarse.
+            if let note { Text(note).font(.caption.weight(.semibold)).foregroundStyle(noteColor).lineLimit(1).minimumScaleFactor(0.75) }
         }
         .card(padding: 12)
         .accessibilityElement(children: .ignore)
@@ -619,11 +635,18 @@ struct HeroCard: View {
     let title: String
     let value: String
     var detail: String? = nil
+    /// Insignia azafrán junto a la cifra («+34% vs. sep», canvas `ReportePyG`).
+    var badge: String? = nil
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title.uppercased()).font(.caption.weight(.semibold)).tracking(0.5).opacity(0.85)
             Text(value).font(.amount(38)).tracking(-0.5).minimumScaleFactor(0.6).lineLimit(2)
+            if let badge {
+                Text(badge).font(.subheadline.weight(.semibold)).foregroundStyle(Palette.onAccent)
+                    .padding(.horizontal, 10).padding(.vertical, 4)
+                    .background(Palette.accent, in: Capsule())
+            }
             if let detail {
                 HStack(spacing: 8) {
                     Circle().fill(Palette.accent).frame(width: 8, height: 8)

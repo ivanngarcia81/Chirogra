@@ -198,17 +198,11 @@ struct ReportsView: View {
     @ViewBuilder
     private var periodControls: some View {
         if isNarrow {
-            // En un iPhone de 402 pt el segmentado y «Comparar» no caben juntos: «Comparar» baja a su línea.
+            // `ReportePyG`: botón «Octubre 2026 ▾» (elige mes, trimestre o año) y casilla «vs. septiembre».
+            // Si no caben juntos (iPhone pequeño, texto grande), la casilla baja a su línea.
             ViewThatFits(in: .horizontal) {
-                HStack {
-                    periodPicker(Period.allCases.filter { $0 != .custom })
-                    Spacer()
-                    if kind == .income { Toggle("Comparar", isOn: $compare).fixedSize() }
-                }
-                VStack(alignment: .leading, spacing: 8) {
-                    periodPicker(Period.allCases.filter { $0 != .custom })
-                    if kind == .income { Toggle("Comparar con periodo anterior", isOn: $compare) }
-                }
+                HStack { periodMenu; Spacer(minLength: 8); if kind == .income { compareCheckbox.fixedSize() } }
+                VStack(alignment: .leading, spacing: 8) { periodMenu; if kind == .income { compareCheckbox } }
             }
         } else {
             // `MacPyG`: segmentado con «Personalizado», botón con el rango y casilla «Comparar con periodo anterior».
@@ -219,6 +213,50 @@ struct ReportsView: View {
                     compareBox
                 }
             }
+        }
+    }
+
+    private var periodMenu: some View {
+        Menu {
+            Picker("Periodo", selection: $period) {
+                ForEach(Period.allCases.filter { $0 != .custom }) { Text($0.localizedTitle).tag($0) }
+            }
+        } label: {
+            HStack(spacing: 6) {
+                Text(periodName(offset: 0)).font(.subheadline.weight(.semibold))
+                Image(systemName: "chevron.down").font(.caption.weight(.bold))
+            }
+            .foregroundStyle(Palette.ink)
+            .padding(.horizontal, 12)
+            .frame(minHeight: 40)
+            .background(Palette.surface, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        }
+        .accessibilityLabel("Periodo")
+        .accessibilityValue(periodName(offset: 0))
+    }
+
+    private var compareCheckbox: some View {
+        Toggle(isOn: $compare) { Text("vs. \(previousName)").foregroundStyle(Palette.ink2) }
+            .toggleStyle(CheckboxStyle())
+    }
+
+    /// «Octubre 2026», «T4 2026» o «2026».
+    private func periodName(offset: Int) -> String {
+        let start = interval(offset: offset).start
+        switch period {
+        case .month, .custom: return start.monthYear
+        case .quarter: return String(localized: "T\((Calendar.current.component(.month, from: start) - 1) / 3 + 1) \(start.formatted(.dateTime.year()))")
+        case .year: return start.formatted(.dateTime.year())
+        }
+    }
+
+    /// Periodo anterior en corto: «septiembre», «T3», «2025».
+    private var previousName: String {
+        let start = interval(offset: -1).start
+        switch period {
+        case .month, .custom: return start.formatted(.dateTime.month(.wide))
+        case .quarter: return String(localized: "T\((Calendar.current.component(.month, from: start) - 1) / 3 + 1)")
+        case .year: return start.formatted(.dateTime.year())
         }
     }
 
@@ -299,8 +337,9 @@ struct ReportsView: View {
         let start = interval(offset: offset).start
         let year = start.formatted(.dateTime.year())
         switch period {
-        // Tres letras como en el canvas («SEP 2026»; la abreviatura del sistema en español es «sept»).
-        case .month: return "\(start.formatted(.dateTime.month(.wide)).prefix(3).uppercased()) \(year)"
+        // Tres letras como en el canvas («SEP 2026»; la abreviatura del sistema en español es «sept»). En iPhone,
+        // sólo el mes («OCT · SEP»), como en `ReportePyG`.
+        case .month: return isNarrow ? start.shortMonth.uppercased() : "\(start.shortMonth.uppercased()) \(year)"
         case .quarter: return String(localized: "T\((Calendar.current.component(.month, from: start) - 1) / 3 + 1) \(year)")
         case .year: return year
         case .custom: return offset == 0 ? String(localized: "ACTUAL") : String(localized: "ANTERIOR")
@@ -315,7 +354,8 @@ struct ReportsView: View {
         return VStack(spacing: isCompact ? Metrics.cardSpacing : 16) {
             if isCompact {
                 HeroCard(title: String(localized: "Ganancia neta"), value: current.netIncome.money,
-                         detail: String(localized: "\(interval().start.shortDate) – \(interval().end.addingTimeInterval(-1).shortDate)"))
+                         detail: String(localized: "\(interval().start.shortDate) – \(interval().end.addingTimeInterval(-1).shortDate)"),
+                         badge: compare ? percentChange(current.netIncome, previous.netIncome).map { "\($0) vs. \(previousShort)" } : nil)
             } else {
                 KPIGrid(items: incomeKPIs(current, previous))
             }
@@ -507,7 +547,8 @@ struct ReportsView: View {
     }
 
     private func amountWidth(_ size: ColumnSize) -> CGFloat {
-        if isCompact { return columnWidth }
+        // En iPhone los importes van sin «$», así que las columnas pueden ser más estrechas.
+        if isCompact { return isNarrow ? columnWidth * 0.82 : columnWidth }
         return switch size {
         case .regular: wideColumnWidth
         case .percent: percentColumnWidth
@@ -540,9 +581,27 @@ struct ReportsView: View {
     }
 
     /// Importe actual y, si se compara, el anterior; en pantallas anchas también la variación y el %.
+    /// En iPhone, importes sin «$» (como en `ReportePyG`): así los nombres de cuenta caben en una línea.
+    private func amountText(_ amount: Int64) -> String { isNarrow ? amount.amountOnly : amount.money }
+
+    /// «sep», «T3» o «2025» para la insignia de la tarjeta destacada.
+    private var previousShort: String {
+        period == .month ? interval(offset: -1).start.shortMonth : previousName
+    }
+
+    /// Títulos de las columnas de importes del reporte abierto; con tamaños de accesibilidad acompañan a cada importe.
+    private var columnLabels: [String] {
+        switch kind {
+        case .income: compare ? [columnTitle(offset: 0), columnTitle(offset: -1)] : []
+        case .trial: [String(localized: "DEBE"), String(localized: "HABER")]
+        case .receivables, .payables: [String(localized: "VENCIDO"), String(localized: "TOTAL")]
+        case .balance, .salesTax: []
+        }
+    }
+
     private func cells(_ amount: Int64, _ previous: Int64?, trend: Trend?) -> [Cell] {
-        guard compare, let previous else { return [Cell(text: amount.money)] }
-        var cells = [Cell(text: amount.money), Cell(text: previous.money, color: Palette.ink3)]
+        guard compare, let previous else { return [Cell(text: amountText(amount))] }
+        var cells = [Cell(text: amountText(amount)), Cell(text: amountText(previous), color: Palette.ink3)]
         if let trend, showsVariationColumns {
             let delta = amount - previous
             let tint = color(for: delta, trend)
@@ -580,9 +639,21 @@ struct ReportsView: View {
         }
         return Group {
             if stacksRows {
+                // Cada importe en su línea y con el título de su columna («OCT 1,800.00»): apilados sin
+                // etiqueta no se sabía qué periodo era cada uno.
+                let labels = columnLabels
                 VStack(alignment: .leading, spacing: 4) {
                     Text(title).padding(.leading, indent ? 8 : 0)
-                    HStack(spacing: 16) { valueViews }
+                    ForEach(Array(cells.enumerated()), id: \.offset) { index, cell in
+                        if !cell.text.isEmpty {
+                            HStack(spacing: 6) {
+                                if labels.count == cells.count {
+                                    Text(labels[index]).font(.caption.weight(.semibold)).foregroundStyle(Palette.ink3)
+                                }
+                                Text(cell.text).foregroundStyle(cell.color)
+                            }
+                        }
+                    }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             } else {

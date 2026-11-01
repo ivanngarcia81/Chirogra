@@ -46,7 +46,7 @@ struct LedgerBrowserView: View {
     @Query private var journalLines: [JournalLine]
     @State private var selectedID: UUID?
     @State private var period: Period = .thisMonth
-    @ScaledMetric(relativeTo: .body) private var listWidth: CGFloat = 240
+    @ScaledMetric(relativeTo: .body) private var listWidth: CGFloat = 270
     @ScaledMetric(relativeTo: .subheadline) private var dateWidth: CGFloat = 52
     @ScaledMetric(relativeTo: .subheadline) private var kindWidth: CGFloat = 84
     @ScaledMetric(relativeTo: .subheadline) private var amountWidth: CGFloat = 92
@@ -108,7 +108,7 @@ struct LedgerBrowserView: View {
         let isSelected = account.id == selected?.id
         return Button { selectedID = account.id } label: {
             VStack(alignment: .leading, spacing: 2) {
-                Text("\(account.code) · \(account.name)").font(.subheadline.weight(.semibold)).lineLimit(1)
+                Text("\(account.code) · \(account.name)").font(.subheadline.weight(.semibold)).lineLimit(2)
                     .foregroundStyle(isSelected ? Palette.brand : Palette.ink)
                 Text("\(account.type.title) · saldo \(balance.money)").font(.caption).lineLimit(1)
                     .foregroundStyle(isSelected ? Palette.brand : Palette.ink3)

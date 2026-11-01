@@ -25,7 +25,7 @@ struct SettingsLinks: View {
             }
             NavigationLink { FormatsView(company: company) } label: { Label("Moneda y formatos", systemImage: "dollarsign.circle") }
         }
-        NavigationLink { DataAndSecurityView() } label: { Label("iCloud, copias y seguridad", systemImage: "icloud") }
+        NavigationLink { DataAndSecurityView() } label: { Label("Datos y seguridad", systemImage: "icloud") }
     }
 }
 
@@ -68,16 +68,39 @@ struct CompanyProfileView: View {
 
 struct FormatsView: View {
     let company: Company
+    @Query private var invoices: [Invoice]
+
     var body: some View {
         Form {
+            // `AjustesFormatos`: vista previa en color de marca de cómo se ven importes y fechas.
             Section {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Vista previa · Factura \(invoices.filter { !$0.number.isEmpty }.max { $0.issueDate < $1.issueDate }?.number ?? "F-1001")")
+                        .font(.caption.weight(.semibold)).textCase(.uppercase).opacity(0.85)
+                    Text(Int64(255_805).money).font(.amount(30))
+                    Text("Vence el \(Date.now.addingTimeInterval(15 * 86_400).formatted(date: .numeric, time: .omitted))")
+                        .font(.subheadline).opacity(0.9)
+                }
+                .foregroundStyle(Palette.onBrand)
+                .padding(16)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Palette.brand, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                .listRowInsets(EdgeInsets())
+                .accessibilityElement(children: .combine)
+            }
+            .listRowBackground(Color.clear)
+            Section(title: "Moneda") {
                 // El nombre de la moneda lo da el sistema en el idioma y la región del teléfono.
                 LabeledContent("Moneda", value: Locale.current.localizedString(forCurrencyCode: company.currencyCode)
                     .map { "\(company.currencyCode) · \($0)" } ?? company.currencyCode)
-                LabeledContent("Ejemplo de importe", value: Int64(4_821_540).money)
-                LabeledContent("Ejemplo de fecha", value: Date.now.formatted(date: .numeric, time: .omitted))
+            }
+            Section {
+                LabeledContent("Inicio del año fiscal", value: Calendar.current.standaloneMonthSymbols[max(0, min(11, company.fiscalYearStartMonth - 1))].sentenceCased)
+                LabeledContent("Primer día de la semana", value: Calendar.current.standaloneWeekdaySymbols[Calendar.current.firstWeekday - 1].sentenceCased)
+            } header: {
+                SectionLabel(text: String(localized: "Fechas e idioma"))
             } footer: {
-                Text("Los formatos siguen la región de tu dispositivo (Ajustes › General › Idioma y región).")
+                Text("Los separadores, el formato de fecha y el idioma siguen la región y el idioma de tu dispositivo (Ajustes › General › Idioma y región).")
             }
         }
         .screenBackground()
@@ -94,6 +117,16 @@ struct DataAndSecurityView: View {
         Form {
             Section {
                 Toggle("Sincronizar con iCloud", isOn: $iCloudSyncEnabled)
+                // `AjustesDatos`: estado con un punto de color.
+                Label {
+                    Text(iCloudSyncEnabled ? String(localized: "Activado · iPhone, iPad y Mac") : String(localized: "Solo en este dispositivo"))
+                } icon: {
+                    Circle().fill(iCloudSyncEnabled ? Palette.positive : Palette.ink3).frame(width: 8, height: 8)
+                }
+                .font(.subheadline)
+                .foregroundStyle(iCloudSyncEnabled ? Palette.positive : Palette.ink3)
+            } header: {
+                SectionLabel(text: "iCloud")
             } footer: {
                 Text("Tus libros viajan cifrados en tu cuenta privada de iCloud entre tu iPhone, iPad y Mac. El cambio se aplica al volver a abrir la app.")
             }
@@ -120,7 +153,7 @@ struct DataAndSecurityView: View {
             }
         }
         .screenBackground()
-        .navigationTitle("iCloud, copias y seguridad")
+        .navigationTitle("Datos y seguridad")
     }
 }
 

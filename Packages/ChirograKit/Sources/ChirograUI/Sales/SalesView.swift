@@ -29,7 +29,7 @@ struct SalesView: View {
         // Una sola búsqueda en el contenedor y siempre visible: puesta en cada lista, desaparecía al volver de
         // una factura, porque la barra ya no encontraba la lista debajo de las pestañas.
         .searchable(text: $query, placement: Self.searchPlacement,
-                    prompt: segment == .invoices ? Text("Cliente, número o monto") : Text("Buscar clientes"))
+                    prompt: segment == .invoices ? Text("Cliente, número o monto") : Text("Nombre, correo o teléfono"))
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 AddButton(title: segment == .invoices ? "Nueva factura" : "Nuevo cliente") { showingEditor = true }

@@ -77,7 +77,8 @@ struct HomeView: View {
                 } else if isWide {
                     KPIGrid(items: wideKPIs, large: true)
                     pair { chart } and: { bankAccounts }
-                    pair { receivables } and: { payables }
+                    // Por pagar no se estira: con una sola fila quedaba una tarjeta casi vacía.
+                    pair(fill: false) { receivables } and: { payables }
                 } else {
                     HeroCard(title: String(localized: "Efectivo disponible"), value: ledger.availableCash.money, detail: cashDetail)
                     kpis
@@ -214,8 +215,14 @@ struct HomeView: View {
 
     /// Dos tarjetas lado a lado si hay sitio; si no, una debajo de otra.
     @ViewBuilder
-    private func pair<First: View, Second: View>(@ViewBuilder _ first: () -> First, @ViewBuilder and second: () -> Second) -> some View {
-        if pairsCards {
+    private func pair<First: View, Second: View>(fill: Bool = true, @ViewBuilder _ first: () -> First,
+                                                 @ViewBuilder and second: () -> Second) -> some View {
+        if pairsCards && !fill {
+            HStack(alignment: .top, spacing: 16) {
+                first().frame(maxWidth: .infinity)
+                second().frame(maxWidth: .infinity)
+            }
+        } else if pairsCards {
             // Las dos tarjetas con la altura de la más alta, sin hueco debajo de la más baja.
             HStack(alignment: .top, spacing: 16) {
                 first().frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -244,23 +251,24 @@ struct HomeView: View {
         ]
     }
 
+    /// `Home`: tres tarjetas de la misma altura, cifras sin centavos y nota de una línea. Con tamaños de
+    /// accesibilidad, una tarjeta por fila: en tres columnas se partían palabras y cifras.
     private var kpis: some View {
-        // Con tamaños de accesibilidad, una tarjeta por fila: en tres columnas se partían palabras y cifras.
-        let columns = dynamicTypeSize.isAccessibilitySize
-            ? [GridItem(.flexible())]
-            : [GridItem(.adaptive(minimum: 100), spacing: 8)]
-        return LazyVGrid(columns: columns, spacing: 8) {
-            KPITile(title: String(localized: "Ingresos"), value: thisMonth.totalIncome.money,
+        let layout = dynamicTypeSize.isAccessibilitySize ? AnyLayout(VStackLayout(spacing: 8)) : AnyLayout(HStackLayout(alignment: .top, spacing: 8))
+        return layout {
+            KPITile(title: String(localized: "Ingresos"), value: thisMonth.totalIncome.moneyWhole,
                     note: change(thisMonth.totalIncome, lastMonth.totalIncome, higherIsBetter: true).text,
                     noteColor: change(thisMonth.totalIncome, lastMonth.totalIncome, higherIsBetter: true).color)
-            KPITile(title: String(localized: "Gastos"), value: (thisMonth.totalExpenses + thisMonth.totalCostOfGoodsSold).money,
+            KPITile(title: String(localized: "Gastos"), value: (thisMonth.totalExpenses + thisMonth.totalCostOfGoodsSold).moneyWhole,
                     note: change(thisMonth.totalExpenses + thisMonth.totalCostOfGoodsSold,
                                  lastMonth.totalExpenses + lastMonth.totalCostOfGoodsSold, higherIsBetter: false).text,
                     noteColor: change(thisMonth.totalExpenses + thisMonth.totalCostOfGoodsSold,
                                       lastMonth.totalExpenses + lastMonth.totalCostOfGoodsSold, higherIsBetter: false).color)
-            KPITile(title: String(localized: "Ganancia neta"), value: thisMonth.netIncome.money,
+            KPITile(title: String(localized: "Ganancia neta"), value: thisMonth.netIncome.moneyWhole,
                     note: thisMonth.totalIncome > 0 ? String(localized: "Margen \(thisMonth.netIncome * 100 / thisMonth.totalIncome)%") : nil)
         }
+        .environment(\.cardFillsHeight, !dynamicTypeSize.isAccessibilitySize)
+        .fixedSize(horizontal: false, vertical: !dynamicTypeSize.isAccessibilitySize)
     }
 
     private func change(_ current: Int64, _ previous: Int64, higherIsBetter: Bool) -> (text: String?, color: Color) {
@@ -268,7 +276,8 @@ struct HomeView: View {
         let percent = (current - previous) * 100 / abs(previous)
         let good = higherIsBetter ? percent >= 0 : percent <= 0
         let arrow = percent >= 0 ? "↑" : "↓"
-        return (String(localized: "\(arrow) \(abs(percent))% vs. mes ant."), good ? Palette.positive : Palette.negative)
+        let month = Calendar.current.date(byAdding: .month, value: -1, to: .now)?.shortMonth ?? ""
+        return (String(localized: "\(arrow) \(abs(percent))% vs. \(month)"), good ? Palette.positive : Palette.negative)
     }
 
     private var quickActions: some View {
@@ -349,13 +358,25 @@ struct HomeView: View {
                 }
             }
             Chart(chartPoints) { point in
-                BarMark(x: .value("Mes", point.month, unit: .month), y: .value("Importe", point.amount))
+                BarMark(x: .value("Mes", point.month, unit: .month), y: .value("Importe", point.amount),
+                        width: .fixed(months == 6 ? 16 : 8))
                     .foregroundStyle(by: .value("Serie", point.series))
                     .position(by: .value("Serie", point.series))
                     .cornerRadius(4)
             }
             .chartForegroundStyleScale([String(localized: "Ingresos"): Palette.brand, String(localized: "Gastos"): Palette.expenseBar])
             .chartXAxis { AxisMarks(values: .stride(by: .month)) { _ in AxisValueLabel(format: .dateTime.month(.narrow)) } }
+            // `Home`: pocas guías discontinuas con cifras redondas («$10K»).
+            .chartYAxis {
+                AxisMarks(position: .leading, values: .automatic(desiredCount: 3)) { value in
+                    AxisGridLine(stroke: StrokeStyle(lineWidth: 1, dash: [3, 3])).foregroundStyle(Palette.separator)
+                    AxisValueLabel {
+                        if let amount = value.as(Double.self), amount > 0 {
+                            Text(amount.formatted(.currency(code: "USD").notation(.compactName).precision(.fractionLength(0))))
+                        }
+                    }
+                }
+            }
             // Los ejes no crecen más allá de xxxLarge (se amontonaban); las cifras completas están en el resumen de VoiceOver.
             .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
             .frame(height: dynamicTypeSize.isAccessibilitySize || isWide ? 220 : 150)
@@ -459,6 +480,18 @@ struct HomeView: View {
             if openInvoices.isEmpty {
                 Text("No tienes facturas pendientes de cobro.").font(.subheadline).foregroundStyle(Palette.ink3)
             }
+            Divider()
+            NavigationLink { SalesView() } label: {
+                HStack {
+                    Text("Ver todas las facturas").font(.subheadline.weight(.semibold))
+                    Spacer()
+                    Image(systemName: "chevron.right").font(.caption.weight(.semibold))
+                }
+                .foregroundStyle(Palette.brand)
+                .frame(minHeight: 44)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
         }
         .card()
     }
@@ -522,8 +555,7 @@ struct HomeView: View {
                 LedgerRow(title: account.name, subtitle: "\(account.code) · \(account.subtype.title)") {
                     IconTile(systemImage: account.subtype == .creditCard ? "creditcard" : "building.columns")
                 } trailing: {
-                    let balance = ledger.balance(of: account)
-                    Text((account.subtype == .creditCard ? -balance : balance).money).font(.body.weight(.semibold)).monospacedDigit()
+                    Text(ledger.cashBalance(of: account).money).font(.body.weight(.semibold)).monospacedDigit()
                 }
             }
         }

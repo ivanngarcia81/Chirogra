@@ -21,12 +21,12 @@
       },
       "shouldTranslate" : false
     },
-    "%@ %lld%% vs. mes ant." : {
+    "%@ %lld%% vs. %@" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ %lld%% vs. last month"
+            "value" : "%@ %lld%% vs. %@"
           }
         }
       }
@@ -57,6 +57,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ left as customer credit"
+          }
+        }
+      }
+    },
+    "%@ vencido" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ overdue"
           }
         }
       }
@@ -268,6 +278,46 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "%lld activas"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld clientes" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld customer"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld customers"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld cliente"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld clientes"
                 }
               }
             }
@@ -587,6 +637,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "On"
+          }
+        }
+      }
+    },
+    "Activado · iPhone, iPad y Mac" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On · iPhone, iPad, and Mac"
           }
         }
       }
@@ -1145,16 +1205,6 @@
         }
       }
     },
-    "Buscar clientes" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Search customers"
-          }
-        }
-      }
-    },
     "C corporation" : {
       "localizations" : {
         "en" : {
@@ -1476,16 +1526,6 @@
         }
       }
     },
-    "Comparar" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Compare"
-          }
-        }
-      }
-    },
     "Comparar con periodo anterior" : {
       "localizations" : {
         "en" : {
@@ -1552,6 +1592,27 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Purchases"
+          }
+        }
+      }
+    },
+    "Con borrador" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Has a draft"
+          }
+        }
+      }
+    },
+    "Con saldo" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "With balance"
           }
         }
       }
@@ -1886,6 +1947,16 @@
         }
       }
     },
+    "Datos y seguridad" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Data and security"
+          }
+        }
+      }
+    },
     "Debe" : {
       "localizations" : {
         "en" : {
@@ -2162,26 +2233,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cash on hand"
-          }
-        }
-      }
-    },
-    "Ejemplo de fecha" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sample date"
-          }
-        }
-      }
-    },
-    "Ejemplo de importe" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sample amount"
           }
         }
       }
@@ -2784,6 +2835,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Period dates"
+          }
+        }
+      }
+    },
+    "Fechas e idioma" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dates and language"
           }
         }
       }
@@ -3490,12 +3551,12 @@
         }
       }
     },
-    "Los formatos siguen la región de tu dispositivo (Ajustes › General › Idioma y región)." : {
+    "Los separadores, el formato de fecha y el idioma siguen la región y el idioma de tu dispositivo (Ajustes › General › Idioma y región)." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Formats follow your device's region (Settings › General › Language & Region)."
+            "value" : "Separators, date format, and language follow your device’s region and language (Settings › General › Language & Region)."
           }
         }
       }
@@ -3907,6 +3968,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Name or company"
+          }
+        }
+      }
+    },
+    "Nombre, correo o teléfono" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Name, email, or phone"
           }
         }
       }
@@ -4708,6 +4779,16 @@
         }
       }
     },
+    "Primer día de la semana" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "First day of the week"
+          }
+        }
+      }
+    },
     "Primeros pasos" : {
       "localizations" : {
         "en" : {
@@ -5394,6 +5475,16 @@
         }
       }
     },
+    "Saldo pendiente %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Balance due %@"
+          }
+        }
+      }
+    },
     "Saldo pendiente de %@ · vence %@" : {
       "localizations" : {
         "en" : {
@@ -5420,16 +5511,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Opening balances"
-          }
-        }
-      }
-    },
-    "Saldos según libros" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Balances per books"
           }
         }
       }
@@ -5925,6 +6006,16 @@
         }
       }
     },
+    "T%lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Q%lld"
+          }
+        }
+      }
+    },
     "T%lld %@" : {
       "localizations" : {
         "en" : {
@@ -6128,6 +6219,17 @@
       }
     },
     "Todo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All"
+          }
+        }
+      }
+    },
+    "Todos" : {
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6438,6 +6540,16 @@
         }
       }
     },
+    "Vence %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Due %@"
+          }
+        }
+      }
+    },
     "Vence el %@" : {
       "localizations" : {
         "en" : {
@@ -6569,6 +6681,17 @@
         }
       }
     },
+    "Vencidos" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Overdue"
+          }
+        }
+      }
+    },
     "Ventas" : {
       "localizations" : {
         "en" : {
@@ -6629,6 +6752,16 @@
         }
       }
     },
+    "Ver todas las facturas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "See all invoices"
+          }
+        }
+      }
+    },
     "Viene de notas de crédito que superaron lo que debía. Para usarlo en una factura, abre la factura pendiente y elige «Aplicar saldo a favor»." : {
       "localizations" : {
         "en" : {
@@ -6655,6 +6788,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Preview of invoice %@"
+          }
+        }
+      }
+    },
+    "Vista previa · Factura %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preview · Invoice %@"
           }
         }
       }
@@ -6709,32 +6852,12 @@
         }
       }
     },
-    "iCloud, copias y seguridad" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "iCloud, backups, and security"
-          }
-        }
-      }
-    },
     "pagada" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "paid"
-          }
-        }
-      }
-    },
-    "por cobrar" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "receivable"
           }
         }
       }
@@ -6785,6 +6908,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "due %@"
+          }
+        }
+      }
+    },
+    "vs. %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "vs. %@"
           }
         }
       }

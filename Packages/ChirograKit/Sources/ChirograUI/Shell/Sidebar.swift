@@ -180,10 +180,11 @@ struct Sidebar: View {
             query = ""
             selection = item
         } label: {
+            // Hasta dos líneas en vez de encogerse: «Balanza de comprobación» quedaba más pequeña que las demás.
             Text(title)
                 .font(.subheadline.weight(isActive ? .semibold : .regular))
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
+                .lineLimit(2)
+                .fixedSize(horizontal: false, vertical: true)
                 .foregroundStyle(isActive ? Palette.ink : Palette.ink2)
                 .padding(.leading, 41)
                 .padding(.trailing, 12)

@@ -207,17 +207,22 @@ struct InvoicePreviewView: View {
             }
         }
         .background(Palette.surface2)
-        .navigationTitle("Vista previa")
+        // `FacturaEnviar`: «Compartir PDF» como acción principal, fija abajo. Enviar por correo desde la app
+        // (hoja «Enviar por correo» del canvas) llega más adelante: de momento se comparte por Mail o Mensajes.
+        .bottomActionBar {
+            if let pdf {
+                ShareLink(item: pdf, subject: Text(pdf.filename), preview: SharePreview(pdf.filename)) {
+                    Label("Compartir PDF", systemImage: "square.and.arrow.up")
+                }
+                .buttonStyle(.primary)
+            } else {
+                ProgressView().frame(maxWidth: .infinity, minHeight: Metrics.buttonHeight)
+            }
+        }
+        .navigationTitle(invoice.number.isEmpty ? String(localized: "Vista previa") : invoice.number)
         .inlineTitle()
         .toolbar {
             ToolbarItem(placement: .cancellationAction) { Button("Cerrar") { dismiss() } }
-            ToolbarItem(placement: .primaryAction) {
-                if let pdf {
-                    ShareLink(item: pdf, preview: SharePreview(pdf.filename)) { Label("Compartir PDF", systemImage: "square.and.arrow.up") }
-                } else {
-                    ProgressView()
-                }
-            }
         }
         .task { pdf = InvoicePDFFile(invoice: invoice, company: company) }
     }

@@ -3,47 +3,110 @@ import ChirograData
 import SwiftData
 import SwiftUI
 
-/// Clientes con búsqueda y saldo (canvas: `Clientes`).
+/// Clientes (canvas `Clientes`): chips Todos / Con saldo / Vencidos, resumen y filas con avatar redondo (rojo si
+/// tiene vencido) y el estado debajo del saldo.
 struct CustomerListView: View {
+    enum Filter: String, CaseIterable, Identifiable {
+        case all = "Todos", withBalance = "Con saldo", overdue = "Vencidos"
+        var id: String { rawValue }
+    }
+
     /// Texto de la búsqueda de Ventas (`SalesView`).
     var query = ""
     @Query(sort: \Customer.name) private var customers: [Customer]
+    @State private var filter: Filter = .all
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    private func overdue(_ customer: Customer) -> Int64 {
+        (customer.invoices ?? []).filter { $0.isOpen && $0.daysOverdue() != nil }.reduce(0) { $0 + $1.balanceDue }
+    }
+
+    private func matches(_ customer: Customer, _ filter: Filter) -> Bool {
+        switch filter {
+        case .all: true
+        case .withBalance: customer.openBalance > 0
+        case .overdue: overdue(customer) > 0
+        }
+    }
+
+    private var active: [Customer] { customers.filter { !$0.isArchived } }
 
     private var filtered: [Customer] {
         let text = query.trimmingCharacters(in: .whitespaces)
-        return customers.filter {
-            !$0.isArchived && (text.isEmpty || $0.name.localizedStandardContains(text) || $0.email.localizedStandardContains(text))
+        return active.filter {
+            matches($0, filter) && (text.isEmpty || $0.name.localizedStandardContains(text)
+                || $0.email.localizedStandardContains(text) || $0.phone.contains(text))
         }
     }
 
     var body: some View {
         List {
+            Section {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(Filter.allCases) { option in
+                            FilterChip(title: option.localizedTitle, isSelected: filter == option) { filter = option }
+                        }
+                    }
+                }
+                .listRowInsets(EdgeInsets())
+                .listRowBackground(Color.clear)
+            } footer: {
+                let count = Text("\(filtered.count) clientes")
+                let balance = Text("Saldo pendiente \(Text(active.reduce(0) { $0 + $1.openBalance }.money).bold())")
+                ViewThatFits(in: .horizontal) {
+                    HStack { count.fixedSize(); Spacer(); balance.fixedSize() }
+                    VStack(alignment: .leading, spacing: 2) { count; balance }
+                }
+            }
+
             if filtered.isEmpty {
                 EmptyStateView(systemImage: "person.2", title: customers.isEmpty ? String(localized: "Sin clientes todavía") : String(localized: "Sin resultados"),
                                message: customers.isEmpty ? String(localized: "Añade tu primer cliente con el botón +.") : String(localized: "Prueba con otro nombre."))
                     .listRowBackground(Palette.surface)
-            }
-            ForEach(filtered) { customer in
-                NavigationLink { CustomerDetailView(customer: customer) } label: {
-                    LedgerRow(title: customer.name, subtitle: customer.email.isEmpty ? String(localized: "Sin correo") : customer.email) {
-                        InitialsTile(text: customer.initials)
-                    } trailing: {
-                        VStack(alignment: dynamicTypeSize.amountAlignment, spacing: 2) {
-                            Text(customer.openBalance.money).font(.body.weight(.semibold)).monospacedDigit()
-                            Text("por cobrar").font(.caption).foregroundStyle(Palette.ink3)
-                            if customer.creditBalance > 0 {
-                                Text("\(customer.creditBalance.money) a favor").font(.caption.weight(.semibold)).foregroundStyle(Palette.positive)
-                            }
-                        }
+            } else {
+                Section {
+                    ForEach(filtered) { customer in
+                        NavigationLink { CustomerDetailView(customer: customer) } label: { row(customer) }
                     }
                 }
+                .listRowBackground(Palette.surface)
             }
-            .listRowBackground(Palette.surface)
         }
         .screenBackground()
         .navigationLinkIndicatorVisibility(.hidden)
         .contentMargins(.top, 8, for: .scrollContent)
+    }
+
+    private func row(_ customer: Customer) -> some View {
+        let late = overdue(customer)
+        let contact = customer.email.isEmpty ? (customer.phone.isEmpty ? String(localized: "Sin correo") : customer.phone) : customer.email
+        return LedgerRow(title: customer.name, subtitle: contact) {
+            InitialsTile(text: customer.initials, foreground: late > 0 ? Palette.negative : Palette.brand,
+                         background: late > 0 ? Palette.negativeWash : Palette.brandWash, round: true)
+        } trailing: {
+            VStack(alignment: dynamicTypeSize.amountAlignment, spacing: 2) {
+                Text(customer.openBalance.money).font(.body.weight(.semibold)).monospacedDigit()
+                    .foregroundStyle(customer.openBalance > 0 ? Palette.ink : Palette.ink3)
+                Text(status(customer, overdue: late)).font(.caption.weight(.semibold))
+                    .foregroundStyle(late > 0 ? Palette.negative : Palette.ink3)
+                if customer.creditBalance > 0 {
+                    Text("\(customer.creditBalance.money) a favor").font(.caption.weight(.semibold)).foregroundStyle(Palette.positive)
+                }
+            }
+        }
+    }
+
+    /// «$2,150 vencido», «Vence 12 nov», «Borrador F-1048», «Al día» o «Sin facturas».
+    private func status(_ customer: Customer, overdue: Int64) -> String {
+        let invoices = customer.invoices ?? []
+        if overdue > 0 { return String(localized: "\(overdue.moneyWhole) vencido") }
+        if let next = invoices.filter({ $0.isOpen && $0.balanceDue > 0 }).min(by: { $0.dueDate < $1.dueDate }) {
+            return String(localized: "Vence \(next.dueDate.dayMonth)")
+        }
+        if invoices.isEmpty { return String(localized: "Sin facturas") }
+        if invoices.contains(where: { $0.status == .draft }) { return String(localized: "Con borrador") }
+        return String(localized: "Al día")
     }
 }
 
