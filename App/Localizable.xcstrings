@@ -452,6 +452,16 @@
         }
       }
     },
+    "Anterior: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Previous: %@"
+          }
+        }
+      }
+    },
     "Antigüedad de cuentas por cobrar" : {
       "localizations" : {
         "en" : {
@@ -4895,12 +4905,32 @@
         }
       }
     },
+    "Total debe" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total debits"
+          }
+        }
+      }
+    },
     "Total gastos" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Total expenses"
+          }
+        }
+      }
+    },
+    "Total haber" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total credits"
           }
         }
       }
