@@ -62,28 +62,105 @@ public struct ChirograRootView: View {
     @Query private var companies: [Company]
     @Environment(\.scenePhase) private var scenePhase
     @AppStorage("appLockEnabled") private var appLockEnabled = false
-    @State private var isUnlocked = false
+    @State private var lock = AppLockState()
+    #if os(iOS)
+    @State private var lockWindow = LockWindow()
+    #endif
 
     public init() {}
+
+    private var isLocked: Bool { appLockEnabled && !lock.isUnlocked && !companies.isEmpty }
 
     public var body: some View {
         Group {
             if companies.isEmpty {
                 OnboardingView()
-            } else if appLockEnabled && !isUnlocked {
-                LockView(isUnlocked: $isUnlocked)
             } else {
+                #if os(iOS)
+                // La app sigue montada debajo de la ventana de bloqueo: al desbloquear, todo está donde estaba.
                 AppShell()
+                #else
+                if isLocked { LockView(lock: lock) } else { AppShell() }
+                #endif
             }
         }
         .tint(Palette.brand)
         .background(Palette.background)
-        .onChange(of: scenePhase) { _, phase in
+        #if os(iOS)
+        .background(WindowSceneReader { lockWindow.scene = $0 })
+        .onChange(of: isLocked, initial: true) { _, locked in lockWindow.update(isLocked: locked, lock: lock) }
+        #endif
+        .onChange(of: scenePhase, initial: true) { _, phase in
+            lock.isActive = phase == .active
             // Al pasar a segundo plano se vuelve a bloquear; al volver se pide Face ID otra vez.
-            if phase == .background { isUnlocked = false }
+            if phase == .background { lock.isUnlocked = false }
+        }
+        .onChange(of: appLockEnabled) { _, enabled in
+            // Quien activa el bloqueo ya está dentro: se bloquea la próxima vez que la app pase a segundo plano.
+            if enabled { lock.isUnlocked = true }
         }
     }
 }
+
+/// Estado del bloqueo de una escena, compartido entre la raíz y la pantalla de bloqueo.
+@Observable
+final class AppLockState {
+    var isUnlocked = false
+    /// Face ID solo se puede pedir con la escena activa: en segundo plano el sistema lo cancela al instante.
+    var isActive = false
+}
+
+#if os(iOS)
+/// Ventana por encima de todo (hojas y alertas incluidas) que tapa la app mientras está bloqueada,
+/// también en la captura del selector de apps. Al quitarla, la app sigue en la misma pestaña y pantalla.
+final class LockWindow {
+    var scene: UIWindowScene? { didSet { refresh() } }
+    private var lock: AppLockState?
+    private var isLocked = false
+    private var window: UIWindow?
+
+    func update(isLocked: Bool, lock: AppLockState) {
+        self.isLocked = isLocked
+        self.lock = lock
+        refresh()
+    }
+
+    private func refresh() {
+        if isLocked, window == nil, let scene, let lock {
+            let window = UIWindow(windowScene: scene)
+            window.windowLevel = .alert + 1
+            window.rootViewController = UIHostingController(rootView: LockView(lock: lock).tint(Palette.brand))
+            window.makeKeyAndVisible()
+            self.window = window
+        } else if !isLocked, let window {
+            window.isHidden = true
+            self.window = nil
+            scene?.windows.first { $0.windowLevel == .normal }?.makeKey()
+        }
+    }
+}
+
+/// Lee la `UIWindowScene` en la que vive la vista (en iPad puede haber varias ventanas de la app).
+private struct WindowSceneReader: UIViewRepresentable {
+    let onChange: (UIWindowScene?) -> Void
+
+    func makeUIView(context: Context) -> SceneView {
+        let view = SceneView()
+        view.onChange = onChange
+        return view
+    }
+
+    func updateUIView(_ view: SceneView, context: Context) {}
+
+    final class SceneView: UIView {
+        var onChange: ((UIWindowScene?) -> Void)?
+        override func didMoveToWindow() {
+            super.didMoveToWindow()
+            onChange?(window?.windowScene)
+        }
+    }
+}
+#endif
 
 /// Bloqueo de la app con Face ID / Touch ID o, si no hay biometría, con el código del dispositivo.
 enum AppLock {
@@ -195,9 +272,12 @@ struct MoreView: View {
 }
 
 struct LockView: View {
-    @Binding var isUnlocked: Bool
+    let lock: AppLockState
     @AppStorage("appLockEnabled") private var appLockEnabled = false
     @State private var failed = false
+    @State private var isEvaluating = false
+    /// Face ID se pide solo una vez por sí solo; si el usuario cancela, queda el botón «Desbloquear».
+    @State private var didPromptAutomatically = false
 
     var body: some View {
         VStack(spacing: 20) {
@@ -209,22 +289,38 @@ struct LockView: View {
         .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Palette.background)
-        .task { unlock() }
+        .onChange(of: lock.isActive, initial: true) { _, active in
+            guard active, !didPromptAutomatically else { return }
+            didPromptAutomatically = true
+            unlock()
+        }
     }
 
     private func unlock() {
-        let context = LAContext()
+        guard !isEvaluating, !lock.isUnlocked else { return }
         guard AppLock.isAvailable else {
             // El dispositivo ya no tiene código ni biometría: desactivar el bloqueo antes que dejar fuera al usuario.
             appLockEnabled = false
-            isUnlocked = true
+            lock.isUnlocked = true
             return
         }
-        context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: "Desbloquear tus libros") { success, _ in
-            Task { @MainActor in
-                isUnlocked = success
-                failed = !success
+        isEvaluating = true
+        failed = false
+        Task {
+            do {
+                lock.isUnlocked = try await LAContext().evaluatePolicy(.deviceOwnerAuthentication,
+                                                                       localizedReason: "Desbloquear tus libros")
+            } catch {
+                failed = Self.isFailure(error)
             }
+            isEvaluating = false
         }
+    }
+
+    /// Solo un fallo real se muestra en rojo: cancelar, o que el sistema interrumpa (app en segundo plano,
+    /// llamada entrante), no es un error de identidad.
+    nonisolated static func isFailure(_ error: any Error) -> Bool {
+        guard let code = (error as? LAError)?.code else { return true }
+        return ![.userCancel, .appCancel, .systemCancel, .notInteractive].contains(code)
     }
 }
