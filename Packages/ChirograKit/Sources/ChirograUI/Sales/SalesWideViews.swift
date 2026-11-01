@@ -96,6 +96,7 @@ struct InvoiceTableView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
+                MacPageTitle(String(localized: "Ventas"))
                 KPIGrid(items: kpis)
                 ViewThatFits(in: .horizontal) {
                     HStack(spacing: 10) { search.frame(maxWidth: 320); chips }
@@ -305,6 +306,7 @@ struct CustomerTableView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
+                MacPageTitle(String(localized: "Clientes"))
                 ViewThatFits(in: .horizontal) {
                     HStack(spacing: 10) { search.frame(maxWidth: 320); chips; Spacer(minLength: 8); summary }
                     VStack(alignment: .leading, spacing: 10) { search; HStack { chips; Spacer(minLength: 8) }; summary }

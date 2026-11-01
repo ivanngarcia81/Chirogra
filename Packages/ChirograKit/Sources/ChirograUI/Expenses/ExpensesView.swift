@@ -18,10 +18,13 @@ struct ExpensesView: View {
 
     @State private var selectedSegment: Segment = .expenses
     @State private var showingEditor = false
+    /// Cómo se abrió el editor (en la columna o en hoja). Se fija al abrirlo: si la columna cambia de ancho
+    /// mientras tanto (barra lateral en un iPad vertical), el editor sigue donde estaba y no se pierde lo escrito.
+    @State private var editorInline = false
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     #if os(iOS)
-    @Environment(\.horizontalSizeClass) private var sizeClass
+    @LayoutSizeClass private var sizeClass
     #endif
 
     private var segment: Segment { fixedSegment ?? selectedSegment }
@@ -35,7 +38,8 @@ struct ExpensesView: View {
     }
 
     private var title: String {
-        guard isWide else { return String(localized: "Gastos") }
+        // En iPhone las tres van bajo «Gastos» con el selector; desde la barra lateral cada una tiene su título.
+        guard isWide || fixedSegment != nil else { return String(localized: "Gastos") }
         return switch segment {
         case .expenses: String(localized: "Gastos")
         case .bills: String(localized: "Facturas por pagar")
@@ -57,6 +61,11 @@ struct ExpensesView: View {
         case .bills: String(localized: "Nueva factura de proveedor")
         case .vendors: String(localized: "Nuevo proveedor")
         }
+    }
+
+    private func openEditor() {
+        editorInline = isWide && segment == .expenses
+        showingEditor = true
     }
 
     var body: some View {
@@ -85,22 +94,22 @@ struct ExpensesView: View {
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 if isWide {
-                    Button { showingEditor = true } label: {
+                    Button { openEditor() } label: {
                         HStack(spacing: 4) { Image(systemName: "plus"); Text(addTitle) }
                     }
                     .buttonStyle(.borderedProminent)
                     .tint(Palette.brand)
                     .accessibilityLabel(addLabel)
                 } else {
-                    AddButton(title: "Nuevo") { showingEditor = true }
+                    AddButton(title: "Nuevo") { openEditor() }
                 }
             }
         }
         // `MacGastoNuevo`: en pantallas anchas el gasto nuevo se abre a pantalla completa, junto a la barra lateral.
-        .navigationDestination(isPresented: Binding(get: { showingEditor && isWide && segment == .expenses }, set: { showingEditor = $0 })) {
+        .navigationDestination(isPresented: Binding(get: { showingEditor && editorInline }, set: { showingEditor = $0 })) {
             ExpenseEditorView()
         }
-        .sheet(isPresented: Binding(get: { showingEditor && !(isWide && segment == .expenses) }, set: { showingEditor = $0 })) {
+        .sheet(isPresented: Binding(get: { showingEditor && !editorInline }, set: { showingEditor = $0 })) {
             NavigationStack {
                 switch segment {
                 case .expenses: ExpenseEditorView()
@@ -118,7 +127,7 @@ struct ExpenseListView: View {
     /// Abre «Por pagar» desde el aviso.
     var showBills: () -> Void = {}
     #if os(iOS)
-    @Environment(\.horizontalSizeClass) private var sizeClass
+    @LayoutSizeClass private var sizeClass
     private var isNarrow: Bool { sizeClass == .compact }
     #else
     private let isNarrow = false
@@ -277,7 +286,7 @@ struct ExpenseEditorView: View {
     @State private var errorMessage: String?
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     #if os(iOS)
-    @Environment(\.horizontalSizeClass) private var sizeClass
+    @LayoutSizeClass private var sizeClass
     #endif
 
     /// `MacGastoNuevo` en iPad y Mac (hasta AX3); el formulario del iPhone en pantallas estrechas.
@@ -592,7 +601,9 @@ struct BillEditorView: View {
                 DatePicker("Vence", selection: $dueDate, in: billDate..., displayedComponents: .date)
             }
             Section {
-                MoneyField(title: String(localized: "Importe total"), minorUnits: $amount)
+                LabeledContent("Importe total") {
+                    MoneyField(title: String(localized: "Importe total"), minorUnits: $amount).multilineTextAlignment(.trailing)
+                }
                 AccountPicker(title: String(localized: "Categoría"), accounts: costAccounts, selection: $accountID)
                 TextField("Descripción", text: $details)
             }

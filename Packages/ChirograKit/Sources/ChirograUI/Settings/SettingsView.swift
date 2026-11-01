@@ -7,7 +7,7 @@ import SwiftUI
 struct SettingsView: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     #if os(iOS)
-    @Environment(\.horizontalSizeClass) private var sizeClass
+    @LayoutSizeClass private var sizeClass
     #endif
 
     /// `MacAjustes` en iPad y Mac (hasta AX3); la lista del iPhone en pantallas estrechas.
@@ -60,38 +60,41 @@ struct SettingsWideView: View {
     @State private var saved = false
 
     var body: some View {
-        HStack(alignment: .top, spacing: 16) {
-            VStack(spacing: 2) {
-                ForEach(Page.allCases) { option in
-                    Button { page = option; saved = false } label: {
-                        Label(option.title, systemImage: option.symbol)
-                            .font(.subheadline.weight(page == option ? .semibold : .medium))
-                            .foregroundStyle(page == option ? Palette.brand : Palette.ink2)
-                            .padding(.horizontal, 12)
-                            .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
-                            .background(page == option ? Palette.brandWash : .clear, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-                            .contentShape(Rectangle())
+        VStack(alignment: .leading, spacing: 16) {
+            MacPageTitle(String(localized: "Ajustes"))
+            HStack(alignment: .top, spacing: 16) {
+                VStack(spacing: 2) {
+                    ForEach(Page.allCases) { option in
+                        Button { page = option; saved = false } label: {
+                            Label(option.title, systemImage: option.symbol)
+                                .font(.subheadline.weight(page == option ? .semibold : .medium))
+                                .foregroundStyle(page == option ? Palette.brand : Palette.ink2)
+                                .padding(.horizontal, 12)
+                                .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                                .background(page == option ? Palette.brandWash : .clear, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityAddTraits(page == option ? .isSelected : [])
                     }
-                    .buttonStyle(.plain)
-                    .accessibilityAddTraits(page == option ? .isSelected : [])
                 }
-            }
-            .padding(8)
-            .frame(width: 260)
-            .background(Palette.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .padding(8)
+                .frame(width: 260)
+                .background(Palette.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
 
-            VStack(alignment: .leading, spacing: 12) {
-                Text(page.title).font(.title3.weight(.semibold)).foregroundStyle(Palette.ink).accessibilityAddTraits(.isHeader)
-                    .padding(.horizontal, 4)
-                if let company = companies.first {
-                    switch page {
-                    case .profile: CompanyProfileGrid(company: company)
-                    case .formats: FormatsView(company: company, embedded: true).scrollContentBackground(.hidden)
-                    case .data: DataAndSecurityView(embedded: true).scrollContentBackground(.hidden)
+                VStack(alignment: .leading, spacing: 12) {
+                    Text(page.title).font(.title3.weight(.semibold)).foregroundStyle(Palette.ink).accessibilityAddTraits(.isHeader)
+                        .padding(.horizontal, 4)
+                    if let company = companies.first {
+                        switch page {
+                        case .profile: CompanyProfileGrid(company: company)
+                        case .formats: FormatsView(company: company, embedded: true).scrollContentBackground(.hidden)
+                        case .data: DataAndSecurityView(embedded: true).scrollContentBackground(.hidden)
+                        }
                     }
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         }
         .padding(20)
         .background(Palette.background)

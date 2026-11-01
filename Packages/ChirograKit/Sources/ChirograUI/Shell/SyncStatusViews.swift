@@ -20,6 +20,12 @@ final class SyncMonitor {
 
     var state: State = .off
 
+    /// Este dispositivo ya terminó de traer los libros de iCloud alguna vez. Hasta entonces, si ya hay empresa,
+    /// las secciones muestran su esqueleto con «Sincronizando con iCloud» (`MacCargando`, `EstadoCargando`).
+    private(set) var hasImported = UserDefaults.standard.bool(forKey: SyncMonitor.importedKey)
+
+    private static let importedKey = "iCloudFirstImportDone"
+
     /// Solo en Debug, para QA sin iCloud: lanzar con `-ChirograForceSync loading` (esqueleto «Sincronizando con iCloud»,
     /// también con empresa) o `-ChirograForceSync error` (franja de sin conexión). En Release no existe.
     #if DEBUG
@@ -33,15 +39,34 @@ final class SyncMonitor {
 
     init() {
         switch Self.forced {
-        case "loading": state = .syncing
+        case "loading": state = .syncing; hasImported = false
         case "error":
             state = .failed(code: "CKError.networkUnavailable", network: true)
+            hasFailed = true
             lastSync = Calendar.current.date(byAdding: .day, value: -1, to: .now)
         default: break
         }
     }
 
     var isSyncing: Bool { state == .syncing }
+
+    /// Primera importación en curso: el esqueleto sustituye al contenido de la sección.
+    /// Tras un fallo se muestran los datos del dispositivo con la franja, no el esqueleto.
+    var isFirstImport: Bool { isSyncing && !hasImported && !hasFailed }
+
+    private var hasFailed = false
+
+    /// «Reintentar»: CloudKit reintenta solo; se vuelve a «Sincronizando» y la franja reaparece si el siguiente
+    /// evento también falla. Con la bandera de QA, el fallo vuelve a los 2 segundos.
+    func retry() {
+        state = .syncing
+        if Self.forced == "error" {
+            Task { @MainActor in
+                try? await Task.sleep(for: .seconds(2))
+                state = .failed(code: "CKError.networkUnavailable", network: true)
+            }
+        }
+    }
 
     var isFailed: Bool {
         if case .failed = state { true } else { false }
@@ -55,10 +80,15 @@ final class SyncMonitor {
             let ckError = error as? CKError
             let network = [.networkUnavailable, .networkFailure, .serviceUnavailable, .requestRateLimited].contains(ckError?.code)
             state = .failed(code: ckError.map { "CKError.\($0.code)" } ?? (error as NSError).domain, network: network)
+            hasFailed = true
         } else {
             let date = event.endDate ?? .now
             lastSync = date
             state = .synced(date)
+            if event.type == .import && !hasImported {
+                hasImported = true
+                UserDefaults.standard.set(true, forKey: Self.importedKey)
+            }
         }
     }
 }
@@ -74,14 +104,126 @@ extension View {
     }
 }
 
-// MARK: - Cargando (`MacCargando`)
+// MARK: - Cargando (`MacCargando`, `EstadoCargando`)
 
-/// Primera apertura con iCloud en un dispositivo nuevo: mientras llegan los datos se muestra el esqueleto de la
-/// pantalla con «Sincronizando con iCloud», en vez del alta de empresa. Se puede crear una empresa nueva igualmente.
-struct SyncLoadingView: View {
-    let onSkip: () -> Void
+/// Contenido de una sección: mientras llegan los libros de iCloud por primera vez, su esqueleto con el título y
+/// «Sincronizando con iCloud»; la barra lateral y las pestañas siguen disponibles.
+struct SyncAwareContent<Content: View>: View {
+    let title: String
+    @ViewBuilder let content: Content
+    @State private var monitor = SyncMonitor.shared
+
+    var body: some View {
+        if monitor.isFirstImport {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 14) {
+                    // En iOS el título va en la barra de navegación (con el botón de la barra lateral); en el Mac,
+                    // grande dentro del contenido como en `MacCargando`.
+                    #if os(macOS)
+                    ViewThatFits(in: .horizontal) {
+                        HStack(spacing: 12) { MacPageTitle(title); Spacer(minLength: 8); SyncingPill() }
+                        VStack(alignment: .leading, spacing: 8) { MacPageTitle(title); SyncingPill() }
+                    }
+                    #else
+                    SyncingPill()
+                    #endif
+                    SyncSkeleton()
+                    Text("Estamos trayendo tus libros desde iCloud. Puedes seguir usando la app mientras tanto.")
+                        .font(.subheadline).foregroundStyle(Palette.ink2)
+                }
+                .padding(20)
+                .frame(maxWidth: 1100, alignment: .leading)
+                .frame(maxWidth: .infinity)
+            }
+            .background(Palette.background)
+            .navigationTitle(title)
+        } else {
+            content
+        }
+    }
+}
+
+/// Píldora «Sincronizando con iCloud».
+struct SyncingPill: View {
+    var body: some View {
+        HStack(spacing: 8) {
+            ProgressView().controlSize(.small)
+            Text("Sincronizando con iCloud").font(.footnote.weight(.semibold))
+        }
+        .foregroundStyle(Palette.brand)
+        .padding(.horizontal, 12)
+        .frame(minHeight: 32)
+        .background(Palette.brandWash, in: Capsule())
+        .accessibilityElement(children: .combine)
+    }
+}
+
+/// Cifras clave y filas de tabla en gris, con un pulso suave (quieto con «Reducir movimiento»).
+struct SyncSkeleton: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var dim = false
+
+    var body: some View {
+        VStack(spacing: 14) {
+            // Cuatro cifras en fila o, si no caben, en dos filas de dos.
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 12) { ForEach(0..<4, id: \.self) { _ in kpi } }
+                Grid(horizontalSpacing: 12, verticalSpacing: 12) {
+                    GridRow { kpi; kpi }
+                    GridRow { kpi; kpi }
+                }
+            }
+            VStack(spacing: 0) {
+                ForEach([0.22, 0.16, 0.26, 0.18, 0.24, 0.14, 0.2, 0.28], id: \.self) { share in
+                    VStack(spacing: 0) {
+                        Divider()
+                        GeometryReader { proxy in
+                            // Las barras fijas solo si caben: en el iPhone la fila se salía de la tarjeta.
+                            let wide = proxy.size.width >= 420
+                            HStack(spacing: 16) {
+                                bar(width: 56, height: 10)
+                                bar(width: proxy.size.width * share, height: 10)
+                                Spacer(minLength: 0)
+                                if wide { bar(width: 64, height: 10) }
+                                bar(width: wide ? 80 : 60, height: 18)
+                            }
+                            .frame(maxHeight: .infinity)
+                        }
+                        .frame(height: 44)
+                        .padding(.horizontal, 18)
+                    }
+                }
+            }
+            .background(Palette.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        }
+        .opacity(dim ? 0.45 : 1)
+        .accessibilityHidden(true)
+        .onAppear {
+            guard !reduceMotion else { return }
+            withAnimation(.easeInOut(duration: 0.7).repeatForever(autoreverses: true)) { dim = true }
+        }
+    }
+
+    private var kpi: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            bar(width: 90, height: 10)
+            bar(width: 110, height: 20)
+        }
+        .padding(.horizontal, 16).padding(.vertical, 14)
+        .frame(minWidth: 140, maxWidth: .infinity, alignment: .leading)
+        .background(Palette.surface, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+    }
+
+    private func bar(width: CGFloat, height: CGFloat) -> some View {
+        RoundedRectangle(cornerRadius: height / 2).fill(Palette.surface2).frame(width: width, height: height)
+    }
+}
+
+/// Primera apertura con iCloud en un dispositivo nuevo y todavía sin empresa: mientras llegan los datos se muestra
+/// el esqueleto con «Sincronizando con iCloud», en vez del alta de empresa. Se puede crear una empresa nueva igualmente.
+struct SyncLoadingView: View {
+    let onSkip: () -> Void
 
     var body: some View {
         ScrollView {
@@ -90,51 +232,9 @@ struct SyncLoadingView: View {
                     LogoMark(size: 34)
                     Text("Chirogra").font(.title2.weight(.bold)).foregroundStyle(Palette.ink)
                     Spacer(minLength: 8)
-                    HStack(spacing: 8) {
-                        ProgressView().controlSize(.small)
-                        Text("Sincronizando con iCloud").font(.footnote.weight(.semibold))
-                    }
-                    .foregroundStyle(Palette.brand)
-                    .padding(.horizontal, 12)
-                    .frame(minHeight: 32)
-                    .background(Palette.brandWash, in: Capsule())
-                    .accessibilityElement(children: .combine)
+                    SyncingPill()
                 }
-                Group {
-                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 160), spacing: 12)], spacing: 12) {
-                        ForEach(0..<4, id: \.self) { _ in
-                            VStack(alignment: .leading, spacing: 10) {
-                                bar(width: 90, height: 10)
-                                bar(width: 140, height: 20)
-                            }
-                            .padding(.horizontal, 16).padding(.vertical, 14)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .background(Palette.surface, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-                        }
-                    }
-                    VStack(spacing: 0) {
-                        ForEach([0.22, 0.16, 0.26, 0.18, 0.24, 0.14, 0.2, 0.28], id: \.self) { share in
-                            VStack(spacing: 0) {
-                                Divider()
-                                GeometryReader { proxy in
-                                    HStack(spacing: 16) {
-                                        bar(width: 56, height: 10)
-                                        bar(width: proxy.size.width * share, height: 10)
-                                        Spacer(minLength: 0)
-                                        bar(width: 64, height: 10)
-                                        bar(width: 80, height: 18)
-                                    }
-                                    .frame(maxHeight: .infinity)
-                                }
-                                .frame(height: 44)
-                                .padding(.horizontal, 18)
-                            }
-                        }
-                    }
-                    .background(Palette.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-                }
-                .opacity(dim ? 0.45 : 1)
-                .accessibilityHidden(true)
+                SyncSkeleton()
                 Text("Estamos trayendo tus libros desde iCloud. Si es la primera vez que usas Chirogra, puedes crear tu empresa.")
                     .font(.subheadline).foregroundStyle(Palette.ink2)
                 Button("Crear una empresa nueva", action: onSkip).font(.body.weight(.semibold)).frame(minHeight: 44)
@@ -144,14 +244,6 @@ struct SyncLoadingView: View {
             .frame(maxWidth: .infinity)
         }
         .background(Palette.background)
-        .onAppear {
-            guard !reduceMotion else { return }
-            withAnimation(.easeInOut(duration: 0.7).repeatForever(autoreverses: true)) { dim = true }
-        }
-    }
-
-    private func bar(width: CGFloat, height: CGFloat) -> some View {
-        RoundedRectangle(cornerRadius: height / 2).fill(Palette.surface2).frame(width: width, height: height)
     }
 }
 
@@ -163,6 +255,9 @@ struct SyncErrorBanner: View {
     @State private var monitor = SyncMonitor.shared
     @State private var showingDetails = false
     @State private var dismissed = false
+    #if os(iOS)
+    @LayoutSizeClass private var sizeClass
+    #endif
 
     var body: some View {
         if case let .failed(code, network) = monitor.state, !dismissed {
@@ -173,13 +268,27 @@ struct SyncErrorBanner: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                 Button("Detalles") { showingDetails = true }
                     .fontWeight(.semibold)
+                    .frame(minHeight: 44)
+                    #if os(macOS)
                     .popover(isPresented: $showingDetails) { details(code: code, network: network) }
+                    #endif
             }
             .font(.subheadline.weight(.semibold))
             .foregroundStyle(Palette.background)
             .padding(.horizontal, 14).padding(.vertical, 10)
             .background(Palette.ink, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-            .padding(.horizontal, 20).padding(.top, 8)
+            .padding(.horizontal, margin).padding(.top, 8)
+            #if os(iOS)
+            // En iOS, hoja centrada: la tarjeta de cristal del popover quedaba sobre la franja oscura y su título
+            // apenas se leía.
+            .sheet(isPresented: $showingDetails) {
+                if sizeClass == .compact {
+                    ScrollView { details(code: code, network: network) }.presentationDetents([.medium, .large])
+                } else {
+                    details(code: code, network: network).presentationSizing(.fitted)
+                }
+            }
+            #endif
         }
     }
 
@@ -200,6 +309,10 @@ struct SyncErrorBanner: View {
                     Text(monitor.lastSync?.formatted(.appDateTime.day().month(.abbreviated).hour().minute()) ?? "—")
                 }
                 Divider()
+                detailRow(String(localized: "Cambios pendientes")) {
+                    Text("Guardados en este dispositivo")
+                }
+                Divider()
                 detailRow(String(localized: "Detalle técnico")) {
                     Text(code).font(.caption.monospaced()).foregroundStyle(Palette.ink2)
                 }
@@ -207,12 +320,36 @@ struct SyncErrorBanner: View {
             .font(.subheadline)
             .padding(.horizontal, 14)
             .background(Palette.background, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-            Button("Seguir sin conexión") { showingDetails = false; dismissed = true }
-                .buttonStyle(.borderedProminent).tint(Palette.brand).controlSize(.large)
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 10) { continueButton; retryButton }
+                VStack(spacing: 10) { retryButton; continueButton }
+            }
         }
         .padding(24)
+        #if os(macOS)
         .frame(width: 420)
-        .presentationCompactAdaptation(.sheet)
+        #else
+        .frame(maxWidth: 480)
+        #endif
+    }
+
+    /// Alineada con las tarjetas: margen del iPhone en pantallas compactas.
+    private var margin: CGFloat {
+        #if os(iOS)
+        sizeClass == .compact ? Metrics.gutter : 20
+        #else
+        20
+        #endif
+    }
+
+    private var retryButton: some View {
+        Button { showingDetails = false; monitor.retry() } label: { Text("Reintentar").frame(maxWidth: .infinity) }
+            .buttonStyle(.borderedProminent).tint(Palette.brand).controlSize(.large)
+    }
+
+    private var continueButton: some View {
+        Button { showingDetails = false; dismissed = true } label: { Text("Seguir sin conexión").frame(maxWidth: .infinity) }
+            .buttonStyle(.bordered).tint(Palette.ink).controlSize(.large)
     }
 
     private func detailRow<Value: View>(_ title: String, @ViewBuilder value: () -> Value) -> some View {

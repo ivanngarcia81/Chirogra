@@ -45,7 +45,7 @@ struct OnboardingView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     #if os(iOS)
-    @Environment(\.horizontalSizeClass) private var sizeClass
+    @LayoutSizeClass private var sizeClass
     #endif
     @State private var step = 1
     @State private var displayName = ""

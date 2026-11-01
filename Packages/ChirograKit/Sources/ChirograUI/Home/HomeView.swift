@@ -26,7 +26,7 @@ struct HomeView: View {
     @State private var sheet: QuickAction?
     @State private var width: CGFloat = 0
     #if os(iOS)
-    @Environment(\.horizontalSizeClass) private var sizeClass
+    @LayoutSizeClass private var sizeClass
     #endif
 
     enum QuickAction: String, Identifiable {

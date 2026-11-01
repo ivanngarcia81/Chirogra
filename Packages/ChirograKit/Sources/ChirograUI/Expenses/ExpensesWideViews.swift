@@ -51,6 +51,7 @@ struct ExpenseTableView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
+                MacPageTitle(String(localized: "Gastos"))
                 monthCard
                 ViewThatFits(in: .horizontal) {
                     HStack(spacing: 12) { search.frame(maxWidth: 320); receiptToggle; Spacer(minLength: 8); count }
@@ -223,6 +224,7 @@ struct VendorTableView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
+                MacPageTitle(String(localized: "Proveedores"))
                 ViewThatFits(in: .horizontal) {
                     HStack(spacing: 10) { search.frame(maxWidth: 320); chips; Spacer(minLength: 8); notice }
                     VStack(alignment: .leading, spacing: 10) { search; chips; notice }
@@ -323,6 +325,7 @@ struct BillTableView: View {
         let open = bills.filter(\.isOpen)
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
+                MacPageTitle(String(localized: "Facturas por pagar"))
                 KPIGrid(items: [
                     KPIItem(title: String(localized: "Total por pagar"), value: open.reduce(0) { $0 + $1.balanceDue }.money),
                     KPIItem(title: String(localized: "Vencido"), value: open.filter(\.isOverdue).reduce(0) { $0 + $1.balanceDue }.money),

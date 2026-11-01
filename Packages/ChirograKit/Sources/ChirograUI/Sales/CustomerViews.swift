@@ -124,7 +124,7 @@ struct CustomerDetailView: View {
     @Environment(\.openURL) private var openURL
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     #if os(iOS)
-    @Environment(\.horizontalSizeClass) private var sizeClass
+    @LayoutSizeClass private var sizeClass
     #endif
     @ScaledMetric(relativeTo: .subheadline) private var amountWidth: CGFloat = 100
     @State private var openOnly = false

@@ -16,10 +16,13 @@ struct SalesView: View {
 
     @State private var selectedSegment: Segment = .invoices
     @State private var showingEditor = false
+    /// Cómo se abrió el editor (en la columna o en hoja). Se fija al abrirlo: si la columna cambia de ancho
+    /// mientras tanto (barra lateral en un iPad vertical), el editor sigue donde estaba y no se pierde lo escrito.
+    @State private var editorInline = false
     @State private var query = ""
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     #if os(iOS)
-    @Environment(\.horizontalSizeClass) private var sizeClass
+    @LayoutSizeClass private var sizeClass
     #endif
 
     private var segment: Segment { fixedSegment ?? selectedSegment }
@@ -30,6 +33,11 @@ struct SalesView: View {
         if sizeClass != .regular { return false }
         #endif
         return dynamicTypeSize < .accessibility4
+    }
+
+    private func openEditor() {
+        editorInline = isWide && segment == .invoices
+        showingEditor = true
     }
 
     var body: some View {
@@ -51,7 +59,7 @@ struct SalesView: View {
             }
         }
         .background(Palette.background)
-        .navigationTitle(isWide && segment == .customers ? "Clientes" : "Ventas")
+        .navigationTitle((isWide || fixedSegment != nil) && segment == .customers ? "Clientes" : "Ventas")
         // Una sola búsqueda en el contenedor y siempre visible: puesta en cada lista, desaparecía al volver de
         // una factura, porque la barra ya no encontraba la lista debajo de las pestañas. En pantallas anchas
         // la búsqueda va dentro de la tabla, como en el canvas.
@@ -60,24 +68,24 @@ struct SalesView: View {
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 if isWide {
-                    Button { showingEditor = true } label: {
+                    Button { openEditor() } label: {
                         HStack(spacing: 4) { Image(systemName: "plus"); Text(segment == .invoices ? "Factura" : "Cliente") }
                     }
                     .buttonStyle(.borderedProminent)
                     .tint(Palette.brand)
                     .accessibilityLabel(segment == .invoices ? "Nueva factura" : "Nuevo cliente")
                 } else {
-                    AddButton(title: segment == .invoices ? "Nueva factura" : "Nuevo cliente") { showingEditor = true }
+                    AddButton(title: segment == .invoices ? "Nueva factura" : "Nuevo cliente") { openEditor() }
                 }
             }
         }
         // `MacFacturaNueva`: en pantallas anchas la factura nueva se abre a pantalla completa, junto a la barra lateral.
-        .sheet(isPresented: Binding(get: { showingEditor && !(isWide && segment == .invoices) }, set: { showingEditor = $0 })) {
+        .sheet(isPresented: Binding(get: { showingEditor && !editorInline }, set: { showingEditor = $0 })) {
             NavigationStack {
                 if segment == .invoices { InvoiceEditorView() } else { CustomerEditorView() }
             }
         }
-        .navigationDestination(isPresented: Binding(get: { showingEditor && isWide && segment == .invoices }, set: { showingEditor = $0 })) {
+        .navigationDestination(isPresented: Binding(get: { showingEditor && editorInline }, set: { showingEditor = $0 })) {
             InvoiceEditorView()
         }
     }

@@ -1662,6 +1662,16 @@
         }
       }
     },
+    "Cambios pendientes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pending changes"
+          }
+        }
+      }
+    },
     "Cancelar" : {
       "localizations" : {
         "en" : {
@@ -3235,6 +3245,16 @@
         }
       }
     },
+    "Estamos trayendo tus libros desde iCloud. Puedes seguir usando la app mientras tanto." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "We're bringing your books over from iCloud. You can keep using the app in the meantime."
+          }
+        }
+      }
+    },
     "Estamos trayendo tus libros desde iCloud. Si es la primera vez que usas Chirogra, puedes crear tu empresa." : {
       "localizations" : {
         "en" : {
@@ -3891,6 +3911,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Saved ✓"
+          }
+        }
+      }
+    },
+    "Guardados en este dispositivo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saved on this device"
           }
         }
       }
@@ -6631,6 +6661,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Record an expense"
+          }
+        }
+      }
+    },
+    "Reintentar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Try Again"
           }
         }
       }

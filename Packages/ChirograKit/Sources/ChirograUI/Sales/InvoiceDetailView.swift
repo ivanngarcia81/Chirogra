@@ -183,7 +183,9 @@ struct InvoiceDetailView: View {
                 Button("Eliminar borrador", role: .destructive, action: deleteDraft).buttonStyle(.destructive)
             }
         } else {
-            HStack(spacing: 8) {
+            // Con texto grande, uno debajo de otro: en fila se cortaban («Duplic…», «Remin…»).
+            let layout = dynamicTypeSize.isAccessibilitySize ? AnyLayout(VStackLayout(spacing: 8)) : AnyLayout(HStackLayout(spacing: 8))
+            layout {
                 actionTile(String(localized: "Duplicar"), "plus.square.on.square", action: duplicateInvoice)
                 actionTile(String(localized: "PDF"), "doc.richtext") { showingPreview = true }
                 if invoice.isOpen {

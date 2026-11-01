@@ -78,7 +78,7 @@ public struct ChirograRootView: View {
         Group {
             // Con iCloud, en un dispositivo nuevo los libros tardan en llegar: no se pide crear la empresa
             // mientras se importan (`MacCargando`).
-            if sync.isSyncing && !skipsSyncWait && (companies.isEmpty || SyncMonitor.forcesLoading) {
+            if sync.isSyncing && !skipsSyncWait && companies.isEmpty {
                 SyncLoadingView { skipsSyncWait = true }
             } else if companies.isEmpty {
                 OnboardingView()
@@ -94,8 +94,13 @@ public struct ChirograRootView: View {
         .tint(Palette.brand)
         .background(Palette.background)
         .monitorsCloudSync()
-        // Fechas y selectores de fecha en el idioma de la app, con el orden de su región (B3).
+        // Fechas y selectores de fecha en el idioma de la app, con el orden de su región (B3). En el Mac los
+        // selectores son campos en cifras: con el locale de los textos (es_419) salían en día/mes en EE. UU.
+        #if os(macOS)
+        .environment(\.locale, .app)
+        #else
         .environment(\.locale, .appText)
+        #endif
         #if os(iOS)
         // Valores de las filas en `ink`, como en el canvas. En el Mac los formularios usan este estilo también
         // para sus controles, así que allí se deja el del sistema.
@@ -187,14 +192,15 @@ enum AppLock {
 struct AppShell: View {
     #if os(iOS)
     @Environment(\.horizontalSizeClass) private var sizeClass
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    /// Ancho de la columna de detalle: en un iPad vertical con la barra lateral abierta puede quedar estrecha.
+    @State private var detailWidth: CGFloat = .infinity
     #endif
     @State private var tab: AppSection = .home
     @State private var selection: SidebarItem = .section(.home)
     @State private var query = ""
-    /// Al elegir otro elemento de la barra lateral la pila del detalle se retira un instante y vuelve a crearse:
-    /// con `.id(selection)` o vaciando su `path`, la columna conservaba la ficha o el editor que se había abierto
-    /// con `NavigationLink(destination:)`, dentro de una sección y entre secciones.
-    @State private var showsDetail = true
+    /// Se guarda aquí para que la barra lateral siga abierta o cerrada al rehacer la vista dividida.
+    @State private var columnVisibility: NavigationSplitViewVisibility = .automatic
 
     var body: some View {
         #if os(iOS)
@@ -204,49 +210,79 @@ struct AppShell: View {
         #endif
     }
 
+    #if os(iOS)
+    private var isDetailNarrow: Bool { detailWidth < (dynamicTypeSize.isAccessibilitySize ? 960 : 760) }
+    #endif
+
     /// iPhone: 5 pestañas (Inicio · Ventas · Gastos · Reportes · Más).
     private var tabs: some View {
         TabView(selection: $tab) {
             ForEach(AppSection.phoneTabs) { section in
                 Tab(section.title, systemImage: section.systemImage, value: section) {
-                    NavigationStack { section.destination }
+                    NavigationStack {
+                        // Dentro de la pila, debajo de la barra de navegación: fuera de ella tapaba el título.
+                        SyncAwareContent(title: section.title) { section.destination }
+                            .safeAreaInset(edge: .top, spacing: 0) { SyncErrorBanner() }
+                    }
                 }
             }
             Tab("Más", systemImage: "ellipsis.circle", value: AppSection.settings) {
-                NavigationStack { MoreView() }
+                NavigationStack { MoreView().safeAreaInset(edge: .top, spacing: 0) { SyncErrorBanner() } }
             }
         }
     }
 
     /// iPad y Mac: barra lateral propia (`Sidebar`); con texto en la búsqueda, el detalle muestra los resultados.
     private var split: some View {
-        NavigationSplitView {
+        NavigationSplitView(columnVisibility: $columnVisibility) {
             Sidebar(selection: $selection, query: $query)
                 .navigationSplitViewColumnWidth(min: 200, ideal: 240)
                 #if os(iOS)
                 .toolbar(removing: .title)
                 #endif
         } detail: {
-            if showsDetail {
-                NavigationStack {
-                    if query.trimmingCharacters(in: .whitespaces).isEmpty {
-                        selection.destination
-                    } else {
-                        SearchResultsView(query: query)
-                    }
+            NavigationStack {
+                if query.trimmingCharacters(in: .whitespaces).isEmpty {
+                    SyncAwareContent(title: selection.section.title) { selection.destination }
+                } else {
+                    SearchResultsView(query: query)
                 }
-                .id(selection)
-                .safeAreaInset(edge: .top, spacing: 0) { SyncErrorBanner() }
-            } else {
-                Palette.background.ignoresSafeArea()
             }
+            #if os(iOS)
+            .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { detailWidth = $0 }
+            #endif
+            .safeAreaInset(edge: .top, spacing: 0) { SyncErrorBanner() }
         }
-        .onChange(of: selection) {
-            showsDetail = false
-            Task { @MainActor in showsDetail = true }
-        }
+        #if os(iOS)
+        // Si la columna de detalle queda estrecha, sus pantallas usan el diseño de iPhone: las tablas de Gastos y la
+        // vista dividida de Ventas no caben (iPad vertical con la barra abierta: 712 pt en el de 13", y con texto
+        // grande se cortaba también Ventas). En la vista dividida y no en la pila: las pantallas que se abren encima
+        // toman el entorno de aquí.
+        .environment(\.isNarrowColumn, isDetailNarrow)
+        #endif
+        // Al elegir otro elemento de la barra lateral se rehace la vista dividida entera: las pantallas abiertas con
+        // `NavigationLink(destination:)` quedan en la pila propia de la columna de detalle, que no se vacía al
+        // cambiar la raíz ni con `.id` en el `NavigationStack` interior.
+        .id(selection)
     }
 }
+
+#if os(iOS)
+extension EnvironmentValues {
+    /// La columna de detalle del iPad es estrecha (vertical con la barra lateral abierta): sus pantallas usan el
+    /// diseño de iPhone. Llega también a las que se abren encima, que toman el `horizontalSizeClass` de la columna.
+    @Entry var isNarrowColumn = false
+}
+
+/// Tamaño horizontal para elegir el diseño: el del sistema, o compacto si la columna es estrecha.
+@propertyWrapper
+struct LayoutSizeClass: DynamicProperty {
+    @Environment(\.horizontalSizeClass) private var system
+    @Environment(\.isNarrowColumn) private var isNarrowColumn
+
+    var wrappedValue: UserInterfaceSizeClass? { isNarrowColumn ? .compact : system }
+}
+#endif
 
 /// Pestaña "Más" del iPhone: Contabilidad, Impuestos y Ajustes.
 struct MoreView: View {

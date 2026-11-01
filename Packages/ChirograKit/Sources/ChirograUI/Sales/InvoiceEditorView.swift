@@ -25,7 +25,7 @@ struct InvoiceEditorView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     #if os(iOS)
-    @Environment(\.horizontalSizeClass) private var sizeClass
+    @LayoutSizeClass private var sizeClass
     #endif
     @ScaledMetric(relativeTo: .subheadline) private var amountColumn: CGFloat = 110
     @Query(sort: \Customer.name) private var customers: [Customer]

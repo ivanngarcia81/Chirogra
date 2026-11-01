@@ -13,7 +13,7 @@ struct VendorDetailView: View {
     @State private var addingExpense = false
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     #if os(iOS)
-    @Environment(\.horizontalSizeClass) private var sizeClass
+    @LayoutSizeClass private var sizeClass
     #endif
 
     /// `MacProveedorFicha` en iPad y Mac (hasta AX3); la ficha del iPhone en pantallas estrechas.

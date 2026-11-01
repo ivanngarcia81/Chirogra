@@ -62,7 +62,7 @@ struct ReportsView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     #if os(iOS)
-    @Environment(\.horizontalSizeClass) private var sizeClass
+    @LayoutSizeClass private var sizeClass
     #endif
     @ScaledMetric(relativeTo: .subheadline) private var columnWidth: CGFloat = 110
     @ScaledMetric(relativeTo: .body) private var wideColumnWidth: CGFloat = 120
@@ -452,12 +452,12 @@ struct ReportsView: View {
             }
             VStack(spacing: 0) {
                 header(columns: compare ? [columnTitle(offset: 0), columnTitle(offset: -1)] : [columnTitle(offset: 0)], variation: compare)
-                group(String(localized: "Ingresos"), current.income, previous.income, trend: .upIsGood)
+                group(String(localized: "Ingresos"), current.income, compare ? previous.income : nil, trend: .upIsGood)
                 totalRow(String(localized: "Total ingresos"), current.totalIncome, previous.totalIncome, trend: .upIsGood)
-                group(String(localized: "Costo de ventas"), current.costOfGoodsSold, previous.costOfGoodsSold, trend: .downIsGood)
+                group(String(localized: "Costo de ventas"), current.costOfGoodsSold, compare ? previous.costOfGoodsSold : nil, trend: .downIsGood)
                 totalRow(String(localized: "Total costo de ventas"), current.totalCostOfGoodsSold, previous.totalCostOfGoodsSold, trend: .downIsGood)
                 totalRow(String(localized: "Utilidad bruta"), current.grossProfit, previous.grossProfit, trend: .upIsGood)
-                group(String(localized: "Gastos operativos"), current.expenses, previous.expenses, trend: .downIsGood)
+                group(String(localized: "Gastos operativos"), current.expenses, compare ? previous.expenses : nil, trend: .downIsGood)
                 totalRow(String(localized: "Total gastos operativos"), current.totalExpenses, previous.totalExpenses, trend: .downIsGood)
                 totalRow(String(localized: "Ganancia neta"), current.netIncome, previous.netIncome, trend: .upIsGood, highlighted: true)
             }
@@ -989,11 +989,15 @@ struct ReportsView: View {
         Text(title).font(isCompact ? .footnote.weight(.semibold) : .body.weight(.semibold)).foregroundStyle(Palette.ink3)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 16).padding(.top, isCompact ? 10 : 20).padding(.bottom, isCompact ? 2 : 4)
-        ForEach(rows) { row in
+        // Al comparar, también las cuentas que solo tuvieron importe en el periodo anterior (con 0 en el actual):
+        // si no, el total anterior no cuadraba con las filas.
+        let shown = rows + (previous ?? []).filter { old in !rows.contains { $0.account.id == old.account.id } }
+            .map { ReportRow(account: $0.account, amount: 0) }
+        ForEach(shown.sorted { ($0.account.code, $0.account.name) < ($1.account.code, $1.account.name) }) { row in
             line(row.account.name, row.amount, previous.map { list in list.first { $0.account.id == row.account.id }?.amount ?? 0 },
                  trend: trend, indent: true)
         }
-        if rows.isEmpty { rowView(String(localized: "Sin movimientos"), [], indent: true).foregroundStyle(Palette.ink3) }
+        if shown.isEmpty { rowView(String(localized: "Sin movimientos"), [], indent: true).foregroundStyle(Palette.ink3) }
     }
 
     private func line(_ title: String, _ amount: Int64, _ previous: Int64?, trend: Trend? = nil, indent: Bool = false) -> some View {

@@ -68,7 +68,7 @@ struct ChartOfAccountsView: View {
     @State private var showArchived = false
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     #if os(iOS)
-    @Environment(\.horizontalSizeClass) private var sizeClass
+    @LayoutSizeClass private var sizeClass
     #endif
 
     /// `MacPlanCuentas` en iPad y Mac (hasta AX3); la lista del iPhone en pantallas estrechas.
@@ -171,7 +171,7 @@ struct JournalListView: View {
     @State private var opened: JournalEntry?
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     #if os(iOS)
-    @Environment(\.horizontalSizeClass) private var sizeClass
+    @LayoutSizeClass private var sizeClass
     #endif
 
     private var isWide: Bool {
@@ -290,7 +290,7 @@ struct JournalEntryEditorView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     #if os(iOS)
-    @Environment(\.horizontalSizeClass) private var sizeClass
+    @LayoutSizeClass private var sizeClass
     #endif
     @ScaledMetric(relativeTo: .body) private var amountWidth: CGFloat = 120
     @Query(sort: \Account.code) private var accounts: [Account]
@@ -758,7 +758,7 @@ struct PeriodCloseView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     #if os(iOS)
-    @Environment(\.horizontalSizeClass) private var sizeClass
+    @LayoutSizeClass private var sizeClass
     #endif
 
     /// `MacCierre` en iPad y Mac (hasta AX3); la lista del iPhone en pantallas estrechas.

@@ -37,6 +37,11 @@ public struct ReportRow: Hashable, Sendable, Identifiable {
     /// Saldo en el lado normal de la cuenta (positivo = saldo habitual).
     public var amount: Int64
     public var id: UUID { account.id }
+
+    public init(account: LedgerAccount, amount: Int64) {
+        self.account = account
+        self.amount = amount
+    }
 }
 
 public struct TrialBalance: Hashable, Sendable {

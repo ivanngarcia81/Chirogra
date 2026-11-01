@@ -70,6 +70,22 @@ extension String {
     nonisolated var sentenceCased: String { prefix(1).uppercased() + dropFirst() }
 }
 
+/// Título grande dentro del contenido en el Mac (`MacInicio`, `MacVentas`, `MacGastos`…), donde el de la ventana
+/// es pequeño. En iOS no se dibuja: el título va en la barra de navegación.
+struct MacPageTitle: View {
+    let title: String
+
+    init(_ title: String) { self.title = title }
+
+    var body: some View {
+        #if os(macOS)
+        Text(title).font(.system(size: 28, weight: .bold)).foregroundStyle(Palette.ink).accessibilityAddTraits(.isHeader)
+        #else
+        EmptyView()
+        #endif
+    }
+}
+
 // MARK: - Tipografía
 
 extension Font {

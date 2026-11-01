@@ -64,6 +64,7 @@ struct ChartOfAccountsWideView: View {
         let twoColumns = width - 40 >= 2 * 540 + 16
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
+                MacPageTitle(String(localized: "Plan de cuentas"))
                 ViewThatFits(in: .horizontal) {
                     HStack(spacing: 10) { search.frame(maxWidth: 280); chips }
                     VStack(alignment: .leading, spacing: 10) { search; ScrollView(.horizontal, showsIndicators: false) { chips } }
@@ -198,6 +199,7 @@ struct PeriodCloseWideView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
+                MacPageTitle(String(localized: "Cierre de periodo"))
                 Text("Bloquea los meses ya revisados para que nadie los cambie por error.")
                     .font(.subheadline).foregroundStyle(Palette.ink3)
                 if let company = companies.first {
