@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		0F6D88651207F8C4A4AF5A7B /* ChirograApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53FB421440D95AA4F9DB69E7 /* ChirograApp.swift */; };
 		500CA6F4B59709A1E4FC467C /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 71CDDD428B9A05C74B6A6CCB /* InfoPlist.xcstrings */; };
+		594376113D43B1153729BBDF /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = 8A84B8A2D0C4E08FFB4D297A /* AppIcon.icon */; };
 		889416CF49C9AFE2F3A38632 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 3BF4A529585E38589928C266 /* Localizable.xcstrings */; };
 		8D366A0BEB2A3A1EFFBABAA0 /* ChirograCore in Frameworks */ = {isa = PBXBuildFile; productRef = 5222374F4B8B70EB983F946B /* ChirograCore */; };
 		9CB3DF906D7BB2FA485CB8E9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7364B1960027C08F87F64E1F /* Assets.xcassets */; };
@@ -24,6 +25,7 @@
 		71CDDD428B9A05C74B6A6CCB /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
 		7364B1960027C08F87F64E1F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		89B034281E78B27BB74D6F66 /* Chirogra.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Chirogra.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8A84B8A2D0C4E08FFB4D297A /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = wrapper.icon; path = AppIcon.icon; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -59,6 +61,7 @@
 		4AF2C8E367AFD5E4BFCEC674 /* App */ = {
 			isa = PBXGroup;
 			children = (
+				8A84B8A2D0C4E08FFB4D297A /* AppIcon.icon */,
 				7364B1960027C08F87F64E1F /* Assets.xcassets */,
 				53FB421440D95AA4F9DB69E7 /* ChirograApp.swift */,
 				5E80BC58C6541FB633123F25 /* Info.plist */,
@@ -144,6 +147,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				594376113D43B1153729BBDF /* AppIcon.icon in Resources */,
 				9CB3DF906D7BB2FA485CB8E9 /* Assets.xcassets in Resources */,
 				500CA6F4B59709A1E4FC467C /* InfoPlist.xcstrings in Resources */,
 				889416CF49C9AFE2F3A38632 /* Localizable.xcstrings in Resources */,
