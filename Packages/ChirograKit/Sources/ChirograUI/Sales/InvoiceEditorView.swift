@@ -23,6 +23,11 @@ struct InvoiceEditorView: View {
 
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    #if os(iOS)
+    @Environment(\.horizontalSizeClass) private var sizeClass
+    #endif
+    @ScaledMetric(relativeTo: .subheadline) private var amountColumn: CGFloat = 110
     @Query(sort: \Customer.name) private var customers: [Customer]
     @Query(sort: \Account.code) private var accounts: [Account]
     @Query(sort: \TaxGroup.name) private var taxGroups: [TaxGroup]
@@ -61,6 +66,60 @@ struct InvoiceEditorView: View {
     }
 
     var body: some View {
+        Group {
+            if isWide { wideForm } else { compactForm }
+        }
+        .sheet(item: $previewing) { invoice in
+            NavigationStack { InvoicePreviewView(invoice: invoice, company: companies.first) }
+        }
+        .navigationTitle(editing == nil ? "Nueva factura" : "Editar borrador")
+        .modifier(InlineTitleUnless(wide: isWide))
+        // En pantalla ancha se abre en la navegación: «Cancelar» hace de «Atrás» (y pregunta por el borrador).
+        .navigationBarBackButtonHidden(isWide)
+        .toolbar {
+            ToolbarItem(placement: .cancellationAction) { Button("Cancelar", action: cancel) }
+            // «Guardar» y no «Guardar borrador»: con el texto largo el título se cortaba en «Nueva f…».
+            ToolbarItem(placement: .confirmationAction) {
+                Button("Guardar", action: saveDraft)
+                    .disabled(customerID == nil)
+                    .accessibilityLabel("Guardar borrador")
+            }
+            if isWide {
+                // `MacFacturaNueva`: «Vista previa» y la acción principal arriba, junto al título.
+                ToolbarItemGroup(placement: .primaryAction) {
+                    Button("Vista previa", action: showPreview).disabled(customerID == nil || validLines.isEmpty)
+                    Button("Emitir factura", action: issue)
+                        .buttonStyle(.borderedProminent).tint(Palette.brand)
+                        .disabled(customerID == nil || validLines.isEmpty)
+                }
+            }
+        }
+        // La vista previa guarda la factura como borrador: al cancelar se pregunta qué hacer con él.
+        .interactiveDismissDisabled(hasNewDraft)
+        .confirmationDialog("¿Conservar el borrador?", isPresented: $confirmingCancel, titleVisibility: .visible) {
+            Button("Conservar borrador", action: saveDraft)
+            Button("Descartar borrador", role: .destructive, action: discardDraft)
+            Button("Seguir editando", role: .cancel) {}
+        } message: {
+            Text("Al ver la vista previa se guardó como borrador.")
+        }
+        .onAppear {
+            if let editing, !loadedDraft { load(editing) }
+            if customerID == nil { customerID = preselectedCustomer?.id }
+            if lines.first?.incomeAccountID == nil { lines[0].incomeAccountID = incomeAccounts.first?.id }
+        }
+        .onChange(of: customerID) {
+            if skipCustomerDefaults { skipCustomerDefaults = false; return }
+            guard let customer else { return }
+            taxGroupID = customer.defaultTaxGroupID
+            dueDate = Calendar.current.date(byAdding: .day, value: customer.paymentTermsDays, to: issueDate) ?? issueDate
+        }
+        .sheet(isPresented: $showingNewCustomer) {
+            NavigationStack { CustomerEditorView { customerID = $0.id } }
+        }
+    }
+
+    private var compactForm: some View {
         Form {
             if let errorMessage {
                 Section { ErrorBanner(message: errorMessage) }.listRowBackground(Color.clear).listRowInsets(EdgeInsets())
@@ -160,43 +219,209 @@ struct InvoiceEditorView: View {
             Button("Emitir factura", action: issue).buttonStyle(.primary)
                 .disabled(customerID == nil || validLines.isEmpty)
         }
-        .sheet(item: $previewing) { invoice in
-            NavigationStack { InvoicePreviewView(invoice: invoice, company: companies.first) }
+    }
+
+    /// `MacFacturaNueva` en iPad y Mac (hasta AX3); el formulario del iPhone en pantallas estrechas.
+    private var isWide: Bool {
+        #if os(iOS)
+        if sizeClass != .regular { return false }
+        #endif
+        return dynamicTypeSize < .accessibility4
+    }
+
+    // MARK: iPad y Mac (`MacFacturaNueva`)
+
+    private var wideForm: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                if let errorMessage { ErrorBanner(message: errorMessage) }
+                wideHeaderCard
+                wideLinesCard
+                ViewThatFits(in: .horizontal) {
+                    HStack(alignment: .top, spacing: 16) {
+                        wideMessageCard.frame(maxWidth: .infinity)
+                        wideTotalsCard.frame(width: 340)
+                    }
+                    VStack(spacing: 16) { wideMessageCard; wideTotalsCard }
+                }
+                Text("Al emitirla se registra el asiento contable: débito a cuentas por cobrar, crédito a ingresos y sales tax.")
+                    .font(.footnote).foregroundStyle(Palette.ink3)
+            }
+            .padding(20)
         }
-        .navigationTitle(editing == nil ? "Nueva factura" : "Editar borrador")
-        .inlineTitle()
-        .toolbar {
-            ToolbarItem(placement: .cancellationAction) { Button("Cancelar", action: cancel) }
-            // «Guardar» y no «Guardar borrador»: con el texto largo el título se cortaba en «Nueva f…».
-            ToolbarItem(placement: .confirmationAction) {
-                Button("Guardar", action: saveDraft)
-                    .disabled(customerID == nil)
-                    .accessibilityLabel("Guardar borrador")
+        .scrollDismissesKeyboard(.interactively)
+        .background(Palette.background)
+    }
+
+    private func fieldLabel<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title).font(.caption.weight(.semibold)).foregroundStyle(Palette.ink2)
+            content()
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    /// Cliente (ancho doble), número, fecha y vencimiento con el plazo como título.
+    private var wideHeaderCard: some View {
+        let days = Calendar.current.dateComponents([.day], from: Calendar.current.startOfDay(for: issueDate),
+                                                   to: Calendar.current.startOfDay(for: dueDate)).day ?? 0
+        return LazyVGrid(columns: [GridItem(.adaptive(minimum: 170), spacing: 14, alignment: .topLeading)], alignment: .leading, spacing: 14) {
+            fieldLabel(String(localized: "Cliente")) {
+                Menu {
+                    Picker("Cliente", selection: $customerID) {
+                        Text("Elegir cliente…").tag(UUID?.none)
+                        ForEach(customers.filter { !$0.isArchived }) { Text($0.name).tag(Optional($0.id)) }
+                    }
+                    Button("Nuevo cliente", systemImage: "person.badge.plus") { showingNewCustomer = true }
+                } label: {
+                    HStack(spacing: 6) {
+                        if let customer {
+                            Text(customer.name).fontWeight(.semibold).foregroundStyle(Palette.ink)
+                            if !customer.email.isEmpty { Text("· \(customer.email)").foregroundStyle(Palette.ink3) }
+                        } else {
+                            Text("Elegir cliente…").foregroundStyle(Palette.brand)
+                        }
+                        Spacer(minLength: 4)
+                        Image(systemName: "chevron.up.chevron.down").font(.caption).foregroundStyle(Palette.ink3)
+                    }
+                    .font(.subheadline)
+                    .lineLimit(1)
+                    .padding(.horizontal, 10)
+                    .frame(minHeight: 38)
+                    .background(Palette.background, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).stroke(Palette.separator))
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Cliente")
+                .accessibilityValue(customer?.name ?? String(localized: "Sin elegir"))
+            }
+            fieldLabel(String(localized: "Número")) {
+                Text(savedInvoice.map { $0.number.isEmpty ? String(localized: "Al emitir") : $0.number }
+                     ?? (try? books.peekDocumentNumber(.invoice)) ?? "—")
+                    .font(.subheadline.weight(.semibold)).foregroundStyle(Palette.ink).frame(minHeight: 38)
+            }
+            fieldLabel(String(localized: "Fecha")) {
+                DatePicker("Fecha", selection: $issueDate, displayedComponents: .date).labelsHidden().frame(minHeight: 38)
+            }
+            fieldLabel(days == 0 ? String(localized: "Al recibir") : String(localized: "Neto \(days)")) {
+                DatePicker("Vence", selection: $dueDate, in: issueDate..., displayedComponents: .date).labelsHidden().frame(minHeight: 38)
             }
         }
-        // La vista previa guarda la factura como borrador: al cancelar se pregunta qué hacer con él.
-        .interactiveDismissDisabled(hasNewDraft)
-        .confirmationDialog("¿Conservar el borrador?", isPresented: $confirmingCancel, titleVisibility: .visible) {
-            Button("Conservar borrador", action: saveDraft)
-            Button("Descartar borrador", role: .destructive, action: discardDraft)
-            Button("Seguir editando", role: .cancel) {}
-        } message: {
-            Text("Al ver la vista previa se guardó como borrador.")
+        .padding(.horizontal, 18).padding(.vertical, 16)
+        .background(Palette.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+
+    /// Tabla de líneas: # · PRODUCTO O SERVICIO · CUENTA · CANT. · PRECIO · IMPUESTO · IMPORTE.
+    private var wideLinesCard: some View {
+        VStack(spacing: 0) {
+            HStack(spacing: 10) {
+                Text("#").frame(width: 24, alignment: .leading)
+                Text("Producto o servicio").frame(maxWidth: .infinity, alignment: .leading)
+                Text("Cuenta de ingreso").frame(maxWidth: .infinity, alignment: .leading)
+                Text("Cant.").frame(width: 120, alignment: .center)
+                Text("Precio").frame(width: amountColumn, alignment: .trailing)
+                Text("Impuesto").frame(width: 96, alignment: .leading)
+                Text("Importe").frame(width: amountColumn, alignment: .trailing)
+                Color.clear.frame(width: 32, height: 1)
+            }
+            .font(.label).tracking(0.6).textCase(.uppercase).foregroundStyle(Palette.ink3)
+            .padding(.horizontal, 18).padding(.vertical, 12)
+            .accessibilityHidden(true)
+            ForEach(Array($lines.enumerated()), id: \.element.id) { index, $line in
+                Divider()
+                HStack(spacing: 10) {
+                    Text("\(index + 1)").foregroundStyle(Palette.ink3).frame(width: 24, alignment: .leading).accessibilityHidden(true)
+                    TextField("Producto o servicio", text: $line.details).fieldBox().frame(maxWidth: .infinity)
+                    Menu {
+                        Picker("Cuenta de ingreso", selection: $line.incomeAccountID) {
+                            ForEach(incomeAccounts) { Text($0.displayName).tag(Optional($0.id)) }
+                        }
+                    } label: {
+                        Text(incomeAccounts.first { $0.id == line.incomeAccountID }?.displayName ?? String(localized: "Cuenta de ingreso"))
+                            .lineLimit(1).foregroundStyle(Palette.ink2)
+                            .frame(maxWidth: .infinity, minHeight: 38, alignment: .leading)
+                    }
+                    .buttonStyle(.plain)
+                    .frame(maxWidth: .infinity)
+                    .accessibilityLabel("Cuenta de ingreso")
+                    QuantityStepper(quantity: $line.quantity).frame(width: 120)
+                    MoneyField(title: String(localized: "Precio"), minorUnits: $line.unitPrice)
+                        .multilineTextAlignment(.trailing).fieldBox().frame(width: amountColumn)
+                    Button(line.isTaxable ? String(localized: "Gravable") : String(localized: "Exento")) { line.isTaxable.toggle() }
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(line.isTaxable ? Palette.brand : Palette.ink2)
+                        .frame(width: 96, height: 38)
+                        .background(line.isTaxable ? Palette.brandWash : Palette.background, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("Gravable")
+                        .accessibilityValue(line.isTaxable ? Text("Sí") : Text("No"))
+                    Text(line.amount.money).fontWeight(.semibold).monospacedDigit().frame(width: amountColumn, alignment: .trailing)
+                    Button { lines.remove(at: index) } label: {
+                        Image(systemName: "xmark").frame(width: 32, height: 44)
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(Palette.ink3)
+                    .disabled(lines.count <= 1)
+                    .accessibilityLabel("Quitar la línea \(index + 1)")
+                }
+                .font(.subheadline)
+                .padding(.horizontal, 18).padding(.vertical, 6)
+            }
+            Divider()
+            Button("Añadir línea", systemImage: "plus") { lines.append(LineDraft(incomeAccountID: incomeAccounts.first?.id)) }
+                .buttonStyle(.plain)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(Palette.brand)
+                .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                .padding(.horizontal, 18)
         }
-        .onAppear {
-            if let editing, !loadedDraft { load(editing) }
-            if customerID == nil { customerID = preselectedCustomer?.id }
-            if lines.first?.incomeAccountID == nil { lines[0].incomeAccountID = incomeAccounts.first?.id }
+        .background(Palette.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+
+    private var wideMessageCard: some View {
+        fieldLabel(String(localized: "Mensaje para el cliente")) {
+            TextField("Notas y términos", text: $customerMessage, axis: .vertical)
+                .lineLimit(3...)
+                .textFieldStyle(.plain)
+                .padding(10)
+                .background(Palette.background, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).stroke(Palette.separator))
         }
-        .onChange(of: customerID) {
-            if skipCustomerDefaults { skipCustomerDefaults = false; return }
-            guard let customer else { return }
-            taxGroupID = customer.defaultTaxGroupID
-            dueDate = Calendar.current.date(byAdding: .day, value: customer.paymentTermsDays, to: issueDate) ?? issueDate
+        .padding(.horizontal, 18).padding(.vertical, 16)
+        .background(Palette.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+
+    private var wideTotalsCard: some View {
+        VStack(spacing: 8) {
+            LabeledContent("Subtotal", value: validLines.reduce(0) { $0 + $1.amount }.money)
+            LabeledContent("Impuesto") {
+                Picker("Impuesto", selection: $taxGroupID) {
+                    Text("Sin impuesto").tag(UUID?.none)
+                    ForEach(taxGroups.filter { !$0.isArchived }) { group in
+                        Text("\(group.name) · \(group.percent.formatted())%").tag(Optional(group.id))
+                    }
+                }
+                .labelsHidden()
+                .accessibilityLabel("Impuesto sobre ventas")
+            }
+            LabeledContent("Descuento") {
+                MoneyField(title: String(localized: "Descuento"), minorUnits: $discount).multilineTextAlignment(.trailing).frame(maxWidth: 120)
+            }
+            if discount > validLines.reduce(0, { $0 + $1.amount }) {
+                Text("El descuento no puede ser mayor que el subtotal.").font(.footnote).foregroundStyle(Palette.negative)
+            }
+            LabeledContent("Sales tax", value: (preview?.totalTax ?? 0).money)
+            Divider()
+            LabeledContent {
+                Text((preview?.total ?? 0).money).font(.amount(24)).monospacedDigit()
+            } label: {
+                Text("Total").font(.headline)
+            }
         }
-        .sheet(isPresented: $showingNewCustomer) {
-            NavigationStack { CustomerEditorView { customerID = $0.id } }
-        }
+        .font(.subheadline)
+        .foregroundStyle(Palette.ink2)
+        .padding(.horizontal, 18).padding(.vertical, 16)
+        .background(Palette.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 
     // MARK: Celdas y líneas
@@ -374,5 +599,13 @@ struct QuantityStepper: View {
         .accessibilityRepresentation {
             Stepper("Cantidad", value: $quantity, in: 1...9_999)
         }
+    }
+}
+
+/// Título en línea en pantallas estrechas; grande en las anchas (`MacFacturaNueva`).
+struct InlineTitleUnless: ViewModifier {
+    let wide: Bool
+    func body(content: Content) -> some View {
+        if wide { content } else { content.inlineTitle() }
     }
 }

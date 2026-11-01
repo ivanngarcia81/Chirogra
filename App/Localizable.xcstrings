@@ -1,6 +1,9 @@
 {
   "sourceLanguage" : "es",
   "strings" : {
+    " · " : {
+      "shouldTranslate" : false
+    },
     " · %@" : {
       "localizations" : {
         "en" : {
@@ -691,6 +694,17 @@
         }
       }
     },
+    "Abiertas" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open"
+          }
+        }
+      }
+    },
     "Abre los ajustes" : {
       "localizations" : {
         "en" : {
@@ -1255,6 +1269,16 @@
         }
       }
     },
+    "Borradores" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Drafts"
+          }
+        }
+      }
+    },
     "Borrar búsqueda" : {
       "localizations" : {
         "en" : {
@@ -1332,6 +1356,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cancel"
+          }
+        }
+      }
+    },
+    "Cant." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Qty."
           }
         }
       }
@@ -1547,6 +1581,16 @@
         }
       }
     },
+    "Cobrado en %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Collected in %@"
+          }
+        }
+      }
+    },
     "Cobrado en el periodo" : {
       "localizations" : {
         "en" : {
@@ -1708,6 +1752,16 @@
         }
       }
     },
+    "Condiciones" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terms"
+          }
+        }
+      }
+    },
     "Condiciones de pago" : {
       "localizations" : {
         "en" : {
@@ -1834,6 +1888,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Create your first invoice with the + button."
+          }
+        }
+      }
+    },
+    "Crea tu primera factura con «+ Factura»." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create your first invoice with “+ Invoice”."
           }
         }
       }
@@ -2599,6 +2663,16 @@
         }
       }
     },
+    "Enviar recordatorio" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send reminder"
+          }
+        }
+      }
+    },
     "Escribe las tasas de tu estado, condado y ciudad. Chirogra no determina qué es gravable: consúltalo con tu agencia o tu contador." : {
       "localizations" : {
         "en" : {
@@ -2950,6 +3024,26 @@
         }
       }
     },
+    "Filtrar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filter"
+          }
+        }
+      }
+    },
+    "Filtrar historial" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filter history"
+          }
+        }
+      }
+    },
     "Filtrar por fechas" : {
       "localizations" : {
         "en" : {
@@ -3168,6 +3262,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "History"
+          }
+        }
+      }
+    },
+    "Historial de facturas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invoice history"
           }
         }
       }
@@ -3873,12 +3977,32 @@
         }
       }
     },
+    "Ninguna factura coincide" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No invoices match"
+          }
+        }
+      }
+    },
     "Ninguno" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "None"
+          }
+        }
+      }
+    },
+    "Ningún cliente coincide con «%@»." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No customers match “%@”."
           }
         }
       }
@@ -4404,6 +4528,46 @@
         }
       }
     },
+    "Paga en %lld días de promedio" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Pays in %lld day on average"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Pays in %lld days on average"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Paga en %lld día de promedio"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Paga en %lld días de promedio"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "Paga en promedio" : {
       "localizations" : {
         "en" : {
@@ -4840,6 +5004,16 @@
         }
       }
     },
+    "Por vencer" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not yet due"
+          }
+        }
+      }
+    },
     "Por vencer %@" : {
       "localizations" : {
         "en" : {
@@ -4906,6 +5080,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Try with sample data"
+          }
+        }
+      }
+    },
+    "Producto o servicio" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Product or service"
           }
         }
       }
@@ -5997,6 +6181,16 @@
         }
       }
     },
+    "Sin saldo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No balance"
+          }
+        }
+      }
+    },
     "Sincronizado con iCloud" : {
       "localizations" : {
         "en" : {
@@ -6762,6 +6956,17 @@
         }
       }
     },
+    "Vencidas" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Overdue"
+          }
+        }
+      }
+    },
     "Vencidas · %@ (%lld)" : {
       "localizations" : {
         "en" : {
@@ -6772,12 +6977,62 @@
         }
       }
     },
+    "Vencido" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Overdue"
+          }
+        }
+      }
+    },
     "Vencido %@" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Overdue %@"
+          }
+        }
+      }
+    },
+    "Vencido · %lld facturas" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Overdue · %lld invoice"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Overdue · %lld invoices"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Vencido · %lld factura"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Vencido · %lld facturas"
+                }
+              }
+            }
           }
         }
       }
@@ -6983,6 +7238,16 @@
         }
       }
     },
+    "saldo total %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "total balance %@"
+          }
+        }
+      }
+    },
     "se calcula al emitir" : {
       "localizations" : {
         "en" : {
@@ -7034,6 +7299,9 @@
       }
     },
     "·" : {
+      "shouldTranslate" : false
+    },
+    "· %@" : {
       "shouldTranslate" : false
     },
     "¿A qué se dedica tu negocio?" : {

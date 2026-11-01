@@ -17,8 +17,20 @@ struct SalesView: View {
     @State private var selectedSegment: Segment = .invoices
     @State private var showingEditor = false
     @State private var query = ""
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    #if os(iOS)
+    @Environment(\.horizontalSizeClass) private var sizeClass
+    #endif
 
     private var segment: Segment { fixedSegment ?? selectedSegment }
+
+    /// Tablas y lista y detalle (`MacVentas`, `iPadVentas`, `MacClientes`) en iPad y Mac hasta AX3.
+    private var isWide: Bool {
+        #if os(iOS)
+        if sizeClass != .regular { return false }
+        #endif
+        return dynamicTypeSize < .accessibility4
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -26,34 +38,50 @@ struct SalesView: View {
                 UnderlineTabs(options: Segment.allCases, selection: $selectedSegment) { $0.localizedTitle }
             }
 
-            switch segment {
-            case .invoices: InvoiceListView(query: $query)
-            case .customers: CustomerListView(query: query)
+            switch (segment, isWide) {
+            case (.invoices, false): InvoiceListView(query: $query)
+            case (.customers, false): CustomerListView(query: query)
+            case (.invoices, true):
+                #if os(macOS)
+                InvoiceTableView(query: $query)
+                #else
+                InvoiceSplitView(query: $query)
+                #endif
+            case (.customers, true): CustomerTableView(query: $query)
             }
         }
         .background(Palette.background)
-        .navigationTitle("Ventas")
+        .navigationTitle(isWide && segment == .customers ? "Clientes" : "Ventas")
         // Una sola búsqueda en el contenedor y siempre visible: puesta en cada lista, desaparecía al volver de
-        // una factura, porque la barra ya no encontraba la lista debajo de las pestañas.
-        .searchable(text: $query, placement: Self.searchPlacement,
-                    prompt: segment == .invoices ? Text("Cliente, número o monto") : Text("Nombre, correo o teléfono"))
+        // una factura, porque la barra ya no encontraba la lista debajo de las pestañas. En pantallas anchas
+        // la búsqueda va dentro de la tabla, como en el canvas.
+        .modifier(SalesSearch(enabled: !isWide, query: $query,
+                              prompt: segment == .invoices ? Text("Cliente, número o monto") : Text("Nombre, correo o teléfono")))
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                AddButton(title: segment == .invoices ? "Nueva factura" : "Nuevo cliente") { showingEditor = true }
+                if isWide {
+                    Button { showingEditor = true } label: {
+                        HStack(spacing: 4) { Image(systemName: "plus"); Text(segment == .invoices ? "Factura" : "Cliente") }
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(Palette.brand)
+                    .accessibilityLabel(segment == .invoices ? "Nueva factura" : "Nuevo cliente")
+                } else {
+                    AddButton(title: segment == .invoices ? "Nueva factura" : "Nuevo cliente") { showingEditor = true }
+                }
             }
         }
-        .sheet(isPresented: $showingEditor) {
+        // `MacFacturaNueva`: en pantallas anchas la factura nueva se abre a pantalla completa, junto a la barra lateral.
+        .sheet(isPresented: Binding(get: { showingEditor && !(isWide && segment == .invoices) }, set: { showingEditor = $0 })) {
             NavigationStack {
                 if segment == .invoices { InvoiceEditorView() } else { CustomerEditorView() }
             }
         }
+        .navigationDestination(isPresented: Binding(get: { showingEditor && isWide && segment == .invoices }, set: { showingEditor = $0 })) {
+            InvoiceEditorView()
+        }
     }
 
-    #if os(iOS)
-    private static let searchPlacement = SearchFieldPlacement.navigationBarDrawer(displayMode: .always)
-    #else
-    private static let searchPlacement = SearchFieldPlacement.automatic
-    #endif
 }
 
 struct InvoiceListView: View {
@@ -182,4 +210,23 @@ struct InvoiceRow: View {
 
 #Preview {
     NavigationStack { SalesView() }.modelContainer(SampleData.makeContainer())
+}
+
+/// Búsqueda de la barra de navegación sólo en pantallas estrechas.
+private struct SalesSearch: ViewModifier {
+    let enabled: Bool
+    @Binding var query: String
+    let prompt: Text
+
+    func body(content: Content) -> some View {
+        if enabled {
+            #if os(iOS)
+            content.searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: prompt)
+            #else
+            content.searchable(text: $query, prompt: prompt)
+            #endif
+        } else {
+            content
+        }
+    }
 }

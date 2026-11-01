@@ -123,6 +123,11 @@ struct CustomerDetailView: View {
     @Bindable var customer: Customer
     @Environment(\.openURL) private var openURL
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    #if os(iOS)
+    @Environment(\.horizontalSizeClass) private var sizeClass
+    #endif
+    @ScaledMetric(relativeTo: .subheadline) private var amountWidth: CGFloat = 100
+    @State private var openOnly = false
     @State private var editing = false
     @State private var newInvoice = false
     @State private var refunding = false
@@ -131,7 +136,167 @@ struct CustomerDetailView: View {
     private var openInvoices: [Invoice] { (customer.invoices ?? []).filter { $0.isOpen && $0.balanceDue > 0 } }
     private var overdue: Int64 { openInvoices.filter { $0.daysOverdue() != nil }.reduce(0) { $0 + $1.balanceDue } }
 
+    /// `MacClienteFicha` en iPad y Mac hasta AX3; la ficha del iPhone en pantallas estrechas.
+    private var isWide: Bool {
+        #if os(iOS)
+        if sizeClass != .regular { return false }
+        #endif
+        return dynamicTypeSize < .accessibility4
+    }
+
     var body: some View {
+        Group {
+            if isWide { wideBody } else { compactBody }
+        }
+        .background(Palette.background)
+        .inlineTitle()
+        .toolbar {
+            if isWide {
+                ToolbarItemGroup(placement: .primaryAction) {
+                    Button("Editar") { editing = true }
+                    if customer.openBalance > 0 {
+                        ShareLink(item: reminderText, subject: Text("Recordatorio de pago")) { Text("Enviar recordatorio") }
+                    }
+                    Button { newInvoice = true } label: { HStack(spacing: 4) { Image(systemName: "plus"); Text("Factura") } }
+                        .buttonStyle(.borderedProminent).tint(Palette.brand)
+                        .accessibilityLabel("Nueva factura")
+                }
+            } else {
+                ToolbarItem(placement: .primaryAction) { Button("Editar") { editing = true } }
+            }
+        }
+        .sheet(isPresented: $editing) { NavigationStack { CustomerEditorView(customer: customer) } }
+        .sheet(isPresented: Binding(get: { newInvoice && !isWide }, set: { newInvoice = $0 })) {
+            NavigationStack { InvoiceEditorView(preselectedCustomer: customer) }
+        }
+        .navigationDestination(isPresented: Binding(get: { newInvoice && isWide }, set: { newInvoice = $0 })) {
+            InvoiceEditorView(preselectedCustomer: customer)
+        }
+        .sheet(isPresented: $refunding) { NavigationStack { CustomerRefundView(customer: customer) } }
+    }
+
+    // MARK: iPad y Mac (`MacClienteFicha`)
+
+    private var wideBody: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                ProfileHeader(initials: customer.initials, name: customer.name, detail: headerDetail, round: true,
+                              foreground: overdue > 0 ? Palette.negative : Palette.brand,
+                              background: overdue > 0 ? Palette.negativeWash : Palette.brandWash)
+                KPIGrid(items: [
+                    KPIItem(title: String(localized: "Saldo pendiente"), value: customer.openBalance.money, isBrand: true),
+                    KPIItem(title: String(localized: "Vencido"), value: overdue.money),
+                    KPIItem(title: String(localized: "Por vencer"), value: (customer.openBalance - overdue).money),
+                    KPIItem(title: String(localized: "Facturado en \(Date.now.formatted(.appDateTime.year()))"), value: billedThisYear.money,
+                            foot: averageDaysToPay.map { String(localized: "Paga en \($0) días de promedio") }),
+                ])
+                if customer.creditBalance > 0 { creditCard }
+                ViewThatFits(in: .horizontal) {
+                    HStack(alignment: .top, spacing: 16) {
+                        invoiceTable.frame(minWidth: 520, maxWidth: .infinity)
+                        VStack(spacing: 16) { contactCard; notesCard }.frame(width: 320)
+                    }
+                    VStack(spacing: 16) { invoiceTable; contactCard; notesCard }
+                }
+            }
+            .padding(20)
+        }
+    }
+
+    /// Historial de facturas: Nº · FECHA · VENCE · ESTADO · IMPORTE · SALDO, con Todas / Abiertas.
+    private var invoiceTable: some View {
+        let invoices = (customer.invoices ?? []).filter { !openOnly || $0.isOpen }.sorted { $0.issueDate > $1.issueDate }
+        return VStack(alignment: .leading, spacing: 0) {
+            HStack {
+                Text("Historial de facturas").font(.headline).foregroundStyle(Palette.ink)
+                Spacer()
+                Picker("Filtrar historial", selection: $openOnly) {
+                    Text("Todas").tag(false)
+                    Text("Abiertas").tag(true)
+                }
+                .pickerStyle(.segmented).labelsHidden().fixedSize()
+            }
+            .padding(.horizontal, 18).padding(.top, 14).padding(.bottom, 6)
+            TableCard {
+                Text("Nº").frame(width: 70, alignment: .leading)
+                Text("Fecha").frame(width: 80, alignment: .leading)
+                Text("Vence").frame(width: 80, alignment: .leading)
+                Text("Estado").frame(maxWidth: .infinity, alignment: .leading)
+                Text("Importe").frame(width: amountWidth, alignment: .trailing)
+                Text("Saldo").frame(width: amountWidth, alignment: .trailing)
+            } rows: {
+                ForEach(invoices) { invoice in
+                    NavigationLink { InvoiceDetailView(invoice: invoice) } label: {
+                        TableRow {
+                            Text(invoice.number.isEmpty ? String(localized: "Borrador") : invoice.number).fontWeight(.semibold)
+                                .frame(width: 70, alignment: .leading)
+                            Text(invoice.issueDate.dayMonth).foregroundStyle(Palette.ink2).frame(width: 80, alignment: .leading)
+                            Text(invoice.dueDate.dayMonth).foregroundStyle(Palette.ink2).frame(width: 80, alignment: .leading)
+                            StatusChip(invoice: invoice).frame(maxWidth: .infinity, alignment: .leading)
+                            Text(invoice.total.money).frame(width: amountWidth, alignment: .trailing)
+                            Text(invoice.balanceDue.money).fontWeight(.semibold)
+                                .foregroundStyle(invoice.isOpen ? Palette.ink : Palette.ink3).frame(width: amountWidth, alignment: .trailing)
+                        }
+                    }
+                    .buttonStyle(.plain)
+                }
+                if invoices.isEmpty {
+                    Text("Sin facturas").foregroundStyle(Palette.ink3).frame(maxWidth: .infinity).padding(.vertical, 24)
+                }
+            }
+        }
+        .background(Palette.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+
+    private var contactCard: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text("Contacto").font(.headline).foregroundStyle(Palette.ink).padding(.bottom, 6)
+            contactRow(String(localized: "Correo"), customer.email, link: customer.email.isEmpty ? nil : URL(string: "mailto:\(customer.email)"))
+            contactRow(String(localized: "Teléfono"), customer.phone,
+                       link: customer.phone.isEmpty ? nil : URL(string: "tel:\(customer.phone.filter { $0.isNumber || $0 == "+" })"))
+            contactRow(String(localized: "Dirección"), customer.billingAddress)
+            contactRow(String(localized: "Condiciones"),
+                       customer.paymentTermsDays == 0 ? String(localized: "Al recibir") : String(localized: "Neto \(customer.paymentTermsDays)"))
+            contactRow(String(localized: "Sales tax"), customer.isTaxExempt ? String(localized: "Exento") : String(localized: "Gravable"))
+        }
+        .card()
+    }
+
+    private func contactRow(_ title: String, _ value: String, link: URL? = nil) -> some View {
+        VStack(spacing: 0) {
+            Divider()
+            HStack(alignment: .firstTextBaseline, spacing: 12) {
+                Text(title).foregroundStyle(Palette.ink3)
+                Spacer(minLength: 8)
+                if let link {
+                    Button(value) { openURL(link) }.buttonStyle(.plain).foregroundStyle(Palette.brand)
+                } else {
+                    Text(value.isEmpty ? "—" : value).foregroundStyle(Palette.ink).multilineTextAlignment(.trailing)
+                }
+            }
+            .font(.subheadline)
+            .padding(.vertical, 10)
+            .frame(minHeight: 44)
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    private var notesCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Notas").font(.headline).foregroundStyle(Palette.ink)
+            TextField("Añadir una nota…", text: $customer.notes, axis: .vertical)
+                .lineLimit(3...)
+                .textFieldStyle(.plain)
+                .padding(10)
+                .background(Palette.background, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).stroke(Palette.separator))
+        }
+        .card()
+    }
+
+    // MARK: iPhone (`ClienteFicha`)
+
+    private var compactBody: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Metrics.cardSpacing) {
                 ProfileHeader(initials: customer.initials, name: customer.name, detail: headerDetail, round: true,
@@ -155,12 +320,6 @@ struct CustomerDetailView: View {
             .frame(maxWidth: 720, alignment: .leading)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .background(Palette.background)
-        .inlineTitle()
-        .toolbar { Button("Editar") { editing = true } }
-        .sheet(isPresented: $editing) { NavigationStack { CustomerEditorView(customer: customer) } }
-        .sheet(isPresented: $newInvoice) { NavigationStack { InvoiceEditorView(preselectedCustomer: customer) } }
-        .sheet(isPresented: $refunding) { NavigationStack { CustomerRefundView(customer: customer) } }
     }
 
     /// «Cliente desde marzo de 2025 · Neto 15».

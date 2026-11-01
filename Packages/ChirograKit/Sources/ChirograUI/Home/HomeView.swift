@@ -599,9 +599,12 @@ extension HomeView {
         let total = openInvoices.reduce(0) { $0 + $1.balanceDue }
         return VStack(alignment: .leading, spacing: 0) {
             wideHeader("Por cobrar") {
-                (Text("\(overdueTotal.money) vencido").foregroundStyle(Palette.negative).bold()
-                 + Text(" · \(String(localized: "\((total - overdueTotal).money) por vencer"))").foregroundStyle(Palette.ink3))
-                    .font(.footnote)
+                HStack(spacing: 0) {
+                    Text("\(overdueTotal.money) vencido").foregroundStyle(Palette.negative).bold()
+                    Text(" · \(String(localized: "\((total - overdueTotal).money) por vencer"))").foregroundStyle(Palette.ink3)
+                }
+                .font(.footnote)
+                .accessibilityElement(children: .combine)
             }
             .padding(.bottom, 8)
             ForEach(openInvoices.sorted { ($0.daysOverdue() ?? -1) > ($1.daysOverdue() ?? -1) }.prefix(5)) { invoice in

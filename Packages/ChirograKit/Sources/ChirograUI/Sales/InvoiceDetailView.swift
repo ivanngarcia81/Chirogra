@@ -7,6 +7,8 @@ import SwiftUI
 /// la tarjeta «Registrar pago» en la misma pantalla y, debajo, las líneas, los totales y las notas de crédito.
 struct InvoiceDetailView: View {
     @Bindable var invoice: Invoice
+    /// Dentro de la lista y detalle de iPad (`iPadVentas`): sin título propio, que es el de Ventas.
+    var embedded = false
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
@@ -52,8 +54,7 @@ struct InvoiceDetailView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .background(Palette.background)
-        .navigationTitle(invoice.number.isEmpty ? String(localized: "Borrador") : invoice.number)
-        .inlineTitle()
+        .modifier(DetailTitle(title: invoice.number.isEmpty ? String(localized: "Borrador") : invoice.number, shown: !embedded))
         .toolbar {
             if invoice.status != .draft && invoice.status != .void {
                 ToolbarItem(placement: .primaryAction) { moreMenu }
@@ -533,5 +534,14 @@ struct CreditNoteEditorView: View {
         } catch {
             errorMessage = error.localizedDescription
         }
+    }
+}
+
+/// Título en línea de la factura, salvo cuando va dentro de la lista y detalle de iPad.
+private struct DetailTitle: ViewModifier {
+    let title: String
+    let shown: Bool
+    func body(content: Content) -> some View {
+        if shown { content.navigationTitle(title).inlineTitle() } else { content }
     }
 }
