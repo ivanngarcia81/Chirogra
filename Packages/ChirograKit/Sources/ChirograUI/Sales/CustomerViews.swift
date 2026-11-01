@@ -120,6 +120,7 @@ struct CustomerDetailView: View {
 
     @Bindable var customer: Customer
     @Environment(\.openURL) private var openURL
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var editing = false
     @State private var newInvoice = false
     @State private var refunding = false
@@ -164,7 +165,7 @@ struct CustomerDetailView: View {
     private var headerDetail: String {
         let since = ([customer.createdAt] + (customer.invoices ?? []).map(\.issueDate)).min() ?? customer.createdAt
         let terms = customer.paymentTermsDays == 0 ? String(localized: "Al recibir") : String(localized: "Neto \(customer.paymentTermsDays)")
-        return String(localized: "Cliente desde \(since.formatted(.dateTime.month(.wide).year())) · \(terms)")
+        return String(localized: "Cliente desde \(since.formatted(.appDateTime.month(.wide).year())) · \(terms)")
     }
 
     private var actions: some View {
@@ -227,8 +228,11 @@ struct CustomerDetailView: View {
                 .font(.footnote)
             }
             Divider()
-            HStack(alignment: .top) {
-                stat(String(localized: "Facturado en \(Date.now.formatted(.dateTime.year()))"), billedThisYear.money)
+            // Con tamaños de accesibilidad, una cifra debajo de la otra («Paga en promedio» se partía en tres líneas).
+            let statLayout = dynamicTypeSize.isAccessibilitySize ? AnyLayout(VStackLayout(alignment: .leading, spacing: 10))
+                                                                 : AnyLayout(HStackLayout(alignment: .top))
+            statLayout {
+                stat(String(localized: "Facturado en \(Date.now.formatted(.appDateTime.year()))"), billedThisYear.money)
                 stat(String(localized: "Paga en promedio"), averageDaysToPay.map { String(localized: "\($0) días") } ?? "—")
             }
         }

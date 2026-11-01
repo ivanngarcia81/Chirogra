@@ -24,7 +24,7 @@ struct VendorDetailView: View {
                               foreground: Palette.outflow, background: Palette.outflowWash)
                 HStack(spacing: 8) {
                     MiniStat(title: String(localized: "Por pagar"), value: vendor.openBalance.money)
-                    MiniStat(title: String(localized: "Gastado \(Date.now.formatted(.dateTime.year()))"), value: spentThisYear.money)
+                    MiniStat(title: String(localized: "Gastado \(Date.now.formatted(.appDateTime.year()))"), value: spentThisYear.money)
                     MiniStat(title: String(localized: "Compras"), value: (bills.count + expenses.count).formatted())
                 }
                 if let nextBill { billCard(nextBill) }
@@ -46,11 +46,11 @@ struct VendorDetailView: View {
         .sheet(item: $paying) { bill in NavigationStack { PayBillView(bill: bill) } }
     }
 
-    /// «Materiales · Neto 30 · desde 2024».
+    /// «Neto 30 · desde 2024». La categoría va debajo de «Historial»: aquí, con nombres largos, partía el subtítulo.
     private var headerDetail: String {
         let since = ([vendor.createdAt] + bills.map(\.billDate) + expenses.map(\.date)).min() ?? vendor.createdAt
         let terms = vendor.paymentTermsDays == 0 ? String(localized: "Al recibir") : String(localized: "Neto \(vendor.paymentTermsDays)")
-        return ([category, terms, String(localized: "desde \(since.formatted(.dateTime.year()))")].compactMap { $0 }).joined(separator: " · ")
+        return [terms, String(localized: "desde \(since.formatted(.appDateTime.year()))")].joined(separator: " · ")
     }
 
     private var spentThisYear: Int64 {

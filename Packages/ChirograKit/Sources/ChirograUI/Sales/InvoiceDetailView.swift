@@ -9,6 +9,7 @@ struct InvoiceDetailView: View {
     @Bindable var invoice: Invoice
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Query private var companies: [Company]
     @Query(sort: \Account.code) private var accounts: [Account]
     @State private var showingCreditNote = false
@@ -75,6 +76,8 @@ struct InvoiceDetailView: View {
         } message: {
             Text("Se registrará un asiento de reversión. La factura queda en el historial como anulada.")
         }
+        // Al pasar a «Parcial» el monto se vacía para escribir el que se cobra (antes quedaba el saldo completo).
+        .onChange(of: paymentMode) { _, mode in paymentAmount = mode == .partial ? 0 : invoice.balanceDue }
         .onAppear {
             paymentAmount = invoice.balanceDue
             depositAccountID = depositAccountID ?? depositAccounts.first { $0.subtype == .bank }?.id
@@ -146,7 +149,9 @@ struct InvoiceDetailView: View {
             (String(localized: "Pago"), payments.first?.dayMonth),
             (String(localized: "Pagada"), invoice.status == .paid ? (payments.last ?? invoice.issueDate).dayMonth : nil),
         ]
-        return HStack(alignment: .top, spacing: 6) {
+        // Con tamaños de accesibilidad, 2×2: en una fila de cuatro se recortaba «Pago».
+        let columns = Array(repeating: GridItem(.flexible(), spacing: 6, alignment: .top), count: dynamicTypeSize.isAccessibilitySize ? 2 : 4)
+        return LazyVGrid(columns: columns, alignment: .leading, spacing: 10) {
             ForEach(steps.indices, id: \.self) { index in
                 let (title, date) = steps[index]
                 VStack(alignment: .leading, spacing: 4) {
@@ -233,11 +238,16 @@ struct InvoiceDetailView: View {
     private var paymentCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Registrar pago").font(.cardTitle)
-            Picker("Tipo de pago", selection: $paymentMode) {
+            // Con tamaños de accesibilidad, menú: el segmentado no crece con el texto.
+            let picker = Picker("Tipo de pago", selection: $paymentMode) {
                 ForEach(PaymentMode.allCases) { Text($0.localizedTitle).tag($0) }
             }
-            .pickerStyle(.segmented)
             .labelsHidden()
+            if dynamicTypeSize.isAccessibilitySize {
+                picker.pickerStyle(.menu)
+            } else {
+                picker.pickerStyle(.segmented)
+            }
             VStack(spacing: 0) {
                 paymentRow(String(localized: "Monto")) {
                     if paymentMode == .partial {

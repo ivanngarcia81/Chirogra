@@ -17,16 +17,33 @@ extension Int64 {
     }
 }
 
-extension Date {
-    /// Mes en tres letras como en el canvas («sep», «oct»; la abreviatura del sistema en español es «sept.»).
-    var shortMonth: String { formatted(.dateTime.month(.wide)).prefix(3).lowercased() }
+extension Locale {
+    /// Locale de las fechas: el idioma de la app con la región del dispositivo. En español de EE. UU. se usa el de
+    /// Latinoamérica, que escribe «20 ene 2027» como el canvas (es_US escribe «ene 20, 2027»). También se pone en el
+    /// entorno de SwiftUI, así los selectores de fecha salen en el idioma de la app y no en el del sistema.
+    nonisolated static let app: Locale = {
+        let language = Bundle.main.preferredLocalizations.first ?? Locale.current.language.languageCode?.identifier ?? "es"
+        let region = Locale.current.region?.identifier ?? "US"
+        if language.hasPrefix("es") && region == "US" { return Locale(identifier: "es_419") }
+        return Locale(identifier: "\(language)_\(region)")
+    }()
+}
+
+extension FormatStyle where Self == Date.FormatStyle {
+    /// Como `.dateTime`, pero con `Locale.app`.
+    nonisolated static var appDateTime: Date.FormatStyle { Date.FormatStyle(locale: .app) }
 }
 
 extension Date {
-    var shortDate: String { formatted(.dateTime.day().month(.abbreviated).year()) }
-    var dayMonth: String { formatted(.dateTime.day().month(.abbreviated)) }
+    /// Mes en tres letras como en el canvas («sep», «oct»; la abreviatura del sistema en español es «sept.»).
+    var shortMonth: String { formatted(.appDateTime.month(.wide)).prefix(3).lowercased() }
+}
+
+extension Date {
+    var shortDate: String { formatted(.appDateTime.day().month(.abbreviated).year()) }
+    var dayMonth: String { formatted(.appDateTime.day().month(.abbreviated)) }
     /// «Octubre de 2026»: solo la primera letra en mayúscula (`capitalized` daría «Octubre De 2026»).
-    var monthYear: String { formatted(.dateTime.month(.wide).year()).sentenceCased }
+    var monthYear: String { formatted(.appDateTime.month(.wide).year()).sentenceCased }
     /// «vence Oct 28» con espacios de no separación: en una fila estrecha se parte antes, nunca dentro.
     var dueLabel: String { String(localized: "vence \(dayMonth)").replacingOccurrences(of: " ", with: "\u{00A0}") }
 }

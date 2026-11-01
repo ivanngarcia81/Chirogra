@@ -78,7 +78,7 @@ struct FormatsView: View {
                     Text("Vista previa · Factura \(invoices.filter { !$0.number.isEmpty }.max { $0.issueDate < $1.issueDate }?.number ?? "F-1001")")
                         .font(.caption.weight(.semibold)).textCase(.uppercase).opacity(0.85)
                     Text(Int64(255_805).money).font(.amount(30))
-                    Text("Vence el \(Date.now.addingTimeInterval(15 * 86_400).formatted(date: .numeric, time: .omitted))")
+                    Text("Vence el \(Date.now.addingTimeInterval(15 * 86_400).formatted(Date.FormatStyle(date: .numeric, time: .omitted, locale: .app)))")
                         .font(.subheadline).opacity(0.9)
                 }
                 .foregroundStyle(Palette.onBrand)

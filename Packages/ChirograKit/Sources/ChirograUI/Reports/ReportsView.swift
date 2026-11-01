@@ -245,8 +245,8 @@ struct ReportsView: View {
         let start = interval(offset: offset).start
         switch period {
         case .month, .custom: return start.monthYear
-        case .quarter: return String(localized: "T\((Calendar.current.component(.month, from: start) - 1) / 3 + 1) \(start.formatted(.dateTime.year()))")
-        case .year: return start.formatted(.dateTime.year())
+        case .quarter: return String(localized: "T\((Calendar.current.component(.month, from: start) - 1) / 3 + 1) \(start.formatted(.appDateTime.year()))")
+        case .year: return start.formatted(.appDateTime.year())
         }
     }
 
@@ -254,9 +254,9 @@ struct ReportsView: View {
     private var previousName: String {
         let start = interval(offset: -1).start
         switch period {
-        case .month, .custom: return start.formatted(.dateTime.month(.wide))
+        case .month, .custom: return start.formatted(.appDateTime.month(.wide))
         case .quarter: return String(localized: "T\((Calendar.current.component(.month, from: start) - 1) / 3 + 1)")
-        case .year: return start.formatted(.dateTime.year())
+        case .year: return start.formatted(.appDateTime.year())
         }
     }
 
@@ -319,7 +319,7 @@ struct ReportsView: View {
 
     private var rangeLabel: String {
         let current = interval()
-        return (current.start..<current.end.addingTimeInterval(-1)).formatted(.interval.day().month(.abbreviated).year())
+        return (current.start..<current.end.addingTimeInterval(-1)).formatted(.interval.day().month(.abbreviated).year().locale(.app))
     }
 
     /// Periodo mostrado, o el anterior de igual duración (`offset: -1`).
@@ -335,7 +335,7 @@ struct ReportsView: View {
     /// Encabezado de columna del periodo: «OCT 2026», «T4 2026», «2026»; en rangos personalizados, «ACTUAL»/«ANTERIOR».
     private func columnTitle(offset: Int) -> String {
         let start = interval(offset: offset).start
-        let year = start.formatted(.dateTime.year())
+        let year = start.formatted(.appDateTime.year())
         switch period {
         // Tres letras como en el canvas («SEP 2026»; la abreviatura del sistema en español es «sept»). En iPhone,
         // sólo el mes («OCT · SEP»), como en `ReportePyG`.

@@ -118,12 +118,14 @@ struct InvoiceEditorView: View {
             }
 
             Section {
-                Picker("Impuesto sobre ventas", selection: $taxGroupID) {
+                // «Impuesto» y no «Impuesto sobre ventas»: así etiqueta y grupo caben en una línea, como en el canvas.
+                Picker("Impuesto", selection: $taxGroupID) {
                     Text("Sin impuesto").tag(UUID?.none)
                     ForEach(taxGroups.filter { !$0.isArchived }) { group in
                         Text("\(group.name) · \(group.percent.formatted())%").tag(Optional(group.id))
                     }
                 }
+                .accessibilityLabel("Impuesto sobre ventas")
                 LabeledContent("Subtotal", value: validLines.reduce(0) { $0 + $1.amount }.money)
                 LabeledContent("Descuento") {
                     MoneyField(title: String(localized: "Descuento"), minorUnits: $discount)

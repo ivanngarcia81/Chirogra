@@ -136,7 +136,7 @@ struct ExpenseListView: View {
         if rest > 0 { slices.append((String(localized: "Otros"), rest)) }
         return VStack(alignment: .leading, spacing: 12) {
             VStack(alignment: .leading, spacing: 2) {
-                Text(Date.now.formatted(.dateTime.month(.wide)).sentenceCased).font(.footnote.weight(.semibold)).foregroundStyle(Palette.ink3)
+                Text(Date.now.formatted(.appDateTime.month(.wide)).sentenceCased).font(.footnote.weight(.semibold)).foregroundStyle(Palette.ink3)
                 Text(total.money).font(.amount(24)).foregroundStyle(Palette.ink)
             }
             if total > 0 {

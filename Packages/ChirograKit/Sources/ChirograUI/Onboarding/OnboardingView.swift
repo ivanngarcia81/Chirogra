@@ -57,7 +57,6 @@ struct OnboardingView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                stepIndicator
                 if step == 1 { companyStep } else { typeStep }
                 if let errorMessage { ErrorBanner(message: errorMessage) }
             }
@@ -65,7 +64,18 @@ struct OnboardingView: View {
             .frame(maxWidth: 520, alignment: .leading)
             .frame(maxWidth: .infinity)
         }
+        // Cada paso empieza arriba: el paso 2 heredaba el desplazamiento del 1 y su cabecera quedaba bajo la hora.
+        .id(step)
         .scrollDismissesKeyboard(.interactively)
+        // Pasos y «Atrás» fijos arriba, debajo de la barra de estado.
+        .safeAreaInset(edge: .top, spacing: 0) {
+            stepIndicator
+                .padding(.horizontal, 20)
+                .padding(.vertical, 8)
+                .frame(maxWidth: 520)
+                .frame(maxWidth: .infinity)
+                .background(Palette.background)
+        }
         .safeAreaInset(edge: .bottom, spacing: 0) {
             VStack(spacing: 6) {
                 Button(step == 1 ? "Continuar" : "Usar este plan") {

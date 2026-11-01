@@ -336,7 +336,7 @@ struct HomeView: View {
         return months.map { month, points in
             let income = points.first { $0.series == String(localized: "Ingresos") }?.amount ?? 0
             let expense = points.first { $0.series == String(localized: "Gastos") }?.amount ?? 0
-            let name = month.formatted(.dateTime.month(.wide))
+            let name = month.formatted(.appDateTime.month(.wide))
             let incomeText = income.formatted(.currency(code: "USD"))
             let expenseText = expense.formatted(.currency(code: "USD"))
             return String(localized: "\(name): ingresos \(incomeText), gastos \(expenseText)")
@@ -522,9 +522,9 @@ struct HomeView: View {
                 Divider()
                 LedgerRow(title: bill.vendor?.name ?? String(localized: "Proveedor"), subtitle: String(localized: "Factura por pagar \(bill.vendorNumber)")) {
                     VStack(spacing: 0) {
-                        Text(bill.dueDate.formatted(.dateTime.month(.abbreviated)).uppercased())
+                        Text(bill.dueDate.formatted(.appDateTime.month(.abbreviated)).uppercased())
                             .font(.caption2.weight(.bold)).foregroundStyle(Palette.outflow)
-                        Text(bill.dueDate.formatted(.dateTime.day())).font(.headline)
+                        Text(bill.dueDate.formatted(.appDateTime.day())).font(.headline)
                     }
                     .frame(minWidth: dateTileWidth)
                     .accessibilityElement(children: .ignore)

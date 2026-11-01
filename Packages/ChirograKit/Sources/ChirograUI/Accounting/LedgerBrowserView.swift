@@ -193,7 +193,7 @@ struct LedgerBrowserView: View {
         let range = period.interval
         let sources = kinds(for: account)
         let ledger = LedgerView.ledger(for: account, from: range?.start, to: range?.end.addingTimeInterval(-1))
-        let day = Date.FormatStyle.dateTime.day().month(.abbreviated)
+        let day = Date.FormatStyle.appDateTime.day().month(.abbreviated)
         var rows: [Row] = []
         if let range {
             rows.append(Row(id: "opening", date: range.start.formatted(day), detail: String(localized: "Saldo inicial"),

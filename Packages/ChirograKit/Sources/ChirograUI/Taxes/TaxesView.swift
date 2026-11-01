@@ -65,8 +65,8 @@ struct TaxesView: View {
     private func quarterTitle(_ interval: DateInterval) -> String {
         let calendar = Calendar.current
         let number = (calendar.component(.month, from: interval.start) - 1) / 3 + 1
-        let months = (interval.start..<interval.end.addingTimeInterval(-1)).formatted(.interval.month(.abbreviated))
-        return String(localized: "T\(number) \(interval.start.formatted(.dateTime.year())) · \(months)")
+        let months = (interval.start..<interval.end.addingTimeInterval(-1)).formatted(.interval.month(.abbreviated).locale(.app))
+        return String(localized: "T\(number) \(interval.start.formatted(.appDateTime.year())) · \(months)")
     }
 
     /// Fecha habitual de declaración: el día 20 del mes siguiente al trimestre (Texas y muchos estados).
