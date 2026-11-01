@@ -74,6 +74,10 @@ struct ReportsView: View {
     @Query private var invoices: [Invoice]
     @Query private var bills: [Bill]
     @Query private var companies: [Company]
+    @Query(sort: \Customer.name) private var customers: [Customer]
+    @Query(sort: \Vendor.name) private var vendors: [Vendor]
+    @Query(sort: \TaxRate.name) private var taxRates: [TaxRate]
+    @Query private var entries: [JournalEntry]
 
     @State private var selectedKind: Kind = .income
     @State private var period: Period = .month
@@ -82,6 +86,10 @@ struct ReportsView: View {
     @State private var customEnd = Period.month.interval().end.addingTimeInterval(-1)
     @State private var editingRange = false
     @State private var width: CGFloat = 0
+    /// Fecha de corte de balance, balanza y antigüedad («Al 31 oct 2026»).
+    @State private var asOf = Date.now
+    /// Trimestre del sales tax en pantallas anchas (`MacSalesTax`): 0 el actual, −1 el anterior…
+    @State private var taxQuarter = 0
 
     private var kind: Kind { fixedKind ?? selectedKind }
     private var ledger: Ledger { Ledger(accounts: accounts, lines: journalLines) }
@@ -110,7 +118,16 @@ struct ReportsView: View {
     }
 
     /// VARIACIÓN y % sólo si caben junto a los dos periodos (no en iPad vertical con la barra lateral).
-    private var showsVariationColumns: Bool { !isCompact && width - 2 * margin >= 760 }
+    private var showsVariationColumns: Bool { !isCompact && width - 2 * margin >= (showsDeltaColumn ? 760 : 640) }
+
+    /// La variación en dinero sólo en el Mac (`MacPyG`); el iPad (`iPadPyG`) muestra sólo el %.
+    private var showsDeltaColumn: Bool {
+        #if os(macOS)
+        true
+        #else
+        false
+        #endif
+    }
 
     /// Importes debajo del nombre en vez de en columnas: sólo en la columna única con tamaños de accesibilidad.
     private var stacksRows: Bool { isCompact && dynamicTypeSize.isAccessibilitySize }
@@ -124,7 +141,7 @@ struct ReportsView: View {
             VStack(alignment: .leading, spacing: isCompact ? Metrics.cardSpacing : 16) {
                 if !isNarrow { pageHeader }
                 if fixedKind == nil { kindChips }
-                if kind == .income || kind == .salesTax { periodControls }
+                if kind == .income || (kind == .salesTax && isCompact) { periodControls }
                 switch kind {
                 case .income: incomeStatement
                 case .balance: balanceSheet
@@ -158,22 +175,59 @@ struct ReportsView: View {
     /// `MacPyG`: empresa · base · moneda, y «Exportar CSV» a la derecha. En el Mac el título va también aquí,
     /// porque el de la ventana es pequeño.
     private var pageHeader: some View {
-        HStack(alignment: .center, spacing: 12) {
-            VStack(alignment: .leading, spacing: 2) {
-                #if os(macOS)
-                Text(kind.fullTitle).font(.system(size: 28, weight: .bold)).foregroundStyle(Palette.ink)
-                #endif
-                Text(subtitle).font(.subheadline).foregroundStyle(Palette.ink3)
-            }
-            Spacer(minLength: 8)
-            ShareLink(item: csvFile, preview: SharePreview("\(csvFile.name).csv")) {
-                Text("Exportar CSV")
+        ViewThatFits(in: .horizontal) {
+            HStack(alignment: .center, spacing: 12) { pageTitle; Spacer(minLength: 8); headerActions }
+            VStack(alignment: .leading, spacing: 12) { pageTitle; HStack(spacing: 12) { headerActions } }
+        }
+    }
+
+    private var pageTitle: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            #if os(macOS)
+            Text(kind.fullTitle).font(.system(size: 28, weight: .bold)).foregroundStyle(Palette.ink)
+            #endif
+            Text(subtitle).font(.subheadline).foregroundStyle(Palette.ink3)
+        }
+    }
+
+    /// Fecha de corte («Al …»), trimestre del sales tax y exportar. En el Mac «Exportar CSV» con borde (`MacPyG`);
+    /// en el iPad, «Exportar» en color de marca (`iPadPyG`).
+    @ViewBuilder
+    private var headerActions: some View {
+        if kind == .balance || kind == .trial || kind == .receivables || kind == .payables {
+            DatePicker("Al", selection: $asOf, in: ...Date.now, displayedComponents: .date)
+                .fixedSize()
+                .font(.subheadline.weight(.semibold))
+        }
+        if kind == .salesTax { quarterPicker }
+        ShareLink(item: csvFile, preview: SharePreview("\(csvFile.name).csv")) {
+            #if os(macOS)
+            Text("Exportar CSV")
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(Palette.ink)
+                .padding(.horizontal, 14)
+                .frame(minHeight: 36)
+                .background(Palette.surface, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).stroke(Palette.separator))
+            #else
+            Text("Exportar")
+                .font(.body.weight(.semibold))
+                .foregroundStyle(kind == .salesTax ? Palette.ink : Palette.onBrand)
+                .padding(.horizontal, 16)
+                .frame(minHeight: 44)
+                .background(kind == .salesTax ? Palette.surface : Palette.brand, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).stroke(kind == .salesTax ? Palette.separator : .clear))
+            #endif
+        }
+        .buttonStyle(.plain)
+        if kind == .salesTax {
+            NavigationLink { TaxesView() } label: {
+                Text("Registrar pago de impuesto")
                     .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Palette.ink)
+                    .foregroundStyle(Palette.onBrand)
                     .padding(.horizontal, 14)
-                    .frame(minHeight: 36)
-                    .background(Palette.surface, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-                    .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).stroke(Palette.separator))
+                    .frame(minHeight: Self.minimumRowHeight)
+                    .background(Palette.brand, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
             }
             .buttonStyle(.plain)
         }
@@ -182,8 +236,37 @@ struct ReportsView: View {
     private var subtitle: String {
         let company = companies.first
         let name = company.map { $0.displayName.isEmpty ? $0.legalName : $0.displayName } ?? ""
-        return String(localized: "\(name) · base devengado · \(company?.currencyCode ?? "USD")")
+        switch kind {
+        case .income:
+            #if os(macOS)
+            return String(localized: "\(name) · base devengado · \(company?.currencyCode ?? "USD")")
+            #else
+            return String(localized: "\(rangeTitle) · base devengado")
+            #endif
+        case .balance:
+            return String(localized: "\(name) · base devengado · \(company?.currencyCode ?? "USD")")
+        case .trial:
+            let count = trialBalanceReport.rows.count
+            return String(localized: "Saldos al \(asOf.shortDate) · \(count) cuentas con movimiento")
+        case .receivables:
+            return String(localized: "Facturas de clientes abiertas · días después del vencimiento · \(lateTotal(receivablesReport).money) vencido")
+        case .payables:
+            return String(localized: "Facturas de proveedores abiertas · días después del vencimiento · \(lateTotal(payablesReport).money) vencido")
+        case .salesTax:
+            return String(localized: "Sales tax por agencia · un trimestre por declaración")
+        }
     }
+
+    /// «Octubre de 2026», «T4 2026 (oct–dic)» o «2026», para el subtítulo del iPad.
+    private var rangeTitle: String {
+        switch period {
+        case .month: return periodName(offset: 0).sentenceCased
+        case .quarter: return "\(periodName(offset: 0)) (\(rangeLabel))"
+        case .year, .custom: return rangeLabel
+        }
+    }
+
+    private func lateTotal(_ report: AgingReport) -> Int64 { report.total - report.total(for: .current) }
 
     private var kindChips: some View {
         ScrollView(.horizontal, showsIndicators: false) {
@@ -205,6 +288,7 @@ struct ReportsView: View {
                 VStack(alignment: .leading, spacing: 8) { periodMenu; if kind == .income { compareCheckbox } }
             }
         } else {
+            #if os(macOS)
             // `MacPyG`: segmentado con «Personalizado», botón con el rango y casilla «Comparar con periodo anterior».
             ViewThatFits(in: .horizontal) {
                 HStack(spacing: 12) { periodPicker(Period.allCases); rangeButton; compareBox }
@@ -213,6 +297,13 @@ struct ReportsView: View {
                     compareBox
                 }
             }
+            #else
+            // `iPadPyG`: Mes, Trimestre y Año, y la casilla; el rango va en el subtítulo.
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 12) { periodPicker([.month, .quarter, .year]); compareBox }
+                VStack(alignment: .leading, spacing: 12) { periodPicker([.month, .quarter, .year]); compareBox }
+            }
+            #endif
         }
     }
 
@@ -371,6 +462,7 @@ struct ReportsView: View {
                 totalRow(String(localized: "Ganancia neta"), current.netIncome, previous.netIncome, trend: .upIsGood, highlighted: true)
             }
             .card(padding: 0)
+            .clipShape(RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous))
         }
     }
 
@@ -396,16 +488,67 @@ struct ReportsView: View {
 
     // MARK: Balance general
 
+    @ViewBuilder
     private var balanceSheet: some View {
+        if isCompact { compactBalanceSheet } else { wideBalanceSheet }
+    }
+
+    /// `MacBalance`: tres cifras, la comprobación arriba y dos columnas (activos | pasivos y patrimonio).
+    private var wideBalanceSheet: some View {
+        let report = balanceSheetReport
+        let twoColumns = width - 2 * margin >= 2 * 380 + 16
+        let assets = VStack(spacing: 0) {
+            group(String(localized: "Activos"), report.assets, nil)
+            totalRow(String(localized: "Total activos"), report.totalAssets, nil, highlighted: true)
+        }
+        .card(padding: 0)
+        .clipShape(RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous))
+        let liabilities = VStack(spacing: 0) {
+            group(String(localized: "Pasivos"), report.liabilities, nil)
+            totalRow(String(localized: "Total pasivos"), report.totalLiabilities, nil, highlighted: true)
+            group(String(localized: "Patrimonio"), report.equity, nil)
+            line(String(localized: "Resultados de años anteriores"), report.priorYearsEarnings, nil, indent: true)
+            line(String(localized: "Resultado del ejercicio"), report.currentYearEarnings, nil, indent: true)
+            totalRow(String(localized: "Total patrimonio"), report.totalEquity, nil, highlighted: true)
+            totalRow(String(localized: "Pasivo + patrimonio"), report.totalLiabilities + report.totalEquity, nil, highlighted: true)
+        }
+        .card(padding: 0)
+        .clipShape(RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous))
+        return VStack(spacing: 16) {
+            KPIGrid(items: [KPIItem(title: String(localized: "Activos"), value: report.totalAssets.money),
+                            KPIItem(title: String(localized: "Pasivos"), value: report.totalLiabilities.money),
+                            KPIItem(title: String(localized: "Patrimonio"), value: report.totalEquity.money, isBrand: true)])
+            equationBanner(report)
+            if twoColumns {
+                HStack(alignment: .top, spacing: 16) { assets.frame(maxWidth: .infinity); liabilities.frame(maxWidth: .infinity) }
+            } else {
+                assets
+                liabilities
+            }
+        }
+    }
+
+    private func equationBanner(_ report: BalanceSheet) -> some View {
+        let difference = report.totalAssets - report.totalLiabilities - report.totalEquity
+        return HStack(spacing: 10) {
+            Image(systemName: report.isBalanced ? "checkmark" : "exclamationmark.triangle").fontWeight(.bold).accessibilityHidden(true)
+            Text("Activo \(report.totalAssets.money) = Pasivo \(report.totalLiabilities.money) + Patrimonio \(report.totalEquity.money)")
+            Spacer(minLength: 8)
+            Text(report.isBalanced ? String(localized: "Cuadra") : String(localized: "Diferencia \(difference.money)")).font(.footnote.weight(.semibold))
+        }
+        .font(.body.weight(.semibold))
+        .monospacedDigit()
+        .foregroundStyle(report.isBalanced ? Palette.positive : Palette.negative)
+        .padding(.horizontal, 16).padding(.vertical, 12)
+        .background(report.isBalanced ? Palette.positiveWash : Palette.negativeWash, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .accessibilityElement(children: .combine)
+    }
+
+    private var compactBalanceSheet: some View {
         let report = balanceSheetReport
         return VStack(spacing: 16) {
-            if !isCompact {
-                KPIGrid(items: [KPIItem(title: String(localized: "Total activos"), value: report.totalAssets.money),
-                         KPIItem(title: String(localized: "Total pasivos"), value: report.totalLiabilities.money),
-                         KPIItem(title: String(localized: "Total patrimonio"), value: report.totalEquity.money)])
-            }
             VStack(spacing: 0) {
-                header(columns: [String(localized: "AL \(Date.now.shortDate.uppercased())")])
+                header(columns: [String(localized: "AL \(asOf.shortDate.uppercased())")])
                 group(String(localized: "Activos"), report.assets, nil)
                 totalRow(String(localized: "Total activos"), report.totalAssets, nil)
                 group(String(localized: "Pasivos"), report.liabilities, nil)
@@ -418,18 +561,67 @@ struct ReportsView: View {
                 balanceCheck(report.isBalanced, ok: String(localized: "Activo = Pasivo + Patrimonio"), bad: String(localized: "El balance no cuadra"))
             }
             .card(padding: 0)
+            .clipShape(RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous))
         }
     }
 
     // MARK: Balanza de comprobación
 
+    private var trialBalanceReport: TrialBalance {
+        ReportBuilder.trialBalance(accounts: ledger.ledgerAccounts, lines: ledger.lines, asOf: endOfDay(asOf))
+    }
+
+    @ViewBuilder
     private var trialBalance: some View {
-        let report = ReportBuilder.trialBalance(accounts: ledger.ledgerAccounts, lines: ledger.lines, asOf: .now)
-        return VStack(spacing: 16) {
-            if !isCompact {
-                KPIGrid(items: [KPIItem(title: String(localized: "Total debe"), value: report.totalDebit.money),
-                         KPIItem(title: String(localized: "Total haber"), value: report.totalCredit.money)])
+        if isCompact { compactTrialBalance } else { wideTrialBalance }
+    }
+
+    /// `MacBalanza`: Nº · CUENTA · TIPO · DÉBITO · CRÉDITO y la fila de totales con «Cuadra».
+    private var wideTrialBalance: some View {
+        let report = trialBalanceReport
+        let difference = abs(report.totalDebit - report.totalCredit)
+        return TableCard {
+            Text("Nº").frame(width: 56, alignment: .leading)
+            Text("Cuenta").frame(maxWidth: .infinity, alignment: .leading)
+            Text("Tipo").frame(width: 170, alignment: .leading)
+            Text("Débito").frame(width: wideColumnWidth + 10, alignment: .trailing)
+            Text("Crédito").frame(width: wideColumnWidth + 10, alignment: .trailing)
+        } rows: {
+            ForEach(report.rows) { row in
+                TableRow {
+                    Text(row.account.code).foregroundStyle(Palette.ink3).frame(width: 56, alignment: .leading)
+                    Text(row.account.name).lineLimit(1).frame(maxWidth: .infinity, alignment: .leading)
+                    Text(row.account.subtype.title).foregroundStyle(Palette.ink2).lineLimit(1).frame(width: 170, alignment: .leading)
+                    Text(row.debit == 0 ? "" : row.debit.money).frame(width: wideColumnWidth + 10, alignment: .trailing)
+                    Text(row.credit == 0 ? "" : row.credit.money).frame(width: wideColumnWidth + 10, alignment: .trailing)
+                }
             }
+            VStack(spacing: 0) {
+                Rectangle().fill(Palette.ink).frame(height: 2)
+                HStack(spacing: 12) {
+                    Color.clear.frame(width: 56, height: 1)
+                    Text("Totales").frame(maxWidth: .infinity, alignment: .leading)
+                    Text(report.isBalanced ? String(localized: "✓ Cuadra") : String(localized: "Diferencia \(difference.money)"))
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(report.isBalanced ? Palette.positive : Palette.negative)
+                        .frame(width: 170, alignment: .leading)
+                    Text(report.totalDebit.money).frame(width: wideColumnWidth + 10, alignment: .trailing)
+                    Text(report.totalCredit.money).frame(width: wideColumnWidth + 10, alignment: .trailing)
+                }
+                .font(.body.weight(.bold))
+                .monospacedDigit()
+                .padding(.horizontal, 18)
+                .frame(minHeight: 46)
+                .background(report.isBalanced ? Palette.positiveWash : Palette.negativeWash)
+                .accessibilityElement(children: .combine)
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+
+    private var compactTrialBalance: some View {
+        let report = trialBalanceReport
+        return VStack(spacing: 16) {
             VStack(spacing: 0) {
                 header(columns: [String(localized: "DEBE"), String(localized: "HABER")])
                 ForEach(report.rows) { row in
@@ -441,6 +633,7 @@ struct ReportsView: View {
                 balanceCheck(report.isBalanced, ok: String(localized: "Débitos = créditos"), bad: String(localized: "La balanza no cuadra"))
             }
             .card(padding: 0)
+            .clipShape(RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous))
         }
     }
 
@@ -458,8 +651,11 @@ struct ReportsView: View {
                     }
                 }
             } else {
-                KPIGrid(items: AgingReport.Bucket.allCases.map { KPIItem(title: titles[$0]!, value: report.total(for: $0).money) })
+                agingBuckets(report)
             }
+            if byBucket {
+                agingTable(report, party: party, total: total, empty: empty)
+            } else {
             VStack(spacing: 0) {
                 if byBucket {
                     header(party, columns: AgingReport.Bucket.allCases.map { titles[$0]!.uppercased() } + [String(localized: "TOTAL")], size: .bucket)
@@ -489,6 +685,105 @@ struct ReportsView: View {
                 }
             }
             .card(padding: 0)
+            .clipShape(RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous))
+            }
+        }
+    }
+
+    private static let wideBucketTitles: [AgingReport.Bucket: String] = [
+        .current: String(localized: "Al día"), .days1to30: "1–30", .days31to60: "31–60", .days61to90: "61–90", .over90: "90+",
+    ]
+
+    /// `MacAntigCobrar`: «Total abierto» en color de marca y una tarjeta por tramo con su barra; lo vencido, en rojo.
+    private func agingBuckets(_ report: AgingReport) -> some View {
+        let grand = report.total
+        let colors: [AgingReport.Bucket: Color] = [.current: Palette.brand, .days1to30: Color(light: 0xF2B33D, dark: 0xF2B33D),
+                                                   .days31to60: Color(light: 0xE58A4E, dark: 0xE58A4E), .days61to90: Palette.negative, .over90: Palette.negative]
+        return LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 12)], spacing: 12) {
+            bucketCard(String(localized: "Total abierto"), grand, share: 1, bar: Palette.onBrand, brand: true, late: false)
+            ForEach(AgingReport.Bucket.allCases, id: \.self) { bucket in
+                let amount = report.total(for: bucket)
+                bucketCard(bucket == .current ? Self.wideBucketTitles[bucket]! : String(localized: "\(Self.wideBucketTitles[bucket]!) días"),
+                           amount, share: grand == 0 ? 0 : Double(amount) / Double(grand), bar: colors[bucket]!, brand: false,
+                           late: bucket != .current && amount > 0)
+            }
+        }
+    }
+
+    private func bucketCard(_ title: String, _ amount: Int64, share: Double, bar: Color, brand: Bool, late: Bool) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title).font(.caption.weight(.semibold)).opacity(0.85)
+            Text(amount.money).font(.amount(20)).lineLimit(1).minimumScaleFactor(0.7)
+            GeometryReader { proxy in
+                ZStack(alignment: .leading) {
+                    Capsule().fill(brand ? Palette.onBrand.opacity(0.25) : Palette.surface2)
+                    Capsule().fill(bar).frame(width: proxy.size.width * share)
+                }
+            }
+            .frame(height: 5)
+            .accessibilityHidden(true)
+        }
+        .foregroundStyle(brand ? Palette.onBrand : late ? Palette.negative : Palette.ink)
+        .padding(.horizontal, 16).padding(.vertical, 12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(brand ? Palette.brand : Palette.surface, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .accessibilityElement(children: .combine)
+    }
+
+    /// Tabla por tramos con el nombre enlazado a la ficha del cliente o del proveedor.
+    private func agingTable(_ report: AgingReport, party: String, total: String, empty: String) -> some View {
+        TableCard {
+            Text(party).frame(maxWidth: .infinity, alignment: .leading)
+            ForEach(AgingReport.Bucket.allCases, id: \.self) { bucket in
+                Text(Self.wideBucketTitles[bucket]!).frame(width: bucketColumnWidth, alignment: .trailing)
+            }
+            Text("Total").frame(width: bucketColumnWidth + 10, alignment: .trailing)
+        } rows: {
+            ForEach(report.rows) { row in
+                TableRow {
+                    partyLink(row.party).frame(maxWidth: .infinity, alignment: .leading)
+                    ForEach(AgingReport.Bucket.allCases, id: \.self) { bucket in
+                        let amount = row.amounts[bucket] ?? 0
+                        Text(amount == 0 ? "—" : amount.money)
+                            .fontWeight(bucket != .current && amount > 0 ? .semibold : .regular)
+                            .foregroundStyle(amount == 0 ? Palette.ink3 : bucket == .current ? Palette.ink : Palette.negative)
+                            .frame(width: bucketColumnWidth, alignment: .trailing)
+                    }
+                    Text(row.total.money).fontWeight(.bold).frame(width: bucketColumnWidth + 10, alignment: .trailing)
+                }
+            }
+            if report.rows.isEmpty {
+                Text(empty).font(.subheadline).foregroundStyle(Palette.ink3).frame(maxWidth: .infinity).padding(.vertical, 32)
+            }
+            VStack(spacing: 0) {
+                Rectangle().fill(Palette.ink).frame(height: 2)
+                HStack(spacing: 12) {
+                    Text(total).frame(maxWidth: .infinity, alignment: .leading)
+                    ForEach(AgingReport.Bucket.allCases, id: \.self) { bucket in
+                        let amount = report.total(for: bucket)
+                        Text(amount == 0 ? "—" : amount.money).frame(width: bucketColumnWidth, alignment: .trailing)
+                    }
+                    Text(report.total.money).frame(width: bucketColumnWidth + 10, alignment: .trailing)
+                }
+                .font(.subheadline.weight(.bold))
+                .monospacedDigit()
+                .padding(.horizontal, 18)
+                .frame(minHeight: 46)
+                .background(Palette.brandWash)
+                .accessibilityElement(children: .combine)
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+
+    @ViewBuilder
+    private func partyLink(_ name: String) -> some View {
+        if kind == .receivables, let customer = customers.first(where: { $0.name == name }) {
+            NavigationLink(name) { CustomerDetailView(customer: customer) }.buttonStyle(.plain).fontWeight(.semibold).lineLimit(1)
+        } else if kind == .payables, let vendor = vendors.first(where: { $0.name == name }) {
+            NavigationLink(name) { VendorDetailView(vendor: vendor) }.buttonStyle(.plain).fontWeight(.semibold).lineLimit(1)
+        } else {
+            Text(name).fontWeight(.semibold).lineLimit(1)
         }
     }
 
@@ -500,26 +795,138 @@ struct ReportsView: View {
         if isCompact {
             SalesTaxSummaryCard(report: summary)
         } else {
-            VStack(spacing: 16) {
-                KPIGrid(items: [KPIItem(title: String(localized: "Sales tax cobrado"), value: summary.totalTax.money, isBrand: true),
-                         KPIItem(title: String(localized: "Ventas totales"), value: summary.totalSales.money),
-                         KPIItem(title: String(localized: "Gravables"), value: summary.taxableSales.money),
-                         KPIItem(title: String(localized: "No gravables"), value: summary.nonTaxableSales.money),
-                         KPIItem(title: String(localized: "Exentas (clientes exentos)"), value: summary.exemptSales.money)])
-                // «Por tasa» con el mismo estilo de tabla que el resto de reportes: TASA · BASE · IMPUESTO.
-                VStack(spacing: 0) {
-                    header(String(localized: "TASA"), columns: [String(localized: "BASE"), String(localized: "IMPUESTO")])
-                    ForEach(summary.rows) { row in
-                        rowView("\(row.name) · \(row.percent.formatted())%", [Cell(text: row.taxableSales.money), Cell(text: row.tax.money)])
-                    }
-                    if summary.rows.isEmpty {
-                        Text("Sin impuesto cobrado en el periodo.").foregroundStyle(Palette.ink3).padding()
-                    }
-                    Divider()
-                    rowView(String(localized: "Total"), [Cell(text: ""), Cell(text: summary.totalTax.money)], bold: true)
-                }
-                .card(padding: 0)
+            wideSalesTax(summary)
+        }
+    }
+
+    private struct AgencyRow: Identifiable {
+        let id: UUID?
+        let name: String
+        let rates: String
+        let rateMillionths: Int64
+        let taxableSales: Int64
+        let collected: Int64
+        let paid: Int64
+        var balance: Int64 { collected - paid }
+    }
+
+    /// Pagos de sales tax de la declaración del trimestre: los que se registran en el trimestre siguiente, que es
+    /// cuando se declara (`MacSalesTax`: el T3 se pagó el 20 oct). Por agencia (`nil` sin agencia).
+    private func taxPayments(for quarter: DateInterval) -> [(agency: UUID?, date: Date, amount: Int64)] {
+        let next = Period.quarter.interval(offset: taxQuarter + 1)
+        return entries.filter { $0.status == .posted && $0.sourceRaw == EntrySource.salesTaxPayment.rawValue && next.contains($0.date) && $0.date >= quarter.end }
+            .map { entry in (entry.sourceDocumentID, entry.date, (entry.lines ?? []).reduce(0) { $0 + $1.debit }) }
+    }
+
+    /// Una fila por agencia: suma de sus tasas, base gravable, cobrado, pagado y saldo.
+    private func agencyRows(_ summary: SalesTaxSummary, payments: [(agency: UUID?, date: Date, amount: Int64)]) -> [AgencyRow] {
+        let agencyOf = Dictionary(taxRates.map { ($0.id, $0.agency) }, uniquingKeysWith: { first, _ in first })
+        var order: [UUID?] = []
+        var grouped: [UUID?: [SalesTaxSummary.RateRow]] = [:]
+        for row in summary.rows {
+            let agency = row.rateID.flatMap { agencyOf[$0] ?? nil }
+            if grouped[agency?.id] == nil { order.append(agency?.id) }
+            grouped[agency?.id, default: []].append(row)
+        }
+        for payment in payments where grouped[payment.agency] == nil {
+            order.append(payment.agency)
+            grouped[payment.agency] = []
+        }
+        let names = Dictionary(taxRates.compactMap { $0.agency }.map { ($0.id, $0.name) }, uniquingKeysWith: { first, _ in first })
+        return order.map { id in
+            let rows = grouped[id] ?? []
+            return AgencyRow(id: id, name: id.flatMap { names[$0] } ?? String(localized: "Sin agencia"),
+                             rates: rows.map(\.name).joined(separator: " · "),
+                             rateMillionths: rows.reduce(0) { $0 + $1.rateMillionths },
+                             taxableSales: rows.map(\.taxableSales).max() ?? 0,
+                             collected: rows.reduce(0) { $0 + $1.tax },
+                             paid: payments.filter { $0.agency == id }.reduce(0) { $0 + $1.amount })
+        }
+    }
+
+    private var quarterPicker: some View {
+        Picker("Trimestre", selection: $taxQuarter) {
+            ForEach([-3, -2, -1, 0], id: \.self) { offset in
+                let start = Period.quarter.interval(offset: offset).start
+                Text("T\((Calendar.current.component(.month, from: start) - 1) / 3 + 1) \(start.formatted(.appDateTime.year()))").tag(offset)
             }
+        }
+        .labelsHidden()
+        .pickerStyle(.segmented)
+        .fixedSize()
+    }
+
+    private func percent(_ millionths: Int64) -> String {
+        (Decimal(millionths) / 10_000).formatted(.number.precision(.fractionLength(2))) + "%"
+    }
+
+    /// `MacSalesTax`: ventas gravables, cobrado, pagado y saldo del trimestre, y la tabla por agencia.
+    private func wideSalesTax(_ summary: SalesTaxSummary) -> some View {
+        let quarter = Period.quarter.interval(offset: taxQuarter)
+        let payments = taxPayments(for: quarter)
+        let rows = agencyRows(summary, payments: payments)
+        let paid = payments.reduce(0) { $0 + $1.amount }
+        let balance = summary.totalTax - paid
+        let lastPayment = payments.map(\.date).max()
+        return VStack(alignment: .leading, spacing: 16) {
+            KPIGrid(items: [
+                KPIItem(title: String(localized: "Ventas gravables"), value: summary.taxableSales.money,
+                        foot: String(localized: "Exentas \(summary.exemptSales.money)")),
+                KPIItem(title: String(localized: "Impuesto cobrado"), value: summary.totalTax.money),
+                KPIItem(title: String(localized: "Pagado"), value: paid.money,
+                        foot: lastPayment.map { String(localized: "Pagado el \($0.shortDate)") } ?? String(localized: "Sin pagos registrados")),
+                KPIItem(title: String(localized: "Saldo"), value: balance.money,
+                        foot: balance <= 0 && summary.totalTax > 0 ? String(localized: "Trimestre saldado") : String(localized: "Pendiente de pagar"),
+                        isBrand: balance > 0),
+            ])
+            TableCard {
+                Text("Jurisdicción").frame(maxWidth: .infinity, alignment: .leading)
+                Text("Tasa").frame(width: 70, alignment: .trailing)
+                Text("Ventas gravables").frame(width: 150, alignment: .trailing)
+                Text("Cobrado").frame(width: wideColumnWidth, alignment: .trailing)
+                Text("Pagado").frame(width: wideColumnWidth, alignment: .trailing)
+                Text("Saldo").frame(width: wideColumnWidth, alignment: .trailing)
+            } rows: {
+                ForEach(rows) { row in
+                    TableRow {
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text(row.name).fontWeight(.semibold)
+                            if !row.rates.isEmpty { Text(row.rates).font(.caption).foregroundStyle(Palette.ink3) }
+                        }
+                        .lineLimit(1)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        Text(percent(row.rateMillionths)).frame(width: 70, alignment: .trailing)
+                        Text(row.taxableSales.money).frame(width: 150, alignment: .trailing)
+                        Text(row.collected.money).frame(width: wideColumnWidth, alignment: .trailing)
+                        Text(row.paid.money).frame(width: wideColumnWidth, alignment: .trailing)
+                        Text(row.balance.money).fontWeight(.bold).frame(width: wideColumnWidth, alignment: .trailing)
+                    }
+                }
+                if rows.isEmpty {
+                    Text("Sin impuesto cobrado en el periodo.").font(.subheadline).foregroundStyle(Palette.ink3)
+                        .frame(maxWidth: .infinity).padding(.vertical, 32)
+                }
+                VStack(spacing: 0) {
+                    Rectangle().fill(Palette.ink).frame(height: 2)
+                    HStack(spacing: 12) {
+                        Text("Total · tasa combinada").frame(maxWidth: .infinity, alignment: .leading)
+                        Text(percent(rows.reduce(0) { $0 + $1.rateMillionths })).frame(width: 70, alignment: .trailing)
+                        Text(summary.taxableSales.money).frame(width: 150, alignment: .trailing)
+                        Text(summary.totalTax.money).frame(width: wideColumnWidth, alignment: .trailing)
+                        Text(paid.money).frame(width: wideColumnWidth, alignment: .trailing)
+                        Text(balance.money).frame(width: wideColumnWidth, alignment: .trailing)
+                    }
+                    .font(.subheadline.weight(.bold))
+                    .monospacedDigit()
+                    .padding(.horizontal, 18)
+                    .frame(minHeight: 46)
+                    .background(Palette.brandWash)
+                    .accessibilityElement(children: .combine)
+                }
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            Text("Cuentan como pagados los pagos registrados en el trimestre siguiente, cuando se presenta la declaración. Las tasas y las agencias se configuran en Impuestos.")
+                .font(.footnote).foregroundStyle(Palette.ink3)
         }
     }
 
@@ -529,7 +936,7 @@ struct ReportsView: View {
     private func header(_ first: String = String(localized: "CUENTA"), columns: [String], size: ColumnSize = .regular,
                         variation: Bool = false) -> some View {
         let showsVariation = variation && showsVariationColumns
-        let titles = columns + (showsVariation ? [String(localized: "VARIACIÓN")] : [])
+        let titles = columns + (showsVariation && showsDeltaColumn ? [String(localized: "VARIACIÓN")] : [])
         return HStack {
             Text(first).frame(maxWidth: .infinity, alignment: .leading)
             if !stacksRows {
@@ -576,7 +983,8 @@ struct ReportsView: View {
         VStack(spacing: 0) {
             Divider()
             rowView(title, cells(amount, previous, trend: trend), bold: true)
-                .background(highlighted ? Palette.brandWash : .clear)
+                // Banda a todo el ancho: con `.background(Color)` tomaba la forma redondeada de la tarjeta.
+                .background { Rectangle().fill(highlighted ? Palette.brandWash : .clear) }
         }
     }
 
@@ -605,7 +1013,7 @@ struct ReportsView: View {
         if let trend, showsVariationColumns {
             let delta = amount - previous
             let tint = color(for: delta, trend)
-            cells.append(Cell(text: signedMoney(delta), color: tint))
+            if showsDeltaColumn { cells.append(Cell(text: signedMoney(delta), color: tint)) }
             cells.append(Cell(text: percentChange(amount, previous) ?? "—", color: tint, size: .percent))
         }
         return cells
@@ -683,27 +1091,32 @@ struct ReportsView: View {
     // MARK: Datos de los reportes
 
     private var balanceSheetReport: BalanceSheet {
-        let fiscalStart = (try? Bookkeeper(context: context).fiscalYearStart(containing: .now))
-            ?? Calendar.current.dateInterval(of: .year, for: .now)?.start
-        return ReportBuilder.balanceSheet(accounts: ledger.ledgerAccounts, lines: ledger.lines, asOf: .now, fiscalYearStart: fiscalStart)
+        let fiscalStart = (try? Bookkeeper(context: context).fiscalYearStart(containing: asOf))
+            ?? Calendar.current.dateInterval(of: .year, for: asOf)?.start
+        return ReportBuilder.balanceSheet(accounts: ledger.ledgerAccounts, lines: ledger.lines, asOf: endOfDay(asOf), fiscalYearStart: fiscalStart)
     }
 
     // Las listas de facturas y de facturas de proveedor se observan para que los reportes se actualicen solos.
     private var receivablesReport: AgingReport {
         _ = invoices.count
-        return (try? Bookkeeper(context: context).receivablesAging()) ?? ReportBuilder.aging(items: [], asOf: .now)
+        return (try? Bookkeeper(context: context).receivablesAging(asOf: asOf)) ?? ReportBuilder.aging(items: [], asOf: asOf)
+    }
+
+    /// Último instante del día elegido: lo registrado ese día cuenta en el corte.
+    private func endOfDay(_ date: Date) -> Date {
+        Calendar.current.date(byAdding: DateComponents(day: 1, second: -1), to: Calendar.current.startOfDay(for: date)) ?? date
     }
 
     private var salesTaxReport: SalesTaxSummary {
         _ = invoices.count
-        let interval = interval()
+        let interval = isCompact ? interval() : Period.quarter.interval(offset: taxQuarter)
         return (try? Bookkeeper(context: context).salesTaxSummary(from: interval.start, to: interval.end.addingTimeInterval(-1)))
             ?? ReportBuilder.salesTaxSummary(documents: [], from: interval.start, to: interval.end)
     }
 
     private var payablesReport: AgingReport {
         _ = bills.count
-        return (try? Bookkeeper(context: context).payablesAging()) ?? ReportBuilder.aging(items: [], asOf: .now)
+        return (try? Bookkeeper(context: context).payablesAging(asOf: asOf)) ?? ReportBuilder.aging(items: [], asOf: asOf)
     }
 
     // MARK: Exportar
@@ -719,7 +1132,7 @@ struct ReportsView: View {
             CSVFile(name: String(localized: "Balance general"), text: CSVExport.balanceSheet(balanceSheetReport))
         case .trial:
             CSVFile(name: String(localized: "Balanza de comprobación"),
-                    text: CSVExport.trialBalance(ReportBuilder.trialBalance(accounts: ledger.ledgerAccounts, lines: ledger.lines, asOf: .now)))
+                    text: CSVExport.trialBalance(trialBalanceReport))
         case .receivables:
             CSVFile(name: String(localized: "Antigüedad de cuentas por cobrar"),
                     text: CSVExport.aging(receivablesReport, title: String(localized: "Antigüedad de cuentas por cobrar"), partyTitle: String(localized: "Cliente")))

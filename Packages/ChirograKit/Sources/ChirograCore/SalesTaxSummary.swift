@@ -44,6 +44,8 @@ public struct SalesTaxSummary: Hashable, Sendable {
         public var rateMillionths: Int64
         public var taxableSales: Int64
         public var tax: Int64
+        /// Tasa configurada de la que sale la fila (para saber su agencia); `nil` en documentos antiguos.
+        public var rateID: UUID? = nil
         public var id: String { "\(name)-\(rateMillionths)" }
         public var percent: Decimal { Decimal(rateMillionths) / 10_000 }
     }
@@ -69,7 +71,7 @@ extension ReportBuilder {
             let key = tax.rateID?.uuidString ?? "\(tax.name)-\(tax.rateMillionths)"
             if rows[key] == nil {
                 order.append(key)
-                rows[key] = SalesTaxSummary.RateRow(name: tax.name, rateMillionths: tax.rateMillionths, taxableSales: 0, tax: 0)
+                rows[key] = SalesTaxSummary.RateRow(name: tax.name, rateMillionths: tax.rateMillionths, taxableSales: 0, tax: 0, rateID: tax.rateID)
             }
             rows[key]?.taxableSales += tax.taxableBase
             rows[key]?.tax += tax.amount

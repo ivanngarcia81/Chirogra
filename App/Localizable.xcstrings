@@ -64,6 +64,16 @@
         }
       }
     },
+    "%@ días" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ days"
+          }
+        }
+      }
+    },
     "%@ por pagar" : {
       "localizations" : {
         "en" : {
@@ -136,6 +146,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ · void"
+          }
+        }
+      }
+    },
+    "%@ · base devengado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · accrual basis"
           }
         }
       }
@@ -811,6 +831,22 @@
         }
       }
     },
+    "Activo %@ = Pasivo %@ + Patrimonio %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Activo %1$@ = Pasivo %2$@ + Patrimonio %3$@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Assets %@ = Liabilities %@ + Equity %@"
+          }
+        }
+      }
+    },
     "Activo = Pasivo + Patrimonio" : {
       "localizations" : {
         "en" : {
@@ -1258,16 +1294,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Year"
-          }
-        }
-      }
-    },
-    "BASE" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "BASE"
           }
         }
       }
@@ -2088,6 +2114,16 @@
         }
       }
     },
+    "Cuadra" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Balanced"
+          }
+        }
+      }
+    },
     "Cuando registres ventas y gastos, aparecerán tu efectivo, tus ingresos del mes y lo que te deben." : {
       "localizations" : {
         "en" : {
@@ -2134,6 +2170,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Deleted account"
+          }
+        }
+      }
+    },
+    "Cuentan como pagados los pagos registrados en el trimestre siguiente, cuando se presenta la declaración. Las tasas y las agencias se configuran en Impuestos." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Payments recorded in the following quarter, when the return is filed, count as paid. Rates and agencies are set up in Taxes."
           }
         }
       }
@@ -2374,6 +2420,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Details"
+          }
+        }
+      }
+    },
+    "Diferencia %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Difference %@"
           }
         }
       }
@@ -2929,6 +2985,16 @@
         }
       }
     },
+    "Exentas %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exempt %@"
+          }
+        }
+      }
+    },
     "Exentas (clientes exentos)" : {
       "localizations" : {
         "en" : {
@@ -3116,6 +3182,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Invoices"
+          }
+        }
+      }
+    },
+    "Facturas de clientes abiertas · días después del vencimiento · %@ vencido" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open customer invoices · days past due · %@ overdue"
+          }
+        }
+      }
+    },
+    "Facturas de proveedores abiertas · días después del vencimiento · %@ vencido" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open vendor bills · days past due · %@ overdue"
           }
         }
       }
@@ -3552,16 +3638,6 @@
         }
       }
     },
-    "IMPUESTO" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "TAX"
-          }
-        }
-      }
-    },
     "Importar y conciliar · Próximamente" : {
       "localizations" : {
         "en" : {
@@ -3648,6 +3724,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tax"
+          }
+        }
+      }
+    },
+    "Impuesto cobrado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tax collected"
           }
         }
       }
@@ -3778,6 +3864,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Inventory"
+          }
+        }
+      }
+    },
+    "Jurisdicción" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jurisdiction"
           }
         }
       }
@@ -4995,6 +5091,16 @@
         }
       }
     },
+    "Pagado el %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paid on %@"
+          }
+        }
+      }
+    },
     "Pagar" : {
       "localizations" : {
         "en" : {
@@ -5193,6 +5299,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pending"
+          }
+        }
+      }
+    },
+    "Pendiente de pagar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not yet paid"
           }
         }
       }
@@ -6196,6 +6312,46 @@
         }
       }
     },
+    "Saldos al %@ · %lld cuentas con movimiento" : {
+      "localizations" : {
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Saldos al %@ · %lld cuenta con movimiento"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Saldos al %@ · %lld cuentas con movimiento"
+                }
+              }
+            }
+          }
+        },
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Balances as of %@ · %lld account with activity"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Balances as of %@ · %lld accounts with activity"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "Saldos de apertura" : {
       "localizations" : {
         "en" : {
@@ -6253,6 +6409,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sales tax collected"
+          }
+        }
+      }
+    },
+    "Sales tax por agencia · un trimestre por declaración" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sales tax by agency · one quarter per return"
           }
         }
       }
@@ -6587,6 +6753,16 @@
         }
       }
     },
+    "Sin pagos registrados" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No payments recorded"
+          }
+        }
+      }
+    },
     "Sin proveedor" : {
       "localizations" : {
         "en" : {
@@ -6793,16 +6969,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Q%lld %@ · %@"
-          }
-        }
-      }
-    },
-    "TASA" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RATE"
           }
         }
       }
@@ -7030,6 +7196,16 @@
         }
       }
     },
+    "Total abierto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total open"
+          }
+        }
+      }
+    },
     "Total activos" : {
       "localizations" : {
         "en" : {
@@ -7070,16 +7246,6 @@
         }
       }
     },
-    "Total debe" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Total debits"
-          }
-        }
-      }
-    },
     "Total gastos" : {
       "localizations" : {
         "en" : {
@@ -7096,16 +7262,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Total operating expenses"
-          }
-        }
-      }
-    },
-    "Total haber" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Total credits"
           }
         }
       }
@@ -7180,6 +7336,16 @@
         }
       }
     },
+    "Total · tasa combinada" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total · combined rate"
+          }
+        }
+      }
+    },
     "Totales" : {
       "localizations" : {
         "en" : {
@@ -7217,6 +7383,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Quarter"
+          }
+        }
+      }
+    },
+    "Trimestre saldado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quarter settled"
           }
         }
       }
@@ -7875,6 +8051,16 @@
     },
     "−%@" : {
       "shouldTranslate" : false
+    },
+    "✓ Cuadra" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "✓ Balanced"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"
