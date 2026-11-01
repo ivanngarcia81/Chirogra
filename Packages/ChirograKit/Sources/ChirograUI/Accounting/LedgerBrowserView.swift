@@ -46,10 +46,10 @@ struct LedgerBrowserView: View {
     @Query private var journalLines: [JournalLine]
     @State private var selectedID: UUID?
     @State private var period: Period = .thisMonth
-    @ScaledMetric(relativeTo: .body) private var listWidth: CGFloat = 280
-    @ScaledMetric(relativeTo: .subheadline) private var dateWidth: CGFloat = 56
-    @ScaledMetric(relativeTo: .subheadline) private var kindWidth: CGFloat = 96
-    @ScaledMetric(relativeTo: .subheadline) private var amountWidth: CGFloat = 100
+    @ScaledMetric(relativeTo: .body) private var listWidth: CGFloat = 240
+    @ScaledMetric(relativeTo: .subheadline) private var dateWidth: CGFloat = 52
+    @ScaledMetric(relativeTo: .subheadline) private var kindWidth: CGFloat = 84
+    @ScaledMetric(relativeTo: .subheadline) private var amountWidth: CGFloat = 92
 
     private var active: [Account] { accounts.filter { !$0.isArchived } }
 
@@ -78,11 +78,28 @@ struct LedgerBrowserView: View {
         .background(Palette.background)
         .navigationTitle("Libro mayor")
         .toolbar {
+            // Menú con su texto: un `Picker` en la barra del iPad se veía como una cápsula vacía a todo el ancho.
             ToolbarItem(placement: .primaryAction) {
-                Picker("Periodo", selection: $period) {
-                    ForEach(Period.allCases) { Text($0.title).tag($0) }
+                Menu {
+                    Picker("Periodo", selection: $period) {
+                        ForEach(Period.allCases) { Text($0.title).tag($0) }
+                    }
+                } label: {
+                    HStack(spacing: 4) {
+                        Text(period.title)
+                        Image(systemName: "chevron.down").font(.caption.weight(.semibold))
+                    }
                 }
-                .pickerStyle(.menu)
+                .accessibilityLabel("Periodo")
+                .accessibilityValue(period.title)
+            }
+            if let selected {
+                ToolbarItem(placement: .primaryAction) {
+                    let file = csvFile(for: selected)
+                    ShareLink(item: file, preview: SharePreview("\(file.name).csv")) {
+                        Text("Exportar CSV")
+                    }
+                }
             }
         }
     }
@@ -159,10 +176,22 @@ struct LedgerBrowserView: View {
         .accessibilityHidden(isHeader)
     }
 
+    private func csvFile(for account: Account) -> CSVFile {
+        let range = period.interval
+        let ledger = LedgerView.ledger(for: account, from: range?.start, to: range?.end.addingTimeInterval(-1))
+        return CSVFile(name: String(localized: "Libro mayor · \(account.name)"),
+                       text: CSVExport.accountLedger(ledger, kinds: kinds(for: account)))
+    }
+
+    /// Tipo de cada movimiento (cobro, gasto…) según el documento que generó el asiento.
+    private func kinds(for account: Account) -> [UUID: String] {
+        Dictionary((account.lines ?? []).compactMap { line in line.entry.map { (line.id, $0.source.title) } },
+                   uniquingKeysWith: { first, _ in first })
+    }
+
     private func rows(for account: Account) -> [Row] {
         let range = period.interval
-        let sources = Dictionary((account.lines ?? []).compactMap { line in line.entry.map { (line.id, $0.source.title) } },
-                                 uniquingKeysWith: { first, _ in first })
+        let sources = kinds(for: account)
         let ledger = LedgerView.ledger(for: account, from: range?.start, to: range?.end.addingTimeInterval(-1))
         let day = Date.FormatStyle.dateTime.day().month(.abbreviated)
         var rows: [Row] = []

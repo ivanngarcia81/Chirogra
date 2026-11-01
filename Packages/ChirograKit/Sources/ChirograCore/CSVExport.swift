@@ -92,6 +92,27 @@ public enum CSVExport {
 }
 
 extension CSVExport {
+    /// Libro mayor de una cuenta: saldo inicial, movimientos con saldo acumulado y saldo final.
+    /// `kinds` da el tipo de cada movimiento (cobro, gasto…) por su identificador.
+    public static func accountLedger(_ ledger: AccountLedger, kinds: [UUID: String] = [:], calendar: Calendar = .current) -> String {
+        var rows: [[String]] = [[String(localized: "Libro mayor"), "\(ledger.account.code) · \(ledger.account.name)"]]
+        if let from = ledger.from, let to = ledger.to {
+            rows.append([String(localized: "Periodo"), date(from, calendar: calendar), date(to, calendar: calendar)])
+        }
+        rows += [[], [String(localized: "Fecha"), String(localized: "Tipo"), String(localized: "Detalle"),
+                      String(localized: "Débito"), String(localized: "Crédito"), String(localized: "Saldo")]]
+        if ledger.from != nil {
+            rows.append(["", "", String(localized: "Saldo inicial"), "", "", amount(ledger.openingBalance)])
+        }
+        rows += ledger.rows.map { row in
+            [date(row.movement.date, calendar: calendar), kinds[row.movement.id] ?? "", row.movement.memo,
+             row.movement.debit > 0 ? amount(row.movement.debit) : "", row.movement.credit > 0 ? amount(row.movement.credit) : "",
+             amount(row.balance)]
+        }
+        rows.append(["", "", String(localized: "Saldo final"), amount(ledger.totalDebit), amount(ledger.totalCredit), amount(ledger.closingBalance)])
+        return lines(rows)
+    }
+
     public static func salesTaxSummary(_ report: SalesTaxSummary, calendar: Calendar = .current) -> String {
         var rows: [[String]] = [[String(localized: "Resumen de sales tax")], [String(localized: "Periodo"), date(report.from, calendar: calendar), date(report.to, calendar: calendar)], [],
                                 [String(localized: "Ventas totales"), amount(report.totalSales)],

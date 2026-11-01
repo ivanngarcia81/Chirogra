@@ -50,12 +50,18 @@ extension Font {
 
 // MARK: - Superficies
 
+extension EnvironmentValues {
+    /// Las tarjetas ocupan todo el alto disponible: dos tarjetas lado a lado miden lo mismo (canvas `MacInicio`).
+    @Entry var cardFillsHeight = false
+}
+
 struct CardModifier: ViewModifier {
     var padding: CGFloat = Metrics.cardPadding
+    @Environment(\.cardFillsHeight) private var fillsHeight
     func body(content: Content) -> some View {
         content
             .padding(padding)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(maxWidth: .infinity, maxHeight: fillsHeight ? .infinity : nil, alignment: .topLeading)
             .background(Palette.surface, in: RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous))
     }
 }

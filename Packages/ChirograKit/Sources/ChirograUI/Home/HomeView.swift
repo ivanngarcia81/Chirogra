@@ -18,6 +18,8 @@ struct HomeView: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @ScaledMetric(relativeTo: .title2) private var quickActionSide: CGFloat = 56
     @ScaledMetric(relativeTo: .headline) private var dateTileWidth: CGFloat = 44
+    @ScaledMetric(relativeTo: .subheadline) private var tableNumberWidth: CGFloat = 62
+    @ScaledMetric(relativeTo: .subheadline) private var tableAmountWidth: CGFloat = 90
     @State private var sheet: QuickAction?
     @State private var width: CGFloat = 0
     #if os(iOS)
@@ -43,9 +45,9 @@ struct HomeView: View {
         #endif
     }
 
-    /// Diseño de `MacInicio`: en iPad y Mac con al menos 700 pt, hasta AX3 incluido.
+    /// Diseño de `MacInicio`: en iPad y Mac con al menos 600 pt (iPad vertical con la barra lateral), hasta AX3.
     private var isWide: Bool {
-        !isNarrow && dynamicTypeSize < .accessibility4 && (width == 0 || width - 2 * margin >= 700)
+        !isNarrow && dynamicTypeSize < .accessibility4 && (width == 0 || width - 2 * margin >= 600)
     }
 
     /// Tarjetas de dos en dos cuando hay sitio (y sin tamaños de accesibilidad, que necesitan todo el ancho).
@@ -128,10 +130,13 @@ struct HomeView: View {
     @ViewBuilder
     private func pair<First: View, Second: View>(@ViewBuilder _ first: () -> First, @ViewBuilder and second: () -> Second) -> some View {
         if pairsCards {
+            // Las dos tarjetas con la altura de la más alta, sin hueco debajo de la más baja.
             HStack(alignment: .top, spacing: 16) {
-                first().frame(maxWidth: .infinity)
-                second().frame(maxWidth: .infinity)
+                first().frame(maxWidth: .infinity, maxHeight: .infinity)
+                second().frame(maxWidth: .infinity, maxHeight: .infinity)
             }
+            .environment(\.cardFillsHeight, true)
+            .fixedSize(horizontal: false, vertical: true)
         } else {
             first()
             second()
@@ -327,6 +332,28 @@ struct HomeView: View {
                 }
                 .font(.footnote)
             }
+            if isWide {
+                // `MacInicio`: tabla Nº · cliente · estado · importe, las vencidas primero.
+                ForEach(openInvoices.sorted { ($0.daysOverdue() ?? -1) > ($1.daysOverdue() ?? -1) }.prefix(5)) { invoice in
+                    Divider()
+                    NavigationLink { InvoiceDetailView(invoice: invoice) } label: {
+                        HStack(spacing: 12) {
+                            Text(invoice.number).foregroundStyle(Palette.ink3).frame(width: tableNumberWidth, alignment: .leading)
+                            Text(invoice.customer?.name ?? String(localized: "Sin cliente")).fontWeight(.semibold).lineLimit(1)
+                            Spacer(minLength: 8)
+                            StatusChip(invoice: invoice)
+                            Text(invoice.balanceDue.money).fontWeight(.semibold).frame(minWidth: tableAmountWidth, alignment: .trailing)
+                        }
+                        .font(.subheadline)
+                        .monospacedDigit()
+                        .foregroundStyle(Palette.ink)
+                        .frame(minHeight: 36)
+                        .contentShape(Rectangle())
+                        .accessibilityElement(children: .combine)
+                    }
+                    .buttonStyle(.plain)
+                }
+            } else {
             ForEach(openInvoices.prefix(3)) { invoice in
                 Divider()
                 NavigationLink { InvoiceDetailView(invoice: invoice) } label: {
@@ -342,6 +369,7 @@ struct HomeView: View {
                 }
                 .buttonStyle(.plain)
             }
+            }
             if openInvoices.isEmpty {
                 Text("No tienes facturas pendientes de cobro.").font(.subheadline).foregroundStyle(Palette.ink3)
             }
@@ -353,6 +381,24 @@ struct HomeView: View {
         let soon = bills.filter { $0.isOpen && $0.dueDate <= Calendar.current.date(byAdding: .day, value: 14, to: .now)! }
         return VStack(alignment: .leading, spacing: 8) {
             Text("Por pagar · próximos 14 días").font(.cardTitle)
+            if isWide {
+                // `MacInicio`: tabla fecha · proveedor · número · importe.
+                ForEach(soon) { bill in
+                    Divider()
+                    HStack(spacing: 12) {
+                        Text(bill.dueDate.dayMonth).foregroundStyle(Palette.ink3).frame(width: tableNumberWidth, alignment: .leading)
+                        Text(bill.vendor?.name ?? String(localized: "Proveedor")).fontWeight(.semibold).lineLimit(1)
+                        Spacer(minLength: 8)
+                        Text(bill.vendorNumber).font(.caption).foregroundStyle(Palette.ink3).lineLimit(1)
+                        Text(bill.balanceDue.money).fontWeight(.semibold).frame(minWidth: tableAmountWidth, alignment: .trailing)
+                    }
+                    .font(.subheadline)
+                    .monospacedDigit()
+                    .foregroundStyle(Palette.ink)
+                    .frame(minHeight: 36)
+                    .accessibilityElement(children: .combine)
+                }
+            } else {
             ForEach(soon) { bill in
                 Divider()
                 LedgerRow(title: bill.vendor?.name ?? String(localized: "Proveedor"), subtitle: String(localized: "Factura por pagar \(bill.vendorNumber)")) {
@@ -370,6 +416,7 @@ struct HomeView: View {
                     Text(bill.balanceDue.money).font(.body.weight(.semibold)).monospacedDigit()
                 }
             }
+            }
             if soon.isEmpty {
                 Text("Nada por pagar en las próximas dos semanas.").font(.subheadline).foregroundStyle(Palette.ink3)
             }
@@ -377,12 +424,16 @@ struct HomeView: View {
         .card()
     }
 
+    /// Cuentas bancarias y tarjetas; caja y fondos no depositados sólo si tienen saldo (M4).
     private var bankAccounts: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Cuentas").font(.cardTitle)
-            ForEach(ledger.moneyAccounts) { account in
+        let shown = ledger.moneyAccounts.filter { account in
+            account.subtype == .bank || account.subtype == .creditCard || ledger.balance(of: account) != 0
+        }
+        return VStack(alignment: .leading, spacing: 8) {
+            Text("Cuentas bancarias").font(.cardTitle)
+            ForEach(shown) { account in
                 Divider()
-                LedgerRow(title: account.name, subtitle: account.subtype == .creditCard ? String(localized: "Tarjeta de crédito") : String(localized: "Saldo según libros")) {
+                LedgerRow(title: account.name, subtitle: "\(account.code) · \(account.subtype.title)") {
                     IconTile(systemImage: account.subtype == .creditCard ? "creditcard" : "building.columns")
                 } trailing: {
                     let balance = ledger.balance(of: account)

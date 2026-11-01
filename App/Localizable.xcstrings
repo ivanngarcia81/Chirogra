@@ -1456,6 +1456,16 @@
         }
       }
     },
+    "Cuentas bancarias" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bank accounts"
+          }
+        }
+      }
+    },
     "Cuentas por cobrar" : {
       "localizations" : {
         "en" : {
@@ -1932,6 +1942,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Choose…"
+          }
+        }
+      }
+    },
+    "Elige la cuenta de la línea %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose the account for line %lld"
           }
         }
       }
@@ -2905,6 +2925,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "General ledger"
+          }
+        }
+      }
+    },
+    "Libro mayor · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "General ledger · %@"
           }
         }
       }
@@ -4609,16 +4639,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Open balance"
-          }
-        }
-      }
-    },
-    "Saldo según libros" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Balance per books"
           }
         }
       }

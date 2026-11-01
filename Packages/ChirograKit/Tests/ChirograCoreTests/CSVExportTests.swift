@@ -73,4 +73,18 @@ struct CSVExportTests {
         let csv = CSVExport.incomeStatement(current, previous: previous, calendar: calendar)
         #expect(csv.contains("  Alquiler,0.00,1200.00"))
     }
+
+    @Test("El libro mayor exporta saldo inicial, movimientos con saldo acumulado y saldo final")
+    func accountLedger() {
+        let deposit = LedgerMovement(date: day(5), memo: "Cobro F-1001, Café", debit: 125_050, credit: 0)
+        let rentPaid = LedgerMovement(date: day(9), memo: "Renta", debit: 0, credit: 120_000)
+        let opening = LedgerMovement(date: day(1), memo: "Saldos iniciales", debit: 1_000_000, credit: 0)
+        let ledger = ReportBuilder.accountLedger(account: bank, movements: [opening, deposit, rentPaid], from: day(2), to: day(31))
+        let rows = CSVExport.accountLedger(ledger, kinds: [deposit.id: "Cobro"], calendar: calendar)
+            .split(separator: "\n").map(String.init)
+        #expect(rows.contains(",,Saldo inicial,,,10000.00"))
+        #expect(rows.contains("2026-10-05,Cobro,\"Cobro F-1001, Café\",1250.50,,11250.50"))
+        #expect(rows.contains("2026-10-09,,Renta,,1200.00,10050.50"))
+        #expect(rows.last == ",,Saldo final,1250.50,1200.00,10050.50")
+    }
 }

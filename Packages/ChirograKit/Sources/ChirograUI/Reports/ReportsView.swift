@@ -103,11 +103,14 @@ struct ReportsView: View {
         #endif
     }
 
-    /// Una sola columna como en iPhone: en pantallas estrechas, con menos de 700 pt de contenido y con los dos
+    /// Una sola columna como en iPhone: en pantallas estrechas, con menos de 600 pt de contenido y con los dos
     /// tamaños de accesibilidad más grandes. En iPad con AX1–AX3 hay sitio para las columnas.
     private var isCompact: Bool {
-        isNarrow || dynamicTypeSize >= .accessibility4 || (width > 0 && width - 2 * margin < 700)
+        isNarrow || dynamicTypeSize >= .accessibility4 || (width > 0 && width - 2 * margin < 600)
     }
+
+    /// VARIACIÓN y % sólo si caben junto a los dos periodos (no en iPad vertical con la barra lateral).
+    private var showsVariationColumns: Bool { !isCompact && width - 2 * margin >= 760 }
 
     /// Importes debajo del nombre en vez de en columnas: sólo en la columna única con tamaños de accesibilidad.
     private var stacksRows: Bool { isCompact && dynamicTypeSize.isAccessibilitySize }
@@ -195,10 +198,17 @@ struct ReportsView: View {
     @ViewBuilder
     private var periodControls: some View {
         if isNarrow {
-            HStack {
-                periodPicker(Period.allCases.filter { $0 != .custom })
-                Spacer()
-                if kind == .income { Toggle("Comparar", isOn: $compare).fixedSize() }
+            // En un iPhone de 402 pt el segmentado y «Comparar» no caben juntos: «Comparar» baja a su línea.
+            ViewThatFits(in: .horizontal) {
+                HStack {
+                    periodPicker(Period.allCases.filter { $0 != .custom })
+                    Spacer()
+                    if kind == .income { Toggle("Comparar", isOn: $compare).fixedSize() }
+                }
+                VStack(alignment: .leading, spacing: 8) {
+                    periodPicker(Period.allCases.filter { $0 != .custom })
+                    if kind == .income { Toggle("Comparar con periodo anterior", isOn: $compare) }
+                }
             }
         } else {
             // `MacPyG`: segmentado con «Personalizado», botón con el rango y casilla «Comparar con periodo anterior».
@@ -212,14 +222,21 @@ struct ReportsView: View {
         }
     }
 
+    /// Segmentado; con tamaños de accesibilidad, menú (el segmentado no crece con el texto).
+    @ViewBuilder
     private func periodPicker(_ options: [Period]) -> some View {
-        Picker("Periodo", selection: $period) {
+        let picker = Picker("Periodo", selection: $period) {
             ForEach(options) { Text($0.localizedTitle).tag($0) }
         }
-        .pickerStyle(.segmented)
         .labelsHidden()
-        .fixedSize()
-        .controlSize(isNarrow ? .regular : .large)
+        if dynamicTypeSize.isAccessibilitySize {
+            picker.pickerStyle(.menu)
+        } else {
+            picker
+                .pickerStyle(.segmented)
+                .fixedSize()
+                .controlSize(isNarrow ? .regular : .large)
+        }
     }
 
     private var rangeButton: some View {
@@ -422,7 +439,10 @@ struct ReportsView: View {
                 if report.rows.isEmpty { Text(empty).foregroundStyle(Palette.ink3).padding() }
                 Divider()
                 if byBucket {
-                    rowView(total, AgingReport.Bucket.allCases.map { Cell(text: report.total(for: $0).money, size: .bucket) }
+                    rowView(total, AgingReport.Bucket.allCases.map { bucket in
+                        let amount = report.total(for: bucket)
+                        return Cell(text: amount == 0 ? "—" : amount.money, color: amount == 0 ? Palette.ink3 : Palette.ink, size: .bucket)
+                    }
                                    + [Cell(text: report.total.money, size: .bucket)], bold: true)
                 } else {
                     rowView(total, [Cell(text: ""), Cell(text: report.total.money, color: Palette.ink3)], bold: true)
@@ -468,7 +488,7 @@ struct ReportsView: View {
     /// `variation`: añade «VARIACIÓN» y «%» (sólo en pantallas anchas, como en `MacPyG`).
     private func header(_ first: String = String(localized: "CUENTA"), columns: [String], size: ColumnSize = .regular,
                         variation: Bool = false) -> some View {
-        let showsVariation = variation && !isCompact
+        let showsVariation = variation && showsVariationColumns
         let titles = columns + (showsVariation ? [String(localized: "VARIACIÓN")] : [])
         return HStack {
             Text(first).frame(maxWidth: .infinity, alignment: .leading)
@@ -523,7 +543,7 @@ struct ReportsView: View {
     private func cells(_ amount: Int64, _ previous: Int64?, trend: Trend?) -> [Cell] {
         guard compare, let previous else { return [Cell(text: amount.money)] }
         var cells = [Cell(text: amount.money), Cell(text: previous.money, color: Palette.ink3)]
-        if let trend, !isCompact {
+        if let trend, showsVariationColumns {
             let delta = amount - previous
             let tint = color(for: delta, trend)
             cells.append(Cell(text: signedMoney(delta), color: tint))

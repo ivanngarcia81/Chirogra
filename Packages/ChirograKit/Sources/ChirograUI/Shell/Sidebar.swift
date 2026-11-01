@@ -103,6 +103,8 @@ struct Sidebar: View {
             .padding(.vertical, 8)
         }
         .safeAreaInset(edge: .bottom, spacing: 0) { companyCard }
+        // Al vaciar la búsqueda se suelta el foco del campo.
+        .onChange(of: query) { _, text in if text.isEmpty { searching = false } }
         .background(Palette.sidebar)
         // ⌘K lleva a la búsqueda, como en el canvas.
         .background {
@@ -186,12 +188,16 @@ struct Sidebar: View {
                 .padding(.leading, 41)
                 .padding(.trailing, 12)
                 .frame(maxWidth: .infinity, minHeight: Self.subRowHeight, alignment: .leading)
-                .background(isActive ? Palette.surface : .clear, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+                .background(isActive ? Self.activeSubRow : .clear, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(isActive ? .isSelected : [])
     }
+
+    /// Fondo de la subsección abierta: superficie en claro (canvas); en oscuro, un gris más claro que la barra,
+    /// porque la superficie oscura casi no se distingue de ella.
+    private static let activeSubRow = Color(light: 0xFFFFFF, dark: 0x2B2F47)
 
     #if os(macOS)
     private static let rowHeight: CGFloat = 34

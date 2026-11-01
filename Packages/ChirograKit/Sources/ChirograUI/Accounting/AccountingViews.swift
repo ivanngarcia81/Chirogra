@@ -289,6 +289,15 @@ struct JournalEntryEditorView: View {
     private var books: Bookkeeper { Bookkeeper(context: context) }
     private var postable: [Account] { accounts.filter(\.isPostable) }
 
+    /// Totales de todo lo escrito, también de las líneas sin cuenta (el asiento sólo cuenta las que la tienen).
+    private var typedDebits: Int64 { lines.reduce(0) { $0 + $1.debit } }
+    private var typedCredits: Int64 { lines.reduce(0) { $0 + $1.credit } }
+
+    /// Número (desde 1) de la primera línea con importe y sin cuenta.
+    private var lineWithoutAccount: Int? {
+        lines.firstIndex { $0.accountID == nil && ($0.debit != 0 || $0.credit != 0) }.map { $0 + 1 }
+    }
+
     private var draft: JournalEntryDraft {
         JournalEntryDraft(date: date, memo: memo, source: .manual, lines: lines.compactMap { line in
             guard let accountID = line.accountID else { return nil }
@@ -350,7 +359,7 @@ struct JournalEntryEditorView: View {
                 HStack {
                     Text("Totales")
                     Spacer()
-                    Text("Debe \(entry.totalDebits.money)  ·  Haber \(entry.totalCredits.money)").monospacedDigit()
+                    Text("Debe \(typedDebits.money)  ·  Haber \(typedCredits.money)").monospacedDigit()
                 }
                 .font(.subheadline.weight(.semibold))
             }
@@ -456,8 +465,8 @@ struct JournalEntryEditorView: View {
                     .frame(minHeight: 44)
                 Spacer()
                 Text("Totales").fontWeight(.semibold).foregroundStyle(Palette.ink2)
-                Text(entry.totalDebits.money).fontWeight(.bold).frame(width: amountWidth, alignment: .trailing)
-                Text(entry.totalCredits.money).fontWeight(.bold).frame(width: amountWidth, alignment: .trailing)
+                Text(typedDebits.money).fontWeight(.bold).frame(width: amountWidth, alignment: .trailing)
+                Text(typedCredits.money).fontWeight(.bold).frame(width: amountWidth, alignment: .trailing)
                 Color.clear.frame(width: 28, height: 1)
             }
             .monospacedDigit()
@@ -499,7 +508,9 @@ struct JournalEntryEditorView: View {
     @ViewBuilder
     private func statusBanner(_ entry: JournalEntryDraft) -> some View {
         let balanced = entry.isBalanced && entry.totalDebits > 0
-        let message: String = if balanced {
+        let message: String = if let line = lineWithoutAccount {
+            String(localized: "Elige la cuenta de la línea \(line)")
+        } else if balanced {
             validationErrors.first?.localizedMessage ?? String(localized: "El asiento cuadra: débitos = créditos")
         } else if entry.difference > 0 {
             String(localized: "No cuadra: faltan créditos por \(abs(entry.difference).money)")
@@ -508,7 +519,7 @@ struct JournalEntryEditorView: View {
         } else {
             String(localized: "Escribe los importes al debe y al haber")
         }
-        let ok = balanced && validationErrors.isEmpty
+        let ok = balanced && validationErrors.isEmpty && lineWithoutAccount == nil
         Label(message, systemImage: ok ? "checkmark.circle" : "exclamationmark.triangle")
             .font(.subheadline.weight(.semibold))
             .foregroundStyle(ok ? Palette.positive : Palette.negative)
