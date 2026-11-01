@@ -55,4 +55,12 @@ extension Bookkeeper {
         try context.save()
         return attachment
     }
+
+    /// Quita un recibo adjunto. Tampoco cambia la contabilidad; queda constancia en la auditoría.
+    public func removeAttachment(_ attachment: Attachment) throws {
+        let owner = attachment.expense?.payee ?? attachment.bill?.vendorNumber ?? ""
+        audit("Attachment", attachment.id, "delete", "Recibo quitado: \(attachment.filename)\(owner.isEmpty ? "" : " · \(owner)")")
+        context.delete(attachment)
+        try context.save()
+    }
 }

@@ -85,6 +85,7 @@ struct ExpenseDetailView: View {
     @Environment(\.modelContext) private var context
     @Query private var accounts: [Account]
     @State private var errorMessage: String?
+    @State private var removing: Attachment?
 
     var body: some View {
         List {
@@ -122,11 +123,17 @@ struct ExpenseDetailView: View {
                             }
                             .accessibilityLabel("Compartir \(attachment.filename)")
                         }
+                        Button("Quitar", systemImage: "trash", role: .destructive) { removing = attachment }
+                            .labelStyle(.iconOnly)
+                            .buttonStyle(.borderless)
+                            .accessibilityLabel("Quitar \(attachment.filename)")
                     }
-                }
-                .onDelete { offsets in
-                    for index in offsets { context.delete(attachments[index]) }
-                    try? context.save()
+                    .swipeActions {
+                        Button("Quitar", systemImage: "trash", role: .destructive) { removing = attachment }
+                    }
+                    .contextMenu {
+                        Button("Quitar recibo", systemImage: "trash", role: .destructive) { removing = attachment }
+                    }
                 }
                 ReceiptPickerButtons { data, name, type in
                     do {
@@ -144,5 +151,20 @@ struct ExpenseDetailView: View {
         .screenBackground()
         .navigationTitle("Gasto")
         .inlineTitle()
+        .confirmationDialog("¿Quitar este recibo?", isPresented: Binding(get: { removing != nil }, set: { if !$0 { removing = nil } }),
+                            titleVisibility: .visible, presenting: removing) { attachment in
+            Button("Quitar \(attachment.filename)", role: .destructive) { remove(attachment) }
+        } message: { _ in
+            Text("El gasto y su asiento no cambian; solo se borra el archivo adjunto.")
+        }
+    }
+
+    private func remove(_ attachment: Attachment) {
+        do {
+            try Bookkeeper(context: context).removeAttachment(attachment)
+            errorMessage = nil
+        } catch {
+            errorMessage = "No se pudo quitar el recibo."
+        }
     }
 }

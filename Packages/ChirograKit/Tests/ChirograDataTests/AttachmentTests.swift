@@ -42,7 +42,7 @@ struct AttachmentTests {
         }
     }
 
-    @Test("Adjuntar un recibo a un gasto registrado no cambia la contabilidad")
+    @Test("Adjuntar y quitar un recibo de un gasto registrado no cambia la contabilidad")
     func attachToExpense() throws {
         let container = try ChirograStore.makeContainer(inMemory: true)
         let books = Bookkeeper(context: container.mainContext)
@@ -60,5 +60,12 @@ struct AttachmentTests {
         #expect(expense.attachments?.count == 1)
         #expect(expense.attachments?.first?.contentType == UTType.jpeg.identifier)
         #expect(try container.mainContext.fetchCount(FetchDescriptor<JournalEntry>()) == entries)
+
+        try books.removeAttachment(try #require(expense.attachments?.first))
+        #expect(expense.attachments?.isEmpty ?? true)
+        #expect(try container.mainContext.fetchCount(FetchDescriptor<ChirograData.Attachment>()) == 0)
+        #expect(try container.mainContext.fetchCount(FetchDescriptor<JournalEntry>()) == entries)
+        let audit = try container.mainContext.fetch(FetchDescriptor<AuditEvent>())
+        #expect(audit.contains { $0.entityName == "Attachment" && $0.action == "delete" })
     }
 }

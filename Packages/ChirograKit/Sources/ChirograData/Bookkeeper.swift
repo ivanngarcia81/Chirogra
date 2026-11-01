@@ -641,7 +641,7 @@ public struct Bookkeeper {
         return sequence.format(try nextNumber(kind))
     }
 
-    private func audit(_ entity: String, _ id: UUID?, _ action: String, _ summary: String) {
+    func audit(_ entity: String, _ id: UUID?, _ action: String, _ summary: String) {
         context.insert(AuditEvent(actor: actor, entityName: entity, entityID: id, action: action, summary: summary))
     }
 
