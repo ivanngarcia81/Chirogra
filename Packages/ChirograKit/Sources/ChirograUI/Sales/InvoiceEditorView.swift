@@ -48,7 +48,6 @@ struct InvoiceEditorView: View {
     @State private var confirmingDiscardChanges = false
     /// Lo que había al abrir el editor, para saber si hay cambios sin guardar.
     @State private var baseline: String?
-    @Environment(\.unsavedChanges) private var unsavedChanges
     @State private var loadedDraft = false
     /// Al cargar un borrador no se aplican los valores por defecto del cliente (impuesto, vencimiento).
     @State private var skipCustomerDefaults = false
@@ -91,7 +90,21 @@ struct InvoiceEditorView: View {
         // En pantalla ancha se abre en la navegación: «Cancelar» hace de «Atrás» (y pregunta por el borrador).
         .navigationBarBackButtonHidden(isWide)
         .toolbar {
-            ToolbarItem(placement: .cancellationAction) { Button("Cancelar", action: cancel) }
+            // Los avisos van anclados a «Cancelar»: en la vista dividida del iPad salían sobre la barra lateral.
+            ToolbarItem(placement: .cancellationAction) {
+                Button("Cancelar", action: cancel)
+                    .confirmationDialog("¿Conservar el borrador?", isPresented: $confirmingCancel, titleVisibility: .visible) {
+                        Button("Conservar borrador", action: saveDraft)
+                        Button("Descartar borrador", role: .destructive, action: discardDraft)
+                        Button("Seguir editando", role: .cancel) {}
+                    } message: {
+                        Text("Al ver la vista previa se guardó como borrador.")
+                    }
+                    .confirmationDialog("¿Descartar los cambios?", isPresented: $confirmingDiscardChanges, titleVisibility: .visible) {
+                        Button("Descartar", role: .destructive) { dismiss() }
+                        Button("Seguir editando", role: .cancel) {}
+                    }
+            }
             // «Guardar» y no «Guardar borrador»: con el texto largo el título se cortaba en «Nueva f…».
             ToolbarItem(placement: .confirmationAction) {
                 Button("Guardar", action: saveDraft)
@@ -110,17 +123,6 @@ struct InvoiceEditorView: View {
         }
         // La vista previa guarda la factura como borrador: al cancelar se pregunta qué hacer con él.
         .interactiveDismissDisabled(hasNewDraft)
-        .confirmationDialog("¿Conservar el borrador?", isPresented: $confirmingCancel, titleVisibility: .visible) {
-            Button("Conservar borrador", action: saveDraft)
-            Button("Descartar borrador", role: .destructive, action: discardDraft)
-            Button("Seguir editando", role: .cancel) {}
-        } message: {
-            Text("Al ver la vista previa se guardó como borrador.")
-        }
-        .confirmationDialog("¿Descartar los cambios?", isPresented: $confirmingDiscardChanges, titleVisibility: .visible) {
-            Button("Descartar", role: .destructive) { dismiss() }
-            Button("Seguir editando", role: .cancel) {}
-        }
         .onAppear {
             if let editing, !loadedDraft { load(editing) }
             if customerID == nil { customerID = preselectedCustomer?.id }
@@ -129,12 +131,7 @@ struct InvoiceEditorView: View {
         }
         // La barra lateral pregunta antes de cambiar de pantalla si hay cambios (y al descartar borra el borrador
         // que guardó la vista previa).
-        .onChange(of: hasChanges, initial: true) { reportUnsavedChanges() }
-        .onChange(of: savedInvoice?.id) { reportUnsavedChanges() }
-        .onDisappear {
-            unsavedChanges?.hasChanges = false
-            unsavedChanges?.discard = nil
-        }
+        .reportsUnsavedChanges(hasChanges, onDiscard: deleteSavedDraft)
         .onChange(of: customerID) {
             if skipCustomerDefaults { skipCustomerDefaults = false; return }
             guard let customer else { return }
@@ -571,13 +568,10 @@ struct InvoiceEditorView: View {
     /// Borrador creado en esta pantalla (por la vista previa) al hacer una factura nueva.
     private var hasNewDraft: Bool { editing == nil && savedInvoice != nil }
 
-    private func reportUnsavedChanges() {
-        unsavedChanges?.hasChanges = hasChanges
-        unsavedChanges?.discard = { [savedInvoice, editing, context] in
-            guard editing == nil, let savedInvoice else { return }
-            context.delete(savedInvoice)
-            try? context.save()
-        }
+    private func deleteSavedDraft() {
+        guard editing == nil, let savedInvoice else { return }
+        context.delete(savedInvoice)
+        try? context.save()
     }
 
     private func cancel() {

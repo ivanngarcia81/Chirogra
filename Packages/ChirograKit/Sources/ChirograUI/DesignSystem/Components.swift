@@ -84,13 +84,90 @@ private struct EditorSheetSizing: ViewModifier {
     }
 }
 
-/// Cambios sin guardar del editor abierto en la columna de detalle. Lo consulta la barra lateral antes de cambiar de
-/// pantalla: rehacer la vista dividida cierra el editor y se perdería lo escrito.
+/// Cambios sin guardar de los editores abiertos. Lo consulta la barra lateral antes de cambiar de pantalla: rehacer la
+/// vista dividida cierra el editor y se perdería lo escrito. Cada editor se registra con su propio identificador, para
+/// que una hoja abierta encima (p. ej. un cliente nuevo desde la factura) no borre el estado del editor de debajo.
 @Observable
 final class UnsavedChanges {
-    var hasChanges = false
-    /// Lo que hace el editor al descartar (p. ej. borrar el borrador que guardó la vista previa).
-    var discard: (() -> Void)?
+    private var discards: [UUID: () -> Void] = [:]
+
+    var hasChanges: Bool { !discards.isEmpty }
+
+    /// `discard`: lo que hace el editor al descartar (p. ej. borrar el borrador que guardó la vista previa).
+    func report(_ editor: UUID, hasChanges: Bool, discard: @escaping () -> Void = {}) {
+        discards[editor] = hasChanges ? discard : nil
+    }
+
+    func remove(_ editor: UUID) { discards[editor] = nil }
+
+    func discardAll() {
+        discards.values.forEach { $0() }
+        discards = [:]
+    }
+}
+
+extension View {
+    /// Editor que se puede descartar: compara `value` (lo que escribe el usuario) con lo que había al abrirlo y, si
+    /// hay cambios, «Cancelar» pregunta antes de cerrarlo (con el aviso anclado al botón), la hoja no se cierra
+    /// deslizando y la barra lateral pregunta antes de cambiar de pantalla.
+    func discardableEditor<Value: Equatable>(tracking value: Value, onDiscard: @escaping () -> Void = {}) -> some View {
+        modifier(DiscardableEditor(value: value, onDiscard: onDiscard))
+    }
+
+    /// Informa de los cambios de un editor que pone su propio «Cancelar» (la factura, que además conserva borradores).
+    func reportsUnsavedChanges(_ hasChanges: Bool, onDiscard: @escaping () -> Void = {}) -> some View {
+        modifier(UnsavedChangesReporter(hasChanges: hasChanges, onDiscard: onDiscard))
+    }
+}
+
+private struct DiscardableEditor<Value: Equatable>: ViewModifier {
+    let value: Value
+    let onDiscard: () -> Void
+    @State private var baseline: Value?
+    /// Se toma la referencia tras el primer ciclo, cuando el editor ya cargó sus datos y valores por defecto.
+    @State private var readyForBaseline = false
+
+    private var hasChanges: Bool { baseline.map { $0 != value } ?? false }
+
+    func body(content: Content) -> some View {
+        content
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) { CancelEditorButton(hasChanges: hasChanges, onDiscard: onDiscard) }
+            }
+            .interactiveDismissDisabled(hasChanges)
+            .reportsUnsavedChanges(hasChanges, onDiscard: onDiscard)
+            .onAppear { if baseline == nil { Task { @MainActor in readyForBaseline = true } } }
+            .onChange(of: readyForBaseline) { if baseline == nil { baseline = value } }
+    }
+}
+
+private struct UnsavedChangesReporter: ViewModifier {
+    let hasChanges: Bool
+    let onDiscard: () -> Void
+    @Environment(\.unsavedChanges) private var unsavedChanges
+    @State private var editorID = UUID()
+
+    func body(content: Content) -> some View {
+        content
+            .onChange(of: hasChanges, initial: true) { unsavedChanges?.report(editorID, hasChanges: hasChanges, discard: onDiscard) }
+            .onDisappear { unsavedChanges?.remove(editorID) }
+    }
+}
+
+/// «Cancelar» de un editor: con cambios, pregunta «¿Descartar los cambios?» antes de cerrarlo.
+struct CancelEditorButton: View {
+    let hasChanges: Bool
+    var onDiscard: () -> Void = {}
+    @Environment(\.dismiss) private var dismiss
+    @State private var confirming = false
+
+    var body: some View {
+        Button("Cancelar") { if hasChanges { confirming = true } else { dismiss() } }
+            .confirmationDialog("¿Descartar los cambios?", isPresented: $confirming, titleVisibility: .visible) {
+                Button("Descartar", role: .destructive) { onDiscard(); dismiss() }
+                Button("Seguir editando", role: .cancel) {}
+            }
+    }
 }
 
 extension EnvironmentValues {

@@ -394,8 +394,8 @@ struct TaxRateEditorView: View {
         .screenBackground()
         .navigationTitle("Nueva tasa")
         .inlineTitle()
+        .discardableEditor(tracking: "\(agencyID?.uuidString ?? "")|\(newAgencyName)|\(name)|\(percent)")
         .toolbar {
-            ToolbarItem(placement: .cancellationAction) { Button("Cancelar") { dismiss() } }
             ToolbarItem(placement: .confirmationAction) {
                 Button("Guardar", action: save).disabled(name.isEmpty || percent <= 0 || (agencyID == nil && newAgencyName.isEmpty))
             }
@@ -445,8 +445,8 @@ struct TaxGroupEditorView: View {
         .screenBackground()
         .navigationTitle("Nuevo grupo")
         .inlineTitle()
+        .discardableEditor(tracking: "\(name)|" + selected.map(\.uuidString).sorted().joined(separator: ","))
         .toolbar {
-            ToolbarItem(placement: .cancellationAction) { Button("Cancelar") { dismiss() } }
             ToolbarItem(placement: .confirmationAction) {
                 Button("Guardar") {
                     context.insert(TaxGroup(name: name, rates: rates.filter { selected.contains($0.id) }))
@@ -493,8 +493,8 @@ struct SalesTaxPaymentView: View {
         .screenBackground()
         .navigationTitle("Pago de sales tax")
         .inlineTitle()
+        .discardableEditor(tracking: "\(agencyID?.uuidString ?? "")|\(amount)|\(date)|\(accountID?.uuidString ?? "")|\(reference)")
         .toolbar {
-            ToolbarItem(placement: .cancellationAction) { Button("Cancelar") { dismiss() } }
             ToolbarItem(placement: .confirmationAction) { Button("Registrar", action: save).disabled(amount <= 0 || accountID == nil) }
         }
         .onAppear {

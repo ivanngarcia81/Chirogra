@@ -611,8 +611,8 @@ struct CustomerEditorView: View {
         .screenBackground()
         .navigationTitle(customer == nil ? "Nuevo cliente" : "Editar cliente")
         .inlineTitle()
+        .discardableEditor(tracking: "\(name)|\(email)|\(phone)|\(billingAddress)|\(terms)|\(taxGroupID?.uuidString ?? "")|\(isTaxExempt)|\(exemptionReason)")
         .toolbar {
-            ToolbarItem(placement: .cancellationAction) { Button("Cancelar") { dismiss() } }
             ToolbarItem(placement: .confirmationAction) {
                 Button("Guardar", action: save).disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
             }
@@ -670,8 +670,8 @@ struct CustomerRefundView: View {
         .screenBackground()
         .navigationTitle("Reembolso")
         .inlineTitle()
+        .discardableEditor(tracking: "\(amount)|\(date)|\(accountID?.uuidString ?? "")")
         .toolbar {
-            ToolbarItem(placement: .cancellationAction) { Button("Cancelar") { dismiss() } }
             ToolbarItem(placement: .confirmationAction) {
                 Button("Reembolsar", action: save).disabled(amount <= 0 || accountID == nil)
             }

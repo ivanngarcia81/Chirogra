@@ -311,8 +311,8 @@ struct ExpenseEditorView: View {
         .modifier(InlineTitleUnless(wide: isWide))
         // En pantalla ancha se abre en la navegación: «Cancelar» hace de «Atrás».
         .navigationBarBackButtonHidden(isWide)
+        .discardableEditor(tracking: "\(payee)|\(vendorID?.uuidString ?? "")|\(date)|\(amount)|\(categoryID?.uuidString ?? "")|\(paymentAccountID?.uuidString ?? "")|\(memo)|\(receipts.count)|\(method)")
         .toolbar {
-            ToolbarItem(placement: .cancellationAction) { Button("Cancelar") { dismiss() } }
             if isWide {
                 ToolbarItemGroup(placement: .primaryAction) {
                     Button("Guardar y nuevo") { save(another: true) }.disabled(!canSave)
@@ -615,8 +615,8 @@ struct BillEditorView: View {
         .screenBackground()
         .navigationTitle("Factura por pagar")
         .inlineTitle()
+        .discardableEditor(tracking: "\(vendorID?.uuidString ?? "")|\(number)|\(billDate)|\(dueDate)|\(amount)|\(accountID?.uuidString ?? "")|\(details)")
         .toolbar {
-            ToolbarItem(placement: .cancellationAction) { Button("Cancelar") { dismiss() } }
             ToolbarItem(placement: .confirmationAction) {
                 Button("Guardar", action: save).disabled(vendorID == nil || amount <= 0 || accountID == nil)
             }
@@ -673,8 +673,8 @@ struct PayBillView: View {
         .screenBackground()
         .navigationTitle("Pagar factura")
         .inlineTitle()
+        .discardableEditor(tracking: "\(amount)|\(date)|\(accountID?.uuidString ?? "")")
         .toolbar {
-            ToolbarItem(placement: .cancellationAction) { Button("Cancelar") { dismiss() } }
             ToolbarItem(placement: .confirmationAction) { Button("Pagar", action: pay).disabled(amount <= 0 || accountID == nil) }
         }
         .onAppear { amount = bill.balanceDue }
@@ -751,8 +751,8 @@ struct VendorEditorView: View {
         .screenBackground()
         .navigationTitle(vendor == nil ? String(localized: "Nuevo proveedor") : vendor!.name)
         .inlineTitle()
+        .discardableEditor(tracking: "\(name)|\(email)|\(phone)|\(terms)|\(defaultAccountID?.uuidString ?? "")|\(is1099)|\(tinLast4)")
         .toolbar {
-            ToolbarItem(placement: .cancellationAction) { Button("Cancelar") { dismiss() } }
             ToolbarItem(placement: .confirmationAction) {
                 Button("Guardar", action: save).disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
             }

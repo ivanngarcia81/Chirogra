@@ -524,8 +524,8 @@ struct CreditNoteEditorView: View {
         .screenBackground()
         .navigationTitle("Nota de crédito")
         .inlineTitle()
+        .discardableEditor(tracking: "\(amount)|\(isTaxable)|\(reason)|\(date)")
         .toolbar {
-            ToolbarItem(placement: .cancellationAction) { Button("Cancelar") { dismiss() } }
             ToolbarItem(placement: .confirmationAction) {
                 Button("Emitir", action: save).disabled(amount <= 0 || reason.trimmingCharacters(in: .whitespaces).isEmpty)
             }

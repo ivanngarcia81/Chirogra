@@ -148,8 +148,8 @@ struct AccountEditorView: View {
         .screenBackground()
         .navigationTitle("Nueva cuenta")
         .inlineTitle()
+        .discardableEditor(tracking: "\(code)|\(name)|\(subtype)")
         .toolbar {
-            ToolbarItem(placement: .cancellationAction) { Button("Cancelar") { dismiss() } }
             ToolbarItem(placement: .confirmationAction) {
                 Button("Guardar") {
                     context.insert(Account(code: code, name: name, subtype: subtype))
@@ -343,8 +343,8 @@ struct JournalEntryEditorView: View {
         }
         .navigationTitle("Nuevo asiento")
         .inlineTitle()
+        .discardableEditor(tracking: "\(date)|\(memo)|" + lines.map { "\($0.accountID?.uuidString ?? "")/\($0.debit)/\($0.credit)" }.joined(separator: ";"))
         .toolbar {
-            ToolbarItem(placement: .cancellationAction) { Button("Cancelar") { dismiss() } }
             ToolbarItem(placement: .confirmationAction) { Button("Registrar asiento", action: save).disabled(!isValid) }
         }
     }

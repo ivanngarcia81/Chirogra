@@ -274,8 +274,7 @@ struct AppShell: View {
         .environment(\.unsavedChanges, unsavedChanges)
         .alert("¿Descartar los cambios?", isPresented: Binding(get: { pendingSelection != nil }, set: { if !$0 { pendingSelection = nil } })) {
             Button("Descartar", role: .destructive) {
-                unsavedChanges.discard?()
-                unsavedChanges.hasChanges = false
+                unsavedChanges.discardAll()
                 if let pendingSelection { selection = pendingSelection }
                 pendingSelection = nil
             }
