@@ -5,11 +5,177 @@ import SwiftUI
 /// Ajustes (canvas: `AjustesEmpresa`, `AjustesFormatos`, `AjustesDatos`).
 /// "Usuarios y permisos" y "Plantilla de factura" no están en el MVP (DISEÑO §7.4).
 struct SettingsView: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    #if os(iOS)
+    @Environment(\.horizontalSizeClass) private var sizeClass
+    #endif
+
+    /// `MacAjustes` en iPad y Mac (hasta AX3); la lista del iPhone en pantallas estrechas.
+    private var isWide: Bool {
+        #if os(iOS)
+        if sizeClass != .regular { return false }
+        #endif
+        return dynamicTypeSize < .accessibility4
+    }
+
     var body: some View {
-        List { SettingsLinks() }
-            .listRowBackground(Palette.surface)
-            .screenBackground()
-            .navigationTitle("Ajustes")
+        if isWide {
+            SettingsWideView()
+        } else {
+            List { SettingsLinks() }
+                .listRowBackground(Palette.surface)
+                .screenBackground()
+                .navigationTitle("Ajustes")
+        }
+    }
+}
+
+/// Ajustes en iPad y Mac (canvas `MacAjustes`): secciones a la izquierda y su contenido a la derecha.
+/// «Plantilla de factura» y el logotipo quedan para más adelante (DISEÑO §7.4).
+struct SettingsWideView: View {
+    enum Page: String, CaseIterable, Identifiable {
+        case profile, formats, data
+        var id: String { rawValue }
+
+        var title: String {
+            switch self {
+            case .profile: String(localized: "Perfil de la empresa")
+            case .formats: String(localized: "Moneda y formatos")
+            case .data: String(localized: "iCloud, copias y seguridad")
+            }
+        }
+
+        var symbol: String {
+            switch self {
+            case .profile: "building.2"
+            case .formats: "dollarsign.circle"
+            case .data: "icloud"
+            }
+        }
+    }
+
+    @Environment(\.modelContext) private var context
+    @Query private var companies: [Company]
+    @State private var page: Page = .profile
+    @State private var saved = false
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 16) {
+            VStack(spacing: 2) {
+                ForEach(Page.allCases) { option in
+                    Button { page = option; saved = false } label: {
+                        Label(option.title, systemImage: option.symbol)
+                            .font(.subheadline.weight(page == option ? .semibold : .medium))
+                            .foregroundStyle(page == option ? Palette.brand : Palette.ink2)
+                            .padding(.horizontal, 12)
+                            .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                            .background(page == option ? Palette.brandWash : .clear, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityAddTraits(page == option ? .isSelected : [])
+                }
+            }
+            .padding(8)
+            .frame(width: 260)
+            .background(Palette.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+
+            VStack(alignment: .leading, spacing: 12) {
+                Text(page.title).font(.title3.weight(.semibold)).foregroundStyle(Palette.ink).accessibilityAddTraits(.isHeader)
+                    .padding(.horizontal, 4)
+                if let company = companies.first {
+                    switch page {
+                    case .profile: CompanyProfileGrid(company: company)
+                    case .formats: FormatsView(company: company, embedded: true).scrollContentBackground(.hidden)
+                    case .data: DataAndSecurityView(embedded: true).scrollContentBackground(.hidden)
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        }
+        .padding(20)
+        .background(Palette.background)
+        .navigationTitle("Ajustes")
+        .toolbar {
+            if page == .profile {
+                ToolbarItem(placement: .primaryAction) {
+                    Button(saved ? String(localized: "Guardado ✓") : String(localized: "Guardar cambios")) {
+                        try? context.save()
+                        saved = true
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(saved ? Palette.positive : Palette.brand)
+                }
+            }
+        }
+        .onDisappear { try? context.save() }
+    }
+}
+
+/// Perfil de la empresa en dos columnas (`MacAjustes`), sin logotipo.
+struct CompanyProfileGrid: View {
+    @Bindable var company: Company
+
+    private func field<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title).font(.caption.weight(.semibold)).foregroundStyle(Palette.ink2)
+            content()
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func menu<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
+        content()
+            .labelsHidden()
+            .pickerStyle(.menu)
+            .frame(maxWidth: .infinity, minHeight: 38, alignment: .leading)
+            .padding(.horizontal, 4)
+            .background(Palette.surface, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).stroke(Palette.separator))
+    }
+
+    var body: some View {
+        let columns = [GridItem(.flexible(), spacing: 14, alignment: .topLeading), GridItem(.flexible(), spacing: 14, alignment: .topLeading)]
+        ScrollView {
+            VStack(alignment: .leading, spacing: 14) {
+                LazyVGrid(columns: columns, alignment: .leading, spacing: 14) {
+                    field(String(localized: "Nombre comercial")) { TextField("Nombre comercial", text: $company.displayName).fieldBox() }
+                    field(String(localized: "Razón social")) { TextField("Razón social", text: $company.legalName).fieldBox() }
+                    field(String(localized: "Tipo de entidad")) {
+                        menu {
+                            Picker("Tipo de entidad", selection: $company.entityTypeRaw) {
+                                ForEach(EntityType.allCases, id: \.self) { Text($0.title).tag($0.rawValue) }
+                            }
+                        }
+                    }
+                    field(String(localized: "ID fiscal (EIN)")) { TextField("EIN (opcional)", text: $company.ein).fieldBox() }
+                    field(String(localized: "Correo de facturación")) { TextField("Correo", text: $company.email).fieldBox() }
+                    field(String(localized: "Teléfono")) { TextField("Teléfono", text: $company.phone).fieldBox() }
+                }
+                field(String(localized: "Dirección")) { TextField("Dirección", text: $company.address, axis: .vertical).lineLimit(1...3).fieldBox() }
+                LazyVGrid(columns: columns, alignment: .leading, spacing: 14) {
+                    field(String(localized: "Estado")) {
+                        menu {
+                            Picker("Estado", selection: $company.state) {
+                                Text("—").tag("")
+                                ForEach(USState.all, id: \.self) { Text($0).tag($0) }
+                            }
+                        }
+                    }
+                    field(String(localized: "Inicio del año fiscal")) {
+                        menu {
+                            Picker("Inicio del año fiscal", selection: $company.fiscalYearStartMonth) {
+                                ForEach(1...12, id: \.self) { month in
+                                    Text(Calendar.current.standaloneMonthSymbols[month - 1].sentenceCased).tag(month)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            .padding(20)
+            .background(Palette.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        }
     }
 }
 
@@ -68,6 +234,8 @@ struct CompanyProfileView: View {
 
 struct FormatsView: View {
     let company: Company
+    /// Dentro de `SettingsWideView`: el título de la ventana sigue siendo «Ajustes».
+    var embedded = false
     @Query private var invoices: [Invoice]
 
     var body: some View {
@@ -106,11 +274,13 @@ struct FormatsView: View {
             }
         }
         .screenBackground()
-        .navigationTitle("Moneda y formatos")
+        .modifier(TitleUnlessEmbedded(title: "Moneda y formatos", embedded: embedded))
     }
 }
 
 struct DataAndSecurityView: View {
+    /// Dentro de `SettingsWideView`: el título de la ventana sigue siendo «Ajustes».
+    var embedded = false
     @AppStorage("iCloudSyncEnabled") private var iCloudSyncEnabled = false
     @AppStorage("appLockEnabled") private var appLockEnabled = false
     @State private var lockUnavailable = false
@@ -155,7 +325,7 @@ struct DataAndSecurityView: View {
             }
         }
         .screenBackground()
-        .navigationTitle("Datos y seguridad")
+        .modifier(TitleUnlessEmbedded(title: "Datos y seguridad", embedded: embedded))
     }
 }
 
@@ -177,4 +347,12 @@ enum USState {
         "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "PR",
         "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY",
     ]
+}
+
+private struct TitleUnlessEmbedded: ViewModifier {
+    let title: LocalizedStringKey
+    let embedded: Bool
+    func body(content: Content) -> some View {
+        if embedded { content } else { content.navigationTitle(title) }
+    }
 }

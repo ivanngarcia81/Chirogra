@@ -81,6 +81,16 @@ public enum CSVExport {
         return lines(rows)
     }
 
+    /// Plan de cuentas con su tipo de detalle y el saldo en libros a la fecha.
+    public static func chartOfAccounts(
+        _ accounts: [(code: String, name: String, type: String, detail: String, balance: Int64)], asOf: Date, calendar: Calendar = .current
+    ) -> String {
+        var rows: [[String]] = [[String(localized: "Plan de cuentas")], [String(localized: "Al"), date(asOf, calendar: calendar)], [],
+                                [String(localized: "Código"), String(localized: "Cuenta"), String(localized: "Tipo"), String(localized: "Tipo de detalle"), String(localized: "Saldo")]]
+        rows += accounts.map { [$0.code, $0.name, $0.type, $0.detail, amount($0.balance)] }
+        return lines(rows)
+    }
+
     public static func aging(_ report: AgingReport, title: String, partyTitle: String, calendar: Calendar = .current) -> String {
         let buckets = AgingReport.Bucket.allCases
         var rows: [[String]] = [[title], [String(localized: "Al"), date(report.asOf, calendar: calendar)], [],

@@ -25,11 +25,34 @@ struct TaxesView: View {
     @State private var showingRate = false
     @State private var showingPayment = false
     @State private var showingGroup = false
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    #if os(iOS)
+    @Environment(\.horizontalSizeClass) private var sizeClass
+    #endif
+
+    /// `MacImpuestos` en iPad y Mac (hasta AX3); las pestañas del iPhone en pantallas estrechas.
+    private var isWide: Bool {
+        #if os(iOS)
+        if sizeClass != .regular { return false }
+        #endif
+        return dynamicTypeSize < .accessibility4
+    }
 
     var body: some View {
         let ledger = Ledger(accounts: accounts, lines: journalLines)
         let payable = accounts.filter { $0.subtype == .salesTaxPayable }.reduce(0) { $0 + ledger.balance(of: $1) }
         let _ = taxLines.count   // se observa para recalcular el resumen al emitir facturas
+        Group {
+            if isWide { wideBody(payable: payable) } else { compactBody(payable: payable) }
+        }
+        .background(Palette.background)
+        .navigationTitle("Impuestos")
+        .sheet(isPresented: $showingRate) { NavigationStack { TaxRateEditorView() } }
+        .sheet(isPresented: $showingPayment) { NavigationStack { SalesTaxPaymentView(owed: payable) } }
+        .sheet(isPresented: $showingGroup) { NavigationStack { TaxGroupEditorView() } }
+    }
+
+    private func compactBody(payable: Int64) -> some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Metrics.cardSpacing) {
                 Picker("Sección", selection: $tab) {
@@ -46,11 +69,149 @@ struct TaxesView: View {
             .frame(maxWidth: 720, alignment: .leading)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .background(Palette.background)
-        .navigationTitle("Impuestos")
-        .sheet(isPresented: $showingRate) { NavigationStack { TaxRateEditorView() } }
-        .sheet(isPresented: $showingPayment) { NavigationStack { SalesTaxPaymentView(owed: payable) } }
-        .sheet(isPresented: $showingGroup) { NavigationStack { TaxGroupEditorView() } }
+    }
+
+    // MARK: iPad y Mac (`MacImpuestos`)
+
+    /// Trimestre, cuatro cifras (cobrado, pagado, saldo y fecha límite), tasas con lo cobrado en el trimestre y los
+    /// pagos a la agencia. «Gastos deducibles» del canvas es de la fase 2.
+    private func wideBody(payable: Int64) -> some View {
+        let interval = quarter(quarterOffset)
+        let summary = try? Bookkeeper(context: context).salesTaxSummary(from: interval.start, to: interval.end.addingTimeInterval(-1))
+        let paid = entries.filter { $0.source == .salesTaxPayment && $0.reversesEntryID == nil && interval.contains($0.date) }
+            .reduce(0) { $0 + $1.totalDebits }
+        let due = dueDate(interval)
+        let days = Calendar.current.dateComponents([.day], from: Calendar.current.startOfDay(for: .now), to: due).day ?? 0
+        return ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                HStack(spacing: 12) {
+                    quarterMenu(interval)
+                    Text("Declaración trimestral").font(.subheadline).foregroundStyle(Palette.ink3)
+                }
+                KPIGrid(items: [
+                    KPIItem(title: String(localized: "Impuesto cobrado"), value: (summary?.totalTax ?? 0).money,
+                            foot: String(localized: "sobre \((summary?.taxableSales ?? 0).money) gravables")),
+                    KPIItem(title: String(localized: "Pagado"), value: paid.money),
+                    KPIItem(title: String(localized: "Saldo por pagar"), value: max(payable, 0).money, isBrand: true),
+                    KPIItem(title: String(localized: "Fecha límite"), value: due.shortDate,
+                            foot: days >= 0 ? String(localized: "Faltan \(days) días") : String(localized: "Venció hace \(-days) días"),
+                            footColor: days < 15 ? Palette.warning : Palette.ink3),
+                ])
+                ViewThatFits(in: .horizontal) {
+                    HStack(alignment: .top, spacing: 16) {
+                        ratesTable(summary, interval: interval).frame(maxWidth: .infinity)
+                        paymentsCard.frame(width: 340)
+                    }
+                    VStack(spacing: 16) { ratesTable(summary, interval: interval); paymentsCard }
+                }
+                Text("El día 20 del mes siguiente es la fecha habitual en Texas y otros estados; confírmala con tu agencia.")
+                    .font(.footnote).foregroundStyle(Palette.ink3)
+            }
+            .padding(20)
+        }
+        .toolbar {
+            ToolbarItemGroup(placement: .primaryAction) {
+                NavigationLink("Ver reporte") { ReportsView(fixedKind: .salesTax) }
+                Button("Registrar pago de impuesto") { showingPayment = true }
+                    .buttonStyle(.borderedProminent).tint(Palette.brand)
+                    .disabled(payable <= 0)
+            }
+        }
+    }
+
+    private func quarterMenu(_ interval: DateInterval) -> some View {
+        Menu {
+            ForEach(0..<4) { index in
+                Button(quarterTitle(quarter(-index))) { quarterOffset = -index }
+            }
+        } label: {
+            HStack(spacing: 6) {
+                Text(quarterTitle(interval)).font(.subheadline.weight(.semibold))
+                Image(systemName: "chevron.down").font(.caption.weight(.bold))
+            }
+            .foregroundStyle(Palette.ink)
+            .padding(.horizontal, 14)
+            .frame(minHeight: 36)
+            .background(Palette.surface, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).stroke(Palette.separator))
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Trimestre")
+        .accessibilityValue(quarterTitle(interval))
+    }
+
+    /// Grupos («Combinada») y tasas de cada agencia con lo cobrado en el trimestre.
+    private func ratesTable(_ summary: SalesTaxSummary?, interval: DateInterval) -> some View {
+        let collected = Dictionary((summary?.rows ?? []).compactMap { row in row.rateID.map { ($0, row.tax) } }, uniquingKeysWith: +)
+        let number = (Calendar.current.component(.month, from: interval.start) - 1) / 3 + 1
+        return VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text("Tasas por jurisdicción").font(.headline).foregroundStyle(Palette.ink).accessibilityAddTraits(.isHeader)
+                Spacer(minLength: 8)
+                Menu {
+                    Button("Nueva tasa", systemImage: "percent") { showingRate = true }
+                    Button("Nuevo grupo", systemImage: "square.stack") { showingGroup = true }
+                        .disabled(agencies.flatMap { $0.rates ?? [] }.isEmpty)
+                } label: {
+                    HStack(spacing: 4) { Image(systemName: "plus"); Text("Tasa") }.fontWeight(.semibold)
+                }
+                .accessibilityLabel("Nueva tasa o grupo")
+            }
+            TableCard {
+                Text("Nombre").frame(maxWidth: .infinity, alignment: .leading)
+                Text("Tipo").frame(width: 150, alignment: .leading)
+                Text("Tasa").frame(width: 80, alignment: .trailing)
+                Text("T\(number) cobrado").frame(width: 120, alignment: .trailing)
+            } rows: {
+                ForEach(groups.filter { !$0.isArchived }) { group in
+                    rateTableRow(group.name, kind: String(localized: "Combinada"), percent: group.percent,
+                                 collected: (group.rates ?? []).reduce(0) { $0 + (collected[$1.id] ?? 0) }, highlighted: true)
+                }
+                ForEach(agencies) { agency in
+                    ForEach((agency.rates ?? []).filter { !$0.isArchived }) { rate in
+                        rateTableRow(rate.name, kind: agency.name, percent: rate.percent, collected: collected[rate.id] ?? 0, highlighted: false)
+                    }
+                }
+                if groups.isEmpty && agencies.allSatisfy({ ($0.rates ?? []).isEmpty }) {
+                    Text("Sin tasas todavía").font(.subheadline).foregroundStyle(Palette.ink3).frame(maxWidth: .infinity).padding(.vertical, 32)
+                }
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        }
+    }
+
+    private func rateTableRow(_ name: String, kind: String, percent: Decimal, collected: Int64, highlighted: Bool) -> some View {
+        TableRow {
+            Text(name).fontWeight(.semibold).lineLimit(1).frame(maxWidth: .infinity, alignment: .leading)
+            Text(kind).foregroundStyle(Palette.ink2).lineLimit(1).frame(width: 150, alignment: .leading)
+            Text("\(percent.formatted())%").fontWeight(.semibold).frame(width: 80, alignment: .trailing)
+            Text(collected.money).frame(width: 120, alignment: .trailing)
+        }
+        .background { Rectangle().fill(highlighted ? Palette.background : .clear) }
+    }
+
+    private var paymentsCard: some View {
+        let payments = entries.filter { $0.source == .salesTaxPayment && $0.reversesEntryID == nil }
+        return VStack(alignment: .leading, spacing: 0) {
+            Text("Pagos a la agencia").font(.headline).foregroundStyle(Palette.ink).padding(.bottom, 6).accessibilityAddTraits(.isHeader)
+            if payments.isEmpty {
+                Text("Sin pagos registrados").font(.subheadline).foregroundStyle(Palette.ink3).padding(.vertical, 8)
+            }
+            ForEach(payments.prefix(8)) { entry in
+                Divider()
+                HStack(alignment: .firstTextBaseline) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(entry.memo).font(.subheadline).lineLimit(2)
+                        Text(entry.date.shortDate).font(.caption).foregroundStyle(Palette.ink3)
+                    }
+                    Spacer(minLength: 8)
+                    Text(entry.totalDebits.money).font(.subheadline.weight(.semibold)).monospacedDigit()
+                }
+                .padding(.vertical, 8)
+                .accessibilityElement(children: .combine)
+            }
+        }
+        .card()
     }
 
     // MARK: Resumen

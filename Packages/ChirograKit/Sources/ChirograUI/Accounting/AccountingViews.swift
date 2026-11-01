@@ -66,8 +66,25 @@ struct ChartOfAccountsView: View {
     @Query private var journalLines: [JournalLine]
     @State private var showingNew = false
     @State private var showArchived = false
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    #if os(iOS)
+    @Environment(\.horizontalSizeClass) private var sizeClass
+    #endif
+
+    /// `MacPlanCuentas` en iPad y Mac (hasta AX3); la lista del iPhone en pantallas estrechas.
+    private var isWide: Bool {
+        #if os(iOS)
+        if sizeClass != .regular { return false }
+        #endif
+        return dynamicTypeSize < .accessibility4
+    }
 
     var body: some View {
+        if isWide { ChartOfAccountsWideView() } else { compactBody }
+    }
+
+    @ViewBuilder
+    private var compactBody: some View {
         let ledger = Ledger(accounts: accounts, lines: journalLines)
         List {
             ForEach(AccountType.allCases, id: \.self) { type in
@@ -739,8 +756,24 @@ struct LedgerView: View {
 struct PeriodCloseView: View {
     @Query private var companies: [Company]
     @Environment(\.modelContext) private var context
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    #if os(iOS)
+    @Environment(\.horizontalSizeClass) private var sizeClass
+    #endif
+
+    /// `MacCierre` en iPad y Mac (hasta AX3); la lista del iPhone en pantallas estrechas.
+    private var isWide: Bool {
+        #if os(iOS)
+        if sizeClass != .regular { return false }
+        #endif
+        return dynamicTypeSize < .accessibility4
+    }
 
     var body: some View {
+        if isWide { PeriodCloseWideView() } else { compactBody }
+    }
+
+    private var compactBody: some View {
         Form {
             if let company = companies.first {
                 Section {

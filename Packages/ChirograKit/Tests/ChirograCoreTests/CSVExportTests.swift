@@ -48,6 +48,14 @@ struct CSVExportTests {
         #expect(csv != CSVExport.trialBalance(ReportBuilder.trialBalance(accounts: accounts, lines: lines, asOf: day(31)), calendar: calendar))
     }
 
+    @Test("El plan de cuentas lleva tipo, tipo de detalle y saldo")
+    func chartOfAccounts() {
+        let csv = CSVExport.chartOfAccounts([("1010", "Banco, corriente", "Activos", "Banco", 125_050)], asOf: day(31), calendar: calendar)
+        #expect(csv.contains("Al,2026-10-31"))
+        #expect(csv.contains("Código,Cuenta,Tipo,Tipo de detalle,Saldo"))
+        #expect(csv.contains("1010,\"Banco, corriente\",Activos,Banco,1250.50"))
+    }
+
     @Test("La balanza lleva Debe y Haber con totales iguales")
     func trialBalance() {
         let csv = CSVExport.trialBalance(ReportBuilder.trialBalance(accounts: accounts, lines: lines, asOf: day(31)), calendar: calendar)
