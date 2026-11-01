@@ -80,8 +80,10 @@ struct CustomerListView: View {
 
     private func row(_ customer: Customer) -> some View {
         let late = overdue(customer)
-        let contact = customer.email.isEmpty ? (customer.phone.isEmpty ? String(localized: "Sin correo") : customer.phone) : customer.email
-        return LedgerRow(title: customer.name, subtitle: contact) {
+        // Punto de corte invisible tras la «@»: si el correo no cabe, baja ahí y no se parte con guion.
+        let contact = customer.email.isEmpty ? (customer.phone.isEmpty ? String(localized: "Sin correo") : customer.phone)
+            : customer.email.replacingOccurrences(of: "@", with: "@\u{200B}")
+        return LedgerRow(title: customer.name, subtitle: contact, subtitleLines: 2) {
             InitialsTile(text: customer.initials, foreground: late > 0 ? Palette.negative : Palette.brand,
                          background: late > 0 ? Palette.negativeWash : Palette.brandWash, round: true)
         } trailing: {

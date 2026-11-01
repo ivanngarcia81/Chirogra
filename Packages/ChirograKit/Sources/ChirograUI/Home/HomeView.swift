@@ -372,7 +372,8 @@ struct HomeView: View {
                     AxisGridLine(stroke: StrokeStyle(lineWidth: 1, dash: [3, 3])).foregroundStyle(Palette.separator)
                     AxisValueLabel {
                         if let amount = value.as(Double.self), amount > 0 {
-                            Text(amount.formatted(.currency(code: "USD").notation(.compactName).precision(.fractionLength(0))))
+                            // «$10k» como el canvas («$10K» en inglés); el formato compacto del sistema pone «$10 K».
+                            Text("$\(Int((amount / 1000).rounded()))k")
                         }
                     }
                 }

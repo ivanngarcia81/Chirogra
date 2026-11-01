@@ -56,6 +56,12 @@ struct ExpensesView: View {
 struct ExpenseListView: View {
     /// Abre «Por pagar» desde el aviso.
     var showBills: () -> Void = {}
+    #if os(iOS)
+    @Environment(\.horizontalSizeClass) private var sizeClass
+    private var isNarrow: Bool { sizeClass == .compact }
+    #else
+    private let isNarrow = false
+    #endif
     @Query(sort: \Expense.date, order: .reverse) private var expenses: [Expense]
     @Query(sort: \Account.code) private var accounts: [Account]
     @Query private var journalLines: [JournalLine]
@@ -151,11 +157,13 @@ struct ExpenseListView: View {
                 .frame(height: 10)
                 .clipShape(RoundedRectangle(cornerRadius: 5))
                 .accessibilityHidden(true)
-                LazyVGrid(columns: [GridItem(.flexible(), alignment: .leading), GridItem(.flexible(), alignment: .leading)], spacing: 6) {
+                // En iPhone, una categoría por línea con el importe a la derecha: en dos columnas se cortaban los nombres.
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 16, alignment: .leading), count: isNarrow ? 1 : 2), spacing: 6) {
                     ForEach(slices.indices, id: \.self) { index in
                         HStack(spacing: 6) {
                             RoundedRectangle(cornerRadius: 3).fill(Self.barColors[index]).frame(width: 9, height: 9).accessibilityHidden(true)
                             Text(slices[index].name).foregroundStyle(Palette.ink2).lineLimit(1)
+                            Spacer(minLength: 8)
                             Text(slices[index].amount.money).fontWeight(.semibold).foregroundStyle(Palette.ink).monospacedDigit()
                         }
                         .font(.footnote)

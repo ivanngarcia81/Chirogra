@@ -44,7 +44,8 @@ struct BankingView: View {
 
     private func accountCard(_ account: Account, balance: Int64, featured: Bool) -> some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("\(account.name) · \(account.code)").font(.footnote.weight(.semibold)).lineLimit(1)
+            Text("\(account.name) · \(account.code)").font(.footnote.weight(.semibold)).lineLimit(2)
+                .fixedSize(horizontal: false, vertical: true)
                 .foregroundStyle(featured ? Palette.onBrand.opacity(0.85) : Palette.ink3)
             Text(balance.money).font(.amount(24)).monospacedDigit().lineLimit(1).minimumScaleFactor(0.7)
                 .foregroundStyle(featured ? Palette.onBrand : Palette.ink)

@@ -188,6 +188,7 @@ struct Sidebar: View {
                 .foregroundStyle(isActive ? Palette.ink : Palette.ink2)
                 .padding(.leading, 41)
                 .padding(.trailing, 12)
+                .padding(.vertical, 4)
                 .frame(maxWidth: .infinity, minHeight: Self.subRowHeight, alignment: .leading)
                 .background(isActive ? Self.activeSubRow : .clear, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
                 .contentShape(Rectangle())

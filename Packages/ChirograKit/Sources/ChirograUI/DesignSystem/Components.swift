@@ -293,6 +293,8 @@ struct IconTile: View {
 struct LedgerRow<Leading: View, Trailing: View>: View {
     let title: String
     let subtitle: String
+    /// Líneas del subtítulo: 2 para correos, que recortados por el medio no se leían.
+    var subtitleLines = 1
     @ViewBuilder var leading: Leading
     @ViewBuilder var trailing: Trailing
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
@@ -327,7 +329,7 @@ struct LedgerRow<Leading: View, Trailing: View>: View {
         return VStack(alignment: .leading, spacing: 2) {
             Text(title).font(.body.weight(.semibold)).foregroundStyle(Palette.ink).lineLimit(lines)
             Text(subtitle).font(.subheadline).foregroundStyle(Palette.ink3)
-                .lineLimit(lines)
+                .lineLimit(lines.map { _ in subtitleLines })
                 .minimumScaleFactor(0.85)
                 .truncationMode(.middle)
                 .fixedSize(horizontal: false, vertical: lines == nil)

@@ -7,6 +7,16 @@
     "#%lld" : {
       "shouldTranslate" : false
     },
+    "$%lldk" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "$%lldK"
+          }
+        }
+      }
+    },
     "%" : {
       "shouldTranslate" : false
     },

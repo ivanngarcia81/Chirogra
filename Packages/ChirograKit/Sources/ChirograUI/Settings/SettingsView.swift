@@ -75,10 +75,12 @@ struct FormatsView: View {
             // `AjustesFormatos`: vista previa en color de marca de cómo se ven importes y fechas.
             Section {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Vista previa · Factura \(invoices.filter { !$0.number.isEmpty }.max { $0.issueDate < $1.issueDate }?.number ?? "F-1001")")
+                    // La última factura emitida, con su importe y vencimiento reales; sin facturas, un ejemplo genérico.
+                    let sample = invoices.filter { !$0.number.isEmpty }.max { $0.issueDate < $1.issueDate }
+                    Text("Vista previa · Factura \(sample?.number ?? "F-0000")")
                         .font(.caption.weight(.semibold)).textCase(.uppercase).opacity(0.85)
-                    Text(Int64(255_805).money).font(.amount(30))
-                    Text("Vence el \(Date.now.addingTimeInterval(15 * 86_400).formatted(Date.FormatStyle(date: .numeric, time: .omitted, locale: .app)))")
+                    Text((sample?.total ?? 255_805).money).font(.amount(30))
+                    Text("Vence el \((sample?.dueDate ?? Date.now.addingTimeInterval(15 * 86_400)).formatted(Date.FormatStyle(date: .numeric, time: .omitted, locale: .app)))")
                         .font(.subheadline).opacity(0.9)
                 }
                 .foregroundStyle(Palette.onBrand)
