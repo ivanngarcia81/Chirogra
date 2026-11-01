@@ -60,8 +60,8 @@ struct CustomerDetailView: View {
                     }
                 }
                 LabeledContent("Saldo por cobrar", value: customer.openBalance.money)
-                LabeledContent("Condiciones", value: customer.paymentTermsDays == 0 ? "Al recibir" : "Neto \(customer.paymentTermsDays)")
-                if customer.isTaxExempt { LabeledContent("Sales tax", value: "Exento") }
+                LabeledContent("Condiciones", value: customer.paymentTermsDays == 0 ? String(localized: "Al recibir") : String(localized: "Neto \(customer.paymentTermsDays)"))
+                if customer.isTaxExempt { LabeledContent("Sales tax", value: String(localized: "Exento")) }
             }
             if customer.creditBalance > 0 {
                 Section {

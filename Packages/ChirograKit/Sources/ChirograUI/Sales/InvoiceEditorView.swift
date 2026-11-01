@@ -75,7 +75,7 @@ struct InvoiceEditorView: View {
             }
 
             Section {
-                LabeledContent("Número", value: savedInvoice.map { $0.number.isEmpty ? "Se asigna al emitir" : $0.number }
+                LabeledContent("Número", value: savedInvoice.map { $0.number.isEmpty ? String(localized: "Se asigna al emitir") : $0.number }
                     ?? (try? books.peekDocumentNumber(.invoice)) ?? "—")
                 DatePicker("Fecha", selection: $issueDate, displayedComponents: .date)
                 DatePicker("Vence", selection: $dueDate, in: issueDate..., displayedComponents: .date)

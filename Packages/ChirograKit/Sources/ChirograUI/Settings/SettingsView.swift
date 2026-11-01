@@ -71,7 +71,9 @@ struct FormatsView: View {
     var body: some View {
         Form {
             Section {
-                LabeledContent("Moneda", value: "\(company.currencyCode) · dólar estadounidense")
+                // El nombre de la moneda lo da el sistema en el idioma y la región del teléfono.
+                LabeledContent("Moneda", value: Locale.current.localizedString(forCurrencyCode: company.currencyCode)
+                    .map { "\(company.currencyCode) · \($0)" } ?? company.currencyCode)
                 LabeledContent("Ejemplo de importe", value: Int64(4_821_540).money)
                 LabeledContent("Ejemplo de fecha", value: Date.now.formatted(date: .numeric, time: .omitted))
             } footer: {
@@ -112,7 +114,7 @@ struct DataAndSecurityView: View {
                 }
             }
             Section {
-                LabeledContent("Copia de seguridad exportable", value: "Próximamente")
+                LabeledContent("Copia de seguridad exportable", value: String(localized: "Próximamente"))
             } footer: {
                 Text("Exportar e importar un archivo de copia independiente de iCloud está en el plan del MVP (DISEÑO §6.4).")
             }

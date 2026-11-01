@@ -460,7 +460,7 @@ struct LedgerView: View {
                 // El nombre también va aquí: en el título se recorta con «…» si es largo o el texto es grande.
                 LabeledContent("Cuenta", value: account.displayName)
                 LabeledContent("Tipo", value: "\(account.type.title) · \(account.subtype.title)")
-                LabeledContent("Aumenta con", value: account.type.normalBalance == .debit ? "Débitos" : "Créditos")
+                LabeledContent("Aumenta con", value: account.type.normalBalance == .debit ? String(localized: "Débitos") : String(localized: "Créditos"))
                 Toggle("Filtrar por fechas", isOn: $filterByDate)
                 if filterByDate {
                     DatePicker("Desde", selection: $from, in: ...to, displayedComponents: .date)

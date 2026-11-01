@@ -37,7 +37,7 @@ struct InvoiceDetailView: View {
                         .font(.subheadline).foregroundStyle(Palette.ink3)
                 }
                 .padding(.vertical, 6)
-                LabeledContent("Número", value: invoice.number.isEmpty ? "Se asigna al emitir" : invoice.number)
+                LabeledContent("Número", value: invoice.number.isEmpty ? String(localized: "Se asigna al emitir") : invoice.number)
                 LabeledContent("Fecha", value: invoice.issueDate.shortDate)
                 LabeledContent("Vence", value: invoice.dueDate.shortDate)
             }
@@ -47,7 +47,8 @@ struct InvoiceDetailView: View {
                     AdaptiveRow(alignment: .firstTextBaseline) {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(line.details.isEmpty ? String(localized: "Sin descripción") : line.details)
-                            Text("\(line.quantity.formatted()) × \(line.unitPrice.money)\(line.isTaxable ? " · gravable" : "")")
+                            Text(line.isTaxable ? "\(line.quantity.formatted()) × \(line.unitPrice.money) · gravable"
+                                                 : "\(line.quantity.formatted()) × \(line.unitPrice.money)")
                                 .font(.footnote).foregroundStyle(Palette.ink3)
                         }
                     } trailing: {
@@ -88,7 +89,7 @@ struct InvoiceDetailView: View {
             if let applications = invoice.creditApplications, !applications.isEmpty {
                 Section("Créditos aplicados") {
                     ForEach(applications.sorted { $0.date < $1.date }) { application in
-                        LabeledContent("\(application.note?.number ?? "Nota") · \(application.date.shortDate)",
+                        LabeledContent("\(application.note?.number ?? String(localized: "Nota")) · \(application.date.shortDate)",
                                        value: "−\(application.amount.money)")
                     }
                 }

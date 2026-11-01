@@ -51,6 +51,8 @@ scripts/sync-strings.sh
 
 y traduce en Xcode los textos nuevos. Las pruebas de `ChirograUITests` fallan si falta el inglés de algún texto.
 
+Los textos de la interfaz cambian con el idioma del teléfono, pero los datos guardados no. El plan de cuentas (también el de los datos de ejemplo) y los memos que genera la app se crean en el idioma que tenga el teléfono en ese momento y ya no cambian, igual que los clientes, proveedores y descripciones que escribe el usuario. Las fechas, los importes y el nombre de la moneda siguen la región del teléfono; el CSV usa fechas ISO para las hojas de cálculo.
+
 ## Sincronización con iCloud
 
 El modelo de datos ya cumple las reglas de CloudKit, pero la capacidad de iCloud no viene activada para que el proyecto compile con cualquier cuenta (los equipos personales no admiten iCloud). Para activarla:

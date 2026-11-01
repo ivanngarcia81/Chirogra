@@ -98,16 +98,18 @@
         }
       }
     },
-    "%@ × %@%@" : {
+    "%@ × %@" : {
+      "shouldTranslate" : false
+    },
+    "%@ × %@ · gravable" : {
       "localizations" : {
-        "es" : {
+        "en" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ × %2$@%3$@"
+            "state" : "translated",
+            "value" : "%@ × %@ · taxable"
           }
         }
-      },
-      "shouldTranslate" : false
+      }
     },
     "%@ – %@" : {
       "shouldTranslate" : false
@@ -1896,6 +1898,16 @@
         }
       }
     },
+    "Exento" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exempt"
+          }
+        }
+      }
+    },
     "Exento de sales tax" : {
       "localizations" : {
         "en" : {
@@ -2819,6 +2831,16 @@
         }
       }
     },
+    "Neto %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Net %lld"
+          }
+        }
+      }
+    },
     "Neto 15" : {
       "localizations" : {
         "en" : {
@@ -3734,6 +3756,16 @@
         }
       }
     },
+    "Próximamente" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Coming soon"
+          }
+        }
+      }
+    },
     "Página %lld de %lld" : {
       "localizations" : {
         "en" : {
@@ -4318,6 +4350,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Applied to this invoice"
+          }
+        }
+      }
+    },
+    "Se asigna al emitir" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Assigned when issued"
           }
         }
       }
