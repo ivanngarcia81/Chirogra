@@ -338,13 +338,13 @@ public struct Bookkeeper {
     /// factura (`applyCustomerCredit`) o se reembolsa (`refundCustomerCredit`).
     @discardableResult
     public func issueCreditNote(
-        for invoice: Invoice, amount: Int64, isTaxable: Bool, reason: String, date: Date = Date(), incomeAccountID: UUID? = nil
+        for invoice: Invoice, amount: Int64, isTaxable: Bool, reason: String, date: Date = Date(), lineID: UUID? = nil
     ) throws -> CreditNote {
         guard [.sent, .partiallyPaid, .paid].contains(invoice.status) else {
             throw BookkeepingError.invalidState("Solo se acreditan facturas emitidas.")
         }
         let receivable = try systemAccount(.accountsReceivable)
-        let income = try incomeAccountID ?? invoice.sortedLines.first?.incomeAccountID ?? systemAccount(.sales).id
+        let lines = try creditLines(for: invoice, amount: amount, isTaxable: isTaxable, lineID: lineID)
         let components = try taxComponents(groupID: invoice.taxGroupID, on: invoice.issueDate)
         let number = try peekDocumentNumber(.creditNote)
         let posting: InvoicePosting
@@ -352,8 +352,7 @@ public struct Bookkeeper {
             posting = try PostingRules.creditNote(
                 date: date, memo: "Nota de crédito \(number) · \(invoice.number) · \(invoice.customer?.name ?? "")",
                 receivableAccountID: receivable.id,
-                lines: [SalesLine(incomeAccountID: income, amount: amount, isTaxable: isTaxable, memo: reason)],
-                taxComponents: components, customerIsTaxExempt: invoice.customer?.isTaxExempt ?? false
+                lines: lines, taxComponents: components, customerIsTaxExempt: invoice.customer?.isTaxExempt ?? false
             )
         } catch {
             throw BookkeepingError.invalidDocument(error)
@@ -364,7 +363,8 @@ public struct Bookkeeper {
 
         let note = CreditNote(invoice: invoice, date: date, amount: amount, isTaxable: isTaxable, reason: reason)
         note.number = try nextDocumentNumber(.creditNote)
-        note.incomeAccountID = income
+        let accounts = Set(lines.map(\.incomeAccountID))
+        note.incomeAccountID = accounts.count == 1 ? accounts.first : nil
         note.taxTotal = posting.totalTax
         note.total = posting.total
         note.unappliedAmount = posting.total
@@ -375,6 +375,20 @@ public struct Bookkeeper {
         if invoice.isOpen { apply(note, to: invoice, amount: min(posting.total, invoice.balanceDue), date: date) }
         try saveOrRollback()
         return note
+    }
+
+    /// Líneas de ingreso que rebaja una nota de crédito: las de la línea elegida de la factura o, sin línea,
+    /// el importe repartido entre todas en proporción, cada parte en la cuenta de ingresos de su línea original.
+    /// Sin impuesto (`isTaxable == false`) ninguna parte es gravable; con impuesto, cada parte conserva el de su línea.
+    public func creditLines(for invoice: Invoice, amount: Int64, isTaxable: Bool, lineID: UUID? = nil) throws -> [SalesLine] {
+        let fallback = try systemAccount(.sales).id
+        let source = invoice.sortedLines.filter { lineID == nil || $0.id == lineID }.map {
+            SalesLine(incomeAccountID: $0.incomeAccountID ?? fallback, amount: $0.amount, isTaxable: isTaxable && $0.isTaxable)
+        }
+        guard !source.isEmpty else {
+            return amount > 0 ? [SalesLine(incomeAccountID: fallback, amount: amount, isTaxable: isTaxable)] : []
+        }
+        return PostingRules.prorated(amount, across: source)
     }
 
     /// Aplica saldo a favor del cliente a una de sus facturas pendientes, consumiendo sus notas de crédito

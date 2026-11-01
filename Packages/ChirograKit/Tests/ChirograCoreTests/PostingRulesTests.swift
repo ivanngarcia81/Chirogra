@@ -194,3 +194,39 @@ struct InvoiceDiscountTests {
         }
     }
 }
+
+@Suite("Reparto proporcional de una nota de crédito")
+struct ProratedCreditTests {
+    let services = UUID()
+    let products = UUID()
+
+    @Test("Cada parte va a la cuenta de su línea y la suma es exacta")
+    func splitsByLine() {
+        let lines = [SalesLine(incomeAccountID: services, amount: 30_000),
+                     SalesLine(incomeAccountID: products, amount: 10_000, isTaxable: false)]
+        let parts = PostingRules.prorated(10_001, across: lines)
+        #expect(parts.map(\.incomeAccountID) == [services, products])
+        #expect(parts.map(\.amount) == [7_501, 2_500])
+        #expect(parts.map(\.isTaxable) == [true, false])
+    }
+
+    @Test("Acreditar todo devuelve las líneas originales; cero no devuelve nada")
+    func edges() {
+        let lines = [SalesLine(incomeAccountID: services, amount: 333), SalesLine(incomeAccountID: products, amount: 667)]
+        #expect(PostingRules.prorated(1_000, across: lines).map(\.amount) == [333, 667])
+        #expect(PostingRules.prorated(0, across: lines).isEmpty)
+        #expect(PostingRules.prorated(1, across: lines).map(\.amount) == [1])
+    }
+
+    @Test("Propiedad: la suma de las partes es siempre el importe", arguments: 0..<50)
+    func sumIsExact(seed: Int) {
+        var rng = SeededGenerator(seed: UInt64(seed) + 1)
+        let lines = (0..<Int.random(in: 1...6, using: &rng)).map { _ in
+            SalesLine(incomeAccountID: Bool.random(using: &rng) ? services : products, amount: Int64.random(in: 1...500_000, using: &rng))
+        }
+        let amount = Int64.random(in: 1...lines.reduce(0) { $0 + $1.amount }, using: &rng)
+        let parts = PostingRules.prorated(amount, across: lines)
+        #expect(parts.reduce(0) { $0 + $1.amount } == amount)
+        #expect(parts.allSatisfy { $0.amount > 0 })
+    }
+}

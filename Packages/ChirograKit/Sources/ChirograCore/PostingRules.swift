@@ -119,6 +119,28 @@ public enum PostingRules {
         return posting
     }
 
+    /// Reparte `amount` entre las líneas en proporción a su importe, para que una nota de crédito sobre varias
+    /// líneas rebaje cada cuenta de ingresos en su parte. Los centavos sobrantes van a las líneas con mayor
+    /// resto (a igualdad, la primera), así la suma es exacta. Las partes de cero se omiten.
+    public static func prorated(_ amount: Int64, across lines: [SalesLine]) -> [SalesLine] {
+        let total = lines.reduce(0) { $0 + $1.amount }
+        guard amount > 0, total > 0 else { return [] }
+        var shares = lines.map { line -> (line: SalesLine, amount: Int64, remainder: Int64) in
+            let (share, remainder) = total.dividingFullWidth(amount.multipliedFullWidth(by: line.amount))
+            return (line, share, remainder)
+        }
+        var leftover = amount - shares.reduce(0) { $0 + $1.amount }
+        for index in shares.indices.sorted(by: { shares[$0].remainder > shares[$1].remainder }) where leftover > 0 {
+            shares[index].amount += 1
+            leftover -= 1
+        }
+        return shares.filter { $0.amount > 0 }.map { share in
+            var line = share.line
+            line.amount = share.amount
+            return line
+        }
+    }
+
     /// Cobro de cliente: Debe Banco/Caja/Fondos no depositados / Haber CxC.
     public static func paymentReceived(
         date: Date, memo: String, amount: Int64, depositAccountID: UUID, receivableAccountID: UUID

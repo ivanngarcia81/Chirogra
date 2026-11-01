@@ -244,15 +244,28 @@ struct CreditNoteEditorView: View {
     @State private var isTaxable = true
     @State private var reason = ""
     @State private var date = Date()
+    /// Línea de la factura que se acredita; `nil` reparte el importe entre todas en proporción.
+    @State private var lineID: UUID?
     @State private var errorMessage: String?
+    @Query(sort: \Account.code) private var accounts: [Account]
 
     private var books: Bookkeeper { Bookkeeper(context: context) }
 
+    private var creditLines: [SalesLine] {
+        (try? books.creditLines(for: invoice, amount: amount, isTaxable: isTaxable, lineID: lineID)) ?? []
+    }
+
     private var preview: InvoicePosting? {
         let components = (try? books.taxComponents(groupID: invoice.taxGroupID, on: invoice.issueDate)) ?? []
-        return try? PostingRules.creditNote(date: date, memo: "", receivableAccountID: UUID(),
-                                            lines: [SalesLine(incomeAccountID: UUID(), amount: amount, isTaxable: isTaxable)],
+        return try? PostingRules.creditNote(date: date, memo: "", receivableAccountID: UUID(), lines: creditLines,
                                             taxComponents: components, customerIsTaxExempt: invoice.customer?.isTaxExempt ?? false)
+    }
+
+    /// Cuánto rebaja la nota en cada cuenta de ingresos, para que se vea antes de emitirla.
+    private var incomeByAccount: [(name: String, amount: Int64)] {
+        Dictionary(grouping: creditLines, by: \.incomeAccountID)
+            .map { id, lines in (accounts.first { $0.id == id }?.name ?? "Ingresos", lines.reduce(0) { $0 + $1.amount }) }
+            .sorted { $0.name < $1.name }
     }
 
     var body: some View {
@@ -263,6 +276,14 @@ struct CreditNoteEditorView: View {
                 LabeledContent("Saldo pendiente", value: invoice.balanceDue.money)
             }
             Section {
+                if invoice.sortedLines.count > 1 {
+                    Picker("Qué se acredita", selection: $lineID) {
+                        Text("Todas las líneas (proporcional)").tag(UUID?.none)
+                        ForEach(invoice.sortedLines) { line in
+                            Text("\(line.details) · \(line.amount.money)").tag(Optional(line.id))
+                        }
+                    }
+                }
                 MoneyField(title: "Importe a acreditar (sin impuesto)", minorUnits: $amount)
                 Toggle("Incluye sales tax", isOn: $isTaxable)
                 TextField("Motivo (devolución, ajuste de precio…)", text: $reason)
@@ -270,6 +291,9 @@ struct CreditNoteEditorView: View {
             }
             Section {
                 let total = preview?.total ?? 0
+                ForEach(incomeByAccount, id: \.name) { row in
+                    LabeledContent("Rebaja \(row.name)", value: row.amount.money)
+                }
                 LabeledContent("Sales tax", value: (preview?.totalTax ?? 0).money)
                 LabeledContent("Total de la nota", value: total.money).fontWeight(.semibold)
                 if total > 0 {
@@ -293,12 +317,19 @@ struct CreditNoteEditorView: View {
                 Button("Emitir", action: save).disabled(amount <= 0 || reason.trimmingCharacters(in: .whitespaces).isEmpty)
             }
         }
-        .onAppear { isTaxable = !(invoice.taxLines ?? []).isEmpty }
+        .onAppear {
+            isTaxable = !(invoice.taxLines ?? []).isEmpty
+            if invoice.sortedLines.count == 1 { lineID = invoice.sortedLines.first?.id }
+        }
+        .onChange(of: lineID) {
+            guard let line = invoice.sortedLines.first(where: { $0.id == lineID }) else { return }
+            isTaxable = line.isTaxable && !(invoice.taxLines ?? []).isEmpty
+        }
     }
 
     private func save() {
         do {
-            try books.issueCreditNote(for: invoice, amount: amount, isTaxable: isTaxable, reason: reason, date: date)
+            try books.issueCreditNote(for: invoice, amount: amount, isTaxable: isTaxable, reason: reason, date: date, lineID: lineID)
             dismiss()
         } catch {
             errorMessage = error.localizedDescription

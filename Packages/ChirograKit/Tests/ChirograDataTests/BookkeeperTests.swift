@@ -135,6 +135,38 @@ struct BookkeeperTests {
         #expect(invoice.status == .paid)
     }
 
+    @Test("Nota de crédito sobre una línea de producto rebaja la venta de productos, no los servicios")
+    func creditNoteUsesLineAccount() throws {
+        let invoice = try makeInvoice(amount: 100_000)                              // Servicio → 4000
+        let product = InvoiceLine(details: "Lámpara", unitPrice: 40_000, isTaxable: false,
+                                  incomeAccountID: try account("4100").id, order: 1)
+        product.invoice = invoice
+        context.insert(product)
+        try books.issue(invoice)
+        let note = try books.issueCreditNote(for: invoice, amount: 40_000, isTaxable: false, reason: "Devolución", lineID: product.id)
+        #expect(try note.incomeAccountID == account("4100").id)
+        let lines = try books.ledgerLines()
+        #expect(ReportBuilder.balance(of: try account("4000").ledgerAccount, lines: lines) == 100_000)
+        #expect(ReportBuilder.balance(of: try account("4100").ledgerAccount, lines: lines) == 0)
+        #expect(try allEntriesBalanced())
+    }
+
+    @Test("Nota de crédito sin línea elegida: se reparte entre las cuentas de todas las líneas")
+    func creditNoteProratesAcrossLines() throws {
+        let invoice = try makeInvoice(amount: 30_000)                               // Servicio → 4000
+        let product = InvoiceLine(details: "Lámpara", unitPrice: 10_000, isTaxable: false,
+                                  incomeAccountID: try account("4100").id, order: 1)
+        product.invoice = invoice
+        context.insert(product)
+        try books.issue(invoice)
+        let note = try books.issueCreditNote(for: invoice, amount: 20_000, isTaxable: false, reason: "Ajuste")
+        #expect(note.incomeAccountID == nil)
+        let lines = try books.ledgerLines()
+        #expect(ReportBuilder.balance(of: try account("4000").ledgerAccount, lines: lines) == 15_000)
+        #expect(ReportBuilder.balance(of: try account("4100").ledgerAccount, lines: lines) == 5_000)
+        #expect(try allEntriesBalanced())
+    }
+
     @Test("Pago de sales tax a la agencia: salda el pasivo y no admite pagar de más")
     func salesTaxPayment() throws {
         let group = try austinTaxGroup()
