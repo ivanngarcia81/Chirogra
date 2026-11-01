@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		0F6D88651207F8C4A4AF5A7B /* ChirograApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53FB421440D95AA4F9DB69E7 /* ChirograApp.swift */; };
+		500CA6F4B59709A1E4FC467C /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 71CDDD428B9A05C74B6A6CCB /* InfoPlist.xcstrings */; };
+		889416CF49C9AFE2F3A38632 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 3BF4A529585E38589928C266 /* Localizable.xcstrings */; };
 		8D366A0BEB2A3A1EFFBABAA0 /* ChirograCore in Frameworks */ = {isa = PBXBuildFile; productRef = 5222374F4B8B70EB983F946B /* ChirograCore */; };
 		9CB3DF906D7BB2FA485CB8E9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7364B1960027C08F87F64E1F /* Assets.xcassets */; };
 		A4D4D4C3591851EB343D3923 /* ChirograUI in Frameworks */ = {isa = PBXBuildFile; productRef = 1AC0F11095AE088BEA25F7A2 /* ChirograUI */; };
@@ -15,9 +17,11 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		3BF4A529585E38589928C266 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		53FB421440D95AA4F9DB69E7 /* ChirograApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChirograApp.swift; sourceTree = "<group>"; };
 		5CC24A74A69DD9CDC364AE58 /* ChirograKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ChirograKit; path = Packages/ChirograKit; sourceTree = SOURCE_ROOT; };
 		5E80BC58C6541FB633123F25 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		71CDDD428B9A05C74B6A6CCB /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
 		7364B1960027C08F87F64E1F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		89B034281E78B27BB74D6F66 /* Chirogra.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Chirogra.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -58,6 +62,8 @@
 				7364B1960027C08F87F64E1F /* Assets.xcassets */,
 				53FB421440D95AA4F9DB69E7 /* ChirograApp.swift */,
 				5E80BC58C6541FB633123F25 /* Info.plist */,
+				71CDDD428B9A05C74B6A6CCB /* InfoPlist.xcstrings */,
+				3BF4A529585E38589928C266 /* Localizable.xcstrings */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -115,6 +121,7 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				Base,
+				en,
 				es,
 			);
 			mainGroup = DD25423463D6889FBC19DE87;
@@ -138,6 +145,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				9CB3DF906D7BB2FA485CB8E9 /* Assets.xcassets in Resources */,
+				500CA6F4B59709A1E4FC467C /* InfoPlist.xcstrings in Resources */,
+				889416CF49C9AFE2F3A38632 /* Localizable.xcstrings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

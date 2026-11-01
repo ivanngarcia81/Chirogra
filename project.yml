@@ -28,7 +28,7 @@ targets:
       properties:
         CFBundleDisplayName: Chirogra
         CFBundleDevelopmentRegion: es
-        CFBundleLocalizations: [es]
+        CFBundleLocalizations: [es, en]
         LSApplicationCategoryType: public.app-category.finance
         NSFaceIDUsageDescription: Chirogra usa Face ID para proteger tus libros.
         UILaunchScreen: {}

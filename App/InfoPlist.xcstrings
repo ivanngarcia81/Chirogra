@@ -1,0 +1,24 @@
+{
+  "sourceLanguage" : "es",
+  "strings" : {
+    "NSFaceIDUsageDescription" : {
+      "comment" : "Permiso de Face ID que muestra iOS",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chirogra uses Face ID to protect your books."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chirogra usa Face ID para proteger tus libros."
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

@@ -41,6 +41,16 @@ xcodebuild -project Chirogra.xcodeproj -scheme Chirogra -destination 'platform=m
 
 Si cambias `project.yml`, regenera el proyecto con `xcodegen generate`.
 
+## Idiomas
+
+La app está en español (idioma de origen) e inglés. Los textos viven en `App/Localizable.xcstrings`, en el target de la app: las vistas del paquete usan `Text("…")` y `String(localized:)`, que buscan en el bundle principal. Como Xcode no sincroniza solo los textos del paquete con ese catálogo, después de añadir o cambiar textos:
+
+```bash
+scripts/sync-strings.sh
+```
+
+y traduce en Xcode los textos nuevos. Las pruebas de `ChirograUITests` fallan si falta el inglés de algún texto.
+
 ## Sincronización con iCloud
 
 El modelo de datos ya cumple las reglas de CloudKit, pero la capacidad de iCloud no viene activada para que el proyecto compile con cualquier cuenta (los equipos personales no admiten iCloud). Para activarla:
@@ -70,7 +80,6 @@ Esqueleto del MVP (ver DISEÑO §3.1 y §10). Funciona:
 Pendiente del MVP:
 
 - copia de seguridad exportable;
-- traducción al inglés;
 - envío de facturas por correo desde la app (hoy se comparten como PDF);
 - ícono definitivo exportado del canvas.
 
