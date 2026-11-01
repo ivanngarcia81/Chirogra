@@ -148,6 +148,7 @@ struct JournalListView: View {
     @Query(sort: [SortDescriptor(\JournalEntry.date, order: .reverse), SortDescriptor(\JournalEntry.number, order: .reverse)])
     private var entries: [JournalEntry]
     @State private var showingEditor = false
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         List {
@@ -160,7 +161,7 @@ struct JournalListView: View {
                               subtitle: "#\(entry.number) · \(entry.date.shortDate) · \(entry.source.title)") {
                         EmptyView()
                     } trailing: {
-                        VStack(alignment: .trailing, spacing: 3) {
+                        VStack(alignment: dynamicTypeSize.amountAlignment, spacing: 3) {
                             Text(entry.totalDebits.money).monospacedDigit()
                             if entry.isReversed || entry.reversesEntryID != nil {
                                 StatusChip(text: entry.isReversed ? "Revertido" : "Reversión", foreground: Palette.ink3, background: Palette.surface2)
@@ -414,6 +415,7 @@ struct LedgerAccountPickerView: View {
 /// un crédito aumenta el saldo (+); en activo y gasto lo aumenta un débito.
 struct LedgerView: View {
     let account: Account
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var filterByDate = false
     @State private var from = DateInterval.month(containing: .now).start
     @State private var to = Date()
@@ -456,14 +458,14 @@ struct LedgerView: View {
             Section {
                 if ledger.rows.isEmpty { Text("Sin movimientos").foregroundStyle(Palette.ink3) }
                 ForEach(ledger.rows.reversed()) { row in
-                    HStack(alignment: .firstTextBaseline) {
+                    AdaptiveRow(alignment: .firstTextBaseline) {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(row.movement.memo.isEmpty ? "Asiento" : row.movement.memo).lineLimit(2)
                             Text("\(row.movement.date.shortDate) · \(row.movement.debit > 0 ? "Débito" : "Crédito")")
                                 .font(.caption).foregroundStyle(Palette.ink3)
                         }
-                        Spacer()
-                        VStack(alignment: .trailing, spacing: 2) {
+                    } trailing: {
+                        VStack(alignment: dynamicTypeSize.amountAlignment, spacing: 2) {
                             Text("\(row.increasesBalance ? "+" : "−")\(abs(row.effect).money)")
                                 .foregroundStyle(row.increasesBalance ? Palette.ink : Palette.outflow)
                             Text("Saldo \(row.balance.money)").font(.caption).foregroundStyle(Palette.ink3)

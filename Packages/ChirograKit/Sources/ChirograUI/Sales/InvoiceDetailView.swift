@@ -26,9 +26,9 @@ struct InvoiceDetailView: View {
 
             Section {
                 VStack(alignment: .leading, spacing: 8) {
-                    HStack {
+                    AdaptiveRow {
                         Text(invoice.customer?.name ?? "Sin cliente").font(.title2.weight(.semibold))
-                        Spacer()
+                    } trailing: {
                         StatusChip(invoice: invoice, compact: false)
                     }
                     Text(invoice.status == .draft ? invoice.draftAmount.money : invoice.balanceDue.money)
@@ -44,14 +44,14 @@ struct InvoiceDetailView: View {
 
             Section("Productos y servicios") {
                 ForEach(invoice.sortedLines) { line in
-                    HStack(alignment: .firstTextBaseline) {
+                    AdaptiveRow(alignment: .firstTextBaseline) {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(line.details.isEmpty ? "Sin descripción" : line.details)
                             Text("\(line.quantity.formatted()) × \(line.unitPrice.money)\(line.isTaxable ? " · gravable" : "")")
                                 .font(.footnote).foregroundStyle(Palette.ink3)
                         }
-                        Spacer()
-                        Text(line.amount.money).monospacedDigit()
+                    } trailing: {
+                        Text(line.amount.money).monospacedDigit().fontWeight(.semibold)
                     }
                 }
             }
@@ -116,8 +116,9 @@ struct InvoiceDetailView: View {
                     EmptyView()
                 }
             }
-            .listRowInsets(EdgeInsets())
+            .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
             .listRowBackground(Color.clear)
+            .listRowSeparator(.hidden)
         }
         .screenBackground()
         .navigationTitle(invoice.number.isEmpty ? "Borrador" : invoice.number)

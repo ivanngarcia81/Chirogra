@@ -194,6 +194,7 @@ struct ExpenseEditorView: View {
 struct BillListView: View {
     @Query(sort: \Bill.dueDate) private var bills: [Bill]
     @State private var paying: Bill?
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         List {
@@ -213,7 +214,7 @@ struct BillListView: View {
                         LedgerRow(title: bill.vendor?.name ?? "Proveedor", subtitle: "\(bill.vendorNumber) · \(bill.dueDate.dueLabel)") {
                             IconTile(systemImage: "doc.text", foreground: Palette.outflow, background: Palette.outflowWash)
                         } trailing: {
-                            VStack(alignment: .trailing, spacing: 3) {
+                            VStack(alignment: dynamicTypeSize.amountAlignment, spacing: 3) {
                                 Text(bill.balanceDue.money).font(.body.weight(.semibold)).monospacedDigit()
                                 StatusChip(bill: bill)
                             }

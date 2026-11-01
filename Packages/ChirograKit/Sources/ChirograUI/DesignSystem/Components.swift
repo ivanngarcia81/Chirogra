@@ -72,6 +72,8 @@ struct PrimaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.body.weight(.semibold))
+            .multilineTextAlignment(.center)
+            .padding(.vertical, 10)
             .frame(maxWidth: .infinity, minHeight: Metrics.buttonHeight)
             .padding(.horizontal, 22)
             .foregroundStyle(isEnabled ? Palette.onBrand : Palette.ink3)
@@ -85,6 +87,8 @@ struct SecondaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.body.weight(.semibold))
+            .multilineTextAlignment(.center)
+            .padding(.vertical, 10)
             .frame(maxWidth: .infinity, minHeight: Metrics.buttonHeight)
             .padding(.horizontal, 22)
             .foregroundStyle(destructive ? Palette.negative : Palette.brand)
@@ -245,6 +249,30 @@ struct LedgerRow<Leading: View, Trailing: View>: View {
             Text(title).font(.body.weight(.semibold)).foregroundStyle(Palette.ink).lineLimit(2)
             // Sin límite de líneas: el subtítulo (número, vencimiento) nunca se corta con «…».
             Text(subtitle).font(.subheadline).foregroundStyle(Palette.ink3).fixedSize(horizontal: false, vertical: true)
+        }
+    }
+}
+
+/// Texto a la izquierda y valor a la derecha; con tamaños de accesibilidad, uno debajo del otro,
+/// para que ni las palabras ni las cifras se partan en varias líneas.
+struct AdaptiveRow<Leading: View, Trailing: View>: View {
+    var alignment: VerticalAlignment = .center
+    @ViewBuilder var leading: Leading
+    @ViewBuilder var trailing: Trailing
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    var body: some View {
+        if dynamicTypeSize.isAccessibilitySize {
+            VStack(alignment: .leading, spacing: 4) {
+                leading
+                trailing
+            }
+        } else {
+            HStack(alignment: alignment) {
+                leading
+                Spacer(minLength: 8)
+                trailing
+            }
         }
     }
 }

@@ -109,24 +109,16 @@ struct ExpenseDetailView: View {
                     Text("Sin recibo. Guarda el comprobante: el IRS pide conservarlo.").foregroundStyle(Palette.ink3)
                 }
                 ForEach(attachments) { attachment in
-                    HStack(spacing: 12) {
-                        ReceiptThumbnail(data: attachment.data, contentType: attachment.contentType)
-                        VStack(alignment: .leading) {
-                            Text(attachment.filename).lineLimit(1)
-                            Text(attachment.createdAt.shortDate).font(.caption).foregroundStyle(Palette.ink3)
-                        }
-                        Spacer()
-                        if let data = attachment.data {
-                            ShareLink(item: AttachmentFile(data: data, filename: attachment.filename, contentType: attachment.contentType),
-                                      preview: SharePreview(attachment.filename)) {
-                                Label("Compartir", systemImage: "square.and.arrow.up").labelStyle(.iconOnly)
+                    AdaptiveRow {
+                        HStack(spacing: 12) {
+                            ReceiptThumbnail(data: attachment.data, contentType: attachment.contentType)
+                            VStack(alignment: .leading) {
+                                Text(attachment.filename).lineLimit(2)
+                                Text(attachment.createdAt.shortDate).font(.caption).foregroundStyle(Palette.ink3)
                             }
-                            .accessibilityLabel("Compartir \(attachment.filename)")
                         }
-                        Button("Quitar", systemImage: "trash", role: .destructive) { removing = attachment }
-                            .labelStyle(.iconOnly)
-                            .buttonStyle(.borderless)
-                            .accessibilityLabel("Quitar \(attachment.filename)")
+                    } trailing: {
+                        HStack(spacing: 16) { attachmentActions(attachment) }
                     }
                     .swipeActions {
                         Button("Quitar", systemImage: "trash", role: .destructive) { removing = attachment }
@@ -157,6 +149,22 @@ struct ExpenseDetailView: View {
         } message: { _ in
             Text("El gasto y su asiento no cambian; solo se borra el archivo adjunto.")
         }
+    }
+
+    /// Compartir y quitar un recibo.
+    @ViewBuilder
+    private func attachmentActions(_ attachment: Attachment) -> some View {
+        if let data = attachment.data {
+            ShareLink(item: AttachmentFile(data: data, filename: attachment.filename, contentType: attachment.contentType),
+                      preview: SharePreview(attachment.filename)) {
+                Label("Compartir", systemImage: "square.and.arrow.up").labelStyle(.iconOnly)
+            }
+            .accessibilityLabel("Compartir \(attachment.filename)")
+        }
+        Button("Quitar", systemImage: "trash", role: .destructive) { removing = attachment }
+            .labelStyle(.iconOnly)
+            .buttonStyle(.borderless)
+            .accessibilityLabel("Quitar \(attachment.filename)")
     }
 
     private func remove(_ attachment: Attachment) {
