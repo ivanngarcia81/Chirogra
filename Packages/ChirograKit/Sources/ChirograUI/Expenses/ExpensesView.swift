@@ -586,6 +586,7 @@ struct BillEditorView: View {
     @State private var accountID: UUID?
     @State private var details = ""
     @State private var errorMessage: String?
+    @FocusState private var editingDetails: Bool
 
     private var costAccounts: [Account] { accounts.filtered { $0.accountType == .expense || $0 == .fixedAsset || $0 == .inventory } }
 
@@ -607,7 +608,12 @@ struct BillEditorView: View {
                     MoneyField(title: String(localized: "Importe total"), minorUnits: $amount).multilineTextAlignment(.trailing).labelsHidden()
                 }
                 AccountPicker(title: String(localized: "Categoría"), accounts: costAccounts, selection: $accountID)
+                // Toda la fila da el foco al campo: en el iPad en horizontal, tocar la descripción a veces no lo hacía.
                 TextField("Descripción", text: $details)
+                    .focused($editingDetails)
+                    .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                    .contentShape(Rectangle())
+                    .onTapGesture { editingDetails = true }
             }
         }
         // Agrupado también en el Mac: con el estilo por defecto los campos llegaban a los bordes de la hoja.

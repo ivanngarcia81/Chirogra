@@ -84,25 +84,39 @@ private struct EditorSheetSizing: ViewModifier {
     }
 }
 
+/// Testigo de un editor abierto: vive en el estado de la vista, así que desaparece con ella.
+final class EditorToken {}
+
 /// Cambios sin guardar de los editores abiertos. Lo consulta la barra lateral antes de cambiar de pantalla: rehacer la
-/// vista dividida cierra el editor y se perdería lo escrito. Cada editor se registra con su propio identificador, para
-/// que una hoja abierta encima (p. ej. un cliente nuevo desde la factura) no borre el estado del editor de debajo.
+/// vista dividida cierra el editor y se perdería lo escrito. Cada editor se registra con su propio testigo, para que
+/// una hoja abierta encima (p. ej. un cliente nuevo desde la factura) no borre el estado del editor de debajo. El
+/// registro guarda el testigo de forma débil: si la vista del editor ya no existe, deja de contar aunque `onDisappear`
+/// no haya llegado (o haya llegado antes que el último aviso de cambios).
 @Observable
 final class UnsavedChanges {
-    private var discards: [UUID: () -> Void] = [:]
-
-    var hasChanges: Bool { !discards.isEmpty }
-
-    /// `discard`: lo que hace el editor al descartar (p. ej. borrar el borrador que guardó la vista previa).
-    func report(_ editor: UUID, hasChanges: Bool, discard: @escaping () -> Void = {}) {
-        discards[editor] = hasChanges ? discard : nil
+    private struct Entry {
+        weak var token: EditorToken?
+        let discard: () -> Void
     }
 
-    func remove(_ editor: UUID) { discards[editor] = nil }
+    @ObservationIgnored private var entries: [ObjectIdentifier: Entry] = [:]
+
+    /// Solo cuentan los editores que siguen existiendo.
+    var hasChanges: Bool { entries.values.contains { $0.token != nil } }
+
+    /// `discard`: lo que hace el editor al descartar (p. ej. borrar el borrador que guardó la vista previa).
+    func report(_ editor: EditorToken, hasChanges: Bool, discard: @escaping () -> Void = {}) {
+        entries = entries.filter { $0.value.token != nil }
+        entries[ObjectIdentifier(editor)] = hasChanges ? Entry(token: editor, discard: discard) : nil
+    }
+
+    func remove(_ editor: EditorToken) { entries[ObjectIdentifier(editor)] = nil }
+
+    func removeAll() { entries = [:] }
 
     func discardAll() {
-        discards.values.forEach { $0() }
-        discards = [:]
+        entries.values.filter { $0.token != nil }.forEach { $0.discard() }
+        entries = [:]
     }
 }
 
@@ -145,12 +159,19 @@ private struct UnsavedChangesReporter: ViewModifier {
     let hasChanges: Bool
     let onDiscard: () -> Void
     @Environment(\.unsavedChanges) private var unsavedChanges
-    @State private var editorID = UUID()
+    @State private var token = EditorToken()
+    /// Solo informa mientras el editor está en pantalla, sea cual sea el orden de los avisos.
+    @State private var isVisible = false
 
     func body(content: Content) -> some View {
         content
-            .onChange(of: hasChanges, initial: true) { unsavedChanges?.report(editorID, hasChanges: hasChanges, discard: onDiscard) }
-            .onDisappear { unsavedChanges?.remove(editorID) }
+            .onAppear { isVisible = true; report() }
+            .onChange(of: hasChanges) { report() }
+            .onDisappear { isVisible = false; unsavedChanges?.remove(token) }
+    }
+
+    private func report() {
+        unsavedChanges?.report(token, hasChanges: hasChanges && isVisible, discard: onDiscard)
     }
 }
 

@@ -272,6 +272,8 @@ struct AppShell: View {
         .environment(\.isNarrowColumn, isDetailNarrow)
         #endif
         .environment(\.unsavedChanges, unsavedChanges)
+        // Al cambiar de pantalla se rehace la vista dividida: los editores de la columna ya no existen.
+        .onChange(of: selection) { unsavedChanges.removeAll() }
         .alert("¿Descartar los cambios?", isPresented: Binding(get: { pendingSelection != nil }, set: { if !$0 { pendingSelection = nil } })) {
             Button("Descartar", role: .destructive) {
                 unsavedChanges.discardAll()
