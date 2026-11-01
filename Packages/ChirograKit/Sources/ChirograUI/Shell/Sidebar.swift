@@ -215,6 +215,7 @@ struct Sidebar: View {
                     Text(Initials.from(name))
                         .font(.caption.weight(.bold))
                         .foregroundStyle(Palette.background)
+                        .dynamicTypeSize(...DynamicTypeSize.xxLarge)
                         .frame(width: 30, height: 30)
                         .background(Palette.ink, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
                         .accessibilityHidden(true)
