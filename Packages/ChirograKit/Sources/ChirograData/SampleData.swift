@@ -7,20 +7,23 @@ import SwiftData
 @MainActor
 public enum SampleData {
 
-    public static func makeContainer() -> ModelContainer {
+    public static func makeContainer(locale: Locale = .current) -> ModelContainer {
         do {
             let container = try ChirograStore.makeContainer(inMemory: true)
-            try populate(container.mainContext)
+            try populate(container.mainContext, locale: locale)
             return container
         } catch {
             fatalError("No se pudieron crear los datos de ejemplo: \(error)")
         }
     }
 
-    public static func populate(_ context: ModelContext, today: Date = Date(), calendar: Calendar = .current) throws {
+    /// El plan de cuentas (categorías) y el asiento de apertura salen en el idioma de la app (`locale`);
+    /// clientes, proveedores y descripciones son contenido de ejemplo «escrito por el usuario» y no se traducen.
+    public static func populate(_ context: ModelContext, today: Date = Date(), calendar: Calendar = .current,
+                                locale: Locale = .current) throws {
         let books = Bookkeeper(context: context, actor: "Ejemplo")
         try books.setUpCompany(legalName: "Ríos Diseño & Obra LLC", displayName: "Ríos Diseño & Obra",
-                               entityType: .llc, state: "TX", locale: Locale(identifier: "es_US"))
+                               entityType: .llc, state: "TX", locale: locale)
         func day(_ offset: Int) -> Date { calendar.date(byAdding: .day, value: offset, to: today) ?? today }
         func account(_ code: String) throws -> Account {
             guard let found = try books.accounts().first(where: { $0.code == code }) else { throw BookkeepingError.unknownAccount }
@@ -34,7 +37,7 @@ public enum SampleData {
         let services = try account("4000")
         let materials = try account("4100")
 
-        try books.post(JournalEntryDraft(date: day(-120), memo: "Saldos iniciales", source: .opening, lines: [
+        try books.post(JournalEntryDraft(date: day(-120), memo: String(localized: "Saldos iniciales"), source: .opening, lines: [
             .debit(checking.id, 3_800_000), .debit(savings.id, 950_000), .credit(capital.id, 4_750_000),
         ]))
 

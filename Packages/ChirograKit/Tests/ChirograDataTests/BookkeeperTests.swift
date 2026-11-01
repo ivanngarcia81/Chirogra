@@ -498,6 +498,16 @@ struct SectorTemplateTests {
         #expect(try books.accounts().first { $0.code == "4000" }?.name == "Ventas de mercancía")
     }
 
+    @Test("Los datos de ejemplo crean el plan de cuentas en el idioma de la app")
+    func sampleDataFollowsLanguage() throws {
+        for (identifier, expected) in [("es_US", "Ingresos por servicios"), ("en_US", "Service Revenue")] {
+            let sample = try ChirograStore.makeContainer(inMemory: true)
+            try SampleData.populate(sample.mainContext, locale: Locale(identifier: identifier))
+            let accounts = try Bookkeeper(context: sample.mainContext).accounts()
+            #expect(accounts.first { $0.code == "4000" }?.name == expected)
+        }
+    }
+
     @Test("Construcción y servicios tienen ingresos distintos")
     func sectorsDiffer() {
         let names = { (sector: BusinessSector) in sector.template.entries.first { $0.code == "4000" }?.spanish }

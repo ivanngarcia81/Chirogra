@@ -125,7 +125,7 @@ struct OnboardingView: View {
     private var previewAccounts: [String] {
         sector.template.entries
             .filter { [.sales, .costOfGoodsSold, .inventory].contains($0.subtype) }
-            .map { $0.name(for: Locale(identifier: "es_US")) }
+            .map { $0.name(for: .current) }   // el mismo idioma con que `setUpCompany` creará las cuentas
     }
 
     private func field(_ title: String, text: Binding<String>, prompt: String) -> some View {
