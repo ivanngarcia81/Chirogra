@@ -1,11 +1,12 @@
 import ChirograCore
 import ChirograData
 import CoreGraphics
+import PDFKit
 import SwiftUI
 import UniformTypeIdentifiers
 
-/// Factura en PDF tamaño carta (DISEÑO §3.1, canvas `FacturaEnviar`). Se dibuja con la misma vista que la
-/// vista previa, siempre en modo claro, y se pagina si hay muchas líneas.
+/// Factura en PDF tamaño carta (DISEÑO §3.1, canvas `FacturaEnviar`). Se dibuja con `InvoiceDocumentView`,
+/// siempre en modo claro, y se pagina si hay muchas líneas; la vista previa muestra ese mismo PDF.
 enum InvoicePDF {
     static let pageSize = CGSize(width: 612, height: 792)   // US Letter, en puntos
     static let linesPerPage = 16
@@ -196,17 +197,14 @@ struct InvoicePreviewView: View {
     @State private var pdf: InvoicePDFFile?
 
     var body: some View {
-        ScrollView([.vertical, .horizontal]) {
-            VStack(spacing: 16) {
-                let pages = InvoicePDF.pages(for: invoice)
-                ForEach(Array(pages.enumerated()), id: \.offset) { index, lines in
-                    InvoiceDocumentView(invoice: invoice, company: company, lines: lines, pageNumber: index + 1, pageCount: pages.count)
-                        .frame(width: InvoicePDF.pageSize.width, height: InvoicePDF.pageSize.height)
-                        .environment(\.colorScheme, .light)
-                        .shadow(color: .black.opacity(0.12), radius: 8, y: 2)
-                }
+        Group {
+            if let pdf {
+                // El mismo PDF que se comparte, ajustado al ancho de la pantalla; se amplía con dos dedos.
+                PDFPreview(data: pdf.data)
+                    .accessibilityLabel("Vista previa de la factura \(invoice.number)")
+            } else {
+                ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-            .padding()
         }
         .background(Palette.surface2)
         .navigationTitle("Vista previa")
@@ -224,3 +222,38 @@ struct InvoicePreviewView: View {
         .task { pdf = InvoicePDFFile(invoice: invoice, company: company) }
     }
 }
+
+/// PDF con PDFKit: páginas ajustadas al ancho disponible y zoom con gesto.
+#if canImport(UIKit)
+private struct PDFPreview: UIViewRepresentable {
+    let data: Data
+
+    func makeUIView(context: Context) -> PDFView {
+        let view = PDFView()
+        view.autoScales = true
+        view.displayMode = .singlePageContinuous
+        view.displayDirection = .vertical
+        view.backgroundColor = .clear
+        view.document = PDFDocument(data: data)
+        return view
+    }
+
+    func updateUIView(_ view: PDFView, context: Context) {}
+}
+#elseif canImport(AppKit)
+private struct PDFPreview: NSViewRepresentable {
+    let data: Data
+
+    func makeNSView(context: Context) -> PDFView {
+        let view = PDFView()
+        view.autoScales = true
+        view.displayMode = .singlePageContinuous
+        view.displayDirection = .vertical
+        view.backgroundColor = .clear
+        view.document = PDFDocument(data: data)
+        return view
+    }
+
+    func updateNSView(_ view: PDFView, context: Context) {}
+}
+#endif
