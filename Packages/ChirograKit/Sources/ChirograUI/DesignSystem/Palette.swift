@@ -55,13 +55,15 @@ public enum Metrics {
 }
 
 extension Color {
-    init(light: UInt32, dark: UInt32) {
+    /// `nonisolated` y cierre `@Sendable`: SwiftUI y UIKit/AppKit resuelven el color en hilos de fondo.
+    /// Si el cierre heredara el MainActor (aislamiento por defecto del módulo), Swift 6 abortaría la app.
+    nonisolated init(light: UInt32, dark: UInt32) {
         #if canImport(UIKit)
-        self.init(uiColor: UIColor { traits in
+        self.init(uiColor: UIColor { @Sendable traits in
             UIColor(rgb: traits.userInterfaceStyle == .dark ? dark : light)
         })
         #elseif canImport(AppKit)
-        self.init(nsColor: NSColor(name: nil) { appearance in
+        self.init(nsColor: NSColor(name: nil) { @Sendable appearance in
             NSColor(rgb: appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua ? dark : light)
         })
         #endif
@@ -70,14 +72,14 @@ extension Color {
 
 #if canImport(UIKit)
 private extension UIColor {
-    convenience init(rgb: UInt32) {
+    nonisolated convenience init(rgb: UInt32) {
         self.init(red: CGFloat((rgb >> 16) & 0xFF) / 255, green: CGFloat((rgb >> 8) & 0xFF) / 255,
                   blue: CGFloat(rgb & 0xFF) / 255, alpha: 1)
     }
 }
 #elseif canImport(AppKit)
 private extension NSColor {
-    convenience init(rgb: UInt32) {
+    nonisolated convenience init(rgb: UInt32) {
         self.init(srgbRed: CGFloat((rgb >> 16) & 0xFF) / 255, green: CGFloat((rgb >> 8) & 0xFF) / 255,
                   blue: CGFloat(rgb & 0xFF) / 255, alpha: 1)
     }
