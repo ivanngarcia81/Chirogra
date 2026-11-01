@@ -1151,6 +1151,16 @@
         }
       }
     },
+    "Asiento manual" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manual entry"
+          }
+        }
+      }
+    },
     "Asientos de diario" : {
       "localizations" : {
         "en" : {
@@ -1492,6 +1502,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Category"
+          }
+        }
+      }
+    },
+    "Categoría o cuenta" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Category or account"
           }
         }
       }
@@ -2254,6 +2274,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Deposit to"
+          }
+        }
+      }
+    },
+    "Depósito" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deposit"
           }
         }
       }
@@ -3532,6 +3562,26 @@
         }
       }
     },
+    "Importar y conciliar · Próximamente" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Import and reconcile · Coming soon"
+          }
+        }
+      }
+    },
+    "Importar y conciliar, disponible en una próxima versión" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Import and reconcile, available in a future version"
+          }
+        }
+      }
+    },
     "Importe" : {
       "localizations" : {
         "en" : {
@@ -4013,6 +4063,16 @@
         }
       }
     },
+    "Mes siguiente" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next month"
+          }
+        }
+      }
+    },
     "Moneda" : {
       "localizations" : {
         "en" : {
@@ -4063,12 +4123,32 @@
         }
       }
     },
+    "Movimiento" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transaction"
+          }
+        }
+      }
+    },
     "Movimientos" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Activity"
+          }
+        }
+      }
+    },
+    "Movimientos · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transactions · %@"
           }
         }
       }
@@ -4630,6 +4710,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "New group"
+          }
+        }
+      }
+    },
+    "Nuevo movimiento" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New transaction"
           }
         }
       }
@@ -5913,6 +6003,16 @@
         }
       }
     },
+    "Retiro" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Withdrawal"
+          }
+        }
+      }
+    },
     "Retiros" : {
       "localizations" : {
         "en" : {
@@ -6032,6 +6132,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Account balance per books"
+          }
+        }
+      }
+    },
+    "Saldo en libros · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Book balance · %@"
           }
         }
       }
@@ -6453,6 +6563,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No activity"
+          }
+        }
+      }
+    },
+    "Sin movimientos este mes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No transactions this month"
           }
         }
       }
@@ -7177,6 +7297,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "OVERDUE"
+          }
+        }
+      }
+    },
+    "Varias" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Multiple"
           }
         }
       }
