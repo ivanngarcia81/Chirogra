@@ -353,7 +353,7 @@ struct VendorListView: View {
                     .listRowBackground(Palette.surface)
             }
             ForEach(vendors) { vendor in
-                NavigationLink { VendorEditorView(vendor: vendor) } label: {
+                NavigationLink { VendorDetailView(vendor: vendor) } label: {
                     LedgerRow(title: vendor.name, subtitle: vendor.is1099 ? String(localized: "Sujeto a 1099") : (vendor.email.isEmpty ? String(localized: "Proveedor") : vendor.email)) {
                         InitialsTile(text: Initials.from(vendor.name), foreground: Palette.outflow, background: Palette.outflowWash)
                     } trailing: {
@@ -404,7 +404,7 @@ struct VendorEditorView: View {
         .navigationTitle(vendor == nil ? String(localized: "Nuevo proveedor") : vendor!.name)
         .inlineTitle()
         .toolbar {
-            if vendor == nil { ToolbarItem(placement: .cancellationAction) { Button("Cancelar") { dismiss() } } }
+            ToolbarItem(placement: .cancellationAction) { Button("Cancelar") { dismiss() } }
             ToolbarItem(placement: .confirmationAction) {
                 Button("Guardar", action: save).disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
             }

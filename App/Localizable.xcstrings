@@ -275,6 +275,46 @@
         }
       }
     },
+    "%lld días" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld day"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld days"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld día"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld días"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld facturas" : {
       "localizations" : {
         "en" : {
@@ -781,6 +821,16 @@
         }
       }
     },
+    "Añadir una nota…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add a note…"
+          }
+        }
+      }
+    },
     "Año" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1025,6 +1075,16 @@
         }
       }
     },
+    "Categoría predeterminada: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Default category: %@"
+          }
+        }
+      }
+    },
     "Cerrado hasta" : {
       "localizations" : {
         "en" : {
@@ -1121,6 +1181,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Customer"
+          }
+        }
+      }
+    },
+    "Cliente desde %@ · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Customer since %@ · %@"
           }
         }
       }
@@ -1246,6 +1316,16 @@
         }
       }
     },
+    "Compras" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Purchases"
+          }
+        }
+      }
+    },
     "Con estos datos preparamos tu plan de cuentas y tus facturas." : {
       "localizations" : {
         "en" : {
@@ -1262,16 +1342,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Memo"
-          }
-        }
-      }
-    },
-    "Condiciones" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Terms"
           }
         }
       }
@@ -1706,6 +1776,16 @@
         }
       }
     },
+    "Dirección de envío" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shipping address"
+          }
+        }
+      }
+    },
     "Dirección de facturación" : {
       "localizations" : {
         "en" : {
@@ -1952,6 +2032,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "The amount is more than the balance due (%@)."
+          }
+        }
+      }
+    },
+    "El pago se registra en tus libros; el dinero se mueve desde tu banco." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The payment is recorded in your books; the money moves from your bank."
           }
         }
       }
@@ -2357,6 +2447,16 @@
         }
       }
     },
+    "Facturado en %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Billed in %@"
+          }
+        }
+      }
+    },
     "Facturas" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2454,6 +2554,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Net income"
+          }
+        }
+      }
+    },
+    "Gastado %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spent %@"
           }
         }
       }
@@ -2629,6 +2739,17 @@
         }
       }
     },
+    "Historial" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "History"
+          }
+        }
+      }
+    },
     "Hola, %@: la factura %@ por %@ venció el %@. ¿Nos ayudas con el pago? ¡Gracias!" : {
       "localizations" : {
         "en" : {
@@ -2645,6 +2766,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Hi %@, a friendly reminder that invoice %@ for %@ is due on %@. Thank you!"
+          }
+        }
+      }
+    },
+    "Hola, %@: te recordamos que tienes %@ pendiente de pago. ¡Gracias!" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hi %@, a friendly reminder that you have %@ outstanding. Thank you!"
+          }
+        }
+      }
+    },
+    "Hola, %@: tienes %@ vencido con nosotros. ¿Nos ayudas con el pago? ¡Gracias!" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hi %@, you have %@ overdue with us. Could you help us with the payment? Thank you!"
           }
         }
       }
@@ -3025,6 +3166,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "General ledger · %@"
+          }
+        }
+      }
+    },
+    "Llamar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Call"
           }
         }
       }
@@ -3530,6 +3681,17 @@
         }
       }
     },
+    "Notas" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notes"
+          }
+        }
+      }
+    },
     "Notas de crédito" : {
       "localizations" : {
         "en" : {
@@ -3800,6 +3962,16 @@
         }
       }
     },
+    "Paga en promedio" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pays on average in"
+          }
+        }
+      }
+    },
     "Pagada" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3938,6 +4110,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Partially paid"
+          }
+        }
+      }
+    },
+    "Pago recibido" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Payment received"
+          }
+        }
+      }
+    },
+    "Pago recibido · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Payment received · %@"
           }
         }
       }
@@ -4152,6 +4344,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "By rate"
+          }
+        }
+      }
+    },
+    "Por vencer %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not yet due %@"
           }
         }
       }
@@ -4417,6 +4619,16 @@
         }
       }
     },
+    "Recibo adjunto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Receipt attached"
+          }
+        }
+      }
+    },
     "Recibo en PDF" : {
       "localizations" : {
         "en" : {
@@ -4443,6 +4655,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Receipts"
+          }
+        }
+      }
+    },
+    "Recordar pago" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remind to pay"
           }
         }
       }
@@ -4824,16 +5046,6 @@
         }
       }
     },
-    "Saldo por cobrar" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Open balance"
-          }
-        }
-      }
-    },
     "Saldos de apertura" : {
       "localizations" : {
         "en" : {
@@ -5041,6 +5253,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No customers yet"
+          }
+        }
+      }
+    },
+    "Sin compras todavía" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No purchases yet"
           }
         }
       }
@@ -5888,6 +6110,16 @@
         }
       }
     },
+    "Vencido %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Overdue %@"
+          }
+        }
+      }
+    },
     "Ventas" : {
       "localizations" : {
         "en" : {
@@ -5998,6 +6230,16 @@
         }
       }
     },
+    "desde %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "since %@"
+          }
+        }
+      }
+    },
     "iCloud, copias y seguridad" : {
       "localizations" : {
         "en" : {
@@ -6008,12 +6250,32 @@
         }
       }
     },
+    "pagada" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "paid"
+          }
+        }
+      }
+    },
     "por cobrar" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "receivable"
+          }
+        }
+      }
+    },
+    "por pagar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "to pay"
           }
         }
       }

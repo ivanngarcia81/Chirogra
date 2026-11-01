@@ -154,6 +154,20 @@ struct StatusChip: View {
     }
 }
 
+extension Invoice {
+    /// Nombre del estado, igual que en su chip («Vencida», «Pago parcial»…).
+    var statusTitle: String {
+        if daysOverdue() != nil { return String(localized: "Vencida") }
+        return switch status {
+        case .draft: String(localized: "Borrador")
+        case .sent: String(localized: "Enviada")
+        case .partiallyPaid: String(localized: "Pago parcial")
+        case .paid: String(localized: "Pagada")
+        case .void: String(localized: "Anulada")
+        }
+    }
+}
+
 extension StatusChip {
     /// Estados de factura del canvas: Borrador, Enviada, Pago parcial, Vencida · N días, Pagada (+ Anulada).
     init(invoice: Invoice, compact: Bool = true) {
@@ -434,6 +448,77 @@ extension View {
     /// Fija `BottomActionBar` sobre el borde inferior: los botones no se van con el scroll.
     func bottomActionBar<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
         safeAreaInset(edge: .bottom, spacing: 0) { BottomActionBar(content: content) }
+    }
+}
+
+// MARK: - Fichas (canvas `ClienteFicha`, `ProveedorFicha`)
+
+/// Cabecera de ficha: avatar de 56 pt (círculo para clientes, cuadrado para proveedores), nombre grande y detalle.
+struct ProfileHeader: View {
+    var initials: String? = nil
+    var systemImage: String? = nil
+    let name: String
+    let detail: String
+    var round = false
+    var foreground: Color = Palette.brand
+    var background: Color = Palette.brandWash
+    @ScaledMetric(relativeTo: .title) private var side: CGFloat = 56
+
+    var body: some View {
+        HStack(spacing: 14) {
+            Group {
+                if let systemImage { Image(systemName: systemImage).font(.title2) } else { Text(initials ?? "").font(.title3.weight(.bold)) }
+            }
+            .foregroundStyle(foreground)
+            .frame(width: side, height: side)
+            .background(background, in: round ? AnyShape(Circle()) : AnyShape(RoundedRectangle(cornerRadius: 16, style: .continuous)))
+            .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(name).font(.title.weight(.bold)).foregroundStyle(Palette.ink).lineLimit(2).minimumScaleFactor(0.8)
+                    .accessibilityAddTraits(.isHeader)
+                Text(detail).font(.subheadline).foregroundStyle(Palette.ink3)
+            }
+        }
+    }
+}
+
+/// Acción de la ficha (Llamar, Correo, Factura): icono sobre el texto, en tarjeta.
+struct ProfileAction: View {
+    let title: String
+    let systemImage: String
+    let action: () -> Void
+    @Environment(\.isEnabled) private var isEnabled
+
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 4) {
+                Image(systemName: systemImage).font(.title3).accessibilityHidden(true)
+                Text(title).font(.caption.weight(.semibold)).lineLimit(1).minimumScaleFactor(0.8)
+            }
+            .foregroundStyle(isEnabled ? Palette.brand : Palette.ink3)
+            .frame(maxWidth: .infinity, minHeight: 60)
+            .background(Palette.surface, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+/// Cifra pequeña de ficha: etiqueta y valor en una tarjeta (canvas `ProveedorFicha`).
+struct MiniStat: View {
+    let title: String
+    let value: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(title).font(.caption).foregroundStyle(Palette.ink3).lineLimit(1).minimumScaleFactor(0.8)
+            Text(value).font(.body.weight(.bold)).foregroundStyle(Palette.ink).monospacedDigit().lineLimit(1).minimumScaleFactor(0.7)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Palette.surface, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .accessibilityElement(children: .combine)
     }
 }
 

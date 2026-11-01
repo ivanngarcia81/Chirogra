@@ -292,7 +292,7 @@ struct SearchResultsView: View {
             if !foundVendors.isEmpty {
                 Section(title: "Proveedores") {
                     ForEach(foundVendors.prefix(20)) { vendor in
-                        NavigationLink { VendorEditorView(vendor: vendor) } label: {
+                        NavigationLink { VendorDetailView(vendor: vendor) } label: {
                             LedgerRow(title: vendor.name, subtitle: vendor.email) {
                                 InitialsTile(text: Initials.from(vendor.name), foreground: Palette.outflow, background: Palette.outflowWash)
                             } trailing: {
