@@ -325,6 +325,16 @@
         }
       }
     },
+    "Abre los ajustes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens settings"
+          }
+        }
+      }
+    },
     "Activado" : {
       "localizations" : {
         "en" : {
@@ -706,6 +716,16 @@
         }
       }
     },
+    "BASE" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "BASE"
+          }
+        }
+      }
+    },
     "BORRADOR" : {
       "localizations" : {
         "en" : {
@@ -799,6 +819,26 @@
         }
       }
     },
+    "Borrar búsqueda" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear search"
+          }
+        }
+      }
+    },
+    "Buscar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search"
+          }
+        }
+      }
+    },
     "Buscar clientes" : {
       "localizations" : {
         "en" : {
@@ -825,6 +865,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "QTY"
+          }
+        }
+      }
+    },
+    "CLIENTE" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CUSTOMER"
           }
         }
       }
@@ -2363,6 +2413,16 @@
         }
       }
     },
+    "IMPUESTO" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TAX"
+          }
+        }
+      }
+    },
     "Importe" : {
       "localizations" : {
         "en" : {
@@ -3404,6 +3464,16 @@
         }
       }
     },
+    "PROVEEDOR" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "VENDOR"
+          }
+        }
+      }
+    },
     "Pagada" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3840,6 +3910,16 @@
         }
       }
     },
+    "Prueba con un cliente, un número de factura, un proveedor o un monto." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Try a customer, an invoice number, a vendor, or an amount."
+          }
+        }
+      }
+    },
     "Próximamente" : {
       "localizations" : {
         "en" : {
@@ -4157,6 +4237,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Prior years' earnings"
+          }
+        }
+      }
+    },
+    "Resultados de búsqueda" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search results"
           }
         }
       }
@@ -4698,6 +4788,16 @@
         }
       }
     },
+    "Sincronizado con iCloud" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Synced with iCloud"
+          }
+        }
+      }
+    },
     "Sincronizar con iCloud" : {
       "localizations" : {
         "en" : {
@@ -4714,6 +4814,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Partnership"
+          }
+        }
+      }
+    },
+    "Solo en este dispositivo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On this device only"
           }
         }
       }
@@ -4784,6 +4894,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Q%lld %@"
+          }
+        }
+      }
+    },
+    "TASA" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RATE"
           }
         }
       }
@@ -5015,6 +5135,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Total expenses"
+          }
+        }
+      }
+    },
+    "Total gastos operativos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total operating expenses"
           }
         }
       }
