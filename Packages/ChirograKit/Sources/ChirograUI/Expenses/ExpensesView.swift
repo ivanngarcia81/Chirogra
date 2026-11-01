@@ -210,7 +210,7 @@ struct BillListView: View {
             Section {
                 ForEach(bills) { bill in
                     Button { if bill.isOpen { paying = bill } } label: {
-                        LedgerRow(title: bill.vendor?.name ?? "Proveedor", subtitle: "\(bill.vendorNumber) · vence \(bill.dueDate.dayMonth)") {
+                        LedgerRow(title: bill.vendor?.name ?? "Proveedor", subtitle: "\(bill.vendorNumber) · \(bill.dueDate.dueLabel)") {
                             IconTile(systemImage: "doc.text", foreground: Palette.outflow, background: Palette.outflowWash)
                         } trailing: {
                             VStack(alignment: .trailing, spacing: 3) {

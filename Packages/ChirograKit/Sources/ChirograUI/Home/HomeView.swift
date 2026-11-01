@@ -206,7 +206,7 @@ struct HomeView: View {
                 Divider()
                 NavigationLink { InvoiceDetailView(invoice: invoice) } label: {
                     LedgerRow(title: invoice.customer?.name ?? "Sin cliente",
-                              subtitle: "\(invoice.number) · vence el \(invoice.dueDate.dayMonth)") {
+                              subtitle: "\(invoice.number) · \(invoice.dueDate.dueLabel)") {
                         EmptyView()
                     } trailing: {
                         VStack(alignment: .trailing, spacing: 3) {

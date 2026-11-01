@@ -129,6 +129,9 @@ struct InvoiceRow: View {
         } trailing: {
             VStack(alignment: .trailing, spacing: 3) {
                 Text(amount).font(.body.weight(.semibold)).monospacedDigit()
+                if invoice.status == .partiallyPaid {
+                    Text("de \(invoice.total.money)").font(.caption).foregroundStyle(Palette.ink3).monospacedDigit()
+                }
                 StatusChip(invoice: invoice)
             }
         }
@@ -148,8 +151,7 @@ struct InvoiceRow: View {
         case .draft: return "\(number) · borrador"
         case .paid: return "\(number) · pagada"
         case .void: return "\(number) · anulada"
-        case .partiallyPaid: return "\(number) · vence \(invoice.dueDate.dayMonth) · de \(invoice.total.money)"
-        case .sent: return "\(number) · vence \(invoice.dueDate.dayMonth)"
+        case .partiallyPaid, .sent: return "\(number) · \(invoice.dueDate.dueLabel)"
         }
     }
 }

@@ -12,6 +12,8 @@ extension Int64 {
 extension Date {
     var shortDate: String { formatted(.dateTime.day().month(.abbreviated).year()) }
     var dayMonth: String { formatted(.dateTime.day().month(.abbreviated)) }
+    /// «vence Oct 28» con espacios de no separación: en una fila estrecha se parte antes, nunca dentro.
+    var dueLabel: String { "vence \(dayMonth)".replacingOccurrences(of: " ", with: "\u{00A0}") }
 }
 
 // MARK: - Tipografía
@@ -239,7 +241,8 @@ struct LedgerRow<Leading: View, Trailing: View>: View {
     private var texts: some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(title).font(.body.weight(.semibold)).foregroundStyle(Palette.ink).lineLimit(2)
-            Text(subtitle).font(.subheadline).foregroundStyle(Palette.ink3).lineLimit(2)
+            // Sin límite de líneas: el subtítulo (número, vencimiento) nunca se corta con «…».
+            Text(subtitle).font(.subheadline).foregroundStyle(Palette.ink3).fixedSize(horizontal: false, vertical: true)
         }
     }
 }
