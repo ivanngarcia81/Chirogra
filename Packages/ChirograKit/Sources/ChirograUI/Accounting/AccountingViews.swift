@@ -125,6 +125,9 @@ struct ChartOfAccountsView: View {
 struct AccountEditorView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.unsavedChanges) private var unsavedChanges
+    /// Testigo del editor en `UnsavedChanges`: se retira al guardar, antes de cerrar.
+    @State private var editorToken = EditorToken()
     @Query private var accounts: [Account]
     @State private var code = ""
     @State private var name = ""
@@ -148,13 +151,13 @@ struct AccountEditorView: View {
         .screenBackground()
         .navigationTitle("Nueva cuenta")
         .inlineTitle()
-        .discardableEditor(tracking: "\(code)|\(name)|\(subtype)")
+        .discardableEditor(tracking: "\(code)|\(name)|\(subtype)", token: editorToken)
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
                 Button("Guardar") {
                     context.insert(Account(code: code, name: name, subtype: subtype))
                     try? context.save()
-                    dismiss()
+                    unsavedChanges?.remove(editorToken); dismiss()
                 }
                 .disabled(name.isEmpty || codeTaken)
             }
@@ -288,6 +291,9 @@ struct JournalEntryEditorView: View {
 
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.unsavedChanges) private var unsavedChanges
+    /// Testigo del editor en `UnsavedChanges`: se retira al guardar, antes de cerrar.
+    @State private var editorToken = EditorToken()
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     #if os(iOS)
     @LayoutSizeClass private var sizeClass
@@ -343,7 +349,7 @@ struct JournalEntryEditorView: View {
         }
         .navigationTitle("Nuevo asiento")
         .inlineTitle()
-        .discardableEditor(tracking: "\(date)|\(memo)|" + lines.map { "\($0.accountID?.uuidString ?? "")/\($0.debit)/\($0.credit)" }.joined(separator: ";"))
+        .discardableEditor(tracking: "\(date)|\(memo)|" + lines.map { "\($0.accountID?.uuidString ?? "")/\($0.debit)/\($0.credit)" }.joined(separator: ";"), token: editorToken)
         .toolbar {
             ToolbarItem(placement: .confirmationAction) { Button("Registrar asiento", action: save).disabled(!isValid) }
         }
@@ -549,7 +555,7 @@ struct JournalEntryEditorView: View {
     private func save() {
         do {
             try books.post(draft)
-            dismiss()
+            unsavedChanges?.remove(editorToken); dismiss()
         } catch {
             errorMessage = error.localizedDescription
         }

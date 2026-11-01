@@ -568,6 +568,9 @@ struct CustomerEditorView: View {
 
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.unsavedChanges) private var unsavedChanges
+    /// Testigo del editor en `UnsavedChanges`: se retira al guardar, antes de cerrar.
+    @State private var editorToken = EditorToken()
     @Query(sort: \TaxGroup.name) private var taxGroups: [TaxGroup]
 
     @State private var name = ""
@@ -611,7 +614,7 @@ struct CustomerEditorView: View {
         .screenBackground()
         .navigationTitle(customer == nil ? "Nuevo cliente" : "Editar cliente")
         .inlineTitle()
-        .discardableEditor(tracking: "\(name)|\(email)|\(phone)|\(billingAddress)|\(terms)|\(taxGroupID?.uuidString ?? "")|\(isTaxExempt)|\(exemptionReason)")
+        .discardableEditor(tracking: "\(name)|\(email)|\(phone)|\(billingAddress)|\(terms)|\(taxGroupID?.uuidString ?? "")|\(isTaxExempt)|\(exemptionReason)", token: editorToken)
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
                 Button("Guardar", action: save).disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
@@ -635,7 +638,7 @@ struct CustomerEditorView: View {
         target.isTaxExempt = isTaxExempt; target.exemptionReason = exemptionReason
         try? context.save()
         if customer == nil { onCreate?(target) }
-        dismiss()
+        unsavedChanges?.remove(editorToken); dismiss()
     }
 }
 
@@ -644,6 +647,9 @@ struct CustomerRefundView: View {
     let customer: Customer
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.unsavedChanges) private var unsavedChanges
+    /// Testigo del editor en `UnsavedChanges`: se retira al guardar, antes de cerrar.
+    @State private var editorToken = EditorToken()
     @Query(sort: \Account.code) private var accounts: [Account]
     @State private var amount: Int64 = 0
     @State private var date = Date()
@@ -670,7 +676,7 @@ struct CustomerRefundView: View {
         .screenBackground()
         .navigationTitle("Reembolso")
         .inlineTitle()
-        .discardableEditor(tracking: "\(amount)|\(date)|\(accountID?.uuidString ?? "")")
+        .discardableEditor(tracking: "\(amount)|\(date)|\(accountID?.uuidString ?? "")", token: editorToken)
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
                 Button("Reembolsar", action: save).disabled(amount <= 0 || accountID == nil)
@@ -686,7 +692,7 @@ struct CustomerRefundView: View {
         guard let account = accounts.first(where: { $0.id == accountID }) else { return }
         do {
             try Bookkeeper(context: context).refundCustomerCredit(customer, amount: amount, date: date, from: account)
-            dismiss()
+            unsavedChanges?.remove(editorToken); dismiss()
         } catch {
             errorMessage = error.localizedDescription
         }

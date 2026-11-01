@@ -218,10 +218,18 @@ struct AppShell: View {
     #endif
 
     /// Con un editor con cambios abierto, la barra lateral pregunta antes de cambiar de pantalla (como «Cancelar»).
+    /// Si hay un aviso de «Cancelar» abierto o cerrándose, se espera a que su acción termine antes de decidir: en el iPad
+    /// el toque en la barra llegaba antes que «Descartar», y se preguntaba sin ningún editor a la vista.
     private var sidebarSelection: Binding<SidebarItem> {
         Binding(get: { selection }, set: { item in
             guard item != selection else { return }
-            if unsavedChanges.hasChanges { pendingSelection = item } else { selection = item }
+            Task { @MainActor in
+                while unsavedChanges.hasChanges && unsavedChanges.isSettling() {
+                    try? await Task.sleep(for: .milliseconds(50))
+                }
+                guard item != selection else { return }
+                if unsavedChanges.hasChanges { pendingSelection = item } else { selection = item }
+            }
         })
     }
 

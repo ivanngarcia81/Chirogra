@@ -453,6 +453,9 @@ struct CreditNoteEditorView: View {
     let invoice: Invoice
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.unsavedChanges) private var unsavedChanges
+    /// Testigo del editor en `UnsavedChanges`: se retira al guardar, antes de cerrar.
+    @State private var editorToken = EditorToken()
     @State private var amount: Int64 = 0
     @State private var isTaxable = true
     @State private var reason = ""
@@ -524,7 +527,7 @@ struct CreditNoteEditorView: View {
         .screenBackground()
         .navigationTitle("Nota de crédito")
         .inlineTitle()
-        .discardableEditor(tracking: "\(amount)|\(isTaxable)|\(reason)|\(date)")
+        .discardableEditor(tracking: "\(amount)|\(isTaxable)|\(reason)|\(date)", token: editorToken)
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
                 Button("Emitir", action: save).disabled(amount <= 0 || reason.trimmingCharacters(in: .whitespaces).isEmpty)
@@ -543,7 +546,7 @@ struct CreditNoteEditorView: View {
     private func save() {
         do {
             try books.issueCreditNote(for: invoice, amount: amount, isTaxable: isTaxable, reason: reason, date: date, lineID: lineID)
-            dismiss()
+            unsavedChanges?.remove(editorToken); dismiss()
         } catch {
             errorMessage = error.localizedDescription
         }

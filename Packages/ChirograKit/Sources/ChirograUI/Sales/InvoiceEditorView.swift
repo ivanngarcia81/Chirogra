@@ -48,6 +48,10 @@ struct InvoiceEditorView: View {
     @State private var confirmingDiscardChanges = false
     /// Lo que había al abrir el editor, para saber si hay cambios sin guardar.
     @State private var baseline: String?
+    @Environment(\.unsavedChanges) private var unsavedChanges
+    /// Testigo del editor en `UnsavedChanges`: se retira antes de cerrar (al descartar, guardar o emitir), porque
+    /// durante la animación de salida seguiría contando y la barra lateral preguntaría sin editor a la vista.
+    @State private var editorToken = EditorToken()
     @State private var loadedDraft = false
     /// Al cargar un borrador no se aplican los valores por defecto del cliente (impuesto, vencimiento).
     @State private var skipCustomerDefaults = false
@@ -101,7 +105,7 @@ struct InvoiceEditorView: View {
                         Text("Al ver la vista previa se guardó como borrador.")
                     }
                     .confirmationDialog("¿Descartar los cambios?", isPresented: $confirmingDiscardChanges, titleVisibility: .visible) {
-                        Button("Descartar", role: .destructive) { dismiss() }
+                        Button("Descartar", role: .destructive) { close() }
                         Button("Seguir editando", role: .cancel) {}
                     }
             }
@@ -131,7 +135,10 @@ struct InvoiceEditorView: View {
         }
         // La barra lateral pregunta antes de cambiar de pantalla si hay cambios (y al descartar borra el borrador
         // que guardó la vista previa).
-        .reportsUnsavedChanges(hasChanges, onDiscard: deleteSavedDraft)
+        .reportsUnsavedChanges(hasChanges, token: editorToken, onDiscard: deleteSavedDraft)
+        // Con un aviso de «Cancelar» abierto o cerrándose, su acción aún puede retirar el editor
+        // (ver `UnsavedChanges.confirmation`).
+        .onChange(of: confirmingCancel || confirmingDiscardChanges) { _, open in unsavedChanges?.confirmation(isOpen: open) }
         .onChange(of: customerID) {
             if skipCustomerDefaults { skipCustomerDefaults = false; return }
             guard let customer else { return }
@@ -574,8 +581,14 @@ struct InvoiceEditorView: View {
         try? context.save()
     }
 
+    /// Retira el registro de cambios y cierra.
+    private func close() {
+        unsavedChanges?.remove(editorToken)
+        dismiss()
+    }
+
     private func cancel() {
-        if hasNewDraft { confirmingCancel = true } else if hasChanges { confirmingDiscardChanges = true } else { dismiss() }
+        if hasNewDraft { confirmingCancel = true } else if hasChanges { confirmingDiscardChanges = true } else { close() }
     }
 
     private func discardDraft() {
@@ -583,13 +596,13 @@ struct InvoiceEditorView: View {
             context.delete(savedInvoice)
             try? context.save()
         }
-        dismiss()
+        close()
     }
 
     private func saveDraft() {
         do {
             try persistDraft()
-            dismiss()
+            close()
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -608,7 +621,7 @@ struct InvoiceEditorView: View {
         do {
             // Si un intento anterior falló, el borrador se reescribe con las correcciones antes de emitir.
             try books.issue(try persistDraft())
-            dismiss()
+            close()
         } catch {
             errorMessage = error.localizedDescription
         }

@@ -112,7 +112,19 @@ final class UnsavedChanges {
 
     func remove(_ editor: EditorToken) { entries[ObjectIdentifier(editor)] = nil }
 
-    func removeAll() { entries = [:] }
+    /// Hasta cuándo puede cambiar el registro por un aviso de «Cancelar»: en el iPad, un toque en la barra lateral
+    /// llega antes que la acción de «Descartar», que se ejecuta mientras el aviso se cierra.
+    @ObservationIgnored private(set) var settlingUntil: Date?
+
+    /// Un aviso de «Cancelar» se abre (`isOpen`) o se cierra: mientras está abierto, y un momento después, su acción
+    /// aún puede retirar el editor.
+    func confirmation(isOpen: Bool, settleFor seconds: TimeInterval = 1.2, now: Date = .now) {
+        settlingUntil = isOpen ? .distantFuture : now.addingTimeInterval(seconds)
+    }
+
+    func isSettling(at now: Date = .now) -> Bool { settlingUntil.map { now < $0 } ?? false }
+
+    func removeAll() { entries = [:]; settlingUntil = nil }
 
     func discardAll() {
         entries.values.filter { $0.token != nil }.forEach { $0.discard() }
@@ -124,19 +136,25 @@ extension View {
     /// Editor que se puede descartar: compara `value` (lo que escribe el usuario) con lo que había al abrirlo y, si
     /// hay cambios, «Cancelar» pregunta antes de cerrarlo (con el aviso anclado al botón), la hoja no se cierra
     /// deslizando y la barra lateral pregunta antes de cambiar de pantalla.
-    func discardableEditor<Value: Equatable>(tracking value: Value, onDiscard: @escaping () -> Void = {}) -> some View {
-        modifier(DiscardableEditor(value: value, onDiscard: onDiscard))
+    ///
+    /// `token` es el testigo del editor: al guardar, el editor lo retira de `UnsavedChanges` antes de cerrarse, porque
+    /// durante la animación de salida seguiría contando y la barra lateral preguntaría sin ningún editor a la vista.
+    func discardableEditor<Value: Equatable>(tracking value: Value, token: EditorToken,
+                                             onDiscard: @escaping () -> Void = {}) -> some View {
+        modifier(DiscardableEditor(value: value, token: token, onDiscard: onDiscard))
     }
 
     /// Informa de los cambios de un editor que pone su propio «Cancelar» (la factura, que además conserva borradores).
-    func reportsUnsavedChanges(_ hasChanges: Bool, onDiscard: @escaping () -> Void = {}) -> some View {
-        modifier(UnsavedChangesReporter(hasChanges: hasChanges, onDiscard: onDiscard))
+    func reportsUnsavedChanges(_ hasChanges: Bool, token: EditorToken, onDiscard: @escaping () -> Void = {}) -> some View {
+        modifier(UnsavedChangesReporter(hasChanges: hasChanges, token: token, onDiscard: onDiscard))
     }
 }
 
 private struct DiscardableEditor<Value: Equatable>: ViewModifier {
     let value: Value
+    let token: EditorToken
     let onDiscard: () -> Void
+    @Environment(\.unsavedChanges) private var unsavedChanges
     @State private var baseline: Value?
     /// Se toma la referencia tras el primer ciclo, cuando el editor ya cargó sus datos y valores por defecto.
     @State private var readyForBaseline = false
@@ -146,10 +164,12 @@ private struct DiscardableEditor<Value: Equatable>: ViewModifier {
     func body(content: Content) -> some View {
         content
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { CancelEditorButton(hasChanges: hasChanges, onDiscard: onDiscard) }
+                ToolbarItem(placement: .cancellationAction) {
+                    CancelEditorButton(hasChanges: hasChanges) { onDiscard(); unsavedChanges?.remove(token) }
+                }
             }
             .interactiveDismissDisabled(hasChanges)
-            .reportsUnsavedChanges(hasChanges, onDiscard: onDiscard)
+            .reportsUnsavedChanges(hasChanges, token: token, onDiscard: onDiscard)
             .onAppear { if baseline == nil { Task { @MainActor in readyForBaseline = true } } }
             .onChange(of: readyForBaseline) { if baseline == nil { baseline = value } }
     }
@@ -157,9 +177,9 @@ private struct DiscardableEditor<Value: Equatable>: ViewModifier {
 
 private struct UnsavedChangesReporter: ViewModifier {
     let hasChanges: Bool
+    let token: EditorToken
     let onDiscard: () -> Void
     @Environment(\.unsavedChanges) private var unsavedChanges
-    @State private var token = EditorToken()
     /// Solo informa mientras el editor está en pantalla, sea cual sea el orden de los avisos.
     @State private var isVisible = false
 
@@ -175,11 +195,13 @@ private struct UnsavedChangesReporter: ViewModifier {
     }
 }
 
-/// «Cancelar» de un editor: con cambios, pregunta «¿Descartar los cambios?» antes de cerrarlo.
+/// «Cancelar» de un editor: con cambios, pregunta «¿Descartar los cambios?» antes de cerrarlo. `onDiscard` se llama
+/// justo antes de cerrar (y retira el registro de cambios sin esperar a que termine la animación).
 struct CancelEditorButton: View {
     let hasChanges: Bool
     var onDiscard: () -> Void = {}
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.unsavedChanges) private var unsavedChanges
     @State private var confirming = false
 
     var body: some View {
@@ -188,6 +210,7 @@ struct CancelEditorButton: View {
                 Button("Descartar", role: .destructive) { onDiscard(); dismiss() }
                 Button("Seguir editando", role: .cancel) {}
             }
+            .onChange(of: confirming) { unsavedChanges?.confirmation(isOpen: confirming) }
     }
 }
 

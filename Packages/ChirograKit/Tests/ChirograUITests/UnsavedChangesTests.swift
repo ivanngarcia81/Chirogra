@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 @testable import ChirograUI
 
@@ -26,6 +27,31 @@ struct UnsavedChangesTests {
         #expect(changes.hasChanges)
         editor = nil
         #expect(!changes.hasChanges)
+    }
+
+    @Test("Al descartar o guardar se retira el registro sin esperar a que el editor desaparezca")
+    func retiredBeforeDisappearing() {
+        let changes = UnsavedChanges()
+        let editor = EditorToken()
+        changes.report(editor, hasChanges: true)
+        // El editor sigue vivo (animación de salida), pero ya no cuenta.
+        changes.remove(editor)
+        #expect(!changes.hasChanges)
+        withExtendedLifetime(editor) {}
+    }
+
+    @Test("Con un aviso de Cancelar abierto, y un momento después de cerrarse, el registro aún puede cambiar")
+    func settling() {
+        let changes = UnsavedChanges()
+        let start = Date(timeIntervalSince1970: 0)
+        #expect(!changes.isSettling(at: start))
+        changes.confirmation(isOpen: true, now: start)
+        #expect(changes.isSettling(at: start.addingTimeInterval(60)))
+        changes.confirmation(isOpen: false, settleFor: 1, now: start)
+        #expect(changes.isSettling(at: start.addingTimeInterval(0.5)))
+        #expect(!changes.isSettling(at: start.addingTimeInterval(1.5)))
+        changes.removeAll()
+        #expect(!changes.isSettling(at: start.addingTimeInterval(0.5)))
     }
 
     @Test("Una hoja encima no borra los cambios del editor de debajo")

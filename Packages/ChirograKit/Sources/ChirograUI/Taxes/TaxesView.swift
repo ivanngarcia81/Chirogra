@@ -365,6 +365,9 @@ struct TaxesView: View {
 struct TaxRateEditorView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.unsavedChanges) private var unsavedChanges
+    /// Testigo del editor en `UnsavedChanges`: se retira al guardar, antes de cerrar.
+    @State private var editorToken = EditorToken()
     @Query(sort: \TaxAgency.name) private var agencies: [TaxAgency]
 
     @State private var agencyID: UUID?
@@ -394,7 +397,7 @@ struct TaxRateEditorView: View {
         .screenBackground()
         .navigationTitle("Nueva tasa")
         .inlineTitle()
-        .discardableEditor(tracking: "\(agencyID?.uuidString ?? "")|\(newAgencyName)|\(name)|\(percent)")
+        .discardableEditor(tracking: "\(agencyID?.uuidString ?? "")|\(newAgencyName)|\(name)|\(percent)", token: editorToken)
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
                 Button("Guardar", action: save).disabled(name.isEmpty || percent <= 0 || (agencyID == nil && newAgencyName.isEmpty))
@@ -414,7 +417,7 @@ struct TaxRateEditorView: View {
             }
             context.insert(TaxRate(name: name, rateMillionths: TaxComponent.millionths(fromPercent: percent), agency: agency))
             try context.save()
-            dismiss()
+            unsavedChanges?.remove(editorToken); dismiss()
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -424,6 +427,9 @@ struct TaxRateEditorView: View {
 struct TaxGroupEditorView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.unsavedChanges) private var unsavedChanges
+    /// Testigo del editor en `UnsavedChanges`: se retira al guardar, antes de cerrar.
+    @State private var editorToken = EditorToken()
     @Query(sort: \TaxRate.name) private var rates: [TaxRate]
     @State private var name = ""
     @State private var selected: Set<UUID> = []
@@ -445,13 +451,13 @@ struct TaxGroupEditorView: View {
         .screenBackground()
         .navigationTitle("Nuevo grupo")
         .inlineTitle()
-        .discardableEditor(tracking: "\(name)|" + selected.map(\.uuidString).sorted().joined(separator: ","))
+        .discardableEditor(tracking: "\(name)|" + selected.map(\.uuidString).sorted().joined(separator: ","), token: editorToken)
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
                 Button("Guardar") {
                     context.insert(TaxGroup(name: name, rates: rates.filter { selected.contains($0.id) }))
                     try? context.save()
-                    dismiss()
+                    unsavedChanges?.remove(editorToken); dismiss()
                 }
                 .disabled(name.isEmpty || selected.isEmpty)
             }
@@ -464,6 +470,9 @@ struct SalesTaxPaymentView: View {
     let owed: Int64
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.unsavedChanges) private var unsavedChanges
+    /// Testigo del editor en `UnsavedChanges`: se retira al guardar, antes de cerrar.
+    @State private var editorToken = EditorToken()
     @Query(sort: \TaxAgency.name) private var agencies: [TaxAgency]
     @Query(sort: \Account.code) private var accounts: [Account]
     @State private var agencyID: UUID?
@@ -493,7 +502,7 @@ struct SalesTaxPaymentView: View {
         .screenBackground()
         .navigationTitle("Pago de sales tax")
         .inlineTitle()
-        .discardableEditor(tracking: "\(agencyID?.uuidString ?? "")|\(amount)|\(date)|\(accountID?.uuidString ?? "")|\(reference)")
+        .discardableEditor(tracking: "\(agencyID?.uuidString ?? "")|\(amount)|\(date)|\(accountID?.uuidString ?? "")|\(reference)", token: editorToken)
         .toolbar {
             ToolbarItem(placement: .confirmationAction) { Button("Registrar", action: save).disabled(amount <= 0 || accountID == nil) }
         }
@@ -509,7 +518,7 @@ struct SalesTaxPaymentView: View {
         do {
             try Bookkeeper(context: context).paySalesTax(to: agencies.first { $0.id == agencyID }, amount: amount, date: date,
                                                          from: account, reference: reference)
-            dismiss()
+            unsavedChanges?.remove(editorToken); dismiss()
         } catch {
             errorMessage = error.localizedDescription
         }

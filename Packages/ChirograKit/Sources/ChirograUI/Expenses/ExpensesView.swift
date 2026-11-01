@@ -272,6 +272,9 @@ struct ExpenseEditorView: View {
     var preselectedVendor: Vendor? = nil
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.unsavedChanges) private var unsavedChanges
+    /// Testigo del editor en `UnsavedChanges`: se retira al guardar, antes de cerrar.
+    @State private var editorToken = EditorToken()
     @Query(sort: \Account.code) private var accounts: [Account]
     @Query(sort: \Vendor.name) private var vendors: [Vendor]
 
@@ -311,7 +314,7 @@ struct ExpenseEditorView: View {
         .modifier(InlineTitleUnless(wide: isWide))
         // En pantalla ancha se abre en la navegación: «Cancelar» hace de «Atrás».
         .navigationBarBackButtonHidden(isWide)
-        .discardableEditor(tracking: "\(payee)|\(vendorID?.uuidString ?? "")|\(date)|\(amount)|\(categoryID?.uuidString ?? "")|\(paymentAccountID?.uuidString ?? "")|\(memo)|\(receipts.count)|\(method)")
+        .discardableEditor(tracking: "\(payee)|\(vendorID?.uuidString ?? "")|\(date)|\(amount)|\(categoryID?.uuidString ?? "")|\(paymentAccountID?.uuidString ?? "")|\(memo)|\(receipts.count)|\(method)", token: editorToken)
         .toolbar {
             if isWide {
                 ToolbarItemGroup(placement: .primaryAction) {
@@ -527,7 +530,7 @@ struct ExpenseEditorView: View {
         }
         if failed.isEmpty, another {
             amount = 0; payee = ""; vendorID = nil; memo = ""; receipts = []; categoryID = nil; errorMessage = nil
-        } else if failed.isEmpty { dismiss() } else {
+        } else if failed.isEmpty { unsavedChanges?.remove(editorToken); dismiss() } else {
             errorMessage = String(localized: "El gasto se guardó, pero no se pudo adjuntar: \(failed.joined(separator: ", ")). Ábrelo desde la lista para reintentar.")
         }
     }
@@ -575,6 +578,9 @@ struct BillListView: View {
 struct BillEditorView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.unsavedChanges) private var unsavedChanges
+    /// Testigo del editor en `UnsavedChanges`: se retira al guardar, antes de cerrar.
+    @State private var editorToken = EditorToken()
     @Query(sort: \Account.code) private var accounts: [Account]
     @Query(sort: \Vendor.name) private var vendors: [Vendor]
 
@@ -621,7 +627,7 @@ struct BillEditorView: View {
         .screenBackground()
         .navigationTitle("Factura por pagar")
         .inlineTitle()
-        .discardableEditor(tracking: "\(vendorID?.uuidString ?? "")|\(number)|\(billDate)|\(dueDate)|\(amount)|\(accountID?.uuidString ?? "")|\(details)")
+        .discardableEditor(tracking: "\(vendorID?.uuidString ?? "")|\(number)|\(billDate)|\(dueDate)|\(amount)|\(accountID?.uuidString ?? "")|\(details)", token: editorToken)
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
                 Button("Guardar", action: save).disabled(vendorID == nil || amount <= 0 || accountID == nil)
@@ -642,7 +648,7 @@ struct BillEditorView: View {
         context.insert(line)
         do {
             try Bookkeeper(context: context).record(bill)
-            dismiss()
+            unsavedChanges?.remove(editorToken); dismiss()
         } catch {
             context.delete(bill)
             errorMessage = error.localizedDescription
@@ -654,6 +660,9 @@ struct PayBillView: View {
     let bill: Bill
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.unsavedChanges) private var unsavedChanges
+    /// Testigo del editor en `UnsavedChanges`: se retira al guardar, antes de cerrar.
+    @State private var editorToken = EditorToken()
     @Query(sort: \Account.code) private var accounts: [Account]
     @State private var amount: Int64 = 0
     @State private var date = Date()
@@ -679,7 +688,7 @@ struct PayBillView: View {
         .screenBackground()
         .navigationTitle("Pagar factura")
         .inlineTitle()
-        .discardableEditor(tracking: "\(amount)|\(date)|\(accountID?.uuidString ?? "")")
+        .discardableEditor(tracking: "\(amount)|\(date)|\(accountID?.uuidString ?? "")", token: editorToken)
         .toolbar {
             ToolbarItem(placement: .confirmationAction) { Button("Pagar", action: pay).disabled(amount <= 0 || accountID == nil) }
         }
@@ -690,7 +699,7 @@ struct PayBillView: View {
         guard let account = accounts.first(where: { $0.id == accountID }) else { return }
         do {
             try Bookkeeper(context: context).pay(bill, amount: amount, date: date, from: account)
-            dismiss()
+            unsavedChanges?.remove(editorToken); dismiss()
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -726,6 +735,9 @@ struct VendorEditorView: View {
     var vendor: Vendor?
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.unsavedChanges) private var unsavedChanges
+    /// Testigo del editor en `UnsavedChanges`: se retira al guardar, antes de cerrar.
+    @State private var editorToken = EditorToken()
     @Query(sort: \Account.code) private var accounts: [Account]
 
     @State private var name = ""
@@ -757,7 +769,7 @@ struct VendorEditorView: View {
         .screenBackground()
         .navigationTitle(vendor == nil ? String(localized: "Nuevo proveedor") : vendor!.name)
         .inlineTitle()
-        .discardableEditor(tracking: "\(name)|\(email)|\(phone)|\(terms)|\(defaultAccountID?.uuidString ?? "")|\(is1099)|\(tinLast4)")
+        .discardableEditor(tracking: "\(name)|\(email)|\(phone)|\(terms)|\(defaultAccountID?.uuidString ?? "")|\(is1099)|\(tinLast4)", token: editorToken)
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
                 Button("Guardar", action: save).disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
@@ -778,6 +790,6 @@ struct VendorEditorView: View {
         target.defaultExpenseAccountID = defaultAccountID; target.is1099 = is1099
         target.tinLast4 = String(tinLast4.filter(\.isNumber).suffix(4))
         try? context.save()
-        dismiss()
+        unsavedChanges?.remove(editorToken); dismiss()
     }
 }
