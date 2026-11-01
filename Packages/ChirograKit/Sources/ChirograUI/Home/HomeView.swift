@@ -14,6 +14,7 @@ struct HomeView: View {
     @Query(sort: \Bill.dueDate) private var bills: [Bill]
 
     @State private var months = 6
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @ScaledMetric(relativeTo: .title2) private var quickActionSide: CGFloat = 56
     @ScaledMetric(relativeTo: .headline) private var dateTileWidth: CGFloat = 44
     @State private var sheet: QuickAction?
@@ -72,7 +73,11 @@ struct HomeView: View {
     }
 
     private var kpis: some View {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 100), spacing: 8)], spacing: 8) {
+        // Con tamaños de accesibilidad, una tarjeta por fila: en tres columnas se partían palabras y cifras.
+        let columns = dynamicTypeSize.isAccessibilitySize
+            ? [GridItem(.flexible())]
+            : [GridItem(.adaptive(minimum: 100), spacing: 8)]
+        return LazyVGrid(columns: columns, spacing: 8) {
             KPITile(title: "Ingresos", value: thisMonth.totalIncome.money,
                     note: change(thisMonth.totalIncome, lastMonth.totalIncome, higherIsBetter: true).text,
                     noteColor: change(thisMonth.totalIncome, lastMonth.totalIncome, higherIsBetter: true).color)
@@ -94,16 +99,23 @@ struct HomeView: View {
     }
 
     private var quickActions: some View {
-        HStack(spacing: 8) {
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 8))
+            : AnyLayout(HStackLayout(spacing: 8))
+        return layout {
             quickAction("Factura", "doc.badge.plus", .invoice, prominent: true)
             quickAction("Gasto", "wallet.bifold", .expense)
             quickAction("Cliente", "person.badge.plus", .customer)
         }
     }
 
+    /// Icono sobre el título; con tamaños de accesibilidad, icono a la izquierda y una acción por fila.
     private func quickAction(_ title: String, _ image: String, _ action: QuickAction, prominent: Bool = false) -> some View {
-        Button { sheet = action } label: {
-            VStack(spacing: 6) {
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(HStackLayout(spacing: 12))
+            : AnyLayout(VStackLayout(spacing: 6))
+        return Button { sheet = action } label: {
+            layout {
                 Image(systemName: image)
                     .font(.title2)
                     .frame(width: quickActionSide, height: quickActionSide)
@@ -112,7 +124,7 @@ struct HomeView: View {
                     .accessibilityHidden(true)
                 Text(title).font(.footnote.weight(.semibold)).foregroundStyle(Palette.ink)
             }
-            .frame(maxWidth: .infinity)
+            .frame(maxWidth: .infinity, alignment: dynamicTypeSize.isAccessibilitySize ? .leading : .center)
         }
         .buttonStyle(.plain)
     }
@@ -150,15 +162,16 @@ struct HomeView: View {
 
     private var chart: some View {
         VStack(alignment: .leading, spacing: 14) {
-            HStack {
-                Text("Ingresos vs. gastos").font(.cardTitle)
-                Spacer()
-                Picker("Periodo de la gráfica", selection: $months) {
-                    Text("6 M").tag(6)
-                    Text("12 M").tag(12)
+            ViewThatFits(in: .horizontal) {
+                HStack {
+                    Text("Ingresos vs. gastos").font(.cardTitle).fixedSize()
+                    Spacer()
+                    chartPeriodPicker
                 }
-                .pickerStyle(.segmented)
-                .fixedSize()
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Ingresos vs. gastos").font(.cardTitle)
+                    chartPeriodPicker
+                }
             }
             Chart(chartPoints) { point in
                 BarMark(x: .value("Mes", point.month, unit: .month), y: .value("Importe", point.amount))
@@ -168,21 +181,38 @@ struct HomeView: View {
             }
             .chartForegroundStyleScale(["Ingresos": Palette.brand, "Gastos": Palette.expenseBar])
             .chartXAxis { AxisMarks(values: .stride(by: .month)) { _ in AxisValueLabel(format: .dateTime.month(.narrow)) } }
-            .frame(height: 150)
+            // Los ejes no crecen más allá de xxxLarge (se amontonaban); las cifras completas están en el resumen de VoiceOver.
+            .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
+            .frame(height: dynamicTypeSize.isAccessibilitySize ? 220 : 150)
             .accessibilityLabel("Ingresos y gastos de los últimos \(months) meses")
             .accessibilityValue(chartSummary)
         }
         .card()
     }
 
+    private var chartPeriodPicker: some View {
+        Picker("Periodo de la gráfica", selection: $months) {
+            Text("6 M").tag(6)
+            Text("12 M").tag(12)
+        }
+        .pickerStyle(.segmented)
+        .fixedSize()
+    }
+
     private var receivables: some View {
         let overdueTotal = overdue.reduce(0) { $0 + $1.balanceDue }
         let total = openInvoices.reduce(0) { $0 + $1.balanceDue }
         return VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Text("Por cobrar").font(.cardTitle)
-                Spacer()
-                Text(total.money).font(.amount(17))
+            ViewThatFits(in: .horizontal) {
+                HStack {
+                    Text("Por cobrar").font(.cardTitle).fixedSize()
+                    Spacer()
+                    Text(total.money).font(.amount(17)).fixedSize()
+                }
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Por cobrar").font(.cardTitle)
+                    Text(total.money).font(.amount(17))
+                }
             }
             if total > 0 {
                 GeometryReader { proxy in
@@ -195,10 +225,20 @@ struct HomeView: View {
                 .frame(height: 8)
                 .clipShape(RoundedRectangle(cornerRadius: 4))
                 .accessibilityHidden(true)
-                HStack {
-                    Text("Vencidas · \(overdueTotal.money) (\(overdue.count))").foregroundStyle(Palette.negative).fontWeight(.semibold)
-                    Spacer()
-                    Text("Por vencer · \((total - overdueTotal).money) (\(openInvoices.count - overdue.count))").foregroundStyle(Palette.ink2)
+                let overdueText = Text("Vencidas · \(overdueTotal.money) (\(overdue.count))")
+                    .foregroundStyle(Palette.negative).fontWeight(.semibold)
+                let upcomingText = Text("Por vencer · \((total - overdueTotal).money) (\(openInvoices.count - overdue.count))")
+                    .foregroundStyle(Palette.ink2)
+                ViewThatFits(in: .horizontal) {
+                    HStack {
+                        overdueText.fixedSize()
+                        Spacer()
+                        upcomingText.fixedSize()
+                    }
+                    VStack(alignment: .leading, spacing: 4) {
+                        overdueText
+                        upcomingText
+                    }
                 }
                 .font(.footnote)
             }
@@ -209,7 +249,7 @@ struct HomeView: View {
                               subtitle: "\(invoice.number) · \(invoice.dueDate.dueLabel)") {
                         EmptyView()
                     } trailing: {
-                        VStack(alignment: .trailing, spacing: 3) {
+                        VStack(alignment: dynamicTypeSize.amountAlignment, spacing: 3) {
                             Text(invoice.balanceDue.money).font(.body.weight(.semibold)).monospacedDigit()
                             StatusChip(invoice: invoice)
                         }

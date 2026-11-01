@@ -7,6 +7,7 @@ import SwiftUI
 struct CustomerListView: View {
     @Query(sort: \Customer.name) private var customers: [Customer]
     @State private var query = ""
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     private var filtered: [Customer] {
         customers.filter { !$0.isArchived && (query.isEmpty || $0.name.localizedCaseInsensitiveContains(query)) }
@@ -24,7 +25,7 @@ struct CustomerListView: View {
                     LedgerRow(title: customer.name, subtitle: customer.email.isEmpty ? "Sin correo" : customer.email) {
                         InitialsTile(text: customer.initials)
                     } trailing: {
-                        VStack(alignment: .trailing, spacing: 2) {
+                        VStack(alignment: dynamicTypeSize.amountAlignment, spacing: 2) {
                             Text(customer.openBalance.money).font(.body.weight(.semibold)).monospacedDigit()
                             Text("por cobrar").font(.caption).foregroundStyle(Palette.ink3)
                             if customer.creditBalance > 0 {

@@ -210,7 +210,7 @@ struct IconTile: View {
 
 /// Fila del canvas: icono o iniciales, título, subtítulo e importe con chip opcional.
 /// El texto tiene prioridad sobre el importe y puede ir en dos líneas, para que datos como el vencimiento
-/// no se corten en iPhone; con tamaños de accesibilidad el importe pasa debajo del texto.
+/// no se corten en iPhone; con tamaños de accesibilidad icono, texto e importe van en columna.
 struct LedgerRow<Leading: View, Trailing: View>: View {
     let title: String
     let subtitle: String
@@ -221,8 +221,10 @@ struct LedgerRow<Leading: View, Trailing: View>: View {
     var body: some View {
         Group {
             if dynamicTypeSize.isAccessibilitySize {
+                // Todo en columna: el icono crece con el texto y, a su lado, partía el nombre en sílabas.
                 VStack(alignment: .leading, spacing: 6) {
-                    HStack(spacing: 12) { leading; texts }
+                    leading
+                    texts
                     trailing
                 }
             } else {
@@ -245,6 +247,11 @@ struct LedgerRow<Leading: View, Trailing: View>: View {
             Text(subtitle).font(.subheadline).foregroundStyle(Palette.ink3).fixedSize(horizontal: false, vertical: true)
         }
     }
+}
+
+extension DynamicTypeSize {
+    /// Alineación de la columna de importe de una `LedgerRow`: a la derecha, o a la izquierda cuando la fila va en columna.
+    var amountAlignment: HorizontalAlignment { isAccessibilitySize ? .leading : .trailing }
 }
 
 struct SectionLabel: View {

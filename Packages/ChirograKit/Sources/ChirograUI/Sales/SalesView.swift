@@ -91,10 +91,18 @@ struct InvoiceListView: View {
                 .listRowInsets(EdgeInsets())
                 .listRowBackground(Color.clear)
             } footer: {
-                HStack {
-                    Text("\(filtered.count) \(filtered.count == 1 ? "factura" : "facturas")")
-                    Spacer()
-                    Text("Por cobrar \(Text(invoices.filter(\.isOpen).reduce(0) { $0 + $1.balanceDue }.money).bold())")
+                let count = Text("\(filtered.count) \(filtered.count == 1 ? "factura" : "facturas")")
+                let receivable = Text("Por cobrar \(Text(invoices.filter(\.isOpen).reduce(0) { $0 + $1.balanceDue }.money).bold())")
+                ViewThatFits(in: .horizontal) {
+                    HStack {
+                        count.fixedSize()
+                        Spacer()
+                        receivable.fixedSize()
+                    }
+                    VStack(alignment: .leading, spacing: 2) {
+                        count
+                        receivable
+                    }
                 }
             }
 
@@ -122,12 +130,13 @@ struct InvoiceListView: View {
 
 struct InvoiceRow: View {
     let invoice: Invoice
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         LedgerRow(title: invoice.customer?.name ?? "Sin cliente", subtitle: subtitle) {
             InitialsTile(text: invoice.customer?.initials ?? "?", foreground: Palette.ink2, background: Palette.surface2)
         } trailing: {
-            VStack(alignment: .trailing, spacing: 3) {
+            VStack(alignment: dynamicTypeSize.amountAlignment, spacing: 3) {
                 Text(amount).font(.body.weight(.semibold)).monospacedDigit()
                 if invoice.status == .partiallyPaid {
                     Text("de \(invoice.total.money)").font(.caption).foregroundStyle(Palette.ink3).monospacedDigit()
