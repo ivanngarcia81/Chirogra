@@ -43,6 +43,26 @@
         }
       }
     },
+    "% del total acreedor" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "% of total credits"
+          }
+        }
+      }
+    },
+    "% del total deudor" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "% of total debits"
+          }
+        }
+      }
+    },
     "%@ %@" : {
       "shouldTranslate" : false
     },
@@ -63,6 +83,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ %lld%% vs. %@"
+          }
+        }
+      }
+    },
+    "%@ (%@) vs. %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ (%@) vs. %@"
           }
         }
       }
@@ -105,6 +135,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ of %@"
+          }
+        }
+      }
+    },
+    "%@ de pasivo + patrimonio" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ of liabilities + equity"
+          }
+        }
+      }
+    },
+    "%@ de total activos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ of total assets"
           }
         }
       }
@@ -255,6 +305,16 @@
         }
       }
     },
+    "%@ · al %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · as of %@"
+          }
+        }
+      }
+    },
     "%@ · anulada" : {
       "localizations" : {
         "en" : {
@@ -291,6 +351,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ · draft"
+          }
+        }
+      }
+    },
+    "%@ · contracuenta" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · contra account"
           }
         }
       }
@@ -527,6 +597,16 @@
     },
     "%@.csv" : {
       "shouldTranslate" : false
+    },
+    "%@: %@, %@: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@: %@, %@: %@"
+          }
+        }
+      }
     },
     "%@: ingresos %@, gastos %@" : {
       "localizations" : {
@@ -1551,6 +1631,16 @@
         }
       }
     },
+    "Abrir ficha" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open profile"
+          }
+        }
+      }
+    },
     "Acciones rápidas" : {
       "localizations" : {
         "en" : {
@@ -1567,6 +1657,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Action"
+          }
+        }
+      }
+    },
+    "Acreedora" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Credit"
           }
         }
       }
@@ -1863,6 +1963,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Before closing %@"
+          }
+        }
+      }
+    },
+    "Antigüedad" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aging"
           }
         }
       }
@@ -2264,6 +2374,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No expenses yet"
+          }
+        }
+      }
+    },
+    "Aún no hay tasas de impuesto. Añade una con «+» bajo la tabla." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No tax rates yet. Add one with “+” below the table."
           }
         }
       }
@@ -2774,6 +2894,16 @@
         }
       }
     },
+    "Cliente · saldo abierto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Customer · open balance"
+          }
+        }
+      }
+    },
     "Cliente, número o monto" : {
       "localizations" : {
         "en" : {
@@ -2842,6 +2972,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Payment %@ · %@"
+          }
+        }
+      }
+    },
+    "Cobro de %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Payment of %@"
           }
         }
       }
@@ -2992,6 +3132,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Component · %@"
+          }
+        }
+      }
+    },
+    "Composición del balance" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Balance sheet mix"
           }
         }
       }
@@ -3418,6 +3568,16 @@
         }
       }
     },
+    "Cuenta %@ · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Account %@ · %@"
+          }
+        }
+      }
+    },
     "Cuenta %lld" : {
       "localizations" : {
         "en" : {
@@ -3598,6 +3758,16 @@
         }
       }
     },
+    "De los ingresos totales" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Of total income"
+          }
+        }
+      }
+    },
     "Debe" : {
       "localizations" : {
         "en" : {
@@ -3628,6 +3798,26 @@
         }
       }
     },
+    "Declaración" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filing"
+          }
+        }
+      }
+    },
+    "Declaración %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filing %@"
+          }
+        }
+      }
+    },
     "Declaración trimestral" : {
       "localizations" : {
         "en" : {
@@ -3654,6 +3844,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "File and pay by %@"
+          }
+        }
+      }
+    },
+    "Del total abierto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Of total open"
           }
         }
       }
@@ -3824,6 +4024,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Details"
+          }
+        }
+      }
+    },
+    "Deudora" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Debit"
           }
         }
       }
@@ -4188,6 +4398,36 @@
         }
       }
     },
+    "El reporte no tiene movimientos todavía." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The report has no activity yet."
+          }
+        }
+      }
+    },
+    "El saldo coincide con la naturaleza de la cuenta." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The balance matches the account’s normal side."
+          }
+        }
+      }
+    },
+    "El saldo es contrario a la naturaleza de la cuenta: puede ser una contracuenta (como la depreciación acumulada) o un registro por revisar." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The balance is on the opposite side of the account’s normal balance: it may be a contra account (like accumulated depreciation) or an entry to review."
+          }
+        }
+      }
+    },
     "El tipo decide dónde aparece la cuenta en los reportes." : {
       "localizations" : {
         "en" : {
@@ -4540,6 +4780,16 @@
         }
       }
     },
+    "Estado de destino" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appears on"
+          }
+        }
+      }
+    },
     "Estado de resultados" : {
       "localizations" : {
         "en" : {
@@ -4556,6 +4806,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Profit and loss · %@"
+          }
+        }
+      }
+    },
+    "Estado del pago" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Payment status"
           }
         }
       }
@@ -5069,6 +5329,16 @@
         }
       }
     },
+    "Fechas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dates"
+          }
+        }
+      }
+    },
     "Fechas del periodo" : {
       "localizations" : {
         "en" : {
@@ -5185,6 +5455,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Receipt photo"
+          }
+        }
+      }
+    },
+    "Frecuencia" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Frequency"
           }
         }
       }
@@ -5514,6 +5794,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "To"
+          }
+        }
+      }
+    },
+    "Haz clic en una fila del reporte para ver su detalle aquí." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Click a row in the report to see its details here."
           }
         }
       }
@@ -6661,6 +6951,16 @@
         }
       }
     },
+    "Naturaleza" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Normal balance"
+          }
+        }
+      }
+    },
     "Negocio" : {
       "localizations" : {
         "en" : {
@@ -6858,6 +7158,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Non-taxable"
+          }
+        }
+      }
+    },
+    "No hay cuentas con movimiento al corte." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No accounts with activity as of this date."
           }
         }
       }
@@ -7911,6 +8221,36 @@
         }
       }
     },
+    "Pasivos %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Liabilities %@"
+          }
+        }
+      }
+    },
+    "Pasivos %@, patrimonio %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Liabilities %@, equity %@"
+          }
+        }
+      }
+    },
+    "Pasivos y patrimonio" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Liabilities and equity"
+          }
+        }
+      }
+    },
     "Paso %lld de 2" : {
       "localizations" : {
         "en" : {
@@ -7927,6 +8267,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Equity"
+          }
+        }
+      }
+    },
+    "Patrimonio %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Equity %@"
           }
         }
       }
@@ -8364,12 +8714,32 @@
         }
       }
     },
+    "Proporción" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share"
+          }
+        }
+      }
+    },
     "Proveedor" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Vendor"
+          }
+        }
+      }
+    },
+    "Proveedor · saldo abierto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vendor · open balance"
           }
         }
       }
@@ -8966,6 +9336,16 @@
         }
       }
     },
+    "Resultado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Result"
+          }
+        }
+      }
+    },
     "Resultado del ejercicio" : {
       "localizations" : {
         "en" : {
@@ -9201,6 +9581,16 @@
         }
       }
     },
+    "Saldo acreedor al %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Credit balance as of %@"
+          }
+        }
+      }
+    },
     "Saldo al %@ %@" : {
       "localizations" : {
         "en" : {
@@ -9217,6 +9607,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Account balance per books"
+          }
+        }
+      }
+    },
+    "Saldo deudor al %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Debit balance as of %@"
           }
         }
       }
@@ -9853,6 +10253,16 @@
         }
       }
     },
+    "Sin impuesto cobrado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No tax collected"
+          }
+        }
+      }
+    },
     "Sin impuesto cobrado en el periodo." : {
       "localizations" : {
         "en" : {
@@ -10295,6 +10705,36 @@
         }
       }
     },
+    "Tasa combinada · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Combined rate · %@"
+          }
+        }
+      }
+    },
+    "Tasa de impuesto sobre ventas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sales tax rate"
+          }
+        }
+      }
+    },
+    "Tasa elegida" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selected rate"
+          }
+        }
+      }
+    },
     "Tasas" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -10604,6 +11044,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Credit memo total"
+          }
+        }
+      }
+    },
+    "Total de sección" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Section total"
           }
         }
       }
@@ -10979,6 +11429,16 @@
         }
       }
     },
+    "Vence en %lld días" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Due in %lld days"
+          }
+        }
+      }
+    },
     "Vence esta semana" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -10986,6 +11446,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Due this week"
+          }
+        }
+      }
+    },
+    "Vence hoy" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Due today"
           }
         }
       }
@@ -11194,6 +11664,16 @@
         }
       }
     },
+    "Vencimiento" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Due date"
+          }
+        }
+      }
+    },
     "Venció hace %lld días" : {
       "localizations" : {
         "en" : {
@@ -11324,6 +11804,16 @@
         }
       }
     },
+    "Ver en el libro mayor" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View in ledger"
+          }
+        }
+      }
+    },
     "Ver estado de resultados" : {
       "localizations" : {
         "en" : {
@@ -11340,6 +11830,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "View report"
+          }
+        }
+      }
+    },
+    "Ver tasas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View rates"
           }
         }
       }
