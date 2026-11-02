@@ -5,7 +5,7 @@ Resumen del chat de coordinación de Chirogra (desarrollo + QA), al 2 de noviemb
 ## Estado actual
 
 - **Versión aprobada:** `038b168`. Pasó QA y es la última de `main` en GitHub (github.com/ivanngarcia81/Chirogra).
-- **Instalada en:** iPhone 17 Pro Max y Mac (`/Applications/Chirogra.app`) con `038b168`. El **iPad sigue en `68ebad9`** porque la instalación falló con el iPad bloqueado: falta desbloquearlo y reinstalar.
+- **Instalada en:** iPhone 17 Pro Max, iPad Pro 12,9″ y Mac (`/Applications/Chirogra.app`, Release) con el rediseño de `integracion-rediseno` (`c83cc9d`), el 2-nov.
 - **Rediseño nativo (2-nov), en la rama local `integracion-rediseno`, SIN fusionar en `main` ni subir.** El usuario pidió rehacer la app con el canvas actualizado («Claude code actualizó el diseño»), lo que deja sin efecto el descarte de `7a8b97f`. El sistema y el mapa por áreas están en [REDISEÑO-NATIVO.md](REDISEÑO-NATIVO.md). Lo hizo un equipo de agentes en worktrees (`.claude/worktrees/`), uno por tarea, y el coordinador lo fusionó. Para resolver choques del catálogo de textos hay un script de fusión por claves (ver «Fusionar el catálogo de textos» abajo).
 
 ## Qué se hizo en este chat (de lo más antiguo a lo más nuevo)
