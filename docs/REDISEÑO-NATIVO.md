@@ -207,3 +207,10 @@ Anotadas para que el usuario decida; la base no las resuelve por su cuenta salvo
 7. **«¿Descartar los cambios?»** El canvas no lo muestra; no lo contradice. Se conserva.
 8. **Barra lateral.** El canvas agrupa «Negocio» / «Libros»; hoy es «MÁS». No es una decisión del usuario, solo un cambio del canvas (área D).
 9. **Modo oscuro del Mac.** Aplazado por el usuario; los tokens ya tienen variante oscura igualmente (`MacVentasOscuro`).
+
+## Decisiones del usuario sobre las contradicciones (2-nov-2026)
+
+1. **Botón principal: vidrio sin relleno de marca** (no como el canvas). `PrimaryButtonStyle` y `CompactPrimaryButtonStyle` usan `.glass` con el texto en `ink`.
+2. **Pestañas del iPhone: como el canvas** — Inicio · Ventas · Gastos · **Banca** · Más. Reportes pasa a «Más». (Área D.)
+3. **Fila elegida en la columna maestro (iPad y Mac): rellena de Tinta con texto blanco**, como el canvas. (Área D.)
+4. **Barra lateral: grupos «Negocio» y «Libros»**, como el canvas, en lugar de «MÁS». (Área D.)

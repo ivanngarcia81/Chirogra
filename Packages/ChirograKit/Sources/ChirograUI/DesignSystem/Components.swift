@@ -358,18 +358,19 @@ extension View {
 
 // MARK: - Botones
 
-/// Botón principal del canvas («Enviar factura», «Registrar $…», «Continuar»): la cápsula de vidrio destacada del
-/// sistema (`.glassProminent`), rellena de Tinta con el texto blanco y semibold, a todo el ancho. En el Mac es el
-/// botón por defecto del sistema, con la densidad de sus controles. Es el único botón relleno del acento.
+/// Botón principal («Enviar factura», «Registrar $…», «Continuar»): la cápsula de vidrio del sistema (`.glass`) SIN
+/// relleno de marca, con el texto en `ink` y semibold, a todo el ancho. Decisión del usuario (2-nov): el canvas lo
+/// rellena de Tinta, pero se queda en vidrio sin relleno, como en `f21e0bf`. Se distingue del secundario por el
+/// vidrio y el peso del texto.
 struct PrimaryButtonStyle: PrimitiveButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         Button(configuration)
-            .buttonStyle(.glassProminent)
+            .buttonStyle(.glass)
             .buttonBorderShape(.capsule)
             .controlSize(.large)
             .buttonSizing(.flexible)
             .fontWeight(.semibold)
-            .tint(Palette.brandFill)
+            .tint(Palette.ink)
     }
 }
 
@@ -377,11 +378,11 @@ struct PrimaryButtonStyle: PrimitiveButtonStyle {
 struct CompactPrimaryButtonStyle: PrimitiveButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         Button(configuration)
-            .buttonStyle(.glassProminent)
+            .buttonStyle(.glass)
             .buttonBorderShape(.capsule)
             .controlSize(.large)
             .fontWeight(.semibold)
-            .tint(Palette.brandFill)
+            .tint(Palette.ink)
     }
 }
 
