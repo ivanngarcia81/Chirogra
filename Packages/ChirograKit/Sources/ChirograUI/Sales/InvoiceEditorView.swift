@@ -91,8 +91,6 @@ struct InvoiceEditorView: View {
         }
         .navigationTitle(editorTitle)
         .modifier(InlineTitleUnless(wide: isWide))
-        // En pantalla ancha se abre en la navegación: «Cancelar» hace de «Atrás» (y pregunta por el borrador).
-        .navigationBarBackButtonHidden(isWide)
         .toolbar {
             // Los avisos van anclados a «Cancelar»: en la vista dividida del iPad salían sobre la barra lateral.
             ToolbarItem(placement: .cancellationAction) {
@@ -110,6 +108,17 @@ struct InvoiceEditorView: View {
                     }
                     .headerButton()
             }
+            #if os(macOS)
+            // Una hoja del Mac solo muestra «Cancelar» y la acción de confirmar: aquí «Emitir factura» (con Return);
+            // «Vista previa» y «Guardar borrador» van en el contenido. Antes no se podía emitir.
+            ToolbarItem(placement: .confirmationAction) {
+                if isWide {
+                    Button("Emitir factura", action: issue).disabled(customerID == nil || validLines.isEmpty)
+                } else {
+                    Button("Guardar", action: saveDraft).disabled(customerID == nil).accessibilityLabel("Guardar borrador")
+                }
+            }
+            #else
             // «Guardar» y no «Guardar borrador»: con el texto largo el título se cortaba en «Nueva f…».
             ToolbarItem(placement: .confirmationAction) {
                 Button("Guardar", action: saveDraft)
@@ -127,9 +136,11 @@ struct InvoiceEditorView: View {
                     Button("Emitir factura", action: issue).disabled(customerID == nil || validLines.isEmpty).headerButton()
                 }
             }
+            #endif
         }
-        // La vista previa guarda la factura como borrador: al cancelar se pregunta qué hacer con él.
-        .interactiveDismissDisabled(hasNewDraft)
+        // Con cambios, o con el borrador que guardó la vista previa, la hoja no se cierra tocando fuera: «Cancelar»
+        // pregunta qué hacer. Antes solo se bloqueaba con borrador, y lo escrito se perdía.
+        .interactiveDismissDisabled(hasChanges)
         .onAppear {
             if let editing, !loadedDraft { load(editing) }
             if customerID == nil { customerID = preselectedCustomer?.id }
@@ -280,6 +291,13 @@ struct InvoiceEditorView: View {
                 }
                 Text("Al emitirla se registra el asiento contable: débito a cuentas por cobrar, crédito a ingresos y sales tax.")
                     .font(.footnote).foregroundStyle(Palette.ink3)
+                #if os(macOS)
+                HStack(spacing: 10) {
+                    Button("Vista previa", action: showPreview).disabled(customerID == nil || validLines.isEmpty)
+                    Button("Guardar borrador", action: saveDraft).disabled(customerID == nil)
+                }
+                .buttonStyle(.secondary).fixedSize()
+                #endif
             }
             .padding(20)
         }

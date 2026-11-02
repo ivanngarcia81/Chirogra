@@ -155,6 +155,9 @@ private struct DiscardableEditor<Value: Equatable>: ViewModifier {
     let token: EditorToken
     let onDiscard: () -> Void
     @Environment(\.unsavedChanges) private var unsavedChanges
+    /// El cierre del editor, leído aquí y no dentro del botón de la barra: en una hoja del Mac, el `dismiss` de un
+    /// ítem de la barra no cerraba la hoja («Cancelar», «Descartar» y Escape no hacían nada).
+    @Environment(\.dismiss) private var dismiss
     @State private var baseline: Value?
     /// Se toma la referencia tras el primer ciclo, cuando el editor ya cargó sus datos y valores por defecto.
     @State private var readyForBaseline = false
@@ -165,7 +168,7 @@ private struct DiscardableEditor<Value: Equatable>: ViewModifier {
         content
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    CancelEditorButton(hasChanges: hasChanges) { onDiscard(); unsavedChanges?.remove(token) }
+                    CancelEditorButton(hasChanges: hasChanges, close: dismiss) { onDiscard(); unsavedChanges?.remove(token) }
                 }
             }
             .interactiveDismissDisabled(hasChanges)
@@ -199,15 +202,16 @@ private struct UnsavedChangesReporter: ViewModifier {
 /// justo antes de cerrar (y retira el registro de cambios sin esperar a que termine la animación).
 struct CancelEditorButton: View {
     let hasChanges: Bool
+    /// El cierre del editor que lo pone (ver `DiscardableEditor`).
+    let close: DismissAction
     var onDiscard: () -> Void = {}
-    @Environment(\.dismiss) private var dismiss
     @Environment(\.unsavedChanges) private var unsavedChanges
     @State private var confirming = false
 
     var body: some View {
-        Button("Cancelar") { if hasChanges { confirming = true } else { dismiss() } }
+        Button("Cancelar") { if hasChanges { confirming = true } else { close() } }
             .confirmationDialog("¿Descartar los cambios?", isPresented: $confirming, titleVisibility: .visible) {
-                Button("Descartar", role: .destructive) { onDiscard(); dismiss() }
+                Button("Descartar", role: .destructive) { onDiscard(); close() }
                 Button("Seguir editando", role: .cancel) {}
             }
             .onChange(of: confirming) { unsavedChanges?.confirmation(isOpen: confirming) }
@@ -274,9 +278,10 @@ extension View {
         scrollContentBackground(.hidden).background(Palette.background)
     }
 
-    /// Título de pantalla (§7.4, decisión del usuario): en el iPad y el Mac, grande dentro de la barra de vidrio del
-    /// sistema, junto al botón de la barra lateral y a los botones, sin franja vacía encima; en el iPhone, el título
-    /// grande de siempre, que se pliega al desplazar. Va en cada pantalla: las que se abren encima no heredan el modo.
+    /// Título de pantalla (§7.4, decisión del usuario): en el iPad, grande dentro de la barra de vidrio del sistema,
+    /// junto al botón de la barra lateral y a los botones, sin franja vacía encima; en el Mac, el de la ventana; en el
+    /// iPhone, el título grande de siempre, que se pliega al desplazar. Va en cada pantalla: las que se abren encima no
+    /// heredan el modo.
     func headerTitle() -> some View {
         modifier(HeaderTitle())
     }
@@ -762,9 +767,9 @@ private struct HeaderTitle: ViewModifier {
         #if os(iOS)
         content.toolbarTitleDisplayMode(sizeClass == .regular ? .inlineLarge : .automatic)
         #else
-        // En el Mac, el título grande en la barra de la ventana, en la misma fila que las acciones (como en los
-        // tableros) y una sola vez: antes iba pequeño en la barra y repetido en grande en el contenido.
-        content.toolbarTitleDisplayMode(.inlineLarge)
+        // En el Mac, el título de la ventana, con el tamaño que le da el sistema (`.inlineLarge` no lo agranda), en la
+        // fila de las acciones y una sola vez: ya no se repite en grande en el contenido.
+        content
         #endif
     }
 }

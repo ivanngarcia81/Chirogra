@@ -106,19 +106,15 @@ struct MasterDetailColumn: View {
 }
 
 /// Movimientos de la cuenta elegida en Banca: la tabla del mes si el detalle es ancho; si es estrecho (iPad vertical
-/// con la lista a la vista), el libro mayor en lista, como en el iPhone, porque la tabla no cabe.
+/// con la lista a la vista, o un Mac de 1000 pt), el libro mayor en lista, porque la tabla no cabe. Se decide con el
+/// ancho que ofrece la columna: los anchos mínimos de la tabla ensanchaban la ventana del Mac de 1000 a 1099 pt.
 private struct BankAccountDetail: View {
     let account: Account
-    #if os(iOS)
-    @LayoutSizeClass private var sizeClass
-    #endif
 
     var body: some View {
-        #if os(iOS)
-        if sizeClass == .compact { LedgerView(account: account) } else { table }
-        #else
-        table
-        #endif
+        GeometryReader { proxy in
+            if proxy.size.width < 720 { LedgerView(account: account) } else { table }
+        }
     }
 
     private var table: some View {
@@ -159,8 +155,8 @@ private struct ModelLookup<Model: PersistentModel, Content: View>: View {
 
 // MARK: - Piezas comunes
 
-/// Filtro de la columna maestro, debajo de la barra (`safeAreaBar`, con el efecto de borde del sistema). Con tamaños
-/// de accesibilidad o más de tres opciones, chips que pasan de línea: el segmentado no crece con el texto.
+/// Filtro de la columna maestro, encima de la lista. Con tamaños de accesibilidad o más de tres opciones, chips que
+/// pasan de línea: el segmentado no crece con el texto.
 private struct MasterFilterBar<Option: Hashable & Identifiable & RawRepresentable>: View where Option.RawValue == String {
     let options: [Option]
     @Binding var selection: Option
@@ -201,6 +197,10 @@ private struct MasterListStyle: ViewModifier {
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
             .background(Palette.surface)
+            #if os(iOS)
+            // Si el sistema pinta la selección, en el mismo lavado que `masterRow` y no en el color de marca.
+            .tint(Palette.brandWash)
+            #endif
             .navigationTitle(title)
             .headerTitle()
             .searchable(text: $query, prompt: Text(prompt))
@@ -249,6 +249,18 @@ private struct MasterRow<Badge: View>: View {
 }
 
 private extension View {
+    /// Fila de la columna maestro con su selección: fondo lavado de marca y texto en sus colores (AA en claro y en
+    /// oscuro). Con el relleno de marca del sistema, el texto quedaba en ~2,5:1 y la línea de abajo en ~1,2:1.
+    func masterRow(_ id: UUID, selection: UUID?) -> some View {
+        tag(id).listRowBackground(id == selection ? Palette.brandWash : Palette.surface)
+    }
+
+    /// Filtro de la columna, fijo encima de la lista con fondo opaco. Con `safeAreaBar` formaba parte de la barra y
+    /// el efecto de borde dejaba borroso el título grande.
+    func masterFilter<Filter: View>(@ViewBuilder _ filter: () -> Filter) -> some View {
+        safeAreaInset(edge: .top, spacing: 0) { filter().background(Palette.surface) }
+    }
+
     func masterList(_ title: String, query: Binding<String>, prompt: LocalizedStringKey) -> some View {
         modifier(MasterListStyle(title: title, query: query, prompt: prompt))
     }
@@ -301,15 +313,15 @@ private struct InvoiceMasterList: View {
                           subtitle: "\(invoice.number.isEmpty ? String(localized: "Borrador") : invoice.number) · \(invoice.dueDate.dueLabel)") {
                     StatusChip(invoice: invoice)
                 }
-                .tag(invoice.id)
+                .masterRow(invoice.id, selection: selection)
             }
             if filtered.isEmpty {
                 Text("Ninguna factura coincide").font(.subheadline).foregroundStyle(Palette.ink3)
-                    .frame(maxWidth: .infinity).listRowSeparator(.hidden)
+                    .frame(maxWidth: .infinity).listRowSeparator(.hidden).listRowBackground(Palette.surface)
             }
         }
         .masterList(String(localized: "Ventas"), query: $query, prompt: "Cliente, número o monto")
-        .safeAreaBar(edge: .top) {
+        .masterFilter {
             MasterFilterBar(options: InvoiceScope.allCases, selection: $scope) { option in
                 invoices.filter { inScope($0, option) }.count
             }
@@ -350,15 +362,15 @@ private struct CustomerMasterList: View {
                         StatusChip(text: String(localized: "Al día"), foreground: Palette.positive, background: Palette.positiveWash)
                     }
                 }
-                .tag(customer.id)
+                .masterRow(customer.id, selection: selection)
             }
             if filtered.isEmpty {
                 Text(customers.isEmpty ? String(localized: "Sin clientes todavía") : String(localized: "Ningún cliente coincide con «\(query)»."))
-                    .font(.subheadline).foregroundStyle(Palette.ink3).frame(maxWidth: .infinity).listRowSeparator(.hidden)
+                    .font(.subheadline).foregroundStyle(Palette.ink3).frame(maxWidth: .infinity).listRowSeparator(.hidden).listRowBackground(Palette.surface)
             }
         }
         .masterList(String(localized: "Clientes"), query: $query, prompt: "Nombre, correo o teléfono")
-        .safeAreaBar(edge: .top) { MasterFilterBar(options: CustomerListView.Filter.allCases, selection: $filter) }
+        .masterFilter { MasterFilterBar(options: CustomerListView.Filter.allCases, selection: $filter) }
         .masterAddButton(String(localized: "Cliente"), label: String(localized: "Nuevo cliente")) { creating = true }
         .sheet(isPresented: $creating) { NavigationStack { CustomerEditorView() }.editorSheetSizing() }
     }
@@ -396,11 +408,11 @@ private struct ExpenseMasterList: View {
                         Image(systemName: "paperclip").font(.caption).foregroundStyle(Palette.ink3).accessibilityLabel("Recibo adjunto")
                     }
                 }
-                .tag(expense.id)
+                .masterRow(expense.id, selection: selection)
             }
             if filtered.isEmpty {
                 Text(expenses.isEmpty ? String(localized: "Sin gastos todavía") : String(localized: "Ningún gasto coincide"))
-                    .font(.subheadline).foregroundStyle(Palette.ink3).frame(maxWidth: .infinity).listRowSeparator(.hidden)
+                    .font(.subheadline).foregroundStyle(Palette.ink3).frame(maxWidth: .infinity).listRowSeparator(.hidden).listRowBackground(Palette.surface)
             }
         }
         .masterList(String(localized: "Gastos"), query: $query, prompt: "Beneficiario, categoría o monto")
@@ -442,15 +454,15 @@ private struct VendorMasterList: View {
                         StatusChip(text: "1099", foreground: Palette.ink2, background: Palette.surface2)
                     }
                 }
-                .tag(vendor.id)
+                .masterRow(vendor.id, selection: selection)
             }
             if filtered.isEmpty {
                 Text(vendors.isEmpty ? String(localized: "Sin proveedores") : String(localized: "Ningún proveedor coincide"))
-                    .font(.subheadline).foregroundStyle(Palette.ink3).frame(maxWidth: .infinity).listRowSeparator(.hidden)
+                    .font(.subheadline).foregroundStyle(Palette.ink3).frame(maxWidth: .infinity).listRowSeparator(.hidden).listRowBackground(Palette.surface)
             }
         }
         .masterList(String(localized: "Proveedores"), query: $query, prompt: "Nombre o correo")
-        .safeAreaBar(edge: .top) { MasterFilterBar(options: VendorFilter.allCases, selection: $filter) }
+        .masterFilter { MasterFilterBar(options: VendorFilter.allCases, selection: $filter) }
         .masterAddButton(String(localized: "Proveedor"), label: String(localized: "Nuevo proveedor")) { creating = true }
         .sheet(isPresented: $creating) { NavigationStack { VendorEditorView() }.editorSheetSizing() }
     }
@@ -482,18 +494,18 @@ private struct BillMasterList: View {
         List(selection: $selection) {
             ForEach(filtered) { bill in
                 MasterRow(title: bill.vendor?.name ?? String(localized: "Proveedor"), amount: bill.balanceDue.money,
-                          subtitle: "\(bill.vendorNumber) · \(bill.dueDate.dueLabel)") {
+                          subtitle: bill.vendorNumber.isEmpty ? bill.dueDate.dueLabel : "\(bill.vendorNumber) · \(bill.dueDate.dueLabel)") {
                     StatusChip(bill: bill)
                 }
-                .tag(bill.id)
+                .masterRow(bill.id, selection: selection)
             }
             if filtered.isEmpty {
                 Text(bills.isEmpty ? String(localized: "Sin facturas por pagar") : String(localized: "Ninguna factura coincide"))
-                    .font(.subheadline).foregroundStyle(Palette.ink3).frame(maxWidth: .infinity).listRowSeparator(.hidden)
+                    .font(.subheadline).foregroundStyle(Palette.ink3).frame(maxWidth: .infinity).listRowSeparator(.hidden).listRowBackground(Palette.surface)
             }
         }
         .masterList(String(localized: "Facturas por pagar"), query: $query, prompt: "Proveedor, número o monto")
-        .safeAreaBar(edge: .top) {
+        .masterFilter {
             MasterFilterBar(options: BillFilter.allCases, selection: $filter) { option in
                 bills.filter { inFilter($0, option) }.count
             }
@@ -522,7 +534,7 @@ private struct BankingMasterList: View {
                     Image(systemName: account.subtype == .creditCard ? "creditcard" : "building.columns")
                         .font(.caption).foregroundStyle(Palette.ink3).accessibilityHidden(true)
                 }
-                .tag(account.id)
+                .masterRow(account.id, selection: selection)
             }
             Section {
                 Label("Importar y conciliar · Próximamente", systemImage: "square.and.arrow.down")
@@ -530,11 +542,15 @@ private struct BankingMasterList: View {
                     .foregroundStyle(Palette.ink3)
                     .accessibilityLabel("Importar y conciliar, disponible en una próxima versión")
                     .selectionDisabled()
+                    .listRowBackground(Palette.surface)
             }
         }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
         .background(Palette.surface)
+        #if os(iOS)
+        .tint(Palette.brandWash)
+        #endif
         .navigationTitle("Banca")
         .headerTitle()
         .toolbar {
@@ -585,11 +601,11 @@ private struct JournalMasterList: View {
                                    foreground: Palette.ink3, background: Palette.surface2)
                     }
                 }
-                .tag(entry.id)
+                .masterRow(entry.id, selection: selection)
             }
             if filtered.isEmpty {
                 Text(entries.isEmpty ? String(localized: "Sin asientos") : String(localized: "Ningún asiento coincide"))
-                    .font(.subheadline).foregroundStyle(Palette.ink3).frame(maxWidth: .infinity).listRowSeparator(.hidden)
+                    .font(.subheadline).foregroundStyle(Palette.ink3).frame(maxWidth: .infinity).listRowSeparator(.hidden).listRowBackground(Palette.surface)
             }
         }
         .masterList(String(localized: "Asientos de diario"), query: $query, prompt: "Concepto, número o monto")
@@ -617,15 +633,16 @@ private struct ChartMasterList: View {
                         ForEach(rows) { account in
                             HStack {
                                 Text(account.code).foregroundStyle(Palette.ink3).frame(minWidth: codeWidth, alignment: .leading)
+                                // Una línea por dato: en una columna estrecha (Mac de 1000 pt) el importe se partía.
                                 VStack(alignment: .leading, spacing: 1) {
-                                    Text(account.name).strikethrough(account.isArchived).foregroundStyle(Palette.ink)
-                                    Text(account.subtype.title).font(.caption).foregroundStyle(Palette.ink3)
+                                    Text(account.name).strikethrough(account.isArchived).foregroundStyle(Palette.ink).lineLimit(1)
+                                    Text(account.subtype.title).font(.caption).foregroundStyle(Palette.ink3).lineLimit(1)
                                 }
                                 Spacer(minLength: 8)
-                                Text(ledger.balance(of: account).money).monospacedDigit().foregroundStyle(Palette.ink2)
+                                Text(ledger.balance(of: account).money).monospacedDigit().foregroundStyle(Palette.ink2).fixedSize()
                             }
                             .accessibilityElement(children: .combine)
-                            .tag(account.id)
+                            .masterRow(account.id, selection: selection)
                             .contextMenu {
                                 if !account.isSystem {
                                     Button(account.isArchived ? "Restaurar" : "Archivar") { account.isArchived.toggle() }

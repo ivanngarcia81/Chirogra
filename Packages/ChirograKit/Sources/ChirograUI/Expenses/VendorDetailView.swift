@@ -48,7 +48,9 @@ struct VendorDetailView: View {
         }
         .sheet(isPresented: $editing) { NavigationStack { VendorEditorView(vendor: vendor) } }
         .sheet(item: $paying) { bill in NavigationStack { PayBillView(bill: bill) } }
-        .navigationDestination(isPresented: $addingExpense) { ExpenseEditorView(preselectedVendor: vendor) }
+        .sheet(isPresented: $addingExpense) {
+            NavigationStack { ExpenseEditorView(preselectedVendor: vendor) }.editorSheetSizing()
+        }
     }
 
     private var compactBody: some View {

@@ -71,12 +71,6 @@ struct HomeView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: isWide ? 16 : Metrics.cardSpacing) {
-                #if os(macOS)
-                // `MacInicio`: título grande dentro del contenido; el de la ventana es pequeño.
-                Text("Inicio").font(.system(size: 28, weight: .bold)).foregroundStyle(Palette.ink)
-                    .accessibilityAddTraits(.isHeader)
-                    .padding(.bottom, -12)
-                #endif
                 Text(isFirstUse ? (isWide ? String(localized: "Te damos la bienvenida a Chirogra, \(companies.first?.displayName ?? "")")
                                           : companies.first?.displayName ?? "") : Date.now.monthYear)
                     .font(.subheadline).foregroundStyle(Palette.ink3)

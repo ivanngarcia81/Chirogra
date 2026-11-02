@@ -271,10 +271,15 @@ struct ExpenseEditorView: View {
         }
         .navigationTitle("Nuevo gasto")
         .modifier(InlineTitleUnless(wide: isWide))
-        // En pantalla ancha se abre en la navegación: «Cancelar» hace de «Atrás».
-        .navigationBarBackButtonHidden(isWide)
         .discardableEditor(tracking: "\(payee)|\(vendorID?.uuidString ?? "")|\(date)|\(amount)|\(categoryID?.uuidString ?? "")|\(paymentAccountID?.uuidString ?? "")|\(memo)|\(receipts.count)|\(method)", token: editorToken)
         .toolbar {
+            #if os(macOS)
+            // Una hoja del Mac solo muestra «Cancelar» y la acción de confirmar (con Return); «Guardar y nuevo» va en
+            // el contenido.
+            ToolbarItem(placement: .confirmationAction) {
+                Button(isWide ? "Guardar gasto" : "Guardar") { save() }.disabled(!canSave)
+            }
+            #else
             if isWide {
                 ToolbarItem(placement: .primaryAction) {
                     Button("Guardar y nuevo") { save(another: true) }.disabled(!canSave).headerButton()
@@ -288,6 +293,7 @@ struct ExpenseEditorView: View {
                     Button("Guardar") { save() }.disabled(!canSave).headerButton()
                 }
             }
+            #endif
         }
         .onChange(of: vendorID) {
             guard let vendor = vendors.first(where: { $0.id == vendorID }) else { return }
@@ -350,6 +356,11 @@ struct ExpenseEditorView: View {
                 }
                 Text("Al guardarlo se registra el asiento contable: débito a la categoría y crédito a la cuenta de pago.")
                     .font(.footnote).foregroundStyle(Palette.ink3)
+                #if os(macOS)
+                Button("Guardar y nuevo") { save(another: true) }
+                    .buttonStyle(.secondary).fixedSize()
+                    .disabled(!canSave)
+                #endif
             }
             .padding(20)
             .frame(maxWidth: 1100, alignment: .leading)
@@ -532,7 +543,8 @@ struct BillRow: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
-        LedgerRow(title: bill.vendor?.name ?? String(localized: "Proveedor"), subtitle: "\(bill.vendorNumber) · \(bill.dueDate.dueLabel)") {
+        LedgerRow(title: bill.vendor?.name ?? String(localized: "Proveedor"),
+                  subtitle: bill.vendorNumber.isEmpty ? bill.dueDate.dueLabel : "\(bill.vendorNumber) · \(bill.dueDate.dueLabel)") {
             IconTile(systemImage: "doc.text", foreground: Palette.outflow, background: Palette.outflowWash)
         } trailing: {
             VStack(alignment: dynamicTypeSize.amountAlignment, spacing: 3) {

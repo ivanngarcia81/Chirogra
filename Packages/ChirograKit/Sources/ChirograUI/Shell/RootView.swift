@@ -285,11 +285,12 @@ struct AppShell: View {
     private var sidebar: some View {
         Sidebar(selection: sidebarSelection, query: $query)
             #if os(macOS)
-            .navigationSplitViewColumnWidth(min: 200, ideal: 220)
+            .navigationSplitViewColumnWidth(min: 220, ideal: 220, max: 280)
             #else
             .navigationSplitViewColumnWidth(min: 200, ideal: 240)
-            #endif
+            // Solo en iOS: en el Mac, quitar el título de la barra lateral la dejaba en ~144 pt.
             .toolbar(removing: .title)
+            #endif
     }
 
     /// Columna de detalle: lo de la página o, con texto en la búsqueda de la barra lateral, los resultados.
@@ -340,11 +341,6 @@ struct AppShell: View {
         #endif
         .environment(\.unsavedChanges, unsavedChanges)
         .environment(\.openSidebarItem, OpenSidebarItemAction { sidebarSelection.wrappedValue = $0 })
-        // Al cambiar de pantalla se rehace la vista dividida: los editores de la columna ya no existen.
-        .onChange(of: selection) {
-            unsavedChanges.removeAll()
-            masterSelection = nil
-        }
         .alert("¿Descartar los cambios?", isPresented: Binding(get: { pendingSelection != nil }, set: { if !$0 { pendingSelection = nil } })) {
             Button("Descartar", role: .destructive) {
                 unsavedChanges.discardAll()
@@ -359,6 +355,12 @@ struct AppShell: View {
         // `NavigationLink(destination:)` quedan en la pila propia de la columna de detalle, que no se vacía al
         // cambiar la raíz ni con `.id` en el `NavigationStack` interior.
         .id(selection)
+        // Después de `.id`, en la vista que no se rehace: antes de él no llegaba a ejecutarse, y el Plan de cuentas se
+        // abría con la cuenta elegida en Banca. Al cambiar de pantalla, los editores de la columna ya no existen.
+        .onChange(of: selection) {
+            unsavedChanges.removeAll()
+            masterSelection = nil
+        }
     }
 }
 

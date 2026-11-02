@@ -181,11 +181,10 @@ struct CustomerDetailView: View {
             }
         }
         .sheet(isPresented: $editing) { NavigationStack { CustomerEditorView(customer: customer) } }
-        .sheet(isPresented: Binding(get: { newInvoice && !isWide }, set: { newInvoice = $0 })) {
-            NavigationStack { InvoiceEditorView(preselectedCustomer: customer) }
-        }
-        .navigationDestination(isPresented: Binding(get: { newInvoice && isWide }, set: { newInvoice = $0 })) {
-            InvoiceEditorView(preselectedCustomer: customer)
+        // En hoja también en iPad y Mac, como el resto de editores nuevos: en el detalle, junto a la lista, la factura
+        // no cabía y ensanchaba la ventana del Mac.
+        .sheet(isPresented: $newInvoice) {
+            NavigationStack { InvoiceEditorView(preselectedCustomer: customer) }.editorSheetSizing()
         }
         .sheet(isPresented: $refunding) { NavigationStack { CustomerRefundView(customer: customer) } }
     }
@@ -233,35 +232,46 @@ struct CustomerDetailView: View {
                 .pickerStyle(.segmented).labelsHidden().fixedSize()
             }
             .padding(.horizontal, 18).padding(.top, 14).padding(.bottom, 6)
-            TableCard {
-                Text("Nº").frame(width: 70, alignment: .leading)
-                Text("Fecha").frame(width: 80, alignment: .leading)
-                Text("Vence").frame(width: 80, alignment: .leading)
-                Text("Estado").frame(maxWidth: .infinity, alignment: .leading)
-                Text("Importe").frame(width: amountWidth, alignment: .trailing)
-                Text("Saldo").frame(width: amountWidth, alignment: .trailing)
-            } rows: {
-                ForEach(invoices) { invoice in
-                    NavigationLink { InvoiceDetailView(invoice: invoice) } label: {
-                        TableRow {
-                            Text(invoice.number.isEmpty ? String(localized: "Borrador") : invoice.number).fontWeight(.semibold)
-                                .frame(width: 70, alignment: .leading)
-                            Text(invoice.issueDate.dayMonth).foregroundStyle(Palette.ink2).frame(width: 80, alignment: .leading)
-                            Text(invoice.dueDate.dayMonth).foregroundStyle(Palette.ink2).frame(width: 80, alignment: .leading)
-                            StatusChip(invoice: invoice).frame(maxWidth: .infinity, alignment: .leading)
-                            Text(invoice.total.money).frame(width: amountWidth, alignment: .trailing)
-                            Text(invoice.balanceDue.money).fontWeight(.semibold)
-                                .foregroundStyle(invoice.isOpen ? Palette.ink : Palette.ink3).frame(width: amountWidth, alignment: .trailing)
-                        }
-                    }
-                    .buttonStyle(.plain)
-                }
-                if invoices.isEmpty {
-                    Text("Sin facturas").foregroundStyle(Palette.ink3).frame(maxWidth: .infinity).padding(.vertical, 24)
-                }
+            // Con poco ancho (ficha junto a la lista en un Mac de 1000 pt), sin Fecha ni Importe: ESTADO se quedaba
+            // en «E…» y los chips se estiraban en vertical.
+            ViewThatFits(in: .horizontal) {
+                historyTable(invoices, full: true)
+                historyTable(invoices, full: false)
             }
         }
         .background(Palette.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+
+    private func historyTable(_ invoices: [Invoice], full: Bool) -> some View {
+        TableCard {
+            Text("Nº").frame(width: 70, alignment: .leading)
+            if full { Text("Fecha").frame(width: 80, alignment: .leading) }
+            Text("Vence").frame(width: 80, alignment: .leading)
+            Text("Estado").frame(minWidth: 130, maxWidth: .infinity, alignment: .leading)
+            if full { Text("Importe").frame(width: amountWidth, alignment: .trailing) }
+            Text("Saldo").frame(width: amountWidth, alignment: .trailing)
+        } rows: {
+            ForEach(invoices) { invoice in
+                NavigationLink { InvoiceDetailView(invoice: invoice) } label: {
+                    TableRow {
+                        Text(invoice.number.isEmpty ? String(localized: "Borrador") : invoice.number).fontWeight(.semibold)
+                            .frame(width: 70, alignment: .leading)
+                        if full {
+                            Text(invoice.issueDate.dayMonth).foregroundStyle(Palette.ink2).frame(width: 80, alignment: .leading)
+                        }
+                        Text(invoice.dueDate.dayMonth).foregroundStyle(Palette.ink2).frame(width: 80, alignment: .leading)
+                        StatusChip(invoice: invoice).fixedSize().frame(minWidth: 130, maxWidth: .infinity, alignment: .leading)
+                        if full { Text(invoice.total.money).frame(width: amountWidth, alignment: .trailing) }
+                        Text(invoice.balanceDue.money).fontWeight(.semibold)
+                            .foregroundStyle(invoice.isOpen ? Palette.ink : Palette.ink3).frame(width: amountWidth, alignment: .trailing)
+                    }
+                }
+                .buttonStyle(.plain)
+            }
+            if invoices.isEmpty {
+                Text("Sin facturas").foregroundStyle(Palette.ink3).frame(maxWidth: .infinity).padding(.vertical, 24)
+            }
+        }
     }
 
     private var contactCard: some View {

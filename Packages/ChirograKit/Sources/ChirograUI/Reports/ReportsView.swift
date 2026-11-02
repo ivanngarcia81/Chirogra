@@ -186,8 +186,7 @@ struct ReportsView: View {
 
     // MARK: Cabecera y filtros
 
-    /// `MacPyG`: empresa · base · moneda, y «Exportar CSV» a la derecha. En el Mac el título va también aquí,
-    /// porque el de la ventana es pequeño.
+    /// `MacPyG`: empresa · base · moneda, y «Exportar CSV» a la derecha. El título va solo en la barra.
     private var pageHeader: some View {
         ViewThatFits(in: .horizontal) {
             HStack(alignment: .center, spacing: 12) { pageTitle; Spacer(minLength: 8); headerActions }
@@ -197,15 +196,11 @@ struct ReportsView: View {
 
     private var pageTitle: some View {
         VStack(alignment: .leading, spacing: 2) {
-            #if os(macOS)
-            Text(kind.fullTitle).font(.system(size: 28, weight: .bold)).foregroundStyle(Palette.ink)
-            #endif
             Text(subtitle).font(.subheadline).foregroundStyle(Palette.ink3)
         }
     }
 
-    /// Fecha de corte («Al …»), trimestre del sales tax y exportar. En el Mac «Exportar CSV» con borde (`MacPyG`);
-    /// en el iPad, «Exportar» en color de marca (`iPadPyG`).
+    /// Fecha de corte («Al …»), trimestre del sales tax y exportar, en vidrio y sin relleno de marca (§7.4).
     @ViewBuilder
     private var headerActions: some View {
         if kind == .balance || kind == .trial || kind == .receivables || kind == .payables {
@@ -215,23 +210,17 @@ struct ReportsView: View {
         }
         if kind == .salesTax { quarterPicker }
         ShareLink(item: csvFile, preview: SharePreview("\(csvFile.name).csv")) {
-            #if os(macOS)
-            Text("Exportar CSV")
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(Palette.ink)
-                .padding(.horizontal, 14)
-                .frame(minHeight: 36)
-                .background(Palette.surface, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-                .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).stroke(Palette.separator))
-            #else
-            Text("Exportar")
-                .font(.body.weight(.semibold))
-                .foregroundStyle(kind == .salesTax ? Palette.ink : Palette.onBrand)
-                .padding(.horizontal, 16)
-                .frame(minHeight: Metrics.target)
-                .background(kind == .salesTax ? Palette.surface : Palette.brand, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-                .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).stroke(kind == .salesTax ? Palette.separator : .clear))
-            #endif
+            Group {
+                #if os(macOS)
+                Text("Exportar CSV").font(.subheadline.weight(.semibold))
+                #else
+                Text("Exportar").font(.body.weight(.semibold))
+                #endif
+            }
+            .foregroundStyle(Palette.ink)
+            .padding(.horizontal, 14)
+            .frame(minHeight: Metrics.target)
+            .glassEffect(.regular.interactive(), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
         }
         .buttonStyle(.plain)
         if kind == .salesTax {
