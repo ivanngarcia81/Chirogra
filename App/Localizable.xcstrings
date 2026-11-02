@@ -149,6 +149,26 @@
         }
       }
     },
+    "%@ menos que en %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ less than in %@"
+          }
+        }
+      }
+    },
+    "%@ más que en %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ more than in %@"
+          }
+        }
+      }
+    },
     "%@ por pagar" : {
       "localizations" : {
         "en" : {
@@ -862,7 +882,6 @@
       }
     },
     "%lld de %lld gastos" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -874,6 +893,16 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$lld de %2$lld gastos"
+          }
+        }
+      }
+    },
+    "%lld de %lld gastos de %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld of %lld %@ expenses"
           }
         }
       }
@@ -1131,6 +1160,86 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "%lld facturas · la próxima vence el %@"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld gastos" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld expense"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld expenses"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld gasto"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld gastos"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld gastos de %@" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld %@ expense"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld %@ expenses"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld gasto de %@"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld gastos de %@"
                 }
               }
             }
@@ -1531,6 +1640,16 @@
         }
       }
     },
+    "Abre la Vista Rápida" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens Quick Look"
+          }
+        }
+      }
+    },
     "Abre los ajustes" : {
       "localizations" : {
         "en" : {
@@ -1567,6 +1686,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Open profile"
+          }
+        }
+      }
+    },
+    "Abrir gasto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open expense"
           }
         }
       }
@@ -1723,6 +1852,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Attach receipt photo"
+          }
+        }
+      }
+    },
+    "Adjuntar otro recibo…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Attach another receipt…"
+          }
+        }
+      }
+    },
+    "Adjuntar recibo…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Attach receipt…"
           }
         }
       }
@@ -4298,6 +4447,16 @@
         }
       }
     },
+    "Elige otro mes o registra un gasto nuevo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose another month or record a new expense."
+          }
+        }
+      }
+    },
     "Elige tu estado" : {
       "localizations" : {
         "en" : {
@@ -5352,7 +5511,6 @@
       }
     },
     "Gastos de %@" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5444,6 +5602,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Keep the receipt: the IRS asks you to keep it."
+          }
+        }
+      }
+    },
+    "Guarda el comprobante: el IRS pide conservarlo. Puedes soltar aquí una foto o un PDF." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keep the receipt: the IRS asks you to keep it. You can drop a photo or a PDF here."
           }
         }
       }
@@ -5686,6 +5854,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Language"
+          }
+        }
+      }
+    },
+    "Igual que en %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Same as in %@"
+          }
+        }
+      }
+    },
+    "Imagen guardada con el gasto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Image saved with the expense"
           }
         }
       }
@@ -6862,6 +7050,16 @@
         }
       }
     },
+    "Ningún gasto coincide con la búsqueda o el filtro." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No expenses match the search or filter."
+          }
+        }
+      }
+    },
     "Ningún proveedor coincide" : {
       "localizations" : {
         "en" : {
@@ -7573,6 +7771,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "PDF"
+          }
+        }
+      }
+    },
+    "PDF guardado con el gasto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PDF saved with the expense"
           }
         }
       }
@@ -8426,6 +8634,16 @@
     },
     "Proveedor, categoría o importe" : {
       "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vendor, category or amount"
+          }
+        }
+      }
+    },
+    "Proveedor, categoría o monto" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -9612,6 +9830,16 @@
         }
       }
     },
+    "Selecciona un gasto para ver sus detalles." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select an expense to see its details."
+          }
+        }
+      }
+    },
     "Selecciona una factura para ver sus detalles." : {
       "localizations" : {
         "en" : {
@@ -9883,6 +10111,16 @@
         }
       }
     },
+    "Sin gastos en %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No expenses in %@"
+          }
+        }
+      }
+    },
     "Sin gastos este mes" : {
       "localizations" : {
         "en" : {
@@ -10014,7 +10252,6 @@
       }
     },
     "Sin recibo" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -10578,6 +10815,16 @@
         }
       }
     },
+    "Todos los meses" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All months"
+          }
+        }
+      }
+    },
     "Total" : {
       "localizations" : {
         "en" : {
@@ -10999,6 +11246,16 @@
         }
       }
     },
+    "Varias categorías" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Multiple categories"
+          }
+        }
+      }
+    },
     "Vence" : {
       "localizations" : {
         "en" : {
@@ -11394,6 +11651,26 @@
         }
       }
     },
+    "Ver proveedor" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View vendor"
+          }
+        }
+      }
+    },
+    "Ver recibo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View receipt"
+          }
+        }
+      }
+    },
     "Ver reporte" : {
       "localizations" : {
         "en" : {
@@ -11430,6 +11707,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "See all"
+          }
+        }
+      }
+    },
+    "Ver todos los meses" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show all months"
           }
         }
       }
@@ -11787,6 +12074,26 @@
     },
     "−%@" : {
       "shouldTranslate" : false
+    },
+    "▲ %@ vs. %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "▲ %@ vs. %@"
+          }
+        }
+      }
+    },
+    "▼ %@ vs. %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "▼ %@ vs. %@"
+          }
+        }
+      }
     },
     "✓ Cuadra" : {
       "localizations" : {
