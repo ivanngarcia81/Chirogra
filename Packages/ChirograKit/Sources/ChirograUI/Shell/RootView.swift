@@ -63,6 +63,7 @@ enum AppSection: String, Hashable, CaseIterable, Identifiable {
 public struct ChirograRootView: View {
     @Query private var companies: [Company]
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.modelContext) private var modelContext
     @AppStorage("appLockEnabled") private var appLockEnabled = false
     @State private var lock = AppLockState()
     @State private var sync = SyncMonitor.shared
@@ -84,6 +85,10 @@ public struct ChirograRootView: View {
                 SyncLoadingView { skipsSyncWait = true }
             } else if companies.isEmpty {
                 OnboardingView()
+                    #if DEBUG
+                    // `-qa.muestra 1`: los datos de ejemplo sin pasar por el alta («Probar con datos de ejemplo»).
+                    .onAppear { if QALaunch.loadsSample { try? SampleData.populate(modelContext) } }
+                    #endif
             } else {
                 #if os(iOS)
                 // La app sigue montada debajo de la ventana de bloqueo: al desbloquear, todo está donde estaba.
@@ -95,6 +100,9 @@ public struct ChirograRootView: View {
         }
         .tint(Palette.brand)
         .background(Palette.background)
+        #if DEBUG
+        .preferredColorScheme(QALaunch.colorScheme)
+        #endif
         .monitorsCloudSync()
         // Fechas y selectores de fecha en el idioma de la app, con el orden de su región (B3). En el Mac los
         // selectores son campos en cifras: con el locale de los textos (es_419) salían en día/mes en EE. UU.
@@ -205,7 +213,12 @@ struct AppShell: View {
     @State private var keepsSidebarClosedUntil = Date.distantPast
     #endif
     @State private var tab: AppSection = .home
+    #if DEBUG
+    /// Con `-qa.seccion` (solo Debug), la página con la que arranca.
+    @State private var selection: SidebarItem = QALaunch.sidebarItem ?? .section(.home)
+    #else
     @State private var selection: SidebarItem = .section(.home)
+    #endif
     @State private var query = ""
     /// Cambios sin guardar del editor de la columna de detalle: antes de cambiar de pantalla se pregunta.
     @State private var unsavedChanges = UnsavedChanges()
@@ -373,9 +386,29 @@ struct AppShell: View {
         #endif
     }
 
-    /// iPad y Mac: barra lateral propia (`Sidebar`) y, en las páginas de lista y detalle, la columna maestro.
+    /// iPad y Mac: barra lateral propia (`Sidebar`) y, en las páginas de lista y detalle, la columna maestro (iPad).
+    /// En el Mac, las páginas de lista son barra lateral + contenido: la tabla a todo el ancho con el inspector a la
+    /// derecha (`MacTablePage`, decisión del usuario del 2-nov). Las que aún no tienen su tabla (`hasMacTable`) siguen
+    /// con la columna maestro.
     @ViewBuilder
     private var columns: some View {
+        #if os(macOS)
+        if let page = masterPage, page.hasMacTable {
+            NavigationSplitView(columnVisibility: $columnVisibility) {
+                sidebar
+            } detail: {
+                detailColumn { page.macTable(selection: $masterSelection) }
+            }
+        } else {
+            listColumns
+        }
+        #else
+        listColumns
+        #endif
+    }
+
+    @ViewBuilder
+    private var listColumns: some View {
         if let page = masterPage {
             NavigationSplitView(columnVisibility: masterVisibility) {
                 sidebar

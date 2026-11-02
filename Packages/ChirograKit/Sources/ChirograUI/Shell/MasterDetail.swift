@@ -7,6 +7,8 @@ import SwiftUI
 /// (columna maestro, de altura completa, con su título, búsqueda, filtro y botones en la barra) y detalle (§7.4,
 /// decisión del usuario; se aparta de los tableros, que ponían la lista o una tabla dentro del contenido).
 /// Las de tabla o reporte a todo el ancho (Inicio, Reportes, Libro mayor, Cierre, Impuestos, Ajustes) no cambian.
+/// En el Mac (decisión del usuario del 2-nov), cada página pasa a tabla + inspector en cuanto tiene su `MacTablePage`
+/// (`hasMacTable`, `macTable(selection:)` en `Shell/MacTablePage.swift`); hasta entonces sigue con estas columnas.
 enum MasterPage: Hashable {
     case invoices, customers, expenses, vendors, bills, banking, journal, chart
 

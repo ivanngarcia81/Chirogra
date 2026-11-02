@@ -841,6 +841,16 @@
         }
       }
     },
+    "%lld de %lld facturas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld of %lld invoices"
+          }
+        }
+      }
+    },
     "%lld de %lld gastos" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1517,6 +1527,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Opens settings"
+          }
+        }
+      }
+    },
+    "Abrir" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open"
+          }
+        }
+      }
+    },
+    "Abrir factura" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Invoice"
           }
         }
       }
@@ -3238,6 +3268,16 @@
         }
       }
     },
+    "Crea tu primera factura para empezar a cobrar." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create your first invoice to start getting paid."
+          }
+        }
+      }
+    },
     "Creada" : {
       "localizations" : {
         "en" : {
@@ -4710,6 +4750,16 @@
         }
       }
     },
+    "Factura %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invoice %@"
+          }
+        }
+      }
+    },
     "Factura %@ · %@" : {
       "localizations" : {
         "en" : {
@@ -5690,6 +5740,16 @@
         }
       }
     },
+    "Importes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Amounts"
+          }
+        }
+      }
+    },
     "Imprimir" : {
       "localizations" : {
         "en" : {
@@ -6411,6 +6471,26 @@
         }
       }
     },
+    "Mostrar inspector" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show Inspector"
+          }
+        }
+      }
+    },
+    "Mostrar inspector (⌥⌘I)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show Inspector (⌥⌘I)"
+          }
+        }
+      }
+    },
     "Motivo (devolución, ajuste de precio…)" : {
       "localizations" : {
         "en" : {
@@ -6658,6 +6738,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No invoices match"
+          }
+        }
+      }
+    },
+    "Ninguna factura coincide con la búsqueda o el filtro." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No invoices match the search or filter."
           }
         }
       }
@@ -7265,6 +7355,26 @@
         }
       }
     },
+    "Ocultar inspector" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hide Inspector"
+          }
+        }
+      }
+    },
+    "Ocultar inspector (⌥⌘I)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hide Inspector (⌥⌘I)"
+          }
+        }
+      }
+    },
     "Opcional" : {
       "localizations" : {
         "en" : {
@@ -7757,6 +7867,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Partial"
+          }
+        }
+      }
+    },
+    "Parcial · %@ pend." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Partial · %@ due"
           }
         }
       }
@@ -8766,6 +8886,16 @@
         }
       }
     },
+    "Registrar pago…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Record Payment…"
+          }
+        }
+      }
+    },
     "Registrar un gasto" : {
       "localizations" : {
         "en" : {
@@ -9422,6 +9552,16 @@
         }
       }
     },
+    "Selecciona una factura para ver sus detalles." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select an invoice to see its details."
+          }
+        }
+      }
+    },
     "Separadores" : {
       "localizations" : {
         "en" : {
@@ -9673,6 +9813,16 @@
         }
       }
     },
+    "Sin facturas todavía" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No invoices yet"
+          }
+        }
+      }
+    },
     "Sin gastos este mes" : {
       "localizations" : {
         "en" : {
@@ -9841,6 +9991,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No balance"
+          }
+        }
+      }
+    },
+    "Sin selección" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Selection"
           }
         }
       }
@@ -11134,12 +11294,32 @@
         }
       }
     },
+    "Ventas · %lld facturas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sales · %lld invoices"
+          }
+        }
+      }
+    },
     "Ver" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "View"
+          }
+        }
+      }
+    },
+    "Ver cliente" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View Customer"
           }
         }
       }

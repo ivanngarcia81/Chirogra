@@ -236,13 +236,7 @@ struct InvoiceDetailView: View {
         .contentShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 
-    /// Texto del recordatorio: se comparte por Mensajes o Mail (el envío desde la app llega más adelante).
-    private var reminderText: String {
-        let customer = invoice.customer?.name ?? ""
-        return invoice.daysOverdue() == nil
-            ? String(localized: "Hola, \(customer): te recordamos que la factura \(invoice.number) por \(invoice.balanceDue.money) vence el \(invoice.dueDate.dayMonth). ¡Gracias!")
-            : String(localized: "Hola, \(customer): la factura \(invoice.number) por \(invoice.balanceDue.money) venció el \(invoice.dueDate.dayMonth). ¿Nos ayudas con el pago? ¡Gracias!")
-    }
+    private var reminderText: String { invoice.reminderText }
 
     /// «⋯» de la barra (canvas: editar, duplicar, anular).
     private var moreMenu: some View {
@@ -612,6 +606,16 @@ private struct ActivityMark: View {
             }
         }
         .accessibilityHidden(true)
+    }
+}
+
+extension Invoice {
+    /// Texto del recordatorio: se comparte por Mensajes o Mail (el envío desde la app llega más adelante).
+    var reminderText: String {
+        let customer = customer?.name ?? ""
+        return daysOverdue() == nil
+            ? String(localized: "Hola, \(customer): te recordamos que la factura \(number) por \(balanceDue.money) vence el \(dueDate.dayMonth). ¡Gracias!")
+            : String(localized: "Hola, \(customer): la factura \(number) por \(balanceDue.money) venció el \(dueDate.dayMonth). ¿Nos ayudas con el pago? ¡Gracias!")
     }
 }
 
