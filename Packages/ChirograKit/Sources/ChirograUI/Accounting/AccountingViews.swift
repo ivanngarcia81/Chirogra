@@ -618,6 +618,10 @@ struct LedgerAccountPickerView: View {
 /// un crédito aumenta el saldo (+); en activo y gasto lo aumenta un débito.
 struct LedgerView: View {
     let account: Account
+    /// En la columna de detalle de iPad y Mac (Plan de cuentas, Banca): título pequeño en la barra, como la factura,
+    /// el gasto y las demás fichas, sin repetir en grande lo que el contenido ya dice (canvas `iPadVentas`,
+    /// `iPadBancaCuentas`: lo grande es la cifra). Abierto encima de otra pantalla, el título de pantalla de siempre.
+    var inDetailColumn = false
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var filterByDate = false
     @State private var from = DateInterval.month(containing: .now).start
@@ -704,7 +708,14 @@ struct LedgerView: View {
         .listRowBackground(Palette.surface)
         .screenBackground()
         .navigationTitle(account.name)
-        .headerTitle()
+        .modifier(LedgerTitle(inDetailColumn: inDetailColumn))
+    }
+}
+
+private struct LedgerTitle: ViewModifier {
+    let inDetailColumn: Bool
+    func body(content: Content) -> some View {
+        if inDetailColumn { content.inlineTitle() } else { content.headerTitle() }
     }
 }
 

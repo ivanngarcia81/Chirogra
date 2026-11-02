@@ -97,7 +97,7 @@ struct MasterDetailColumn: View {
             case .bills: ModelLookup(id: id, key: \Bill.id, page: page) { BillDetailView(bill: $0) }
             case .banking: ModelLookup(id: id, key: \Account.id, page: page) { BankAccountDetail(account: $0) }
             case .journal: ModelLookup(id: id, key: \JournalEntry.id, page: page) { JournalEntryDetailView(entry: $0) }
-            case .chart: ModelLookup(id: id, key: \Account.id, page: page) { LedgerView(account: $0) }
+            case .chart: ModelLookup(id: id, key: \Account.id, page: page) { LedgerView(account: $0, inDetailColumn: true) }
             }
         } else {
             MasterPlaceholder(page: page)
@@ -113,7 +113,7 @@ private struct BankAccountDetail: View {
 
     var body: some View {
         GeometryReader { proxy in
-            if proxy.size.width < 720 { LedgerView(account: account) } else { table }
+            if proxy.size.width < 720 { LedgerView(account: account, inDetailColumn: true) } else { table }
         }
     }
 
