@@ -226,9 +226,12 @@ extension EnvironmentValues {
 
 // MARK: - Tipografía
 
+/// Estilos del tablero «Sistema nativo» (SF Pro con Dynamic Type): `.largeTitle` para el título de pantalla,
+/// `.title3` bold para el título de un grupo, `.body` para filas, `.subheadline` para detalles y `.footnote` para
+/// subtítulos de fila, estados y encabezados de sección. En el Mac los mismos estilos dan 13 pt de cuerpo.
 extension Font {
-    /// Cifras destacadas (tarjeta de efectivo, totales). El tamaño del canvas se traduce al estilo de texto
-    /// más cercano para que escale con Dynamic Type.
+    /// Cifras destacadas (efectivo, totales). El tamaño del canvas se traduce al estilo de texto más cercano para que
+    /// escale con Dynamic Type.
     static func amount(_ size: CGFloat) -> Font {
         let style: Font.TextStyle = switch size {
         case 34...: .largeTitle
@@ -239,8 +242,17 @@ extension Font {
         }
         return .system(style, weight: .bold).monospacedDigit()
     }
+    #if os(macOS)
+    /// Título de una caja del Mac («Ingresos y gastos · 12 meses»): 13 pt bold.
     static let cardTitle = Font.headline
-    static let label = Font.caption.weight(.semibold)
+    /// Cabeceras de tabla y de inspector del Mac: 11 pt semibold.
+    static let label = Font.subheadline.weight(.semibold)
+    #else
+    /// Título de un grupo («Ingresos y gastos», «Por cobrar»): `.title3` bold, fuera de la tarjeta.
+    static let cardTitle = Font.title3.weight(.bold)
+    /// Encabezados de sección y etiquetas pequeñas: `.footnote` (13 pt), en tipo oración.
+    static let label = Font.footnote
+    #endif
 }
 
 // MARK: - Superficies
@@ -250,30 +262,41 @@ extension EnvironmentValues {
     @Entry var cardFillsHeight = false
 }
 
+/// Tarjeta: la celda de una lista agrupada (radio 24, `secondarySystemGroupedBackground`); en el Mac, la caja del
+/// canvas (fondo alterno, borde fino de `separator`, radio 12).
 struct CardModifier: ViewModifier {
     var padding: CGFloat = Metrics.cardPadding
     @Environment(\.cardFillsHeight) private var fillsHeight
+
     func body(content: Content) -> some View {
+        let shape = RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous)
         content
             .padding(padding)
             .frame(maxWidth: .infinity, maxHeight: fillsHeight ? .infinity : nil, alignment: .topLeading)
-            .background(Palette.surface, in: RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous))
+            .background(Palette.surface, in: shape)
+            #if os(macOS)
+            .overlay(shape.strokeBorder(Palette.separator, lineWidth: 0.5))
+            #endif
     }
 }
 
 extension View {
     func card(padding: CGFloat = Metrics.cardPadding) -> some View { modifier(CardModifier(padding: padding)) }
 
-    /// Campo con borde de los tableros de Mac (`MacDiario`): alto 38, radio 10, fondo de superficie.
+    /// Campo con fondo fuera de un `Form` (líneas de la factura y del asiento, fichas del Mac): en iPhone e iPad, el
+    /// relleno del sistema (canvas `--fill`); en el Mac, el campo redondeado del sistema (canvas `.tf`).
     func fieldBox() -> some View {
+        #if os(macOS)
+        textFieldStyle(.roundedBorder)
+        #else
         textFieldStyle(.plain)
             .padding(.horizontal, 10)
             .frame(minHeight: 38)
-            .background(Palette.surface, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).stroke(Palette.separator))
+            .background(Palette.surface2, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+        #endif
     }
 
-    /// Fondo de pantalla del canvas, en listas y en vistas con scroll.
+    /// Fondo de pantalla (`systemGroupedBackground`; en el Mac, el de la ventana), en listas y en vistas con scroll.
     func screenBackground() -> some View {
         scrollContentBackground(.hidden).background(Palette.background)
     }
@@ -308,65 +331,131 @@ extension View {
 
 // MARK: - Botones
 
-/// Botones de acción dentro del contenido (§7.4, decisión del usuario): vidrio del sistema (`glassEffect`), sin
-/// relleno de marca. El primario se distingue del secundario por el peso del texto (semibold en `ink` frente a
-/// regular en `ink2`); el destructivo, por el texto en `negative`. `ink` e `ink2` cumplen AA sobre el vidrio en claro
-/// y en oscuro.
-struct PrimaryButtonStyle: ButtonStyle {
+/// Botón principal del canvas («Enviar factura», «Registrar $…», «Continuar»): la cápsula de vidrio destacada del
+/// sistema (`.glassProminent`), rellena de Tinta con el texto blanco y semibold, a todo el ancho. En el Mac es el
+/// botón por defecto del sistema, con la densidad de sus controles. Es el único botón relleno del acento.
+struct PrimaryButtonStyle: PrimitiveButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        Button(configuration)
+            .buttonStyle(.glassProminent)
+            .buttonBorderShape(.capsule)
+            .controlSize(.large)
+            .buttonSizing(.flexible)
+            .fontWeight(.semibold)
+            .tint(Palette.brandFill)
+    }
+}
+
+/// Igual que el principal pero del ancho de su texto (estado vacío: «Importar mi banco», «Crear tu primera factura»).
+struct CompactPrimaryButtonStyle: PrimitiveButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        Button(configuration)
+            .buttonStyle(.glassProminent)
+            .buttonBorderShape(.capsule)
+            .controlSize(.large)
+            .fontWeight(.semibold)
+            .tint(Palette.brandFill)
+    }
+}
+
+/// Botón secundario y destructivo del canvas («Vista previa», «Excluir»): en iPhone e iPad, cápsula con el relleno
+/// del sistema (`--fill`) y el texto semibold en Tinta, o en rojo si es destructivo; en el Mac, el botón con borde
+/// del sistema (canvas `.pb`).
+struct SecondaryButtonStyle: PrimitiveButtonStyle {
+    var destructive = false
+
+    func makeBody(configuration: Configuration) -> some View {
+        let button = Button(role: destructive ? .destructive : configuration.role) { configuration.trigger() } label: {
+            configuration.label
+        }
+        #if os(macOS)
+        button
+            .buttonStyle(.bordered)
+            .buttonBorderShape(.capsule)
+            .controlSize(.large)
+            .buttonSizing(.flexible)
+            .foregroundStyle(destructive ? Palette.negative : Palette.ink)
+        #else
+        button.buttonStyle(FillCapsuleButtonStyle(foreground: destructive ? Palette.negative : Palette.brand))
+        #endif
+    }
+}
+
+/// Cápsula con el relleno del sistema y texto de color: la forma de `SecondaryButtonStyle` en iPhone e iPad.
+struct FillCapsuleButtonStyle: ButtonStyle {
+    var foreground: Color = Palette.brand
+    var fullWidth = true
     @Environment(\.isEnabled) private var isEnabled
+
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.body.weight(.semibold))
             .multilineTextAlignment(.center)
+            .padding(.horizontal, 20)
             .padding(.vertical, 10)
-            .frame(maxWidth: .infinity, minHeight: Metrics.buttonHeight)
-            .padding(.horizontal, 22)
-            .foregroundStyle(isEnabled ? Palette.ink : Palette.ink3)
-            .contentShape(RoundedRectangle(cornerRadius: Metrics.buttonRadius, style: .continuous))
-            .glassEffect(.regular.interactive(isEnabled), in: RoundedRectangle(cornerRadius: Metrics.buttonRadius, style: .continuous))
+            .frame(maxWidth: fullWidth ? .infinity : nil, minHeight: Metrics.buttonHeight)
+            .foregroundStyle(isEnabled ? foreground : Palette.ink2)
+            .background(Palette.surface2, in: Capsule())
+            .contentShape(Capsule())
+            .opacity(configuration.isPressed ? 0.55 : 1)
     }
 }
 
-struct SecondaryButtonStyle: ButtonStyle {
-    var destructive = false
-    @Environment(\.isEnabled) private var isEnabled
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .font(destructive ? .body.weight(.semibold) : .body)
-            .multilineTextAlignment(.center)
-            .padding(.vertical, 10)
-            .frame(maxWidth: .infinity, minHeight: Metrics.buttonHeight)
-            .padding(.horizontal, 22)
-            .foregroundStyle(!isEnabled ? Palette.ink3 : destructive ? Palette.negative : Palette.ink2)
-            .contentShape(RoundedRectangle(cornerRadius: Metrics.buttonRadius, style: .continuous))
-            .glassEffect(.regular.interactive(isEnabled), in: RoundedRectangle(cornerRadius: Metrics.buttonRadius, style: .continuous))
-    }
-}
-
-extension ButtonStyle where Self == PrimaryButtonStyle {
+extension PrimitiveButtonStyle where Self == PrimaryButtonStyle {
     static var primary: PrimaryButtonStyle { PrimaryButtonStyle() }
 }
 
-extension ButtonStyle where Self == SecondaryButtonStyle {
+extension PrimitiveButtonStyle where Self == CompactPrimaryButtonStyle {
+    static var primaryCompact: CompactPrimaryButtonStyle { CompactPrimaryButtonStyle() }
+}
+
+extension PrimitiveButtonStyle where Self == SecondaryButtonStyle {
     static var secondary: SecondaryButtonStyle { SecondaryButtonStyle() }
     static var destructive: SecondaryButtonStyle { SecondaryButtonStyle(destructive: true) }
 }
 
-// MARK: - Chips de estado
+// MARK: - Estados
 
+/// Punto de color de un estado (canvas: 7 pt, 6 en el Mac), siempre junto a un texto.
+struct StatusDot: View {
+    let color: Color
+    #if os(macOS)
+    private let side: CGFloat = 6
+    #else
+    private let side: CGFloat = 7
+    #endif
+
+    var body: some View {
+        Circle().fill(color).frame(width: side, height: side).accessibilityHidden(true)
+    }
+}
+
+/// Estado de un documento como en el canvas: un punto del color del sistema y el texto en su color accesible
+/// («● Vencida · 8 días»), sin cápsula. `compact` es el de las filas (`.footnote`); el otro, el de una ficha
+/// (`.subheadline` semibold). `background` ya no se dibuja: se conserva para no tocar las pantallas.
 struct StatusChip: View {
     let text: String
     let foreground: Color
     let background: Color
     var compact = false
+    /// Color del punto (por defecto, el del texto).
+    var dot: Color? = nil
 
     var body: some View {
-        Text(text)
-            .font(compact ? .caption2.weight(.semibold) : .caption.weight(.semibold))
-            .padding(.horizontal, compact ? 8 : 11)
-            .padding(.vertical, compact ? 2 : 5)
-            .foregroundStyle(foreground)
-            .background(background, in: Capsule())
+        HStack(spacing: compact ? 5 : 6) {
+            StatusDot(color: dot ?? foreground)
+            Text(text).lineLimit(1)
+        }
+        .font(font)
+        .foregroundStyle(foreground)
+    }
+
+    private var font: Font {
+        #if os(macOS)
+        compact ? .subheadline : .body
+        #else
+        compact ? .footnote : .subheadline.weight(.semibold)
+        #endif
     }
 }
 
@@ -385,32 +474,38 @@ extension Invoice {
 }
 
 extension StatusChip {
-    /// Estados de factura del canvas: Borrador, Enviada, Pago parcial, Vencida · N días, Pagada (+ Anulada).
+    /// Estados de factura del canvas (`Ventas`): Borrador (gris), Enviada (azul), Pago parcial (naranja),
+    /// Vencida · N días (rojo), Pagada (verde) y Anulada (gris).
     init(invoice: Invoice, compact: Bool = true) {
         if let days = invoice.daysOverdue() {
-            self.init(text: String(localized: "Vencida · \(days) días"), foreground: Palette.negative, background: Palette.negativeWash, compact: compact)
+            self.init(text: String(localized: "Vencida · \(days) días"), foreground: Palette.negative, background: Palette.negativeWash,
+                      compact: compact, dot: Palette.red)
             return
         }
         switch invoice.status {
-        case .draft: self.init(text: String(localized: "Borrador"), foreground: Palette.ink2, background: Palette.surface2, compact: compact)
-        case .sent: self.init(text: String(localized: "Enviada"), foreground: Palette.brand, background: Palette.brandWash, compact: compact)
-        case .partiallyPaid: self.init(text: String(localized: "Pago parcial"), foreground: Palette.warning, background: Palette.warningWash, compact: compact)
-        case .paid: self.init(text: String(localized: "Pagada"), foreground: Palette.positive, background: Palette.positiveWash, compact: compact)
-        case .void: self.init(text: String(localized: "Anulada"), foreground: Palette.ink3, background: Palette.surface2, compact: compact)
+        case .draft: self.init(text: String(localized: "Borrador"), foreground: Palette.ink2, background: Palette.surface2, compact: compact, dot: Palette.gray)
+        case .sent: self.init(text: String(localized: "Enviada"), foreground: Palette.ink2, background: Palette.surface2, compact: compact, dot: Palette.blue)
+        case .partiallyPaid: self.init(text: String(localized: "Pago parcial"), foreground: Palette.warning, background: Palette.warningWash, compact: compact, dot: Palette.orange)
+        case .paid: self.init(text: String(localized: "Pagada"), foreground: Palette.positive, background: Palette.positiveWash, compact: compact, dot: Palette.green)
+        case .void: self.init(text: String(localized: "Anulada"), foreground: Palette.ink2, background: Palette.surface2, compact: compact, dot: Palette.gray)
         }
     }
 
     init(bill: Bill, compact: Bool = true) {
         switch bill.status {
-        case .open: self.init(text: String(localized: "Por pagar"), foreground: Palette.brand, background: Palette.brandWash, compact: compact)
-        case .partiallyPaid: self.init(text: String(localized: "Pago parcial"), foreground: Palette.warning, background: Palette.warningWash, compact: compact)
-        case .paid: self.init(text: String(localized: "Pagada"), foreground: Palette.positive, background: Palette.positiveWash, compact: compact)
-        case .void: self.init(text: String(localized: "Anulada"), foreground: Palette.ink3, background: Palette.surface2, compact: compact)
+        case .open: self.init(text: String(localized: "Por pagar"), foreground: Palette.ink2, background: Palette.surface2, compact: compact, dot: Palette.blue)
+        case .partiallyPaid: self.init(text: String(localized: "Pago parcial"), foreground: Palette.warning, background: Palette.warningWash, compact: compact, dot: Palette.orange)
+        case .paid: self.init(text: String(localized: "Pagada"), foreground: Palette.positive, background: Palette.positiveWash, compact: compact, dot: Palette.green)
+        case .void: self.init(text: String(localized: "Anulada"), foreground: Palette.ink2, background: Palette.surface2, compact: compact, dot: Palette.gray)
         }
     }
 }
 
-/// Chip de filtro o de tipo de reporte: área táctil de 44 pt como mínimo y rasgo de seleccionado.
+// MARK: - Filtros
+
+/// Chip de filtro o de tipo de reporte: cápsula con el relleno del sistema; la elegida, rellena de Tinta con el texto
+/// blanco. Área táctil de 44 pt (28 en el Mac) y rasgo de seleccionado. En pantallas nuevas, mejor `FilterPicker`
+/// (segmentado del sistema) o `FilterMenu` (botón de filtro de la barra), que son los del canvas.
 struct FilterChip: View {
     let title: String
     var count: Int? = nil
@@ -421,14 +516,13 @@ struct FilterChip: View {
         Button(action: action) {
             HStack(spacing: 4) {
                 Text(title).fontWeight(.semibold)
-                if let count { Text("\(count)").foregroundStyle(isSelected ? Palette.background.opacity(0.8) : Palette.ink3) }
+                if let count { Text("\(count)").foregroundStyle(isSelected ? Palette.onBrandFill.opacity(0.85) : Palette.ink2) }
             }
             .font(.subheadline)
             .padding(.horizontal, 14)
             .frame(minHeight: Metrics.target)
-            .foregroundStyle(isSelected ? Palette.background : Palette.ink2)
-            .background(isSelected ? Palette.ink : Palette.surface, in: Capsule())
-            .overlay(Capsule().stroke(isSelected ? Palette.ink : Palette.separator))
+            .foregroundStyle(isSelected ? Palette.onBrandFill : Palette.ink)
+            .background(isSelected ? Palette.brandFill : Palette.surface2, in: Capsule())
             .contentShape(Capsule())
         }
         .buttonStyle(.plain)
@@ -437,26 +531,86 @@ struct FilterChip: View {
     }
 }
 
+/// Filtro de una opción entre varias (canvas `Gastos`, `iPadVentas`, `ReportePyG`): el control segmentado del sistema
+/// si caben (hasta cuatro opciones y sin texto de accesibilidad); si no, un menú desplegable con la opción elegida.
+struct FilterPicker<Option: Hashable>: View {
+    let title: String
+    let options: [Option]
+    @Binding var selection: Option
+    let label: (Option) -> String
+    var count: ((Option) -> Int)? = nil
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    var body: some View {
+        if options.count <= 4 && !dynamicTypeSize.isAccessibilitySize {
+            Picker(title, selection: $selection) {
+                ForEach(options, id: \.self) { Text(label($0)).tag($0) }
+            }
+            .pickerStyle(.segmented)
+            .labelsHidden()
+        } else {
+            Picker(title, selection: $selection) {
+                ForEach(options, id: \.self) { option in
+                    if let count { Text("\(label(option)) (\(count(option)))").tag(option) } else { Text(label(option)).tag(option) }
+                }
+            }
+            .pickerStyle(.menu)
+            .fixedSize()
+        }
+    }
+}
+
+/// Filtro de una lista en la barra, como en Mail (canvas `Ventas`): el botón de filtro del sistema, en Tinta cuando
+/// hay un filtro puesto, con un menú de opciones y su cuenta. La primera opción es «sin filtro».
+struct FilterMenu<Option: Hashable>: View {
+    let options: [Option]
+    @Binding var selection: Option
+    let label: (Option) -> String
+    var count: ((Option) -> Int)? = nil
+
+    private var isFiltering: Bool { selection != options.first }
+
+    var body: some View {
+        Menu {
+            Picker(String(localized: "Filtrar"), selection: $selection) {
+                ForEach(options, id: \.self) { option in
+                    if let count { Text(label(option)).badge(count(option)).tag(option) } else { Text(label(option)).tag(option) }
+                }
+            }
+            .pickerStyle(.inline)
+        } label: {
+            Label(String(localized: "Filtrar"), systemImage: isFiltering ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
+        }
+        .tint(isFiltering ? Palette.brand : Palette.ink)
+        .accessibilityValue(label(selection))
+    }
+}
+
 // MARK: - Piezas de lista
 
-/// Iniciales en un cuadrado redondeado o, para clientes (canvas `Clientes`), en un círculo.
+/// Monograma de cliente o proveedor, como en Contactos: iniciales blancas en un círculo con el degradado gris del
+/// sistema (canvas `Clientes`, `FacturaNueva`). `foreground`, `background` y `round` ya no cambian nada: se conservan
+/// para no tocar las pantallas.
 struct InitialsTile: View {
     let text: String
     var foreground: Color = Palette.brand
     var background: Color = Palette.brandWash
     var round = false
-    @ScaledMetric(relativeTo: .subheadline) private var side = Metrics.iconTile
+    @ScaledMetric(relativeTo: .subheadline) private var side = Metrics.avatar
 
     var body: some View {
         Text(text)
-            .font(.subheadline.weight(.bold))
+            .font(.system(size: side * 0.38, weight: .semibold))
             .frame(width: side, height: side)
-            .foregroundStyle(foreground)
-            .background(background, in: round ? AnyShape(Circle()) : AnyShape(RoundedRectangle(cornerRadius: 12, style: .continuous)))
+            .foregroundStyle(.white)
+            .background(Palette.monogram, in: Circle())
             .accessibilityHidden(true)
     }
 }
 
+/// Icono de fila como en Ajustes (canvas `Mas`, `Gastos`, `Home` · Cuentas): símbolo blanco en un cuadrado redondeado
+/// relleno de color (30 pt, radio 8; 22 pt en el Mac). `foreground` es el color del cuadrado: un color del sistema
+/// (`Palette.blue`, `.orange`…) o el de un estado; `background` ya no se dibuja.
 struct IconTile: View {
     let systemImage: String
     var foreground: Color = Palette.brand
@@ -465,17 +619,36 @@ struct IconTile: View {
 
     var body: some View {
         Image(systemName: systemImage)
-            .font(.body.weight(.medium))
+            .font(.system(size: side * 0.55, weight: .medium))
             .frame(width: side, height: side)
-            .foregroundStyle(foreground)
-            .background(background, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .foregroundStyle(.white)
+            // Tinta oscura bajo el blanco: con la de texto (#9A9EFF en oscuro) el símbolo no se leía.
+            .background(foreground == Palette.brand ? Palette.brandFill : foreground,
+                        in: RoundedRectangle(cornerRadius: side * 0.27, style: .continuous))
             .accessibilityHidden(true)
     }
 }
 
-/// Fila del canvas: icono o iniciales, título, subtítulo e importe con chip opcional, sin chevron
-/// (`navigationLinkIndicatorVisibility(.hidden)` en la lista). Con tamaños de accesibilidad icono, texto e
-/// importe van en columna.
+/// Fecha de vencimiento como hoja de calendario (canvas `Home` · Por pagar): mes en rojo y día debajo.
+struct DateTile: View {
+    let date: Date
+    @ScaledMetric(relativeTo: .body) private var width: CGFloat = 38
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Text(date.shortMonth).textCase(.uppercase).font(.system(size: width * 0.24, weight: .bold)).foregroundStyle(Palette.red)
+            Text(date.formatted(.appDateTime.day())).font(.system(size: width * 0.45, weight: .semibold)).foregroundStyle(Palette.ink)
+        }
+        .monospacedDigit()
+        .frame(width: width, height: width * 40 / 38)
+        .background(Palette.surface2, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+        .accessibilityHidden(true)
+    }
+}
+
+/// Fila de lista del canvas: icono o monograma, título (`.body`), subtítulo (`.footnote`, gris) e importe con el estado
+/// debajo. El chevron lo pone la lista cuando la fila abre algo. Con tamaños de accesibilidad icono, texto e importe
+/// van en columna.
 struct LedgerRow<Leading: View, Trailing: View>: View {
     let title: String
     let subtitle: String
@@ -503,7 +676,8 @@ struct LedgerRow<Leading: View, Trailing: View>: View {
                 }
             }
         }
-        .padding(.vertical, 6)
+        // La lista ya pone su margen: con él la fila mide unos 60 pt, como en el canvas.
+        .padding(.vertical, 2)
         .accessibilityElement(children: .combine)
     }
 
@@ -512,15 +686,21 @@ struct LedgerRow<Leading: View, Trailing: View>: View {
     /// se permiten varias líneas.
     private var texts: some View {
         let lines = dynamicTypeSize.isAccessibilitySize ? nil : 1 as Int?
-        return VStack(alignment: .leading, spacing: 2) {
-            Text(title).font(.body.weight(.semibold)).foregroundStyle(Palette.ink).lineLimit(lines)
-            Text(subtitle).font(.subheadline).foregroundStyle(Palette.ink3)
+        return VStack(alignment: .leading, spacing: 1) {
+            Text(title).font(.body).foregroundStyle(Palette.ink).lineLimit(lines)
+            Text(subtitle).font(Self.subtitleFont).foregroundStyle(Palette.ink2)
                 .lineLimit(lines.map { _ in subtitleLines })
                 .minimumScaleFactor(0.85)
                 .truncationMode(.middle)
                 .fixedSize(horizontal: false, vertical: lines == nil)
         }
     }
+
+    #if os(macOS)
+    static var subtitleFont: Font { .subheadline }
+    #else
+    static var subtitleFont: Font { .footnote }
+    #endif
 }
 
 /// Texto a la izquierda y valor a la derecha; con tamaños de accesibilidad, uno debajo del otro,
@@ -552,21 +732,21 @@ extension DynamicTypeSize {
     var amountAlignment: HorizontalAlignment { isAccessibilitySize ? .leading : .trailing }
 }
 
-/// Encabezado de sección del canvas: mayúsculas 12/600 con espaciado, en `ink3` («CONTABILIDAD»).
+/// Encabezado de sección de una lista agrupada, como en Ajustes de iOS 26: `.footnote` gris en tipo oración
+/// («Registrar pago», «Actividad»); en el Mac, 11 pt semibold (cabecera de inspector).
 struct SectionLabel: View {
     let text: String
     var body: some View {
-        // `textCase` y no `uppercased()`: se ve igual, pero VoiceOver lee el texto original (no deletrea «MÁS»).
         Text(text)
-            .textCase(.uppercase)
             .font(.label)
-            .tracking(0.6)
-            .foregroundStyle(Palette.ink3)
+            .foregroundStyle(Palette.ink2)
+            // Sin mayúsculas: las listas agrupadas del sistema las ponían por defecto.
+            .textCase(nil)
     }
 }
 
 extension Section where Parent == SectionLabel, Footer == EmptyView, Content: View {
-    /// Sección de lista con el encabezado del canvas en vez del de iOS (tipo oración, 17 pt).
+    /// Sección de lista con el encabezado del canvas.
     init(title: LocalizedStringResource, @ViewBuilder content: () -> Content) {
         self.init(content: content) { SectionLabel(text: String(localized: title)) }
     }
@@ -577,10 +757,32 @@ extension Section where Parent == SectionLabel, Footer == EmptyView, Content: Vi
     }
 }
 
-/// Fila «etiqueta · valor» con el valor en `ink`, como en el canvas (iOS lo pinta en gris secundario).
-/// Los selectores de menú y los interruptores de los formularios también pasan por este estilo, así que nunca
-/// se recorta nada: si etiqueta y valor no caben en una línea, el valor baja a la siguiente (siempre, con
-/// tamaños de accesibilidad).
+/// Título de un grupo fuera de una lista (canvas `Home`: «Ingresos y gastos», «Por cobrar · Ver todo»): `.title3` bold
+/// con un enlace opcional en Tinta a la derecha. Con el margen de la tarjeta, para alinearse con su contenido.
+struct SectionHeader<Trailing: View>: View {
+    let title: String
+    @ViewBuilder var trailing: Trailing
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 12) {
+            Text(title).font(.cardTitle).foregroundStyle(Palette.ink).accessibilityAddTraits(.isHeader)
+            Spacer(minLength: 8)
+            trailing.font(.body).tint(Palette.brand)
+        }
+        .padding(.horizontal, Metrics.cardPadding)
+    }
+}
+
+extension SectionHeader where Trailing == EmptyView {
+    init(_ title: String) {
+        self.init(title: title) { EmptyView() }
+    }
+}
+
+/// Fila «etiqueta · valor» con el valor en gris secundario, como las filas del sistema y del canvas («Número F-1049»).
+/// Los selectores de menú y los interruptores de los formularios también pasan por este estilo, así que nunca se
+/// recorta nada: si etiqueta y valor no caben en una línea, el valor baja a la siguiente (siempre, con tamaños de
+/// accesibilidad).
 struct InkValueLabeledContentStyle: LabeledContentStyle {
     func makeBody(configuration: Configuration) -> some View {
         Row(configuration: configuration)
@@ -599,7 +801,7 @@ struct InkValueLabeledContentStyle: LabeledContentStyle {
                     HStack(alignment: .center, spacing: 12) {
                         configuration.label.fixedSize()
                         Spacer(minLength: 0)
-                        configuration.content.foregroundStyle(Palette.ink).fixedSize()
+                        configuration.content.foregroundStyle(Palette.ink2).fixedSize()
                     }
                     stacked
                 }
@@ -609,71 +811,59 @@ struct InkValueLabeledContentStyle: LabeledContentStyle {
         private var stacked: some View {
             VStack(alignment: .leading, spacing: 4) {
                 configuration.label
-                configuration.content.foregroundStyle(Palette.ink)
+                configuration.content.foregroundStyle(Palette.ink2)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 }
 
-/// Pestañas de texto subrayadas (canvas `Ventas`): la activa en color de marca con un subrayado de 2.5 pt,
-/// el resto en `ink2`, y una línea fina debajo de todas.
+/// Pestañas de una pantalla (Facturas · Clientes): el control segmentado del sistema (canvas `Gastos`).
 struct UnderlineTabs<Value: Hashable>: View {
     let options: [Value]
     @Binding var selection: Value
     let title: (Value) -> String
 
     var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 18) {
-                ForEach(options, id: \.self) { option in
-                    let isSelected = option == selection
-                    Button { selection = option } label: {
-                        Text(title(option))
-                            .font(.subheadline.weight(isSelected ? .semibold : .medium))
-                            .foregroundStyle(isSelected ? Palette.brand : Palette.ink2)
-                            .frame(minHeight: Metrics.target)
-                            .overlay(alignment: .bottom) {
-                                Rectangle().fill(isSelected ? Palette.brand : .clear).frame(height: 2.5)
-                            }
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityAddTraits(isSelected ? [.isSelected, .isButton] : .isButton)
-                }
-            }
-            .padding(.horizontal, Metrics.gutter)
+        Picker(String(localized: "Sección"), selection: $selection) {
+            ForEach(options, id: \.self) { Text(title($0)).tag($0) }
         }
-        .overlay(alignment: .bottom) { Rectangle().fill(Palette.separator).frame(height: 1) }
+        .pickerStyle(.segmented)
+        .labelsHidden()
+        .padding(.horizontal, Metrics.gutter)
+        .padding(.vertical, 6)
     }
 }
 
-/// Barra de acciones fija abajo (canvas `FacturaNueva`, `FacturaEnviar`): fondo de superficie con una línea
-/// arriba, botones uno al lado del otro; con tamaños de accesibilidad, uno debajo del otro.
+/// Acciones fijas abajo (canvas `FacturaNueva`, `FacturaEnviar`): una barra de vidrio que flota sobre el contenido,
+/// con los botones uno al lado del otro; con tamaños de accesibilidad, uno debajo del otro.
 struct BottomActionBar<Content: View>: View {
     @ViewBuilder var content: Content
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
-        let layout = dynamicTypeSize.isAccessibilitySize ? AnyLayout(VStackLayout(spacing: 10)) : AnyLayout(HStackLayout(spacing: 10))
+        let layout = dynamicTypeSize.isAccessibilitySize ? AnyLayout(VStackLayout(spacing: 8)) : AnyLayout(HStackLayout(spacing: 8))
         layout { content }
+            .padding(8)
+            .glassEffect(.regular, in: RoundedRectangle(cornerRadius: Metrics.buttonHeight / 2 + 8, style: .continuous))
             .padding(.horizontal, Metrics.gutter)
-            .padding(.top, 12)
+            .padding(.top, 8)
             .padding(.bottom, 8)
-            .background(Palette.surface)
-            .overlay(alignment: .top) { Rectangle().fill(Palette.separator).frame(height: 1) }
     }
 }
 
 extension View {
-    /// Fija `BottomActionBar` sobre el borde inferior: los botones no se van con el scroll.
+    /// Fija `BottomActionBar` sobre el borde inferior, con el efecto de borde del sistema: los botones no se van con
+    /// el scroll.
     func bottomActionBar<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
-        safeAreaInset(edge: .bottom, spacing: 0) { BottomActionBar(content: content) }
+        safeAreaBar(edge: .bottom, spacing: 0) { BottomActionBar(content: content) }
     }
 }
 
 // MARK: - Fichas (canvas `ClienteFicha`, `ProveedorFicha`)
 
-/// Cabecera de ficha: avatar de 56 pt (círculo para clientes, cuadrado para proveedores), nombre grande y detalle.
+/// Cabecera de ficha, como en Contactos: monograma grande (84 pt; 64 en el Mac) o icono en un círculo de color,
+/// nombre en `.title` bold y detalle gris, centrados. `round` ya no cambia nada.
 struct ProfileHeader: View {
     var initials: String? = nil
     var systemImage: String? = nil
@@ -682,70 +872,116 @@ struct ProfileHeader: View {
     var round = false
     var foreground: Color = Palette.brand
     var background: Color = Palette.brandWash
-    @ScaledMetric(relativeTo: .title) private var side: CGFloat = 56
+    #if os(macOS)
+    @ScaledMetric(relativeTo: .title) private var side: CGFloat = 64
+    #else
+    @ScaledMetric(relativeTo: .title) private var side: CGFloat = 84
+    #endif
 
     var body: some View {
-        HStack(spacing: 14) {
+        VStack(spacing: 4) {
             Group {
-                if let systemImage { Image(systemName: systemImage).font(.title2) } else { Text(initials ?? "").font(.title3.weight(.bold)) }
+                if let systemImage {
+                    Image(systemName: systemImage)
+                        .font(.system(size: side * 0.42, weight: .medium))
+                        .frame(width: side, height: side)
+                        .foregroundStyle(.white)
+                        .background(foreground == Palette.brand ? Palette.brandFill : foreground, in: Circle())
+                } else {
+                    Text(initials ?? "")
+                        .font(.system(size: side * 0.4, weight: .semibold))
+                        .frame(width: side, height: side)
+                        .foregroundStyle(.white)
+                        .background(Palette.monogram, in: Circle())
+                }
             }
-            .foregroundStyle(foreground)
-            .frame(width: side, height: side)
-            .background(background, in: round ? AnyShape(Circle()) : AnyShape(RoundedRectangle(cornerRadius: 16, style: .continuous)))
             .accessibilityHidden(true)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(name).font(.title.weight(.bold)).foregroundStyle(Palette.ink).lineLimit(2).minimumScaleFactor(0.8)
-                    .accessibilityAddTraits(.isHeader)
-                Text(detail).font(.subheadline).foregroundStyle(Palette.ink3)
-            }
+            Text(name).font(.title.weight(.bold)).foregroundStyle(Palette.ink).lineLimit(2).minimumScaleFactor(0.8)
+                .padding(.top, 8)
+                .accessibilityAddTraits(.isHeader)
+            Text(detail).font(.subheadline).foregroundStyle(Palette.ink2)
         }
+        .multilineTextAlignment(.center)
+        .frame(maxWidth: .infinity)
     }
 }
 
-/// Acción de la ficha (Llamar, Correo, Factura): icono sobre el texto, en tarjeta.
+/// Acción de la ficha (Llamar, Mensaje, Correo, Factura): círculo de vidrio con el símbolo en Tinta y el nombre debajo.
 struct ProfileAction: View {
     let title: String
     let systemImage: String
     let action: () -> Void
     @Environment(\.isEnabled) private var isEnabled
+    #if os(macOS)
+    @ScaledMetric(relativeTo: .title3) private var side: CGFloat = 40
+    #else
+    @ScaledMetric(relativeTo: .title3) private var side: CGFloat = 54
+    #endif
 
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 4) {
-                Image(systemName: systemImage).font(.title3).accessibilityHidden(true)
-                Text(title).font(.caption.weight(.semibold)).lineLimit(1).minimumScaleFactor(0.8)
+            VStack(spacing: 6) {
+                Image(systemName: systemImage)
+                    .font(.title3)
+                    .foregroundStyle(isEnabled ? Palette.brand : Palette.ink2)
+                    .frame(width: side, height: side)
+                    .glassEffect(.regular.interactive(isEnabled), in: Circle())
+                    .accessibilityHidden(true)
+                Text(title).font(.caption).foregroundStyle(isEnabled ? Palette.ink : Palette.ink2)
+                    .lineLimit(1).minimumScaleFactor(0.8)
             }
-            .foregroundStyle(isEnabled ? Palette.brand : Palette.ink3)
-            .frame(maxWidth: .infinity, minHeight: 60)
-            .background(Palette.surface, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .frame(maxWidth: .infinity, minHeight: Metrics.target)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }
 }
 
-/// Cifra pequeña de ficha: etiqueta y valor en una tarjeta (canvas `ProveedorFicha`).
+/// Cifra pequeña de ficha (canvas `ProveedorFicha`): etiqueta gris y valor semibold.
 struct MiniStat: View {
     let title: String
     let value: String
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(title).font(.caption).foregroundStyle(Palette.ink3).lineLimit(1).minimumScaleFactor(0.8)
-            Text(value).font(.body.weight(.bold)).foregroundStyle(Palette.ink).monospacedDigit().lineLimit(1).minimumScaleFactor(0.7)
+        VStack(alignment: .leading, spacing: 1) {
+            Text(title).font(.footnote).foregroundStyle(Palette.ink2).lineLimit(1).minimumScaleFactor(0.8)
+            Text(value).font(.headline).foregroundStyle(Palette.ink).monospacedDigit().lineLimit(1).minimumScaleFactor(0.7)
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 10)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Palette.surface, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .card(padding: 12)
         .accessibilityElement(children: .combine)
     }
 }
 
-/// Botón «+» de las pantallas de lista: círculo relleno en color de marca (canvas `Ventas`, `Clientes`).
+/// Acción rápida de Inicio (canvas `Home`: Factura · Gasto · Escanear · Cliente): círculo de 58 pt con el símbolo en
+/// Tinta y el nombre debajo; la destacada, rellena de Tinta con el símbolo blanco.
+struct QuickAction: View {
+    let title: String
+    let systemImage: String
+    var prominent = false
+    let action: () -> Void
+    @ScaledMetric(relativeTo: .title3) private var side: CGFloat = 58
+
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 6) {
+                Image(systemName: systemImage)
+                    .font(.title3.weight(.medium))
+                    .foregroundStyle(prominent ? Palette.onBrandFill : Palette.brand)
+                    .frame(width: side, height: side)
+                    .background(prominent ? Palette.brandFill : Palette.surface, in: Circle())
+                    .accessibilityHidden(true)
+                Text(title).font(.caption).foregroundStyle(Palette.ink).lineLimit(1).minimumScaleFactor(0.8)
+            }
+            .frame(maxWidth: .infinity)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+}
+
 extension View {
-    /// Botón de la cabecera (§7.4, decisión del usuario): el vidrio que la barra del sistema ya pone a sus ítems, con el
-    /// texto en tinta y no en el color de marca. `ink` se lee sobre el vidrio en claro y en oscuro.
+    /// Botón de la cabecera (§7.4, decisión del usuario; canvas: botones de vidrio con el símbolo en `label`): el vidrio
+    /// que la barra del sistema ya pone a sus ítems, con el texto en tinta y no en el color de marca.
     func headerButton() -> some View {
         tint(Palette.ink)
     }
@@ -774,6 +1010,7 @@ private struct HeaderTitle: ViewModifier {
     }
 }
 
+/// «+» de la barra: solo el símbolo, en tinta, dentro del vidrio de la barra (canvas `Ventas`, `Gastos`).
 struct AddButton: View {
     let title: LocalizedStringResource
     let action: () -> Void
@@ -786,12 +1023,13 @@ struct AddButton: View {
     }
 }
 
-/// Cifra clave de iPad y Mac (canvas `MacInicio`, `MacPyG`): etiqueta, importe y pie; la destacada en color de marca.
+/// Cifra clave de iPad y Mac (canvas `MacInicio`, `MacVentas`): etiqueta, importe y pie. `isBrand` ya no cambia nada:
+/// el canvas no rellena ninguna tarjeta de marca.
 struct KPIItem: Identifiable {
     let title: String
     let value: String
     var foot: String? = nil
-    var footColor: Color = Palette.ink3
+    var footColor: Color = Palette.ink2
     var isBrand = false
     var id: String { title }
 }
@@ -804,18 +1042,22 @@ struct KPIGrid: View {
     @State private var width: CGFloat = 0
     @ScaledMetric(relativeTo: .title2) private var minimumWidth: CGFloat = 160
 
-    private var spacing: CGFloat { large ? 14 : 12 }
+    private var spacing: CGFloat { 12 }
 
-    /// Cifra de las tarjetas grandes: 24 pt en iPad (`iPadInicio`), 28 en Mac (`MacInicio`).
-    #if os(macOS)
-    private static let largeAmount: CGFloat = 28
-    #else
+    /// Cifra de las tarjetas: 24 pt en iPad y Mac (`iPadInicio`, `MacInicio`).
     private static let largeAmount: CGFloat = 24
+
+    #if os(macOS)
+    private static let titleFont = Font.subheadline.weight(.semibold)
+    private static let footFont = Font.subheadline
+    #else
+    private static let titleFont = Font.footnote
+    private static let footFont = Font.footnote
     #endif
 
     private var columns: Int {
         let available = width + spacing
-        let minimum = (large ? minimumWidth * 1.25 : minimumWidth) + spacing
+        let minimum = (large ? minimumWidth * 1.2 : minimumWidth) + spacing
         if available >= CGFloat(items.count) * minimum { return items.count }
         if items.count == 4 { return 2 }
         return max(1, min(items.count, Int(available / minimum)))
@@ -824,20 +1066,15 @@ struct KPIGrid: View {
     var body: some View {
         LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: spacing), count: columns), spacing: spacing) {
             ForEach(items) { item in
-                VStack(alignment: .leading, spacing: large ? 6 : 4) {
-                    Text(item.title).font((large ? Font.footnote : .caption).weight(.semibold))
-                        .foregroundStyle(item.isBrand ? Palette.onBrand.opacity(0.85) : Palette.ink3)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(item.title).font(Self.titleFont).foregroundStyle(Palette.ink2).lineLimit(1)
                     Text(item.value).font(.amount(large ? Self.largeAmount : 22)).minimumScaleFactor(0.6).lineLimit(1)
-                        .foregroundStyle(item.isBrand ? Palette.onBrand : Palette.ink)
+                        .foregroundStyle(Palette.ink)
                     // Siempre una línea de pie, aunque esté vacía, para que todas las tarjetas midan lo mismo.
-                    Text(item.foot ?? " ").font((large ? Font.footnote : .caption).weight(.semibold)).lineLimit(1)
-                        .foregroundStyle(item.isBrand ? Palette.onBrand.opacity(0.9) : item.footColor)
+                    Text(item.foot ?? " ").font(Self.footFont).lineLimit(1)
+                        .foregroundStyle(item.footColor)
                 }
-                .padding(.horizontal, large ? 18 : 16)
-                .padding(.vertical, large ? 16 : 14)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(item.isBrand ? Palette.brand : Palette.surface,
-                            in: RoundedRectangle(cornerRadius: large ? 16 : 14, style: .continuous))
+                .card(padding: 14)
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel(item.title)
                 .accessibilityValue([item.value, item.foot].compactMap { $0 }.joined(separator: ", "))
@@ -847,18 +1084,20 @@ struct KPIGrid: View {
     }
 }
 
+/// Cifra de un resumen de tres columnas (canvas `Home`: Ingresos · Gastos · Ganancia): etiqueta gris, importe
+/// semibold y una nota de color («▲ 12%»).
 struct KPITile: View {
     let title: String
     let value: String
     var note: String? = nil
-    var noteColor: Color = Palette.ink3
+    var noteColor: Color = Palette.ink2
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(title).font(.caption.weight(.semibold)).foregroundStyle(Palette.ink3)
-            Text(value).font(.amount(17)).foregroundStyle(Palette.ink).minimumScaleFactor(0.7).lineLimit(2)
+        VStack(alignment: .leading, spacing: 2) {
+            Text(title).font(.footnote).foregroundStyle(Palette.ink2)
+            Text(value).font(.headline).monospacedDigit().foregroundStyle(Palette.ink).minimumScaleFactor(0.7).lineLimit(2)
             // Una línea, como en el canvas («↑ 12% vs. sep»); se encoge un poco antes de cortarse.
-            if let note { Text(note).font(.caption.weight(.semibold)).foregroundStyle(noteColor).lineLimit(1).minimumScaleFactor(0.75) }
+            if let note { Text(note).font(.footnote).foregroundStyle(noteColor).lineLimit(1).minimumScaleFactor(0.75) }
         }
         .card(padding: 12)
         .accessibilityElement(children: .ignore)
@@ -869,43 +1108,42 @@ struct KPITile: View {
     /// Las flechas de variación se leen como palabras («sube», «baja»), no como símbolos.
     static func spoken(_ note: String) -> String {
         note.replacingOccurrences(of: "↑", with: String(localized: "sube")).replacingOccurrences(of: "↓", with: String(localized: "baja"))
+            .replacingOccurrences(of: "▲", with: String(localized: "sube")).replacingOccurrences(of: "▼", with: String(localized: "baja"))
     }
 }
 
-/// Tarjeta destacada en color de marca (efectivo disponible, ganancia neta).
+/// Cifra destacada (canvas `Home` · Efectivo disponible, `ReportePyG` · Ganancia neta): una tarjeta del sistema con la
+/// etiqueta gris, la cifra grande y, debajo, la variación de color y el detalle. Sin relleno de marca.
 struct HeroCard: View {
     let title: String
     let value: String
     var detail: String? = nil
-    /// Insignia azafrán junto a la cifra («+34% vs. sep», canvas `ReportePyG`).
+    /// Variación junto a la cifra («+34% vs. sep»): verde si sube, roja si baja.
     var badge: String? = nil
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(title.uppercased()).font(.caption.weight(.semibold)).tracking(0.5).opacity(0.85)
-            Text(value).font(.amount(38)).tracking(-0.5).minimumScaleFactor(0.6).lineLimit(2)
+        VStack(alignment: .leading, spacing: 2) {
+            Text(title).font(.subheadline).foregroundStyle(Palette.ink2)
+            Text(value).font(.amount(36)).foregroundStyle(Palette.ink).minimumScaleFactor(0.6).lineLimit(2)
             if let badge {
-                Text(badge).font(.subheadline.weight(.semibold)).foregroundStyle(Palette.onAccent)
-                    .padding(.horizontal, 10).padding(.vertical, 4)
-                    .background(Palette.accent, in: Capsule())
+                Text(badge).font(.footnote.weight(.semibold)).foregroundStyle(Self.isDecrease(badge) ? Palette.negative : Palette.positive)
             }
             if let detail {
-                HStack(spacing: 8) {
-                    Circle().fill(Palette.accent).frame(width: 8, height: 8)
-                    Text(detail).font(.subheadline)
-                }
-                .opacity(0.9)
+                Text(detail).font(.footnote).foregroundStyle(Palette.ink2)
             }
         }
-        .foregroundStyle(Palette.onBrand)
-        .padding(20)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Palette.brand, in: RoundedRectangle(cornerRadius: Metrics.heroRadius, style: .continuous))
+        .card(padding: 18)
         .accessibilityElement(children: .combine)
+    }
+
+    private static func isDecrease(_ text: String) -> Bool {
+        guard let first = text.trimmingCharacters(in: .whitespaces).first else { return false }
+        return "-−↓▼".contains(first)
     }
 }
 
-/// Estado vacío / primera vez del canvas.
+/// Estado vacío o sin resultados: el del sistema (`ContentUnavailableView`, canvas `EstadoVacio`), con una acción
+/// opcional en el botón principal compacto.
 struct EmptyStateView: View {
     let systemImage: String
     let title: String
@@ -914,32 +1152,29 @@ struct EmptyStateView: View {
     var action: (() -> Void)? = nil
 
     var body: some View {
-        VStack(spacing: 12) {
-            Image(systemName: systemImage)
-                .font(.largeTitle)
-                .accessibilityHidden(true)
-                .foregroundStyle(Palette.ink3)
-            Text(title).font(.headline).foregroundStyle(Palette.ink)
-            Text(message).font(.subheadline).foregroundStyle(Palette.ink3).multilineTextAlignment(.center)
+        ContentUnavailableView {
+            Label(title, systemImage: systemImage)
+        } description: {
+            Text(message)
+        } actions: {
             if let actionTitle, let action {
-                Button(actionTitle, action: action).buttonStyle(.secondary).fixedSize()
+                Button(actionTitle, action: action).buttonStyle(.primaryCompact)
             }
         }
-        .padding(32)
-        .frame(maxWidth: .infinity)
     }
 }
 
-/// Logotipo de Chirogra: cuadrado en tinta, "C" abierta y punto de azafrán.
+/// Logotipo de Chirogra (canvas `Main`, icono de la cabecera): cuadrado en Tinta, «C» abierta blanca y punto de azafrán,
+/// igual en claro y en oscuro.
 struct LogoMark: View {
     var size: CGFloat = 28
 
     var body: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: size * 11 / 40, style: .continuous).fill(Palette.brand)
+            RoundedRectangle(cornerRadius: size * 9 / 40, style: .continuous).fill(Palette.logoFill)
             Circle()
                 .trim(from: 0.1, to: 0.9)
-                .stroke(Palette.onBrand, style: StrokeStyle(lineWidth: size * 3.4 / 40, lineCap: .round))
+                .stroke(Palette.logoMark, style: StrokeStyle(lineWidth: size * 3.4 / 40, lineCap: .round))
                 .frame(width: size * 18 / 40, height: size * 18 / 40)
             Circle().fill(Palette.accent)
                 .frame(width: size * 5.4 / 40, height: size * 5.4 / 40)
@@ -989,11 +1224,11 @@ struct AccountPicker: View {
     }
 }
 
-/// Mensaje de error recuperable con texto claro.
+/// Mensaje de error recuperable con texto claro: símbolo y texto en rojo sobre un fondo rojo tenue.
 struct ErrorBanner: View {
     let message: String
     var body: some View {
-        Label(message, systemImage: "exclamationmark.triangle")
+        Label(message, systemImage: "exclamationmark.triangle.fill")
             .font(.subheadline.weight(.semibold))
             .foregroundStyle(Palette.negative)
             .padding(12)

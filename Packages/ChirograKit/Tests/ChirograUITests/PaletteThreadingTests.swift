@@ -18,7 +18,8 @@ struct PaletteThreadingTests {
             }
             return rgb
         }.value
-        #expect(Int((components.0 * 255).rounded()) == 0x8F)
+        // Tinta en oscuro: #9A9EFF (canvas «Sistema nativo»).
+        #expect(Int((components.0 * 255).rounded()) == 0x9A)
         #expect(Int((components.2 * 255).rounded()) == 0xFF)
     }
 }
