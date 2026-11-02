@@ -5,12 +5,37 @@ import SwiftData
 import SwiftUI
 import UniformTypeIdentifiers
 
+/// Un recibo elegido o arrastrado, todavía sin guardar: el archivo tal cual, su nombre y su tipo. También se recibe al
+/// soltar una foto o un PDF sobre la zona del recibo (canvas `MacGastoNuevo`: «Arrastra una foto o un PDF»).
+nonisolated struct ReceiptFile: Identifiable, Transferable {
+    let id = UUID()
+    let data: Data
+    let name: String
+    let type: UTType
+
+    init(data: Data, name: String, type: UTType) {
+        self.data = data
+        self.name = name
+        self.type = type
+    }
+
+    init(url: URL, fallback: UTType) throws {
+        self.init(data: try Data(contentsOf: url), name: url.lastPathComponent,
+                  type: UTType(filenameExtension: url.pathExtension) ?? fallback)
+    }
+
+    static var transferRepresentation: some TransferRepresentation {
+        FileRepresentation(importedContentType: .pdf) { try ReceiptFile(url: $0.file, fallback: .pdf) }
+        FileRepresentation(importedContentType: .image) { try ReceiptFile(url: $0.file, fallback: .image) }
+    }
+}
+
 /// Botones para adjuntar un recibo: foto de la fototeca o archivo (imagen o PDF).
 /// La lectura automática del recibo (OCR) es de la fase 2.
 struct ReceiptPickerButtons: View {
-    /// Textos cortos para la tarjeta «Recibo» de pantallas anchas (`MacGastoNuevo`).
+    /// Textos cortos para la zona del recibo de pantallas anchas (`MacGastoNuevo`).
     var short = false
-    let onPick: (Data, String, UTType) -> Void
+    let onPick: (ReceiptFile) -> Void
     @State private var photo: PhotosPickerItem?
     @State private var importing = false
 
@@ -22,19 +47,73 @@ struct ReceiptPickerButtons: View {
             guard let photo else { return }
             Task {
                 if let data = try? await photo.loadTransferable(type: Data.self) {
-                    onPick(data, "recibo.jpg", photo.supportedContentTypes.first ?? .jpeg)
+                    onPick(ReceiptFile(data: data, name: "recibo.jpg", type: photo.supportedContentTypes.first ?? .jpeg))
                 }
                 self.photo = nil
             }
         }
-        Button(short ? String(localized: "Elegir archivo") : String(localized: "Adjuntar archivo (PDF o imagen)"), systemImage: "doc.badge.plus") { importing = true }
+        Button(short ? String(localized: "Elegir archivo…") : String(localized: "Adjuntar archivo (PDF o imagen)"), systemImage: "doc.badge.plus") { importing = true }
             .fileImporter(isPresented: $importing, allowedContentTypes: [.pdf, .image]) { result in
                 guard case .success(let url) = result else { return }
                 let scoped = url.startAccessingSecurityScopedResource()
                 defer { if scoped { url.stopAccessingSecurityScopedResource() } }
-                guard let data = try? Data(contentsOf: url) else { return }
-                onPick(data, url.lastPathComponent, UTType(filenameExtension: url.pathExtension) ?? .data)
+                guard let file = try? ReceiptFile(url: url, fallback: .data) else { return }
+                onPick(file)
             }
+    }
+}
+
+/// Zona del recibo de «Nuevo gasto» en iPad y Mac (canvas `MacGastoNuevo`): se arrastra una foto o un PDF, o se elige;
+/// debajo, los archivos ya elegidos con «Quitar».
+struct ReceiptDropPanel: View {
+    @Binding var receipts: [ReceiptFile]
+    @State private var isTargeted = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Recibo").font(.cardTitle).foregroundStyle(Palette.ink).accessibilityAddTraits(.isHeader)
+            VStack(spacing: 8) {
+                Image(systemName: "doc.viewfinder").font(.largeTitle).foregroundStyle(Palette.ink2).accessibilityHidden(true)
+                Text("Arrastra una foto o un PDF").font(.subheadline.weight(.semibold)).foregroundStyle(Palette.ink)
+                Text("JPG, PNG, HEIC o PDF").font(.footnote).foregroundStyle(Palette.ink2)
+                ViewThatFits(in: .horizontal) {
+                    HStack(spacing: 8) { ReceiptPickerButtons(short: true) { receipts.append($0) } }
+                    VStack(spacing: 8) { ReceiptPickerButtons(short: true) { receipts.append($0) } }
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+                .padding(.top, 4)
+            }
+            .multilineTextAlignment(.center)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 24)
+            .padding(.horizontal, 12)
+            .background(isTargeted ? Palette.brandWash : Palette.surface, in: RoundedRectangle(cornerRadius: Metrics.fieldRadius, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: Metrics.fieldRadius, style: .continuous)
+                .strokeBorder(isTargeted ? Palette.brand : Palette.separator, style: StrokeStyle(lineWidth: 1, dash: [5, 4])))
+
+            ForEach(receipts) { receipt in
+                HStack(spacing: 10) {
+                    ReceiptThumbnail(data: receipt.data, contentType: receipt.type.identifier, side: 40)
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text(receipt.name).font(.subheadline).lineLimit(1).truncationMode(.middle)
+                        Text("\(Int64(receipt.data.count).formatted(.byteCount(style: .file))) · adjunto")
+                            .font(.footnote).foregroundStyle(Palette.ink2)
+                    }
+                    Spacer(minLength: 6)
+                    Button("Quitar") { receipts.removeAll { $0.id == receipt.id } }
+                        .buttonStyle(.bordered).controlSize(.small)
+                        .accessibilityLabel("Quitar \(receipt.name)")
+                }
+            }
+            Text("El archivo se guarda junto al gasto tal como lo subes. Los datos del formulario se escriben a mano.")
+                .font(.footnote).foregroundStyle(Palette.ink2)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .dropDestination(for: ReceiptFile.self) { files, _ in
+            receipts += files
+            return !files.isEmpty
+        } isTargeted: { isTargeted = $0 }
     }
 }
 
@@ -49,12 +128,12 @@ struct ReceiptThumbnail: View {
             if let image = cgImage {
                 Image(decorative: image, scale: 1).resizable().scaledToFill()
             } else {
-                Image(systemName: "doc.richtext").font(.title).foregroundStyle(Palette.ink3)
+                Image(systemName: "doc.richtext").font(.title2).foregroundStyle(Palette.ink2)
             }
         }
         .frame(width: side, height: side)
         .background(Palette.surface2)
-        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
         .accessibilityLabel(contentType == UTType.pdf.identifier ? "Recibo en PDF" : "Foto del recibo")
     }
 
@@ -81,76 +160,118 @@ struct AttachmentFile: Transferable {
     }
 }
 
-/// Detalle de un gasto: datos, categoría, recibos adjuntos y asiento contable.
+/// Detalle de un gasto (canvas `MacGastos`, inspector «Gasto»): icono de la categoría con el beneficiario y el importe,
+/// «Detalles» en filas «etiqueta gris · valor» y el recibo. El título es el beneficiario.
 struct ExpenseDetailView: View {
     @Bindable var expense: Expense
     @Environment(\.modelContext) private var context
     @Query private var accounts: [Account]
     @State private var errorMessage: String?
     @State private var removing: Attachment?
+    @State private var isTargeted = false
+
+    private func accountName(_ id: UUID?) -> String? { accounts.first { $0.id == id }?.name }
+    private var category: String? { expense.sortedLines.first.flatMap { accountName($0.accountID) } }
+    private var title: String { expense.payee.isEmpty ? String(localized: "Gasto") : expense.payee }
 
     var body: some View {
-        List {
+        Form {
             if let errorMessage { ErrorBanner(message: errorMessage) }
-            Section {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(expense.payee).font(.title3.weight(.semibold))
-                    Text("−\(expense.total.money)").font(.amount(28)).foregroundStyle(Palette.outflow)
-                }
-                .accessibilityElement(children: .combine)
-                LabeledContent("Fecha", value: expense.date.shortDate)
-                LabeledContent("Pagado con", value: accounts.first { $0.id == expense.paymentAccountID }?.name ?? "—")
-                ForEach(expense.sortedLines) { line in
-                    LabeledContent(accounts.first { $0.id == line.accountID }?.name ?? String(localized: "Sin categoría"), value: line.amount.money)
-                }
-                if !expense.memo.isEmpty { LabeledContent("Nota", value: expense.memo) }
-            }
-            Section {
-                let attachments = (expense.attachments ?? []).sorted { $0.createdAt < $1.createdAt }
-                if attachments.isEmpty {
-                    Text("Sin recibo. Guarda el comprobante: el IRS pide conservarlo.").foregroundStyle(Palette.ink3)
-                }
-                ForEach(attachments) { attachment in
-                    AdaptiveRow {
-                        HStack(spacing: 12) {
-                            ReceiptThumbnail(data: attachment.data, contentType: attachment.contentType)
-                            VStack(alignment: .leading) {
-                                Text(attachment.filename).lineLimit(2)
-                                Text(attachment.createdAt.shortDate).font(.caption).foregroundStyle(Palette.ink3)
-                            }
-                        }
-                    } trailing: {
-                        HStack(spacing: 16) { attachmentActions(attachment) }
-                    }
-                    .swipeActions {
-                        Button("Quitar", systemImage: "trash", role: .destructive) { removing = attachment }
-                    }
-                    .contextMenu {
-                        Button("Quitar recibo", systemImage: "trash", role: .destructive) { removing = attachment }
-                    }
-                }
-                ReceiptPickerButtons { data, name, type in
-                    do {
-                        try Bookkeeper(context: context).attachReceipt(data, filename: name, contentType: type, to: expense)
-                        errorMessage = nil
-                    } catch {
-                        errorMessage = String(localized: "No se pudo adjuntar el archivo: usa una foto o un PDF.")
-                    }
-                }
-            } header: {
-                SectionLabel(text: String(localized: "Recibos"))
-            }
+            Section { header }
+                .listRowBackground(Color.clear)
+                .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+            details
+            receipts
         }
-        .listRowBackground(Palette.surface)
+        .formStyle(.grouped)
         .screenBackground()
-        .navigationTitle("Gasto")
-        .inlineTitle()
+        .recordTitle(title, section: String(localized: "Gasto"))
+        .dropDestination(for: ReceiptFile.self) { files, _ in
+            files.forEach(attach)
+            return !files.isEmpty
+        } isTargeted: { isTargeted = $0 }
         .confirmationDialog("¿Quitar este recibo?", isPresented: Binding(get: { removing != nil }, set: { if !$0 { removing = nil } }),
                             titleVisibility: .visible, presenting: removing) { attachment in
             Button("Quitar \(attachment.filename)", role: .destructive) { remove(attachment) }
         } message: { _ in
             Text("El gasto y su asiento no cambian; solo se borra el archivo adjunto.")
         }
+    }
+
+    /// Icono de la categoría, beneficiario y cifra (canvas: cuadrado de 36 pt, nombre semibold e importe de 24 bold).
+    private var header: some View {
+        HStack(spacing: 12) {
+            LargeIconTile(systemImage: ExpenseCategoryStyle.symbol(for: category), color: ExpenseCategoryStyle.color(for: category))
+            VStack(alignment: .leading, spacing: 1) {
+                Text(title).font(.subheadline.weight(.semibold)).foregroundStyle(Palette.ink)
+                Text(expense.total.money).font(.amount(28)).foregroundStyle(Palette.ink)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(.vertical, 4)
+        .accessibilityElement(children: .combine)
+    }
+
+    @ViewBuilder
+    private var details: some View {
+        Section {
+            LabeledContent("Fecha", value: expense.date.shortDate)
+            if let vendor = expense.vendor { LabeledContent("Proveedor", value: vendor.name) }
+            let lines = expense.sortedLines
+            if lines.count == 1 {
+                LabeledContent("Categoría", value: category ?? String(localized: "Sin categoría"))
+            } else {
+                ForEach(lines) { line in
+                    LabeledContent(accountName(line.accountID) ?? String(localized: "Sin categoría"), value: line.amount.money)
+                }
+            }
+            LabeledContent("Cuenta de pago", value: accountName(expense.paymentAccountID) ?? "—")
+            LabeledContent("Método", value: ExpenseEditorView.title(for: PaymentMethod(rawValue: expense.methodRaw) ?? .other))
+            if !expense.memo.isEmpty { LabeledContent("Nota", value: expense.memo) }
+        } header: {
+            SectionLabel(text: String(localized: "Detalles"))
+        }
+    }
+
+    @ViewBuilder
+    private var receipts: some View {
+        let attachments = (expense.attachments ?? []).sorted { $0.createdAt < $1.createdAt }
+        Section {
+            if attachments.isEmpty {
+                HStack(spacing: 6) {
+                    StatusDot(color: Palette.orange)
+                    Text("Sin recibo").foregroundStyle(Palette.warning)
+                }
+                .accessibilityElement(children: .combine)
+            }
+            ForEach(attachments) { attachment in
+                AdaptiveRow {
+                    HStack(spacing: 12) {
+                        ReceiptThumbnail(data: attachment.data, contentType: attachment.contentType, side: 48)
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text(attachment.filename).lineLimit(2)
+                            Text(attachment.createdAt.shortDate).font(.footnote).foregroundStyle(Palette.ink2)
+                        }
+                    }
+                } trailing: {
+                    HStack(spacing: 16) { attachmentActions(attachment) }
+                }
+                .swipeActions {
+                    Button("Quitar", systemImage: "trash", role: .destructive) { removing = attachment }
+                }
+                .contextMenu {
+                    Button("Quitar recibo", systemImage: "trash", role: .destructive) { removing = attachment }
+                }
+            }
+            ReceiptPickerButtons { attach($0) }
+        } header: {
+            SectionLabel(text: String(localized: "Recibo"))
+        } footer: {
+            if attachments.isEmpty {
+                Text("Guarda el comprobante: el IRS pide conservarlo.")
+            }
+        }
+        .listRowBackground(isTargeted ? Palette.brandWash : Palette.surface)
     }
 
     /// Compartir y quitar un recibo.
@@ -160,13 +281,25 @@ struct ExpenseDetailView: View {
             ShareLink(item: AttachmentFile(data: data, filename: attachment.filename, contentType: attachment.contentType),
                       preview: SharePreview(attachment.filename)) {
                 Label("Compartir", systemImage: "square.and.arrow.up").labelStyle(.iconOnly)
+                    .frame(minWidth: Metrics.target, minHeight: Metrics.target)
             }
+            .buttonStyle(.borderless)
             .accessibilityLabel("Compartir \(attachment.filename)")
         }
         Button("Quitar", systemImage: "trash", role: .destructive) { removing = attachment }
             .labelStyle(.iconOnly)
+            .frame(minWidth: Metrics.target, minHeight: Metrics.target)
             .buttonStyle(.borderless)
             .accessibilityLabel("Quitar \(attachment.filename)")
+    }
+
+    private func attach(_ file: ReceiptFile) {
+        do {
+            try Bookkeeper(context: context).attachReceipt(file.data, filename: file.name, contentType: file.type, to: expense)
+            errorMessage = nil
+        } catch {
+            errorMessage = String(localized: "No se pudo adjuntar el archivo: usa una foto o un PDF.")
+        }
     }
 
     private func remove(_ attachment: Attachment) {
@@ -176,5 +309,22 @@ struct ExpenseDetailView: View {
         } catch {
             errorMessage = String(localized: "No se pudo quitar el recibo.")
         }
+    }
+}
+
+/// Icono de cabecera de una ficha (canvas `MacGastos`, `MacCierre`: cuadrado de 36 pt, radio 9, símbolo blanco).
+/// Como `IconTile`, pero más grande; candidato a subir al sistema.
+struct LargeIconTile: View {
+    let systemImage: String
+    let color: Color
+    @ScaledMetric(relativeTo: .title3) private var side: CGFloat = 36
+
+    var body: some View {
+        Image(systemName: systemImage)
+            .font(.system(size: side * 0.5, weight: .medium))
+            .frame(width: side, height: side)
+            .foregroundStyle(.white)
+            .background(color, in: RoundedRectangle(cornerRadius: side * 0.25, style: .continuous))
+            .accessibilityHidden(true)
     }
 }

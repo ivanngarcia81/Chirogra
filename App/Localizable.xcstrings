@@ -48,6 +48,16 @@
         }
       }
     },
+    "%@ (%lld)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ (%lld)"
+          }
+        }
+      }
+    },
     "%@ a favor" : {
       "localizations" : {
         "en" : {
@@ -64,6 +74,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ days"
+          }
+        }
+      }
+    },
+    "%@ listo para cerrar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ ready to close"
           }
         }
       }
@@ -94,6 +114,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ left as customer credit"
+          }
+        }
+      }
+    },
+    "%@ tiene pendientes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ has open items"
           }
         }
       }
@@ -130,6 +160,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ · Debit"
+          }
+        }
+      }
+    },
+    "%@ · adjunto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · attached"
           }
         }
       }
@@ -332,6 +372,46 @@
         }
       }
     },
+    "%lld asientos" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld entry"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld entries"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld asiento"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld asientos"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld borradores de factura sin emitir" : {
       "localizations" : {
         "en" : {
@@ -452,6 +532,46 @@
         }
       }
     },
+    "%lld cuentas · %@" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld account · %@"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld accounts · %@"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld cuenta · %@"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld cuentas · %@"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld cuentas · según libros" : {
       "localizations" : {
         "en" : {
@@ -515,6 +635,16 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$lld de %2$lld gastos"
+          }
+        }
+      }
+    },
+    "%lld de %lld listos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld of %lld ready"
           }
         }
       }
@@ -689,6 +819,46 @@
         }
       }
     },
+    "%lld facturas · vence el %@" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld bill · due %@"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld bills · next due %@"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld factura · vence el %@"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld facturas · la próxima vence el %@"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld gastos sin recibo adjunto" : {
       "localizations" : {
         "en" : {
@@ -722,6 +892,46 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "%lld gastos sin recibo adjunto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld movimientos" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld transaction"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld transactions"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld movimiento"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld movimientos"
                 }
               }
             }
@@ -810,6 +1020,9 @@
           }
         }
       }
+    },
+    "1099-NEC" : {
+      "shouldTranslate" : false
     },
     "12 M" : {
       "shouldTranslate" : false
@@ -985,6 +1198,16 @@
         }
       }
     },
+    "Adjunta los recibos que te falten" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Attach the missing receipts"
+          }
+        }
+      }
+    },
     "Adjunta una foto o un PDF" : {
       "localizations" : {
         "en" : {
@@ -1041,6 +1264,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "As of"
+          }
+        }
+      }
+    },
+    "Al %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "As of %@"
+          }
+        }
+      }
+    },
+    "Al corriente" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All paid"
           }
         }
       }
@@ -1195,6 +1438,16 @@
         }
       }
     },
+    "Anuladas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voided"
+          }
+        }
+      }
+    },
     "Anular" : {
       "localizations" : {
         "en" : {
@@ -1251,6 +1504,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Archive"
+          }
+        }
+      }
+    },
+    "Arrastra una foto o un PDF" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Drag a photo or a PDF"
           }
         }
       }
@@ -1351,6 +1614,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Add your first customer with the + button."
+          }
+        }
+      }
+    },
+    "Añade tus cuentas de banco y tarjetas en el plan de cuentas." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add your bank accounts and cards in the chart of accounts."
           }
         }
       }
@@ -1524,6 +1797,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Payee, category, or amount"
+          }
+        }
+      }
+    },
+    "Bloquea los meses ya revisados para que nadie los cambie por error" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lock the months you have reviewed so nobody changes them by mistake"
           }
         }
       }
@@ -1782,6 +2065,16 @@
         }
       }
     },
+    "Cerrado hasta el %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Closed through %@"
+          }
+        }
+      }
+    },
     "Cerrar" : {
       "localizations" : {
         "en" : {
@@ -1798,6 +2091,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Close through %@"
+          }
+        }
+      }
+    },
+    "Cerrar periodo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close period"
           }
         }
       }
@@ -2426,12 +2729,32 @@
         }
       }
     },
+    "Cuenta %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Account %lld"
+          }
+        }
+      }
+    },
     "Cuenta de ingreso" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Income account"
+          }
+        }
+      }
+    },
+    "Cuenta de la línea %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Account for line %lld"
           }
         }
       }
@@ -2552,6 +2875,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "DESCRIPTION"
+          }
+        }
+      }
+    },
+    "Datos del asiento" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entry details"
           }
         }
       }
@@ -2726,6 +3059,26 @@
         }
       }
     },
+    "Desde el %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Since %@"
+          }
+        }
+      }
+    },
+    "Desde el inicio" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "From the start"
+          }
+        }
+      }
+    },
     "Detalle" : {
       "localizations" : {
         "en" : {
@@ -2826,6 +3179,16 @@
         }
       }
     },
+    "Débitos %@ · Créditos %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Debits %@ · Credits %@"
+          }
+        }
+      }
+    },
     "Débitos = créditos" : {
       "localizations" : {
         "en" : {
@@ -2906,12 +3269,32 @@
         }
       }
     },
+    "Ej. materiales para una obra" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "E.g. materials for a job"
+          }
+        }
+      }
+    },
     "El archivo se guarda junto al gasto tal como lo subes." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "The file is stored with the expense exactly as you upload it."
+          }
+        }
+      }
+    },
+    "El archivo se guarda junto al gasto tal como lo subes. Los datos del formulario se escriben a mano." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The file is saved with the expense exactly as you upload it. The form fields are filled in by hand."
           }
         }
       }
@@ -3036,6 +3419,16 @@
         }
       }
     },
+    "El monto supera el saldo de %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The amount is more than the balance of %@."
+          }
+        }
+      }
+    },
     "El pago se registra en tus libros; el dinero se mueve desde tu banco." : {
       "localizations" : {
         "en" : {
@@ -3066,12 +3459,42 @@
         }
       }
     },
+    "El plan de cuentas está vacío." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The chart of accounts is empty."
+          }
+        }
+      }
+    },
+    "El tipo decide dónde aparece la cuenta en los reportes." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The type decides where the account shows up in reports."
+          }
+        }
+      }
+    },
     "Elegir archivo" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Choose file"
+          }
+        }
+      }
+    },
+    "Elegir archivo…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose File…"
           }
         }
       }
@@ -3222,6 +3645,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Issue invoice"
+          }
+        }
+      }
+    },
+    "Emítelos o bórralos antes de cerrar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Issue or delete them before closing"
           }
         }
       }
@@ -3761,6 +4194,16 @@
         }
       }
     },
+    "Fecha de pago" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Payment date"
+          }
+        }
+      }
+    },
     "Fecha límite" : {
       "localizations" : {
         "en" : {
@@ -3990,6 +4433,16 @@
         }
       }
     },
+    "Gastos del mes por categoría" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Expenses this month by category"
+          }
+        }
+      }
+    },
     "Gastos operativos" : {
       "localizations" : {
         "en" : {
@@ -4026,6 +4479,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Groups (what's applied on the invoice)"
+          }
+        }
+      }
+    },
+    "Guarda el comprobante: el IRS pide conservarlo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keep the receipt: the IRS asks you to keep it."
           }
         }
       }
@@ -4238,6 +4701,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "INCOME"
+          }
+        }
+      }
+    },
+    "Importar y conciliar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Import and reconcile"
           }
         }
       }
@@ -4468,6 +4941,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Inventory"
+          }
+        }
+      }
+    },
+    "JPG, PNG, HEIC o PDF" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "JPG, PNG, HEIC or PDF"
           }
         }
       }
@@ -4762,6 +5245,26 @@
         }
       }
     },
+    "Los débitos deben ser iguales a los créditos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Debits must equal credits"
+          }
+        }
+      }
+    },
+    "Los débitos deben ser iguales a los créditos." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Debits must equal credits."
+          }
+        }
+      }
+    },
     "Los separadores, el formato de fecha y el idioma siguen la región y el idioma de tu dispositivo (Ajustes › General › Idioma y región)." : {
       "localizations" : {
         "en" : {
@@ -4782,6 +5285,16 @@
         }
       }
     },
+    "Líneas del asiento" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entry lines"
+          }
+        }
+      }
+    },
     "Manual" : {
       "localizations" : {
         "en" : {
@@ -4798,6 +5311,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Margin %lld%%"
+          }
+        }
+      }
+    },
+    "Mensaje" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Message"
           }
         }
       }
@@ -4913,6 +5436,26 @@
         }
       }
     },
+    "Movimientos por cuenta" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activity by account"
+          }
+        }
+      }
+    },
+    "Movimientos por cuenta con saldo acumulado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activity by account with running balance"
+          }
+        }
+      }
+    },
     "Movimientos · %@" : {
       "localizations" : {
         "en" : {
@@ -4943,6 +5486,16 @@
         }
       }
     },
+    "Más adelante" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Later"
+          }
+        }
+      }
+    },
     "Más de 90" : {
       "localizations" : {
         "en" : {
@@ -4969,6 +5522,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Payment method"
+          }
+        }
+      }
+    },
+    "Nada pendiente" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing due"
           }
         }
       }
@@ -5100,6 +5663,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No matching expenses"
+          }
+        }
+      }
+    },
+    "Ningún gasto coincide con el filtro." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No expenses match the filter."
           }
         }
       }
@@ -5687,6 +6260,16 @@
         }
       }
     },
+    "Otro importe…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Other amount…"
+          }
+        }
+      }
+    },
     "Otro pasivo corriente" : {
       "localizations" : {
         "en" : {
@@ -5907,6 +6490,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pay"
+          }
+        }
+      }
+    },
+    "Pagar %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pay %@"
           }
         }
       }
@@ -6234,6 +6827,16 @@
         }
       }
     },
+    "Por categoría" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "By category"
+          }
+        }
+      }
+    },
     "Por cobrar" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -6272,6 +6875,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Payables"
+          }
+        }
+      }
+    },
+    "Por pagar esta semana" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Due this week"
           }
         }
       }
@@ -6498,6 +7111,46 @@
         }
       }
     },
+    "Próxima factura por pagar · %lld abiertas" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Next bill to pay · %lld open"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Next bill to pay · %lld open"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Próxima factura por pagar · %lld abierta"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Próxima factura por pagar · %lld abiertas"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "Próximamente" : {
       "localizations" : {
         "en" : {
@@ -6564,6 +7217,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Remove closing"
+          }
+        }
+      }
+    },
+    "Quitar filtro" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear Filter"
           }
         }
       }
@@ -7133,6 +7796,16 @@
         }
       }
     },
+    "Saldo al %@ %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Balance on %@ %@"
+          }
+        }
+      }
+    },
     "Saldo de la cuenta según libros" : {
       "localizations" : {
         "en" : {
@@ -7153,12 +7826,32 @@
         }
       }
     },
+    "Saldo en libros · %@ · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Book balance · %@ · %@"
+          }
+        }
+      }
+    },
     "Saldo final" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ending balance"
+          }
+        }
+      }
+    },
+    "Saldo final del periodo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ending balance for the period"
           }
         }
       }
@@ -7604,6 +8297,26 @@
         }
       }
     },
+    "Sin cuentas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No accounts"
+          }
+        }
+      }
+    },
+    "Sin cuentas de banco" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No bank accounts"
+          }
+        }
+      }
+    },
     "Sin descripción" : {
       "localizations" : {
         "en" : {
@@ -7701,6 +8414,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No activity"
+          }
+        }
+      }
+    },
+    "Sin movimientos en el periodo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No activity in this period"
           }
         }
       }
@@ -8326,6 +9049,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Credit memo total"
+          }
+        }
+      }
+    },
+    "Total del mes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total this month"
           }
         }
       }
@@ -9016,6 +9749,16 @@
         }
       }
     },
+    "ayer" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "yesterday"
+          }
+        }
+      }
+    },
     "baja" : {
       "localizations" : {
         "en" : {
@@ -9042,6 +9785,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "since %@"
+          }
+        }
+      }
+    },
+    "hoy" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "today"
           }
         }
       }
@@ -9230,6 +9983,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Last purchase"
+          }
+        }
+      }
+    },
+    "Última el %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last on %@"
           }
         }
       }
