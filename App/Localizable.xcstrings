@@ -377,6 +377,16 @@
         }
       }
     },
+    "%@ · saldos al %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · balances as of %@"
+          }
+        }
+      }
+    },
     "%@ · tasa combinada" : {
       "localizations" : {
         "en" : {
@@ -831,12 +841,32 @@
         }
       }
     },
+    "%lld de %lld asientos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld of %lld entries"
+          }
+        }
+      }
+    },
     "%lld de %lld completados" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld of %lld completed"
+          }
+        }
+      }
+    },
+    "%lld de %lld cuentas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld of %lld accounts"
           }
         }
       }
@@ -874,6 +904,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld of %lld ready"
+          }
+        }
+      }
+    },
+    "%lld de %lld movimientos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld of %lld transactions"
           }
         }
       }
@@ -1541,6 +1581,16 @@
         }
       }
     },
+    "Abrir asiento" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Entry"
+          }
+        }
+      }
+    },
     "Abrir factura" : {
       "localizations" : {
         "en" : {
@@ -1567,6 +1617,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Action"
+          }
+        }
+      }
+    },
+    "Activa" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Active"
           }
         }
       }
@@ -1993,6 +2053,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "This is where you’ll see how your business is doing"
+          }
+        }
+      }
+    },
+    "Archivada" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Archived"
           }
         }
       }
@@ -3057,6 +3127,26 @@
         }
       }
     },
+    "Concepto, número, cuenta o monto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Description, number, account or amount"
+          }
+        }
+      }
+    },
+    "Conciliación" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reconciliation"
+          }
+        }
+      }
+    },
     "Condiciones" : {
       "localizations" : {
         "en" : {
@@ -3113,6 +3203,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Accounting"
+          }
+        }
+      }
+    },
+    "Contabilidad · %lld asientos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accounting · %lld entries"
+          }
+        }
+      }
+    },
+    "Contabilizado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Posted"
           }
         }
       }
@@ -3458,12 +3568,32 @@
         }
       }
     },
+    "Cuenta del sistema: Chirogra la usa al contabilizar los documentos y no se puede archivar." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "System account: Chirogra uses it to post documents, so it can't be archived."
+          }
+        }
+      }
+    },
     "Cuenta eliminada" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Deleted account"
+          }
+        }
+      }
+    },
+    "Cuenta principal" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Parent account"
           }
         }
       }
@@ -3594,6 +3724,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Data and security"
+          }
+        }
+      }
+    },
+    "De documentos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "From documents"
           }
         }
       }
@@ -3738,6 +3878,16 @@
         }
       }
     },
+    "Descripción, cuenta o monto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Description, account or amount"
+          }
+        }
+      }
+    },
     "Descuento" : {
       "localizations" : {
         "en" : {
@@ -3864,6 +4014,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Billing address"
+          }
+        }
+      }
+    },
+    "Disponible en una próxima versión" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Available in a future version"
           }
         }
       }
@@ -5149,6 +5309,26 @@
         }
       }
     },
+    "Filtrar por origen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filter by source"
+          }
+        }
+      }
+    },
+    "Filtrar por tipo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filter by type"
+          }
+        }
+      }
+    },
     "Fondos no depositados" : {
       "localizations" : {
         "en" : {
@@ -5384,6 +5564,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Taxable"
+          }
+        }
+      }
+    },
+    "Grupo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Group"
           }
         }
       }
@@ -5646,6 +5836,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Language"
+          }
+        }
+      }
+    },
+    "Importación bancaria" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bank import"
           }
         }
       }
@@ -6140,6 +6340,16 @@
         }
       }
     },
+    "Las subcuentas suman en su cuenta principal." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Subaccounts roll up into their parent account."
+          }
+        }
+      }
+    },
     "Las transacciones con fecha hasta el %@ están bloqueadas. Para corregirlas, reabre el periodo." : {
       "localizations" : {
         "en" : {
@@ -6260,6 +6470,26 @@
         }
       }
     },
+    "Los cobros de facturas se registran desde la factura." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invoice payments are recorded from the invoice."
+          }
+        }
+      }
+    },
+    "Los cobros, gastos y asientos que usan esta cuenta aparecen aquí." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Payments, expenses and journal entries that use this account appear here."
+          }
+        }
+      }
+    },
     "Los documentos generan asientos automáticamente; también puedes crear uno manual." : {
       "localizations" : {
         "en" : {
@@ -6331,6 +6561,16 @@
       }
     },
     "Manual" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manual"
+          }
+        }
+      }
+    },
+    "Manuales" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6471,6 +6711,16 @@
         }
       }
     },
+    "Mostrar archivadas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show archived"
+          }
+        }
+      }
+    },
     "Mostrar inspector" : {
       "localizations" : {
         "en" : {
@@ -6557,6 +6807,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Transactions · %@"
+          }
+        }
+      }
+    },
+    "Muestra sus movimientos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shows its transactions"
           }
         }
       }
@@ -6721,6 +6981,16 @@
         }
       }
     },
+    "Ninguna" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None"
+          }
+        }
+      }
+    },
     "Ninguna cuenta coincide" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -6728,6 +6998,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No matching accounts"
+          }
+        }
+      }
+    },
+    "Ninguna cuenta coincide con la búsqueda." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No account matches the search."
           }
         }
       }
@@ -6772,6 +7052,16 @@
         }
       }
     },
+    "Ningún asiento coincide con la búsqueda o el filtro." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No entry matches the search or filter."
+          }
+        }
+      }
+    },
     "Ningún cliente coincide" : {
       "localizations" : {
         "en" : {
@@ -6808,6 +7098,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No expenses match the filter."
+          }
+        }
+      }
+    },
+    "Ningún movimiento coincide con la búsqueda." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No transaction matches the search."
           }
         }
       }
@@ -8586,6 +8886,16 @@
         }
       }
     },
+    "Quitar búsqueda" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear search"
+          }
+        }
+      }
+    },
     "Quitar cierre" : {
       "localizations" : {
         "en" : {
@@ -8822,6 +9132,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Record an expense with the + button and attach the receipt."
+          }
+        }
+      }
+    },
+    "Registrado a mano" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entered manually"
           }
         }
       }
@@ -9068,6 +9388,16 @@
         }
       }
     },
+    "Reversiones" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reversals"
+          }
+        }
+      }
+    },
     "Reversión" : {
       "localizations" : {
         "en" : {
@@ -9098,6 +9428,16 @@
         }
       }
     },
+    "Revertido por" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reversed by"
+          }
+        }
+      }
+    },
     "Revertir" : {
       "localizations" : {
         "en" : {
@@ -9114,6 +9454,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Reverse entry"
+          }
+        }
+      }
+    },
+    "Revertir asiento…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reverse Entry…"
+          }
+        }
+      }
+    },
+    "Revierte a" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reverses"
           }
         }
       }
@@ -9201,6 +9561,16 @@
         }
       }
     },
+    "Saldo al %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Balance as of %@"
+          }
+        }
+      }
+    },
     "Saldo al %@ %@" : {
       "localizations" : {
         "en" : {
@@ -9217,6 +9587,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Account balance per books"
+          }
+        }
+      }
+    },
+    "Saldo después" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Balance after"
           }
         }
       }
@@ -9271,6 +9651,16 @@
         }
       }
     },
+    "Saldo inicial %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beginning balance %@"
+          }
+        }
+      }
+    },
     "Saldo pendiente" : {
       "localizations" : {
         "en" : {
@@ -9307,6 +9697,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Balance due · %@"
+          }
+        }
+      }
+    },
+    "Saldos al %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Balances as of %@"
           }
         }
       }
@@ -9548,6 +9948,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Security"
+          }
+        }
+      }
+    },
+    "Selecciona un asiento para ver sus líneas." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select an entry to see its lines."
+          }
+        }
+      }
+    },
+    "Selecciona un movimiento para ver sus detalles." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select a transaction to see its details."
+          }
+        }
+      }
+    },
+    "Selecciona una cuenta para ver su saldo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select an account to see its balance."
           }
         }
       }
@@ -9883,6 +10313,16 @@
         }
       }
     },
+    "Sin movimientos en %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No transactions in %@"
+          }
+        }
+      }
+    },
     "Sin movimientos en el periodo" : {
       "localizations" : {
         "en" : {
@@ -10141,6 +10581,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Only without receipt"
+          }
+        }
+      }
+    },
+    "Subcuentas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Subaccounts"
           }
         }
       }
@@ -11324,12 +11774,32 @@
         }
       }
     },
+    "Ver en libro mayor" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View in General Ledger"
+          }
+        }
+      }
+    },
     "Ver estado de resultados" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "View profit and loss"
+          }
+        }
+      }
+    },
+    "Ver libro mayor" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View General Ledger"
           }
         }
       }
