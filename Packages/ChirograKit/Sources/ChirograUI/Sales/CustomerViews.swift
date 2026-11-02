@@ -153,16 +153,20 @@ struct CustomerDetailView: View {
         .toolbar {
             if isWide {
                 ToolbarItemGroup(placement: .primaryAction) {
-                    Button("Editar") { editing = true }
+                    Button("Editar") { editing = true }.headerButton()
                     if customer.openBalance > 0 {
                         ShareLink(item: reminderText, subject: Text("Recordatorio de pago")) { Text("Enviar recordatorio") }
+                            .headerButton()
                     }
+                }
+                ToolbarSpacer(.fixed, placement: .primaryAction)
+                ToolbarItem(placement: .primaryAction) {
                     Button { newInvoice = true } label: { HStack(spacing: 4) { Image(systemName: "plus"); Text("Factura") } }
-                        .buttonStyle(.borderedProminent).tint(Palette.brand)
                         .accessibilityLabel("Nueva factura")
+                        .headerButton()
                 }
             } else {
-                ToolbarItem(placement: .primaryAction) { Button("Editar") { editing = true } }
+                ToolbarItem(placement: .primaryAction) { Button("Editar") { editing = true }.headerButton() }
             }
         }
         .sheet(isPresented: $editing) { NavigationStack { CustomerEditorView(customer: customer) } }
@@ -617,7 +621,7 @@ struct CustomerEditorView: View {
         .discardableEditor(tracking: "\(name)|\(email)|\(phone)|\(billingAddress)|\(terms)|\(taxGroupID?.uuidString ?? "")|\(isTaxExempt)|\(exemptionReason)", token: editorToken)
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
-                Button("Guardar", action: save).disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
+                Button("Guardar", action: save).disabled(name.trimmingCharacters(in: .whitespaces).isEmpty).headerButton()
             }
         }
         .onAppear {
@@ -679,7 +683,7 @@ struct CustomerRefundView: View {
         .discardableEditor(tracking: "\(amount)|\(date)|\(accountID?.uuidString ?? "")", token: editorToken)
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
-                Button("Reembolsar", action: save).disabled(amount <= 0 || accountID == nil)
+                Button("Reembolsar", action: save).disabled(amount <= 0 || accountID == nil).headerButton()
             }
         }
         .onAppear {

@@ -222,7 +222,7 @@ struct InvoicePreviewView: View {
         .navigationTitle(invoice.number.isEmpty ? String(localized: "Vista previa") : invoice.number)
         .inlineTitle()
         .toolbar {
-            ToolbarItem(placement: .cancellationAction) { Button("Cerrar") { dismiss() } }
+            ToolbarItem(placement: .cancellationAction) { Button("Cerrar") { dismiss() }.headerButton() }
         }
         .task { pdf = InvoicePDFFile(invoice: invoice, company: company) }
     }

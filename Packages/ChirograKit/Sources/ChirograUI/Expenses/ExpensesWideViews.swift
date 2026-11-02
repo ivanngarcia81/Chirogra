@@ -372,7 +372,7 @@ struct BillTableView: View {
                             Group {
                                 if bill.isOpen {
                                     Button("Registrar pago") { paying = bill }
-                                        .buttonStyle(.borderedProminent).tint(Palette.brand).foregroundStyle(Palette.onBrand).controlSize(.small)
+                                        .glassActionButton().controlSize(.small)
                                         .accessibilityLabel("Registrar pago de \(bill.vendorNumber)")
                                 }
                             }

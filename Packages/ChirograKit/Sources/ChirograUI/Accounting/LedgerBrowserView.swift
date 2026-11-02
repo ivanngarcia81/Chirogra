@@ -77,6 +77,7 @@ struct LedgerBrowserView: View {
         .padding(20)
         .background(Palette.background)
         .navigationTitle("Libro mayor")
+        .headerTitle()
         .toolbar {
             // Menú con su texto: un `Picker` en la barra del iPad se veía como una cápsula vacía a todo el ancho.
             ToolbarItem(placement: .primaryAction) {
@@ -92,6 +93,7 @@ struct LedgerBrowserView: View {
                 }
                 .accessibilityLabel("Periodo")
                 .accessibilityValue(period.title)
+                .headerButton()
             }
             if let selected {
                 ToolbarItem(placement: .primaryAction) {
@@ -99,6 +101,7 @@ struct LedgerBrowserView: View {
                     ShareLink(item: file, preview: SharePreview("\(file.name).csv")) {
                         Text("Exportar CSV")
                     }
+                    .headerButton()
                 }
             }
         }

@@ -234,6 +234,7 @@ struct InvoiceDetailView: View {
         } label: {
             Label("Más acciones", systemImage: "ellipsis")
         }
+        .headerButton()
     }
 
     // MARK: Registrar pago
@@ -530,7 +531,7 @@ struct CreditNoteEditorView: View {
         .discardableEditor(tracking: "\(amount)|\(isTaxable)|\(reason)|\(date)", token: editorToken)
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
-                Button("Emitir", action: save).disabled(amount <= 0 || reason.trimmingCharacters(in: .whitespaces).isEmpty)
+                Button("Emitir", action: save).disabled(amount <= 0 || reason.trimmingCharacters(in: .whitespaces).isEmpty).headerButton()
             }
         }
         .onAppear {

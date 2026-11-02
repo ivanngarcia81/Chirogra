@@ -91,15 +91,15 @@ struct ExpensesView: View {
         }
         .background(Palette.background)
         .navigationTitle(title)
+        .headerTitle()
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 if isWide {
                     Button { openEditor() } label: {
                         HStack(spacing: 4) { Image(systemName: "plus"); Text(addTitle) }
                     }
-                    .buttonStyle(.borderedProminent)
-                    .tint(Palette.brand)
                     .accessibilityLabel(addLabel)
+                    .headerButton()
                 } else {
                     AddButton(title: "Nuevo") { openEditor() }
                 }
@@ -317,15 +317,16 @@ struct ExpenseEditorView: View {
         .discardableEditor(tracking: "\(payee)|\(vendorID?.uuidString ?? "")|\(date)|\(amount)|\(categoryID?.uuidString ?? "")|\(paymentAccountID?.uuidString ?? "")|\(memo)|\(receipts.count)|\(method)", token: editorToken)
         .toolbar {
             if isWide {
-                ToolbarItemGroup(placement: .primaryAction) {
-                    Button("Guardar y nuevo") { save(another: true) }.disabled(!canSave)
-                    Button("Guardar gasto") { save() }
-                        .buttonStyle(.borderedProminent).tint(Palette.brand)
-                        .disabled(!canSave)
+                ToolbarItem(placement: .primaryAction) {
+                    Button("Guardar y nuevo") { save(another: true) }.disabled(!canSave).headerButton()
+                }
+                ToolbarSpacer(.fixed, placement: .primaryAction)
+                ToolbarItem(placement: .primaryAction) {
+                    Button("Guardar gasto") { save() }.disabled(!canSave).headerButton()
                 }
             } else {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Guardar") { save() }.disabled(!canSave)
+                    Button("Guardar") { save() }.disabled(!canSave).headerButton()
                 }
             }
         }
@@ -630,7 +631,7 @@ struct BillEditorView: View {
         .discardableEditor(tracking: "\(vendorID?.uuidString ?? "")|\(number)|\(billDate)|\(dueDate)|\(amount)|\(accountID?.uuidString ?? "")|\(details)", token: editorToken)
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
-                Button("Guardar", action: save).disabled(vendorID == nil || amount <= 0 || accountID == nil)
+                Button("Guardar", action: save).disabled(vendorID == nil || amount <= 0 || accountID == nil).headerButton()
             }
         }
         .onChange(of: vendorID) {
@@ -690,7 +691,7 @@ struct PayBillView: View {
         .inlineTitle()
         .discardableEditor(tracking: "\(amount)|\(date)|\(accountID?.uuidString ?? "")", token: editorToken)
         .toolbar {
-            ToolbarItem(placement: .confirmationAction) { Button("Pagar", action: pay).disabled(amount <= 0 || accountID == nil) }
+            ToolbarItem(placement: .confirmationAction) { Button("Pagar", action: pay).disabled(amount <= 0 || accountID == nil).headerButton() }
         }
         .onAppear { amount = bill.balanceDue }
     }
@@ -772,7 +773,7 @@ struct VendorEditorView: View {
         .discardableEditor(tracking: "\(name)|\(email)|\(phone)|\(terms)|\(defaultAccountID?.uuidString ?? "")|\(is1099)|\(tinLast4)", token: editorToken)
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
-                Button("Guardar", action: save).disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
+                Button("Guardar", action: save).disabled(name.trimmingCharacters(in: .whitespaces).isEmpty).headerButton()
             }
         }
         .onAppear {

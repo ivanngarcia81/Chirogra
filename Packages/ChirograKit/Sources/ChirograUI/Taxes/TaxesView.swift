@@ -47,6 +47,7 @@ struct TaxesView: View {
         }
         .background(Palette.background)
         .navigationTitle("Impuestos")
+        .headerTitle()
         .sheet(isPresented: $showingRate) { NavigationStack { TaxRateEditorView() } }
         .sheet(isPresented: $showingPayment) { NavigationStack { SalesTaxPaymentView(owed: payable) } }
         .sheet(isPresented: $showingGroup) { NavigationStack { TaxGroupEditorView() } }
@@ -110,11 +111,14 @@ struct TaxesView: View {
             .padding(20)
         }
         .toolbar {
-            ToolbarItemGroup(placement: .primaryAction) {
-                NavigationLink("Ver reporte") { ReportsView(fixedKind: .salesTax) }
+            ToolbarItem(placement: .primaryAction) {
+                NavigationLink("Ver reporte") { ReportsView(fixedKind: .salesTax) }.headerButton()
+            }
+            ToolbarSpacer(.fixed, placement: .primaryAction)
+            ToolbarItem(placement: .primaryAction) {
                 Button("Registrar pago de impuesto") { showingPayment = true }
-                    .buttonStyle(.borderedProminent).tint(Palette.brand)
                     .disabled(payable <= 0)
+                    .headerButton()
             }
         }
     }
@@ -400,7 +404,7 @@ struct TaxRateEditorView: View {
         .discardableEditor(tracking: "\(agencyID?.uuidString ?? "")|\(newAgencyName)|\(name)|\(percent)", token: editorToken)
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
-                Button("Guardar", action: save).disabled(name.isEmpty || percent <= 0 || (agencyID == nil && newAgencyName.isEmpty))
+                Button("Guardar", action: save).disabled(name.isEmpty || percent <= 0 || (agencyID == nil && newAgencyName.isEmpty)).headerButton()
             }
         }
     }
@@ -460,6 +464,7 @@ struct TaxGroupEditorView: View {
                     unsavedChanges?.remove(editorToken); dismiss()
                 }
                 .disabled(name.isEmpty || selected.isEmpty)
+                .headerButton()
             }
         }
     }
@@ -504,7 +509,7 @@ struct SalesTaxPaymentView: View {
         .inlineTitle()
         .discardableEditor(tracking: "\(agencyID?.uuidString ?? "")|\(amount)|\(date)|\(accountID?.uuidString ?? "")|\(reference)", token: editorToken)
         .toolbar {
-            ToolbarItem(placement: .confirmationAction) { Button("Registrar", action: save).disabled(amount <= 0 || accountID == nil) }
+            ToolbarItem(placement: .confirmationAction) { Button("Registrar", action: save).disabled(amount <= 0 || accountID == nil).headerButton() }
         }
         .onAppear {
             amount = owed

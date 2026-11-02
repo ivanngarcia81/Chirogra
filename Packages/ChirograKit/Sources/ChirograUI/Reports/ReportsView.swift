@@ -159,12 +159,14 @@ struct ReportsView: View {
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
         .background(Palette.background)
         .navigationTitle(isNarrow ? String(localized: "Reportes") : kind.fullTitle)
+        .headerTitle()
         .toolbar {
             if isNarrow {
                 ToolbarItem(placement: .primaryAction) {
                     ShareLink(item: csvFile, preview: SharePreview("\(csvFile.name).csv")) {
                         Label("Exportar", systemImage: "square.and.arrow.up")
                     }
+                    .headerButton()
                 }
             }
         }
@@ -224,10 +226,10 @@ struct ReportsView: View {
             NavigationLink { TaxesView() } label: {
                 Text("Registrar pago de impuesto")
                     .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Palette.onBrand)
+                    .foregroundStyle(Palette.ink)
                     .padding(.horizontal, 14)
                     .frame(minHeight: Self.minimumRowHeight)
-                    .background(Palette.brand, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    .glassEffect(.regular.interactive(), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
             }
             .buttonStyle(.plain)
         }

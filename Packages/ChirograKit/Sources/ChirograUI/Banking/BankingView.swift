@@ -57,6 +57,7 @@ struct BankingView: View {
         }
         .background(Palette.background)
         .navigationTitle("Banca")
+        .headerTitle()
     }
 
     private func accountCard(_ account: Account, balance: Int64, featured: Bool) -> some View {
@@ -110,24 +111,26 @@ struct BankingWideView: View {
         }
         .background(Palette.background)
         .navigationTitle("Banca")
+        .headerTitle()
         .toolbar {
-            ToolbarItemGroup(placement: .primaryAction) {
+            ToolbarItem(placement: .primaryAction) {
                 Label("Importar y conciliar · Próximamente", systemImage: "square.and.arrow.down")
                     .labelStyle(.titleAndIcon)
                     .font(.footnote.weight(.semibold))
                     .foregroundStyle(Palette.ink3)
                     .fixedSize()
                     .accessibilityLabel("Importar y conciliar, disponible en una próxima versión")
+            }
+            ToolbarSpacer(.fixed, placement: .primaryAction)
+            ToolbarItem(placement: .primaryAction) {
                 Menu {
                     Button("Gasto", systemImage: "wallet.bifold") { adding = .expense }
                     Button("Asiento manual", systemImage: "list.bullet.rectangle") { adding = .entry }
                 } label: {
                     HStack(spacing: 4) { Image(systemName: "plus"); Text("Movimiento") }
                 }
-                .menuStyle(.button)
-                .buttonStyle(.borderedProminent)
-                .tint(Palette.brand)
                 .accessibilityLabel("Nuevo movimiento")
+                .headerButton()
             }
         }
         .sheet(item: $adding) { kind in

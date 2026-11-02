@@ -60,6 +60,7 @@ struct SalesView: View {
         }
         .background(Palette.background)
         .navigationTitle((isWide || fixedSegment != nil) && segment == .customers ? "Clientes" : "Ventas")
+        .headerTitle()
         // Una sola búsqueda en el contenedor y siempre visible: puesta en cada lista, desaparecía al volver de
         // una factura, porque la barra ya no encontraba la lista debajo de las pestañas. En pantallas anchas
         // la búsqueda va dentro de la tabla, como en el canvas.
@@ -71,9 +72,8 @@ struct SalesView: View {
                     Button { openEditor() } label: {
                         HStack(spacing: 4) { Image(systemName: "plus"); Text(segment == .invoices ? "Factura" : "Cliente") }
                     }
-                    .buttonStyle(.borderedProminent)
-                    .tint(Palette.brand)
                     .accessibilityLabel(segment == .invoices ? "Nueva factura" : "Nuevo cliente")
+                    .headerButton()
                 } else {
                     AddButton(title: segment == .invoices ? "Nueva factura" : "Nuevo cliente") { openEditor() }
                 }

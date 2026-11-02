@@ -15,6 +15,7 @@ struct AccountingView: View {
         .listRowBackground(Palette.surface)
         .screenBackground()
         .navigationTitle("Contabilidad")
+        .headerTitle()
     }
 }
 
@@ -114,9 +115,10 @@ struct ChartOfAccountsView: View {
         .screenBackground()
         .navigationLinkIndicatorVisibility(.hidden)
         .navigationTitle("Plan de cuentas")
+        .headerTitle()
         .toolbar {
             ToolbarItem(placement: .primaryAction) { AddButton(title: "Nueva cuenta") { showingNew = true } }
-            ToolbarItem { Toggle("Archivadas", isOn: $showArchived) }
+            ToolbarItem { Toggle("Archivadas", isOn: $showArchived).headerButton() }
         }
         .sheet(isPresented: $showingNew) { NavigationStack { AccountEditorView() } }
     }
@@ -160,6 +162,7 @@ struct AccountEditorView: View {
                     unsavedChanges?.remove(editorToken); dismiss()
                 }
                 .disabled(name.isEmpty || codeTaken)
+                .headerButton()
             }
         }
     }
@@ -189,6 +192,7 @@ struct JournalListView: View {
             if isWide { table } else { list }
         }
         .navigationTitle("Asientos de diario")
+        .headerTitle()
         .toolbar {
             ToolbarItem(placement: .primaryAction) { AddButton(title: "Nuevo asiento") { showingEditor = true } }
         }
@@ -351,7 +355,7 @@ struct JournalEntryEditorView: View {
         .inlineTitle()
         .discardableEditor(tracking: "\(date)|\(memo)|" + lines.map { "\($0.accountID?.uuidString ?? "")/\($0.debit)/\($0.credit)" }.joined(separator: ";"), token: editorToken)
         .toolbar {
-            ToolbarItem(placement: .confirmationAction) { Button("Registrar asiento", action: save).disabled(!isValid) }
+            ToolbarItem(placement: .confirmationAction) { Button("Registrar asiento", action: save).disabled(!isValid).headerButton() }
         }
     }
 
@@ -661,6 +665,7 @@ struct LedgerAccountPickerView: View {
         }
         .screenBackground()
         .navigationTitle("Libro mayor")
+        .headerTitle()
     }
 }
 
@@ -755,6 +760,7 @@ struct LedgerView: View {
         .listRowBackground(Palette.surface)
         .screenBackground()
         .navigationTitle(account.name)
+        .headerTitle()
     }
 }
 
@@ -797,6 +803,7 @@ struct PeriodCloseView: View {
         }
         .screenBackground()
         .navigationTitle("Cierre de periodo")
+        .headerTitle()
         .onDisappear { try? context.save() }
     }
 }

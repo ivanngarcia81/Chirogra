@@ -368,5 +368,6 @@ struct SearchResultsView: View {
         .screenBackground()
         .navigationLinkIndicatorVisibility(.hidden)
         .navigationTitle("Resultados de búsqueda")
+        .headerTitle()
     }
 }

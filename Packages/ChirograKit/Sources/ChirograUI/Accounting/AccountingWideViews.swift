@@ -86,18 +86,22 @@ struct ChartOfAccountsWideView: View {
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
         .background(Palette.background)
         .navigationTitle("Plan de cuentas")
+        .headerTitle()
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
-                Toggle("Archivadas", isOn: $showArchived)
+                Toggle("Archivadas", isOn: $showArchived).headerButton()
                 ShareLink(item: csvFile(ledger), preview: SharePreview("\(String(localized: "Plan de cuentas")).csv")) {
                     Text("Exportar CSV")
                 }
+                .headerButton()
+            }
+            ToolbarSpacer(.fixed, placement: .primaryAction)
+            ToolbarItem(placement: .primaryAction) {
                 Button { showingNew = true } label: {
                     HStack(spacing: 4) { Image(systemName: "plus"); Text("Cuenta") }
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(Palette.brand)
                 .accessibilityLabel("Nueva cuenta")
+                .headerButton()
             }
         }
         .sheet(isPresented: $showingNew) { NavigationStack { AccountEditorView() } }
@@ -217,6 +221,7 @@ struct PeriodCloseWideView: View {
         }
         .background(Palette.background)
         .navigationTitle("Cierre de periodo")
+        .headerTitle()
         .onDisappear { try? context.save() }
     }
 
@@ -255,7 +260,7 @@ struct PeriodCloseWideView: View {
                     newDate = nil
                     try? context.save()
                 }
-                .buttonStyle(.borderedProminent).tint(Palette.brand).foregroundStyle(Palette.onBrand)
+                .glassActionButton()
                 .disabled(company.lockDate.map { calendar.startOfDay(for: target) <= $0 } ?? false)
                 if let lock = company.lockDate {
                     Button(String(localized: "Reabrir \(lock.formatted(.appDateTime.month(.wide).year()))")) {

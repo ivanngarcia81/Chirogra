@@ -37,13 +37,13 @@ struct VendorDetailView: View {
         .background(Palette.background)
         .inlineTitle()
         .toolbar {
-            Button("Editar") { editing = true }
+            Button("Editar") { editing = true }.headerButton()
             if isWide {
                 Button { addingExpense = true } label: {
                     HStack(spacing: 4) { Image(systemName: "plus"); Text("Gasto") }
                 }
-                .buttonStyle(.borderedProminent).tint(Palette.brand)
                 .accessibilityLabel("Nuevo gasto")
+                .headerButton()
             }
         }
         .sheet(isPresented: $editing) { NavigationStack { VendorEditorView(vendor: vendor) } }
@@ -137,7 +137,7 @@ struct VendorDetailView: View {
                             .frame(width: 80, alignment: .leading)
                         Text(bill.balanceDue.money).fontWeight(.semibold).frame(width: 100, alignment: .trailing)
                         Button("Pagar") { paying = bill }
-                            .buttonStyle(.borderedProminent).tint(Palette.brand).foregroundStyle(Palette.onBrand).controlSize(.small)
+                            .glassActionButton().controlSize(.small)
                             .accessibilityLabel("Registrar pago de \(bill.vendorNumber)")
                             .frame(width: 80, alignment: .trailing)
                     }

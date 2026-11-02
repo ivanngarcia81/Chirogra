@@ -137,6 +137,7 @@ struct SyncAwareContent<Content: View>: View {
             }
             .background(Palette.background)
             .navigationTitle(title)
+            .headerTitle()
         } else {
             content
         }
@@ -347,7 +348,7 @@ struct SyncErrorBanner: View {
 
     private var retryButton: some View {
         Button { showingDetails = false; monitor.retry() } label: { Text("Reintentar").frame(maxWidth: .infinity) }
-            .buttonStyle(.borderedProminent).tint(Palette.brand).controlSize(.large)
+            .glassActionButton().controlSize(.large)
     }
 
     private var continueButton: some View {

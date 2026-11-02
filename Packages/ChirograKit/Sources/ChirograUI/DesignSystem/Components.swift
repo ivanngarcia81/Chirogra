@@ -211,6 +211,7 @@ struct CancelEditorButton: View {
                 Button("Seguir editando", role: .cancel) {}
             }
             .onChange(of: confirming) { unsavedChanges?.confirmation(isOpen: confirming) }
+            .headerButton()
     }
 }
 
@@ -288,6 +289,13 @@ extension View {
         scrollContentBackground(.hidden).background(Palette.background)
     }
 
+    /// Título de pantalla (§7.4, decisión del usuario): en el iPad, grande dentro de la barra de vidrio del sistema,
+    /// junto al botón de la barra lateral y a los botones, sin franja vacía encima; en el iPhone, el título grande de
+    /// siempre, que se pliega al desplazar. Va en cada pantalla: las que se abren encima no heredan el modo de la raíz.
+    func headerTitle() -> some View {
+        modifier(HeaderTitle())
+    }
+
     @ViewBuilder
     func inlineTitle() -> some View {
         #if os(iOS)
@@ -300,6 +308,10 @@ extension View {
 
 // MARK: - Botones
 
+/// Botones de acción dentro del contenido (§7.4, decisión del usuario): vidrio del sistema (`glassEffect`), sin
+/// relleno de marca. El primario se distingue del secundario por el peso del texto (semibold en `ink` frente a
+/// regular en `ink2`); el destructivo, por el texto en `negative`. `ink` e `ink2` cumplen AA sobre el vidrio en claro
+/// y en oscuro.
 struct PrimaryButtonStyle: ButtonStyle {
     @Environment(\.isEnabled) private var isEnabled
     func makeBody(configuration: Configuration) -> some View {
@@ -309,9 +321,9 @@ struct PrimaryButtonStyle: ButtonStyle {
             .padding(.vertical, 10)
             .frame(maxWidth: .infinity, minHeight: Metrics.buttonHeight)
             .padding(.horizontal, 22)
-            .foregroundStyle(isEnabled ? Palette.onBrand : Palette.ink3)
-            .background(isEnabled ? Palette.brand : Palette.surface2, in: RoundedRectangle(cornerRadius: Metrics.buttonRadius, style: .continuous))
-            .opacity(configuration.isPressed ? 0.85 : 1)
+            .foregroundStyle(isEnabled ? Palette.ink : Palette.ink3)
+            .contentShape(RoundedRectangle(cornerRadius: Metrics.buttonRadius, style: .continuous))
+            .glassEffect(.regular.interactive(isEnabled), in: RoundedRectangle(cornerRadius: Metrics.buttonRadius, style: .continuous))
     }
 }
 
@@ -320,15 +332,14 @@ struct SecondaryButtonStyle: ButtonStyle {
     @Environment(\.isEnabled) private var isEnabled
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.body.weight(.semibold))
+            .font(destructive ? .body.weight(.semibold) : .body)
             .multilineTextAlignment(.center)
             .padding(.vertical, 10)
             .frame(maxWidth: .infinity, minHeight: Metrics.buttonHeight)
             .padding(.horizontal, 22)
-            .foregroundStyle(!isEnabled ? Palette.ink3 : destructive ? Palette.negative : Palette.brand)
-            .background(!isEnabled ? Palette.surface2 : destructive ? Palette.negativeWash : Palette.brandWash,
-                        in: RoundedRectangle(cornerRadius: Metrics.buttonRadius, style: .continuous))
-            .opacity(configuration.isPressed ? 0.85 : 1)
+            .foregroundStyle(!isEnabled ? Palette.ink3 : destructive ? Palette.negative : Palette.ink2)
+            .contentShape(RoundedRectangle(cornerRadius: Metrics.buttonRadius, style: .continuous))
+            .glassEffect(.regular.interactive(isEnabled), in: RoundedRectangle(cornerRadius: Metrics.buttonRadius, style: .continuous))
     }
 }
 
@@ -732,6 +743,35 @@ struct MiniStat: View {
 }
 
 /// Botón «+» de las pantallas de lista: círculo relleno en color de marca (canvas `Ventas`, `Clientes`).
+extension View {
+    /// Botón de la cabecera (§7.4, decisión del usuario): el vidrio que la barra del sistema ya pone a sus ítems, con el
+    /// texto en tinta y no en el color de marca. `ink` se lee sobre el vidrio en claro y en oscuro.
+    func headerButton() -> some View {
+        tint(Palette.ink)
+    }
+
+    /// Botón de vidrio compacto dentro de filas y tarjetas (por ejemplo «Pagar» en una tabla): el `.glass` del sistema
+    /// con el texto en tinta, como los de la cabecera.
+    func glassActionButton() -> some View {
+        buttonStyle(.glass).tint(Palette.ink).fontWeight(.semibold)
+    }
+}
+
+private struct HeaderTitle: ViewModifier {
+    #if os(iOS)
+    // El del sistema y no `LayoutSizeClass`: también con la columna estrecha del iPad el título va en la barra.
+    @Environment(\.horizontalSizeClass) private var sizeClass
+    #endif
+
+    func body(content: Content) -> some View {
+        #if os(iOS)
+        content.toolbarTitleDisplayMode(sizeClass == .regular ? .inlineLarge : .automatic)
+        #else
+        content
+        #endif
+    }
+}
+
 struct AddButton: View {
     let title: LocalizedStringResource
     let action: () -> Void
@@ -740,8 +780,7 @@ struct AddButton: View {
         Button(action: action) {
             Label(String(localized: title), systemImage: "plus").labelStyle(.iconOnly)
         }
-        .buttonStyle(.borderedProminent)
-        .tint(Palette.brand)
+        .headerButton()
     }
 }
 

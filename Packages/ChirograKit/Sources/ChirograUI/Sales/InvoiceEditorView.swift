@@ -108,20 +108,23 @@ struct InvoiceEditorView: View {
                         Button("Descartar", role: .destructive) { close() }
                         Button("Seguir editando", role: .cancel) {}
                     }
+                    .headerButton()
             }
             // «Guardar» y no «Guardar borrador»: con el texto largo el título se cortaba en «Nueva f…».
             ToolbarItem(placement: .confirmationAction) {
                 Button("Guardar", action: saveDraft)
                     .disabled(customerID == nil)
                     .accessibilityLabel("Guardar borrador")
+                    .headerButton()
             }
             if isWide {
                 // `MacFacturaNueva`: «Vista previa» y la acción principal arriba, junto al título.
-                ToolbarItemGroup(placement: .primaryAction) {
-                    Button("Vista previa", action: showPreview).disabled(customerID == nil || validLines.isEmpty)
-                    Button("Emitir factura", action: issue)
-                        .buttonStyle(.borderedProminent).tint(Palette.brand)
-                        .disabled(customerID == nil || validLines.isEmpty)
+                ToolbarItem(placement: .primaryAction) {
+                    Button("Vista previa", action: showPreview).disabled(customerID == nil || validLines.isEmpty).headerButton()
+                }
+                ToolbarSpacer(.fixed, placement: .primaryAction)
+                ToolbarItem(placement: .primaryAction) {
+                    Button("Emitir factura", action: issue).disabled(customerID == nil || validLines.isEmpty).headerButton()
                 }
             }
         }
@@ -660,6 +663,6 @@ struct QuantityStepper: View {
 struct InlineTitleUnless: ViewModifier {
     let wide: Bool
     func body(content: Content) -> some View {
-        if wide { content } else { content.inlineTitle() }
+        if wide { content.headerTitle() } else { content.inlineTitle() }
     }
 }

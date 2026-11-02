@@ -26,6 +26,7 @@ struct SettingsView: View {
                 .listRowBackground(Palette.surface)
                 .screenBackground()
                 .navigationTitle("Ajustes")
+                .headerTitle()
         }
     }
 }
@@ -99,6 +100,7 @@ struct SettingsWideView: View {
         .padding(20)
         .background(Palette.background)
         .navigationTitle("Ajustes")
+        .headerTitle()
         .toolbar {
             if page == .profile {
                 ToolbarItem(placement: .primaryAction) {
@@ -106,8 +108,7 @@ struct SettingsWideView: View {
                         try? context.save()
                         saved = true
                     }
-                    .buttonStyle(.borderedProminent)
-                    .tint(saved ? Palette.positive : Palette.brand)
+                    .tint(saved ? Palette.positive : Palette.ink)
                 }
             }
         }
@@ -231,6 +232,7 @@ struct CompanyProfileView: View {
         }
         .screenBackground()
         .navigationTitle("Perfil de la empresa")
+        .headerTitle()
         .onDisappear { try? context.save() }
     }
 }
@@ -356,6 +358,6 @@ private struct TitleUnlessEmbedded: ViewModifier {
     let title: LocalizedStringKey
     let embedded: Bool
     func body(content: Content) -> some View {
-        if embedded { content } else { content.navigationTitle(title) }
+        if embedded { content } else { content.navigationTitle(title).headerTitle() }
     }
 }

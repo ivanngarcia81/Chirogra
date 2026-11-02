@@ -109,17 +109,21 @@ struct HomeView: View {
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
         .background(Palette.background)
         .navigationTitle("Inicio")
+        .headerTitle()
         .toolbar {
             if isWide {
-                // `MacInicio`: «+ Gasto» neutro y «+ Factura» en color de marca junto al título.
-                ToolbarItemGroup(placement: .primaryAction) {
-                    // Icono y texto juntos: con `Label` la barra del iPad deja sólo el icono.
+                // `MacInicio`: «+ Gasto» y «+ Factura» junto al título, cada uno en su vidrio (§7.4).
+                // Icono y texto juntos: con `Label` la barra del iPad deja sólo el icono.
+                ToolbarItem(placement: .primaryAction) {
                     Button { sheet = .expense } label: { HStack(spacing: 4) { Image(systemName: "plus"); Text("Gasto") } }
                         .accessibilityLabel("Nuevo gasto")
+                        .headerButton()
+                }
+                ToolbarSpacer(.fixed, placement: .primaryAction)
+                ToolbarItem(placement: .primaryAction) {
                     Button { sheet = .invoice } label: { HStack(spacing: 4) { Image(systemName: "plus"); Text("Factura") } }
-                        .buttonStyle(.borderedProminent)
-                        .tint(Palette.brand)
                         .accessibilityLabel("Nueva factura")
+                        .headerButton()
                 }
             } else {
                 ToolbarItem(placement: .primaryAction) { newMenu }
@@ -143,9 +147,7 @@ struct HomeView: View {
             Button("Gasto", systemImage: "wallet.bifold") { sheet = .expense }
             Button("Cliente", systemImage: "person.badge.plus") { sheet = .customer }
         } label: { Label("Nuevo", systemImage: "plus").labelStyle(.iconOnly) }
-        .menuStyle(.button)
-        .buttonStyle(.borderedProminent)
-        .tint(Palette.brand)
+        .headerButton()
     }
 
     // MARK: Primera vez (`EstadoVacio`)
@@ -427,8 +429,11 @@ struct HomeView: View {
                 Image(systemName: image)
                     .font(.title2)
                     .frame(width: quickActionSide, height: quickActionSide)
-                    .foregroundStyle(prominent ? Palette.onBrand : Palette.brand)
-                    .background(prominent ? Palette.brand : Palette.surface, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                    .fontWeight(prominent ? .semibold : .regular)
+                    .foregroundStyle(prominent ? Palette.ink : Palette.brand)
+                    .background(prominent ? Color.clear : Palette.surface, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                    // La acción principal, en vidrio y no en color de marca (§7.4).
+                    .glassEffect(prominent ? .regular.interactive() : .identity, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
                     .accessibilityHidden(true)
                 Text(title).font(.footnote.weight(.semibold)).foregroundStyle(Palette.ink)
             }
