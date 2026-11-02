@@ -527,7 +527,8 @@ private struct ExpenseMasterList: View {
     var body: some View {
         List(selection: $selection) {
             ForEach(filtered) { expense in
-                MasterRow(title: expense.payee, amount: "−\(expense.total.money)",
+                // Sin «−»: en la lista de Gastos todo es gasto (como en el iPhone y en el detalle).
+                MasterRow(title: expense.payee, amount: expense.total.money,
                           subtitle: "\(category(expense)?.name ?? String(localized: "Sin categoría")) · \(expense.date.dayMonth)") {
                     if !(expense.attachments ?? []).isEmpty {
                         MasterSymbol(systemImage: "paperclip", label: "Recibo adjunto")

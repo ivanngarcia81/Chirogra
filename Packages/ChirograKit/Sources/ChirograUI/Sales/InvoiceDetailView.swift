@@ -133,7 +133,10 @@ struct InvoiceDetailView: View {
     @ViewBuilder
     private var summary: some View {
         let customer = invoice.customer?.name ?? String(localized: "Sin cliente")
-        let amount = Text(isDraft ? invoice.draftAmount.money : invoice.balanceDue.money)
+        // Abierta: lo que falta por cobrar. Pagada o anulada: el total (un «$0.00» grande no dice nada).
+        let shown = isDraft ? invoice.draftAmount
+            : (invoice.status == .paid || invoice.status == .void) ? invoice.total : invoice.balanceDue
+        let amount = Text(shown.money)
             .font(.system(.largeTitle, weight: .bold)).monospacedDigit()
             .foregroundStyle(Palette.ink)
             .minimumScaleFactor(0.6).lineLimit(1)
@@ -177,7 +180,10 @@ struct InvoiceDetailView: View {
         case .draft: String(localized: "Borrador: líneas menos descuento, sin impuesto")
         case .paid: String(localized: "Total cobrado \(invoice.total.money)")
         case .void: String(localized: "Total de \(invoice.total.money)")
-        case .sent, .partiallyPaid: String(localized: "Saldo pendiente de \(invoice.total.money) · vence \(invoice.dueDate.dayMonth)")
+        case .sent, .partiallyPaid:
+            invoice.balanceDue < invoice.total
+                ? String(localized: "Por cobrar de un total de \(invoice.total.money) · vence \(invoice.dueDate.dayMonth)")
+                : String(localized: "Por cobrar · vence \(invoice.dueDate.dayMonth)")
         }
     }
 

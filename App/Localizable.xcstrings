@@ -8003,6 +8003,26 @@
         }
       }
     },
+    "Por cobrar de un total de %@ · vence %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Outstanding of %@ total · due %@"
+          }
+        }
+      }
+    },
+    "Por cobrar · vence %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Outstanding · due %@"
+          }
+        }
+      }
+    },
     "Por cuenta" : {
       "localizations" : {
         "en" : {
@@ -9137,16 +9157,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Balance due %@"
-          }
-        }
-      }
-    },
-    "Saldo pendiente de %@ · vence %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Balance due of %@ · due %@"
           }
         }
       }
