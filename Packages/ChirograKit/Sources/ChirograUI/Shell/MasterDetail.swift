@@ -276,13 +276,21 @@ private extension View {
         modifier(MasterListStyle(title: title, query: query, prompt: prompt))
     }
 
-    /// Botón «+» de la columna: icono y texto, en el vidrio de la barra (§7.4).
-    func masterAddButton(_ title: String, label: String, action: @escaping () -> Void) -> some View {
+    /// Botón «+» de la columna: icono y texto, en el vidrio de la barra (§7.4). Sin `title`, solo «+» con su etiqueta
+    /// de accesibilidad: en el iPad el título de la columna comparte la fila con el botón, y un texto largo («+ Factura
+    /// de proveedor») ocupaba la fila y el sistema ocultaba el título.
+    func masterAddButton(_ title: String?, label: String, action: @escaping () -> Void) -> some View {
         toolbar {
             ToolbarItem(placement: .primaryAction) {
-                Button(action: action) { HStack(spacing: 4) { Image(systemName: "plus"); Text(title) } }
-                    .accessibilityLabel(label)
-                    .headerButton()
+                Button(action: action) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "plus")
+                        if let title { Text(title) }
+                    }
+                }
+                .accessibilityLabel(label)
+                .help(label)
+                .headerButton()
             }
         }
     }
@@ -521,7 +529,7 @@ private struct BillMasterList: View {
                 bills.filter { inFilter($0, option) }.count
             }
         }
-        .masterAddButton(String(localized: "Factura de proveedor"), label: String(localized: "Nueva factura de proveedor")) { creating = true }
+        .masterAddButton(nil, label: String(localized: "Nueva factura de proveedor")) { creating = true }
         .sheet(isPresented: $creating) { NavigationStack { BillEditorView() }.editorSheetSizing() }
     }
 }
@@ -668,7 +676,7 @@ private struct ChartMasterList: View {
         .toolbar {
             ToolbarItem(placement: .secondaryAction) { Toggle("Archivadas", isOn: $showArchived).headerButton() }
         }
-        .masterAddButton(String(localized: "Cuenta"), label: String(localized: "Nueva cuenta")) { creating = true }
+        .masterAddButton(nil, label: String(localized: "Nueva cuenta")) { creating = true }
         .sheet(isPresented: $creating) { NavigationStack { AccountEditorView() } }
     }
 }
