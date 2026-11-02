@@ -1809,6 +1809,12 @@ struct ReportCellText: View {
 /// (~300 pt a la derecha, botón `sidebar.trailing` de la barra y ⌥⌘I, mostrado u oculto en `macInspectorShown`, igual
 /// en todas las páginas) con la fila elegida de la página. Elegir una fila lo abre. Piezas propias de estas páginas;
 /// podrían subir a `Shell/MacTablePage.swift`.
+extension EnvironmentValues {
+    /// `false` solo en las pruebas de humo: `ImageRenderer` no puede alojar el `.inspector` nativo (se cae con «no
+    /// current update to enqueue action to»). En la app siempre es `true`.
+    @Entry var macReportInspectorEnabled = true
+}
+
 private struct MacReportInspector<Inspector: View, Actions: View>: ViewModifier {
     let title: String
     let hasSelection: Bool
@@ -1822,15 +1828,13 @@ private struct MacReportInspector<Inspector: View, Actions: View>: ViewModifier 
     let inspector: () -> Inspector
     let actions: () -> Actions
     @AppStorage("macInspectorShown") private var shown = true
+    @Environment(\.macReportInspectorEnabled) private var enabled
     #if DEBUG
     @State private var qaApplied = false
     #endif
 
     func body(content: Content) -> some View {
-        content
-            .inspector(isPresented: isAvailable ? $shown : .constant(false)) {
-                column.inspectorColumnWidth(min: 260, ideal: 300, max: 420)
-            }
+        withInspector(content)
             .onChange(of: selectionKey) { _, key in if key != nil { shown = true } }
             #if DEBUG
             .onAppear {
@@ -1840,6 +1844,18 @@ private struct MacReportInspector<Inspector: View, Actions: View>: ViewModifier 
                 MacReportQA.apply(shown: $shown, selectRow: qaSelectRow)
             }
             #endif
+    }
+
+    /// Sin el interruptor (pruebas de humo) no se monta el `.inspector`: aunque esté cerrado, `ImageRenderer` se cae.
+    @ViewBuilder
+    private func withInspector(_ content: Content) -> some View {
+        if enabled {
+            content.inspector(isPresented: isAvailable ? $shown : .constant(false)) {
+                column.inspectorColumnWidth(min: 260, ideal: 300, max: 420)
+            }
+        } else {
+            content
+        }
     }
 
     /// Como el de `MacTablePage`: título de 15 bold, el contenido con scroll y los botones al pie.

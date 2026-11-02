@@ -229,7 +229,7 @@ struct CompanyProfileView: View {
             Section {
                 TextField("Dirección", text: $company.address, prompt: Text("Calle, ciudad y código postal"), axis: .vertical)
                     .lineLimit(1...4)
-                Picker("Estado", selection: $company.state) {
+                Picker("Estado de EE. UU.", selection: $company.state) {
                     Text("—").tag("")
                     ForEach(USState.all, id: \.self) { Text($0).tag($0) }
                 }

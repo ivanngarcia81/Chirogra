@@ -158,7 +158,7 @@ struct OnboardingView: View {
         Section {
             LabeledContent("País o región") { Text("Estados Unidos") }
             LabeledContent("Moneda") { Text("USD · Dólar") }
-            Picker("Estado", selection: $state) {
+            Picker("Estado de EE. UU.", selection: $state) {
                 Text("Elige tu estado").tag("")
                 ForEach(USState.all, id: \.self) { Text($0).tag($0) }
             }

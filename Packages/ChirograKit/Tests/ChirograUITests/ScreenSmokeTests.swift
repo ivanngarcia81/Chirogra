@@ -12,7 +12,9 @@ struct ScreenSmokeTests {
     let container = SampleData.makeContainer()
 
     func render<V: View>(_ view: V) -> Bool {
-        ImageRenderer(content: view.modelContainer(container).frame(width: 390, height: 844)).nsImage != nil
+        // Sin el inspector nativo del Mac: `ImageRenderer` no puede alojarlo (en la app sí se ve).
+        ImageRenderer(content: view.environment(\.macReportInspectorEnabled, false).modelContainer(container)
+            .frame(width: 390, height: 844)).nsImage != nil
     }
 
     @Test func home() { #expect(render(HomeView())) }

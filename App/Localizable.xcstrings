@@ -5304,6 +5304,22 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "Status"
+          }
+        }
+      }
+    },
+    "Estado de EE. UU." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estado"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
             "value" : "State"
           }
         }
