@@ -4,7 +4,8 @@ import SwiftData
 import SwiftUI
 import UniformTypeIdentifiers
 
-/// Gastos (canvas: `Gastos`, `ProveedorFicha`): gastos pagados, facturas por pagar y proveedores.
+/// Gastos (canvas: `Gastos`, `ProveedorFicha`): gastos pagados, facturas por pagar y proveedores. Es la pantalla del
+/// iPhone (y del iPad con AX4 o más); en iPad y Mac cada subsección va con columna maestro (`MasterPage`).
 struct ExpensesView: View {
     enum Segment: String, CaseIterable, Identifiable {
         case expenses = "Gastos"
@@ -13,59 +14,22 @@ struct ExpensesView: View {
         var id: String { rawValue }
     }
 
-    /// En iPad y Mac la subsección la elige la barra lateral (canvas `Sidebar`) y no se muestra el segmentado.
+    /// Desde la barra lateral o un enlace, la subsección ya elegida y sin el segmentado.
     var fixedSegment: Segment? = nil
 
     @State private var selectedSegment: Segment = .expenses
     @State private var showingEditor = false
-    /// Cómo se abrió el editor (en la columna o en hoja). Se fija al abrirlo: si la columna cambia de ancho
-    /// mientras tanto (barra lateral en un iPad vertical), el editor sigue donde estaba y no se pierde lo escrito.
-    @State private var editorInline = false
-
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-    #if os(iOS)
-    @LayoutSizeClass private var sizeClass
-    #endif
 
     private var segment: Segment { fixedSegment ?? selectedSegment }
 
-    /// Tablas (`MacGastos`, `MacPorPagar`, `MacProveedores`) en iPad y Mac hasta AX3.
-    private var isWide: Bool {
-        #if os(iOS)
-        if sizeClass != .regular { return false }
-        #endif
-        return dynamicTypeSize < .accessibility4
-    }
-
     private var title: String {
-        // En iPhone las tres van bajo «Gastos» con el selector; desde la barra lateral cada una tiene su título.
-        guard isWide || fixedSegment != nil else { return String(localized: "Gastos") }
+        // En iPhone las tres van bajo «Gastos» con el selector; desde un enlace cada una tiene su título.
+        guard fixedSegment != nil else { return String(localized: "Gastos") }
         return switch segment {
         case .expenses: String(localized: "Gastos")
         case .bills: String(localized: "Facturas por pagar")
         case .vendors: String(localized: "Proveedores")
         }
-    }
-
-    private var addTitle: String {
-        switch segment {
-        case .expenses: String(localized: "Gasto")
-        case .bills: String(localized: "Factura de proveedor")
-        case .vendors: String(localized: "Proveedor")
-        }
-    }
-
-    private var addLabel: String {
-        switch segment {
-        case .expenses: String(localized: "Nuevo gasto")
-        case .bills: String(localized: "Nueva factura de proveedor")
-        case .vendors: String(localized: "Nuevo proveedor")
-        }
-    }
-
-    private func openEditor() {
-        editorInline = isWide && segment == .expenses
-        showingEditor = true
     }
 
     var body: some View {
@@ -80,13 +44,10 @@ struct ExpensesView: View {
                 .padding(.bottom, 8)
             }
 
-            switch (segment, isWide) {
-            case (.expenses, false): ExpenseListView { selectedSegment = .bills }
-            case (.bills, false): BillListView()
-            case (.vendors, false): VendorListView()
-            case (.expenses, true): ExpenseTableView()
-            case (.bills, true): BillTableView()
-            case (.vendors, true): VendorTableView()
+            switch segment {
+            case .expenses: ExpenseListView { selectedSegment = .bills }
+            case .bills: BillListView()
+            case .vendors: VendorListView()
             }
         }
         .background(Palette.background)
@@ -94,22 +55,10 @@ struct ExpensesView: View {
         .headerTitle()
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                if isWide {
-                    Button { openEditor() } label: {
-                        HStack(spacing: 4) { Image(systemName: "plus"); Text(addTitle) }
-                    }
-                    .accessibilityLabel(addLabel)
-                    .headerButton()
-                } else {
-                    AddButton(title: "Nuevo") { openEditor() }
-                }
+                AddButton(title: "Nuevo") { showingEditor = true }
             }
         }
-        // `MacGastoNuevo`: en pantallas anchas el gasto nuevo se abre a pantalla completa, junto a la barra lateral.
-        .navigationDestination(isPresented: Binding(get: { showingEditor && editorInline }, set: { showingEditor = $0 })) {
-            ExpenseEditorView()
-        }
-        .sheet(isPresented: Binding(get: { showingEditor && !editorInline }, set: { showingEditor = $0 })) {
+        .sheet(isPresented: $showingEditor) {
             NavigationStack {
                 switch segment {
                 case .expenses: ExpenseEditorView()
@@ -179,16 +128,7 @@ struct ExpenseListView: View {
                 Section {
                     ForEach(expenses) { expense in
                         NavigationLink { ExpenseDetailView(expense: expense) } label: {
-                            LedgerRow(title: expense.payee, subtitle: "\(category(expense)?.name ?? String(localized: "Sin categoría")) · \(expense.date.dayMonth)") {
-                                IconTile(systemImage: Self.symbol(for: category(expense)), foreground: Palette.outflow, background: Palette.outflowWash)
-                            } trailing: {
-                                HStack(spacing: 6) {
-                                    if !(expense.attachments ?? []).isEmpty {
-                                        Image(systemName: "paperclip").foregroundStyle(Palette.ink3).accessibilityLabel("Recibo adjunto")
-                                    }
-                                    Text("−\(expense.total.money)").font(.body.weight(.semibold)).monospacedDigit().foregroundStyle(Palette.outflow)
-                                }
-                            }
+                            ExpenseRow(expense: expense, category: category(expense))
                         }
                     }
                 } header: {
@@ -264,6 +204,25 @@ struct ExpenseListView: View {
             (["banco", "bank", "comisi", "fee"], "building.columns"),
         ]
         return table.first { entry in entry.keys.contains { name.contains($0) } }?.symbol ?? "receipt"
+    }
+}
+
+/// Fila de gasto: icono de la categoría, beneficiario, categoría y fecha, clip si tiene recibo e importe.
+struct ExpenseRow: View {
+    let expense: Expense
+    let category: Account?
+
+    var body: some View {
+        LedgerRow(title: expense.payee, subtitle: "\(category?.name ?? String(localized: "Sin categoría")) · \(expense.date.dayMonth)") {
+            IconTile(systemImage: ExpenseListView.symbol(for: category), foreground: Palette.outflow, background: Palette.outflowWash)
+        } trailing: {
+            HStack(spacing: 6) {
+                if !(expense.attachments ?? []).isEmpty {
+                    Image(systemName: "paperclip").foregroundStyle(Palette.ink3).accessibilityLabel("Recibo adjunto")
+                }
+                Text("−\(expense.total.money)").font(.body.weight(.semibold)).monospacedDigit().foregroundStyle(Palette.outflow)
+            }
+        }
     }
 }
 
@@ -556,16 +515,7 @@ struct BillListView: View {
             }
             Section {
                 ForEach(bills) { bill in
-                    Button { if bill.isOpen { paying = bill } } label: {
-                        LedgerRow(title: bill.vendor?.name ?? String(localized: "Proveedor"), subtitle: "\(bill.vendorNumber) · \(bill.dueDate.dueLabel)") {
-                            IconTile(systemImage: "doc.text", foreground: Palette.outflow, background: Palette.outflowWash)
-                        } trailing: {
-                            VStack(alignment: dynamicTypeSize.amountAlignment, spacing: 3) {
-                                Text(bill.balanceDue.money).font(.body.weight(.semibold)).monospacedDigit()
-                                StatusChip(bill: bill)
-                            }
-                        }
-                    }
+                    Button { if bill.isOpen { paying = bill } } label: { BillRow(bill: bill) }
                     .buttonStyle(.plain)
                 }
             }
@@ -573,6 +523,23 @@ struct BillListView: View {
         }
         .screenBackground()
         .sheet(item: $paying) { bill in NavigationStack { PayBillView(bill: bill) } }
+    }
+}
+
+/// Fila de factura por pagar: proveedor, número y vencimiento, saldo y estado.
+struct BillRow: View {
+    let bill: Bill
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    var body: some View {
+        LedgerRow(title: bill.vendor?.name ?? String(localized: "Proveedor"), subtitle: "\(bill.vendorNumber) · \(bill.dueDate.dueLabel)") {
+            IconTile(systemImage: "doc.text", foreground: Palette.outflow, background: Palette.outflowWash)
+        } trailing: {
+            VStack(alignment: dynamicTypeSize.amountAlignment, spacing: 3) {
+                Text(bill.balanceDue.money).font(.body.weight(.semibold)).monospacedDigit()
+                StatusChip(bill: bill)
+            }
+        }
     }
 }
 
@@ -717,18 +684,25 @@ struct VendorListView: View {
                     .listRowBackground(Palette.surface)
             }
             ForEach(vendors) { vendor in
-                NavigationLink { VendorDetailView(vendor: vendor) } label: {
-                    LedgerRow(title: vendor.name, subtitle: vendor.is1099 ? String(localized: "Sujeto a 1099") : (vendor.email.isEmpty ? String(localized: "Proveedor") : vendor.email)) {
-                        InitialsTile(text: Initials.from(vendor.name), foreground: Palette.outflow, background: Palette.outflowWash)
-                    } trailing: {
-                        Text(vendor.openBalance.money).font(.body.weight(.semibold)).monospacedDigit()
-                    }
-                }
+                NavigationLink { VendorDetailView(vendor: vendor) } label: { VendorRow(vendor: vendor) }
             }
             .listRowBackground(Palette.surface)
         }
         .screenBackground()
         .navigationLinkIndicatorVisibility(.hidden)
+    }
+}
+
+/// Fila de proveedor: iniciales, 1099 o correo, y lo que se le debe.
+struct VendorRow: View {
+    let vendor: Vendor
+
+    var body: some View {
+        LedgerRow(title: vendor.name, subtitle: vendor.is1099 ? String(localized: "Sujeto a 1099") : (vendor.email.isEmpty ? String(localized: "Proveedor") : vendor.email)) {
+            InitialsTile(text: Initials.from(vendor.name), foreground: Palette.outflow, background: Palette.outflowWash)
+        } trailing: {
+            Text(vendor.openBalance.money).font(.body.weight(.semibold)).monospacedDigit()
+        }
     }
 }
 

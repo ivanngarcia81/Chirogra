@@ -303,8 +303,8 @@ struct HomeView: View {
         case .company: NavigationLink { SettingsView() } label: { label }.buttonStyle(.plain)
         case .invoice: Button { sheet = .invoice } label: { label }.buttonStyle(.plain)
         case .expense: Button { sheet = .expense } label: { label }.buttonStyle(.plain)
-        case .accounts: NavigationLink { BankingView() } label: { label }.buttonStyle(.plain)
-        case .chart: NavigationLink { ChartOfAccountsView() } label: { label }.buttonStyle(.plain)
+        case .accounts: SectionLink(item: .section(.banking)) { BankingView() } label: { label }.buttonStyle(.plain)
+        case .chart: SectionLink(item: .accounting(.chart)) { ChartOfAccountsView() } label: { label }.buttonStyle(.plain)
         }
     }
 
@@ -618,7 +618,7 @@ struct HomeView: View {
                 Text("No tienes facturas pendientes de cobro.").font(.subheadline).foregroundStyle(Palette.ink3)
             }
             Divider()
-            NavigationLink { SalesView() } label: {
+            SectionLink(item: .sales(.invoices)) { SalesView() } label: {
                 HStack {
                     Text("Ver todas las facturas").font(.subheadline.weight(.semibold))
                     Spacer()
@@ -723,7 +723,7 @@ extension HomeView {
         return VStack(alignment: .leading, spacing: 0) {
             wideHeader("Cuentas") {
                 // Enlace de texto: sin `.plain`, el Mac lo dibuja como botón relleno.
-                NavigationLink("Banca") { BankingView() }
+                SectionLink(item: .section(.banking)) { BankingView() } label: { Text("Banca") }
                     .buttonStyle(.plain)
                     .font(.subheadline.weight(.semibold)).foregroundStyle(Palette.brand).frame(minHeight: 44)
             }
@@ -789,7 +789,7 @@ extension HomeView {
         let upcoming = bills.filter(\.isOpen).sorted { $0.dueDate < $1.dueDate }.prefix(5)
         return VStack(alignment: .leading, spacing: 0) {
             wideHeader("Por pagar · próximos") {
-                NavigationLink("Ver todo") { ExpensesView(fixedSegment: .bills) }
+                SectionLink(item: .expenses(.bills)) { ExpensesView(fixedSegment: .bills) } label: { Text("Ver todo") }
                     .buttonStyle(.plain)
                     .font(.footnote.weight(.semibold)).foregroundStyle(Palette.brand).frame(minHeight: 44)
             }

@@ -67,22 +67,8 @@ struct ChartOfAccountsView: View {
     @Query private var journalLines: [JournalLine]
     @State private var showingNew = false
     @State private var showArchived = false
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-    #if os(iOS)
-    @LayoutSizeClass private var sizeClass
-    #endif
 
-    /// `MacPlanCuentas` en iPad y Mac (hasta AX3); la lista del iPhone en pantallas estrechas.
-    private var isWide: Bool {
-        #if os(iOS)
-        if sizeClass != .regular { return false }
-        #endif
-        return dynamicTypeSize < .accessibility4
-    }
-
-    var body: some View {
-        if isWide { ChartOfAccountsWideView() } else { compactBody }
-    }
+    var body: some View { compactBody }
 
     @ViewBuilder
     private var compactBody: some View {
@@ -173,68 +159,18 @@ struct JournalListView: View {
     @Query(sort: [SortDescriptor(\JournalEntry.date, order: .reverse), SortDescriptor(\JournalEntry.number, order: .reverse)])
     private var entries: [JournalEntry]
     @State private var showingEditor = false
-    @State private var selection: JournalEntry.ID?
-    @State private var opened: JournalEntry?
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-    #if os(iOS)
-    @LayoutSizeClass private var sizeClass
-    #endif
-
-    private var isWide: Bool {
-        #if os(iOS)
-        if sizeClass == .compact { return false }
-        #endif
-        return dynamicTypeSize < .accessibility4 && !entries.isEmpty
-    }
 
     var body: some View {
-        Group {
-            if isWide { table } else { list }
-        }
-        .navigationTitle("Asientos de diario")
-        .headerTitle()
-        .toolbar {
-            ToolbarItem(placement: .primaryAction) { AddButton(title: "Nuevo asiento") { showingEditor = true } }
-        }
-        .sheet(isPresented: $showingEditor) {
-            NavigationStack { JournalEntryEditorView() }
-                .presentationSizing(.page)
-        }
-        .navigationDestination(item: $opened) { JournalEntryDetailView(entry: $0) }
-    }
-
-    private var table: some View {
-        Table(entries, selection: $selection) {
-            TableColumn("Nº") { entry in
-                Text("#\(entry.number)").monospacedDigit().foregroundStyle(Palette.ink3)
+        list
+            .navigationTitle("Asientos de diario")
+            .headerTitle()
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) { AddButton(title: "Nuevo asiento") { showingEditor = true } }
             }
-            .width(min: 50, ideal: 64, max: 90)
-            TableColumn("Fecha") { entry in Text(entry.date.shortDate).monospacedDigit().foregroundStyle(Palette.ink) }
-                .width(min: 90, ideal: 120, max: 160)
-            TableColumn("Concepto") { entry in
-                HStack(spacing: 8) {
-                    Text(entry.memo.isEmpty ? String(localized: "Asiento \(entry.number)") : entry.memo).lineLimit(1).foregroundStyle(Palette.ink)
-                    if entry.isReversed || entry.reversesEntryID != nil {
-                        StatusChip(text: entry.isReversed ? String(localized: "Revertido") : String(localized: "Reversión"),
-                                   foreground: Palette.ink3, background: Palette.surface2)
-                    }
-                }
+            .sheet(isPresented: $showingEditor) {
+                NavigationStack { JournalEntryEditorView() }
+                    .presentationSizing(.page)
             }
-            TableColumn("Origen") { entry in Text(entry.source.title).foregroundStyle(Palette.ink2).lineLimit(1) }
-                .width(min: 100, ideal: 160, max: 220)
-            TableColumn("Importe") { entry in
-                Text(entry.totalDebits.money).monospacedDigit().foregroundStyle(Palette.ink).frame(maxWidth: .infinity, alignment: .trailing)
-            }
-            .width(min: 100, ideal: 130, max: 180)
-        }
-        // Tocar (iPad) o doble clic (Mac) abre el asiento.
-        .contextMenu(forSelectionType: JournalEntry.ID.self) { _ in
-            EmptyView()
-        } primaryAction: { ids in
-            opened = entries.first { ids.contains($0.id) }
-        }
-        .scrollContentBackground(.hidden)
-        .background(Palette.background)
     }
 
     private var list: some View {
@@ -243,24 +179,32 @@ struct JournalListView: View {
                 EmptyStateView(systemImage: "doc.plaintext", title: String(localized: "Sin asientos"), message: String(localized: "Los documentos generan asientos automáticamente; también puedes crear uno manual."))
             }
             ForEach(entries) { entry in
-                NavigationLink { JournalEntryDetailView(entry: entry) } label: {
-                    LedgerRow(title: entry.memo.isEmpty ? String(localized: "Asiento \(entry.number)") : entry.memo,
-                              subtitle: "#\(entry.number) · \(entry.date.shortDate) · \(entry.source.title)") {
-                        EmptyView()
-                    } trailing: {
-                        VStack(alignment: dynamicTypeSize.amountAlignment, spacing: 3) {
-                            Text(entry.totalDebits.money).monospacedDigit()
-                            if entry.isReversed || entry.reversesEntryID != nil {
-                                StatusChip(text: entry.isReversed ? String(localized: "Revertido") : String(localized: "Reversión"), foreground: Palette.ink3, background: Palette.surface2)
-                            }
-                        }
-                    }
-                }
+                NavigationLink { JournalEntryDetailView(entry: entry) } label: { JournalEntryRow(entry: entry) }
             }
             .listRowBackground(Palette.surface)
         }
         .screenBackground()
         .navigationLinkIndicatorVisibility(.hidden)
+    }
+}
+
+/// Fila de asiento: concepto, número, fecha y origen, importe y si está revertido.
+struct JournalEntryRow: View {
+    let entry: JournalEntry
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    var body: some View {
+        LedgerRow(title: entry.memo.isEmpty ? String(localized: "Asiento \(entry.number)") : entry.memo,
+                  subtitle: "#\(entry.number) · \(entry.date.shortDate) · \(entry.source.title)") {
+            EmptyView()
+        } trailing: {
+            VStack(alignment: dynamicTypeSize.amountAlignment, spacing: 3) {
+                Text(entry.totalDebits.money).monospacedDigit()
+                if entry.isReversed || entry.reversesEntryID != nil {
+                    StatusChip(text: entry.isReversed ? String(localized: "Revertido") : String(localized: "Reversión"), foreground: Palette.ink3, background: Palette.surface2)
+                }
+            }
+        }
     }
 }
 

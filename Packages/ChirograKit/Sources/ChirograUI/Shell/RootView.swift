@@ -190,9 +190,9 @@ enum AppLock {
 }
 
 struct AppShell: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     #if os(iOS)
     @Environment(\.horizontalSizeClass) private var sizeClass
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     /// Ancho de la columna de detalle: en un iPad vertical con la barra lateral abierta puede quedar estrecha.
     @State private var detailWidth: CGFloat = .infinity
     #endif
@@ -204,6 +204,12 @@ struct AppShell: View {
     @State private var pendingSelection: SidebarItem?
     /// Se guarda aquí para que la barra lateral siga abierta o cerrada al rehacer la vista dividida.
     @State private var columnVisibility: NavigationSplitViewVisibility = .automatic
+    /// Lo elegido en la columna maestro de las páginas de lista y detalle (`MasterPage`).
+    @State private var masterSelection: UUID?
+    /// La columna maestro oculta (solo el detalle a la vista).
+    @State private var masterHidden = false
+    @State private var monitor = SyncMonitor.shared
+    @ScaledMetric(relativeTo: .body) private var masterWidth: CGFloat = 320
 
     var body: some View {
         #if os(iOS)
@@ -251,27 +257,71 @@ struct AppShell: View {
         }
     }
 
-    /// iPad y Mac: barra lateral propia (`Sidebar`); con texto en la búsqueda, el detalle muestra los resultados.
-    private var split: some View {
-        NavigationSplitView(columnVisibility: $columnVisibility) {
-            Sidebar(selection: sidebarSelection, query: $query)
-                .navigationSplitViewColumnWidth(min: 200, ideal: 240)
-                #if os(iOS)
-                .toolbar(removing: .title)
-                #endif
-        } detail: {
-            NavigationStack {
-                if query.trimmingCharacters(in: .whitespaces).isEmpty {
-                    SyncAwareContent(title: selection.section.title) { selection.destination }
-                } else {
-                    SearchResultsView(query: query)
-                }
-            }
+    /// Página de lista y detalle con columna maestro (§7.4). No mientras llegan los libros de iCloud por primera vez
+    /// (esqueleto de `SyncAwareContent`) ni con AX4 o más, donde la columna no cabe y se usan las listas del iPhone.
+    private var masterPage: MasterPage? {
+        guard !monitor.isFirstImport, dynamicTypeSize < .accessibility4 else { return nil }
+        return MasterPage(selection)
+    }
+
+    private var isSearching: Bool { !query.trimmingCharacters(in: .whitespaces).isEmpty }
+
+    /// Visibilidad con tres columnas a partir de la de dos: con la barra lateral cerrada se ven la lista y el detalle;
+    /// ocultar también la lista deja solo el detalle. Así la barra queda como estaba al pasar de una página a otra.
+    private var masterVisibility: Binding<NavigationSplitViewVisibility> {
+        Binding(get: {
+            if masterHidden { return .detailOnly }
+            return columnVisibility == .detailOnly ? .doubleColumn : columnVisibility
+        }, set: { visibility in
+            masterHidden = visibility == .detailOnly
+            columnVisibility = visibility == .all || visibility == .automatic ? visibility : .detailOnly
+        })
+    }
+
+    private var sidebar: some View {
+        Sidebar(selection: sidebarSelection, query: $query)
+            .navigationSplitViewColumnWidth(min: 200, ideal: 240)
             #if os(iOS)
-            .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { detailWidth = $0 }
+            .toolbar(removing: .title)
             #endif
-            .safeAreaInset(edge: .top, spacing: 0) { SyncErrorBanner() }
+    }
+
+    /// Columna de detalle: lo de la página o, con texto en la búsqueda de la barra lateral, los resultados.
+    private func detailColumn<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
+        NavigationStack {
+            if isSearching { SearchResultsView(query: query) } else { content() }
         }
+        #if os(iOS)
+        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { detailWidth = $0 }
+        #endif
+        .safeAreaInset(edge: .top, spacing: 0) { SyncErrorBanner() }
+    }
+
+    /// iPad y Mac: barra lateral propia (`Sidebar`) y, en las páginas de lista y detalle, la columna maestro.
+    @ViewBuilder
+    private var columns: some View {
+        if let page = masterPage {
+            NavigationSplitView(columnVisibility: masterVisibility) {
+                sidebar
+            } content: {
+                MasterColumn(page: page, selection: $masterSelection)
+                    .navigationSplitViewColumnWidth(min: masterWidth * 0.85, ideal: masterWidth, max: masterWidth * 1.4)
+            } detail: {
+                // Con otra elección, el detalle empieza de cero: no se queda en lo que se abrió encima de la anterior.
+                detailColumn { MasterDetailColumn(page: page, selection: masterSelection) }
+                    .id(masterSelection)
+            }
+        } else {
+            NavigationSplitView(columnVisibility: $columnVisibility) {
+                sidebar
+            } detail: {
+                detailColumn { SyncAwareContent(title: selection.section.title) { selection.destination } }
+            }
+        }
+    }
+
+    private var split: some View {
+        columns
         #if os(iOS)
         // Si la columna de detalle queda estrecha, sus pantallas usan el diseño de iPhone: las tablas de Gastos y la
         // vista dividida de Ventas no caben (iPad vertical con la barra abierta: 712 pt en el de 13", y con texto
@@ -280,8 +330,12 @@ struct AppShell: View {
         .environment(\.isNarrowColumn, isDetailNarrow)
         #endif
         .environment(\.unsavedChanges, unsavedChanges)
+        .environment(\.openSidebarItem, OpenSidebarItemAction { sidebarSelection.wrappedValue = $0 })
         // Al cambiar de pantalla se rehace la vista dividida: los editores de la columna ya no existen.
-        .onChange(of: selection) { unsavedChanges.removeAll() }
+        .onChange(of: selection) {
+            unsavedChanges.removeAll()
+            masterSelection = nil
+        }
         .alert("¿Descartar los cambios?", isPresented: Binding(get: { pendingSelection != nil }, set: { if !$0 { pendingSelection = nil } })) {
             Button("Descartar", role: .destructive) {
                 unsavedChanges.discardAll()

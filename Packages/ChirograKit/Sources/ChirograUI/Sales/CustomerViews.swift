@@ -67,7 +67,7 @@ struct CustomerListView: View {
             } else {
                 Section {
                     ForEach(filtered) { customer in
-                        NavigationLink { CustomerDetailView(customer: customer) } label: { row(customer) }
+                        NavigationLink { CustomerDetailView(customer: customer) } label: { CustomerRow(customer: customer) }
                     }
                 }
                 .listRowBackground(Palette.surface)
@@ -78,7 +78,18 @@ struct CustomerListView: View {
         .contentMargins(.top, 8, for: .scrollContent)
     }
 
-    private func row(_ customer: Customer) -> some View {
+}
+
+/// Fila de cliente: iniciales (en rojo si tiene vencido), contacto, saldo y estado.
+struct CustomerRow: View {
+    let customer: Customer
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    private func overdue(_ customer: Customer) -> Int64 {
+        (customer.invoices ?? []).filter { $0.isOpen && $0.daysOverdue() != nil }.reduce(0) { $0 + $1.balanceDue }
+    }
+
+    var body: some View {
         let late = overdue(customer)
         // Punto de corte invisible tras la «@»: si el correo no cabe, baja ahí y no se parte con guion.
         let contact = customer.email.isEmpty ? (customer.phone.isEmpty ? String(localized: "Sin correo") : customer.phone)

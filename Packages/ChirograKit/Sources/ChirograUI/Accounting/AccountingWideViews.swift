@@ -3,177 +3,6 @@ import ChirograData
 import SwiftData
 import SwiftUI
 
-// MARK: - Plan de cuentas (`MacPlanCuentas`)
-
-/// Búsqueda, chips por tipo y dos columnas (cuentas de balance | de resultados) con Nº · NOMBRE · TIPO DE DETALLE ·
-/// SALDO y el total de cada grupo. Cada cuenta abre su libro mayor.
-struct ChartOfAccountsWideView: View {
-    enum Group: String, CaseIterable, Identifiable {
-        case all = "Todas", asset = "Activo", liability = "Pasivo", equity = "Patrimonio", income = "Ingresos"
-        case costOfSales = "Costo de ventas", expense = "Gastos"
-        var id: String { rawValue }
-
-        /// Título del grupo en la tabla, en mayúsculas como en el canvas.
-        var heading: String {
-            switch self {
-            case .all: ""
-            case .asset: String(localized: "ACTIVO")
-            case .liability: String(localized: "PASIVO")
-            case .equity: String(localized: "PATRIMONIO")
-            case .income: String(localized: "INGRESOS")
-            case .costOfSales: String(localized: "COSTO DE VENTAS")
-            case .expense: String(localized: "GASTOS")
-            }
-        }
-
-        func contains(_ account: Account) -> Bool {
-            switch self {
-            case .all: true
-            case .asset: account.type == .asset
-            case .liability: account.type == .liability
-            case .equity: account.type == .equity
-            case .income: account.type == .income
-            case .costOfSales: account.subtype == .costOfGoodsSold
-            case .expense: account.type == .expense && account.subtype != .costOfGoodsSold
-            }
-        }
-    }
-
-    @Query(sort: \Account.code) private var accounts: [Account]
-    @Query private var journalLines: [JournalLine]
-    @State private var query = ""
-    @State private var filter: Group = .all
-    @State private var showArchived = false
-    @State private var showingNew = false
-    @State private var width: CGFloat = 0
-    @ScaledMetric(relativeTo: .subheadline) private var amountWidth: CGFloat = 110
-
-    private var visible: [Account] {
-        let text = query.trimmingCharacters(in: .whitespaces)
-        return accounts.filter { account in
-            (showArchived || !account.isArchived) && filter.contains(account)
-                && (text.isEmpty || account.code.localizedStandardContains(text) || account.name.localizedStandardContains(text))
-        }
-    }
-
-    var body: some View {
-        let ledger = Ledger(accounts: accounts, lines: journalLines)
-        let balanceGroups: [Group] = [.asset, .liability, .equity]
-        let resultGroups: [Group] = [.income, .costOfSales, .expense]
-        // Dos columnas sólo si los nombres caben enteros; si no, una debajo de otra.
-        let twoColumns = width - 40 >= 2 * 540 + 16
-        ScrollView {
-            VStack(alignment: .leading, spacing: 14) {
-                MacPageTitle(String(localized: "Plan de cuentas"))
-                ViewThatFits(in: .horizontal) {
-                    HStack(spacing: 10) { search.frame(maxWidth: 280); chips }
-                    VStack(alignment: .leading, spacing: 10) { search; ScrollView(.horizontal, showsIndicators: false) { chips } }
-                }
-                let left = table(balanceGroups, ledger)
-                let right = table(resultGroups, ledger)
-                if twoColumns {
-                    HStack(alignment: .top, spacing: 16) { left.frame(maxWidth: .infinity); right.frame(maxWidth: .infinity) }
-                } else {
-                    left
-                    right
-                }
-                if visible.isEmpty {
-                    Text("Ninguna cuenta coincide").font(.subheadline).foregroundStyle(Palette.ink3).frame(maxWidth: .infinity).padding(.vertical, 32)
-                }
-            }
-            .padding(20)
-        }
-        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
-        .background(Palette.background)
-        .navigationTitle("Plan de cuentas")
-        .headerTitle()
-        .toolbar {
-            ToolbarItemGroup(placement: .primaryAction) {
-                Toggle("Archivadas", isOn: $showArchived).headerButton()
-                ShareLink(item: csvFile(ledger), preview: SharePreview("\(String(localized: "Plan de cuentas")).csv")) {
-                    Text("Exportar CSV")
-                }
-                .headerButton()
-            }
-            ToolbarSpacer(.fixed, placement: .primaryAction)
-            ToolbarItem(placement: .primaryAction) {
-                Button { showingNew = true } label: {
-                    HStack(spacing: 4) { Image(systemName: "plus"); Text("Cuenta") }
-                }
-                .accessibilityLabel("Nueva cuenta")
-                .headerButton()
-            }
-        }
-        .sheet(isPresented: $showingNew) { NavigationStack { AccountEditorView() } }
-    }
-
-    private var search: some View { WideSearchField(prompt: "Número o nombre", text: $query) }
-
-    private var chips: some View {
-        HStack(spacing: 6) {
-            ForEach(Group.allCases) { option in
-                FilterChip(title: option.localizedTitle, isSelected: filter == option) { filter = option }
-            }
-        }
-    }
-
-    @ViewBuilder
-    private func table(_ groups: [Group], _ ledger: Ledger) -> some View {
-        let shown = groups.filter { group in visible.contains { group.contains($0) } }
-        if !shown.isEmpty {
-            TableCard {
-                Text("Nº").frame(width: 52, alignment: .leading)
-                Text("Nombre").frame(maxWidth: .infinity, alignment: .leading)
-                Text("Tipo de detalle").frame(width: 150, alignment: .leading)
-                Text("Saldo").frame(width: amountWidth, alignment: .trailing)
-            } rows: {
-                ForEach(shown) { group in
-                    let members = accounts.filter { group.contains($0) && (showArchived || !$0.isArchived) }
-                    HStack {
-                        Text(group.heading).tracking(0.6)
-                        Spacer(minLength: 8)
-                        Text(members.reduce(0) { $0 + ledger.balance(of: $1) }.money)
-                    }
-                    .font(.caption.weight(.bold))
-                    .foregroundStyle(Palette.ink2)
-                    .monospacedDigit()
-                    .padding(.horizontal, 18).padding(.top, 10).padding(.bottom, 4)
-                    .background { Rectangle().fill(Palette.background) }
-                    .accessibilityElement(children: .combine)
-                    .accessibilityAddTraits(.isHeader)
-                    ForEach(visible.filter { group.contains($0) }) { account in
-                        NavigationLink { LedgerView(account: account) } label: { row(account, ledger) }
-                            .buttonStyle(.plain)
-                            .contextMenu {
-                                if !account.isSystem {
-                                    Button(account.isArchived ? "Restaurar" : "Archivar") { account.isArchived.toggle() }
-                                }
-                            }
-                    }
-                }
-            }
-            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-        }
-    }
-
-    private func row(_ account: Account, _ ledger: Ledger) -> some View {
-        TableRow {
-            Text(account.code).foregroundStyle(Palette.ink3).frame(width: 52, alignment: .leading)
-            Text(account.name).fontWeight(account.parent == nil ? .semibold : .regular).strikethrough(account.isArchived)
-                .lineLimit(1).padding(.leading, account.parent == nil ? 0 : 16)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            Text(account.subtype.title).foregroundStyle(Palette.ink2).lineLimit(1).frame(width: 150, alignment: .leading)
-            Text(ledger.balance(of: account).money).fontWeight(.semibold).frame(width: amountWidth, alignment: .trailing)
-        }
-    }
-
-    private func csvFile(_ ledger: Ledger) -> CSVFile {
-        let rows = accounts.filter { showArchived || !$0.isArchived }
-            .map { (code: $0.code, name: $0.name, type: $0.type.title, detail: $0.subtype.title, balance: ledger.balance(of: $0)) }
-        return CSVFile(name: String(localized: "Plan de cuentas"), text: CSVExport.chartOfAccounts(rows, asOf: .now))
-    }
-}
-
 // MARK: - Cierre de periodo (`MacCierre`)
 
 /// Fecha de cierre con su candado, aviso, nueva fecha y «Cerrar … / Reabrir …», y la lista de revisión del mes.
@@ -295,23 +124,24 @@ struct PeriodCloseWideView: View {
         let monthBills = bills.filter { $0.status != .void && month.contains($0.billDate) }.count
         return VStack(alignment: .leading, spacing: 0) {
             Text("Antes de cerrar \(name)").font(.headline).foregroundStyle(Palette.ink).padding(.bottom, 6).accessibilityAddTraits(.isHeader)
-            checkRow(ok: true, String(localized: "Facturas de \(name) emitidas (\(issued))")) { SalesView(fixedSegment: .invoices) }
+            checkRow(ok: true, String(localized: "Facturas de \(name) emitidas (\(issued))"), item: .sales(.invoices)) { SalesView(fixedSegment: .invoices) }
             if drafts > 0 {
-                checkRow(ok: false, String(localized: "\(drafts) borradores de factura sin emitir")) { SalesView(fixedSegment: .invoices) }
+                checkRow(ok: false, String(localized: "\(drafts) borradores de factura sin emitir"), item: .sales(.invoices)) { SalesView(fixedSegment: .invoices) }
             }
-            checkRow(ok: true, String(localized: "Gastos de \(name) registrados (\(monthExpenses.count))")) { ExpensesView(fixedSegment: .expenses) }
+            checkRow(ok: true, String(localized: "Gastos de \(name) registrados (\(monthExpenses.count))"), item: .expenses(.expenses)) { ExpensesView(fixedSegment: .expenses) }
             checkRow(ok: noReceipt == 0, noReceipt == 0 ? String(localized: "Todos los gastos tienen recibo")
-                                                        : String(localized: "\(noReceipt) gastos sin recibo adjunto")) { ExpensesView(fixedSegment: .expenses) }
-            checkRow(ok: true, String(localized: "Facturas de proveedor de \(name) (\(monthBills))")) { ExpensesView(fixedSegment: .bills) }
-            checkRow(ok: true, String(localized: "Revisa el impuesto sobre ventas")) { ReportsView(fixedKind: .salesTax) }
+                                                        : String(localized: "\(noReceipt) gastos sin recibo adjunto"), item: .expenses(.expenses)) { ExpensesView(fixedSegment: .expenses) }
+            checkRow(ok: true, String(localized: "Facturas de proveedor de \(name) (\(monthBills))"), item: .expenses(.bills)) { ExpensesView(fixedSegment: .bills) }
+            checkRow(ok: true, String(localized: "Revisa el impuesto sobre ventas"), item: .report(.salesTax)) { ReportsView(fixedKind: .salesTax) }
         }
         .card()
     }
 
-    private func checkRow<Destination: View>(ok: Bool, _ title: String, @ViewBuilder destination: @escaping () -> Destination) -> some View {
+    private func checkRow<Destination: View>(ok: Bool, _ title: String, item: SidebarItem,
+                                             @ViewBuilder destination: @escaping () -> Destination) -> some View {
         VStack(spacing: 0) {
             Divider()
-            NavigationLink(destination: destination) {
+            SectionLink(item: item, destination: destination) {
                 HStack(spacing: 10) {
                     Image(systemName: ok ? "checkmark" : "exclamationmark")
                         .font(.caption.weight(.bold))

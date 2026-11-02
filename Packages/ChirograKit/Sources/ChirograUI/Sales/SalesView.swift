@@ -3,7 +3,8 @@ import ChirograData
 import SwiftData
 import SwiftUI
 
-/// Ventas (canvas: `Ventas`, `Clientes`): facturas con búsqueda y filtros por estado, y clientes.
+/// Ventas (canvas: `Ventas`, `Clientes`): facturas con búsqueda y filtros por estado, y clientes. Es la pantalla del
+/// iPhone (y del iPad con AX4 o más); en iPad y Mac, Facturas y Clientes van con columna maestro (`MasterPage`).
 struct SalesView: View {
     enum Segment: String, CaseIterable, Identifiable {
         case invoices = "Facturas"
@@ -11,34 +12,14 @@ struct SalesView: View {
         var id: String { rawValue }
     }
 
-    /// En iPad y Mac la subsección la elige la barra lateral (canvas `Sidebar`) y no se muestran las pestañas.
+    /// Desde la barra lateral o un enlace, la subsección ya elegida y sin pestañas.
     var fixedSegment: Segment? = nil
 
     @State private var selectedSegment: Segment = .invoices
     @State private var showingEditor = false
-    /// Cómo se abrió el editor (en la columna o en hoja). Se fija al abrirlo: si la columna cambia de ancho
-    /// mientras tanto (barra lateral en un iPad vertical), el editor sigue donde estaba y no se pierde lo escrito.
-    @State private var editorInline = false
     @State private var query = ""
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-    #if os(iOS)
-    @LayoutSizeClass private var sizeClass
-    #endif
 
     private var segment: Segment { fixedSegment ?? selectedSegment }
-
-    /// Tablas y lista y detalle (`MacVentas`, `iPadVentas`, `MacClientes`) en iPad y Mac hasta AX3.
-    private var isWide: Bool {
-        #if os(iOS)
-        if sizeClass != .regular { return false }
-        #endif
-        return dynamicTypeSize < .accessibility4
-    }
-
-    private func openEditor() {
-        editorInline = isWide && segment == .invoices
-        showingEditor = true
-    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -46,51 +27,30 @@ struct SalesView: View {
                 UnderlineTabs(options: Segment.allCases, selection: $selectedSegment) { $0.localizedTitle }
             }
 
-            switch (segment, isWide) {
-            case (.invoices, false): InvoiceListView(query: $query)
-            case (.customers, false): CustomerListView(query: query)
-            case (.invoices, true):
-                #if os(macOS)
-                InvoiceTableView(query: $query)
-                #else
-                InvoiceSplitView(query: $query)
-                #endif
-            case (.customers, true): CustomerTableView(query: $query)
+            switch segment {
+            case .invoices: InvoiceListView(query: $query)
+            case .customers: CustomerListView(query: query)
             }
         }
         .background(Palette.background)
-        .navigationTitle((isWide || fixedSegment != nil) && segment == .customers ? "Clientes" : "Ventas")
+        .navigationTitle(fixedSegment != nil && segment == .customers ? "Clientes" : "Ventas")
         .headerTitle()
         // Una sola búsqueda en el contenedor y siempre visible: puesta en cada lista, desaparecía al volver de
-        // una factura, porque la barra ya no encontraba la lista debajo de las pestañas. En pantallas anchas
-        // la búsqueda va dentro de la tabla, como en el canvas.
-        .modifier(SalesSearch(enabled: !isWide, query: $query,
+        // una factura, porque la barra ya no encontraba la lista debajo de las pestañas.
+        .modifier(SalesSearch(query: $query,
                               prompt: segment == .invoices ? Text("Cliente, número o monto") : Text("Nombre, correo o teléfono")))
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                if isWide {
-                    Button { openEditor() } label: {
-                        HStack(spacing: 4) { Image(systemName: "plus"); Text(segment == .invoices ? "Factura" : "Cliente") }
-                    }
-                    .accessibilityLabel(segment == .invoices ? "Nueva factura" : "Nuevo cliente")
-                    .headerButton()
-                } else {
-                    AddButton(title: segment == .invoices ? "Nueva factura" : "Nuevo cliente") { openEditor() }
-                }
+                AddButton(title: segment == .invoices ? "Nueva factura" : "Nuevo cliente") { showingEditor = true }
             }
         }
-        // `MacFacturaNueva`: en pantallas anchas la factura nueva se abre a pantalla completa, junto a la barra lateral.
-        .sheet(isPresented: Binding(get: { showingEditor && !editorInline }, set: { showingEditor = $0 })) {
+        .sheet(isPresented: $showingEditor) {
             NavigationStack {
                 if segment == .invoices { InvoiceEditorView() } else { CustomerEditorView() }
             }
             .editorSheetSizing()
         }
-        .navigationDestination(isPresented: Binding(get: { showingEditor && editorInline }, set: { showingEditor = $0 })) {
-            InvoiceEditorView()
-        }
     }
-
 }
 
 struct InvoiceListView: View {
@@ -221,21 +181,16 @@ struct InvoiceRow: View {
     NavigationStack { SalesView() }.modelContainer(SampleData.makeContainer())
 }
 
-/// Búsqueda de la barra de navegación sólo en pantallas estrechas.
+/// Búsqueda de la barra de navegación, siempre a la vista.
 private struct SalesSearch: ViewModifier {
-    let enabled: Bool
     @Binding var query: String
     let prompt: Text
 
     func body(content: Content) -> some View {
-        if enabled {
-            #if os(iOS)
-            content.searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: prompt)
-            #else
-            content.searchable(text: $query, prompt: prompt)
-            #endif
-        } else {
-            content
-        }
+        #if os(iOS)
+        content.searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: prompt)
+        #else
+        content.searchable(text: $query, prompt: prompt)
+        #endif
     }
 }

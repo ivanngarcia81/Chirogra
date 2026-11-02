@@ -11,21 +11,8 @@ struct BankingView: View {
     @Query(sort: \Account.code) private var accounts: [Account]
     @Query private var journalLines: [JournalLine]
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-    #if os(iOS)
-    @LayoutSizeClass private var sizeClass
-    #endif
 
-    /// `BancaCuentas` en iPad y Mac (hasta AX3); el carrusel del iPhone en pantallas estrechas.
-    private var isWide: Bool {
-        #if os(iOS)
-        if sizeClass != .regular { return false }
-        #endif
-        return dynamicTypeSize < .accessibility4
-    }
-
-    var body: some View {
-        if isWide { BankingWideView() } else { compactBody }
-    }
+    var body: some View { compactBody }
 
     @ViewBuilder
     private var compactBody: some View {
@@ -77,96 +64,17 @@ struct BankingView: View {
     }
 }
 
-/// Banca en iPad y Mac (canvas `BancaCuentas`): tarjetas de cuenta que se eligen como en un grupo de radio y los
-/// movimientos del mes de la cuenta elegida con retiro, depósito y saldo acumulado. «Importar y conciliar» es de la
-/// fase 2 y se muestra desactivado.
-struct BankingWideView: View {
-    enum NewMovement: String, Identifiable {
-        case expense, entry
-        var id: String { rawValue }
-    }
 
-    @Query(sort: \Account.code) private var accounts: [Account]
-    @Query private var journalLines: [JournalLine]
-    @State private var selectedID: UUID?
+/// Movimientos del mes de una cuenta de dinero (canvas `BancaCuentas`): saldo inicial, retiro, depósito y saldo
+/// acumulado, con el mes anterior y el siguiente. En Banca ancha va bajo las tarjetas y, con la columna maestro, en
+/// el detalle de la cuenta elegida.
+struct AccountMovementsView: View {
+    let account: Account
     @State private var monthOffset = 0
-    @State private var adding: NewMovement?
     @ScaledMetric(relativeTo: .subheadline) private var amountWidth: CGFloat = 110
 
-    var body: some View {
-        let ledger = Ledger(accounts: accounts, lines: journalLines)
-        let shown = ledger.moneyAccounts.filter { $0.subtype == .bank || $0.subtype == .creditCard || ledger.balance(of: $0) != 0 }
-        let selected = shown.first { $0.id == selectedID } ?? shown.first
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                // Como el `auto-fit` del canvas: las tarjetas ocupan todo el ancho, hasta cuatro por fila.
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: max(1, min(shown.count, 4))), spacing: 12) {
-                    ForEach(shown) { account in
-                        accountCard(account, balance: ledger.cashBalance(of: account), selected: account.id == selected?.id)
-                    }
-                }
-                if let selected { movements(of: selected) }
-            }
-            .padding(20)
-        }
-        .background(Palette.background)
-        .navigationTitle("Banca")
-        .headerTitle()
-        .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Label("Importar y conciliar · Próximamente", systemImage: "square.and.arrow.down")
-                    .labelStyle(.titleAndIcon)
-                    .font(.footnote.weight(.semibold))
-                    .foregroundStyle(Palette.ink3)
-                    .fixedSize()
-                    .accessibilityLabel("Importar y conciliar, disponible en una próxima versión")
-            }
-            ToolbarSpacer(.fixed, placement: .primaryAction)
-            ToolbarItem(placement: .primaryAction) {
-                Menu {
-                    Button("Gasto", systemImage: "wallet.bifold") { adding = .expense }
-                    Button("Asiento manual", systemImage: "list.bullet.rectangle") { adding = .entry }
-                } label: {
-                    HStack(spacing: 4) { Image(systemName: "plus"); Text("Movimiento") }
-                }
-                .accessibilityLabel("Nuevo movimiento")
-                .headerButton()
-            }
-        }
-        .sheet(item: $adding) { kind in
-            NavigationStack {
-                switch kind {
-                case .expense: ExpenseEditorView()
-                case .entry: JournalEntryEditorView()
-                }
-            }
-        }
-    }
-
-    private func accountCard(_ account: Account, balance: Int64, selected: Bool) -> some View {
-        Button { selectedID = account.id } label: {
-            VStack(alignment: .leading, spacing: 6) {
-                Label(account.name, systemImage: account.subtype == .creditCard ? "creditcard" : "building.columns")
-                    .font(.footnote.weight(.semibold)).lineLimit(1)
-                    .foregroundStyle(selected ? Palette.onBrand.opacity(0.9) : Palette.ink2)
-                Text(balance.money).font(.amount(24)).lineLimit(1).minimumScaleFactor(0.7)
-                    .foregroundStyle(selected ? Palette.onBrand : Palette.ink)
-                Text("Saldo en libros · \(account.code)").font(.caption)
-                    .foregroundStyle(selected ? Palette.onBrand.opacity(0.85) : Palette.ink3)
-            }
-            .padding(.horizontal, 16).padding(.vertical, 14)
-            .frame(maxWidth: .infinity, minHeight: 96, alignment: .leading)
-            .background(selected ? Palette.brand : Palette.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(selected ? Palette.brand : Palette.separator))
-            .contentShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-        }
-        .buttonStyle(.plain)
-        .accessibilityElement(children: .combine)
-        .accessibilityAddTraits(selected ? [.isSelected] : [])
-    }
-
     /// Movimientos del mes: el saldo sigue lo que ve el usuario (una tarjeta de crédito en negativo, lo que se debe).
-    private func movements(of account: Account) -> some View {
+    var body: some View {
         let month = DateInterval.month(containing: .now, offset: monthOffset)
         let end = month.end.addingTimeInterval(-1)
         let ledger = LedgerView.ledger(for: account, from: month.start, to: end)
