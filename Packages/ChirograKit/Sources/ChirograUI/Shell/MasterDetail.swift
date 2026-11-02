@@ -202,7 +202,7 @@ private struct MasterListStyle: ViewModifier {
             .tint(Palette.brandWash)
             #endif
             .navigationTitle(title)
-            .headerTitle()
+            .masterTitle()
             .searchable(text: $query, prompt: Text(prompt))
     }
 }
@@ -249,6 +249,17 @@ private struct MasterRow<Badge: View>: View {
 }
 
 private extension View {
+    /// Título de la columna maestro: en el iPad, en la fila de la barra junto a «+», como en Mail con la lista
+    /// estrecha. Grande (`.inlineLarge`) quedaba debajo de la barra: el filtro fijo lo tapaba (hueco vacío) o, con el
+    /// filtro en la barra, el efecto de borde lo desenfocaba. En el Mac, el de la ventana.
+    func masterTitle() -> some View {
+        #if os(iOS)
+        toolbarTitleDisplayMode(.inline)
+        #else
+        self
+        #endif
+    }
+
     /// Fila de la columna maestro con su selección: fondo lavado de marca y texto en sus colores (AA en claro y en
     /// oscuro). Con el relleno de marca del sistema, el texto quedaba en ~2,5:1 y la línea de abajo en ~1,2:1.
     func masterRow(_ id: UUID, selection: UUID?) -> some View {
@@ -552,7 +563,7 @@ private struct BankingMasterList: View {
         .tint(Palette.brandWash)
         #endif
         .navigationTitle("Banca")
-        .headerTitle()
+        .masterTitle()
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Menu {
