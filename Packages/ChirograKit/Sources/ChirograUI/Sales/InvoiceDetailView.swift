@@ -270,23 +270,34 @@ struct InvoiceDetailView: View {
                 }
                 Divider()
                 paymentRow(String(localized: "Depositar en")) {
+                    let depositName = depositAccounts.first { $0.id == depositAccountID }?.displayName ?? String(localized: "Elegir…")
                     // Menú con etiqueta propia: con AX3 el nombre de la cuenta baja de línea sin cortarse.
                     Menu {
                         AccountPicker(title: String(localized: "Depositar en"), accounts: depositAccounts, selection: $depositAccountID)
                     } label: {
                         HStack(spacing: 4) {
-                            Text(depositAccounts.first { $0.id == depositAccountID }?.displayName ?? String(localized: "Elegir…"))
+                            Text(depositName)
                                 .multilineTextAlignment(.trailing)
                                 .fixedSize(horizontal: false, vertical: true)
                             Image(systemName: "chevron.up.chevron.down").font(.caption).accessibilityHidden(true)
                         }
                         .foregroundStyle(Palette.brand)
                     }
+                    // Como «Método»: VoiceOver lee el nombre y la cuenta elegida en un solo elemento.
                     .accessibilityLabel("Depositar en")
+                    .accessibilityValue(depositName)
                 }
                 Divider()
                 paymentRow(String(localized: "Fecha")) {
                     DatePicker("Fecha", selection: $paymentDate, displayedComponents: .date).labelsHidden()
+                        #if os(iOS)
+                        // El botón compacto de UIKit se anuncia como «Selector de fecha»: se sustituye por
+                        // «Fecha, <día>». Al tocar dos veces, VoiceOver toca el centro y abre el calendario.
+                        .accessibilityElement(children: .ignore)
+                        .accessibilityLabel("Fecha")
+                        .accessibilityValue(paymentDate.formatted(date: .long, time: .omitted))
+                        .accessibilityAddTraits(.isButton)
+                        #endif
                 }
             }
             .padding(.horizontal, 12)
