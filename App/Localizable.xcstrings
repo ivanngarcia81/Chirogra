@@ -1,6 +1,9 @@
 {
   "sourceLanguage" : "es",
   "strings" : {
+    " · " : {
+      "shouldTranslate" : false
+    },
     " · %@" : {
       "localizations" : {
         "en" : {
@@ -24,7 +27,23 @@
         }
       }
     },
+    "$0" : {
+      "shouldTranslate" : false
+    },
     "%" : {
+      "shouldTranslate" : false
+    },
+    "% del total" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "% of total"
+          }
+        }
+      }
+    },
+    "%@ %@" : {
       "shouldTranslate" : false
     },
     "%@ %@%%" : {
@@ -48,6 +67,9 @@
         }
       }
     },
+    "%@ (%lld)" : {
+      "shouldTranslate" : false
+    },
     "%@ a favor" : {
       "localizations" : {
         "en" : {
@@ -64,6 +86,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ days"
+          }
+        }
+      }
+    },
+    "%@ esta semana" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ this week"
+          }
+        }
+      }
+    },
+    "%@ frente a %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ vs. %@"
           }
         }
       }
@@ -104,6 +146,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ overdue"
+          }
+        }
+      }
+    },
+    "%@ vs. %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ vs. %@"
           }
         }
       }
@@ -174,6 +226,26 @@
         }
       }
     },
+    "%@ · declaración trimestral" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · quarterly filing"
+          }
+        }
+      }
+    },
+    "%@ · ingresos, gastos y ganancia" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · income, expenses and profit"
+          }
+        }
+      }
+    },
     "%@ · pagada" : {
       "localizations" : {
         "en" : {
@@ -190,6 +262,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ · balance %@"
+          }
+        }
+      }
+    },
+    "%@ · tasa combinada" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · combined rate"
+          }
+        }
+      }
+    },
+    "%@ · vence el %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · due %@"
+          }
+        }
+      }
+    },
+    "%@ · venció el %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · was due %@"
           }
         }
       }
@@ -272,6 +374,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@, credit %@"
+          }
+        }
+      }
+    },
+    "%@, vence el %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@, due %@"
           }
         }
       }
@@ -492,6 +604,16 @@
         }
       }
     },
+    "%lld de %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld of %lld"
+          }
+        }
+      }
+    },
     "%lld de %lld completados" : {
       "localizations" : {
         "en" : {
@@ -649,6 +771,16 @@
         }
       }
     },
+    "%lld facturas abiertas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld open invoices"
+          }
+        }
+      }
+    },
     "%lld facturas por pagar esta semana" : {
       "localizations" : {
         "en" : {
@@ -729,6 +861,16 @@
         }
       }
     },
+    "%lld proveedores" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld vendors"
+          }
+        }
+      }
+    },
     "%lld proveedores requieren formulario 1099-NEC para %@" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -766,6 +908,36 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "%lld tasas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld rates"
+          }
+        }
+      }
+    },
+    "%lld vencidas · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld overdue · %@"
+          }
+        }
+      }
+    },
+    "%lld%% del total" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld%% of total"
           }
         }
       }
@@ -814,8 +986,28 @@
     "12 M" : {
       "shouldTranslate" : false
     },
+    "12 meses" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "12 months"
+          }
+        }
+      }
+    },
     "6 M" : {
       "shouldTranslate" : false
+    },
+    "6 meses" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "6 months"
+          }
+        }
+      }
     },
     "ACTIVO" : {
       "extractionState" : "stale",
@@ -885,6 +1077,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Opens settings"
+          }
+        }
+      }
+    },
+    "Acciones rápidas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quick actions"
           }
         }
       }
@@ -1035,12 +1237,32 @@
         }
       }
     },
+    "Ajustes de %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ settings"
+          }
+        }
+      }
+    },
     "Al" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "As of"
+          }
+        }
+      }
+    },
+    "Al %@ · base devengado · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "As of %@ · accrual basis · %@"
           }
         }
       }
@@ -1171,6 +1393,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Payables aging"
+          }
+        }
+      }
+    },
+    "Anual" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Annual"
           }
         }
       }
@@ -1395,6 +1627,16 @@
         }
       }
     },
+    "Añadir tasa" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add rate"
+          }
+        }
+      }
+    },
     "Añadir tu primer cliente" : {
       "localizations" : {
         "en" : {
@@ -1452,6 +1694,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No expenses yet"
+          }
+        }
+      }
+    },
+    "Aún no tienes cuentas de banco ni tarjetas." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You don't have any bank accounts or cards yet."
           }
         }
       }
@@ -1974,12 +2226,32 @@
         }
       }
     },
+    "Columnas en días después del vencimiento." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Columns in days past due."
+          }
+        }
+      }
+    },
     "Combinada" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Combined"
+          }
+        }
+      }
+    },
+    "Combinada · %lld tasas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Combined · %lld rates"
           }
         }
       }
@@ -2000,6 +2272,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Retail or store"
+          }
+        }
+      }
+    },
+    "Comparación" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comparison"
+          }
+        }
+      }
+    },
+    "Comparar con %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compare with %@"
           }
         }
       }
@@ -2060,6 +2352,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Component"
+          }
+        }
+      }
+    },
+    "Componente · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Component · %@"
           }
         }
       }
@@ -2261,6 +2563,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cost of goods sold"
+          }
+        }
+      }
+    },
+    "Costos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Costs"
           }
         }
       }
@@ -2506,6 +2818,16 @@
         }
       }
     },
+    "Cuentas por pagar · próximas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bills to pay · upcoming"
+          }
+        }
+      }
+    },
     "Cuentas y saldos" : {
       "localizations" : {
         "en" : {
@@ -2602,6 +2924,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Quarterly return"
+          }
+        }
+      }
+    },
+    "Declarar y pagar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "File and pay"
           }
         }
       }
@@ -2722,6 +3054,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "From"
+          }
+        }
+      }
+    },
+    "Desglose · %@ %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Breakdown · %@ %@"
           }
         }
       }
@@ -3086,6 +3428,16 @@
         }
       }
     },
+    "Elegir fechas…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose dates…"
+          }
+        }
+      }
+    },
     "Elegir foto" : {
       "localizations" : {
         "en" : {
@@ -3354,6 +3706,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Profit and loss"
+          }
+        }
+      }
+    },
+    "Estado de resultados · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Profit and loss · %@"
           }
         }
       }
@@ -3655,6 +4017,16 @@
         }
       }
     },
+    "Facturas de clientes abiertas · %@ vencido" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open customer invoices · %@ overdue"
+          }
+        }
+      }
+    },
     "Facturas de clientes abiertas · días después del vencimiento · %@ vencido" : {
       "localizations" : {
         "en" : {
@@ -3681,12 +4053,32 @@
         }
       }
     },
+    "Facturas de proveedores abiertas · %@ vencido" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open vendor bills · %@ overdue"
+          }
+        }
+      }
+    },
     "Facturas de proveedores abiertas · días después del vencimiento · %@ vencido" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Open vendor bills · days past due · %@ overdue"
+          }
+        }
+      }
+    },
+    "Facturas por cobrar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invoices to collect"
           }
         }
       }
@@ -3757,6 +4149,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Date"
+          }
+        }
+      }
+    },
+    "Fecha de corte" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "As-of date"
           }
         }
       }
@@ -3882,12 +4284,52 @@
         }
       }
     },
+    "Ganancia" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Profit"
+          }
+        }
+      }
+    },
+    "Ganancia del mes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Profit this month"
+          }
+        }
+      }
+    },
     "Ganancia neta" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Net income"
+          }
+        }
+      }
+    },
+    "Ganancia neta · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Net profit · %@"
+          }
+        }
+      }
+    },
+    "Ganancia · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Profit · %@"
           }
         }
       }
@@ -4342,6 +4784,16 @@
         }
       }
     },
+    "Impuesto cobrado · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tax collected · %@"
+          }
+        }
+      }
+    },
     "Impuesto incluido" : {
       "localizations" : {
         "en" : {
@@ -4432,12 +4884,32 @@
         }
       }
     },
+    "Ingresos y gastos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Income and expenses"
+          }
+        }
+      }
+    },
     "Ingresos y gastos de los últimos %lld meses" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Income and expenses for the last %lld months"
+          }
+        }
+      }
+    },
+    "Ingresos y gastos · 12 meses" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Income and expenses · 12 months"
           }
         }
       }
@@ -4762,6 +5234,16 @@
         }
       }
     },
+    "Los saldos deudores van en Débito y los acreedores en Crédito." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Debit balances go under Debit and credit balances under Credit."
+          }
+        }
+      }
+    },
     "Los separadores, el formato de fecha y el idioma siguen la región y el idioma de tu dispositivo (Ajustes › General › Idioma y región)." : {
       "localizations" : {
         "en" : {
@@ -4808,6 +5290,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Message to customer"
+          }
+        }
+      }
+    },
+    "Mensual" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monthly"
           }
         }
       }
@@ -5717,6 +6209,16 @@
         }
       }
     },
+    "Otros reportes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Other reports"
+          }
+        }
+      }
+    },
     "PASIVO" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -6032,6 +6534,16 @@
         }
       }
     },
+    "Pagos del trimestre" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Payments this quarter"
+          }
+        }
+      }
+    },
     "Para bloquear Chirogra, primero configura un código, Face ID o Touch ID en los ajustes del dispositivo." : {
       "localizations" : {
         "en" : {
@@ -6163,6 +6675,16 @@
         }
       }
     },
+    "Periodo de declaración" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filing frequency"
+          }
+        }
+      }
+    },
     "Periodo de la gráfica" : {
       "localizations" : {
         "en" : {
@@ -6234,6 +6756,16 @@
         }
       }
     },
+    "Por antigüedad" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "By age"
+          }
+        }
+      }
+    },
     "Por cobrar" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -6265,6 +6797,16 @@
         }
       }
     },
+    "Por jurisdicción" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "By jurisdiction"
+          }
+        }
+      }
+    },
     "Por pagar" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -6272,6 +6814,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Payables"
+          }
+        }
+      }
+    },
+    "Por pagar · 14 días" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To pay · 14 days"
           }
         }
       }
@@ -6322,6 +6874,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Not yet due %@"
+          }
+        }
+      }
+    },
+    "Por vencer %@ · %lld facturas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not yet due %@ · %lld invoices"
           }
         }
       }
@@ -6412,6 +6974,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Progress"
+          }
+        }
+      }
+    },
+    "Progreso de configuración" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Setup progress"
           }
         }
       }
@@ -6514,6 +7086,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Coming soon: import and reconcile"
+          }
+        }
+      }
+    },
+    "Próximos 14 días" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next 14 days"
+          }
+        }
+      }
+    },
+    "Próximos 14 días · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next 14 days · %@"
           }
         }
       }
@@ -6980,6 +7572,16 @@
         }
       }
     },
+    "Resumen del mes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Month summary"
+          }
+        }
+      }
+    },
     "Retiro" : {
       "localizations" : {
         "en" : {
@@ -7334,6 +7936,16 @@
         }
       }
     },
+    "Sales tax por jurisdicción · declaración trimestral" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sales tax by jurisdiction · quarterly filing"
+          }
+        }
+      }
+    },
     "Sales tax por pagar" : {
       "localizations" : {
         "en" : {
@@ -7400,6 +8012,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "A reversing entry will be posted. The invoice stays in the history as void."
+          }
+        }
+      }
+    },
+    "Secciones del resumen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Summary sections"
           }
         }
       }
@@ -7725,6 +8347,16 @@
         }
       }
     },
+    "Sin pagos en el trimestre" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No payments this quarter"
+          }
+        }
+      }
+    },
     "Sin pagos registrados" : {
       "localizations" : {
         "en" : {
@@ -7847,6 +8479,16 @@
         }
       }
     },
+    "Sobre %@ gravables" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On %@ taxable"
+          }
+        }
+      }
+    },
     "Sociedad (partnership)" : {
       "localizations" : {
         "en" : {
@@ -7863,6 +8505,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "On this device only"
+          }
+        }
+      }
+    },
+    "Solo periodo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Period only"
           }
         }
       }
@@ -8057,6 +8709,16 @@
         }
       }
     },
+    "Tasa combinada %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Combined rate %@"
+          }
+        }
+      }
+    },
     "Tasas" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -8064,6 +8726,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Rates"
+          }
+        }
+      }
+    },
+    "Tasas de impuesto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tax rates"
           }
         }
       }
@@ -8310,6 +8982,16 @@
         }
       }
     },
+    "Total créditos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total credits"
+          }
+        }
+      }
+    },
     "Total de %@" : {
       "localizations" : {
         "en" : {
@@ -8326,6 +9008,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Credit memo total"
+          }
+        }
+      }
+    },
+    "Total débitos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total debits"
           }
         }
       }
@@ -8400,6 +9092,16 @@
         }
       }
     },
+    "Total pendiente" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total outstanding"
+          }
+        }
+      }
+    },
     "Total por cobrar" : {
       "localizations" : {
         "en" : {
@@ -8456,6 +9158,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Transfer"
+          }
+        }
+      }
+    },
+    "Trimestral" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quarterly"
           }
         }
       }
@@ -8577,6 +9289,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "OVERDUE"
+          }
+        }
+      }
+    },
+    "Variación" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Change"
           }
         }
       }
@@ -8774,6 +9496,16 @@
         }
       }
     },
+    "Vencido %@ · %lld facturas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Overdue %@ · %lld invoices"
+          }
+        }
+      }
+    },
     "Vencido · %lld facturas" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -8936,6 +9668,16 @@
         }
       }
     },
+    "Ver estado de resultados" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View profit and loss"
+          }
+        }
+      }
+    },
     "Ver reporte" : {
       "localizations" : {
         "en" : {
@@ -8952,6 +9694,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "See all invoices"
+          }
+        }
+      }
+    },
+    "Ver todas las facturas por pagar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View all bills"
           }
         }
       }
@@ -9002,6 +9754,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Preview · Invoice %@"
+          }
+        }
+      }
+    },
+    "Vs. anterior" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vs. previous"
           }
         }
       }
