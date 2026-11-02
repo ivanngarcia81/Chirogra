@@ -71,16 +71,43 @@ extension String {
 }
 
 extension View {
-    /// Hoja de un editor: con texto de accesibilidad, del tamaño de página (en el iPad la hoja de formulario se
-    /// quedaba pequeña y solo cabían dos o tres campos).
+    /// Hoja de un editor: en el iPad, alta como una página y de 760 pt de ancho como máximo; con texto de
+    /// accesibilidad, del tamaño de página en todas partes. La hoja de formulario del iPad (~580×660 pt) cortaba la
+    /// factura por abajo aunque sobraba pantalla. En el iPhone no cambia nada y en el Mac conserva su tamaño.
     func editorSheetSizing() -> some View { modifier(EditorSheetSizing()) }
 }
 
 private struct EditorSheetSizing: ViewModifier {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
+    /// Se mira el aparato y no la clase de tamaño: dentro de la hoja de formulario la clase ya es compacta.
+    private var isPad: Bool {
+        #if os(iOS)
+        UIDevice.current.userInterfaceIdiom == .pad
+        #else
+        false
+        #endif
+    }
+
     func body(content: Content) -> some View {
-        if dynamicTypeSize.isAccessibilitySize { content.presentationSizing(.page) } else { content }
+        if dynamicTypeSize.isAccessibilitySize {
+            content.presentationSizing(.page)
+        } else if isPad {
+            content.presentationSizing(EditorPageSizing())
+        } else {
+            content
+        }
+    }
+}
+
+/// Alto de página, ancho de formulario holgado: la hoja de página del iPad en vertical ocupaba casi toda la pantalla.
+private struct EditorPageSizing: PresentationSizing {
+    static let maxWidth: CGFloat = 760
+
+    func proposedSize(for root: PresentationSizingRoot, context: PresentationSizingContext) -> ProposedViewSize {
+        var size = PagePresentationSizing.page.proposedSize(for: root, context: context)
+        size.width = min(size.width ?? Self.maxWidth, Self.maxWidth)
+        return size
     }
 }
 
