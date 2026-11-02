@@ -3,8 +3,10 @@ import ChirograData
 import SwiftData
 import SwiftUI
 
-/// Factura (canvas: `FacturaDetalle`): aviso de estado, tarjeta con saldo y línea de tiempo, tres acciones,
-/// la tarjeta «Registrar pago» en la misma pantalla y, debajo, las líneas, los totales y las notas de crédito.
+/// Factura. iPhone (canvas `FacturaDetalle`): cliente, saldo de 40 y estado centrados; baldosas Duplicar · PDF ·
+/// Recordatorio; «Registrar pago» como grupo con Total · Parcial y el botón dentro; «Actividad» con círculos de Tinta.
+/// iPad y Mac (canvas `iPadVentas`, columna derecha): el resumen a la izquierda, las acciones en la barra y «Actividad»
+/// antes de «Registrar pago». Debajo, en todos, las líneas, los totales y las notas de crédito.
 struct InvoiceDetailView: View {
     @Bindable var invoice: Invoice
     /// Dentro de la lista y detalle de iPad (`iPadVentas`): sin título propio, que es el de Ventas.
@@ -12,6 +14,9 @@ struct InvoiceDetailView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    #if os(iOS)
+    @LayoutSizeClass private var sizeClass
+    #endif
     @Query private var companies: [Company]
     @Query(sort: \Account.code) private var accounts: [Account]
     @State private var showingCreditNote = false
@@ -19,6 +24,7 @@ struct InvoiceDetailView: View {
     @State private var editingDraft = false
     @State private var duplicate: Invoice?
     @State private var confirmingVoid = false
+    @State private var confirmingDelete = false
     @State private var errorMessage: String?
 
     // Registrar pago
@@ -35,47 +41,83 @@ struct InvoiceDetailView: View {
     private var books: Bookkeeper { Bookkeeper(context: context) }
     private var depositAccounts: [Account] { accounts.filtered { $0.isMoneyAccount && $0 != .creditCard } }
     private var amountToRecord: Int64 { paymentMode == .total ? invoice.balanceDue : paymentAmount }
+    private var isDraft: Bool { invoice.status == .draft }
+
+    /// iPad (columna ancha) y Mac: el detalle de `iPadVentas`; en el iPhone y la columna estrecha, el de `FacturaDetalle`.
+    private var isWide: Bool {
+        #if os(iOS)
+        if sizeClass != .regular { return false }
+        #endif
+        return !dynamicTypeSize.isAccessibilitySize
+    }
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: Metrics.cardSpacing) {
-                if let errorMessage { ErrorBanner(message: errorMessage) }
-                statusBanner
-                statusCard
-                actionButtons
-                if invoice.isOpen { paymentCard }
-                linesCard
-                if invoice.status != .draft { totalsCard }
-                creditNotesCard
+            VStack(alignment: .leading, spacing: 0) {
+                if let errorMessage { ErrorBanner(message: errorMessage).padding(.bottom, 12) }
+                summary
+                if isDraft {
+                    draftActions.padding(.top, 16)
+                } else if !isWide {
+                    actionTiles.padding(.top, 14)
+                }
+                if !isDraft {
+                    if isWide {
+                        activity
+                        if invoice.isOpen { paymentSection }
+                    } else {
+                        if invoice.isOpen { paymentSection }
+                        activity
+                    }
+                }
+                linesSection
+                if !isDraft { totalsSection }
+                creditNotesSection
             }
-            .padding(Metrics.gutter)
-            // En iPad, ancho de lectura hasta que llegue su tablero.
+            .padding(.horizontal, Metrics.gutter)
+            .padding(.top, 8)
+            .padding(.bottom, 32)
             .frame(maxWidth: 720, alignment: .leading)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(maxWidth: .infinity, alignment: isWide ? .leading : .center)
         }
         .background(Palette.background)
         .modifier(DetailTitle(title: invoice.number.isEmpty ? String(localized: "Borrador") : invoice.number, shown: !embedded))
         .toolbar {
-            if invoice.status != .draft && invoice.status != .void {
-                ToolbarItem(placement: .primaryAction) { moreMenu }
+            // `iPadVentas`: Duplicar · Compartir PDF · Recordatorio en un grupo de vidrio de la barra.
+            if isWide && !isDraft {
+                ToolbarItemGroup(placement: .primaryAction) {
+                    Button("Duplicar", systemImage: "plus.square.on.square", action: duplicateInvoice).headerButton()
+                    Button("PDF", systemImage: "doc.richtext") { showingPreview = true }.headerButton()
+                    if invoice.isOpen {
+                        ShareLink(item: reminderText, subject: Text("Recordatorio de pago")) {
+                            Label("Recordatorio", systemImage: "bell")
+                        }
+                        .headerButton()
+                    }
+                }
+                ToolbarSpacer(.fixed, placement: .primaryAction)
             }
+            ToolbarItem(placement: .primaryAction) { moreMenu }
         }
         .sheet(isPresented: $showingPreview) {
-            NavigationStack { InvoicePreviewView(invoice: invoice, company: companies.first) }
+            NavigationStack { InvoicePreviewView(invoice: invoice, company: companies.first) }.editorSheetSizing()
         }
         .sheet(isPresented: $editingDraft) {
-            NavigationStack { InvoiceEditorView(editing: invoice) }
+            NavigationStack { InvoiceEditorView(editing: invoice) }.editorSheetSizing()
         }
         .sheet(item: $duplicate) { copy in
-            NavigationStack { InvoiceEditorView(editing: copy) }
+            NavigationStack { InvoiceEditorView(editing: copy) }.editorSheetSizing()
         }
         .sheet(isPresented: $showingCreditNote) {
-            NavigationStack { CreditNoteEditorView(invoice: invoice) }
+            NavigationStack { CreditNoteEditorView(invoice: invoice) }.editorSheetSizing()
         }
         .confirmationDialog("¿Anular la factura?", isPresented: $confirmingVoid, titleVisibility: .visible) {
             Button("Anular", role: .destructive, action: void)
         } message: {
             Text("Se registrará un asiento de reversión. La factura queda en el historial como anulada.")
+        }
+        .confirmationDialog("¿Eliminar el borrador?", isPresented: $confirmingDelete, titleVisibility: .visible) {
+            Button("Eliminar borrador", role: .destructive, action: deleteDraft)
         }
         // Al pasar a «Parcial» el monto se vacía para escribir el que se cobra (antes quedaba el saldo completo).
         .onChange(of: paymentMode) { _, mode in paymentAmount = mode == .partial ? 0 : invoice.balanceDue }
@@ -85,131 +127,107 @@ struct InvoiceDetailView: View {
         }
     }
 
-    // MARK: Estado
+    // MARK: Resumen
 
+    /// Cliente, saldo (o importe del borrador) y estado: centrados en el iPhone, a la izquierda en iPad y Mac.
     @ViewBuilder
-    private var statusBanner: some View {
-        switch invoice.status {
-        case .paid:
-            banner(String(localized: "Factura pagada por completo"), systemImage: "checkmark.circle.fill",
-                   foreground: Palette.positive, background: Palette.positiveWash)
-        case .void:
-            banner(String(localized: "Factura anulada"), systemImage: "xmark.circle.fill",
-                   foreground: Palette.negative, background: Palette.negativeWash)
-        case .draft:
-            banner(String(localized: "Borrador: todavía no se ha emitido"), systemImage: "pencil.circle.fill",
-                   foreground: Palette.info, background: Palette.infoWash)
-        case .sent, .partiallyPaid:
-            if let days = invoice.daysOverdue() {
-                banner(String(localized: "Vencida hace \(days) días"), systemImage: "exclamationmark.circle.fill",
-                       foreground: Palette.negative, background: Palette.negativeWash)
+    private var summary: some View {
+        let customer = invoice.customer?.name ?? String(localized: "Sin cliente")
+        let amount = Text(isDraft ? invoice.draftAmount.money : invoice.balanceDue.money)
+            .font(.system(.largeTitle, weight: .bold)).monospacedDigit()
+            .foregroundStyle(Palette.ink)
+            .minimumScaleFactor(0.6).lineLimit(1)
+        if isWide {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(invoice.number.isEmpty ? customer : "\(customer) · \(invoice.number)")
+                    .font(.subheadline).foregroundStyle(Palette.ink2)
+                amount
+                ViewThatFits(in: .horizontal) {
+                    HStack(spacing: 6) {
+                        StatusChip(invoice: invoice, compact: false).fixedSize()
+                        Text(verbatim: "·").foregroundStyle(Palette.ink2).accessibilityHidden(true)
+                        Text(detail).font(.subheadline).foregroundStyle(Palette.ink2).fixedSize()
+                    }
+                    VStack(alignment: .leading, spacing: 2) {
+                        StatusChip(invoice: invoice, compact: false)
+                        Text(detail).font(.subheadline).foregroundStyle(Palette.ink2)
+                    }
+                }
             }
-        }
-    }
-
-    private func banner(_ text: String, systemImage: String, foreground: Color, background: Color) -> some View {
-        Label(text, systemImage: systemImage)
-            .font(.subheadline.weight(.semibold))
-            .foregroundStyle(foreground)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 10)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(background, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-    }
-
-    private var statusCard: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            AdaptiveRow {
-                Text(invoice.customer?.name ?? String(localized: "Sin cliente")).font(.subheadline).foregroundStyle(Palette.ink2)
-            } trailing: {
+            .padding(.horizontal, 8)
+            .padding(.vertical, 6)
+            .accessibilityElement(children: .combine)
+        } else {
+            VStack(spacing: 2) {
+                Text(customer).font(.subheadline).foregroundStyle(Palette.ink2)
+                amount
                 StatusChip(invoice: invoice, compact: false)
+                Text(detail).font(.footnote).foregroundStyle(Palette.ink2).padding(.top, 2)
             }
-            Text(invoice.status == .draft ? invoice.draftAmount.money : invoice.balanceDue.money)
-                .font(.amount(34)).tracking(-0.5).foregroundStyle(Palette.ink)
-                .minimumScaleFactor(0.6).lineLimit(1)
-            Text(summary).font(.subheadline).foregroundStyle(Palette.ink3)
-            if invoice.status != .draft && invoice.status != .void { timeline }
+            .multilineTextAlignment(.center)
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
+            .accessibilityElement(children: .combine)
         }
-        .card()
     }
 
-    private var summary: String {
+    private var detail: String {
         switch invoice.status {
         case .draft: String(localized: "Borrador: líneas menos descuento, sin impuesto")
-        case .paid, .void: String(localized: "Total de \(invoice.total.money)")
+        case .paid: String(localized: "Total cobrado \(invoice.total.money)")
+        case .void: String(localized: "Total de \(invoice.total.money)")
         case .sent, .partiallyPaid: String(localized: "Saldo pendiente de \(invoice.total.money) · vence \(invoice.dueDate.dayMonth)")
         }
     }
 
-    /// Creada → Enviada → Pago → Pagada, con la fecha de cada paso cumplido.
-    private var timeline: some View {
-        let payments = (invoice.paymentApplications ?? []).compactMap(\.payment?.date).sorted()
-        let steps: [(String, String?)] = [
-            (String(localized: "Creada"), min(invoice.createdAt, invoice.issueDate).dayMonth),
-            (String(localized: "Enviada"), invoice.issueDate.dayMonth),
-            (String(localized: "Pago"), payments.first?.dayMonth),
-            (String(localized: "Pagada"), invoice.status == .paid ? (payments.last ?? invoice.issueDate).dayMonth : nil),
-        ]
-        // Con tamaños de accesibilidad, 2×2: en una fila de cuatro se recortaba «Pago».
-        let columns = Array(repeating: GridItem(.flexible(), spacing: 6, alignment: .top), count: dynamicTypeSize.isAccessibilitySize ? 2 : 4)
-        return LazyVGrid(columns: columns, alignment: .leading, spacing: 10) {
-            ForEach(steps.indices, id: \.self) { index in
-                let (title, date) = steps[index]
-                VStack(alignment: .leading, spacing: 4) {
-                    Capsule().fill(date == nil ? Palette.separator : Palette.brand).frame(height: 4)
-                    Text(title).font(.caption.weight(.semibold)).foregroundStyle(Palette.ink)
-                    Text(date ?? (index == 2 ? String(localized: "Pendiente") : "—"))
-                        .font(.caption2).foregroundStyle(Palette.ink3)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .accessibilityElement(children: .combine)
-            }
-        }
-        .lineLimit(1)
-        .minimumScaleFactor(0.8)
-    }
-
     // MARK: Acciones
 
-    @ViewBuilder
-    private var actionButtons: some View {
-        if invoice.status == .draft {
-            VStack(spacing: 8) {
-                Button("Emitir factura", action: issue).buttonStyle(.primary)
-                HStack(spacing: 8) {
-                    Button("Editar borrador") { editingDraft = true }.buttonStyle(.secondary)
-                    Button("Vista previa") { showingPreview = true }.buttonStyle(.secondary)
-                }
-                Button("Eliminar borrador", role: .destructive, action: deleteDraft).buttonStyle(.destructive)
-            }
-        } else {
-            // Con texto grande, uno debajo de otro: en fila se cortaban («Duplic…», «Remin…»).
-            let layout = dynamicTypeSize.isAccessibilitySize ? AnyLayout(VStackLayout(spacing: 8)) : AnyLayout(HStackLayout(spacing: 8))
-            layout {
-                actionTile(String(localized: "Duplicar"), "plus.square.on.square", action: duplicateInvoice)
-                actionTile(String(localized: "PDF"), "doc.richtext") { showingPreview = true }
-                if invoice.isOpen {
-                    ShareLink(item: reminderText, subject: Text("Recordatorio de pago")) {
-                        tileLabel(String(localized: "Recordatorio"), "bell")
-                    }
-                    .buttonStyle(.plain)
-                }
+    /// Borrador: «Emitir factura» y, debajo, Editar · Vista previa · Eliminar.
+    private var draftActions: some View {
+        VStack(spacing: 8) {
+            Button("Emitir factura", action: issue).buttonStyle(.primary)
+            tileRow {
+                actionTile(String(localized: "Editar"), "pencil") { editingDraft = true }
+                actionTile(String(localized: "Vista previa"), "doc.richtext") { showingPreview = true }
+                actionTile(String(localized: "Eliminar"), "trash", tint: Palette.negative) { confirmingDelete = true }
             }
         }
     }
 
-    private func actionTile(_ title: String, _ image: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) { tileLabel(title, image) }.buttonStyle(.plain)
+    /// Canvas `FacturaDetalle`: Duplicar · PDF · Recordatorio en baldosas `surface` de radio 16.
+    private var actionTiles: some View {
+        tileRow {
+            actionTile(String(localized: "Duplicar"), "plus.square.on.square", action: duplicateInvoice)
+            actionTile(String(localized: "PDF"), "doc.richtext") { showingPreview = true }
+            if invoice.isOpen {
+                ShareLink(item: reminderText, subject: Text("Recordatorio de pago")) {
+                    tileLabel(String(localized: "Recordatorio"), "bell", tint: Palette.brand)
+                }
+                .buttonStyle(.plain)
+            }
+        }
     }
 
-    private func tileLabel(_ title: String, _ image: String) -> some View {
-        VStack(spacing: 6) {
-            Image(systemName: image).font(.title3).foregroundStyle(Palette.brand).accessibilityHidden(true)
-            Text(title).font(.footnote.weight(.semibold)).foregroundStyle(Palette.ink).lineLimit(1).minimumScaleFactor(0.8)
+    /// Con texto grande, una debajo de otra: en fila se cortaban («Duplic…», «Remin…»).
+    private func tileRow<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
+        let layout = dynamicTypeSize.isAccessibilitySize ? AnyLayout(VStackLayout(spacing: 8)) : AnyLayout(HStackLayout(spacing: 8))
+        return layout { content() }
+    }
+
+    private func actionTile(_ title: String, _ image: String, tint: Color = Palette.brand, action: @escaping () -> Void) -> some View {
+        Button(action: action) { tileLabel(title, image, tint: tint) }.buttonStyle(.plain)
+    }
+
+    private func tileLabel(_ title: String, _ image: String, tint: Color) -> some View {
+        VStack(spacing: 4) {
+            Image(systemName: image).font(.title3).accessibilityHidden(true)
+            Text(title).font(.footnote.weight(.semibold)).lineLimit(1).minimumScaleFactor(0.8)
         }
-        .frame(maxWidth: .infinity, minHeight: 64)
-        .background(Palette.surface, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-        .contentShape(Rectangle())
+        .foregroundStyle(tint)
+        .frame(maxWidth: .infinity, minHeight: 60)
+        .background(Palette.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .contentShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 
     /// Texto del recordatorio: se comparte por Mensajes o Mail (el envío desde la app llega más adelante).
@@ -220,16 +238,25 @@ struct InvoiceDetailView: View {
             : String(localized: "Hola, \(customer): la factura \(invoice.number) por \(invoice.balanceDue.money) venció el \(invoice.dueDate.dayMonth). ¿Nos ayudas con el pago? ¡Gracias!")
     }
 
+    /// «⋯» de la barra (canvas: editar, duplicar, anular).
     private var moreMenu: some View {
         Menu {
-            if invoice.isOpen, let credit = invoice.customer?.creditBalance, credit > 0 {
-                Button("Aplicar saldo a favor (\(min(credit, invoice.balanceDue).money))", systemImage: "arrow.uturn.left", action: applyCredit)
-            }
-            Button(invoice.status == .paid ? "Nota de crédito o devolución" : "Nota de crédito", systemImage: "minus.circle") {
-                showingCreditNote = true
-            }
-            if invoice.isOpen && invoice.amountPaid == 0 && invoice.creditsApplied == 0 {
-                Button("Anular factura", systemImage: "xmark.circle", role: .destructive) { confirmingVoid = true }
+            if isDraft {
+                Button("Editar borrador", systemImage: "pencil") { editingDraft = true }
+                Button("Eliminar borrador", systemImage: "trash", role: .destructive) { confirmingDelete = true }
+            } else {
+                Button("Duplicar", systemImage: "plus.square.on.square", action: duplicateInvoice)
+                if invoice.isOpen, let credit = invoice.customer?.creditBalance, credit > 0 {
+                    Button("Aplicar saldo a favor (\(min(credit, invoice.balanceDue).money))", systemImage: "arrow.uturn.left", action: applyCredit)
+                }
+                if invoice.status != .void {
+                    Button(invoice.status == .paid ? "Nota de crédito o devolución" : "Nota de crédito", systemImage: "minus.circle") {
+                        showingCreditNote = true
+                    }
+                }
+                if invoice.isOpen && invoice.amountPaid == 0 && invoice.creditsApplied == 0 {
+                    Button("Anular factura", systemImage: "xmark.circle", role: .destructive) { confirmingVoid = true }
+                }
             }
         } label: {
             Label("Más acciones", systemImage: "ellipsis")
@@ -237,57 +264,94 @@ struct InvoiceDetailView: View {
         .headerButton()
     }
 
+    // MARK: Actividad
+
+    /// Creada → Enviada → Pago → Pagada (o Anulada), con círculos rellenos de Tinta en los pasos cumplidos.
+    private var activity: some View {
+        let payments = (invoice.paymentApplications ?? []).compactMap(\.payment?.date).sorted()
+        var steps: [(title: String, value: String, done: Bool)] = [
+            (String(localized: "Creada"), min(invoice.createdAt, invoice.issueDate).dayMonth, true),
+            (String(localized: "Enviada"), invoice.issueDate.dayMonth, true),
+        ]
+        if invoice.status == .void {
+            steps.append((String(localized: "Anulada"), "", true))
+        } else {
+            steps.append((String(localized: "Pago"), invoice.amountPaid > 0 ? invoice.amountPaid.money : String(localized: "Pendiente"), invoice.amountPaid > 0))
+            steps.append((String(localized: "Pagada"), invoice.status == .paid ? (payments.last ?? invoice.issueDate).dayMonth : "—",
+                          invoice.status == .paid))
+        }
+        return VStack(alignment: .leading, spacing: 0) {
+            sectionLabel(String(localized: "Actividad"))
+            VStack(spacing: 0) {
+                ForEach(steps.indices, id: \.self) { index in
+                    let step = steps[index]
+                    if index > 0 { Divider().padding(.leading, Metrics.cardPadding + 34) }
+                    HStack(spacing: 12) {
+                        ActivityMark(done: step.done)
+                        AdaptiveRow {
+                            Text(step.title).foregroundStyle(step.done ? Palette.ink : Palette.ink2)
+                        } trailing: {
+                            Text(step.value).foregroundStyle(Palette.ink2).monospacedDigit()
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .padding(.horizontal, Metrics.cardPadding)
+                    .padding(.vertical, 6)
+                    .frame(minHeight: Metrics.target)
+                    .accessibilityElement(children: .combine)
+                    .accessibilityValue(step.done ? Text("Hecho") : Text("Pendiente"))
+                }
+            }
+            .card(padding: 0)
+        }
+    }
+
     // MARK: Registrar pago
 
-    private var paymentCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Registrar pago").font(.cardTitle)
-            // Con tamaños de accesibilidad, menú: el segmentado no crece con el texto.
-            let picker = Picker("Tipo de pago", selection: $paymentMode) {
-                ForEach(PaymentMode.allCases) { Text($0.localizedTitle).tag($0) }
-            }
-            .labelsHidden()
-            if dynamicTypeSize.isAccessibilitySize {
-                picker.pickerStyle(.menu)
-            } else {
-                picker.pickerStyle(.segmented)
-            }
+    private var paymentSection: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            sectionLabel(String(localized: "Registrar pago"))
             VStack(spacing: 0) {
+                FilterPicker(title: String(localized: "Tipo de pago"), options: PaymentMode.allCases, selection: $paymentMode, label: \.localizedTitle)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, Metrics.cardPadding)
+                    .padding(.top, 12)
+                    .padding(.bottom, 10)
                 paymentRow(String(localized: "Monto")) {
                     if paymentMode == .partial {
                         MoneyField(title: String(localized: "Monto"), minorUnits: $paymentAmount)
-                            .multilineTextAlignment(.trailing).font(.body.weight(.semibold))
+                            .multilineTextAlignment(.trailing)
                     } else {
-                        Text(invoice.balanceDue.money).font(.body.weight(.semibold)).monospacedDigit()
+                        Text(invoice.balanceDue.money).monospacedDigit().foregroundStyle(Palette.ink)
                     }
                 }
-                Divider()
                 paymentRow(String(localized: "Método")) {
-                    Picker("Método", selection: $method) {
-                        ForEach(PaymentMethod.allCases, id: \.self) { Text($0.title).tag($0) }
+                    // Menú con etiqueta propia, en gris como el canvas; VoiceOver lee nombre y valor en un elemento.
+                    Menu {
+                        Picker("Método", selection: $method) {
+                            ForEach(PaymentMethod.allCases, id: \.self) { Text($0.title).tag($0) }
+                        }
+                        .pickerStyle(.inline)
+                    } label: {
+                        menuLabel(method.title)
                     }
-                    .labelsHidden()
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Método")
+                    .accessibilityValue(method.title)
                 }
-                Divider()
                 paymentRow(String(localized: "Depositar en")) {
                     let depositName = depositAccounts.first { $0.id == depositAccountID }?.displayName ?? String(localized: "Elegir…")
                     // Menú con etiqueta propia: con AX3 el nombre de la cuenta baja de línea sin cortarse.
                     Menu {
                         AccountPicker(title: String(localized: "Depositar en"), accounts: depositAccounts, selection: $depositAccountID)
                     } label: {
-                        HStack(spacing: 4) {
-                            Text(depositName)
-                                .multilineTextAlignment(.trailing)
-                                .fixedSize(horizontal: false, vertical: true)
-                            Image(systemName: "chevron.up.chevron.down").font(.caption).accessibilityHidden(true)
-                        }
-                        .foregroundStyle(Palette.brand)
+                        menuLabel(depositName)
                     }
+                    .buttonStyle(.plain)
                     // Como «Método»: VoiceOver lee el nombre y la cuenta elegida en un solo elemento.
                     .accessibilityLabel("Depositar en")
                     .accessibilityValue(depositName)
                 }
-                Divider()
                 paymentRow(String(localized: "Fecha")) {
                     DatePicker("Fecha", selection: $paymentDate, displayedComponents: .date).labelsHidden()
                         #if os(iOS)
@@ -299,103 +363,178 @@ struct InvoiceDetailView: View {
                         .accessibilityAddTraits(.isButton)
                         #endif
                 }
+                if !isWide {
+                    recordButton.padding(.horizontal, Metrics.cardPadding).padding(.top, 6).padding(.bottom, 16)
+                }
             }
-            .padding(.horizontal, 12)
-            .background(Palette.background, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-            Button("Registrar \(amountToRecord.money)", action: recordPayment)
-                .buttonStyle(.primary)
-                .disabled(amountToRecord <= 0 || amountToRecord > invoice.balanceDue || depositAccountID == nil)
+            .card(padding: 0)
+            // `iPadVentas`: el botón va debajo del grupo.
+            if isWide { recordButton.padding(.top, 16) }
         }
-        .card()
     }
 
-    private func paymentRow<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
-        ViewThatFits(in: .horizontal) {
-            HStack {
-                Text(title).foregroundStyle(Palette.ink2).fixedSize()
-                Spacer(minLength: 8)
-                content()
-            }
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title).foregroundStyle(Palette.ink2)
-                content()
-            }
+    private var recordButton: some View {
+        Button("Registrar \(amountToRecord.money)", action: recordPayment)
+            .buttonStyle(.primary)
+            .disabled(amountToRecord <= 0 || amountToRecord > invoice.balanceDue || depositAccountID == nil)
+    }
+
+    /// Valor de un menú del formulario: en gris con el símbolo de menú, y en varias líneas si no cabe.
+    private func menuLabel(_ text: String) -> some View {
+        HStack(spacing: 4) {
+            Text(text)
+                .multilineTextAlignment(.trailing)
+                .fixedSize(horizontal: false, vertical: true)
+            Image(systemName: "chevron.up.chevron.down").font(.caption).accessibilityHidden(true)
         }
-        .frame(minHeight: 48)
+        .foregroundStyle(Palette.ink2)
+        .frame(minHeight: Metrics.target)
+        .contentShape(Rectangle())
+    }
+
+    /// Fila «etiqueta · valor» del grupo, con la línea sangrada; si no cabe, el valor baja.
+    private func paymentRow<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
+        VStack(spacing: 0) {
+            Divider().padding(.leading, Metrics.cardPadding)
+            ViewThatFits(in: .horizontal) {
+                HStack {
+                    Text(title).foregroundStyle(Palette.ink).fixedSize()
+                    Spacer(minLength: 8)
+                    content()
+                }
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(title).foregroundStyle(Palette.ink)
+                    content()
+                }
+            }
+            .padding(.horizontal, Metrics.cardPadding)
+            .frame(minHeight: Metrics.target)
+        }
     }
 
     // MARK: Líneas, totales y créditos
 
-    private var linesCard: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            SectionLabel(text: String(localized: "Productos y servicios"))
-            ForEach(invoice.sortedLines) { line in
-                AdaptiveRow(alignment: .firstTextBaseline) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(line.details.isEmpty ? String(localized: "Sin descripción") : line.details).fontWeight(.semibold)
-                        Text(line.isTaxable ? "\(line.quantity.formatted()) × \(line.unitPrice.money) · gravable"
-                                             : "\(line.quantity.formatted()) × \(line.unitPrice.money)")
-                            .font(.footnote).foregroundStyle(Palette.ink3)
-                    }
-                } trailing: {
-                    Text(line.amount.money).monospacedDigit().fontWeight(.semibold)
-                }
-                .foregroundStyle(Palette.ink)
-            }
-        }
-        .card()
+    /// Encabezado de grupo del canvas («Registrar pago», «Actividad»): `.footnote` gris, alineado con el texto.
+    private func sectionLabel(_ text: String) -> some View {
+        SectionLabel(text: text)
+            .accessibilityAddTraits(.isHeader)
+            .padding(.horizontal, Metrics.cardPadding)
+            .padding(.top, 22)
+            .padding(.bottom, 7)
     }
 
-    private var totalsCard: some View {
-        VStack(spacing: 8) {
-            LabeledContent("Subtotal", value: invoice.subtotal.money)
-            if invoice.discount > 0 { LabeledContent("Descuento", value: "−\(invoice.discount.money)") }
-            ForEach(invoice.taxLines ?? []) { tax in
-                LabeledContent("\(tax.name) · \((Decimal(tax.rateMillionths) / 10_000).formatted())%", value: tax.amount.money)
+    private var linesSection: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            sectionLabel(String(localized: "Productos y servicios"))
+            VStack(spacing: 0) {
+                ForEach(Array(invoice.sortedLines.enumerated()), id: \.element.id) { index, line in
+                    if index > 0 { Divider().padding(.leading, Metrics.cardPadding) }
+                    AdaptiveRow(alignment: .firstTextBaseline) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(line.details.isEmpty ? String(localized: "Sin descripción") : line.details).foregroundStyle(Palette.ink)
+                            Text(line.isTaxable ? "\(line.quantity.formatted()) × \(line.unitPrice.money) · gravable"
+                                                 : "\(line.quantity.formatted()) × \(line.unitPrice.money)")
+                                .font(.footnote).foregroundStyle(Palette.ink2)
+                        }
+                    } trailing: {
+                        Text(line.amount.money).monospacedDigit().foregroundStyle(Palette.ink)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, Metrics.cardPadding)
+                    .padding(.vertical, 10)
+                    .accessibilityElement(children: .combine)
+                }
+                if invoice.sortedLines.isEmpty {
+                    Text("Sin líneas").foregroundStyle(Palette.ink2)
+                        .frame(maxWidth: .infinity, minHeight: Metrics.target, alignment: .leading)
+                        .padding(.horizontal, Metrics.cardPadding)
+                }
             }
-            Divider()
-            LabeledContent("Total", value: invoice.total.money).fontWeight(.semibold)
-            LabeledContent("Cobrado", value: invoice.amountPaid.money)
-            if invoice.creditsApplied > 0 { LabeledContent("Notas de crédito", value: "−\(invoice.creditsApplied.money)") }
+            .card(padding: 0)
         }
-        .font(.subheadline)
-        .monospacedDigit()
-        .card()
+    }
+
+    private var totalsSection: some View {
+        var rows: [(String, String, Bool)] = [(String(localized: "Subtotal"), invoice.subtotal.money, false)]
+        if invoice.discount > 0 { rows.append((String(localized: "Descuento"), "−\(invoice.discount.money)", false)) }
+        for tax in invoice.taxLines ?? [] {
+            rows.append(("\(tax.name) · \((Decimal(tax.rateMillionths) / 10_000).formatted())%", tax.amount.money, false))
+        }
+        rows.append((String(localized: "Total"), invoice.total.money, true))
+        rows.append((String(localized: "Cobrado"), invoice.amountPaid.money, false))
+        if invoice.creditsApplied > 0 { rows.append((String(localized: "Notas de crédito"), "−\(invoice.creditsApplied.money)", false)) }
+        return VStack(spacing: 0) {
+            ForEach(rows.indices, id: \.self) { index in
+                let (title, value, bold) = rows[index]
+                if index > 0 { Divider().padding(.leading, Metrics.cardPadding) }
+                AdaptiveRow {
+                    Text(title).foregroundStyle(Palette.ink).fontWeight(bold ? .semibold : .regular)
+                } trailing: {
+                    Text(value).monospacedDigit().foregroundStyle(bold ? Palette.ink : Palette.ink2).fontWeight(bold ? .semibold : .regular)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, Metrics.cardPadding)
+                .padding(.vertical, 6)
+                .frame(minHeight: Metrics.target)
+                .accessibilityElement(children: .combine)
+            }
+        }
+        .card(padding: 0)
+        .padding(.top, 20)
     }
 
     @ViewBuilder
-    private var creditNotesCard: some View {
+    private var creditNotesSection: some View {
         let notes = (invoice.creditNotes ?? []).sorted { $0.date < $1.date }
         let applications = (invoice.creditApplications ?? []).sorted { $0.date < $1.date }
-        if !notes.isEmpty || !applications.isEmpty {
-            VStack(alignment: .leading, spacing: 10) {
-                if !notes.isEmpty {
-                    SectionLabel(text: String(localized: "Notas de crédito de esta factura"))
-                    ForEach(notes) { note in
-                        LabeledContent {
-                            Text("−\(note.total.money)").monospacedDigit()
-                        } label: {
+        if !notes.isEmpty {
+            VStack(alignment: .leading, spacing: 0) {
+                sectionLabel(String(localized: "Notas de crédito de esta factura"))
+                VStack(spacing: 0) {
+                    ForEach(Array(notes.enumerated()), id: \.element.id) { index, note in
+                        if index > 0 { Divider().padding(.leading, Metrics.cardPadding) }
+                        AdaptiveRow(alignment: .firstTextBaseline) {
                             VStack(alignment: .leading, spacing: 2) {
-                                Text(note.number)
+                                Text(note.number).foregroundStyle(Palette.ink)
                                 Text("\(note.date.shortDate)\(note.reason.isEmpty ? "" : " · \(note.reason)")")
-                                    .font(.subheadline).foregroundStyle(Palette.ink3)
+                                    .font(.footnote).foregroundStyle(Palette.ink2)
                                 if note.unappliedAmount > 0 {
                                     Text("\(note.unappliedAmount.money) quedan a favor del cliente")
-                                        .font(.subheadline).foregroundStyle(Palette.positive)
+                                        .font(.footnote).foregroundStyle(Palette.positive)
                                 }
                             }
+                        } trailing: {
+                            Text("−\(note.total.money)").monospacedDigit().foregroundStyle(Palette.ink)
                         }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, Metrics.cardPadding)
+                        .padding(.vertical, 10)
+                        .accessibilityElement(children: .combine)
                     }
                 }
-                if !applications.isEmpty {
-                    SectionLabel(text: String(localized: "Créditos aplicados"))
-                    ForEach(applications) { application in
-                        LabeledContent("\(application.note?.number ?? String(localized: "Nota")) · \(application.date.shortDate)",
-                                       value: "−\(application.amount.money)")
-                    }
-                }
+                .card(padding: 0)
             }
-            .card()
+        }
+        if !applications.isEmpty {
+            VStack(alignment: .leading, spacing: 0) {
+                sectionLabel(String(localized: "Créditos aplicados"))
+                VStack(spacing: 0) {
+                    ForEach(Array(applications.enumerated()), id: \.element.id) { index, application in
+                        if index > 0 { Divider().padding(.leading, Metrics.cardPadding) }
+                        AdaptiveRow {
+                            Text("\(application.note?.number ?? String(localized: "Nota")) · \(application.date.shortDate)").foregroundStyle(Palette.ink)
+                        } trailing: {
+                            Text("−\(application.amount.money)").monospacedDigit().foregroundStyle(Palette.ink2)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, Metrics.cardPadding)
+                        .padding(.vertical, 6)
+                        .frame(minHeight: Metrics.target)
+                        .accessibilityElement(children: .combine)
+                    }
+                }
+                .card(padding: 0)
+            }
         }
     }
 
@@ -445,6 +584,28 @@ struct InvoiceDetailView: View {
         context.delete(invoice)
         try? context.save()
         dismiss()
+    }
+}
+
+/// Paso de la actividad (canvas `FacturaDetalle`): círculo de 22 pt relleno de Tinta con una marca blanca si está
+/// cumplido; si no, un anillo gris.
+private struct ActivityMark: View {
+    let done: Bool
+    @ScaledMetric(relativeTo: .body) private var side: CGFloat = 22
+
+    var body: some View {
+        Group {
+            if done {
+                Image(systemName: "checkmark")
+                    .font(.system(size: side * 0.5, weight: .bold))
+                    .foregroundStyle(Palette.onBrandFill)
+                    .frame(width: side, height: side)
+                    .background(Palette.brandFill, in: Circle())
+            } else {
+                Circle().strokeBorder(Palette.chevron, lineWidth: 1.5).frame(width: side, height: side)
+            }
+        }
+        .accessibilityHidden(true)
     }
 }
 
