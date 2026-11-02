@@ -831,6 +831,16 @@
         }
       }
     },
+    "%lld de %lld clientes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld of %lld customers"
+          }
+        }
+      }
+    },
     "%lld de %lld completados" : {
       "localizations" : {
         "en" : {
@@ -1551,6 +1561,16 @@
         }
       }
     },
+    "Abrir ficha" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open profile"
+          }
+        }
+      }
+    },
     "Acciones rápidas" : {
       "localizations" : {
         "en" : {
@@ -2133,6 +2153,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Add your first customer with the + button."
+          }
+        }
+      }
+    },
+    "Añade tu primer cliente para empezar a facturar." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add your first customer to start invoicing."
           }
         }
       }
@@ -4877,6 +4907,16 @@
         }
       }
     },
+    "Facturas abiertas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open invoices"
+          }
+        }
+      }
+    },
     "Facturas de %@ emitidas (%lld)" : {
       "localizations" : {
         "en" : {
@@ -6778,6 +6818,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No matching customers"
+          }
+        }
+      }
+    },
+    "Ningún cliente coincide con el filtro." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No customers match the filter."
           }
         }
       }
@@ -9548,6 +9598,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Security"
+          }
+        }
+      }
+    },
+    "Selecciona un cliente para ver su saldo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select a customer to see their balance."
           }
         }
       }
