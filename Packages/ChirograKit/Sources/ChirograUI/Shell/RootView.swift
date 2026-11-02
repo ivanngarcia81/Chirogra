@@ -209,7 +209,11 @@ struct AppShell: View {
     /// La columna maestro oculta (solo el detalle a la vista).
     @State private var masterHidden = false
     @State private var monitor = SyncMonitor.shared
+    #if os(macOS)
+    @ScaledMetric(relativeTo: .body) private var masterWidth: CGFloat = 280
+    #else
     @ScaledMetric(relativeTo: .body) private var masterWidth: CGFloat = 320
+    #endif
 
     var body: some View {
         #if os(iOS)
@@ -280,10 +284,12 @@ struct AppShell: View {
 
     private var sidebar: some View {
         Sidebar(selection: sidebarSelection, query: $query)
+            #if os(macOS)
+            .navigationSplitViewColumnWidth(min: 200, ideal: 220)
+            #else
             .navigationSplitViewColumnWidth(min: 200, ideal: 240)
-            #if os(iOS)
-            .toolbar(removing: .title)
             #endif
+            .toolbar(removing: .title)
     }
 
     /// Columna de detalle: lo de la página o, con texto en la búsqueda de la barra lateral, los resultados.
@@ -293,8 +299,11 @@ struct AppShell: View {
         }
         #if os(iOS)
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { detailWidth = $0 }
-        #endif
         .safeAreaInset(edge: .top, spacing: 0) { SyncErrorBanner() }
+        #else
+        // `MacError`: la tarjeta centrada en lugar del contenido, no una franja encima.
+        .overlay { SyncErrorBanner() }
+        #endif
     }
 
     /// iPad y Mac: barra lateral propia (`Sidebar`) y, en las páginas de lista y detalle, la columna maestro.
@@ -466,7 +475,7 @@ struct MoreView: View {
             HStack(spacing: 12) {
                 Text(Initials.from(company.displayName))
                     .font(.headline.weight(.bold)).foregroundStyle(Palette.background)
-                    .frame(width: 44, height: 44)
+                    .frame(width: Metrics.target, height: Metrics.target)
                     .background(Palette.ink, in: RoundedRectangle(cornerRadius: 13, style: .continuous))
                     .accessibilityHidden(true)
                 VStack(alignment: .leading, spacing: 1) {

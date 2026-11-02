@@ -35,7 +35,7 @@ struct VendorDetailView: View {
             if isWide { wideBody } else { compactBody }
         }
         .background(Palette.background)
-        .inlineTitle()
+        .recordTitle(vendor.name, section: String(localized: "Proveedores"))
         .toolbar {
             Button("Editar") { editing = true }.headerButton()
             if isWide {

@@ -417,7 +417,7 @@ struct JournalEntryEditorView: View {
                     MoneyField(title: String(localized: "Crédito"), minorUnits: $line.credit)
                         .multilineTextAlignment(.trailing).fieldBox().frame(width: amountWidth)
                     Button { lines.remove(at: index) } label: {
-                        Image(systemName: "minus.circle").frame(width: 28, height: 44)
+                        Image(systemName: "minus.circle").frame(width: 28, height: Metrics.target)
                     }
                     .buttonStyle(.plain)
                     .foregroundStyle(Palette.ink3)
@@ -433,7 +433,7 @@ struct JournalEntryEditorView: View {
                     .buttonStyle(.plain)
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(Palette.brand)
-                    .frame(minHeight: 44)
+                    .frame(minHeight: Metrics.target)
                 Spacer()
                 Text("Totales").fontWeight(.semibold).foregroundStyle(Palette.ink2)
                 Text(typedDebits.money).fontWeight(.bold).frame(width: amountWidth, alignment: .trailing)

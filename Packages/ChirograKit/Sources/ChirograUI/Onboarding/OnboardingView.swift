@@ -101,7 +101,7 @@ struct OnboardingView: View {
                 if step == 1 {
                     Button("Probar con datos de ejemplo", action: loadSample)
                         .font(.body.weight(.semibold))
-                        .frame(minHeight: 44)
+                        .frame(minHeight: Metrics.target)
                 }
             }
             .padding(.horizontal, 20)
@@ -118,7 +118,7 @@ struct OnboardingView: View {
             if step > 1 {
                 Button { step -= 1 } label: {
                     Image(systemName: "chevron.left").font(.title3.weight(.semibold))
-                        .frame(minWidth: 44, minHeight: 44)
+                        .frame(minWidth: Metrics.target, minHeight: Metrics.target)
                         .contentShape(Rectangle())
                 }
                 .accessibilityLabel("Atrás")
@@ -327,7 +327,7 @@ struct OnboardingView: View {
                     if step == 1 {
                         Button("Probar con datos de ejemplo", action: loadSample)
                             .font(.body.weight(.semibold))
-                            .frame(minHeight: 44)
+                            .frame(minHeight: Metrics.target)
                     }
                 }
                 .padding(.horizontal, 16).padding(.vertical, 40)
@@ -350,7 +350,7 @@ struct OnboardingView: View {
     private func wideBox<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
         content()
             .padding(.horizontal, 12)
-            .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+            .frame(maxWidth: .infinity, minHeight: Metrics.target, alignment: .leading)
             .background(Palette.background, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
             .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).stroke(Palette.separator))
     }
@@ -375,7 +375,7 @@ struct OnboardingView: View {
                             ForEach(USState.all, id: \.self) { Text($0).tag($0) }
                         }
                         .labelsHidden().pickerStyle(.menu)
-                        .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                        .frame(maxWidth: .infinity, minHeight: Metrics.target, alignment: .leading)
                     }
                 }
                 wideField(String(localized: "Inicio del año fiscal")) {
@@ -386,7 +386,7 @@ struct OnboardingView: View {
                             }
                         }
                         .labelsHidden().pickerStyle(.menu)
-                        .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                        .frame(maxWidth: .infinity, minHeight: Metrics.target, alignment: .leading)
                     }
                 }
                 wideField(String(localized: "Razón social")) {
@@ -418,7 +418,7 @@ struct OnboardingView: View {
                         ForEach(EntityType.allCases, id: \.self) { Text($0.title).tag($0) }
                     }
                     .labelsHidden().pickerStyle(.menu)
-                    .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                    .frame(maxWidth: .infinity, minHeight: Metrics.target, alignment: .leading)
                 }
             }
         }

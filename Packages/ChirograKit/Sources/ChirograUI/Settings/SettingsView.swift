@@ -62,7 +62,6 @@ struct SettingsWideView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            MacPageTitle(String(localized: "Ajustes"))
             HStack(alignment: .top, spacing: 16) {
                 VStack(spacing: 2) {
                     ForEach(Page.allCases) { option in
@@ -71,7 +70,7 @@ struct SettingsWideView: View {
                                 .font(.subheadline.weight(page == option ? .semibold : .medium))
                                 .foregroundStyle(page == option ? Palette.brand : Palette.ink2)
                                 .padding(.horizontal, 12)
-                                .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                                .frame(maxWidth: .infinity, minHeight: Metrics.target, alignment: .leading)
                                 .background(page == option ? Palette.brandWash : .clear, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                                 .contentShape(Rectangle())
                         }

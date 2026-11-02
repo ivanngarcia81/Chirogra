@@ -3327,6 +3327,17 @@
         }
       }
     },
+    "Esta semana" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This week"
+          }
+        }
+      }
+    },
     "Estado" : {
       "localizations" : {
         "en" : {
@@ -5810,6 +5821,17 @@
     },
     "Pagada" : {
       "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paid"
+          }
+        }
+      }
+    },
+    "Pagadas" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -9244,26 +9266,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "✓ Balanced"
-          }
-        }
-      }
-    },
-    "Esta semana" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "This week"
-          }
-        }
-      }
-    },
-    "Pagadas" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Paid"
           }
         }
       }

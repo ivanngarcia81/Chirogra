@@ -175,7 +175,7 @@ struct LedgerBrowserView: View {
         .monospacedDigit()
         .foregroundStyle(isHeader ? Palette.ink3 : Palette.ink)
         .padding(.horizontal, 16)
-        .frame(minHeight: 44)
+        .frame(minHeight: Metrics.target)
         .accessibilityHidden(isHeader)
     }
 

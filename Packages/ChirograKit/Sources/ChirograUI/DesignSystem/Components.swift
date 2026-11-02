@@ -219,21 +219,6 @@ extension EnvironmentValues {
     @Entry var unsavedChanges: UnsavedChanges?
 }
 
-/// Título grande dentro del contenido en el Mac (`MacInicio`, `MacVentas`, `MacGastos`…), donde el de la ventana
-/// es pequeño. En iOS no se dibuja: el título va en la barra de navegación.
-struct MacPageTitle: View {
-    let title: String
-
-    init(_ title: String) { self.title = title }
-
-    var body: some View {
-        #if os(macOS)
-        Text(title).font(.system(size: 28, weight: .bold)).foregroundStyle(Palette.ink).accessibilityAddTraits(.isHeader)
-        #else
-        EmptyView()
-        #endif
-    }
-}
 
 // MARK: - Tipografía
 
@@ -289,11 +274,21 @@ extension View {
         scrollContentBackground(.hidden).background(Palette.background)
     }
 
-    /// Título de pantalla (§7.4, decisión del usuario): en el iPad, grande dentro de la barra de vidrio del sistema,
-    /// junto al botón de la barra lateral y a los botones, sin franja vacía encima; en el iPhone, el título grande de
-    /// siempre, que se pliega al desplazar. Va en cada pantalla: las que se abren encima no heredan el modo de la raíz.
+    /// Título de pantalla (§7.4, decisión del usuario): en el iPad y el Mac, grande dentro de la barra de vidrio del
+    /// sistema, junto al botón de la barra lateral y a los botones, sin franja vacía encima; en el iPhone, el título
+    /// grande de siempre, que se pliega al desplazar. Va en cada pantalla: las que se abren encima no heredan el modo.
     func headerTitle() -> some View {
         modifier(HeaderTitle())
+    }
+
+    /// Título de una ficha (cliente, proveedor): su nombre, pequeño en la barra, y en el Mac la sección debajo, como
+    /// las migas de los tableros («Clientes › Hotel Mirador»). Sin título, el botón de volver decía «Chirogra».
+    func recordTitle(_ name: String, section: String) -> some View {
+        #if os(macOS)
+        navigationTitle(name).navigationSubtitle(section)
+        #else
+        navigationTitle(name).inlineTitle()
+        #endif
     }
 
     @ViewBuilder
@@ -425,7 +420,7 @@ struct FilterChip: View {
             }
             .font(.subheadline)
             .padding(.horizontal, 14)
-            .frame(minHeight: 44)
+            .frame(minHeight: Metrics.target)
             .foregroundStyle(isSelected ? Palette.background : Palette.ink2)
             .background(isSelected ? Palette.ink : Palette.surface, in: Capsule())
             .overlay(Capsule().stroke(isSelected ? Palette.ink : Palette.separator))
@@ -632,7 +627,7 @@ struct UnderlineTabs<Value: Hashable>: View {
                         Text(title(option))
                             .font(.subheadline.weight(isSelected ? .semibold : .medium))
                             .foregroundStyle(isSelected ? Palette.brand : Palette.ink2)
-                            .frame(minHeight: 44)
+                            .frame(minHeight: Metrics.target)
                             .overlay(alignment: .bottom) {
                                 Rectangle().fill(isSelected ? Palette.brand : .clear).frame(height: 2.5)
                             }
@@ -767,7 +762,9 @@ private struct HeaderTitle: ViewModifier {
         #if os(iOS)
         content.toolbarTitleDisplayMode(sizeClass == .regular ? .inlineLarge : .automatic)
         #else
-        content
+        // En el Mac, el título grande en la barra de la ventana, en la misma fila que las acciones (como en los
+        // tableros) y una sola vez: antes iba pequeño en la barra y repetido en grande en el contenido.
+        content.toolbarTitleDisplayMode(.inlineLarge)
         #endif
     }
 }

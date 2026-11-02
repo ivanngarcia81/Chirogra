@@ -32,7 +32,6 @@ struct PeriodCloseWideView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                MacPageTitle(String(localized: "Cierre de periodo"))
                 Text("Bloquea los meses ya revisados para que nadie los cambie por error.")
                     .font(.subheadline).foregroundStyle(Palette.ink3)
                 if let company = companies.first {
@@ -153,7 +152,7 @@ struct PeriodCloseWideView: View {
                     Spacer(minLength: 6)
                     Image(systemName: "chevron.right").font(.caption.weight(.semibold)).foregroundStyle(Palette.ink3).accessibilityHidden(true)
                 }
-                .frame(minHeight: 44)
+                .frame(minHeight: Metrics.target)
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)

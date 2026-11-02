@@ -344,7 +344,7 @@ struct ExpenseEditorView: View {
                 ViewThatFits(in: .horizontal) {
                     HStack(alignment: .top, spacing: 16) {
                         wideDataCard.frame(maxWidth: .infinity)
-                        wideReceiptCard.frame(width: 320)
+                        wideReceiptCard.frame(width: 280)
                     }
                     VStack(spacing: 16) { wideDataCard; wideReceiptCard }
                 }
@@ -585,7 +585,7 @@ struct BillEditorView: View {
                 // Toda la fila da el foco al campo: en el iPad en horizontal, tocar la descripción a veces no lo hacía.
                 TextField("Descripción", text: $details)
                     .focused($editingDetails)
-                    .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                    .frame(maxWidth: .infinity, minHeight: Metrics.target, alignment: .leading)
                     .contentShape(Rectangle())
                     .onTapGesture { editingDetails = true }
             }

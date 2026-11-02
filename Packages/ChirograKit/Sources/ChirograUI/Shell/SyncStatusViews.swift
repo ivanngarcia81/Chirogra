@@ -50,6 +50,10 @@ final class SyncMonitor {
 
     var isSyncing: Bool { state == .syncing }
 
+    /// En el Mac, «Seguir sin conexión» en la tarjeta de error: se trabaja con los datos del dispositivo y la tarjeta
+    /// no vuelve hasta el próximo fallo de esta sesión.
+    var continuesOffline = false
+
     /// Primera importación en curso: el esqueleto sustituye al contenido de la sección.
     /// Tras un fallo se muestran los datos del dispositivo con la franja, no el esqueleto.
     var isFirstImport: Bool { isSyncing && !hasImported && !hasFailed }
@@ -117,16 +121,8 @@ struct SyncAwareContent<Content: View>: View {
         if monitor.isFirstImport {
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
-                    // En iOS el título va en la barra de navegación (con el botón de la barra lateral); en el Mac,
-                    // grande dentro del contenido como en `MacCargando`.
-                    #if os(macOS)
-                    ViewThatFits(in: .horizontal) {
-                        HStack(spacing: 12) { MacPageTitle(title); Spacer(minLength: 8); SyncingPill() }
-                        VStack(alignment: .leading, spacing: 8) { MacPageTitle(title); SyncingPill() }
-                    }
-                    #else
+                    // El título va en la barra, grande (`headerTitle`), como en el resto de pantallas.
                     SyncingPill()
-                    #endif
                     SyncSkeleton()
                     Text("Estamos trayendo tus libros desde iCloud. Puedes seguir usando la app mientras tanto.")
                         .font(.subheadline).foregroundStyle(Palette.ink2)
@@ -190,7 +186,7 @@ struct SyncSkeleton: View {
                             }
                             .frame(maxHeight: .infinity)
                         }
-                        .frame(height: 44)
+                        .frame(height: Metrics.target)
                         .padding(.horizontal, 18)
                     }
                 }
@@ -238,7 +234,7 @@ struct SyncLoadingView: View {
                 SyncSkeleton()
                 Text("Estamos trayendo tus libros desde iCloud. Si es la primera vez que usas Chirogra, puedes crear tu empresa.")
                     .font(.subheadline).foregroundStyle(Palette.ink2)
-                Button("Crear una empresa nueva", action: onSkip).font(.body.weight(.semibold)).frame(minHeight: 44)
+                Button("Crear una empresa nueva", action: onSkip).font(.body.weight(.semibold)).frame(minHeight: Metrics.target)
             }
             .padding(24)
             .frame(maxWidth: 1100, alignment: .leading)
@@ -252,6 +248,7 @@ struct SyncLoadingView: View {
 
 /// Franja de arriba cuando iCloud no responde: los datos siguen en este dispositivo y los cambios se envían solos
 /// al volver la conexión. «Detalles» abre la tarjeta del canvas con la última sincronización y el detalle técnico.
+/// En el Mac, como en `MacError`, la tarjeta centrada sustituye al contenido hasta «Seguir sin conexión».
 struct SyncErrorBanner: View {
     @State private var monitor = SyncMonitor.shared
     @State private var showingDetails = false
@@ -261,6 +258,21 @@ struct SyncErrorBanner: View {
     #endif
 
     var body: some View {
+        #if os(macOS)
+        if case let .failed(code, network) = monitor.state, !monitor.continuesOffline {
+            details(code: code, network: network)
+                .background(Palette.surface, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+                .shadow(color: .black.opacity(0.08), radius: 16, y: 4)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Palette.background)
+        }
+        #else
+        banner
+        #endif
+    }
+
+    @ViewBuilder
+    private var banner: some View {
         if case let .failed(code, network) = monitor.state, !dismissed {
             HStack(spacing: 10) {
                 Image(systemName: "icloud.slash").accessibilityHidden(true)
@@ -269,10 +281,7 @@ struct SyncErrorBanner: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                 Button("Detalles") { showingDetails = true }
                     .fontWeight(.semibold)
-                    .frame(minHeight: 44)
-                    #if os(macOS)
-                    .popover(isPresented: $showingDetails) { details(code: code, network: network) }
-                    #endif
+                    .frame(minHeight: Metrics.target)
             }
             .font(.subheadline.weight(.semibold))
             .foregroundStyle(Palette.background)
@@ -352,7 +361,11 @@ struct SyncErrorBanner: View {
     }
 
     private var continueButton: some View {
-        Button { showingDetails = false; dismissed = true } label: { Text("Seguir sin conexión").frame(maxWidth: .infinity) }
+        Button {
+            showingDetails = false
+            dismissed = true
+            monitor.continuesOffline = true
+        } label: { Text("Seguir sin conexión").frame(maxWidth: .infinity) }
             .buttonStyle(.bordered).tint(Palette.ink).controlSize(.large)
     }
 

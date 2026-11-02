@@ -48,8 +48,18 @@ public enum Metrics {
     public static let cardPadding: CGFloat = 16
     public static let cardRadius: CGFloat = 20
     public static let heroRadius: CGFloat = 22
+    #if os(macOS)
+    /// En el Mac, botones, filas y chips con la densidad de sus controles (canvas: filas de ~32 px, chips de ~24 px):
+    /// con 44 pt el Plan de cuentas mostraba la mitad de filas y la app parecía de iPhone.
+    public static let buttonRadius: CGFloat = 8
+    public static let buttonHeight: CGFloat = 32
+    public static let target: CGFloat = 28
+    #else
     public static let buttonRadius: CGFloat = 14
     public static let buttonHeight: CGFloat = 48
+    /// Área táctil mínima de iPhone e iPad: 44 pt.
+    public static let target: CGFloat = 44
+    #endif
     public static let fieldRadius: CGFloat = 12
     public static let iconTile: CGFloat = 40
 }

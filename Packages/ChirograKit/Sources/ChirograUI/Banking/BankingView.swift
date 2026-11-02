@@ -87,16 +87,16 @@ struct AccountMovementsView: View {
             }
             TableCard {
                 Text("Fecha").frame(width: 64, alignment: .leading)
-                Text("Descripción").frame(maxWidth: .infinity, alignment: .leading)
-                Text("Categoría o cuenta").frame(width: 190, alignment: .leading)
+                Text("Descripción").frame(minWidth: 100, maxWidth: .infinity, alignment: .leading)
+                Text("Categoría o cuenta").frame(minWidth: 90, maxWidth: 190, alignment: .leading)
                 Text("Retiro").frame(width: amountWidth, alignment: .trailing)
                 Text("Depósito").frame(width: amountWidth, alignment: .trailing)
                 Text("Saldo").frame(width: amountWidth, alignment: .trailing)
             } rows: {
                 TableRow {
                     Text(month.start.dayMonth).frame(width: 64, alignment: .leading)
-                    Text("Saldo inicial").frame(maxWidth: .infinity, alignment: .leading)
-                    Color.clear.frame(width: 190, height: 1)
+                    Text("Saldo inicial").frame(minWidth: 100, maxWidth: .infinity, alignment: .leading)
+                    Color.clear.frame(minWidth: 90, maxWidth: 190, maxHeight: 1)
                     Color.clear.frame(width: amountWidth, height: 1)
                     Color.clear.frame(width: amountWidth, height: 1)
                     Text((sign * ledger.openingBalance).money).frame(width: amountWidth, alignment: .trailing)
@@ -107,9 +107,9 @@ struct AccountMovementsView: View {
                     TableRow {
                         Text(row.movement.date.dayMonth).foregroundStyle(Palette.ink2).frame(width: 64, alignment: .leading)
                         Text(row.movement.memo.isEmpty ? String(localized: "Asiento") : row.movement.memo).fontWeight(.semibold)
-                            .lineLimit(1).frame(maxWidth: .infinity, alignment: .leading)
+                            .lineLimit(1).frame(minWidth: 100, maxWidth: .infinity, alignment: .leading)
                         Text(counterpart(of: lines[row.movement.id])).foregroundStyle(Palette.ink2).lineLimit(1)
-                            .frame(width: 190, alignment: .leading)
+                            .frame(minWidth: 90, maxWidth: 190, alignment: .leading)
                         Text(row.movement.credit > 0 ? row.movement.credit.money : "").frame(width: amountWidth, alignment: .trailing)
                         Text(row.movement.debit > 0 ? row.movement.debit.money : "").foregroundStyle(Palette.positive)
                             .frame(width: amountWidth, alignment: .trailing)
@@ -135,11 +135,11 @@ struct AccountMovementsView: View {
 
     private func monthStepper(_ month: DateInterval) -> some View {
         HStack(spacing: 4) {
-            Button { monthOffset -= 1 } label: { Image(systemName: "chevron.left").frame(width: 44, height: 44) }
+            Button { monthOffset -= 1 } label: { Image(systemName: "chevron.left").frame(width: Metrics.target, height: Metrics.target) }
                 .accessibilityLabel("Mes anterior")
             Text(month.start.formatted(.appDateTime.month(.wide).year()).sentenceCased)
                 .font(.subheadline).foregroundStyle(Palette.ink2).monospacedDigit()
-            Button { monthOffset += 1 } label: { Image(systemName: "chevron.right").frame(width: 44, height: 44) }
+            Button { monthOffset += 1 } label: { Image(systemName: "chevron.right").frame(width: Metrics.target, height: Metrics.target) }
                 .disabled(monthOffset >= 0)
                 .accessibilityLabel("Mes siguiente")
         }

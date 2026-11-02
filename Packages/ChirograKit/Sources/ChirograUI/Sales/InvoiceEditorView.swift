@@ -268,14 +268,6 @@ struct InvoiceEditorView: View {
     private var wideForm: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                #if os(macOS)
-                // `MacFacturaNueva`: ruta «Ventas › Nueva factura» y título grande dentro del contenido.
-                VStack(alignment: .leading, spacing: 2) {
-                    // Con textos que ya están en el catálogo: la sincronización solo compila para iOS.
-                    Text(verbatim: "\(String(localized: "Ventas")) › \(editorTitle)").font(.subheadline).foregroundStyle(Palette.ink3)
-                    MacPageTitle(editorTitle)
-                }
-                #endif
                 if let errorMessage { ErrorBanner(message: errorMessage) }
                 wideHeaderCard
                 wideLinesCard
@@ -361,8 +353,8 @@ struct InvoiceEditorView: View {
         VStack(spacing: 0) {
             HStack(spacing: 10) {
                 Text("#").frame(width: 24, alignment: .leading)
-                Text("Producto o servicio").frame(maxWidth: .infinity, alignment: .leading)
-                Text("Cuenta de ingreso").frame(maxWidth: .infinity, alignment: .leading)
+                Text("Producto o servicio").frame(minWidth: 110, maxWidth: .infinity, alignment: .leading)
+                Text("Cuenta de ingreso").frame(minWidth: 110, maxWidth: .infinity, alignment: .leading)
                 Text("Cant.").frame(width: 120, alignment: .center)
                 Text("Precio").frame(width: amountColumn, alignment: .trailing)
                 Text("Impuesto").frame(width: 96, alignment: .leading)
@@ -370,13 +362,15 @@ struct InvoiceEditorView: View {
                 Color.clear.frame(width: 32, height: 1)
             }
             .font(.label).tracking(0.6).textCase(.uppercase).foregroundStyle(Palette.ink3)
+            // Una línea y recortado: en ventanas estrechas la cabecera se partía en sílabas («PRO-DUCTO»).
+            .lineLimit(1).truncationMode(.tail)
             .padding(.horizontal, 18).padding(.vertical, 12)
             .accessibilityHidden(true)
             ForEach(Array($lines.enumerated()), id: \.element.id) { index, $line in
                 Divider()
                 HStack(spacing: 10) {
                     Text("\(index + 1)").foregroundStyle(Palette.ink3).frame(width: 24, alignment: .leading).accessibilityHidden(true)
-                    TextField("Producto o servicio", text: $line.details).fieldBox().frame(maxWidth: .infinity)
+                    TextField("Producto o servicio", text: $line.details).fieldBox().frame(minWidth: 110, maxWidth: .infinity)
                     Menu {
                         Picker("Cuenta de ingreso", selection: $line.incomeAccountID) {
                             ForEach(incomeAccounts) { Text($0.displayName).tag(Optional($0.id)) }
@@ -402,7 +396,7 @@ struct InvoiceEditorView: View {
                         .accessibilityValue(line.isTaxable ? Text("Sí") : Text("No"))
                     Text(line.amount.money).fontWeight(.semibold).monospacedDigit().frame(width: amountColumn, alignment: .trailing)
                     Button { lines.remove(at: index) } label: {
-                        Image(systemName: "xmark").frame(width: 32, height: 44)
+                        Image(systemName: "xmark").frame(width: 32, height: Metrics.target)
                     }
                     .buttonStyle(.plain)
                     .foregroundStyle(Palette.ink3)
@@ -417,7 +411,7 @@ struct InvoiceEditorView: View {
                 .buttonStyle(.plain)
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(Palette.brand)
-                .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                .frame(maxWidth: .infinity, minHeight: Metrics.target, alignment: .leading)
                 .padding(.horizontal, 18)
         }
         .background(Palette.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
@@ -640,6 +634,22 @@ struct QuantityStepper: View {
     @Binding var quantity: Decimal
 
     var body: some View {
+        #if os(macOS)
+        // En el Mac, un campo numérico con su `Stepper`, como en el tablero; la píldora «− 1 +» era de iPhone.
+        HStack(spacing: 4) {
+            TextField("Cantidad", value: $quantity, format: .number)
+                .labelsHidden()
+                .multilineTextAlignment(.trailing)
+                .monospacedDigit()
+                .frame(minWidth: 40)
+            Stepper("Cantidad", value: $quantity, in: 1...9_999).labelsHidden()
+        }
+        #else
+        pill
+        #endif
+    }
+
+    private var pill: some View {
         HStack(spacing: 0) {
             Button { quantity = max(1, quantity - 1) } label: {
                 Image(systemName: "minus").frame(width: 36, height: 32)

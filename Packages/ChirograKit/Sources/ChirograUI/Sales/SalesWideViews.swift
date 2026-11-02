@@ -19,6 +19,8 @@ struct TableCard<Header: View, Rows: View>: View {
         VStack(spacing: 0) {
             HStack(spacing: 12) { header }
                 .font(.label).tracking(0.6).textCase(.uppercase).foregroundStyle(Palette.ink3)
+                // Una línea y recortado: con columnas estrechas la cabecera se partía en sílabas («DES-CRIP-CIÓN»).
+                .lineLimit(1).truncationMode(.tail)
                 .padding(.horizontal, 18).padding(.vertical, 10)
                 .accessibilityHidden(true)
             rows
@@ -27,7 +29,7 @@ struct TableCard<Header: View, Rows: View>: View {
     }
 }
 
-/// Fila de `TableCard`: línea arriba, 44 pt de alto como mínimo.
+/// Fila de `TableCard`: línea arriba, del alto mínimo de la plataforma (44 pt táctiles; más densa en el Mac).
 struct TableRow<Content: View>: View {
     @ViewBuilder var content: Content
 
@@ -39,7 +41,7 @@ struct TableRow<Content: View>: View {
                 .monospacedDigit()
                 .foregroundStyle(Palette.ink)
                 .padding(.horizontal, 18)
-                .frame(minHeight: 44)
+                .frame(minHeight: Metrics.target)
                 .contentShape(Rectangle())
         }
         .accessibilityElement(children: .combine)

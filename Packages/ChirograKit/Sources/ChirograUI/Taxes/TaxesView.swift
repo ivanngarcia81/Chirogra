@@ -254,7 +254,7 @@ struct TaxesView: View {
             }
             .foregroundStyle(Palette.ink)
             .padding(.horizontal, 14)
-            .frame(minHeight: 44)
+            .frame(minHeight: Metrics.target)
             .background(Palette.surface, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
         }
         .accessibilityLabel("Trimestre")
@@ -312,7 +312,7 @@ struct TaxesView: View {
             LabeledContent(title, value: value)
                 .font(.subheadline.weight(bold ? .semibold : .regular))
                 .monospacedDigit()
-                .frame(minHeight: 44)
+                .frame(minHeight: Metrics.target)
             if !last { Divider() }
         }
     }

@@ -98,8 +98,18 @@ struct ReportsView: View {
 
     #if os(macOS)
     private static let minimumRowHeight: CGFloat = 34
+    /// En el Mac, con letra y filas más compactas, los reportes aguantan sus columnas en ventanas de 1000 pt
+    /// (unos 760 pt de contenido): antes el Balance se apilaba y el PyG perdía Variación y %.
+    private static let compactBelow: CGFloat = 480
+    private static let variationWithDelta: CGFloat = 640
+    private static let variationOnly: CGFloat = 540
+    private static let balanceColumn: CGFloat = 300
     #else
     private static let minimumRowHeight: CGFloat = 44
+    private static let compactBelow: CGFloat = 600
+    private static let variationWithDelta: CGFloat = 760
+    private static let variationOnly: CGFloat = 640
+    private static let balanceColumn: CGFloat = 380
     #endif
 
     /// Ancho de iPhone (o de iPad en Split View estrecho).
@@ -114,11 +124,13 @@ struct ReportsView: View {
     /// Una sola columna como en iPhone: en pantallas estrechas, con menos de 600 pt de contenido y con los dos
     /// tamaños de accesibilidad más grandes. En iPad con AX1–AX3 hay sitio para las columnas.
     private var isCompact: Bool {
-        isNarrow || dynamicTypeSize >= .accessibility4 || (width > 0 && width - 2 * margin < 600)
+        isNarrow || dynamicTypeSize >= .accessibility4 || (width > 0 && width - 2 * margin < Self.compactBelow)
     }
 
     /// VARIACIÓN y % sólo si caben junto a los dos periodos (no en iPad vertical con la barra lateral).
-    private var showsVariationColumns: Bool { !isCompact && width - 2 * margin >= (showsDeltaColumn ? 760 : 640) }
+    private var showsVariationColumns: Bool {
+        !isCompact && width - 2 * margin >= (showsDeltaColumn ? Self.variationWithDelta : Self.variationOnly)
+    }
 
     /// La variación en dinero sólo en el Mac (`MacPyG`); el iPad (`iPadPyG`) muestra sólo el %.
     private var showsDeltaColumn: Bool {
@@ -216,7 +228,7 @@ struct ReportsView: View {
                 .font(.body.weight(.semibold))
                 .foregroundStyle(kind == .salesTax ? Palette.ink : Palette.onBrand)
                 .padding(.horizontal, 16)
-                .frame(minHeight: 44)
+                .frame(minHeight: Metrics.target)
                 .background(kind == .salesTax ? Palette.surface : Palette.brand, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
                 .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).stroke(kind == .salesTax ? Palette.separator : .clear))
             #endif
@@ -498,7 +510,7 @@ struct ReportsView: View {
     /// `MacBalance`: tres cifras, la comprobación arriba y dos columnas (activos | pasivos y patrimonio).
     private var wideBalanceSheet: some View {
         let report = balanceSheetReport
-        let twoColumns = width - 2 * margin >= 2 * 380 + 16
+        let twoColumns = width - 2 * margin >= 2 * Self.balanceColumn + 16
         let assets = VStack(spacing: 0) {
             group(String(localized: "Activos"), report.assets, nil)
             totalRow(String(localized: "Total activos"), report.totalAssets, nil, highlighted: true)
@@ -1185,7 +1197,7 @@ private struct CheckboxStyle: ToggleStyle {
                     .foregroundStyle(configuration.isOn ? Palette.brand : Palette.ink3)
                 configuration.label.font(.subheadline)
             }
-            .frame(minHeight: 44)
+            .frame(minHeight: Metrics.target)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)

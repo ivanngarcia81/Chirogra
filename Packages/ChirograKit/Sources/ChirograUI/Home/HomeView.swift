@@ -297,7 +297,7 @@ struct HomeView: View {
         let label = Text(title).font(.footnote.weight(.semibold)).foregroundStyle(Palette.brand)
             .padding(.horizontal, 12).frame(minHeight: 32)
             .overlay(RoundedRectangle(cornerRadius: 9, style: .continuous).stroke(Palette.separator))
-            .frame(minHeight: 44)
+            .frame(minHeight: Metrics.target)
             .contentShape(Rectangle())
         switch step {
         case .company: NavigationLink { SettingsView() } label: { label }.buttonStyle(.plain)
@@ -625,7 +625,7 @@ struct HomeView: View {
                     Image(systemName: "chevron.right").font(.caption.weight(.semibold))
                 }
                 .foregroundStyle(Palette.brand)
-                .frame(minHeight: 44)
+                .frame(minHeight: Metrics.target)
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
@@ -712,7 +712,7 @@ extension HomeView {
                 .font(.subheadline)
                 .monospacedDigit()
                 .foregroundStyle(Palette.ink)
-                .frame(minHeight: 44)
+                .frame(minHeight: Metrics.target)
                 .contentShape(Rectangle())
         }
     }
@@ -725,7 +725,7 @@ extension HomeView {
                 // Enlace de texto: sin `.plain`, el Mac lo dibuja como botón relleno.
                 SectionLink(item: .section(.banking)) { BankingView() } label: { Text("Banca") }
                     .buttonStyle(.plain)
-                    .font(.subheadline.weight(.semibold)).foregroundStyle(Palette.brand).frame(minHeight: 44)
+                    .font(.subheadline.weight(.semibold)).foregroundStyle(Palette.brand).frame(minHeight: Metrics.target)
             }
             ForEach(shown) { account in
                 NavigationLink { LedgerView(account: account) } label: {
@@ -791,7 +791,7 @@ extension HomeView {
             wideHeader("Por pagar · próximos") {
                 SectionLink(item: .expenses(.bills)) { ExpensesView(fixedSegment: .bills) } label: { Text("Ver todo") }
                     .buttonStyle(.plain)
-                    .font(.footnote.weight(.semibold)).foregroundStyle(Palette.brand).frame(minHeight: 44)
+                    .font(.footnote.weight(.semibold)).foregroundStyle(Palette.brand).frame(minHeight: Metrics.target)
             }
             ForEach(Array(upcoming)) { bill in
                 wideRow {

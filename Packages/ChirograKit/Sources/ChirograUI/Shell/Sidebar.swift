@@ -129,6 +129,7 @@ struct Sidebar: View {
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
         }
+        .scrollIndicators(.never)
         .safeAreaInset(edge: .bottom, spacing: 0) { companyCard }
         // Al vaciar la búsqueda se suelta el foco del campo.
         .onChange(of: query) { _, text in if text.isEmpty { searching = false } }

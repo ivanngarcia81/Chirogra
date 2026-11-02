@@ -160,7 +160,7 @@ struct CustomerDetailView: View {
             if isWide { wideBody } else { compactBody }
         }
         .background(Palette.background)
-        .inlineTitle()
+        .recordTitle(customer.name, section: String(localized: "Clientes"))
         .toolbar {
             if isWide {
                 ToolbarItemGroup(placement: .primaryAction) {
@@ -208,8 +208,9 @@ struct CustomerDetailView: View {
                 if customer.creditBalance > 0 { creditCard }
                 ViewThatFits(in: .horizontal) {
                     HStack(alignment: .top, spacing: 16) {
-                        invoiceTable.frame(minWidth: 520, maxWidth: .infinity)
-                        VStack(spacing: 16) { contactCard; notesCard }.frame(width: 320)
+                        // Medidas que caben junto a la lista de clientes (unos 740 pt de detalle en un Mac de 1280).
+                        invoiceTable.frame(minWidth: 380, maxWidth: .infinity)
+                        VStack(spacing: 16) { contactCard; notesCard }.frame(width: 260)
                     }
                     VStack(spacing: 16) { invoiceTable; contactCard; notesCard }
                 }
@@ -291,7 +292,7 @@ struct CustomerDetailView: View {
             }
             .font(.subheadline)
             .padding(.vertical, 10)
-            .frame(minHeight: 44)
+            .frame(minHeight: Metrics.target)
         }
         .accessibilityElement(children: .combine)
     }
@@ -370,7 +371,7 @@ struct CustomerDetailView: View {
                 if total > 0 {
                     ShareLink(item: reminderText, subject: Text("Recordatorio de pago")) {
                         Text("Recordar pago").font(.subheadline.weight(.semibold))
-                            .padding(.horizontal, 14).frame(minHeight: 44)
+                            .padding(.horizontal, 14).frame(minHeight: Metrics.target)
                             .foregroundStyle(overdue > 0 ? Palette.negative : Palette.brand)
                             .background(overdue > 0 ? Palette.negativeWash : Palette.brandWash,
                                         in: RoundedRectangle(cornerRadius: 12, style: .continuous))
