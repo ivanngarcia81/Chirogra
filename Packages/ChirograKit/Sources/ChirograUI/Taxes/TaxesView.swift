@@ -8,7 +8,8 @@ import SwiftUI
 ///   Resumen · Tasas; en Resumen, la tarjeta «Impuesto sobre ventas por pagar» con la hoja de calendario «Declarar y
 ///   pagar» y «Registrar pago de impuesto», y el desglose como grupo de filas; en Tasas, la lista con «Nueva tasa» en
 ///   Tinta, su pie gris y el periodo de declaración de cada agencia.
-/// - iPad y Mac: `MacImpuestos`: cuatro cajas de cifras, la tabla de tasas con cebra y los pagos a la agencia.
+/// - iPad y Mac: `MacImpuestos`: cuatro cajas de cifras, la tabla de tasas con cebra y los pagos a la agencia. En el
+///   Mac, además, el inspector de la derecha con la tasa elegida en la tabla y la declaración del trimestre.
 /// «Deducibles» y «Exportar para mi contador» son de la fase 2; «Precios con impuesto incluido» no existe en los datos.
 struct TaxesView: View {
     enum Tab: String, CaseIterable, Identifiable {
@@ -31,6 +32,10 @@ struct TaxesView: View {
     @State private var showingPayment = false
     @State private var showingGroup = false
     @State private var width: CGFloat = 0
+    #if os(macOS)
+    /// Tasa o grupo elegido en la tabla para el inspector (clave de `macRateItems`); sin elegir, el primero.
+    @State private var macPick: String?
+    #endif
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     #if os(iOS)
     @LayoutSizeClass private var sizeClass
@@ -61,6 +66,9 @@ struct TaxesView: View {
         .navigationSubtitle(String(localized: "\(quarterTitle(quarter(quarterOffset))) · declaración trimestral"))
         #endif
         .headerTitle()
+        #if os(macOS)
+        .macInspectorToggle()
+        #endif
         .toolbar {
             if isWide {
                 #if os(iOS)
@@ -84,6 +92,19 @@ struct TaxesView: View {
         .sheet(isPresented: $showingRate) { NavigationStack { TaxRateEditorView() } }
         .sheet(isPresented: $showingPayment) { NavigationStack { SalesTaxPaymentView(owed: payable) } }
         .sheet(isPresented: $showingGroup) { NavigationStack { TaxGroupEditorView() } }
+        #if os(macOS)
+        .macReportInspector(title: macSelectedItem?.name ?? String(localized: "Tasas"), hasSelection: macSelectedItem != nil,
+                            placeholder: String(localized: "Aún no hay tasas de impuesto. Añade una con «+» bajo la tabla."),
+                            selectionKey: macPick, qaSelectRow: { index in
+                                let items = macRateItems
+                                if items.indices.contains(index) { macPick = items[index].key }
+                            }) {
+            if let item = macSelectedItem { rateInspector(item) }
+        } actions: {
+            SectionLink(item: .report(.salesTax)) { ReportsView(fixedKind: .salesTax) } label: { Text("Ver reporte") }
+                .buttonStyle(.primary)
+        }
+        #endif
     }
 
     // MARK: Trimestre
@@ -367,6 +388,11 @@ struct TaxesView: View {
         let number = (Calendar.current.component(.month, from: interval.start) - 1) / 3 + 1
         let activeGroups = groups.filter { !$0.isArchived }
         let rates = agencies.flatMap { agency in (agency.rates ?? []).filter { !$0.isArchived }.map { (agency, $0) } }
+        #if os(macOS)
+        let picked = macSelectedItem?.key
+        #else
+        let picked: String? = nil
+        #endif
         return VStack(alignment: .leading, spacing: 6) {
             HStack(alignment: .firstTextBaseline) {
                 Text("Tasas por jurisdicción").font(.cardTitle).accessibilityAddTraits(.isHeader)
@@ -382,12 +408,12 @@ struct TaxesView: View {
             } rows: {
                 ForEach(Array(activeGroups.enumerated()), id: \.element.id) { index, group in
                     rateTableRow(group.name, kind: String(localized: "Combinada"), percent: group.percent,
-                                 collected: (group.rates ?? []).reduce(0) { $0 + (collected[$1.id] ?? 0) }, bold: true)
-                        .background(zebra(index))
+                                 collected: (group.rates ?? []).reduce(0) { $0 + (collected[$1.id] ?? 0) }, bold: true,
+                                 key: "group:\(group.id)", index: index, picked: picked)
                 }
                 ForEach(Array(rates.enumerated()), id: \.element.1.id) { index, item in
-                    rateTableRow(item.1.name, kind: item.0.name, percent: item.1.percent, collected: collected[item.1.id] ?? 0, bold: false)
-                        .background(zebra(index + activeGroups.count))
+                    rateTableRow(item.1.name, kind: item.0.name, percent: item.1.percent, collected: collected[item.1.id] ?? 0, bold: false,
+                                 key: "rate:\(item.1.id)", index: index + activeGroups.count, picked: picked)
                 }
                 if activeGroups.isEmpty && rates.isEmpty {
                     Text("Sin tasas todavía").font(.subheadline).foregroundStyle(Palette.ink2).frame(maxWidth: .infinity).padding(.vertical, 24)
@@ -424,14 +450,98 @@ struct TaxesView: View {
         #endif
     }
 
-    private func rateTableRow(_ name: String, kind: String, percent: Decimal, collected: Int64, bold: Bool) -> some View {
-        TableRow {
-            Text(name).fontWeight(bold ? .semibold : .regular).lineLimit(1).frame(maxWidth: .infinity, alignment: .leading)
-            Text(kind).foregroundStyle(Palette.ink2).lineLimit(1).frame(width: 150, alignment: .leading)
-            Text("\(percent.formatted())%").frame(width: 64, alignment: .trailing)
-            Text(collected.money).frame(width: 110, alignment: .trailing)
+    /// Fila de la tabla de tasas; en el Mac se elige con un clic para verla en el inspector (`MacReportRow`).
+    @ViewBuilder
+    private func rateTableRow(_ name: String, kind: String, percent: Decimal, collected: Int64, bold: Bool,
+                              key: String, index: Int, picked: String?) -> some View {
+        #if os(macOS)
+        MacReportRow(isSelected: key == picked, zebra: !index.isMultiple(of: 2), select: { macPick = key }) {
+            rateCells(name, kind: kind, percent: percent, collected: collected, bold: bold)
+        }
+        #else
+        TableRow { rateCells(name, kind: kind, percent: percent, collected: collected, bold: bold) }
+            .background(zebra(index))
+        #endif
+    }
+
+    @ViewBuilder
+    private func rateCells(_ name: String, kind: String, percent: Decimal, collected: Int64, bold: Bool) -> some View {
+        Text(name).fontWeight(bold ? .semibold : .regular).lineLimit(1).frame(maxWidth: .infinity, alignment: .leading)
+        ReportCellText(text: kind).lineLimit(1).frame(width: 150, alignment: .leading)
+        Text("\(percent.formatted())%").frame(width: 64, alignment: .trailing)
+        Text(collected.money).frame(width: 110, alignment: .trailing)
+    }
+
+    // MARK: Inspector del Mac
+
+    #if os(macOS)
+    /// Una fila de la tabla de tasas: un grupo (tasa combinada) o una tasa de una agencia.
+    struct MacRateItem {
+        let key: String
+        let name: String
+        let percent: Decimal
+        /// Agencia de la tasa; `nil` en un grupo.
+        let agency: String?
+        /// Tasas del grupo; vacío en una tasa suelta.
+        let components: [TaxRate]
+        let collected: Int64
+    }
+
+    /// En el orden de la tabla: los grupos y después las tasas de cada agencia.
+    private var macRateItems: [MacRateItem] {
+        let summary = summary(quarter(quarterOffset))
+        let collected = Dictionary((summary?.rows ?? []).compactMap { row in row.rateID.map { ($0, row.tax) } }, uniquingKeysWith: +)
+        let groupItems = groups.filter { !$0.isArchived }.map { group in
+            MacRateItem(key: "group:\(group.id)", name: group.name, percent: group.percent, agency: nil, components: group.rates ?? [],
+                        collected: (group.rates ?? []).reduce(0) { $0 + (collected[$1.id] ?? 0) })
+        }
+        let rateItems = agencies.flatMap { agency in
+            (agency.rates ?? []).filter { !$0.isArchived }.map { rate in
+                MacRateItem(key: "rate:\(rate.id)", name: rate.name, percent: rate.percent, agency: agency.name, components: [],
+                            collected: collected[rate.id] ?? 0)
+            }
+        }
+        return groupItems + rateItems
+    }
+
+    /// Lo elegido o, sin elegir, la primera fila (como el canvas).
+    private var macSelectedItem: MacRateItem? {
+        let items = macRateItems
+        return items.first { $0.key == macPick } ?? items.first
+    }
+
+    /// La tasa con su porcentaje y su tipo, lo cobrado en el trimestre y la declaración del trimestre.
+    @ViewBuilder
+    private func rateInspector(_ item: MacRateItem) -> some View {
+        let interval = quarter(quarterOffset)
+        let summary = summary(interval)
+        let due = dueDate(interval)
+        let isGroup = item.agency == nil
+        MacReportFigure(caption: String(localized: "Tasa de impuesto sobre ventas"), amount: "\(item.percent.formatted())%") {
+            Text(isGroup ? String(localized: "Combinada · \(item.components.count) tasas") : String(localized: "Componente · \(item.agency ?? "")"))
+                .foregroundStyle(Palette.ink2)
+        }
+        MacInspectorSection(title: String(localized: "Tasa elegida")) {
+            MacInspectorRow(String(localized: "Nombre"), value: item.name)
+            MacInspectorRow(String(localized: "Tipo"), value: isGroup ? String(localized: "Combinada") : String(localized: "Componente"))
+            if let agency = item.agency { MacInspectorRow(String(localized: "Agencia"), value: agency) }
+            MacInspectorRow(String(localized: "Cobrado en \(quarterName(interval))"), value: item.collected.money)
+        }
+        if isGroup && !item.components.isEmpty {
+            MacInspectorSection(title: String(localized: "Tasas incluidas")) {
+                ForEach(item.components) { rate in
+                    MacInspectorRow(rate.name, value: "\(rate.percent.formatted())%")
+                }
+            }
+        }
+        MacInspectorSection(title: String(localized: "Declaración \(quarterName(interval))")) {
+            MacInspectorRow(String(localized: "Cobrado"), value: (summary?.totalTax ?? 0).money)
+            MacInspectorRow(String(localized: "Pagado"), value: paid(in: interval).money)
+            MacInspectorRow(String(localized: "Saldo por pagar"), value: max(payable, 0).money, bold: true)
+            MacInspectorRow(String(localized: "Fecha límite"), value: due.shortDate)
         }
     }
+    #endif
 
     private var paymentsCard: some View {
         let payments = entries.filter { $0.source == .salesTaxPayment && $0.reversesEntryID == nil }
@@ -633,6 +743,8 @@ struct TaxGroupEditorView: View {
 /// Registrar el pago del sales tax cobrado a la agencia (Debe Sales Tax Payable / Haber Banco).
 struct SalesTaxPaymentView: View {
     let owed: Int64
+    /// Importe propuesto (el saldo de la agencia en el inspector del Mac); sin él, lo pendiente según libros.
+    private let suggestedAmount: Int64?
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     @Environment(\.unsavedChanges) private var unsavedChanges
@@ -646,6 +758,13 @@ struct SalesTaxPaymentView: View {
     @State private var accountID: UUID?
     @State private var reference = ""
     @State private var errorMessage: String?
+
+    /// `agencyID` y `amount`: la agencia y el importe ya elegidos (inspector de `MacSalesTax`).
+    init(owed: Int64, agencyID: UUID? = nil, amount: Int64? = nil) {
+        self.owed = owed
+        suggestedAmount = amount
+        _agencyID = State(initialValue: agencyID)
+    }
 
     var body: some View {
         Form {
@@ -672,7 +791,7 @@ struct SalesTaxPaymentView: View {
             ToolbarItem(placement: .confirmationAction) { Button("Registrar", action: save).disabled(amount <= 0 || accountID == nil).headerButton() }
         }
         .onAppear {
-            amount = owed
+            amount = suggestedAmount ?? owed
             agencyID = agencyID ?? agencies.first?.id
             accountID = accountID ?? accounts.first { $0.subtype == .bank }?.id
         }

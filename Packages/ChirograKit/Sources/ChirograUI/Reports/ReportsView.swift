@@ -95,8 +95,23 @@ struct ReportsView: View {
     @State private var asOf = Date.now
     /// Trimestre del sales tax en pantallas anchas (`MacSalesTax`): 0 el actual, −1 el anterior…
     @State private var taxQuarter = 0
+    #if os(macOS)
+    /// Fila elegida del reporte para el inspector del Mac (clave de `macRowKeys`); sin elegir, la primera.
+    @State private var macPick: String?
+    @State private var openedAccount: Account?
+    @State private var openedCustomer: Customer?
+    @State private var openedVendor: Vendor?
+    @State private var payingAgency: AgencyRow?
+    #endif
 
-    private var kind: Kind { fixedKind ?? .income }
+    private var kind: Kind {
+        #if DEBUG
+        // `-qa.reporte balance|trial|receivables|payables|salesTax` con `-qa.seccion reports` (solo Debug).
+        if fixedKind == nil, let raw = UserDefaults.standard.string(forKey: "qa.reporte"),
+           let qa = Kind.allCases.first(where: { "\($0)" == raw }) { return qa }
+        #endif
+        return fixedKind ?? .income
+    }
     private var ledger: Ledger { Ledger(accounts: accounts, lines: journalLines) }
 
     // MARK: Medidas
@@ -149,8 +164,28 @@ struct ReportsView: View {
         .navigationSubtitle(subtitle)
         #endif
         .headerTitle()
+        #if os(macOS)
+        .macInspectorToggle()
+        #endif
         .toolbar { toolbar }
         .sheet(isPresented: $editingRange) { rangeEditor }
+        #if os(macOS)
+        .macReportInspector(title: macInspectorTitle, hasSelection: macSelectedKey != nil, placeholder: macPlaceholder,
+                            selectionKey: macPick, qaSelectRow: { index in
+                                let keys = macRowKeys
+                                if keys.indices.contains(index) { macPick = keys[index] }
+                            }) {
+            macInspector
+        } actions: {
+            macInspectorActions
+        }
+        .navigationDestination(item: $openedAccount) { LedgerView(account: $0) }
+        .navigationDestination(item: $openedCustomer) { CustomerDetailView(customer: $0) }
+        .navigationDestination(item: $openedVendor) { VendorDetailView(vendor: $0) }
+        .sheet(item: $payingAgency) { row in
+            NavigationStack { SalesTaxPaymentView(owed: salesTaxPayable, agencyID: row.id, amount: row.balance) }.editorSheetSizing()
+        }
+        #endif
     }
 
     // MARK: Barra
@@ -329,7 +364,9 @@ struct ReportsView: View {
         var previous: Int64? = nil
         var trend: Trend? = nil
         var style: Style = .line
-        var id: String { "\(name)-\(style)" }
+        /// Cuenta de la fila (las de totales y resultados no tienen).
+        var account: LedgerAccount? = nil
+        var id: String { account.map(\.id.uuidString) ?? "\(name)-\(style)" }
     }
 
     private struct Block: Identifiable {
@@ -346,13 +383,17 @@ struct ReportsView: View {
             .map { ReportRow(account: $0.account, amount: 0) }
         return shown.sorted { ($0.account.code, $0.account.name) < ($1.account.code, $1.account.name) }.map { row in
             Line(name: row.account.name, amount: row.amount,
-                 previous: previous.map { list in list.first { $0.account.id == row.account.id }?.amount ?? 0 }, trend: trend)
+                 previous: previous.map { list in list.first { $0.account.id == row.account.id }?.amount ?? 0 }, trend: trend,
+                 account: row.account)
         }
     }
 
-    private var incomeBlocks: [Block] {
+    private var incomeBlocks: [Block] { incomeBlocks(comparing: compare) }
+
+    /// `comparing`: con el periodo anterior en cada fila (el inspector del Mac compara siempre).
+    private func incomeBlocks(comparing: Bool) -> [Block] {
         let current = ledger.incomeStatement(interval())
-        let previous = compare ? ledger.incomeStatement(interval(offset: -1)) : nil
+        let previous = comparing ? ledger.incomeStatement(interval(offset: -1)) : nil
         func total(_ name: String, _ now: Int64, _ before: Int64?, _ trend: Trend, _ style: Line.Style = .total) -> Line {
             Line(name: name, amount: now, previous: before, trend: trend, style: style)
         }
@@ -855,7 +896,9 @@ struct ReportsView: View {
     /// `MacPyG` / `MacBalance`: el estado como documento, con cabecera centrada, secciones sangradas, línea sobre los
     /// totales y doble subrayado en el resultado.
     private func statementDocument(title: String, range: String, blocks: [Block], columns: [AmountColumn]) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
+        // Fila elegida para el inspector (solo Mac): rellena de Tinta, como la de una tabla.
+        let picked = macPickedKey
+        return VStack(alignment: .leading, spacing: 0) {
             VStack(spacing: 2) {
                 Text(companyName).font(.headline)
                 Text(title).font(.title3.weight(.bold))
@@ -880,9 +923,17 @@ struct ReportsView: View {
             ForEach(blocks) { block in
                 if let title = block.title {
                     Text(title).fontWeight(.semibold).padding(.horizontal, 8).frame(minHeight: 28).padding(.top, 8)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                         .accessibilityAddTraits(.isHeader)
+                        #if os(macOS)
+                        // El encabezado elige el total de su sección (canvas `MacPyG`: la sección con su total).
+                        .contentShape(Rectangle())
+                        .onTapGesture { if let total = block.lines.last { macPick = total.id } }
+                        #endif
                 }
-                ForEach(block.lines) { documentLine($0, columns: columns, inSection: block.title != nil) }
+                ForEach(block.lines) { line in
+                    documentLine(line, columns: columns, inSection: block.title != nil, selected: line.id == picked)
+                }
             }
         }
         .monospacedDigit()
@@ -894,34 +945,42 @@ struct ReportsView: View {
         .frame(maxWidth: .infinity)
     }
 
-    private func documentLine(_ line: Line, columns: [AmountColumn], inSection: Bool) -> some View {
+    private func documentLine(_ line: Line, columns: [AmountColumn], inSection: Bool, selected: Bool = false) -> some View {
         let weight: Font.Weight = switch line.style { case .line: .regular; case .total, .result: .semibold; case .grand: .bold }
         let indent: CGFloat = !inSection ? 0 : line.style == .line ? 36 : 18
         let ruled = line.style != .line
+        let rule = selected ? Palette.onBrandFill.opacity(0.7) : Palette.ink2
         return HStack(spacing: 0) {
             Text(line.name).lineLimit(1).padding(.leading, indent).frame(maxWidth: .infinity, alignment: .leading)
             ForEach(columns) { column in
                 let value = column.value(line)
-                Text(value?.text ?? "").foregroundStyle(value?.color ?? Palette.ink2)
+                Text(value?.text ?? "").foregroundStyle(selected ? Palette.onBrandFill : value?.color ?? Palette.ink2)
                     .fontWeight(column.title == columns.first?.title ? weight : .regular)
                     .lineLimit(1).minimumScaleFactor(0.8)
                     .padding(.vertical, 4)
                     .frame(width: column.width, alignment: .trailing)
                     .padding(.leading, 8)
-                    .overlay(alignment: .top) { if ruled { Rectangle().fill(Palette.ink2).frame(height: 0.5).padding(.leading, 8) } }
+                    .overlay(alignment: .top) { if ruled { Rectangle().fill(rule).frame(height: 0.5).padding(.leading, 8) } }
                     .overlay(alignment: .bottom) {
                         if line.style == .grand {
                             VStack(spacing: 1.5) { Rectangle().frame(height: 0.75); Rectangle().frame(height: 0.75) }
-                                .foregroundStyle(Palette.ink2).padding(.leading, 8)
+                                .foregroundStyle(rule).padding(.leading, 8)
                         }
                     }
             }
         }
         .fontWeight(weight)
+        .foregroundStyle(selected ? Palette.onBrandFill : Palette.ink)
         .padding(.horizontal, 8)
         .frame(minHeight: line.style == .line ? 24 : 28)
+        .background(selected ? Palette.brandFill : .clear, in: RoundedRectangle(cornerRadius: 5, style: .continuous))
         .padding(.top, line.style == .result || line.style == .grand ? 6 : 0)
+        #if os(macOS)
+        .contentShape(Rectangle())
+        .onTapGesture { macPick = line.id }
+        #endif
         .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(selected ? [.isButton, .isSelected] : isMac ? .isButton : [])
     }
 
     // MARK: Balance general
@@ -966,6 +1025,7 @@ struct ReportsView: View {
     private var wideTrial: some View {
         let report = trialBalanceReport
         let difference = abs(report.totalDebit - report.totalCredit)
+        let picked = macPickedKey
         wideSubtitle
         TableCard {
             Text("Número").frame(width: 60, alignment: .leading)
@@ -975,14 +1035,13 @@ struct ReportsView: View {
             Text("Crédito").frame(width: amountColumn, alignment: .trailing)
         } rows: {
             ForEach(Array(report.rows.enumerated()), id: \.element.id) { index, row in
-                TableRow {
-                    Text(row.account.code).foregroundStyle(Palette.ink2).frame(width: 60, alignment: .leading)
+                pickableRow(row.account.id.uuidString, index: index, picked: picked) {
+                    ReportCellText(text: row.account.code).frame(width: 60, alignment: .leading)
                     Text(row.account.name).lineLimit(1).frame(maxWidth: .infinity, alignment: .leading)
-                    Text(row.account.subtype.title).foregroundStyle(Palette.ink2).lineLimit(1).frame(width: 150, alignment: .leading)
+                    ReportCellText(text: row.account.subtype.title).lineLimit(1).frame(width: 150, alignment: .leading)
                     Text(row.debit == 0 ? "" : row.debit.money).frame(width: amountColumn, alignment: .trailing)
                     Text(row.credit == 0 ? "" : row.credit.money).frame(width: amountColumn, alignment: .trailing)
                 }
-                .background(zebra(index))
             }
             TableRow {
                 Color.clear.frame(width: 60, height: 1)
@@ -1003,6 +1062,26 @@ struct ReportsView: View {
         isMac && !index.isMultiple(of: 2) ? Palette.surface : .clear
     }
 
+    /// Fila de tabla: en el Mac se elige con un clic para verla en el inspector (`MacReportRow`); en el iPad, la de
+    /// siempre.
+    @ViewBuilder
+    private func pickableRow<Content: View>(_ key: String, index: Int, picked: String?, @ViewBuilder content: () -> Content) -> some View {
+        #if os(macOS)
+        MacReportRow(isSelected: key == picked, zebra: !index.isMultiple(of: 2), select: { macPick = key }) { content() }
+        #else
+        TableRow { content() }.background(zebra(index))
+        #endif
+    }
+
+    /// Clave de la fila elegida en el Mac; `nil` en iPhone e iPad, donde no se elige.
+    private var macPickedKey: String? {
+        #if os(macOS)
+        macSelectedKey
+        #else
+        nil
+        #endif
+    }
+
     /// Importe de un total con doble subrayado.
     private func doubleRuled(_ text: String) -> some View {
         Text(text)
@@ -1017,6 +1096,7 @@ struct ReportsView: View {
     @ViewBuilder
     private func wideAging(_ report: AgingReport, party: String, empty: String) -> some View {
         let grand = report.total
+        let picked = macPickedKey
         wideSubtitle
         LazyVGrid(columns: [GridItem(.adaptive(minimum: isMac ? 130 : 150), spacing: 12)], spacing: 12) {
             bucketBox(String(localized: "Total abierto"), grand, share: grand == 0 ? 0 : 1, bar: Palette.gray, late: false,
@@ -1037,17 +1117,21 @@ struct ReportsView: View {
             Text("Total").frame(width: bucketColumn + 8, alignment: .trailing)
         } rows: {
             ForEach(Array(report.rows.enumerated()), id: \.element.id) { index, row in
-                TableRow {
+                pickableRow("party:\(row.party)", index: index, picked: picked) {
+                    // En el Mac la fila se elige (la ficha se abre desde el inspector); en el iPad, el nombre la abre.
+                    #if os(macOS)
+                    Text(row.party).lineLimit(1).frame(maxWidth: .infinity, alignment: .leading)
+                    #else
                     partyLink(row.party) { Text(row.party).lineLimit(1) }.frame(maxWidth: .infinity, alignment: .leading)
+                    #endif
                     ForEach(AgingReport.Bucket.allCases, id: \.self) { bucket in
                         let amount = row.amounts[bucket] ?? 0
-                        Text(amount == 0 ? "—" : amount.money)
-                            .foregroundStyle(amount == 0 ? Palette.ink2 : bucket == .current ? Palette.ink : Palette.negative)
+                        ReportCellText(text: amount == 0 ? "—" : amount.money,
+                                       color: amount == 0 ? Palette.ink2 : bucket == .current ? Palette.ink : Palette.negative)
                             .frame(width: bucketColumn, alignment: .trailing)
                     }
                     Text(row.total.money).fontWeight(.semibold).frame(width: bucketColumn + 8, alignment: .trailing)
                 }
-                .background(zebra(index))
             }
             if report.rows.isEmpty {
                 Text(empty).font(.subheadline).foregroundStyle(Palette.ink2).frame(maxWidth: .infinity).padding(.vertical, 24)
@@ -1110,6 +1194,8 @@ struct ReportsView: View {
         /// Tasas de la agencia (estatal, ciudad, transporte…) para desglosar la combinada.
         let components: [SalesTaxSummary.RateRow]
         var balance: Int64 { collected - paid }
+        /// Clave de la fila para el inspector del Mac.
+        var key: String { "agency:\(id?.uuidString ?? "none")" }
     }
 
     /// Pagos de sales tax de la declaración del trimestre: los que se registran en el trimestre siguiente, que es
@@ -1176,6 +1262,7 @@ struct ReportsView: View {
         let lastPayment = payments.map(\.date).max()
         let combined = rows.reduce(0) { $0 + $1.rateMillionths }
         let settled = balance <= 0 && summary.totalTax > 0
+        let picked = macPickedKey
         wideSubtitle
         kpiRow([
             KPIItem(title: String(localized: "Ventas gravables"), value: summary.taxableSales.money,
@@ -1203,7 +1290,7 @@ struct ReportsView: View {
             Text("Saldo").frame(width: amountColumn - 10, alignment: .trailing)
         } rows: {
             ForEach(Array(rows.enumerated()), id: \.element.id) { index, row in
-                TableRow {
+                pickableRow(row.key, index: index, picked: picked) {
                     Text(row.components.count > 1 ? String(localized: "\(row.name) · tasa combinada") : [row.name, row.rates].filter { !$0.isEmpty }.joined(separator: " · "))
                         .lineLimit(1).frame(maxWidth: .infinity, alignment: .leading)
                     Text(percent(row.rateMillionths)).frame(width: 64, alignment: .trailing)
@@ -1212,7 +1299,6 @@ struct ReportsView: View {
                     Text(row.paid.money).frame(width: amountColumn - 10, alignment: .trailing)
                     Text(row.balance.money).fontWeight(.semibold).frame(width: amountColumn - 10, alignment: .trailing)
                 }
-                .background(zebra(index))
                 // Desglose por jurisdicción de la tasa combinada; lo pagado se registra por agencia.
                 if row.components.count > 1 {
                     ForEach(row.components) { component in
@@ -1245,6 +1331,325 @@ struct ReportsView: View {
         Text("Cuentan como pagados los pagos registrados en el trimestre siguiente, cuando se presenta la declaración. Las tasas y las agencias se configuran en Impuestos.")
             .font(.footnote).foregroundStyle(Palette.ink2).padding(.horizontal, 2).padding(.top, 8)
     }
+
+    // MARK: - Inspector del Mac
+
+    #if os(macOS)
+    /// Filas que se pueden elegir, en el orden del reporte (la primera es la elegida si no hay otra).
+    private var macRowKeys: [String] {
+        switch kind {
+        case .income: incomeBlocks(comparing: true).flatMap(\.lines).map(\.id)
+        case .balance: balanceBlocks.flatMap(\.lines).map(\.id)
+        case .trial: trialBalanceReport.rows.map(\.account.id.uuidString)
+        case .receivables: receivablesReport.rows.map { "party:\($0.party)" }
+        case .payables: payablesReport.rows.map { "party:\($0.party)" }
+        case .salesTax: salesTaxQuarterRows.map(\.key)
+        }
+    }
+
+    /// Lo elegido o, sin elegir (o si ya no está en el reporte), la primera fila, como el canvas.
+    private var macSelectedKey: String? {
+        let keys = macRowKeys
+        if let macPick, keys.contains(macPick) { return macPick }
+        return keys.first
+    }
+
+    private var macPlaceholder: String {
+        switch kind {
+        case .income, .balance: String(localized: "El reporte no tiene movimientos todavía.")
+        case .trial: String(localized: "No hay cuentas con movimiento al corte.")
+        case .receivables: String(localized: "No hay facturas pendientes de cobro.")
+        case .payables: String(localized: "No hay facturas de proveedores pendientes.")
+        case .salesTax: String(localized: "Sin impuesto cobrado en el periodo.")
+        }
+    }
+
+    private var macInspectorTitle: String {
+        guard let key = macSelectedKey else { return kind.fullTitle }
+        switch kind {
+        case .income: return incomeBlocks(comparing: true).flatMap(\.lines).first { $0.id == key }?.name ?? kind.fullTitle
+        case .balance: return balanceBlocks.flatMap(\.lines).first { $0.id == key }?.name ?? kind.fullTitle
+        case .trial: return trialBalanceReport.rows.first { $0.account.id.uuidString == key }?.account.name ?? kind.fullTitle
+        case .receivables, .payables: return String(key.dropFirst("party:".count))
+        case .salesTax: return salesTaxQuarterRows.first { $0.key == key }?.name ?? kind.fullTitle
+        }
+    }
+
+    /// Cuenta del libro de una fila del reporte (para «Ver en el libro mayor»).
+    private func bookAccount(_ id: UUID?) -> Account? {
+        id.flatMap { id in accounts.first { $0.id == id } }
+    }
+
+    /// «Cuenta», «Total de sección», «Subtotal» (utilidad bruta), «Resultado» (los del ejercicio en el balance) o el del
+    /// total final.
+    private func lineKindTitle(_ line: Line, grand: String) -> String {
+        if line.account != nil { return String(localized: "Cuenta") }
+        switch line.style {
+        case .line: return String(localized: "Resultado")
+        case .result: return String(localized: "Subtotal")
+        case .total: return String(localized: "Total de sección")
+        case .grand: return grand
+        }
+    }
+
+    private func natureTitle(_ balance: NormalBalance) -> String {
+        balance == .debit ? String(localized: "Deudora") : String(localized: "Acreedora")
+    }
+
+    @ViewBuilder
+    private var macInspector: some View {
+        if let key = macSelectedKey {
+            switch kind {
+            case .income: incomeInspector(key)
+            case .balance: balanceInspector(key)
+            case .trial: trialInspector(key)
+            case .receivables: agingInspector(key, report: receivablesReport)
+            case .payables: agingInspector(key, report: payablesReport)
+            case .salesTax: salesTaxInspector(key)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var macInspectorActions: some View {
+        if let key = macSelectedKey {
+            switch kind {
+            case .income:
+                if let account = bookAccount(incomeBlocks(comparing: true).flatMap(\.lines).first { $0.id == key }?.account?.id) {
+                    Button("Ver en el libro mayor") { openedAccount = account }.buttonStyle(.primary)
+                }
+            case .balance:
+                if let account = bookAccount(balanceBlocks.flatMap(\.lines).first { $0.id == key }?.account?.id) {
+                    Button("Ver en el libro mayor") { openedAccount = account }.buttonStyle(.primary)
+                }
+            case .trial:
+                if let account = bookAccount(UUID(uuidString: key)) {
+                    Button("Ver en el libro mayor") { openedAccount = account }.buttonStyle(.primary)
+                }
+                SectionLink(item: .accounting(.chart)) { ChartOfAccountsView() } label: { Text("Plan de cuentas") }
+                    .buttonStyle(.secondary)
+            case .receivables:
+                let name = String(key.dropFirst("party:".count))
+                if let customer = customers.first(where: { $0.name == name }) {
+                    ShareLink(item: reminderText(customer), subject: Text("Recordatorio de pago")) { Text("Enviar recordatorio") }
+                        .buttonStyle(.primary)
+                    Button("Abrir ficha") { openedCustomer = customer }.buttonStyle(.secondary)
+                }
+            case .payables:
+                let name = String(key.dropFirst("party:".count))
+                SectionLink(item: .expenses(.bills)) { ExpensesView(fixedSegment: .bills) } label: { Text("Registrar pago") }
+                    .buttonStyle(.primary)
+                if let vendor = vendors.first(where: { $0.name == name }) {
+                    Button("Abrir ficha") { openedVendor = vendor }.buttonStyle(.secondary)
+                }
+            case .salesTax:
+                if let row = salesTaxQuarterRows.first(where: { $0.key == key }) {
+                    Button("Registrar pago…") { payingAgency = row }
+                        .buttonStyle(.primary)
+                        .disabled(row.balance <= 0)
+                }
+                SectionLink(item: .section(.taxes)) { TaxesView() } label: { Text("Ver tasas") }
+                    .buttonStyle(.secondary)
+            }
+        }
+    }
+
+    /// Mismo texto que el recordatorio de la ficha del cliente.
+    private func reminderText(_ customer: Customer) -> String {
+        let overdue = (customer.invoices ?? []).filter { $0.isOpen && $0.daysOverdue() != nil }.reduce(0) { $0 + $1.balanceDue }
+        return overdue > 0
+            ? String(localized: "Hola, \(customer.name): tienes \(overdue.money) vencido con nosotros. ¿Nos ayudas con el pago? ¡Gracias!")
+            : String(localized: "Hola, \(customer.name): te recordamos que tienes \(customer.openBalance.money) pendiente de pago. ¡Gracias!")
+    }
+
+    /// `MacPyG`: la fila con el periodo, su variación frente al anterior, la comparación y su peso en los ingresos.
+    @ViewBuilder
+    private func incomeInspector(_ key: String) -> some View {
+        let lines = incomeBlocks(comparing: true).flatMap(\.lines)
+        if let line = lines.first(where: { $0.id == key }) {
+            let previous = line.previous ?? 0
+            let delta = line.amount - previous
+            let percent = percentChange(line.amount, previous)
+            let totalIncome = ledger.incomeStatement(interval()).totalIncome
+            let kindTitle = lineKindTitle(line, grand: String(localized: "Resultado"))
+            MacReportFigure(caption: "\(kindTitle) · \(periodName(offset: 0))", amount: line.amount.money) {
+                Text(percent.map { String(localized: "\(signedMoney(delta)) (\($0)) vs. \(previousName)") }
+                     ?? String(localized: "\(signedMoney(delta)) vs. \(previousName)"))
+                    .foregroundStyle(color(for: delta, line.trend))
+            }
+            MacInspectorSection(title: String(localized: "Comparación")) {
+                MacCompareBars(current: (columnTitle(offset: 0), line.amount), previous: (columnTitle(offset: -1), previous))
+                    .padding(.vertical, 6)
+                MacInspectorRow(columnTitle(offset: 0), value: line.amount.money)
+                MacInspectorRow(columnTitle(offset: -1), value: previous.money)
+                MacInspectorRow(String(localized: "Variación"), value: signedMoney(delta), color: color(for: delta, line.trend))
+                MacInspectorRow(String(localized: "Porcentaje"), value: percent ?? "—", color: color(for: delta, line.trend))
+            }
+            MacInspectorSection(title: String(localized: "Proporción")) {
+                MacInspectorRow(String(localized: "De los ingresos totales"), value: share(line.amount, of: totalIncome))
+            }
+            Text("Haz clic en una fila del reporte para ver su detalle aquí.")
+                .font(.subheadline).foregroundStyle(Palette.ink2)
+        }
+    }
+
+    /// `MacBalance`: la fila al corte, su peso, sus datos y la composición del balance.
+    @ViewBuilder
+    private func balanceInspector(_ key: String) -> some View {
+        let report = balanceSheetReport
+        let blocks = balanceBlocks
+        if let block = blocks.first(where: { $0.lines.contains { $0.id == key } }),
+           let line = block.lines.first(where: { $0.id == key }) {
+            let inAssets = block.title == String(localized: "Activos")
+            let base = inAssets ? report.totalAssets : report.totalLiabilities + report.totalEquity
+            let kindTitle = lineKindTitle(line, grand: String(localized: "Total"))
+            MacReportFigure(caption: String(localized: "\(kindTitle) · al \(asOf.shortDate)"), amount: line.amount.money) {
+                Text(inAssets ? String(localized: "\(share(line.amount, of: base)) de total activos")
+                     : String(localized: "\(share(line.amount, of: base)) de pasivo + patrimonio"))
+                    .foregroundStyle(Palette.ink2)
+            }
+            MacInspectorSection(title: String(localized: "Detalles")) {
+                if let account = line.account {
+                    MacInspectorRow(String(localized: "Número"), value: account.code)
+                }
+                MacInspectorRow(String(localized: "Sección"), value: block.title ?? String(localized: "Pasivos y patrimonio"))
+                if let account = line.account {
+                    MacInspectorRow(String(localized: "Tipo"), value: account.subtype.title)
+                    MacInspectorRow(String(localized: "Naturaleza"),
+                                    value: line.amount < 0 ? String(localized: "\(natureTitle(account.type.normalBalance)) · contracuenta")
+                                        : natureTitle(account.type.normalBalance))
+                }
+                MacInspectorRow(String(localized: "Saldo"), value: line.amount.money, bold: true)
+            }
+            MacInspectorSection(title: String(localized: "Composición del balance")) {
+                MacBalanceMix(liabilities: report.totalLiabilities, equity: report.totalEquity).padding(.vertical, 6)
+            }
+        }
+    }
+
+    /// `MacBalanza`: la cuenta con su saldo deudor o acreedor, su naturaleza y su peso en el total de su lado.
+    @ViewBuilder
+    private func trialInspector(_ key: String) -> some View {
+        let report = trialBalanceReport
+        if let row = report.rows.first(where: { $0.account.id.uuidString == key }) {
+            let debit = row.debit > 0
+            let amount = debit ? row.debit : row.credit
+            let nature = row.account.type.normalBalance
+            let contrary = (nature == .debit) != debit
+            MacReportFigure(caption: String(localized: "Cuenta \(row.account.code) · \(row.account.subtype.title)"), amount: amount.money) {
+                Text(debit ? String(localized: "Saldo deudor al \(asOf.shortDate)") : String(localized: "Saldo acreedor al \(asOf.shortDate)"))
+                    .foregroundStyle(Palette.ink2)
+            }
+            MacInspectorSection(title: String(localized: "Cuenta")) {
+                MacInspectorRow(String(localized: "Número"), value: row.account.code)
+                MacInspectorRow(String(localized: "Tipo"), value: row.account.subtype.title)
+                MacInspectorRow(String(localized: "Naturaleza"), value: natureTitle(nature))
+                MacInspectorRow(String(localized: "Estado de destino"),
+                                value: row.account.type.isBalanceSheet ? String(localized: "Balance general") : String(localized: "Estado de resultados"))
+            }
+            MacInspectorSection(title: String(localized: "Saldo")) {
+                MacInspectorRow(String(localized: "Débito"), value: debit ? row.debit.money : "—")
+                MacInspectorRow(String(localized: "Crédito"), value: debit ? "—" : row.credit.money)
+                MacInspectorRow(debit ? String(localized: "% del total deudor") : String(localized: "% del total acreedor"),
+                                value: share(amount, of: debit ? report.totalDebit : report.totalCredit))
+            }
+            Text(contrary ? String(localized: "El saldo es contrario a la naturaleza de la cuenta: puede ser una contracuenta (como la depreciación acumulada) o un registro por revisar.")
+                 : String(localized: "El saldo coincide con la naturaleza de la cuenta."))
+                .font(.subheadline).foregroundStyle(Palette.ink2)
+        }
+    }
+
+    /// `MacAntigCobrar` / `MacAntigPagar`: el saldo abierto del cliente o proveedor por tramos y su peso en el total.
+    @ViewBuilder
+    private func agingInspector(_ key: String, report: AgingReport) -> some View {
+        if let row = report.rows.first(where: { "party:\($0.party)" == key }) {
+            let late = row.total - (row.amounts[.current] ?? 0)
+            MacReportFigure(caption: kind == .receivables ? String(localized: "Cliente · saldo abierto") : String(localized: "Proveedor · saldo abierto"),
+                            amount: row.total.money) {
+                HStack(spacing: 5) {
+                    StatusDot(color: late > 0 ? Palette.red : Palette.green)
+                    Text(late > 0 ? String(localized: "\(late.money) vencido") : String(localized: "Al corriente"))
+                }
+                .foregroundStyle(late > 0 ? Palette.negative : Palette.positive)
+            }
+            MacInspectorSection(title: String(localized: "Antigüedad")) {
+                ForEach(AgingReport.Bucket.allCases, id: \.self) { bucket in
+                    let amount = row.amounts[bucket] ?? 0
+                    // Como `MacInspectorRow`, con el punto del tramo delante de la etiqueta (canvas `MacAntigCobrar`).
+                    HStack(spacing: 6) {
+                        StatusDot(color: Self.bucketColors[bucket]!)
+                        Text(bucketTitle(bucket)).foregroundStyle(Palette.ink2)
+                        Spacer(minLength: 8)
+                        Text(amount == 0 ? "—" : amount.money)
+                            .foregroundStyle(amount == 0 ? Palette.ink2 : bucket == .current ? Palette.ink : Palette.negative)
+                    }
+                    .monospacedDigit()
+                    .frame(minHeight: 26)
+                    .accessibilityElement(children: .combine)
+                }
+            }
+            MacInspectorSection(title: String(localized: "Proporción")) {
+                MacInspectorRow(String(localized: "Del total abierto"), value: share(row.total, of: report.total))
+            }
+        }
+    }
+
+    /// Filas de agencia del trimestre elegido (`MacSalesTax`).
+    private var salesTaxQuarterRows: [AgencyRow] {
+        agencyRows(salesTaxReport, payments: taxPayments(for: Period.quarter.interval(offset: taxQuarter)))
+    }
+
+    /// Saldo de Sales Tax Payable según libros (lo que pide «Registrar pago…»).
+    private var salesTaxPayable: Int64 {
+        accounts.filter { $0.subtype == .salesTaxPayable }.reduce(0) { $0 + ledger.balance(of: $1) }
+    }
+
+    /// `MacSalesTax`: el saldo de la agencia en el trimestre, sus cifras, sus tasas y su declaración.
+    @ViewBuilder
+    private func salesTaxInspector(_ key: String) -> some View {
+        let quarter = Period.quarter.interval(offset: taxQuarter)
+        let payments = taxPayments(for: quarter)
+        if let row = salesTaxQuarterRows.first(where: { $0.key == key }) {
+            let due = Calendar.current.date(byAdding: .day, value: 19, to: quarter.end) ?? quarter.end
+            let settled = row.balance <= 0 && row.collected > 0
+            let agency = taxRates.compactMap(\.agency).first { $0.id == row.id }
+            let lastPayment = payments.filter { $0.agency == row.id }.map(\.date).max()
+            Text(row.components.count > 1 ? String(localized: "Tasa combinada · \(percent(row.rateMillionths))")
+                 : [row.rates, percent(row.rateMillionths)].filter { !$0.isEmpty }.joined(separator: " · "))
+                .font(.subheadline).foregroundStyle(Palette.ink2)
+            MacReportFigure(caption: String(localized: "Saldo por pagar"), amount: row.balance.money) {
+                HStack(spacing: 5) {
+                    StatusDot(color: settled ? Palette.green : row.balance > 0 ? Palette.orange : Palette.gray)
+                    Text(settled ? String(localized: "Trimestre saldado")
+                         : row.balance > 0 ? String(localized: "Vence el \(due.shortDate)") : String(localized: "Sin impuesto cobrado"))
+                }
+                .foregroundStyle(settled ? Palette.positive : row.balance > 0 ? Palette.warning : Palette.ink2)
+            }
+            MacInspectorSection(title: quarterTitle(taxQuarter)) {
+                MacInspectorRow(String(localized: "Ventas gravables"), value: row.taxableSales.money)
+                MacInspectorRow(String(localized: "Tasa"), value: percent(row.rateMillionths))
+                MacInspectorRow(String(localized: "Impuesto cobrado"), value: row.collected.money)
+                MacInspectorRow(String(localized: "Pagado"), value: row.paid.money)
+                MacInspectorRow(String(localized: "Saldo"), value: row.balance.money, bold: true)
+            }
+            if row.components.count > 1 {
+                MacInspectorSection(title: String(localized: "Tasas")) {
+                    ForEach(row.components) { component in
+                        MacInspectorRow(String(localized: "\(component.name) · \(percent(component.rateMillionths))"), value: component.tax.money)
+                    }
+                }
+            }
+            MacInspectorSection(title: String(localized: "Declaración")) {
+                if let agency {
+                    MacInspectorRow(String(localized: "Frecuencia"),
+                                    value: (FilingFrequency(rawValue: agency.filingFrequencyRaw) ?? .quarterly).title)
+                }
+                MacInspectorRow(String(localized: "Estado del pago"),
+                                value: lastPayment.map { String(localized: "Pagado el \($0.shortDate)") } ?? String(localized: "Sin pagos registrados"))
+            }
+        }
+    }
+    #endif
 
     // MARK: Datos de los reportes
 
@@ -1382,6 +1787,262 @@ struct CSVFile: Transferable {
             .suggestedFileName { "\($0.name).csv" }
     }
 }
+
+/// Texto de una celda en su color, o en blanco sobre la fila elegida de una tabla del Mac (`MacReportRow`). En iPhone e
+/// iPad nunca hay fila elegida: queda en su color.
+struct ReportCellText: View {
+    let text: String
+    var color: Color = Palette.ink2
+    @Environment(\.backgroundProminence) private var prominence
+
+    var body: some View {
+        Text(text).foregroundStyle(prominence == .increased ? Palette.onBrandFill : color)
+    }
+}
+
+#if os(macOS)
+
+// MARK: - Mac: inspector de Inicio, Reportes e Impuestos
+
+/// Inspector de las páginas del Mac que no son tabla (canvas `MacInicio`, `MacPyG`, `MacBalance`, `MacBalanza`,
+/// `MacAntigCobrar`, `MacAntigPagar`, `MacSalesTax`, `MacImpuestos`): el mismo inspector nativo de `MacTablePage`
+/// (~300 pt a la derecha, botón `sidebar.trailing` de la barra y ⌥⌘I, mostrado u oculto en `macInspectorShown`, igual
+/// en todas las páginas) con la fila elegida de la página. Elegir una fila lo abre. Piezas propias de estas páginas;
+/// podrían subir a `Shell/MacTablePage.swift`.
+private struct MacReportInspector<Inspector: View, Actions: View>: ViewModifier {
+    let title: String
+    let hasSelection: Bool
+    let placeholder: String
+    /// Lo elegido a mano: al cambiar, el inspector se abre.
+    let selectionKey: String?
+    let qaSelectRow: ((Int) -> Void)?
+    /// `false`: la página no tiene nada que inspeccionar (Inicio la primera vez): sin inspector (ni botón, con
+    /// `macInspectorToggle(isAvailable:)`).
+    let isAvailable: Bool
+    let inspector: () -> Inspector
+    let actions: () -> Actions
+    @AppStorage("macInspectorShown") private var shown = true
+    #if DEBUG
+    @State private var qaApplied = false
+    #endif
+
+    func body(content: Content) -> some View {
+        content
+            .inspector(isPresented: isAvailable ? $shown : .constant(false)) {
+                column.inspectorColumnWidth(min: 260, ideal: 300, max: 420)
+            }
+            .onChange(of: selectionKey) { _, key in if key != nil { shown = true } }
+            #if DEBUG
+            .onAppear {
+                // Una vez por página: la primera que aparece puede ser una copia que SwiftUI descarta enseguida.
+                guard !qaApplied else { return }
+                qaApplied = true
+                MacReportQA.apply(shown: $shown, selectRow: qaSelectRow)
+            }
+            #endif
+    }
+
+    /// Como el de `MacTablePage`: título de 15 bold, el contenido con scroll y los botones al pie.
+    private var column: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text(title)
+                .font(.title3.weight(.bold))
+                .lineLimit(1)
+                .padding(.horizontal, 16)
+                .padding(.top, 10)
+                .padding(.bottom, 8)
+                .accessibilityAddTraits(.isHeader)
+            if hasSelection {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 18) { inspector() }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 4)
+                }
+                VStack(spacing: 8) { actions() }
+                    .padding(16)
+            } else {
+                ContentUnavailableView {
+                    Label("Sin selección", systemImage: "sidebar.trailing")
+                } description: {
+                    Text(placeholder)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .background(Palette.background)
+    }
+}
+
+/// Botón `sidebar.trailing` de la barra que muestra u oculta el inspector (⌥⌘I). Va aparte del inspector para ponerlo
+/// antes que la barra de la página: así queda el último por la derecha, como en el canvas.
+private struct MacInspectorToggle: ViewModifier {
+    let isAvailable: Bool
+    @AppStorage("macInspectorShown") private var shown = true
+
+    func body(content: Content) -> some View {
+        content.toolbar {
+            if isAvailable {
+                ToolbarItem(placement: .primaryAction) {
+                    Button { shown.toggle() } label: {
+                        Label(shown ? "Ocultar inspector" : "Mostrar inspector", systemImage: "sidebar.trailing")
+                    }
+                    .keyboardShortcut("i", modifiers: [.command, .option])
+                    .help(shown ? "Ocultar inspector (⌥⌘I)" : "Mostrar inspector (⌥⌘I)")
+                    .tint(shown ? Palette.brand : Palette.ink)
+                }
+            }
+        }
+    }
+}
+
+extension View {
+    /// Botón del inspector en la barra; aplicarlo antes del `.toolbar` de la página (ver `MacInspectorToggle`).
+    func macInspectorToggle(isAvailable: Bool = true) -> some View {
+        modifier(MacInspectorToggle(isAvailable: isAvailable))
+    }
+
+    /// Inspector del Mac con lo elegido en la página (ver `MacReportInspector`). `qaSelectRow` elige la fila N con
+    /// `-qa.fila N` (solo Debug).
+    func macReportInspector<Inspector: View, Actions: View>(
+        title: String, hasSelection: Bool, placeholder: String, selectionKey: String?,
+        qaSelectRow: ((Int) -> Void)? = nil, isAvailable: Bool = true,
+        @ViewBuilder inspector: @escaping () -> Inspector,
+        @ViewBuilder actions: @escaping () -> Actions
+    ) -> some View {
+        modifier(MacReportInspector(title: title, hasSelection: hasSelection, placeholder: placeholder, selectionKey: selectionKey,
+                                    qaSelectRow: qaSelectRow, isAvailable: isAvailable, inspector: inspector, actions: actions))
+    }
+}
+
+#if DEBUG
+/// `-qa.inspector 0|1` y `-qa.fila N` también en Inicio, Reportes e Impuestos (como `QALaunch` en las tablas).
+private enum MacReportQA {
+    static func apply(shown: Binding<Bool>, selectRow: ((Int) -> Void)?) {
+        let defaults = UserDefaults.standard
+        if defaults.object(forKey: "qa.inspector") != nil { shown.wrappedValue = defaults.bool(forKey: "qa.inspector") }
+        if defaults.object(forKey: "qa.fila") != nil {
+            let index = defaults.integer(forKey: "qa.fila")
+            // Un momento después: al aparecer, las consultas de la página aún pueden venir vacías.
+            Task { @MainActor in
+                try? await Task.sleep(for: .seconds(1))
+                selectRow?(index)
+            }
+        }
+    }
+}
+#endif
+
+/// Cifra de cabecera del inspector (canvas `MacPyG`, `MacBalance`, `MacInicio`…): leyenda gris, importe de 24 y una nota.
+struct MacReportFigure<Foot: View>: View {
+    let caption: String
+    let amount: String
+    @ViewBuilder var foot: Foot
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(caption).font(.subheadline).foregroundStyle(Palette.ink2)
+            Text(amount).font(.amount(24)).foregroundStyle(Palette.ink).lineLimit(1).minimumScaleFactor(0.6)
+            foot.font(.subheadline)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityElement(children: .combine)
+    }
+}
+
+/// Fila elegible de las tablas propias del Mac (Inicio, Reportes, Impuestos): como `TableRow`, con su cebra, y la
+/// elegida rellena de Tinta con el texto en blanco (`ReportCellText`, `MacCellText` y `MacCellStatus` cambian solos).
+/// Un clic la elige y abre el inspector.
+struct MacReportRow<Content: View>: View {
+    let isSelected: Bool
+    var zebra = false
+    let select: () -> Void
+    @ViewBuilder var content: Content
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Divider()
+            HStack(spacing: TableCard<EmptyView, EmptyView>.columnSpacing) { content }
+                .font(.body)
+                .monospacedDigit()
+                .foregroundStyle(isSelected ? Palette.onBrandFill : Palette.ink)
+                .padding(.horizontal, TableCard<EmptyView, EmptyView>.inset)
+                .frame(minHeight: Metrics.target)
+        }
+        .background(isSelected ? Palette.brandFill : zebra ? Palette.surface : Color.clear)
+        .environment(\.backgroundProminence, isSelected ? .increased : .standard)
+        .contentShape(Rectangle())
+        .onTapGesture(perform: select)
+        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
+        .accessibilityAction { select() }
+    }
+}
+
+/// Dos barras horizontales, el periodo (Tinta) frente al anterior (gris), del inspector de `MacPyG`.
+private struct MacCompareBars: View {
+    let current: (title: String, amount: Int64)
+    let previous: (title: String, amount: Int64)
+
+    var body: some View {
+        let top = max(1, abs(current.amount), abs(previous.amount))
+        VStack(alignment: .leading, spacing: 6) {
+            bar(current.title, current.amount, top: top, color: Palette.income)
+            bar(previous.title, previous.amount, top: top, color: Palette.gray)
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(current.title): \(current.amount.money), \(previous.title): \(previous.amount.money)")
+    }
+
+    private func bar(_ title: String, _ amount: Int64, top: Int64, color: Color) -> some View {
+        HStack(spacing: 8) {
+            Text(title).font(.subheadline).foregroundStyle(Palette.ink2).frame(width: 64, alignment: .leading)
+            Capsule().fill(Palette.surface2).frame(height: 8)
+                .overlay(alignment: .leading) {
+                    GeometryReader { proxy in
+                        Capsule().fill(color).frame(width: max(amount == 0 ? 0 : 3, proxy.size.width * CGFloat(abs(amount)) / CGFloat(top)))
+                    }
+                }
+        }
+    }
+}
+
+/// Barra apilada Pasivos (naranja) · Patrimonio (Tinta) con su leyenda (`MacBalance`, «Composición del balance»).
+private struct MacBalanceMix: View {
+    let liabilities: Int64
+    let equity: Int64
+
+    var body: some View {
+        let total = max(0, liabilities) + max(0, equity)
+        let share = total == 0 ? 0 : Double(max(0, liabilities)) / Double(total)
+        VStack(alignment: .leading, spacing: 6) {
+            GeometryReader { proxy in
+                HStack(spacing: share > 0 && share < 1 ? 2 : 0) {
+                    if share > 0 { Rectangle().fill(Palette.orange).frame(width: (proxy.size.width - 2) * share) }
+                    if share < 1 && total > 0 { Rectangle().fill(Palette.brand) }
+                }
+            }
+            .frame(height: 8)
+            .background(Palette.surface2)
+            .clipShape(Capsule())
+            HStack(spacing: 12) {
+                HStack(spacing: 5) { StatusDot(color: Palette.orange); Text("Pasivos \(percent(share))") }
+                HStack(spacing: 5) { StatusDot(color: Palette.brand); Text("Patrimonio \(percent(total == 0 ? 0 : 1 - share))") }
+            }
+            .font(.subheadline).foregroundStyle(Palette.ink2)
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Composición del balance")
+        .accessibilityValue("Pasivos \(percent(share)), patrimonio \(percent(total == 0 ? 0 : 1 - share))")
+    }
+
+    private func percent(_ value: Double) -> String {
+        (value * 100).formatted(.number.precision(.fractionLength(1))) + "%"
+    }
+}
+
+#endif
 
 #Preview {
     NavigationStack { ReportsView() }.modelContainer(SampleData.makeContainer())

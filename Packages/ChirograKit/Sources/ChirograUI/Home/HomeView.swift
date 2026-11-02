@@ -11,7 +11,7 @@ import SwiftUI
 /// - iPad: `iPadInicio` / `iPadInicioV` / `iPadInicioOscuro`, en maestro-detalle: columna con Efectivo, Resultados,
 ///   Por cobrar y Por pagar (la elegida rellena de Tinta) y, al lado, su detalle.
 /// - Mac: `MacInicio`: cajas de cifras, gráfica de 12 meses con las cuentas al lado y las tablas de por cobrar y por
-///   pagar.
+///   pagar; a la derecha, el inspector con la factura por cobrar elegida en la tabla (la primera si no hay otra).
 /// - Primera vez: `EstadoVacio` (en todas, centrado y con ancho de lectura en iPad y Mac).
 struct HomeView: View {
     @Query private var companies: [Company]
@@ -36,6 +36,13 @@ struct HomeView: View {
     @State private var padSection: PadSection = .results
     @ScaledMetric(relativeTo: .footnote) private var legendDot: CGFloat = 8
     @ScaledMetric(relativeTo: .body) private var padColumnWidth: CGFloat = 340
+    #if os(macOS)
+    /// Factura por cobrar elegida en la tabla para el inspector (`MacInicio`); sin elegir, la primera.
+    @State private var macInvoiceID: UUID?
+    @State private var payingInvoice: Invoice?
+    @State private var openedInvoice: Invoice?
+    @State private var openedCustomer: Customer?
+    #endif
 
     enum NewItem: String, Identifiable {
         case invoice, expense, customer
@@ -110,6 +117,9 @@ struct HomeView: View {
         .background(Palette.background)
         .navigationTitle("Inicio")
         .headerTitle()
+        #if os(macOS)
+        .macInspectorToggle(isAvailable: !isFirstUse)
+        #endif
         .toolbar { toolbar }
         .sheet(item: $sheet) { item in
             NavigationStack {
@@ -121,6 +131,21 @@ struct HomeView: View {
             }
             .editorSheetSizing()
         }
+        #if os(macOS)
+        .macReportInspector(title: macInvoice.map(invoiceTitle) ?? String(localized: "Por cobrar"), hasSelection: macInvoice != nil,
+                            placeholder: String(localized: "No tienes facturas pendientes de cobro."),
+                            selectionKey: macInvoiceID?.uuidString, qaSelectRow: { index in
+                                let rows = Array(receivableRows.prefix(8))
+                                if rows.indices.contains(index) { macInvoiceID = rows[index].id }
+                            }, isAvailable: !isFirstUse) {
+            if let invoice = macInvoice { invoiceInspector(invoice) }
+        } actions: {
+            if let invoice = macInvoice { invoiceActions(invoice) }
+        }
+        .sheet(item: $payingInvoice) { invoice in NavigationStack { InvoicePaymentSheet(invoice: invoice) }.editorSheetSizing() }
+        .navigationDestination(item: $openedInvoice) { InvoiceDetailView(invoice: $0) }
+        .navigationDestination(item: $openedCustomer) { CustomerDetailView(customer: $0) }
+        #endif
     }
 
     @ToolbarContentBuilder
@@ -893,6 +918,19 @@ struct HomeView: View {
                 if openInvoices.isEmpty {
                     emptyRow(String(localized: "No tienes facturas pendientes de cobro."))
                 }
+                #if os(macOS)
+                // Un clic elige la factura y la muestra en el inspector (canvas `MacInicio`); «Abrir factura», ahí.
+                let picked = macInvoice?.id
+                ForEach(Array(receivableRows.prefix(8).enumerated()), id: \.element.id) { index, invoice in
+                    MacReportRow(isSelected: invoice.id == picked, zebra: !index.isMultiple(of: 2), select: { macInvoiceID = invoice.id }) {
+                        ReportCellText(text: invoice.number).lineLimit(1).frame(width: 64, alignment: .leading)
+                        Text(invoice.customer?.name ?? String(localized: "Sin cliente")).lineLimit(1).frame(maxWidth: .infinity, alignment: .leading)
+                        MacCellStatus(chip: StatusChip(invoice: invoice)).frame(width: 120, alignment: .leading)
+                        Text(invoice.balanceDue.money).frame(width: 90, alignment: .trailing)
+                    }
+                    .contextMenu { Button("Abrir factura") { openedInvoice = invoice } }
+                }
+                #else
                 ForEach(Array(receivableRows.prefix(8).enumerated()), id: \.element.id) { index, invoice in
                     NavigationLink { InvoiceDetailView(invoice: invoice) } label: {
                         TableRow {
@@ -905,6 +943,7 @@ struct HomeView: View {
                     }
                     .buttonStyle(.plain)
                 }
+                #endif
             }
         }
         .frame(maxWidth: .infinity, alignment: .topLeading)
@@ -944,6 +983,85 @@ struct HomeView: View {
         }
         .frame(maxWidth: .infinity, alignment: .topLeading)
     }
+
+    // MARK: Inspector (`MacInicio`)
+
+    #if os(macOS)
+    /// La factura elegida o, sin elegir (o si ya se cobró), la primera de la tabla, como el canvas.
+    private var macInvoice: Invoice? {
+        let rows = receivableRows.prefix(8)
+        return rows.first { $0.id == macInvoiceID } ?? rows.first
+    }
+
+    private func invoiceTitle(_ invoice: Invoice) -> String {
+        String(localized: "Factura \(invoice.number)")
+    }
+
+    /// «Venció hace 8 días», «Vence hoy», «Vence en 11 días».
+    private func dueNote(_ invoice: Invoice) -> String {
+        if let days = invoice.daysOverdue() { return String(localized: "Venció hace \(days) días") }
+        let calendar = Calendar.current
+        let days = calendar.dateComponents([.day], from: calendar.startOfDay(for: .now), to: calendar.startOfDay(for: invoice.dueDate)).day ?? 0
+        return days <= 0 ? String(localized: "Vence hoy") : String(localized: "Vence en \(days) días")
+    }
+
+    /// Estado, saldo pendiente con su vencimiento, cliente, fechas, importes y la actividad que guarda la factura
+    /// (creada, emitida y sus cobros). «Vista por el cliente» y «Recordatorio enviado» del canvas no se guardan.
+    @ViewBuilder
+    private func invoiceInspector(_ invoice: Invoice) -> some View {
+        StatusChip(invoice: invoice, compact: true)
+        MacReportFigure(caption: String(localized: "Saldo pendiente"), amount: invoice.balanceDue.money) {
+            Text(dueNote(invoice)).foregroundStyle(invoice.daysOverdue() != nil ? Palette.negative : Palette.ink2)
+        }
+        MacInspectorSection(title: String(localized: "Cliente")) {
+            MacInspectorRow(label: String(localized: "Nombre")) {
+                if let customer = invoice.customer {
+                    Button(customer.name) { openedCustomer = customer }
+                        .buttonStyle(.link)
+                        .foregroundStyle(Palette.brand)
+                        .lineLimit(1)
+                } else {
+                    Text("Sin cliente").foregroundStyle(Palette.ink2)
+                }
+            }
+            if let customer = invoice.customer {
+                MacInspectorRow(String(localized: "Términos"),
+                                value: customer.paymentTermsDays == 0 ? String(localized: "Al recibir") : String(localized: "Neto \(customer.paymentTermsDays)"))
+            }
+        }
+        MacInspectorSection(title: String(localized: "Fechas")) {
+            MacInspectorRow(String(localized: "Emitida"), value: invoice.issueDate.shortDate)
+            MacInspectorRow(String(localized: "Vencimiento"), value: invoice.dueDate.shortDate,
+                            color: invoice.daysOverdue() != nil ? Palette.negative : Palette.ink)
+        }
+        MacInspectorSection(title: String(localized: "Importe")) {
+            MacInspectorRow(String(localized: "Total"), value: invoice.total.money)
+            MacInspectorRow(String(localized: "Pagado"), value: invoice.amountPaid.money)
+            if invoice.creditsApplied > 0 {
+                MacInspectorRow(String(localized: "Notas de crédito"), value: "−\(invoice.creditsApplied.money)")
+            }
+            MacInspectorRow(String(localized: "Saldo"), value: invoice.balanceDue.money, bold: true)
+        }
+        MacInspectorSection(title: String(localized: "Actividad")) {
+            MacInspectorRow(String(localized: "Creada"), value: min(invoice.createdAt, invoice.issueDate).shortDate)
+            MacInspectorRow(String(localized: "Emitida"), value: invoice.issueDate.shortDate)
+            ForEach((invoice.paymentApplications ?? []).sorted { ($0.payment?.date ?? .distantPast) < ($1.payment?.date ?? .distantPast) }) { application in
+                MacInspectorRow(String(localized: "Cobro de \(application.amount.money)"), value: application.payment?.date.shortDate ?? "—")
+            }
+        }
+    }
+
+    /// «Registrar pago…» (vidrio), «Enviar recordatorio» y «Abrir factura».
+    @ViewBuilder
+    private func invoiceActions(_ invoice: Invoice) -> some View {
+        Button("Registrar pago…") { payingInvoice = invoice }.buttonStyle(.primary)
+        HStack(spacing: 8) {
+            ShareLink(item: invoice.reminderText, subject: Text("Recordatorio de pago")) { Text("Enviar recordatorio") }
+                .buttonStyle(.secondary)
+            Button("Abrir factura") { openedInvoice = invoice }.buttonStyle(.secondary)
+        }
+    }
+    #endif
 
     // MARK: - Primera vez (`EstadoVacio`)
 
