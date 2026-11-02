@@ -48,12 +48,44 @@
         }
       }
     },
+    "%@ (%lld)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ (%2$lld)"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ (%lld)"
+          }
+        }
+      }
+    },
     "%@ a favor" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ credit"
+          }
+        }
+      }
+    },
+    "%@ de %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ de %2$@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ of %@"
           }
         }
       }
@@ -174,6 +206,32 @@
         }
       }
     },
+    "%@ · creada %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ · creada %2$@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · created %@"
+          }
+        }
+      }
+    },
+    "%@ · creada hoy" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · created today"
+          }
+        }
+      }
+    },
     "%@ · pagada" : {
       "localizations" : {
         "en" : {
@@ -184,12 +242,54 @@
         }
       }
     },
+    "%@ · pagada %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ · pagada %2$@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · paid %@"
+          }
+        }
+      }
+    },
     "%@ · saldo %@" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ · balance %@"
+          }
+        }
+      }
+    },
+    "%@ · venció %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ · venció %2$@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · was due %@"
+          }
+        }
+      }
+    },
+    "%@ ×" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ ×"
           }
         }
       }
@@ -649,6 +749,46 @@
         }
       }
     },
+    "%lld facturas abiertas" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld open invoice"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld open invoices"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld factura abierta"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld facturas abiertas"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld facturas por pagar esta semana" : {
       "localizations" : {
         "en" : {
@@ -729,6 +869,46 @@
         }
       }
     },
+    "%lld líneas" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld line"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld lines"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld línea"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld líneas"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld proveedores requieren formulario 1099-NEC para %@" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -763,6 +943,46 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "%lld proveedores requieren formulario 1099-NEC para %@"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld páginas · PDF" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld page · PDF"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld pages · PDF"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld página · PDF"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld páginas · PDF"
                 }
               }
             }
@@ -915,6 +1135,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "On · iPhone, iPad, and Mac"
+          }
+        }
+      }
+    },
+    "Actividad" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activity"
           }
         }
       }
@@ -1215,6 +1445,16 @@
         }
       }
     },
+    "Aparece al pie de la factura, debajo de los totales." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appears at the bottom of the invoice, below the totals."
+          }
+        }
+      }
+    },
     "Aplicar saldo a favor (%@)" : {
       "localizations" : {
         "en" : {
@@ -1251,6 +1491,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Archive"
+          }
+        }
+      }
+    },
+    "Artículos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Items"
           }
         }
       }
@@ -1371,6 +1621,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Add"
+          }
+        }
+      }
+    },
+    "Añadir descuento" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add discount"
           }
         }
       }
@@ -2044,6 +2304,16 @@
         }
       }
     },
+    "Compartir PDF…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share PDF…"
+          }
+        }
+      }
+    },
     "Completado" : {
       "localizations" : {
         "en" : {
@@ -2091,6 +2361,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "With balance"
+          }
+        }
+      }
+    },
+    "Con saldo pendiente" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "With open balance"
           }
         }
       }
@@ -2225,6 +2505,16 @@
         }
       }
     },
+    "Correo %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Email %@"
+          }
+        }
+      }
+    },
     "Correo de facturación" : {
       "localizations" : {
         "en" : {
@@ -2312,6 +2602,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Create"
+          }
+        }
+      }
+    },
+    "Crear cliente" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create customer"
           }
         }
       }
@@ -3196,12 +3496,32 @@
         }
       }
     },
+    "Eliminar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete"
+          }
+        }
+      }
+    },
     "Eliminar borrador" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Delete draft"
+          }
+        }
+      }
+    },
+    "Emitida" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Issued"
           }
         }
       }
@@ -3293,6 +3613,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Send reminder"
+          }
+        }
+      }
+    },
+    "Enviar…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send…"
           }
         }
       }
@@ -3628,6 +3958,22 @@
         }
       }
     },
+    "Facturado en %@: %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Facturado en %1$@: %2$@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Billed in %@: %@"
+          }
+        }
+      }
+    },
     "Facturas" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3821,12 +4167,32 @@
         }
       }
     },
+    "Filtrar clientes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filter customers"
+          }
+        }
+      }
+    },
     "Filtrar historial" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Filter history"
+          }
+        }
+      }
+    },
+    "Filtrar por estado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filter by status"
           }
         }
       }
@@ -4140,6 +4506,16 @@
         }
       }
     },
+    "Hecho" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Done"
+          }
+        }
+      }
+    },
     "Hecho con Chirogra" : {
       "localizations" : {
         "en" : {
@@ -4322,6 +4698,16 @@
         }
       }
     },
+    "Imprimir" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Print"
+          }
+        }
+      }
+    },
     "Impuesto" : {
       "localizations" : {
         "en" : {
@@ -4372,6 +4758,16 @@
         }
       }
     },
+    "Impuesto, línea %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tax, line %lld"
+          }
+        }
+      }
+    },
     "Impuestos" : {
       "localizations" : {
         "en" : {
@@ -4398,6 +4794,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Freelancer"
+          }
+        }
+      }
+    },
+    "Información del cliente" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Customer information"
           }
         }
       }
@@ -4802,12 +5208,32 @@
         }
       }
     },
+    "Mensaje" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Message"
+          }
+        }
+      }
+    },
     "Mensaje para el cliente" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Message to customer"
+          }
+        }
+      }
+    },
+    "Mensaje y términos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Message and terms"
           }
         }
       }
@@ -4993,6 +5419,16 @@
         }
       }
     },
+    "Nada vencido" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing overdue"
+          }
+        }
+      }
+    },
     "Negocio propio (sole proprietorship)" : {
       "localizations" : {
         "en" : {
@@ -5080,6 +5516,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No entries match"
+          }
+        }
+      }
+    },
+    "Ningún cliente coincide" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No matching customers"
           }
         }
       }
@@ -5647,6 +6093,16 @@
         }
       }
     },
+    "Otra fecha" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Other date"
+          }
+        }
+      }
+    },
     "Otro" : {
       "localizations" : {
         "en" : {
@@ -5815,6 +6271,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pays on average in"
+          }
+        }
+      }
+    },
+    "Paga en promedio en %lld días" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pays in %lld days on average"
           }
         }
       }
@@ -6028,6 +6494,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Payments to the agency"
+          }
+        }
+      }
+    },
+    "Para %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To %@"
           }
         }
       }
@@ -6478,6 +6954,16 @@
         }
       }
     },
+    "Prueba con otro filtro." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Try another filter."
+          }
+        }
+      }
+    },
     "Prueba con otro nombre." : {
       "localizations" : {
         "en" : {
@@ -6518,12 +7004,32 @@
         }
       }
     },
+    "Próximo vencimiento %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next due %@"
+          }
+        }
+      }
+    },
     "Página %lld de %lld" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Page %lld of %lld"
+          }
+        }
+      }
+    },
+    "Página 1 de 1 · PDF" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Page 1 of 1 · PDF"
           }
         }
       }
@@ -6884,6 +7390,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Requires 1099"
+          }
+        }
+      }
+    },
+    "Requiere seguimiento" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Needs follow-up"
           }
         }
       }
@@ -7695,6 +8211,16 @@
         }
       }
     },
+    "Sin líneas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No lines"
+          }
+        }
+      }
+    },
     "Sin movimientos" : {
       "localizations" : {
         "en" : {
@@ -8300,6 +8826,16 @@
         }
       }
     },
+    "Total cobrado %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total collected %@"
+          }
+        }
+      }
+    },
     "Total costo de ventas" : {
       "localizations" : {
         "en" : {
@@ -8521,6 +9057,16 @@
         }
       }
     },
+    "Términos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terms"
+          }
+        }
+      }
+    },
     "USD · Dólar" : {
       "localizations" : {
         "en" : {
@@ -8617,6 +9163,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Due %@"
+          }
+        }
+      }
+    },
+    "Vence el %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Due %@."
           }
         }
       }
@@ -9199,6 +9755,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Discard changes?"
+          }
+        }
+      }
+    },
+    "¿Eliminar el borrador?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete the draft?"
+          }
+        }
+      }
+    },
+    "¿Quieres crear «%@» como cliente nuevo?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create “%@” as a new customer?"
           }
         }
       }

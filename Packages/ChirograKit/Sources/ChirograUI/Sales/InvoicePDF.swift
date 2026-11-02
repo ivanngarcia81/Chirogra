@@ -4,6 +4,11 @@ import CoreGraphics
 import PDFKit
 import SwiftUI
 import UniformTypeIdentifiers
+#if canImport(UIKit)
+import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
 
 /// Factura en PDF tamaño carta (DISEÑO §3.1, canvas `FacturaEnviar`). Se dibuja con `InvoiceDocumentView`,
 /// siempre en modo claro, y se pagina si hay muchas líneas; la vista previa muestra ese mismo PDF.
@@ -189,76 +194,157 @@ struct InvoiceDocumentView: View {
     }
 }
 
-/// Vista previa de la factura tal como saldrá en el PDF, con botón para compartirla.
+/// Vista previa y envío (canvas `FacturaEnviar`): la página tal como sale en el PDF, con sombra sobre el fondo; un
+/// grupo con «Compartir PDF…» e «Imprimir»; y la barra de vidrio con el cliente, el importe y «Enviar…». Enviar por
+/// correo desde la app (los campos Para y Asunto del canvas) llega más adelante: de momento se envía con la hoja del
+/// sistema (Mail, Mensajes…).
 struct InvoicePreviewView: View {
     let invoice: Invoice
     let company: Company?
     @Environment(\.dismiss) private var dismiss
     @State private var pdf: InvoicePDFFile?
+    @State private var width: CGFloat = 0
+
+    private var pages: [[InvoiceLine]] { InvoicePDF.pages(for: invoice) }
+    private var amount: Int64 { invoice.status == .draft ? invoice.draftAmount : invoice.total }
+    private var title: String { invoice.number.isEmpty ? String(localized: "Vista previa") : invoice.number }
 
     var body: some View {
-        Group {
-            if let pdf {
-                // El mismo PDF que se comparte, ajustado al ancho de la pantalla; se amplía con dos dedos.
-                PDFPreview(data: pdf.data)
-                    .accessibilityLabel("Vista previa de la factura \(invoice.number)")
-            } else {
-                ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
+        ScrollView {
+            VStack(spacing: 0) {
+                Color.clear.frame(height: 0).frame(maxWidth: .infinity)
+                    .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
+                VStack(spacing: 16) {
+                    ForEach(pages.indices, id: \.self) { index in
+                        page(index)
+                    }
+                }
+                .padding(.top, 4)
+                Text(pages.count == 1 ? String(localized: "Página 1 de 1 · PDF") : String(localized: "\(pages.count) páginas · PDF"))
+                    .font(.footnote).foregroundStyle(Palette.ink2)
+                    .padding(.top, 8)
+                sendGroup.padding(.top, 20)
             }
+            .padding(.horizontal, Metrics.gutter)
+            .padding(.bottom, 24)
         }
-        .background(Palette.surface2)
-        // `FacturaEnviar`: «Compartir PDF» como acción principal, fija abajo. Enviar por correo desde la app
-        // (hoja «Enviar por correo» del canvas) llega más adelante: de momento se comparte por Mail o Mensajes.
+        .background(Palette.background)
+        // `FacturaEnviar`: cliente e importe a la izquierda y «Enviar…» como acción principal, fijos abajo.
         .bottomActionBar {
+            VStack(alignment: .leading, spacing: 0) {
+                Text("Para \(invoice.customer?.name ?? String(localized: "Sin cliente"))")
+                    .font(.footnote).foregroundStyle(Palette.ink2).lineLimit(1)
+                Text(amount.money).font(.headline).monospacedDigit().foregroundStyle(Palette.ink)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.leading, 14)
+            .accessibilityElement(children: .combine)
             if let pdf {
                 ShareLink(item: pdf, subject: Text(pdf.filename), preview: SharePreview(pdf.filename)) {
-                    Label("Compartir PDF", systemImage: "square.and.arrow.up")
+                    Label("Enviar…", systemImage: "paperplane")
                 }
-                .buttonStyle(.primary)
+                .buttonStyle(.primaryCompact)
             } else {
-                ProgressView().frame(maxWidth: .infinity, minHeight: Metrics.buttonHeight)
+                ProgressView().frame(minWidth: 88, minHeight: Metrics.buttonHeight)
             }
         }
-        .navigationTitle(invoice.number.isEmpty ? String(localized: "Vista previa") : invoice.number)
+        .navigationTitle(title)
         .inlineTitle()
         .toolbar {
-            ToolbarItem(placement: .cancellationAction) { Button("Cerrar") { dismiss() }.headerButton() }
+            ToolbarItem(placement: .cancellationAction) {
+                Button { dismiss() } label: {
+                    #if os(macOS)
+                    Text("Cerrar")
+                    #else
+                    Label("Cerrar", systemImage: "xmark").labelStyle(.iconOnly)
+                    #endif
+                }
+                .headerButton()
+            }
+            if let pdf {
+                ToolbarItem(placement: .primaryAction) {
+                    ShareLink(item: pdf, subject: Text(pdf.filename), preview: SharePreview(pdf.filename)) {
+                        Label("Compartir PDF", systemImage: "square.and.arrow.up")
+                    }
+                    .headerButton()
+                }
+            }
         }
         .task { pdf = InvoicePDFFile(invoice: invoice, company: company) }
     }
-}
 
-/// PDF con PDFKit: páginas ajustadas al ancho disponible y zoom con gesto.
-#if canImport(UIKit)
-private struct PDFPreview: UIViewRepresentable {
-    let data: Data
-
-    func makeUIView(context: Context) -> PDFView {
-        let view = PDFView()
-        view.autoScales = true
-        view.displayMode = .singlePageContinuous
-        view.displayDirection = .vertical
-        view.backgroundColor = .clear
-        view.document = PDFDocument(data: data)
-        return view
+    /// Una página del PDF dibujada con la misma vista que lo genera, a escala del ancho disponible (como mucho 560 pt),
+    /// con sombra de papel sobre el fondo. Siempre en claro, como el documento.
+    private func page(_ index: Int) -> some View {
+        let size = InvoicePDF.pageSize
+        let pageWidth = max(1, min(width - 24, 560))
+        let scale = pageWidth / size.width
+        return InvoiceDocumentView(invoice: invoice, company: company, lines: pages[index],
+                                   pageNumber: index + 1, pageCount: pages.count)
+            .frame(width: size.width, height: size.height)
+            .environment(\.colorScheme, .light)
+            .environment(\.dynamicTypeSize, .large)
+            .scaleEffect(scale, anchor: .topLeading)
+            .frame(width: size.width * scale, height: size.height * scale, alignment: .topLeading)
+            .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
+            .shadow(color: .black.opacity(0.08), radius: 1, y: 1)
+            .shadow(color: .black.opacity(0.14), radius: 15, y: 10)
+            .accessibilityElement(children: .contain)
+            .accessibilityLabel(pages.count == 1 ? String(localized: "Vista previa de la factura \(title)")
+                                : String(localized: "Página \(index + 1) de \(pages.count)"))
     }
 
-    func updateUIView(_ view: PDFView, context: Context) {}
-}
-#elseif canImport(AppKit)
-private struct PDFPreview: NSViewRepresentable {
-    let data: Data
-
-    func makeNSView(context: Context) -> PDFView {
-        let view = PDFView()
-        view.autoScales = true
-        view.displayMode = .singlePageContinuous
-        view.displayDirection = .vertical
-        view.backgroundColor = .clear
-        view.document = PDFDocument(data: data)
-        return view
+    /// «Compartir PDF…» e «Imprimir» como filas con icono tipo Ajustes.
+    private var sendGroup: some View {
+        VStack(spacing: 0) {
+            if let pdf {
+                ShareLink(item: pdf, subject: Text(pdf.filename), preview: SharePreview(pdf.filename)) {
+                    sendRow(String(localized: "Compartir PDF…"), systemImage: "square.and.arrow.up", color: Palette.blue)
+                }
+                .buttonStyle(.plain)
+                Divider().padding(.leading, Metrics.cardPadding + Metrics.iconTile + 12)
+                Button { InvoicePrinter.print(pdf) } label: {
+                    sendRow(String(localized: "Imprimir"), systemImage: "printer", color: Palette.gray)
+                }
+                .buttonStyle(.plain)
+            } else {
+                ProgressView().frame(maxWidth: .infinity, minHeight: Metrics.target)
+            }
+        }
+        .card(padding: 0)
+        .frame(maxWidth: 560)
     }
 
-    func updateNSView(_ view: PDFView, context: Context) {}
+    private func sendRow(_ title: String, systemImage: String, color: Color) -> some View {
+        HStack(spacing: 12) {
+            IconTile(systemImage: systemImage, foreground: color)
+            Text(title).foregroundStyle(Palette.ink)
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, Metrics.cardPadding)
+        .frame(minHeight: Metrics.target + 4)
+        .contentShape(Rectangle())
+    }
 }
-#endif
+
+/// Imprime el PDF con el diálogo del sistema.
+@MainActor
+private enum InvoicePrinter {
+    static func print(_ file: InvoicePDFFile) {
+        #if canImport(UIKit)
+        let controller = UIPrintInteractionController.shared
+        let info = UIPrintInfo(dictionary: nil)
+        info.outputType = .general
+        info.jobName = file.filename
+        controller.printInfo = info
+        controller.printingItem = file.data
+        controller.present(animated: true)
+        #elseif canImport(AppKit)
+        guard let document = PDFDocument(data: file.data),
+              let operation = document.printOperation(for: NSPrintInfo.shared, scalingMode: .pageScaleToFit, autoRotate: true)
+        else { return }
+        operation.jobTitle = file.filename
+        operation.runModal(for: NSApp.keyWindow ?? NSWindow(), delegate: nil, didRun: nil, contextInfo: nil)
+        #endif
+    }
+}
