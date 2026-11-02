@@ -6,7 +6,7 @@ Resumen del chat de coordinación de Chirogra (desarrollo + QA), al 2 de noviemb
 
 - **Versión aprobada:** `038b168`. Pasó QA y es la última de `main` en GitHub (github.com/ivanngarcia81/Chirogra).
 - **Instalada en:** iPhone 17 Pro Max y Mac (`/Applications/Chirogra.app`) con `038b168`. El **iPad sigue en `68ebad9`** porque la instalación falló con el iPad bloqueado: falta desbloquearlo y reinstalar.
-- **Rediseño nativo descartado:** se probó un rediseño con estilo nativo de iOS (commit `7a8b97f`) y el usuario lo descartó. Nunca se subió y el repo volvió a `038b168`.
+- **Rediseño nativo (2-nov), en la rama local `integracion-rediseno`, SIN fusionar en `main` ni subir.** El usuario pidió rehacer la app con el canvas actualizado («Claude code actualizó el diseño»), lo que deja sin efecto el descarte de `7a8b97f`. El sistema y el mapa por áreas están en [REDISEÑO-NATIVO.md](REDISEÑO-NATIVO.md). Lo hizo un equipo de agentes en worktrees (`.claude/worktrees/`), uno por tarea, y el coordinador lo fusionó. Para resolver choques del catálogo de textos hay un script de fusión por claves (ver «Fusionar el catálogo de textos» abajo).
 
 ## Qué se hizo en este chat (de lo más antiguo a lo más nuevo)
 
@@ -21,14 +21,32 @@ Resumen del chat de coordinación de Chirogra (desarrollo + QA), al 2 de noviemb
 | `10bf2c5`, `281d573` | Mac: que no parezca un iPhone estirado (densidad de Mac, un solo título, barra lateral de 220 pt, hojas con `.confirmationAction` / `.cancellationAction`, contraste AA de la fila seleccionada) |
 | `6bb7a97`, `038b168` | Títulos de la columna maestro visibles en el iPad; «+» solo como ícono en Por pagar y Plan de cuentas |
 
+### En `integracion-rediseno` (2-nov, sin fusionar en `main`)
+
+| Commit | Qué |
+|---|---|
+| `d343fa1` | iPad vertical: la barra lateral se cierra sola en las páginas de lista; barra de 280 pt en todas las páginas |
+| `de93afd` | Hojas de editor en el iPad: alto de página y 760 pt de ancho (`editorSheetSizing`) |
+| `9476336` | Título pequeño en línea en todos los detalles del iPad |
+| `2742f53` | VoiceOver: «Depositar en» y «Fecha» con nombre y valor en Registrar pago |
+| `62f5b58` | Base del rediseño nativo (`Palette`, `Components`, `docs/REDISEÑO-NATIVO.md`) |
+| `4db4ec2` | Botón principal en vidrio sin relleno; decisiones del usuario sobre el canvas |
+| `96c44e1` | Área A: Inicio, Reportes, Impuestos |
+| `7fdc121` | Área B: Ventas y Clientes |
+| `6975c8f` | Área C: Gastos, Proveedores, Por pagar, Banca, Contabilidad |
+| `5229973` | Área D: pestañas, barra lateral, columna maestro, estados, Alta, Ajustes |
+| `106c441` | QA del coordinador: cabecera de la factura (total si está pagada; «Por cobrar de un total de…») y gastos sin «−» en la columna maestro |
+
+Visto por el coordinador en simulador (iPhone 17 Pro e iPad Pro 13″, claro y oscuro, horizontal y vertical): las 5 pestañas del iPhone, las 8 páginas del iPad, detalle de factura y de gasto. Compila para iOS y Mac; `swift test` pasa. **Sin ver: el Mac en pantalla** (la Debug comparte datos con la app instalada), VoiceOver de verdad, iPad con letra grande, registrar un asiento de punta a punta.
+
 ## Decisiones del usuario (no deshacer sin preguntar)
 
-- **Liquid Glass** en cabecera, barra y botones primarios, en todas las páginas. Nada de botones morados.
+- **Liquid Glass** en cabecera, barra y botones primarios, en todas las páginas. Nada de botones morados. **Botón principal en vidrio sin relleno** aunque el canvas lo rellene de Tinta (2-nov).
+- **Rediseño nativo según el canvas actual** (2-nov): manda el canvas salvo lo que diga esta lista. Pestañas del iPhone Inicio · Ventas · Gastos · Banca · Más (Reportes en «Más»); fila elegida de la columna maestro rellena de Tinta; barra lateral con grupos «Negocio» y «Libros».
 - **Maestro-detalle** en las páginas de lista en iPad y Mac, aunque se aparte del canvas de Claude Design.
 - **Mac con densidad de Mac**, no de iPhone (objetivos de 28 pt en Mac, 44 pt en iOS: `Metrics.target`).
 - **Ícono de la app** = el de Icon Composer. El **logo de la empresa** queda para después.
 - **Modo oscuro en Mac:** «salta por ahora esa parte». QA prueba el Mac solo en claro.
-- **Rediseño nativo estilo Ajustes/Mail:** descartado.
 - Todo esto también está anotado en [DISEÑO.md §7.4](DISEÑO.md).
 
 ## Reglas de trabajo
@@ -41,6 +59,10 @@ Resumen del chat de coordinación de Chirogra (desarrollo + QA), al 2 de noviemb
 - Bilingüe español/inglés; las fechas numéricas siguen la región del aparato.
 - Avisar al usuario antes de borrar cualquier cosa de su computadora. No cambiar ajustes del sistema ni de Xcode.
 - El canvas de Claude Design es de solo lectura: https://claude.ai/artifact/Ai344mUq54BECC4Pw4quV9
+
+### Fusionar el catálogo de textos
+
+Si dos ramas añaden textos a `App/Localizable.xcstrings`, git choca. Se resuelve por claves: sacar las tres versiones (`git show ":1:App/Localizable.xcstrings"`, `:2:`, `:3:`; en zsh, con comillas o `${n}`) y unirlas con un script que conserve las claves de las dos ramas y, si una clave cambió en las dos, elija a mano. Escribir el JSON con `indent=2` y `separators=(',', ' : ')` como Xcode. La prueba `StringCatalogTests` exige el inglés con los mismos marcadores que el español (`%@`, no `%1$@`).
 
 ### Flujo con dos sesiones
 
@@ -82,6 +104,10 @@ osascript -e 'tell application id "com.chirogra.app" to quit'; rm -rf /Applicati
 Problemas conocidos: si el aparato sale «desconectado», reintentar. «The developer disk image could not be mounted» = el aparato está bloqueado; desbloquearlo y reintentar.
 
 ## Pendiente
+
+- **Rediseño:** que el usuario lo revise; ver el Mac en pantalla; fusionar `integracion-rediseno` en `main` cuando lo apruebe; borrar las worktrees de los agentes (`git worktree remove`, ~8 GB) con su permiso.
+- Piezas que los agentes construyeron dentro de sus archivos y convendría subir a `DesignSystem` (lista en sus informes): grupos de filas, `ComparisonBars`, cebra de tablas, `ActivityMark`, `LineEditRow`.
+- Sin datos detrás, no construido aunque el canvas lo dibuje: campana de avisos, «12 por revisar», Programar pago, Impuesto incluido, W-9, persona de contacto, plantilla de factura, Para/Asunto al enviar.
 
 - Instalar `038b168` en el iPad (desbloqueado).
 - Que el usuario pruebe en el Mac, en **Nuevo gasto** y **Nueva factura**: Escape cierra (o pregunta si hay cambios) y Return guarda o emite. Ni desarrollo ni QA pudieron mandar teclas.
