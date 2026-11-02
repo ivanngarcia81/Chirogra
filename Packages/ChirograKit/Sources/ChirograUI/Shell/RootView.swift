@@ -195,6 +195,12 @@ struct AppShell: View {
     @Environment(\.horizontalSizeClass) private var sizeClass
     /// Ancho de la columna de detalle: en un iPad vertical con la barra lateral abierta puede quedar estrecha.
     @State private var detailWidth: CGFloat = .infinity
+    /// La ventana es más alta que ancha (iPad en vertical): ahí no caben barra lateral, lista y detalle a la vez.
+    @State private var isPortrait = false
+    /// La barra lateral se cerró sola en vertical: al girar a horizontal vuelve a abrirse, como antes.
+    @State private var sidebarAutoClosed = false
+    /// Hasta cuándo se vuelve a cerrar la barra lateral si la vista dividida recién hecha la abre.
+    @State private var keepsSidebarClosedUntil = Date.distantPast
     #endif
     @State private var tab: AppSection = .home
     @State private var selection: SidebarItem = .section(.home)
@@ -238,7 +244,7 @@ struct AppShell: View {
                     try? await Task.sleep(for: .milliseconds(50))
                 }
                 guard item != selection else { return }
-                if unsavedChanges.hasChanges { pendingSelection = item } else { selection = item }
+                if unsavedChanges.hasChanges { pendingSelection = item } else { show(item) }
             }
         })
     }
@@ -263,10 +269,43 @@ struct AppShell: View {
 
     /// Página de lista y detalle con columna maestro (§7.4). No mientras llegan los libros de iCloud por primera vez
     /// (esqueleto de `SyncAwareContent`) ni con AX4 o más, donde la columna no cabe y se usan las listas del iPhone.
-    private var masterPage: MasterPage? {
+    private var masterPage: MasterPage? { masterPage(for: selection) }
+
+    private func masterPage(for item: SidebarItem) -> MasterPage? {
         guard !monitor.isFirstImport, dynamicTypeSize < .accessibility4 else { return nil }
-        return MasterPage(selection)
+        return MasterPage(item)
     }
+
+    /// Cambia de pantalla. En un iPad vertical, al elegir una página de lista la barra lateral se cierra sola y quedan
+    /// la lista y el detalle: con las tres columnas, la lista medía ~300 pt y cortaba nombres y el buscador.
+    /// El botón de la barra la vuelve a abrir. En horizontal y en el Mac no cambia nada.
+    private func show(_ item: SidebarItem) {
+        #if os(iOS)
+        if isPortrait, masterPage(for: item) != nil {
+            columnVisibility = .detailOnly
+            sidebarAutoClosed = true
+            // La vista dividida nueva (`.id(selection)`) se crea con la barra abierta aunque se le pida cerrada, y lo
+            // avisa enseguida: ese aviso se contesta cerrándola otra vez (`masterVisibility`).
+            keepsSidebarClosedUntil = .now + 1
+        }
+        #endif
+        selection = item
+    }
+
+    #if os(iOS)
+    /// Al girar el iPad: en vertical, una página de lista cierra la barra lateral como al elegirla; de vuelta en
+    /// horizontal, la barra que se cerró sola se abre otra vez.
+    private func orientationChanged(isPortrait: Bool) {
+        if isPortrait {
+            guard masterPage != nil, !masterHidden, columnVisibility != .detailOnly else { return }
+            columnVisibility = .detailOnly
+            sidebarAutoClosed = true
+        } else if sidebarAutoClosed {
+            sidebarAutoClosed = false
+            if columnVisibility == .detailOnly { columnVisibility = .all }
+        }
+    }
+    #endif
 
     private var isSearching: Bool { !query.trimmingCharacters(in: .whitespaces).isEmpty }
 
@@ -277,6 +316,17 @@ struct AppShell: View {
             if masterHidden { return .detailOnly }
             return columnVisibility == .detailOnly ? .doubleColumn : columnVisibility
         }, set: { visibility in
+            #if os(iOS)
+            if visibility == .all, Date.now < keepsSidebarClosedUntil {
+                // Primero el valor que dice la vista dividida y luego el cierre: así cambia y se lo vuelve a pedir.
+                masterHidden = false
+                columnVisibility = .all
+                Task { @MainActor in columnVisibility = .detailOnly }
+                return
+            }
+            // Quien abre la barra con su botón decide: ya no se cierra ni se abre sola al girar.
+            if visibility == .all { sidebarAutoClosed = false }
+            #endif
             masterHidden = visibility == .detailOnly
             columnVisibility = visibility == .all || visibility == .automatic ? visibility : .detailOnly
         })
@@ -287,9 +337,12 @@ struct AppShell: View {
             #if os(macOS)
             .navigationSplitViewColumnWidth(min: 220, ideal: 220, max: 280)
             #else
-            .navigationSplitViewColumnWidth(min: 200, ideal: 240)
             // Solo en iOS: en el Mac, quitar el título de la barra lateral la dejaba en ~144 pt.
             .toolbar(removing: .title)
+            // Después de `.toolbar(removing:)`: antes de él no llegaba a la vista dividida, y la barra medía 320 pt
+            // con dos columnas y 280 con tres (cambiaba de ancho al pasar de Inicio a Ventas). Con 280, el detalle
+            // de Ventas en un iPad de 13" en horizontal sigue por encima del umbral de `isDetailNarrow`.
+            .navigationSplitViewColumnWidth(280)
             #endif
     }
 
@@ -344,7 +397,7 @@ struct AppShell: View {
         .alert("¿Descartar los cambios?", isPresented: Binding(get: { pendingSelection != nil }, set: { if !$0 { pendingSelection = nil } })) {
             Button("Descartar", role: .destructive) {
                 unsavedChanges.discardAll()
-                if let pendingSelection { selection = pendingSelection }
+                if let pendingSelection { show(pendingSelection) }
                 pendingSelection = nil
             }
             Button("Seguir editando", role: .cancel) { pendingSelection = nil }
@@ -361,6 +414,10 @@ struct AppShell: View {
             unsavedChanges.removeAll()
             masterSelection = nil
         }
+        #if os(iOS)
+        .onGeometryChange(for: Bool.self) { $0.size.width < $0.size.height } action: { isPortrait = $0 }
+        .onChange(of: isPortrait) { _, portrait in orientationChanged(isPortrait: portrait) }
+        #endif
     }
 }
 
