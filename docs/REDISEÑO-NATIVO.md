@@ -200,7 +200,7 @@ Anotadas para que el usuario decida; la base no las resuelve por su cuenta salvo
 
 1. **Botón principal relleno de Tinta.** El canvas rellena los botones principales con el acento (`--tintFill`: «Enviar factura», «Registrar $…», «Continuar», «Guardar» del Mac, «+ Factura» del iPad, «Nueva factura» del Mac). DISEÑO §7.4 decía «Liquid Glass sin relleno de marca». La base usa `.glassProminent` teñido de Tinta: sigue siendo Liquid Glass y es el único relleno, del acento, pero **es relleno**. Para volver a vidrio sin relleno basta cambiar `PrimaryButtonStyle` y `CompactPrimaryButtonStyle` (una línea cada uno). Pendiente de confirmar.
 2. **Pestañas del iPhone.** El canvas pone Inicio · Ventas · Gastos · **Banca** · Más (Reportes dentro de Más). El MVP (DISEÑO §7.1) tiene Inicio · Ventas · Gastos · **Reportes** · Más, con Banca en Más porque casi toda es de fase 2. No se ha tocado (`Shell/RootView.swift`).
-3. **Mac: tabla + inspector frente a maestro-detalle.** `MacVentas`, `MacGastos`, `MacPorPagar`, `MacInicio`… muestran tabla a todo el ancho con un inspector de 300 pt a la derecha (el título del grupo 7 dice «iPad (maestro-detalle) y Mac (inspector)»). La decisión del usuario es columna maestro también en el Mac. Se mantiene la decisión; el inspector podría usarse en el detalle si se quiere.
+3. **Mac: tabla + inspector frente a maestro-detalle.** `MacVentas`, `MacGastos`, `MacPorPagar`, `MacInicio`… muestran tabla a todo el ancho con un inspector de 300 pt a la derecha (el título del grupo 7 dice «iPad (maestro-detalle) y Mac (inspector)»). ~~La decisión del usuario es columna maestro también en el Mac.~~ **Cambiada el 2-nov:** en el Mac, tabla + inspector como el canvas; el iPad sigue con maestro-detalle (ver §5).
 4. **Selección de la columna maestro.** El canvas (iPad) la pinta en `brandFill` con texto blanco; hoy va en `brandWash` (decisión de contraste AA de `281d573`). Blanco sobre `#3A3FD1` / `#5458E6` da 7,5:1 / 5,4:1, así que cumple AA. Lo cambia el área D si el usuario está de acuerdo.
 5. **Ícono de la app.** El canvas dibuja el ícono (Tinta, «C» blanca, punto azafrán) en `Main`. Se mantiene el de Icon Composer (decisión del usuario); el dibujo del canvas queda como `LogoMark` dentro de la app.
 6. **Densidad del Mac.** El canvas usa filas de 28, botones de 28 y cabeceras de 26: coincide con `Metrics.target` de 28. Sin conflicto.
@@ -214,3 +214,97 @@ Anotadas para que el usuario decida; la base no las resuelve por su cuenta salvo
 2. **Pestañas del iPhone: como el canvas** — Inicio · Ventas · Gastos · **Banca** · Más. Reportes pasa a «Más». (Área D.)
 3. **Fila elegida en la columna maestro (iPad y Mac): rellena de Tinta con texto blanco**, como el canvas. (Área D.)
 4. **Barra lateral: grupos «Negocio» y «Libros»**, como el canvas, en lugar de «MÁS». (Área D.)
+5. **Mac: tabla + inspector (2-nov)**, como el canvas; el iPad sigue con maestro-detalle. Sustituye a «maestro-detalle en iPad y Mac». Ver §5.
+
+---
+
+## 5. Mac: tabla + inspector
+
+En el Mac, las páginas de lista (`MasterPage`: Facturas, Clientes, Gastos, Proveedores, Por pagar, Banca, Asientos, Plan de cuentas) son **barra lateral + contenido** (dos columnas): el contenido es una `Table` del sistema a todo el ancho y, a la derecha, el **inspector nativo** (`.inspector(isPresented:)`, ~300 pt, `inspectorColumnWidth(min: 260, ideal: 300, max: 420)`) con lo elegido. Elegir una fila abre el inspector; el botón `sidebar.trailing` de la barra o **⌥⌘I** lo muestra u oculta (se recuerda en `@AppStorage("macInspectorShown")`). Doble clic (o «Abrir» del menú contextual) abre la ficha completa encima, en la pila de la columna. El iPad no cambia: columna maestro + detalle de `Shell/MasterDetail.swift`.
+
+### Cómo está montado (no hace falta tocarlo)
+
+- `Shell/RootView.swift` (`AppShell.columns`): en macOS, si la página tiene tabla (`page.hasMacTable`), `NavigationSplitView` de dos columnas con `detailColumn { page.macTable(selection: $masterSelection) }`; si no, las tres columnas de antes. Se conservan el aviso «¿Descartar los cambios?» al cambiar de página, la búsqueda de la barra lateral (con texto, `SearchResultsView` sustituye a la tabla), la barra lateral de 220 pt y el arreglo del iPad en vertical (todo lo nuevo va bajo `#if os(macOS)`).
+- `Shell/MacTablePage.swift`: el `switch` de `MasterPage.hasMacTable` y `macTable(selection:)`, que llaman a **un tipo por página en su propio archivo**, y la pieza común:
+  - `MacTablePage` — título y subtítulo de la ventana (`navigationSubtitle`), búsqueda (`.searchable(placement: .toolbar)`), «+ Nuevo…» y el botón del inspector en la barra; arriba del contenido el filtro, las cajas de cifras (`KPIGrid`) si hay, la tabla con columnas ordenables y cebra, el pie con la cuenta y el estado vacío («Sin resultados · Quitar filtros»); el inspector con su título (15 bold), el contenido con scroll y los botones al pie.
+  - `MacTableFilter` — segmentado del sistema con la cuenta de cada opción («Todas 14 · Borrador 1…»); si no cabe, menú (así no fija el ancho mínimo de la ventana).
+  - `MacInspectorSummary` (nombre, cifra de 24 y estado), `MacInspectorSection` («Detalles», «Importes»: encabezado de 11 semibold y filas con línea entre ellas), `MacInspectorRow` («etiqueta gris · valor», 26 pt; con `value:` de texto o un `@ViewBuilder`).
+  - `MacCellText`, `MacCellStatus` — texto de color y estado («● Vencida · 8 días») de una celda que pasan a blanco en la fila elegida (`backgroundProminence == .increased`). Para el gris normal basta `.foregroundStyle(.secondary)`.
+
+### Qué archivo toca cada página
+
+Cada página ya tiene su archivo con un esqueleto (`static let isReady = false`, `@Binding var selection: UUID?`, `body` vacío). Para hacerla: escribir el `body` con `MacTablePage` y poner `isReady = true`. **Nada más**: ni `RootView.swift`, ni `MacTablePage.swift`, ni `MasterDetail.swift`.
+
+| Página | Tablero | Archivo (solo este) | Inspector: qué reutilizar |
+|---|---|---|---|
+| Facturas | `MacVentas`, `MacVentasOscuro` | `Sales/InvoiceTablePage.swift` (**hecha**) | — |
+| Clientes | `MacClientes` | `Sales/CustomerTablePage.swift` | Saldo, contacto; «Abrir» → `CustomerDetailView` |
+| Gastos | `MacGastos` | `Expenses/ExpenseTablePage.swift` | Lo de `ExpenseDetailView` (`ReceiptViews.swift`) en filas, recibo |
+| Proveedores | `MacProveedores` | `Expenses/VendorTablePage.swift` | «Abrir» → `VendorDetailView` |
+| Por pagar | `MacPorPagar` | `Expenses/BillTablePage.swift` | «Registrar pago…» → `PayBillView`; «Abrir» → `BillDetailView` |
+| Banca | `BancaCuentas` | `Banking/BankingTablePage.swift` | Cuentas en la tabla; movimientos (`AccountMovementsView`) o saldo en el inspector |
+| Asientos | `MacDiario` | `Accounting/JournalTablePage.swift` | Líneas del asiento; «Abrir» → `JournalEntryDetailView` |
+| Plan de cuentas | `MacPlanCuentas` | `Accounting/ChartTablePage.swift` | Saldo y tipo; «Abrir» → `LedgerView(account:inDetailColumn: true)` |
+
+Los filtros, las consultas y los textos de las listas maestro están en `Shell/MasterDetail.swift` (`BillFilter`, `VendorFilter`, `InvoiceScope`…): se pueden reutilizar, pero ese archivo no se toca. Las piezas que una página necesite y no estén en `MacTablePage.swift` se crean `private` en su archivo y se anotan para subirlas después.
+
+### Ejemplo (resumen de `Sales/InvoiceTablePage.swift`)
+
+```swift
+#if os(macOS)
+struct InvoiceTablePage: View {
+    static let isReady = true
+    @Binding var selection: UUID?
+    @Query(sort: \Invoice.createdAt, order: .reverse) private var invoices: [Invoice]
+    @State private var filter: InvoiceListView.Filter = .all
+    @State private var query = ""
+    @State private var openedInvoice: Invoice?
+
+    var body: some View {
+        MacTablePage(
+            title: String(localized: "Facturas"), subtitle: String(localized: "Ventas · \(invoices.count) facturas"),
+            rows: filtered, footer: footer, query: $query, searchPrompt: Text("Cliente, número o monto"),
+            selection: $selection, sortOrder: [KeyPathComparator(\Invoice.tableNumber, order: .reverse)],
+            kpis: kpis, addTitle: String(localized: "Nueva factura"), onAdd: { creating = true },
+            onOpen: { openedInvoice = $0 }, empty: …, inspectorTitle: { … }, inspectorPlaceholder: …
+        ) {
+            TableColumn("Número", value: \.tableNumber) { MacCellText(text: $0.number) }.width(min: 56, ideal: 64, max: 110)
+            TableColumn("Estado", value: \.statusRank) { MacCellStatus(chip: $0.tableStatus) }
+            TableColumn("Importe", value: \.tableAmount) { Text($0.tableAmount.money).monospacedDigit() }.alignment(.trailing)
+        } filter: {
+            MacTableFilter(title: …, options: InvoiceListView.Filter.allCases, selection: $filter, label: \.localizedTitle) { … }
+        } inspector: { invoice in
+            MacInspectorSummary(…) { invoice.tableStatus }
+            MacInspectorSection(title: String(localized: "Detalles")) { MacInspectorRow(String(localized: "Número"), value: invoice.number) }
+        } actions: { invoice in
+            Button("Registrar pago…") { paying = invoice }.buttonStyle(.primary)
+            HStack { Button("Abrir factura") { openedInvoice = invoice }.buttonStyle(.secondary) }
+        }
+        .navigationDestination(item: $openedInvoice) { InvoiceDetailView(invoice: $0) }
+    }
+}
+#endif
+```
+
+Detalles que conviene saber:
+
+- **Claves de orden `nonisolated`.** El módulo es `@MainActor` por defecto y `KeyPathComparator` exige key paths `Sendable`: las propiedades calculadas que se usan como `value:` de una columna van en una extensión del modelo marcadas `nonisolated` (`Invoice.tableNumber`, `tableAmount`, `statusRank`, `customerName`). Las del modelo (`issueDate`, `dueDate`) ya sirven.
+- **Anchos.** Mínimos e ideales modestos (la suma de ideales por debajo de ~600 pt): con la ventana de 1280 y el inspector abierto, el contenido mide ~720 pt; si los ideales no caben, la tabla se desplaza a lo ancho.
+- **Filtrar en la página, ordenar en la pieza.** `rows` llega ya filtrado por la búsqueda y el filtro; `MacTablePage` lo ordena con el orden de las columnas.
+- **Botones del inspector:** principal `.buttonStyle(.primary)` (vidrio sin relleno, decisión del usuario), secundarios `.buttonStyle(.secondary)` (borde del sistema). Hojas con `NavigationStack { … }.editorSheetSizing()` y `.discardableEditor(…)` para «Cancelar».
+- **Textos nuevos** en `App/Localizable.xcstrings` con su inglés (los archivos son solo de macOS: `scripts/sync-strings.sh` compila para iOS y no los ve; añadirlos a mano o con los `.stringsdata` de una compilación del Mac).
+
+### Comprobar en el Mac sin tocar la app del usuario
+
+Copia de prueba con otro identificador (su propio contenedor, sin iCloud) y argumentos de QA (solo Debug, `QALaunch` en `MacTablePage.swift`):
+
+```bash
+xcodebuild -project Chirogra.xcodeproj -scheme Chirogra -configuration Debug -destination 'platform=macOS' -derivedDataPath .dd \
+  PRODUCT_BUNDLE_IDENTIFIER=com.chirogra.qa.mac CODE_SIGN_IDENTITY=- CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM= build
+open -g -j -n .dd/Build/Products/Debug/Chirogra.app --args -AppleLanguages '(es)' \
+  -qa.muestra 1 -qa.seccion invoices -qa.fila 0 -qa.inspector 1 -qa.apariencia oscuro
+```
+
+- `-qa.seccion` `home|invoices|customers|expenses|vendors|bills|banking|journal|chart|ledger|close|reports|taxes|settings`; `-qa.fila N` elige la fila N (en el orden de la tabla); `-qa.inspector 0|1`; `-qa.muestra 1` carga los datos de ejemplo si no hay empresa; `-qa.apariencia claro|oscuro` (en el Mac, `-AppleInterfaceStyle Dark` como argumento no cambia la apariencia).
+- Solo Facturas: `-qa.pago 1` abre «Registrar pago…», `-qa.registrar 1` además lo registra; `-qa.abrir 1` abre la factura completa.
+- Captura solo de esa ventana con `screencapture -l <id> -o -x`, sacando el id con `CGWindowListCopyWindowInfo` filtrado por su PID; al terminar, `kill <pid>`. La ventana queda inactiva (oculta y en segundo plano): la fila elegida sale en gris y los botones de vidrio atenuados; activa, la fila va en Tinta.

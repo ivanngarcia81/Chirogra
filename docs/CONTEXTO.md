@@ -43,7 +43,7 @@ Visto por el coordinador en simulador (iPhone 17 Pro e iPad Pro 13″, claro y o
 
 - **Liquid Glass** en cabecera, barra y botones primarios, en todas las páginas. Nada de botones morados. **Botón principal en vidrio sin relleno** aunque el canvas lo rellene de Tinta (2-nov).
 - **Rediseño nativo según el canvas actual** (2-nov): manda el canvas salvo lo que diga esta lista. Pestañas del iPhone Inicio · Ventas · Gastos · Banca · Más (Reportes en «Más»); fila elegida de la columna maestro rellena de Tinta; barra lateral con grupos «Negocio» y «Libros».
-- **Maestro-detalle** en las páginas de lista en iPad y Mac, aunque se aparte del canvas de Claude Design.
+- **iPad: maestro-detalle; Mac: tabla + inspector (2-nov).** En el iPad, las páginas de lista siguen con columna maestro + detalle. En el Mac son como el canvas (`MacVentas`, `MacClientes`, `MacGastos`…): barra lateral + contenido, tabla a todo el ancho e inspector de ~300 pt a la derecha con lo elegido (ver [REDISEÑO-NATIVO.md](REDISEÑO-NATIVO.md), «Mac: tabla + inspector»). Hecha Facturas; el resto, por páginas.
 - **Mac con densidad de Mac**, no de iPhone (objetivos de 28 pt en Mac, 44 pt en iOS: `Metrics.target`).
 - **Ícono de la app** = el de Icon Composer. El **logo de la empresa** queda para después.
 - **Modo oscuro en Mac:** «salta por ahora esa parte». QA prueba el Mac solo en claro.
