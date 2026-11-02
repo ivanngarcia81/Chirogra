@@ -1410,9 +1410,39 @@
     "%lld proveedores" : {
       "localizations" : {
         "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld vendors"
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld vendor"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld vendors"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld proveedor"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld proveedores"
+                }
+              }
+            }
           }
         }
       }
@@ -12571,6 +12601,296 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "✓ Balanced"
+          }
+        }
+      }
+    },
+    "Pagado en %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paid in %@"
+          }
+        }
+      }
+    },
+    "Todas las facturas de tus proveedores están pagadas." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All your vendor bills are paid."
+          }
+        }
+      }
+    },
+    "Ver pagadas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show Paid"
+          }
+        }
+      }
+    },
+    "Factura de proveedor %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bill %@"
+          }
+        }
+      }
+    },
+    "Ver proveedor" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View Vendor"
+          }
+        }
+      }
+    },
+    "Abrir la factura" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Bill"
+          }
+        }
+      }
+    },
+    "%@ · %@ por pagar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · %@ payable"
+          }
+        }
+      }
+    },
+    "%lld de %lld proveedores" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld of %lld vendors"
+          }
+        }
+      }
+    },
+    "%lld de %lld facturas de proveedor" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld of %lld bills"
+          }
+        }
+      }
+    },
+    "Ningún proveedor coincide con la búsqueda o el filtro." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No vendors match the search or filter."
+          }
+        }
+      }
+    },
+    "Selecciona un proveedor para ver sus detalles." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select a vendor to see its details."
+          }
+        }
+      }
+    },
+    "Filtrar proveedores" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filter vendors"
+          }
+        }
+      }
+    },
+    "Abrir ficha" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Vendor"
+          }
+        }
+      }
+    },
+    "Pagos en %@: %@, por encima del mínimo de $600. Envíale el 1099-NEC antes del 31 de enero." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Payments in %@: %@, above the $600 minimum. Send them a 1099-NEC by January 31."
+          }
+        }
+      }
+    },
+    "Este proveedor no se reporta en el formulario 1099-NEC." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This vendor isn't reported on Form 1099-NEC."
+          }
+        }
+      }
+    },
+    "Requiere 1099-NEC" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Needs 1099-NEC"
+          }
+        }
+      }
+    },
+    "No aplica" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not applicable"
+          }
+        }
+      }
+    },
+    "%lld facturas de proveedor" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld bill"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld bills"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld factura de proveedor"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld facturas de proveedor"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld vencidas" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld overdue"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld overdue"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld vencida"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld vencidas"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld abiertas · %@" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld open · %@"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld open · %@"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld abierta · %@"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld abiertas · %@"
+                }
+              }
+            }
           }
         }
       }
