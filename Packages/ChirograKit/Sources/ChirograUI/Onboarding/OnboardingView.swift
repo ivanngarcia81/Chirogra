@@ -2,9 +2,11 @@ import ChirograData
 import SwiftData
 import SwiftUI
 
-/// Alta de empresa (canvas `OnbEmpresa`, `OnbTipo`). Paso 1: nombre, estado, año fiscal e ID fiscal. Paso 2: tipo de
-/// negocio, que decide la plantilla del plan de cuentas. El paso 3 del canvas («Traer movimientos») no está en el MVP.
-/// El logotipo de la empresa todavía no se guarda, así que no se pide.
+/// Alta de empresa (canvas `OnbEmpresa`, `OnbTipo`; `AltaPaso1`, `AltaPaso2` e `iPadAltaPaso1` en iPad y Mac).
+/// Paso 1: nombre, estado, año fiscal e ID fiscal. Paso 2: tipo de negocio, que decide la plantilla del plan de cuentas.
+/// Las dos como formularios agrupados del sistema con un encabezado grande centrado; en iPhone e iPad, una barra de
+/// vidrio abajo con los puntos de paso y «Continuar»; en el Mac, el pie de la ventana con «Atrás» y «Continuar».
+/// El paso 3 del canvas («Conectar banco») y el logotipo de la empresa no están en el MVP.
 struct OnboardingView: View {
     /// Tipos de negocio del canvas; cada uno usa una de las plantillas de plan de cuentas.
     enum Kind: String, CaseIterable, Identifiable {
@@ -24,12 +26,24 @@ struct OnboardingView: View {
 
         var systemImage: String {
             switch self {
-            case .professional: "briefcase"
-            case .retail: "storefront"
-            case .construction: "hammer"
+            case .professional: "briefcase.fill"
+            case .retail: "storefront.fill"
+            case .construction: "hammer.fill"
             case .food: "fork.knife"
-            case .health: "heart"
-            case .freelance: "person"
+            case .health: "heart.fill"
+            case .freelance: "person.fill"
+            }
+        }
+
+        /// Color del icono de la fila (canvas `OnbTipo`).
+        var color: Color {
+            switch self {
+            case .professional: Palette.blue
+            case .retail: Palette.green
+            case .construction: Palette.orange
+            case .food: Palette.red
+            case .health: Palette.pink
+            case .freelance: Palette.purple
             }
         }
 
@@ -43,10 +57,6 @@ struct OnboardingView: View {
     }
 
     @Environment(\.modelContext) private var context
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-    #if os(iOS)
-    @LayoutSizeClass private var sizeClass
-    #endif
     @State private var step = 1
     @State private var displayName = ""
     @State private var legalName = ""
@@ -57,372 +67,289 @@ struct OnboardingView: View {
     @State private var kind: Kind = .construction
     @State private var errorMessage: String?
 
-    /// `AltaPaso1`/`AltaPaso2` en iPad y Mac (hasta AX3): una tarjeta centrada; en el iPhone, los pasos a pantalla completa.
-    private var isWide: Bool {
-        #if os(iOS)
-        if sizeClass != .regular { return false }
-        #endif
-        return dynamicTypeSize < .accessibility4
-    }
-
     var body: some View {
-        if isWide { wideBody } else { compactBody }
-    }
-
-    private var compactBody: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                if step == 1 { companyStep } else { typeStep }
-                if let errorMessage { ErrorBanner(message: errorMessage) }
+        Form {
+            if step == 1 { companyStep } else { typeStep }
+            if let errorMessage {
+                Section { ErrorBanner(message: errorMessage) }
             }
-            .padding(20)
-            .frame(maxWidth: 520, alignment: .leading)
-            .frame(maxWidth: .infinity)
         }
-        // Cada paso empieza arriba: el paso 2 heredaba el desplazamiento del 1 y su cabecera quedaba bajo la hora.
-        .id(step)
-        .scrollDismissesKeyboard(.interactively)
-        // Pasos y «Atrás» fijos arriba, debajo de la barra de estado.
-        .safeAreaInset(edge: .top, spacing: 0) {
-            stepIndicator
-                .padding(.horizontal, 20)
-                .padding(.vertical, 8)
-                .frame(maxWidth: 520)
-                .frame(maxWidth: .infinity)
-                .background(Palette.background)
-        }
-        .safeAreaInset(edge: .bottom, spacing: 0) {
-            VStack(spacing: 6) {
-                Button(step == 1 ? "Continuar" : "Usar este plan") {
-                    if step == 1 { step = 2 } else { createCompany() }
-                }
-                .buttonStyle(.primary)
-                .disabled(!canContinue)
-                if step == 1 {
-                    Button("Probar con datos de ejemplo", action: loadSample)
-                        .font(.body.weight(.semibold))
-                        .frame(minHeight: Metrics.target)
-                }
-            }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 12)
-            .frame(maxWidth: 520)
-            .frame(maxWidth: .infinity)
-            .background(Palette.background)
-        }
+        .formStyle(.grouped)
+        .scrollContentBackground(.hidden)
+        .frame(maxWidth: Self.columnWidth)
+        .frame(maxWidth: .infinity)
         .background(Palette.background)
+        // Cada paso empieza arriba: el paso 2 heredaba el desplazamiento del 1.
+        .id(step)
+        #if os(iOS)
+        .scrollDismissesKeyboard(.interactively)
+        .safeAreaBar(edge: .top, spacing: 0) { if step > 1 { backBar } }
+        .safeAreaBar(edge: .bottom, spacing: 0) { bottomBar }
+        #else
+        .safeAreaInset(edge: .bottom, spacing: 0) { macFooter }
+        #endif
     }
 
-    private var stepIndicator: some View {
-        HStack(spacing: 6) {
-            if step > 1 {
-                Button { step -= 1 } label: {
-                    Image(systemName: "chevron.left").font(.title3.weight(.semibold))
-                        .frame(minWidth: Metrics.target, minHeight: Metrics.target)
-                        .contentShape(Rectangle())
-                }
-                .accessibilityLabel("Atrás")
-            }
-            ForEach(1...2, id: \.self) { index in
-                Capsule().fill(index <= step ? Palette.brand : Palette.separator).frame(height: 5)
-            }
-            Text("\(step) de 2").font(.footnote.weight(.semibold)).foregroundStyle(Palette.ink3).padding(.leading, 8)
-        }
-    }
+    #if os(macOS)
+    private static let columnWidth: CGFloat = 560
+    #else
+    private static let columnWidth: CGFloat = 600
+    #endif
 
     /// El estado es obligatorio: decide qué sales tax se cobra.
     private var canContinue: Bool {
         !displayName.trimmingCharacters(in: .whitespaces).isEmpty && !state.isEmpty
     }
 
-    // MARK: Paso 1 (`OnbEmpresa`)
+    private func advance() {
+        if step == 1 { step = 2 } else { createCompany() }
+    }
 
+    // MARK: Encabezado
+
+    /// Encabezado grande centrado del paso (canvas: logotipo o símbolo, título de 34 pt y una frase gris), seguido del
+    /// título del primer grupo.
+    private func header<Icon: View>(_ title: LocalizedStringKey, subtitle: LocalizedStringKey, group: String,
+                                    @ViewBuilder icon: () -> Icon) -> some View {
+        VStack(spacing: 0) {
+            VStack(spacing: 8) {
+                icon().padding(.bottom, 8)
+                Text(title).font(Self.titleFont).foregroundStyle(Palette.ink)
+                    .accessibilityAddTraits(.isHeader)
+                Text(subtitle).font(Self.subtitleFont).foregroundStyle(Palette.ink2)
+            }
+            .multilineTextAlignment(.center)
+            .frame(maxWidth: .infinity)
+            .padding(.top, 12)
+            .padding(.bottom, 22)
+            SectionLabel(text: group).frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .textCase(nil)
+    }
+
+    #if os(macOS)
+    private static let titleFont = Font.system(size: 26, weight: .bold)
+    private static let subtitleFont = Font.body
+    private static let logoSize: CGFloat = 64
+    #else
+    private static let titleFont = Font.largeTitle.bold()
+    private static let subtitleFont = Font.body
+    private static let logoSize: CGFloat = 72
+    #endif
+
+    // MARK: Paso 1 (`OnbEmpresa`, `AltaPaso1`)
+
+    @ViewBuilder
     private var companyStep: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            LogoMark(size: 52)
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Creemos tu empresa").font(.largeTitle.bold()).accessibilityAddTraits(.isHeader)
-                Text("Estos datos aparecen en tus facturas. Puedes cambiarlos cuando quieras en Ajustes.").foregroundStyle(Palette.ink2)
+        Section {
+            TextField("Nombre de la empresa", text: $displayName, prompt: Text("Nombre"))
+                // En iOS el título del campo no llega a VoiceOver dentro de un formulario: solo leía «Nombre».
+                .accessibilityLabel(Text("Nombre de la empresa"))
+                #if os(iOS)
+                .textContentType(.organizationName)
+                #endif
+        } header: {
+            header("Creemos tu empresa", subtitle: "Estos datos aparecen en tus facturas. Puedes cambiarlos cuando quieras en Ajustes.",
+                   group: String(localized: "Nombre de la empresa")) {
+                LogoMark(size: Self.logoSize)
             }
-            VStack(alignment: .leading, spacing: 6) {
-                Text("Nombre de la empresa").font(.footnote.weight(.semibold)).foregroundStyle(Palette.ink2)
-                TextField("Nombre de la empresa", text: $displayName, prompt: Text("Ríos Diseño & Obra"))
-                    .font(.title3)
-                    .padding(.horizontal, 14)
-                    .frame(minHeight: 50)
-                    .background(Palette.surface, in: RoundedRectangle(cornerRadius: Metrics.fieldRadius, style: .continuous))
-                    .overlay(RoundedRectangle(cornerRadius: Metrics.fieldRadius, style: .continuous).stroke(Palette.brand, lineWidth: 1.5))
-            }
-            VStack(spacing: 0) {
-                infoRow(String(localized: "País o región")) { Text("Estados Unidos").foregroundStyle(Palette.ink2) }
-                Divider()
-                infoRow(String(localized: "Moneda")) { Text("USD · Dólar").foregroundStyle(Palette.ink2) }
-                Divider()
-                infoRow(String(localized: "Estado")) {
-                    Picker("Estado", selection: $state) {
-                        Text("Elige tu estado").tag("")
-                        ForEach(USState.all, id: \.self) { Text($0).tag($0) }
-                    }
-                    .labelsHidden()
-                }
-                Divider()
-                infoRow(String(localized: "Inicio del año fiscal")) {
-                    Picker("Inicio del año fiscal", selection: $fiscalStartMonth) {
-                        ForEach(1...12, id: \.self) { month in
-                            Text(Calendar.current.standaloneMonthSymbols[month - 1].sentenceCased).tag(month)
-                        }
-                    }
-                    .labelsHidden()
-                }
-                Divider()
-                infoRow(String(localized: "Razón social")) {
-                    TextField("Razón social", text: $legalName, prompt: Text("Opcional")).multilineTextAlignment(.trailing)
-                }
-                Divider()
-                infoRow(String(localized: "ID fiscal (EIN)")) {
-                    TextField("ID fiscal (EIN)", text: $ein, prompt: Text("Opcional")).multilineTextAlignment(.trailing)
-                }
-            }
-            .padding(.horizontal, 14)
-            .background(Palette.surface, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).stroke(Palette.separator))
+        }
 
-            Label("Tus libros se llevan en dólares (USD). El estado decide el sales tax que cobras; es obligatorio.",
-                  systemImage: "info.circle")
-                .font(.subheadline.weight(.medium))
-                .foregroundStyle(Palette.brand)
-                .padding(.horizontal, 14).padding(.vertical, 12)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Palette.brandWash, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        Section {
+            LabeledContent("País o región") { Text("Estados Unidos") }
+            LabeledContent("Moneda") { Text("USD · Dólar") }
+            Picker("Estado", selection: $state) {
+                Text("Elige tu estado").tag("")
+                ForEach(USState.all, id: \.self) { Text($0).tag($0) }
+            }
+            Picker("Inicio del año fiscal", selection: $fiscalStartMonth) {
+                ForEach(1...12, id: \.self) { month in
+                    Text(Calendar.current.standaloneMonthSymbols[month - 1].sentenceCased).tag(month)
+                }
+            }
+            optionalField("Razón social", text: $legalName)
+            optionalField("ID fiscal (EIN)", text: $ein)
+        } header: {
+            SectionLabel(text: String(localized: "Detalles"))
+        } footer: {
+            Text("Tus libros se llevan en dólares (USD). El estado decide el sales tax que cobras; es obligatorio.")
         }
     }
 
-    private func infoRow<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
-        ViewThatFits(in: .horizontal) {
-            HStack(spacing: 12) {
-                Text(title).foregroundStyle(Palette.ink).fixedSize()
-                Spacer(minLength: 8)
-                content()
-            }
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title).foregroundStyle(Palette.ink)
-                content()
-            }
+    /// Campo opcional con su nombre a la izquierda y el texto a la derecha, como las filas del canvas. En iOS el
+    /// `TextField` de un formulario no muestra su título, así que va dentro de un `LabeledContent`.
+    @ViewBuilder
+    private func optionalField(_ title: LocalizedStringKey, text: Binding<String>) -> some View {
+        #if os(macOS)
+        TextField(title, text: text, prompt: Text("Opcional"))
+        #else
+        LabeledContent(title) {
+            TextField(title, text: text, prompt: Text("Opcional"))
+                .multilineTextAlignment(.trailing)
         }
-        .frame(minHeight: 50)
+        // El estilo de la app fija el ancho del valor (`fixedSize`): el campo quedaba del tamaño del texto de ayuda.
+        .labeledContentStyle(.automatic)
+        #endif
     }
 
-    // MARK: Paso 2 (`OnbTipo`)
+    // MARK: Paso 2 (`OnbTipo`, `AltaPaso2`)
 
+    @ViewBuilder
     private var typeStep: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            VStack(alignment: .leading, spacing: 8) {
-                Text("¿A qué se dedica tu negocio?").font(.largeTitle.bold()).accessibilityAddTraits(.isHeader)
-                Text("Te sugerimos un plan de cuentas listo para usar.").foregroundStyle(Palette.ink2)
+        Section {
+            ForEach(Kind.allCases) { option in kindRow(option) }
+        } header: {
+            header("¿A qué se dedica tu negocio?", subtitle: "Te sugerimos un plan de cuentas listo para usar.",
+                   group: String(localized: "Tipo de negocio")) {
+                Image(systemName: "building.2")
+                    .font(.system(size: Self.logoSize * 0.55, weight: .regular))
+                    .foregroundStyle(Palette.brand)
+                    .accessibilityHidden(true)
             }
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: dynamicTypeSize.isAccessibilitySize ? 1 : 2), spacing: 10) {
-                ForEach(Kind.allCases) { option in kindCard(option) }
+        }
+
+        let entries = kind.sector.template.entries
+        Section {
+            Text(suggestedAccounts(entries))
+                .font(.subheadline)
+                .foregroundStyle(Palette.ink2)
+                .fixedSize(horizontal: false, vertical: true)
+        } header: {
+            HStack(alignment: .firstTextBaseline) {
+                SectionLabel(text: String(localized: "Plan de cuentas sugerido"))
+                Spacer(minLength: 8)
+                SectionLabel(text: String(localized: "\(entries.count) cuentas"))
             }
-            suggestedPlan
-            infoRow(String(localized: "Tipo de entidad")) {
-                Picker("Tipo de entidad", selection: $entityType) {
-                    ForEach(EntityType.allCases, id: \.self) { Text($0.title).tag($0) }
-                }
-                .labelsHidden()
+        } footer: {
+            Text("Podrás añadir, renombrar o archivar cuentas en Contabilidad.")
+        }
+
+        Section {
+            Picker("Tipo de entidad", selection: $entityType) {
+                ForEach(EntityType.allCases, id: \.self) { Text($0.title).tag($0) }
             }
-            .padding(.horizontal, 14)
-            .background(Palette.surface, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
         }
     }
 
-    private func kindCard(_ option: Kind) -> some View {
+    /// Tipo de negocio como fila de lista con su icono de color y la marca de selección en Tinta (en el Mac, también
+    /// cuántas cuentas trae su plan, como `AltaPaso2`).
+    private func kindRow(_ option: Kind) -> some View {
         let selected = kind == option
         return Button { kind = option } label: {
-            VStack(alignment: .leading, spacing: 10) {
-                Image(systemName: option.systemImage)
+            HStack(spacing: 12) {
+                IconTile(systemImage: option.systemImage, foreground: option.color)
+                Text(option.title).foregroundStyle(Palette.ink)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                #if os(macOS)
+                Text("\(option.sector.template.entries.count) cuentas").font(.subheadline).foregroundStyle(Palette.ink2)
+                #endif
+                Image(systemName: "checkmark")
                     .font(.body.weight(.semibold))
-                    .foregroundStyle(selected ? Palette.onBrand : Palette.ink2)
-                    .frame(width: 34, height: 34)
-                    .background(selected ? Palette.brand : Palette.surface2, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    .foregroundStyle(Palette.brand)
+                    .opacity(selected ? 1 : 0)
                     .accessibilityHidden(true)
-                Text(option.title).font(.subheadline.weight(.semibold)).foregroundStyle(Palette.ink)
-                    .multilineTextAlignment(.leading).fixedSize(horizontal: false, vertical: true)
             }
-            .padding(14)
-            .frame(maxWidth: .infinity, minHeight: 104, alignment: .topLeading)
-            .background(Palette.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(selected ? Palette.brand : Palette.separator, lineWidth: selected ? 2 : 1))
+            .frame(minHeight: Metrics.target)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(selected ? .isSelected : [])
     }
 
-    /// Cuentas propias del sector (ingresos, costos, inventario) como chips, y cuántas se crearán en total.
-    private var suggestedPlan: some View {
-        let entries = kind.sector.template.entries
+    /// Cuentas propias del sector (ingresos, costos, inventario) en una frase, y cuántas más se crearán. En el mismo
+    /// idioma con que `setUpCompany` creará las cuentas.
+    private func suggestedAccounts(_ entries: [ChartTemplate.Entry]) -> String {
         let featured = entries.filter { [.sales, .costOfGoodsSold, .inventory, .operatingExpense].contains($0.subtype) }
-            .prefix(6).map { $0.name(for: .current) }   // el mismo idioma con que `setUpCompany` creará las cuentas
-        return VStack(alignment: .leading, spacing: 10) {
-            HStack {
-                SectionLabel(text: String(localized: "Plan de cuentas sugerido"))
-                Spacer()
-                Text("\(entries.count) cuentas").font(.footnote.weight(.semibold)).foregroundStyle(Palette.brand)
-            }
-            FlowLayout(spacing: 6) {
-                ForEach(featured, id: \.self) { chip($0) }
-                if entries.count > featured.count { chip(String(localized: "+ \(entries.count - featured.count) más")) }
-            }
-        }
-        .padding(.horizontal, 16).padding(.vertical, 14)
-        .background(Palette.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(Palette.separator))
+            .prefix(6).map { $0.name(for: .current) }
+        let names = featured.joined(separator: ", ")
+        let rest = entries.count - featured.count
+        return rest > 0 ? String(localized: "\(names) y \(rest) más.") : names
     }
 
-    private func chip(_ text: String) -> some View {
-        Text(text).font(.footnote).foregroundStyle(Palette.ink2)
-            .padding(.horizontal, 10).padding(.vertical, 5)
-            .background(Palette.surface2, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+    // MARK: Barra de abajo
+
+    /// Puntos de paso (canvas: el actual en `label`, los demás al 25 %).
+    private var stepDots: some View {
+        HStack(spacing: 8) {
+            ForEach(1...2, id: \.self) { index in
+                Circle().fill(Palette.ink).opacity(index == step ? 1 : 0.25).frame(width: Self.dotSide, height: Self.dotSide)
+            }
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text("Paso \(step) de 2"))
     }
 
-    // MARK: iPad y Mac (`AltaPaso1`, `AltaPaso2`)
+    #if os(macOS)
+    private static let dotSide: CGFloat = 7
+    #else
+    private static let dotSide: CGFloat = 8
+    #endif
 
-    private var wideBody: some View {
-        GeometryReader { proxy in
-            ScrollView {
-                VStack(spacing: 20) {
-                    HStack(spacing: 10) {
-                        LogoMark(size: 34)
-                        Text("Chirogra").font(.title3.weight(.bold)).foregroundStyle(Palette.ink)
-                    }
-                    .accessibilityElement(children: .combine)
-                    VStack(alignment: .leading, spacing: 20) {
-                        HStack(spacing: 8) {
-                            ForEach(1...2, id: \.self) { index in
-                                Capsule().fill(index <= step ? Palette.brand : Palette.separator).frame(height: 5)
-                            }
-                            Text("Paso \(step) de 2").font(.footnote.weight(.semibold)).foregroundStyle(Palette.ink3).padding(.leading, 6)
-                        }
-                        .accessibilityElement(children: .combine)
-                        if step == 1 { wideCompanyStep } else { wideTypeStep }
-                        if let errorMessage { ErrorBanner(message: errorMessage) }
-                        HStack(spacing: 10) {
-                            if step == 2 {
-                                Button("Atrás") { step = 1 }
-                                    .buttonStyle(.secondary)
-                                    .fixedSize(horizontal: true, vertical: false)
-                            }
-                            Button(step == 1 ? "Continuar" : "Crear empresa") {
-                                if step == 1 { step = 2 } else { createCompany() }
-                            }
-                            .buttonStyle(.primary)
-                            .disabled(!canContinue)
-                        }
-                    }
-                    .padding(32)
-                    .frame(maxWidth: 560)
-                    .background(Palette.surface, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
-                    .shadow(color: .black.opacity(0.1), radius: 20, y: 10)
-                    if step == 1 {
-                        Button("Probar con datos de ejemplo", action: loadSample)
-                            .font(.body.weight(.semibold))
-                            .frame(minHeight: Metrics.target)
-                    }
-                }
-                .padding(.horizontal, 16).padding(.vertical, 40)
-                .frame(maxWidth: .infinity, minHeight: proxy.size.height)
+    #if os(iOS)
+    /// Barra de vidrio que flota abajo (canvas `OnbEmpresa`): puntos de paso, «Continuar» y, en el paso 1, los datos de
+    /// ejemplo para probar la app.
+    private var bottomBar: some View {
+        VStack(spacing: 12) {
+            stepDots
+            Button(step == 1 ? "Continuar" : "Usar este plan", action: advance)
+                .buttonStyle(.primary)
+                .disabled(!canContinue)
+            if step == 1 {
+                Button("Probar con datos de ejemplo", action: loadSample)
+                    .font(.body.weight(.semibold))
+                    .frame(minHeight: Metrics.target)
             }
-            .scrollDismissesKeyboard(.interactively)
         }
+        .padding(.horizontal, 12)
+        .padding(.top, 14)
+        .padding(.bottom, step == 1 ? 2 : 12)
+        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 36, style: .continuous))
+        .padding(.horizontal, 12)
+        .padding(.bottom, 4)
+        .frame(maxWidth: Self.columnWidth)
+    }
+
+    /// «Atrás» del paso 2: círculo de vidrio arriba a la izquierda (canvas `OnbTipo`).
+    private var backBar: some View {
+        HStack {
+            Button { step -= 1 } label: {
+                Image(systemName: "chevron.left").font(.title3.weight(.semibold))
+                    .frame(width: 32, height: 32)
+            }
+            .buttonStyle(.glass)
+            .buttonBorderShape(.circle)
+            .tint(Palette.ink)
+            .accessibilityLabel("Atrás")
+            Spacer()
+        }
+        .padding(.horizontal, 16)
+        .padding(.top, 4)
+        .frame(maxWidth: Self.columnWidth)
+    }
+    #else
+    /// Pie de la ventana del Mac (`AltaPaso1`, `AltaPaso2`): puntos de paso a la izquierda; «Atrás» y la acción a la
+    /// derecha, con Retorno.
+    private var macFooter: some View {
+        HStack(spacing: 12) {
+            stepDots
+            Spacer(minLength: 12)
+            if step == 1 {
+                Button("Probar con datos de ejemplo", action: loadSample).buttonStyle(.link)
+            }
+            Button("Atrás") { step -= 1 }
+                .disabled(step == 1)
+            Button(step == 1 ? "Continuar" : "Crear empresa", action: advance)
+                .buttonStyle(.primaryCompact)
+                .keyboardShortcut(.defaultAction)
+                .disabled(!canContinue)
+        }
+        .controlSize(.regular)
+        .padding(.horizontal, 24)
+        .padding(.top, 10)
+        .padding(.bottom, 22)
         .background(Palette.background)
     }
-
-    private func wideField<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(title).font(.footnote.weight(.semibold)).foregroundStyle(Palette.ink2)
-            content()
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    /// Caja de 44 pt del canvas para un valor fijo o un menú.
-    private func wideBox<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
-        content()
-            .padding(.horizontal, 12)
-            .frame(maxWidth: .infinity, minHeight: Metrics.target, alignment: .leading)
-            .background(Palette.background, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).stroke(Palette.separator))
-    }
-
-    private var wideCompanyStep: some View {
-        let columns = [GridItem(.flexible(), spacing: 14, alignment: .topLeading), GridItem(.flexible(), spacing: 14, alignment: .topLeading)]
-        return VStack(alignment: .leading, spacing: 20) {
-            VStack(alignment: .leading, spacing: 6) {
-                Text("Crea tu empresa").font(.system(.largeTitle, weight: .bold)).foregroundStyle(Palette.ink).accessibilityAddTraits(.isHeader)
-                Text("Estos datos aparecen en tus facturas. Puedes cambiarlos después en Ajustes.").foregroundStyle(Palette.ink2)
-            }
-            wideField(String(localized: "Nombre de la empresa")) {
-                wideBox { TextField("Nombre de la empresa", text: $displayName, prompt: Text("Ríos Diseño & Obra")).textFieldStyle(.plain) }
-            }
-            LazyVGrid(columns: columns, alignment: .leading, spacing: 14) {
-                wideField(String(localized: "País o región")) { wideBox { Text("Estados Unidos").foregroundStyle(Palette.ink) } }
-                wideField(String(localized: "Moneda")) { wideBox { Text("USD · Dólar").foregroundStyle(Palette.ink) } }
-                wideField(String(localized: "Estado")) {
-                    wideBox {
-                        Picker("Estado", selection: $state) {
-                            Text("Elige tu estado").tag("")
-                            ForEach(USState.all, id: \.self) { Text($0).tag($0) }
-                        }
-                        .labelsHidden().pickerStyle(.menu)
-                        .frame(maxWidth: .infinity, minHeight: Metrics.target, alignment: .leading)
-                    }
-                }
-                wideField(String(localized: "Inicio del año fiscal")) {
-                    wideBox {
-                        Picker("Inicio del año fiscal", selection: $fiscalStartMonth) {
-                            ForEach(1...12, id: \.self) { month in
-                                Text(Calendar.current.standaloneMonthSymbols[month - 1].sentenceCased).tag(month)
-                            }
-                        }
-                        .labelsHidden().pickerStyle(.menu)
-                        .frame(maxWidth: .infinity, minHeight: Metrics.target, alignment: .leading)
-                    }
-                }
-                wideField(String(localized: "Razón social")) {
-                    wideBox { TextField("Razón social", text: $legalName, prompt: Text("Opcional")).textFieldStyle(.plain) }
-                }
-                wideField(String(localized: "ID fiscal (EIN)")) {
-                    wideBox { TextField("ID fiscal (EIN)", text: $ein, prompt: Text("Opcional")).textFieldStyle(.plain) }
-                }
-            }
-            Text("La moneda base queda fija cuando registras la primera transacción. El estado decide el sales tax que cobras; es obligatorio.")
-                .font(.footnote).foregroundStyle(Palette.ink3)
-        }
-    }
-
-    private var wideTypeStep: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            VStack(alignment: .leading, spacing: 6) {
-                Text("¿A qué se dedica tu negocio?").font(.system(.largeTitle, weight: .bold)).foregroundStyle(Palette.ink)
-                    .accessibilityAddTraits(.isHeader)
-                Text("Te preparamos un plan de cuentas listo para usar. Puedes editarlo cuando quieras.").foregroundStyle(Palette.ink2)
-            }
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 3), spacing: 10) {
-                ForEach(Kind.allCases) { option in kindCard(option) }
-            }
-            suggestedPlan
-            wideField(String(localized: "Tipo de entidad")) {
-                wideBox {
-                    Picker("Tipo de entidad", selection: $entityType) {
-                        ForEach(EntityType.allCases, id: \.self) { Text($0.title).tag($0) }
-                    }
-                    .labelsHidden().pickerStyle(.menu)
-                    .frame(maxWidth: .infinity, minHeight: Metrics.target, alignment: .leading)
-                }
-            }
-        }
-    }
+    #endif
 
     // MARK: Acciones
 

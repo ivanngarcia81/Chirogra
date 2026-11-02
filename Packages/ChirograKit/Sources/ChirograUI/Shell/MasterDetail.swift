@@ -155,8 +155,9 @@ private struct ModelLookup<Model: PersistentModel, Content: View>: View {
 
 // MARK: - Piezas comunes
 
-/// Filtro de la columna maestro, encima de la lista. Con tamaños de accesibilidad o más de tres opciones, chips que
-/// pasan de línea: el segmentado no crece con el texto.
+/// Filtro de la columna maestro, encima de la lista: el segmentado del sistema con hasta tres opciones (canvas
+/// `iPadVentas`: «Abiertas · Vencidas · Todas»); con más opciones o con tamaños de accesibilidad, que no caben en el
+/// segmentado de la columna, un menú con la opción elegida y la cuenta de cada una.
 private struct MasterFilterBar<Option: Hashable & Identifiable & RawRepresentable>: View where Option.RawValue == String {
     let options: [Option]
     @Binding var selection: Option
@@ -165,20 +166,25 @@ private struct MasterFilterBar<Option: Hashable & Identifiable & RawRepresentabl
 
     var body: some View {
         Group {
-            // Más de tres opciones no caben en un segmentado de 300 pt: chips.
-            if dynamicTypeSize.isAccessibilitySize || options.count > 3 {
-                FlowLayout(spacing: 6) {
-                    ForEach(options) { option in
-                        FilterChip(title: option.localizedTitle, count: count?(option), isSelected: selection == option) { selection = option }
-                    }
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-            } else {
+            if options.count <= 3 && !dynamicTypeSize.isAccessibilitySize {
                 Picker("Filtrar", selection: $selection) {
                     ForEach(options) { Text($0.localizedTitle).tag($0) }
                 }
                 .pickerStyle(.segmented)
                 .labelsHidden()
+            } else {
+                HStack(spacing: 8) {
+                    Text("Mostrar").foregroundStyle(Palette.ink2)
+                    Spacer(minLength: 8)
+                    Picker("Filtrar", selection: $selection) {
+                        ForEach(options) { option in
+                            if let count { Text(verbatim: "\(option.localizedTitle) (\(count(option)))").tag(option) } else { Text(option.localizedTitle).tag(option) }
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .labelsHidden()
+                }
+                .frame(minHeight: Metrics.target)
             }
         }
         .padding(.horizontal, 16)
@@ -198,8 +204,8 @@ private struct MasterListStyle: ViewModifier {
             .scrollContentBackground(.hidden)
             .background(Palette.surface)
             #if os(iOS)
-            // Si el sistema pinta la selección, en el mismo lavado que `masterRow` y no en el color de marca.
-            .tint(Palette.brandWash)
+            // Si el sistema pinta la selección, en el mismo relleno de Tinta que `masterRow`.
+            .tint(Palette.brandFill)
             #endif
             .navigationTitle(title)
             .masterTitle()
@@ -207,9 +213,70 @@ private struct MasterListStyle: ViewModifier {
     }
 }
 
-/// Fila compacta de la columna maestro (como la lista de `iPadVentas`): nombre e importe arriba; detalle y estado
-/// abajo. Cabe en los 300 pt de la columna sin recortar el nombre a las pocas letras; con tamaños de accesibilidad,
-/// todo en columna.
+extension EnvironmentValues {
+    /// La fila de la columna maestro es la elegida: va sobre el relleno de Tinta y todo su texto pasa a blanco.
+    @Entry var isMasterRowSelected = false
+}
+
+/// Colores de una fila de la columna maestro, en blanco si es la elegida (decisión del usuario del 2-nov: relleno de
+/// Tinta con texto blanco, como `iPadVentas`). El blanco sobre `brandFill` da 7,5:1 en claro y 5,4:1 en oscuro; el
+/// secundario al 92 %, 4,7:1 en oscuro (AA). El del canvas (80 %) quedaba en ~4:1 en oscuro.
+private struct MasterRowColors {
+    let isSelected: Bool
+    var primary: Color { isSelected ? Palette.onBrandFill : Palette.ink }
+    var secondary: Color { isSelected ? Palette.onBrandFill.opacity(0.92) : Palette.ink2 }
+    func amount(_ color: Color) -> Color { isSelected ? Palette.onBrandFill : color }
+
+    /// Detalle de la fila: 13 pt en iPhone e iPad, 11 en el Mac (`.footnote` del Mac son 10).
+    static var detailFont: Font {
+        #if os(macOS)
+        .subheadline
+        #else
+        .footnote
+        #endif
+    }
+}
+
+/// Estado de una fila maestro: el de su chip, o en blanco (punto y texto) sobre la fila elegida.
+private struct MasterStatus: View {
+    let chip: StatusChip
+    @Environment(\.isMasterRowSelected) private var isSelected
+
+    var body: some View {
+        if isSelected {
+            StatusChip(text: chip.text, foreground: Palette.onBrandFill, background: .clear, compact: true, dot: Palette.onBrandFill)
+        } else {
+            chip
+        }
+    }
+}
+
+/// Símbolo pequeño de una fila maestro (clip del recibo, tipo de cuenta), gris o blanco en la elegida.
+private struct MasterSymbol: View {
+    let systemImage: String
+    let label: LocalizedStringKey?
+    @Environment(\.isMasterRowSelected) private var isSelected
+
+    var body: some View {
+        let image = Image(systemName: systemImage)
+            .font(MasterRowColors.detailFont)
+            .foregroundStyle(MasterRowColors(isSelected: isSelected).secondary)
+        if let label { image.accessibilityLabel(Text(label)) } else { image.accessibilityHidden(true) }
+    }
+}
+
+/// Dato corto de una fila maestro sin estado («1099»), en el gris del detalle o en blanco.
+private struct MasterDetailText: View {
+    let text: String
+    @Environment(\.isMasterRowSelected) private var isSelected
+
+    var body: some View {
+        Text(text).font(MasterRowColors.detailFont).foregroundStyle(MasterRowColors(isSelected: isSelected).secondary)
+    }
+}
+
+/// Fila de la columna maestro (canvas `iPadVentas`): nombre e importe en `.body` arriba; detalle y estado en `.footnote`
+/// abajo. El nombre pasa a una segunda línea antes que recortarse; con tamaños de accesibilidad, todo en columna.
 private struct MasterRow<Badge: View>: View {
     let title: String
     let amount: String
@@ -217,35 +284,68 @@ private struct MasterRow<Badge: View>: View {
     var amountColor = Palette.ink
     @ViewBuilder var badge: Badge
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.isMasterRowSelected) private var isSelected
 
     var body: some View {
+        let colors = MasterRowColors(isSelected: isSelected)
         Group {
             if dynamicTypeSize.isAccessibilitySize {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(title).font(.subheadline.weight(.semibold))
-                    Text(amount).font(.subheadline.weight(.semibold)).monospacedDigit().foregroundStyle(amountColor)
-                    Text(subtitle).font(.caption).foregroundStyle(Palette.ink3)
+                    Text(title)
+                    Text(amount).monospacedDigit().foregroundStyle(colors.amount(amountColor))
+                    Text(subtitle).font(MasterRowColors.detailFont).foregroundStyle(colors.secondary)
                     badge
                 }
             } else {
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack(alignment: .firstTextBaseline) {
-                        Text(title).font(.subheadline.weight(.semibold)).lineLimit(1)
+                VStack(alignment: .leading, spacing: 2) {
+                    HStack(alignment: .firstTextBaseline, spacing: 10) {
+                        Text(title).lineLimit(2)
                         Spacer(minLength: 8)
-                        Text(amount).font(.subheadline.weight(.semibold)).monospacedDigit().foregroundStyle(amountColor).fixedSize()
+                        Text(amount).monospacedDigit().foregroundStyle(colors.amount(amountColor)).fixedSize()
                     }
-                    HStack {
-                        Text(subtitle).font(.caption).foregroundStyle(Palette.ink3).lineLimit(1)
+                    HStack(alignment: .firstTextBaseline, spacing: 8) {
+                        Text(subtitle).font(MasterRowColors.detailFont).foregroundStyle(colors.secondary).lineLimit(1)
                         Spacer(minLength: 8)
                         badge
                     }
                 }
             }
         }
-        .foregroundStyle(Palette.ink)
-        .padding(.vertical, 4)
+        .font(.body)
+        .foregroundStyle(colors.primary)
+        #if os(macOS)
+        .padding(.vertical, 3)
+        #else
+        .padding(.vertical, 6)
+        #endif
         .accessibilityElement(children: .combine)
     }
+}
+
+/// Fondo de una fila maestro: la superficie de la columna o, en la elegida, una cápsula redondeada de Tinta con margen,
+/// como la del canvas (radio 12 en el iPad; 6 en el Mac, como las listas de origen del sistema).
+private struct MasterRowBackground: View {
+    let isSelected: Bool
+
+    var body: some View {
+        ZStack {
+            Palette.surface
+            if isSelected {
+                RoundedRectangle(cornerRadius: Self.radius, style: .continuous)
+                    .fill(Palette.brandFill)
+                    .padding(.horizontal, Self.inset)
+                    .padding(.vertical, 1)
+            }
+        }
+    }
+
+    #if os(macOS)
+    private static let radius: CGFloat = 6
+    private static let inset: CGFloat = 6
+    #else
+    private static let radius: CGFloat = 12
+    private static let inset: CGFloat = 8
+    #endif
 }
 
 private extension View {
@@ -260,10 +360,14 @@ private extension View {
         #endif
     }
 
-    /// Fila de la columna maestro con su selección: fondo lavado de marca y texto en sus colores (AA en claro y en
-    /// oscuro). Con el relleno de marca del sistema, el texto quedaba en ~2,5:1 y la línea de abajo en ~1,2:1.
+    /// Fila de la columna maestro con su selección: la elegida, rellena de Tinta con todo el texto en blanco (decisión
+    /// del usuario del 2-nov, como el canvas). Las filas leen `isMasterRowSelected` para cambiar sus colores.
     func masterRow(_ id: UUID, selection: UUID?) -> some View {
-        tag(id).listRowBackground(id == selection ? Palette.brandWash : Palette.surface)
+        let isSelected = id == selection
+        return tag(id)
+            .environment(\.isMasterRowSelected, isSelected)
+            .listRowBackground(MasterRowBackground(isSelected: isSelected))
+            .listRowSeparator(isSelected ? .hidden : .automatic)
     }
 
     /// Filtro de la columna, fijo encima de la lista con fondo opaco. Con `safeAreaBar` formaba parte de la barra y
@@ -278,7 +382,8 @@ private extension View {
 
     /// Botón «+» de la columna: icono y texto, en el vidrio de la barra (§7.4). Sin `title`, solo «+» con su etiqueta
     /// de accesibilidad: en el iPad el título de la columna comparte la fila con el botón, y un texto largo («+ Factura
-    /// de proveedor») ocupaba la fila y el sistema ocultaba el título.
+    /// de proveedor») ocupaba la fila y el sistema ocultaba el título. El canvas lo rellena de Tinta («+ Factura»); se
+    /// queda en vidrio sin relleno, como el botón principal (decisión del usuario del 2-nov).
     func masterAddButton(_ title: String?, label: String, action: @escaping () -> Void) -> some View {
         toolbar {
             ToolbarItem(placement: .primaryAction) {
@@ -330,12 +435,12 @@ private struct InvoiceMasterList: View {
                 MasterRow(title: invoice.customer?.name ?? String(localized: "Sin cliente"),
                           amount: (invoice.isOpen ? invoice.balanceDue : invoice.status == .draft ? invoice.draftAmount : invoice.total).money,
                           subtitle: "\(invoice.number.isEmpty ? String(localized: "Borrador") : invoice.number) · \(invoice.dueDate.dueLabel)") {
-                    StatusChip(invoice: invoice)
+                    MasterStatus(chip: StatusChip(invoice: invoice))
                 }
                 .masterRow(invoice.id, selection: selection)
             }
             if filtered.isEmpty {
-                Text("Ninguna factura coincide").font(.subheadline).foregroundStyle(Palette.ink3)
+                Text("Ninguna factura coincide").font(.subheadline).foregroundStyle(Palette.ink2)
                     .frame(maxWidth: .infinity).listRowSeparator(.hidden).listRowBackground(Palette.surface)
             }
         }
@@ -376,16 +481,18 @@ private struct CustomerMasterList: View {
                 MasterRow(title: customer.name, amount: customer.openBalance.money,
                           subtitle: customer.email.isEmpty ? customer.phone : customer.email) {
                     if late > 0 {
-                        StatusChip(text: String(localized: "Vencido"), foreground: Palette.negative, background: Palette.negativeWash)
+                        MasterStatus(chip: StatusChip(text: String(localized: "Vencido"), foreground: Palette.negative, background: .clear,
+                                                      compact: true, dot: Palette.red))
                     } else if customer.openBalance > 0 {
-                        StatusChip(text: String(localized: "Al día"), foreground: Palette.positive, background: Palette.positiveWash)
+                        MasterStatus(chip: StatusChip(text: String(localized: "Al día"), foreground: Palette.positive, background: .clear,
+                                                      compact: true, dot: Palette.green))
                     }
                 }
                 .masterRow(customer.id, selection: selection)
             }
             if filtered.isEmpty {
                 Text(customers.isEmpty ? String(localized: "Sin clientes todavía") : String(localized: "Ningún cliente coincide con «\(query)»."))
-                    .font(.subheadline).foregroundStyle(Palette.ink3).frame(maxWidth: .infinity).listRowSeparator(.hidden).listRowBackground(Palette.surface)
+                    .font(.subheadline).foregroundStyle(Palette.ink2).frame(maxWidth: .infinity).listRowSeparator(.hidden).listRowBackground(Palette.surface)
             }
         }
         .masterList(String(localized: "Clientes"), query: $query, prompt: "Nombre, correo o teléfono")
@@ -421,17 +528,16 @@ private struct ExpenseMasterList: View {
         List(selection: $selection) {
             ForEach(filtered) { expense in
                 MasterRow(title: expense.payee, amount: "−\(expense.total.money)",
-                          subtitle: "\(category(expense)?.name ?? String(localized: "Sin categoría")) · \(expense.date.dayMonth)",
-                          amountColor: Palette.outflow) {
+                          subtitle: "\(category(expense)?.name ?? String(localized: "Sin categoría")) · \(expense.date.dayMonth)") {
                     if !(expense.attachments ?? []).isEmpty {
-                        Image(systemName: "paperclip").font(.caption).foregroundStyle(Palette.ink3).accessibilityLabel("Recibo adjunto")
+                        MasterSymbol(systemImage: "paperclip", label: "Recibo adjunto")
                     }
                 }
                 .masterRow(expense.id, selection: selection)
             }
             if filtered.isEmpty {
                 Text(expenses.isEmpty ? String(localized: "Sin gastos todavía") : String(localized: "Ningún gasto coincide"))
-                    .font(.subheadline).foregroundStyle(Palette.ink3).frame(maxWidth: .infinity).listRowSeparator(.hidden).listRowBackground(Palette.surface)
+                    .font(.subheadline).foregroundStyle(Palette.ink2).frame(maxWidth: .infinity).listRowSeparator(.hidden).listRowBackground(Palette.surface)
             }
         }
         .masterList(String(localized: "Gastos"), query: $query, prompt: "Beneficiario, categoría o monto")
@@ -469,15 +575,13 @@ private struct VendorMasterList: View {
             ForEach(filtered) { vendor in
                 MasterRow(title: vendor.name, amount: vendor.openBalance.money,
                           subtitle: vendor.email.isEmpty ? String(localized: "Proveedor") : vendor.email) {
-                    if vendor.is1099 {
-                        StatusChip(text: "1099", foreground: Palette.ink2, background: Palette.surface2)
-                    }
+                    if vendor.is1099 { MasterDetailText(text: "1099") }
                 }
                 .masterRow(vendor.id, selection: selection)
             }
             if filtered.isEmpty {
                 Text(vendors.isEmpty ? String(localized: "Sin proveedores") : String(localized: "Ningún proveedor coincide"))
-                    .font(.subheadline).foregroundStyle(Palette.ink3).frame(maxWidth: .infinity).listRowSeparator(.hidden).listRowBackground(Palette.surface)
+                    .font(.subheadline).foregroundStyle(Palette.ink2).frame(maxWidth: .infinity).listRowSeparator(.hidden).listRowBackground(Palette.surface)
             }
         }
         .masterList(String(localized: "Proveedores"), query: $query, prompt: "Nombre o correo")
@@ -514,13 +618,13 @@ private struct BillMasterList: View {
             ForEach(filtered) { bill in
                 MasterRow(title: bill.vendor?.name ?? String(localized: "Proveedor"), amount: bill.balanceDue.money,
                           subtitle: bill.vendorNumber.isEmpty ? bill.dueDate.dueLabel : "\(bill.vendorNumber) · \(bill.dueDate.dueLabel)") {
-                    StatusChip(bill: bill)
+                    MasterStatus(chip: StatusChip(bill: bill))
                 }
                 .masterRow(bill.id, selection: selection)
             }
             if filtered.isEmpty {
                 Text(bills.isEmpty ? String(localized: "Sin facturas por pagar") : String(localized: "Ninguna factura coincide"))
-                    .font(.subheadline).foregroundStyle(Palette.ink3).frame(maxWidth: .infinity).listRowSeparator(.hidden).listRowBackground(Palette.surface)
+                    .font(.subheadline).foregroundStyle(Palette.ink2).frame(maxWidth: .infinity).listRowSeparator(.hidden).listRowBackground(Palette.surface)
             }
         }
         .masterList(String(localized: "Facturas por pagar"), query: $query, prompt: "Proveedor, número o monto")
@@ -550,15 +654,14 @@ private struct BankingMasterList: View {
             ForEach(shown) { account in
                 MasterRow(title: account.name, amount: ledger.cashBalance(of: account).money,
                           subtitle: String(localized: "Saldo en libros · \(account.code)")) {
-                    Image(systemName: account.subtype == .creditCard ? "creditcard" : "building.columns")
-                        .font(.caption).foregroundStyle(Palette.ink3).accessibilityHidden(true)
+                    MasterSymbol(systemImage: account.subtype == .creditCard ? "creditcard" : "building.columns", label: nil)
                 }
                 .masterRow(account.id, selection: selection)
             }
             Section {
                 Label("Importar y conciliar · Próximamente", systemImage: "square.and.arrow.down")
                     .font(.footnote.weight(.semibold))
-                    .foregroundStyle(Palette.ink3)
+                    .foregroundStyle(Palette.ink2)
                     .accessibilityLabel("Importar y conciliar, disponible en una próxima versión")
                     .selectionDisabled()
                     .listRowBackground(Palette.surface)
@@ -568,7 +671,7 @@ private struct BankingMasterList: View {
         .scrollContentBackground(.hidden)
         .background(Palette.surface)
         #if os(iOS)
-        .tint(Palette.brandWash)
+        .tint(Palette.brandFill)
         #endif
         .navigationTitle("Banca")
         .masterTitle()
@@ -616,20 +719,22 @@ private struct JournalMasterList: View {
                           amount: entry.totalDebits.money,
                           subtitle: "#\(entry.number) · \(entry.date.shortDate) · \(entry.source.title)") {
                     if entry.isReversed || entry.reversesEntryID != nil {
-                        StatusChip(text: entry.isReversed ? String(localized: "Revertido") : String(localized: "Reversión"),
-                                   foreground: Palette.ink3, background: Palette.surface2)
+                        MasterStatus(chip: StatusChip(text: entry.isReversed ? String(localized: "Revertido") : String(localized: "Reversión"),
+                                                      foreground: Palette.ink2, background: .clear, compact: true, dot: Palette.gray))
                     }
                 }
                 .masterRow(entry.id, selection: selection)
             }
             if filtered.isEmpty {
                 Text(entries.isEmpty ? String(localized: "Sin asientos") : String(localized: "Ningún asiento coincide"))
-                    .font(.subheadline).foregroundStyle(Palette.ink3).frame(maxWidth: .infinity).listRowSeparator(.hidden).listRowBackground(Palette.surface)
+                    .font(.subheadline).foregroundStyle(Palette.ink2).frame(maxWidth: .infinity).listRowSeparator(.hidden).listRowBackground(Palette.surface)
             }
         }
         .masterList(String(localized: "Asientos de diario"), query: $query, prompt: "Concepto, número o monto")
         .masterAddButton(String(localized: "Asiento"), label: String(localized: "Nuevo asiento")) { creating = true }
-        .sheet(isPresented: $creating) { NavigationStack { JournalEntryEditorView() }.presentationSizing(.page) }
+        // El editor del asiento cabe en la hoja de 760 pt: en el iPad usa su tabla de líneas sin el plan de cuentas de
+        // consulta (que solo sale desde 1000 pt), igual que con la hoja de página de antes.
+        .sheet(isPresented: $creating) { NavigationStack { JournalEntryEditorView() }.editorSheetSizing() }
     }
 }
 
@@ -650,23 +755,13 @@ private struct ChartMasterList: View {
                 if !rows.isEmpty {
                     Section(heading: type.title) {
                         ForEach(rows) { account in
-                            HStack {
-                                Text(account.code).foregroundStyle(Palette.ink3).frame(minWidth: codeWidth, alignment: .leading)
-                                // Una línea por dato: en una columna estrecha (Mac de 1000 pt) el importe se partía.
-                                VStack(alignment: .leading, spacing: 1) {
-                                    Text(account.name).strikethrough(account.isArchived).foregroundStyle(Palette.ink).lineLimit(1)
-                                    Text(account.subtype.title).font(.caption).foregroundStyle(Palette.ink3).lineLimit(1)
+                            ChartMasterRow(account: account, balance: ledger.balance(of: account).money, codeWidth: codeWidth)
+                                .masterRow(account.id, selection: selection)
+                                .contextMenu {
+                                    if !account.isSystem {
+                                        Button(account.isArchived ? "Restaurar" : "Archivar") { account.isArchived.toggle() }
+                                    }
                                 }
-                                Spacer(minLength: 8)
-                                Text(ledger.balance(of: account).money).monospacedDigit().foregroundStyle(Palette.ink2).fixedSize()
-                            }
-                            .accessibilityElement(children: .combine)
-                            .masterRow(account.id, selection: selection)
-                            .contextMenu {
-                                if !account.isSystem {
-                                    Button(account.isArchived ? "Restaurar" : "Archivar") { account.isArchived.toggle() }
-                                }
-                            }
                         }
                     }
                 }
@@ -674,10 +769,52 @@ private struct ChartMasterList: View {
         }
         .masterList(String(localized: "Plan de cuentas"), query: $query, prompt: "Código o nombre")
         .toolbar {
-            ToolbarItem(placement: .secondaryAction) { Toggle("Archivadas", isOn: $showArchived).headerButton() }
+            ToolbarItem(placement: .secondaryAction) {
+                Toggle(isOn: $showArchived) { Label("Archivadas", systemImage: "archivebox") }.headerButton()
+            }
         }
         .masterAddButton(nil, label: String(localized: "Nueva cuenta")) { creating = true }
-        .sheet(isPresented: $creating) { NavigationStack { AccountEditorView() } }
+        .sheet(isPresented: $creating) { NavigationStack { AccountEditorView() }.editorSheetSizing() }
+    }
+}
+
+/// Fila del plan de cuentas en la columna maestro: código, nombre (hasta dos líneas: en la columna del iPad en vertical
+/// «Accumulated Depreciation» y «Accounts Receivable» se cortaban), tipo debajo y saldo a la derecha.
+private struct ChartMasterRow: View {
+    let account: Account
+    let balance: String
+    let codeWidth: CGFloat
+    @Environment(\.isMasterRowSelected) private var isSelected
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    var body: some View {
+        let colors = MasterRowColors(isSelected: isSelected)
+        Group {
+            if dynamicTypeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(account.code).foregroundStyle(colors.secondary)
+                    name(colors)
+                    Text(balance).monospacedDigit().foregroundStyle(colors.secondary)
+                }
+            } else {
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    Text(account.code).foregroundStyle(colors.secondary).frame(minWidth: codeWidth, alignment: .leading)
+                    name(colors)
+                    Spacer(minLength: 8)
+                    Text(balance).monospacedDigit().foregroundStyle(colors.secondary).fixedSize()
+                }
+            }
+        }
+        .font(.body)
+        .padding(.vertical, 2)
+        .accessibilityElement(children: .combine)
+    }
+
+    private func name(_ colors: MasterRowColors) -> some View {
+        VStack(alignment: .leading, spacing: 1) {
+            Text(account.name).strikethrough(account.isArchived).foregroundStyle(colors.primary).lineLimit(2)
+            Text(account.subtype.title).font(MasterRowColors.detailFont).foregroundStyle(colors.secondary).lineLimit(1)
+        }
     }
 }
 
@@ -692,24 +829,34 @@ struct BillDetailView: View {
 
     var body: some View {
         List {
+            // Cabecera como la factura del canvas (`iPadVentas`, `FacturaDetalle`): proveedor y número, saldo de 40 pt y
+            // el estado con el vencimiento debajo; «Registrar pago» como botón principal.
             Section {
-                VStack(alignment: .leading, spacing: 6) {
-                    HStack(alignment: .firstTextBaseline) {
-                        Text(bill.vendor?.name ?? String(localized: "Proveedor")).font(.title3.weight(.semibold))
-                        Spacer(minLength: 8)
-                        StatusChip(bill: bill)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(bill.vendorNumber.isEmpty ? (bill.vendor?.name ?? String(localized: "Proveedor"))
+                                                   : "\(bill.vendor?.name ?? String(localized: "Proveedor")) · \(bill.vendorNumber)")
+                        .font(.subheadline).foregroundStyle(Palette.ink2)
+                    Text(bill.balanceDue.money).font(.amount(40)).foregroundStyle(Palette.ink)
+                        .lineLimit(1).minimumScaleFactor(0.6)
+                    HStack(alignment: .firstTextBaseline, spacing: 6) {
+                        StatusChip(bill: bill, compact: false)
+                        Text(verbatim: "· " + (bill.isOpen ? String(localized: "Saldo por pagar · \(bill.dueDate.dueLabel)")
+                                                          : String(localized: "Total \(bill.total.money)")))
+                            .font(.subheadline).foregroundStyle(bill.isOverdue ? Palette.negative : Palette.ink2)
                     }
-                    Text(bill.balanceDue.money).font(.amount(28)).foregroundStyle(Palette.ink)
-                    Text(bill.isOpen ? String(localized: "Saldo por pagar · \(bill.dueDate.dueLabel)") : String(localized: "Total \(bill.total.money)"))
-                        .font(.subheadline).foregroundStyle(bill.isOverdue ? Palette.negative : Palette.ink2)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .accessibilityElement(children: .combine)
+                .listRowInsets(EdgeInsets(top: 4, leading: 8, bottom: 4, trailing: 8))
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
                 if bill.isOpen {
                     Button("Registrar pago") { paying = true }.buttonStyle(.primary)
-                        .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 12, trailing: 16))
+                        .listRowInsets(EdgeInsets(top: 12, leading: 0, bottom: 4, trailing: 0))
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
                 }
             }
-            .listRowBackground(Palette.surface)
 
             Section("Factura") {
                 LabeledContent("Número", value: bill.vendorNumber.isEmpty ? "—" : bill.vendorNumber)
@@ -749,7 +896,7 @@ struct BillDetailView: View {
         .screenBackground()
         .navigationTitle(bill.vendorNumber.isEmpty ? String(localized: "Factura por pagar") : bill.vendorNumber)
         .inlineTitle()
-        .sheet(isPresented: $paying) { NavigationStack { PayBillView(bill: bill) } }
+        .sheet(isPresented: $paying) { NavigationStack { PayBillView(bill: bill) }.editorSheetSizing() }
     }
 }
 

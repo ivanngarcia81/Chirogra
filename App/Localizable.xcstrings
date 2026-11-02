@@ -108,6 +108,16 @@
         }
       }
     },
+    "%@ y %lld más." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ and %lld more."
+          }
+        }
+      }
+    },
     "%@ · %@" : {
       "shouldTranslate" : false
     },
@@ -868,6 +878,16 @@
         }
       }
     },
+    "Abierta" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Expanded"
+          }
+        }
+      }
+    },
     "Abiertas" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -875,6 +895,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Open"
+          }
+        }
+      }
+    },
+    "Abre el perfil de la empresa" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens the company profile"
           }
         }
       }
@@ -1672,6 +1702,16 @@
         }
       }
     },
+    "Calle, ciudad y código postal" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Street, city, and ZIP code"
+          }
+        }
+      }
+    },
     "Cambios pendientes" : {
       "localizations" : {
         "en" : {
@@ -1758,6 +1798,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Default category: %@"
+          }
+        }
+      }
+    },
+    "Cerrada" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Collapsed"
           }
         }
       }
@@ -2211,6 +2261,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Exportable backup"
+          }
+        }
+      }
+    },
+    "Copias de seguridad" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Backups"
           }
         }
       }
@@ -3418,6 +3478,16 @@
         }
       }
     },
+    "Estos datos aparecen en el encabezado de tus facturas." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This information appears in the header of your invoices."
+          }
+        }
+      }
+    },
     "Estos datos aparecen en tus facturas. Puedes cambiarlos cuando quieras en Ajustes." : {
       "localizations" : {
         "en" : {
@@ -3851,6 +3921,16 @@
         }
       }
     },
+    "Formato de fecha" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Date format"
+          }
+        }
+      }
+    },
     "Formulario 1099" : {
       "localizations" : {
         "en" : {
@@ -4238,6 +4318,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "INCOME"
+          }
+        }
+      }
+    },
+    "Identidad" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Identity"
+          }
+        }
+      }
+    },
+    "Idioma" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Language"
           }
         }
       }
@@ -4672,6 +4772,16 @@
         }
       }
     },
+    "Libros" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Books"
+          }
+        }
+      }
+    },
     "Libros abiertos" : {
       "localizations" : {
         "en" : {
@@ -4853,6 +4963,16 @@
         }
       }
     },
+    "Moneda base" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Base currency"
+          }
+        }
+      }
+    },
     "Moneda y formatos" : {
       "localizations" : {
         "en" : {
@@ -4869,6 +4989,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Amount"
+          }
+        }
+      }
+    },
+    "Mostrar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show"
           }
         }
       }
@@ -4989,6 +5119,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nothing due in the next two weeks."
+          }
+        }
+      }
+    },
+    "Negocio" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Business"
           }
         }
       }
@@ -5170,6 +5310,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No open invoices."
+          }
+        }
+      }
+    },
+    "No pudimos sincronizar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "We couldn’t sync"
           }
         }
       }
@@ -5623,6 +5773,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Number or name"
+          }
+        }
+      }
+    },
+    "Obligatorio" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Required"
           }
         }
       }
@@ -6220,6 +6380,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Payment terms"
+          }
+        }
+      }
+    },
+    "Podrás añadir, renombrar o archivar cuentas en Contabilidad." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You can add, rename, or archive accounts in Accounting."
           }
         }
       }
@@ -7444,6 +7614,16 @@
         }
       }
     },
+    "Separadores" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Separators"
+          }
+        }
+      }
+    },
     "Serie" : {
       "localizations" : {
         "en" : {
@@ -7570,6 +7750,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No purchases yet"
+          }
+        }
+      }
+    },
+    "Sin conexión" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Offline"
           }
         }
       }
@@ -8168,6 +8358,16 @@
         }
       }
     },
+    "Tipo de negocio" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Type of business"
+          }
+        }
+      }
+    },
     "Tipo de pago" : {
       "localizations" : {
         "en" : {
@@ -8497,6 +8697,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Your changes are safe on this device. Check your iCloud sign-in in System Settings."
+          }
+        }
+      }
+    },
+    "Tus cambios se guardan en este dispositivo y se sincronizan después." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your changes are saved on this device and will sync later."
           }
         }
       }

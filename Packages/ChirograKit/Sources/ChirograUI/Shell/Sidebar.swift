@@ -73,14 +73,17 @@ enum SidebarItem: Hashable {
     }
 }
 
-/// Barra lateral de iPad y Mac (canvas `Sidebar`): logotipo, búsqueda, secciones con la activa en índigo lavado,
-/// «MÁS», un grupo con las subsecciones de la sección activa y la empresa al pie con el estado de iCloud.
+/// Barra lateral de iPad y Mac (canvas `Sidebar`): búsqueda, grupos «Negocio» y «Libros» con los iconos en Tinta, las
+/// subsecciones de la sección abierta sangradas debajo de ella, y la empresa al pie con el estado de iCloud.
+/// iPad: título «Chirogra» de 28 bold, filas de 46 pt y la elegida rellena de Tinta con texto blanco. Mac: filas de
+/// 28 pt sobre el material del sistema y la elegida en el gris de relleno (`fill2`), como las barras del sistema.
 struct Sidebar: View {
     @Binding var selection: SidebarItem
     @Binding var query: String
     @Query private var companies: [Company]
     @AppStorage("iCloudSyncEnabled") private var iCloudSyncEnabled = false
     @State private var sync = SyncMonitor.shared
+    @ScaledMetric(relativeTo: .body) private var iconWidth: CGFloat = Self.iconSide
 
     /// Estado de iCloud al pie: sincronizando, sin conexión o sincronizado (`MacCargando`, `MacError`).
     private var syncText: String {
@@ -92,41 +95,37 @@ struct Sidebar: View {
         }
     }
 
+    private var syncSymbol: String {
+        guard iCloudSyncEnabled || SyncMonitor.forced != nil else { return "iphone" }
+        return sync.isFailed ? "icloud.slash" : "icloud"
+    }
+
     private var syncColor: Color {
-        guard iCloudSyncEnabled || SyncMonitor.forced != nil else { return Palette.ink3 }
-        switch sync.state {
-        case .syncing: return Palette.brand
-        case .failed: return Palette.negative
-        case .off, .synced: return Palette.positive
-        }
+        guard iCloudSyncEnabled || SyncMonitor.forced != nil else { return Palette.ink2 }
+        return sync.isFailed ? Palette.warning : Palette.ink2
     }
     @FocusState private var searching: Bool
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 2) {
-                HStack(spacing: 10) {
-                    LogoMark(size: 28)
-                    Text("Chirogra").font(.headline).foregroundStyle(Palette.ink).lineLimit(1)
-                }
-                .padding(.horizontal, 8)
-                .padding(.bottom, 12)
-                .accessibilityAddTraits(.isHeader)
+            VStack(alignment: .leading, spacing: 1) {
+                #if os(iOS)
+                Text("Chirogra")
+                    .font(.title.bold())
+                    .foregroundStyle(Palette.ink)
+                    .lineLimit(1)
+                    .padding(.horizontal, 6)
+                    .padding(.top, 4)
+                    .padding(.bottom, 8)
+                    .accessibilityAddTraits(.isHeader)
+                #endif
 
-                searchField.padding(.bottom, 10)
+                searchField.padding(.bottom, 4)
 
-                ForEach(AppSection.primary) { section in sectionRow(section) }
-
-                groupHeader(String(localized: "Más"))
-                ForEach(AppSection.more) { section in sectionRow(section) }
-
-                let subsections = SidebarItem.subsections(of: selection.section)
-                if !subsections.isEmpty {
-                    groupHeader(selection.section.title)
-                    ForEach(subsections, id: \.item) { subRow($0.title, item: $0.item) }
-                }
+                group(String(localized: "Negocio"), sections: AppSection.business)
+                group(String(localized: "Libros"), sections: AppSection.books)
             }
-            .padding(.horizontal, 12)
+            .padding(.horizontal, Self.panelPadding)
             .padding(.vertical, 8)
         }
         .scrollIndicators(.never)
@@ -142,19 +141,29 @@ struct Sidebar: View {
         }
     }
 
-    private func groupHeader(_ title: String) -> some View {
-        SectionLabel(text: title)
+    @ViewBuilder
+    private func group(_ title: String, sections: [AppSection]) -> some View {
+        Text(title)
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(Palette.ink2)
             .padding(.horizontal, 10)
-            .padding(.top, 16)
+            .padding(.top, Self.groupTopPadding)
             .padding(.bottom, 4)
             .accessibilityAddTraits(.isHeader)
+        ForEach(sections) { section in
+            sectionRow(section)
+            // Las subsecciones de la sección abierta, debajo de ella (canvas: sangradas a 48 pt en el iPad y 34 en el Mac).
+            if selection.section == section {
+                ForEach(SidebarItem.subsections(of: section), id: \.item) { subRow($0.title, item: $0.item) }
+            }
+        }
     }
 
     // MARK: Búsqueda
 
     private var searchField: some View {
-        HStack(spacing: 8) {
-            Image(systemName: "magnifyingglass").foregroundStyle(Palette.ink3).accessibilityHidden(true)
+        HStack(spacing: 6) {
+            Image(systemName: "magnifyingglass").foregroundStyle(Palette.ink2).accessibilityHidden(true)
             TextField("Buscar", text: $query, prompt: Text(Self.searchPrompt))
                 .focused($searching)
                 .textFieldStyle(.plain)
@@ -162,16 +171,17 @@ struct Sidebar: View {
                 .submitLabel(.search)
             if !query.isEmpty {
                 Button { query = "" } label: {
-                    Image(systemName: "xmark.circle.fill").foregroundStyle(Palette.ink3)
+                    Image(systemName: "xmark.circle.fill").foregroundStyle(Palette.ink2)
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("Borrar búsqueda")
             }
         }
-        .font(.subheadline)
+        .font(.body)
         .padding(.horizontal, 10)
-        .frame(minHeight: Self.rowHeight)
-        .background(Palette.surface, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .frame(minHeight: Self.searchHeight)
+        .background(Palette.surface2, in: RoundedRectangle(cornerRadius: Self.searchRadius, style: .continuous))
+        .padding(.horizontal, 2)
     }
 
     #if os(macOS)
@@ -187,27 +197,49 @@ struct Sidebar: View {
         SidebarItem.subsections(of: section).first?.item ?? .section(section)
     }
 
+    /// Fila de una sección: icono en Tinta y nombre. Si tiene subsecciones, un chevron (abajo si está abierta) y no se
+    /// marca: se marca la subsección abierta, como en el canvas.
     private func sectionRow(_ section: AppSection) -> some View {
-        let isActive = query.isEmpty && selection.section == section
+        let hasSubsections = !SidebarItem.subsections(of: section).isEmpty
+        let isOpen = query.isEmpty && selection.section == section
+        let isActive = isOpen && !hasSubsections
         return Button {
             query = ""
             selection = target(for: section)
         } label: {
-            Label(section.title, systemImage: section.systemImage)
-                .font(.subheadline.weight(isActive ? .semibold : .medium))
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
-                .foregroundStyle(isActive ? Palette.brand : Palette.ink2)
-                .padding(.horizontal, 12)
-                .frame(maxWidth: .infinity, minHeight: Self.rowHeight, alignment: .leading)
-                .background(isActive ? Palette.brandWash : .clear, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-                .contentShape(Rectangle())
+            HStack(spacing: Self.iconGap) {
+                // El icono crece poco con el texto: en la barra de 280 pt, con AX3, dejaba «Ex-penses» partido en sílabas.
+                Image(systemName: section.systemImage)
+                    .font(Self.iconFont)
+                    .dynamicTypeSize(...DynamicTypeSize.xxLarge)
+                    .foregroundStyle(isActive && Self.fillsSelection ? Palette.onBrandFill : Palette.brand)
+                    .frame(width: min(iconWidth, Self.iconSide * 1.3))
+                    .accessibilityHidden(true)
+                // Una sola palabra casi siempre: se encoge un poco antes que partirse.
+                Text(section.title)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                if hasSubsections {
+                    Image(systemName: isOpen ? "chevron.down" : "chevron.right")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(Palette.ink2)
+                        .accessibilityHidden(true)
+                }
+            }
+            .font(.body)
+            .foregroundStyle(foreground(isActive))
+            .padding(.horizontal, Self.rowPadding)
+            .frame(minHeight: Self.rowHeight)
+            .background(background(isActive), in: RoundedRectangle(cornerRadius: Self.rowRadius, style: .continuous))
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(isActive ? .isSelected : [])
+        .accessibilityValue(hasSubsections ? (isOpen ? Text("Abierta") : Text("Cerrada")) : Text(verbatim: ""))
     }
 
-    /// Subsección de la sección activa: sangrada, sin icono; la abierta con fondo de superficie y en negrita.
+    /// Subsección de la sección abierta: sangrada, sin icono; la abierta marcada como las secciones.
     private func subRow(_ title: String, item: SidebarItem) -> some View {
         let isActive = query.isEmpty && selection == item
         return Button {
@@ -216,35 +248,66 @@ struct Sidebar: View {
         } label: {
             // Hasta dos líneas en vez de encogerse: «Balanza de comprobación» quedaba más pequeña que las demás.
             Text(title)
-                .font(.footnote.weight(isActive ? .semibold : .medium))
+                .font(.body)
                 .lineLimit(2)
                 .fixedSize(horizontal: false, vertical: true)
-                .foregroundStyle(isActive ? Palette.ink : Palette.ink2)
-                .padding(.leading, 38)
-                .padding(.trailing, 12)
+                .foregroundStyle(foreground(isActive))
+                .padding(.leading, Self.subIndent)
+                .padding(.trailing, Self.rowPadding)
                 .padding(.vertical, 4)
                 .frame(maxWidth: .infinity, minHeight: Self.subRowHeight, alignment: .leading)
-                .background(isActive ? Self.activeSubRow : .clear, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+                .background(background(isActive), in: RoundedRectangle(cornerRadius: Self.rowRadius, style: .continuous))
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(isActive ? .isSelected : [])
     }
 
-    /// Fondo de la subsección abierta: superficie en claro (canvas); en oscuro, un gris más claro que la barra,
-    /// porque la superficie oscura casi no se distingue de ella.
-    private static let activeSubRow = Color(light: 0xFFFFFF, dark: 0x2B2F47)
+    private func foreground(_ isActive: Bool) -> Color {
+        isActive && Self.fillsSelection ? Palette.onBrandFill : Palette.ink
+    }
+
+    private func background(_ isActive: Bool) -> Color {
+        guard isActive else { return .clear }
+        return Self.fillsSelection ? Palette.brandFill : Palette.fill2
+    }
 
     #if os(macOS)
-    private static let rowHeight: CGFloat = 34
-    private static let subRowHeight: CGFloat = 30
+    /// Mac: la elegida en el gris del sistema con el texto en `label`, como las barras laterales de macOS.
+    private static let fillsSelection = false
+    private static let rowHeight: CGFloat = Metrics.target
+    private static let subRowHeight: CGFloat = Metrics.target
+    private static let rowRadius: CGFloat = 7
+    private static let rowPadding: CGFloat = 8
+    private static let subIndent: CGFloat = 34
+    private static let iconGap: CGFloat = 8
+    private static let iconSide: CGFloat = 18
+    private static let iconFont = Font.body
+    private static let panelPadding: CGFloat = 8
+    private static let groupTopPadding: CGFloat = 12
+    private static let searchHeight: CGFloat = 28
+    private static let searchRadius: CGFloat = 7
     #else
-    private static let rowHeight: CGFloat = 44
+    /// iPad: la elegida rellena de Tinta con el texto y el icono en blanco (canvas `Sidebar`, device=ipad).
+    private static let fillsSelection = true
+    private static let rowHeight: CGFloat = 46
     private static let subRowHeight: CGFloat = 44
+    private static let rowRadius: CGFloat = 12
+    private static let rowPadding: CGFloat = 12
+    private static let subIndent: CGFloat = 48
+    private static let iconGap: CGFloat = 14
+    private static let iconSide: CGFloat = 26
+    private static let iconFont = Font.title3
+    private static let panelPadding: CGFloat = 10
+    private static let groupTopPadding: CGFloat = 18
+    private static let searchHeight: CGFloat = 44
+    private static let searchRadius: CGFloat = 12
     #endif
 
     // MARK: Empresa
 
+    /// Empresa al pie (canvas: monograma, nombre y «iCloud · …»), que abre los ajustes. El selector de empresas del
+    /// canvas es de fase 2 (varias empresas) y no sale.
     @ViewBuilder
     private var companyCard: some View {
         if let company = companies.first {
@@ -254,35 +317,50 @@ struct Sidebar: View {
                 selection = .section(.settings)
             } label: {
                 HStack(spacing: 10) {
-                    Text(Initials.from(name))
-                        .font(.caption.weight(.bold))
-                        .foregroundStyle(Palette.background)
-                        .dynamicTypeSize(...DynamicTypeSize.xxLarge)
-                        .frame(width: 32, height: 32)
-                        .background(Palette.ink, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
-                        .accessibilityHidden(true)
+                    CompanyMonogram(name: name, side: Self.monogramSide)
                     VStack(alignment: .leading, spacing: 1) {
-                        Text(name).font(.footnote.weight(.semibold)).foregroundStyle(Palette.ink)
-                        // Punto verde con iCloud activado, como el canvas («● iCloud»).
-                        HStack(spacing: 5) {
-                            Circle().fill(syncColor).frame(width: 7, height: 7)
-                                .accessibilityHidden(true)
+                        Text(name).font(.body.weight(.semibold)).foregroundStyle(Palette.ink)
+                        Label {
                             Text(syncText)
+                        } icon: {
+                            Image(systemName: syncSymbol).accessibilityHidden(true)
                         }
-                        .font(.caption).foregroundStyle(Palette.ink3)
+                        .labelStyle(SidebarCaptionLabelStyle())
+                        .font(Self.captionFont)
+                        .foregroundStyle(syncColor)
                     }
-                    .lineLimit(1)
+                    .lineLimit(2)
                     .minimumScaleFactor(0.8)
                     Spacer(minLength: 0)
                 }
-                .padding(10)
-                .background(Palette.surface, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .padding(8)
+                .frame(minHeight: Metrics.target)
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
+            .accessibilityElement(children: .combine)
             .accessibilityHint("Abre los ajustes")
-            .padding(12)
+            .padding(.horizontal, Self.panelPadding)
+            .padding(.vertical, 8)
             .background(Palette.sidebar)
+        }
+    }
+
+    #if os(macOS)
+    private static let monogramSide: CGFloat = 28
+    private static let captionFont = Font.subheadline
+    #else
+    private static let monogramSide: CGFloat = 36
+    private static let captionFont = Font.footnote
+    #endif
+}
+
+/// Icono y texto juntos, a 5 pt, como el «☁ iCloud · hace 2 min» del canvas.
+private struct SidebarCaptionLabelStyle: LabelStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        HStack(spacing: 5) {
+            configuration.icon
+            configuration.title
         }
     }
 }
@@ -325,7 +403,7 @@ struct SearchResultsView: View {
                             LedgerRow(title: customer.name, subtitle: customer.email) {
                                 InitialsTile(text: customer.initials)
                             } trailing: {
-                                Text(customer.openBalance.money).font(.body.weight(.semibold)).monospacedDigit()
+                                Text(customer.openBalance.money).monospacedDigit()
                             }
                         }
                     }
@@ -336,9 +414,9 @@ struct SearchResultsView: View {
                     ForEach(foundVendors.prefix(20)) { vendor in
                         NavigationLink { VendorDetailView(vendor: vendor) } label: {
                             LedgerRow(title: vendor.name, subtitle: vendor.email) {
-                                InitialsTile(text: Initials.from(vendor.name), foreground: Palette.outflow, background: Palette.outflowWash)
+                                InitialsTile(text: Initials.from(vendor.name))
                             } trailing: {
-                                Text(vendor.openBalance.money).font(.body.weight(.semibold)).monospacedDigit()
+                                Text(vendor.openBalance.money).monospacedDigit()
                             }
                         }
                     }
@@ -349,9 +427,9 @@ struct SearchResultsView: View {
                     ForEach(foundExpenses.prefix(20)) { expense in
                         NavigationLink { ExpenseDetailView(expense: expense) } label: {
                             LedgerRow(title: expense.payee, subtitle: expense.date.shortDate) {
-                                IconTile(systemImage: "receipt", foreground: Palette.outflow, background: Palette.outflowWash)
+                                IconTile(systemImage: "receipt", foreground: Palette.orange)
                             } trailing: {
-                                Text("−\(expense.total.money)").font(.body.weight(.semibold)).monospacedDigit().foregroundStyle(Palette.outflow)
+                                Text("−\(expense.total.money)").monospacedDigit().foregroundStyle(Palette.ink)
                             }
                         }
                     }

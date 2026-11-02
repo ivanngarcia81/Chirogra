@@ -36,11 +36,13 @@ enum AppSection: String, Hashable, CaseIterable, Identifiable {
         }
     }
 
-    static let primary: [AppSection] = [.home, .sales, .expenses, .banking, .reports]
-    /// iPhone muestra como máximo 5 pestañas sin que el sistema agrupe el resto en su propio "Más".
-    /// Banca (casi todo de fase 2) vive dentro de "Más" hasta que llegue la bandeja de movimientos.
-    static let phoneTabs: [AppSection] = [.home, .sales, .expenses, .reports]
-    static let more: [AppSection] = [.accounting, .taxes, .settings]
+    /// Grupo «Negocio» de la barra lateral (canvas `Sidebar`).
+    static let business: [AppSection] = [.home, .sales, .expenses, .banking, .reports]
+    /// Grupo «Libros» de la barra lateral.
+    static let books: [AppSection] = [.accounting, .taxes, .settings]
+    /// Pestañas del iPhone como el canvas (decisión del usuario del 2-nov): Inicio · Ventas · Gastos · Banca, y «Más»
+    /// con Reportes, Contabilidad, Impuestos y Ajustes. Cinco como máximo, para que el sistema no agrupe el resto.
+    static let phoneTabs: [AppSection] = [.home, .sales, .expenses, .banking]
 
     @ViewBuilder
     var destination: some View {
@@ -218,7 +220,17 @@ struct AppShell: View {
     #if os(macOS)
     @ScaledMetric(relativeTo: .body) private var masterWidth: CGFloat = 280
     #else
-    @ScaledMetric(relativeTo: .body) private var masterWidth: CGFloat = 320
+    /// Columna maestro con la barra lateral a la vista (horizontal): 320 pt. Con los 280 de la barra, el detalle de un
+    /// iPad de 13" en horizontal queda en 776 pt, por encima del umbral de `isDetailNarrow` (los 340 del canvas lo
+    /// dejarían en 756).
+    @ScaledMetric(relativeTo: .body) private var sideBySideMasterWidth: CGFloat = 320
+    /// Con la barra lateral cerrada (iPad en vertical) la lista tiene sitio: a 320 pt se cortaban «Accounts Receiv…»,
+    /// «Accumulated Depreci…» y el título «Chart of accou…». El detalle ya usa ahí el diseño de iPhone (estrecho).
+    @ScaledMetric(relativeTo: .body) private var soloMasterWidth: CGFloat = 400
+
+    private var masterWidth: CGFloat {
+        isPortrait && columnVisibility == .detailOnly ? soloMasterWidth : sideBySideMasterWidth
+    }
     #endif
 
     var body: some View {
@@ -249,7 +261,7 @@ struct AppShell: View {
         })
     }
 
-    /// iPhone: 5 pestañas (Inicio · Ventas · Gastos · Reportes · Más).
+    /// iPhone: 5 pestañas (Inicio · Ventas · Gastos · Banca · Más), como el canvas.
     private var tabs: some View {
         TabView(selection: $tab) {
             ForEach(AppSection.phoneTabs) { section in
@@ -355,7 +367,8 @@ struct AppShell: View {
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { detailWidth = $0 }
         .safeAreaInset(edge: .top, spacing: 0) { SyncErrorBanner() }
         #else
-        // `MacError`: la tarjeta centrada en lugar del contenido, no una franja encima.
+        // `MacError`: la alerta sobre el contenido; tras «Seguir sin conexión», una franja encima con «Reintentar».
+        .safeAreaInset(edge: .top, spacing: 0) { SyncOfflineStrip() }
         .overlay { SyncErrorBanner() }
         #endif
     }
@@ -438,7 +451,9 @@ struct LayoutSizeClass: DynamicProperty {
 }
 #endif
 
-/// Pestaña "Más" del iPhone: Contabilidad, Impuestos y Ajustes.
+/// Pestaña «Más» del iPhone (canvas `Mas`), como la app Ajustes: la empresa arriba con su monograma y, en grupos,
+/// Reportes, Contabilidad, Impuestos y Ajustes en filas con icono de color. Banca tiene su pestaña; Plantilla de
+/// factura, Usuarios y permisos y Deducibles son de fase 2 y no salen.
 struct MoreView: View {
     @Query private var companies: [Company]
     @Query(sort: \Account.code) private var accounts: [Account]
@@ -447,65 +462,58 @@ struct MoreView: View {
     @Query private var rates: [TaxRate]
     @AppStorage("iCloudSyncEnabled") private var iCloudSyncEnabled = false
     @AppStorage("appLockEnabled") private var appLockEnabled = false
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-
-    private var columns: [GridItem] {
-        Array(repeating: GridItem(.flexible(), spacing: 8), count: dynamicTypeSize.isAccessibilitySize ? 1 : 2)
-    }
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 14) {
-                if let company = companies.first { companyCard(company) }
-
-                section(String(localized: "Banca"))
-                MoreTile(title: String(localized: "Cuentas y saldos"), subtitle: String(localized: "\(bankCount) cuentas"),
-                         systemImage: "building.columns") { BankingView() }
-
-                section(String(localized: "Contabilidad"))
-                LazyVGrid(columns: columns, spacing: 8) {
-                    MoreTile(title: String(localized: "Plan de cuentas"), subtitle: String(localized: "\(accounts.filter { !$0.isArchived }.count) cuentas"),
-                             systemImage: "list.bullet.indent") { ChartOfAccountsView() }
-                    MoreTile(title: String(localized: "Asientos de diario"), subtitle: String(localized: "\(entriesThisMonth) este mes"),
-                             systemImage: "doc.plaintext") { JournalListView() }
-                    MoreTile(title: String(localized: "Libro mayor"), subtitle: String(localized: "Por cuenta"),
-                             systemImage: "book.closed") { LedgerAccountPickerView() }
-                    MoreTile(title: String(localized: "Cierre de periodo"), subtitle: closeSubtitle,
-                             systemImage: "lock") { PeriodCloseView() }
-                }
-
-                section(String(localized: "Impuestos"))
-                LazyVGrid(columns: columns, spacing: 8) {
-                    MoreTile(title: String(localized: "Resumen"), subtitle: taxSubtitle, subtitleColor: taxOwed > 0 ? Palette.warning : Palette.ink3,
-                             systemImage: "percent") { TaxesView() }
-                    MoreTile(title: String(localized: "Tasas"), subtitle: String(localized: "\(rates.count) activas"),
-                             systemImage: "list.number") { TaxesView(tab: .rates) }
-                }
-
-                section(String(localized: "Ajustes"))
-                VStack(spacing: 0) {
-                    if let company = companies.first {
-                        settingsRow(String(localized: "Perfil de la empresa"), "building.2", value: nil) { CompanyProfileView(company: company) }
-                        Divider().padding(.leading, 52)
-                        settingsRow(String(localized: "Moneda y formatos"), "dollarsign.circle", value: company.currencyCode) { FormatsView(company: company) }
-                        Divider().padding(.leading, 52)
-                    }
-                    settingsRow(String(localized: "iCloud y copias"), "icloud",
-                                value: iCloudSyncEnabled ? String(localized: "Activado") : String(localized: "Desactivado")) { DataAndSecurityView() }
-                    Divider().padding(.leading, 52)
-                    settingsRow(String(localized: "Seguridad"), "faceid",
-                                value: appLockEnabled ? String(localized: "Face ID") : String(localized: "Desactivado")) { DataAndSecurityView() }
-                }
-                .padding(.horizontal, 12)
-                .background(Palette.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        List {
+            if let company = companies.first {
+                Section { companyRow(company) }
             }
-            .padding(Metrics.gutter)
-        }
-        .background(Palette.background)
-        .navigationTitle("Más")
-    }
 
-    private var bankCount: Int { accounts.filter { !$0.isArchived && ($0.subtype == .bank || $0.subtype == .creditCard) }.count }
+            Section(title: "Reportes") {
+                ForEach(ReportsView.Kind.allCases) { kind in
+                    MoreRow(title: kind.fullTitle, systemImage: kind.moreSymbol, color: kind.moreColor) { ReportsView(fixedKind: kind) }
+                }
+            }
+
+            Section(title: "Contabilidad") {
+                MoreRow(title: String(localized: "Plan de cuentas"), value: String(localized: "\(accounts.filter { !$0.isArchived }.count) cuentas"),
+                        systemImage: "list.bullet.indent", color: Palette.indigo) { ChartOfAccountsView() }
+                MoreRow(title: String(localized: "Asientos de diario"), value: String(localized: "\(entriesThisMonth) este mes"),
+                        systemImage: "doc.plaintext", color: Palette.blue) { JournalListView() }
+                MoreRow(title: String(localized: "Libro mayor"), value: String(localized: "Por cuenta"),
+                        systemImage: "book.closed", color: Palette.teal) { LedgerAccountPickerView() }
+                MoreRow(title: String(localized: "Cierre de periodo"), value: closeSubtitle,
+                        systemImage: "lock", color: Palette.gray) { PeriodCloseView() }
+            }
+
+            Section(title: "Impuestos") {
+                MoreRow(title: String(localized: "Resumen"), value: taxSubtitle, valueColor: taxOwed > 0 ? Palette.warning : Palette.ink2,
+                        systemImage: "percent", color: Palette.red) { TaxesView() }
+                MoreRow(title: String(localized: "Tasas"), value: String(localized: "\(rates.count) activas"),
+                        systemImage: "list.number", color: Palette.pink) { TaxesView(tab: .rates) }
+            }
+
+            Section(title: "Ajustes") {
+                if let company = companies.first {
+                    MoreRow(title: String(localized: "Perfil de la empresa"), systemImage: "building.2", color: Palette.gray) {
+                        CompanyProfileView(company: company)
+                    }
+                    MoreRow(title: String(localized: "Moneda y formatos"), value: company.currencyCode,
+                            systemImage: "dollarsign", color: Palette.green) { FormatsView(company: company) }
+                }
+                MoreRow(title: String(localized: "iCloud y copias"),
+                        value: iCloudSyncEnabled ? String(localized: "Activado") : String(localized: "Desactivado"),
+                        systemImage: "icloud", color: Palette.teal) { DataAndSecurityView() }
+                MoreRow(title: String(localized: "Seguridad"),
+                        value: appLockEnabled ? String(localized: "Face ID") : String(localized: "Desactivado"),
+                        systemImage: "faceid", color: Palette.red) { DataAndSecurityView() }
+            }
+        }
+        .listRowBackground(Palette.surface)
+        .screenBackground()
+        .navigationTitle("Más")
+        .headerTitle()
+    }
 
     private var entriesThisMonth: Int {
         let month = DateInterval.month(containing: .now)
@@ -525,75 +533,96 @@ struct MoreView: View {
         taxOwed > 0 ? String(localized: "\(taxOwed.money) por pagar") : String(localized: "Al día")
     }
 
-    private func section(_ title: String) -> some View {
-        SectionLabel(text: title).padding(.top, 4).accessibilityAddTraits(.isHeader)
-    }
-
-    private func companyCard(_ company: Company) -> some View {
-        NavigationLink { CompanyProfileView(company: company) } label: {
-            HStack(spacing: 12) {
-                Text(Initials.from(company.displayName))
-                    .font(.headline.weight(.bold)).foregroundStyle(Palette.background)
-                    .frame(width: Metrics.target, height: Metrics.target)
-                    .background(Palette.ink, in: RoundedRectangle(cornerRadius: 13, style: .continuous))
-                    .accessibilityHidden(true)
+    /// Fila de la empresa (canvas: monograma de 56 pt, nombre de 20 semibold y un detalle gris), que abre su perfil.
+    private func companyRow(_ company: Company) -> some View {
+        let name = company.displayName.isEmpty ? company.legalName : company.displayName
+        let detail = company.legalName.isEmpty || company.legalName == name ? company.entityType.title : company.legalName
+        return NavigationLink { CompanyProfileView(company: company) } label: {
+            HStack(spacing: 14) {
+                CompanyMonogram(name: name, side: 56)
                 VStack(alignment: .leading, spacing: 1) {
-                    Text(company.displayName).font(.headline).foregroundStyle(Palette.ink)
-                    Text(company.legalName).font(.footnote).foregroundStyle(Palette.ink3)
+                    Text(name).font(.title3.weight(.semibold)).foregroundStyle(Palette.ink)
+                    Text(detail).font(.footnote).foregroundStyle(Palette.ink2)
                 }
-                .lineLimit(1)
-                Spacer(minLength: 0)
-                Image(systemName: "chevron.right").font(.footnote.weight(.semibold)).foregroundStyle(Palette.ink3)
+                .lineLimit(2)
             }
-            .padding(.horizontal, 14).padding(.vertical, 12)
-            .background(Palette.surface, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-            .contentShape(Rectangle())
+            .padding(.vertical, 4)
         }
-        .buttonStyle(.plain)
-    }
-
-    private func settingsRow<Destination: View>(_ title: String, _ image: String, value: String?,
-                                                 @ViewBuilder destination: @escaping () -> Destination) -> some View {
-        NavigationLink(destination: destination) {
-            HStack(spacing: 12) {
-                Image(systemName: image).font(.subheadline).foregroundStyle(Palette.ink2)
-                    .frame(width: 30, height: 30)
-                    .background(Palette.surface2, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
-                    .accessibilityHidden(true)
-                Text(title).foregroundStyle(Palette.ink).lineLimit(1)
-                Spacer(minLength: 8)
-                if let value { Text(value).font(.subheadline).foregroundStyle(Palette.ink3).lineLimit(1) }
-                Image(systemName: "chevron.right").font(.caption.weight(.semibold)).foregroundStyle(Palette.ink3)
-            }
-            .frame(minHeight: 52)
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
+        .accessibilityHint("Abre el perfil de la empresa")
     }
 }
 
-/// Tarjeta de «Más» (canvas `Mas`): icono, título y subtítulo con un dato.
-struct MoreTile<Destination: View>: View {
+extension ReportsView.Kind {
+    /// Icono de la fila en «Más» (canvas `Mas`: resultados en verde, balance en azul, antigüedad en naranja).
+    var moreSymbol: String {
+        switch self {
+        case .income: "chart.bar"
+        case .balance: "scalemass"
+        case .trial: "list.bullet.rectangle"
+        case .receivables: "clock"
+        case .payables: "clock.arrow.circlepath"
+        case .salesTax: "percent"
+        }
+    }
+
+    var moreColor: Color {
+        switch self {
+        case .income: Palette.green
+        case .balance: Palette.blue
+        case .trial: Palette.indigo
+        case .receivables: Palette.orange
+        case .payables: Palette.purple
+        case .salesTax: Palette.pink
+        }
+    }
+}
+
+/// Fila de «Más» como las de Ajustes: icono blanco en un cuadrado de color, título, dato gris y el chevron del sistema.
+/// Con tamaños de accesibilidad, el dato baja debajo del título.
+private struct MoreRow<Destination: View>: View {
     let title: String
-    let subtitle: String
-    var subtitleColor: Color = Palette.ink3
+    var value: String? = nil
+    var valueColor: Color = Palette.ink2
     let systemImage: String
+    let color: Color
     @ViewBuilder let destination: () -> Destination
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         NavigationLink(destination: destination) {
-            VStack(alignment: .leading, spacing: 6) {
-                Image(systemName: systemImage).font(.title3).foregroundStyle(Palette.brand)
-                    .frame(height: 26, alignment: .leading).accessibilityHidden(true)
-                Text(title).font(.subheadline.weight(.semibold)).foregroundStyle(Palette.ink).lineLimit(2)
-                Text(subtitle).font(.caption.weight(.semibold)).foregroundStyle(subtitleColor).lineLimit(1)
+            HStack(spacing: 12) {
+                IconTile(systemImage: systemImage, foreground: color)
+                if dynamicTypeSize.isAccessibilitySize {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(title).foregroundStyle(Palette.ink)
+                        if let value { Text(value).foregroundStyle(valueColor) }
+                    }
+                } else {
+                    Text(title).foregroundStyle(Palette.ink).lineLimit(2).layoutPriority(1)
+                    Spacer(minLength: 8)
+                    if let value { Text(value).foregroundStyle(valueColor).lineLimit(1) }
+                }
             }
-            .padding(12)
-            .frame(maxWidth: .infinity, minHeight: 96, alignment: .topLeading)
-            .background(Palette.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-            .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .accessibilityElement(children: .combine)
+    }
+}
+
+/// Monograma de la empresa, como el de un contacto: iniciales blancas en un círculo con el degradado gris del sistema
+/// (canvas `Mas`, `Sidebar`). Antes era un cuadrado negro que en oscuro quedaba blanco con texto negro.
+struct CompanyMonogram: View {
+    let name: String
+    var side: CGFloat = 36
+    @ScaledMetric(relativeTo: .body) private var scale: CGFloat = 1
+
+    var body: some View {
+        let size = side * min(scale, 1.6)
+        Text(Initials.from(name))
+            .font(.system(size: size * 0.4, weight: .semibold))
+            .foregroundStyle(.white)
+            .frame(width: size, height: size)
+            .background(Palette.monogram, in: Circle())
+            .accessibilityHidden(true)
     }
 }
 
