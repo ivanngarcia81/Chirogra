@@ -1,11 +1,12 @@
 # Chirogra: contexto para retomar en otro chat
 
-Resumen del chat de coordinación de Chirogra (desarrollo + QA), al 2 de noviembre de 2026. Léelo antes de seguir. El diseño técnico completo está en [DISEÑO.md](DISEÑO.md); aquí solo va el estado, las decisiones del usuario y cómo se trabaja.
+Resumen del chat de coordinación de Chirogra (desarrollo + QA), al 3 de noviembre de 2026. Léelo antes de seguir. El diseño técnico completo está en [DISEÑO.md](DISEÑO.md); aquí solo va el estado, las decisiones del usuario y cómo se trabaja.
 
 ## Estado actual
 
 - **Versión aprobada:** el rediseño nativo, aprobado por el usuario y subido a `main` en GitHub (github.com/ivanngarcia81/Chirogra) el 2-nov. La anterior era `038b168`.
-- **Instalada en:** iPhone 17 Pro Max, iPad Pro 12,9″ y Mac (`/Applications/Chirogra.app`, Release) con `integracion-rediseno` `8952b61` (Mac con tabla + inspector; hojas de editor menos apretadas), el 2-nov.
+- **Instalada en:** iPhone 17 Pro Max, iPad Pro 12,9″ y Mac (`/Applications/Chirogra.app`, Release) con el esquema 2 (`main`, 3-nov). Los datos de los tres aparatos ya migraron a V2: una versión anterior no los abre.
+- **Esquema 2 (3-nov):** lo que dibujaba el canvas y la app no tenía, construido sobre `SchemaV2` (migración ligera desde V1, solo aditiva). API en [DATOS-V2.md](DATOS-V2.md). **Antes de publicar en la App Store: desplegar el esquema de CloudKit a producción** (8 tipos de registro y campos nuevos) y actualizar todos los aparatos a la vez.
 - **Rediseño nativo (2-nov), hecho en la rama `integracion-rediseno` y ya en `main` (subido el 2-nov).** El usuario pidió rehacer la app con el canvas actualizado («Claude code actualizó el diseño»), lo que deja sin efecto el descarte de `7a8b97f`. El sistema y el mapa por áreas están en [REDISEÑO-NATIVO.md](REDISEÑO-NATIVO.md). Lo hizo un equipo de agentes en worktrees (`.claude/worktrees/`), uno por tarea, y el coordinador lo fusionó. Para resolver choques del catálogo de textos hay un script de fusión por claves (ver «Fusionar el catálogo de textos» abajo).
 
 ## Qué se hizo en este chat (de lo más antiguo a lo más nuevo)
@@ -113,11 +114,9 @@ Probado por el usuario el 2-nov y funciona: Escape y Return en los editores del 
 - Estado vacío del Mac (empresa sin datos).
 - Las hojas del Mac siguen la apariencia del sistema (el Mac del usuario está en oscuro); `-qa.apariencia` solo cambia la ventana de la copia de prueba, no sus hojas.
 
-**Lo que dibuja el canvas y la app no tiene (decidir si se construye; necesita datos o funciones nuevas)**
-- Pagos programados y en lote, gastos recurrentes, «Programar pago», «Impuesto incluido», W-9.
-- Editar un gasto o una cuenta ya contabilizados; editar una tasa de impuesto.
-- Plantilla de factura, «Para/Asunto» al enviar, persona de contacto del cliente, «vista por el cliente» y recordatorio enviado.
-- Campana de avisos; plan de cuentas agrupado por tipo con triángulos (la tabla común del Mac solo admite filas planas).
+**Hecho el 3-nov (esquema 2)**: pagos programados y en lote, recurrentes, editar gasto contabilizado (reversión + asiento nuevo), impuesto incluido y cliente en gastos, W-9 y pago preferido, ••4821, estimados con conversión, enviar con Para/Asunto/copia, recordatorios, contacto y notas del cliente, plantilla de factura, precios con impuesto incluido, editar cuenta y tasa, impuesto predeterminado, origen de ventas, plan agrupado en el Mac, cierre con historial y contraseña, campana, automatizaciones al abrir. Probado en el iPad físico (migración incluida).
+
+**Sin comprobar del esquema 2**: correo real (MFMail/NSSharingService), logo desde Fotos, que un cargo automático se cobre solo al vencer, VoiceOver. Pendiente menor: los totales de borradores en listas siguen sin impuesto; el editor de factura en la hoja del iPad sale con el diseño del iPhone; la columna maestro del iPad no muestra ••4821 ni la sangría de subcuentas; «Vista por el cliente» no existe (necesita servidor).
 
 **Fase 2 (fuera del MVP)**: OCR, bandeja del banco e importar/conciliar (Plaid en un backend), usuarios y permisos, varias empresas, deducibles y «Exportar para mi contador».
 
