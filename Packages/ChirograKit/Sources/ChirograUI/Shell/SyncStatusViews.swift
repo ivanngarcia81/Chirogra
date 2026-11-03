@@ -1,5 +1,7 @@
+import ChirograData
 import CloudKit
 import CoreData
+import SwiftData
 import SwiftUI
 
 /// Estado de la sincronización con iCloud a partir de los eventos del contenedor de CloudKit que usa SwiftData.
@@ -98,13 +100,87 @@ final class SyncMonitor {
 }
 
 extension View {
-    /// Escucha los eventos de sincronización y los pasa a `SyncMonitor.shared` en el hilo principal.
+    /// Escucha los eventos de sincronización y los pasa a `SyncMonitor.shared` en el hilo principal. Además corre las
+    /// automatizaciones (`AppAutomations`): al abrir y al volver al primer plano, y tras traer cambios de iCloud.
     func monitorsCloudSync() -> some View {
-        onReceive(NotificationCenter.default.publisher(for: NSPersistentCloudKitContainer.eventChangedNotification).receive(on: RunLoop.main)) { note in
-            if let event = note.userInfo?[NSPersistentCloudKitContainer.eventNotificationUserInfoKey] as? NSPersistentCloudKitContainer.Event {
-                SyncMonitor.shared.apply(event)
+        modifier(CloudSyncMonitor())
+    }
+}
+
+private struct CloudSyncMonitor: ViewModifier {
+    @Environment(\.modelContext) private var context
+    @Environment(\.scenePhase) private var scenePhase
+
+    func body(content: Content) -> some View {
+        content
+            .onReceive(NotificationCenter.default.publisher(for: NSPersistentCloudKitContainer.eventChangedNotification).receive(on: RunLoop.main)) { note in
+                if let event = note.userInfo?[NSPersistentCloudKitContainer.eventNotificationUserInfoKey] as? NSPersistentCloudKitContainer.Event {
+                    SyncMonitor.shared.apply(event)
+                    // Tras traer cambios de otro aparato: si los dos generaron la misma repetición sin conexión, se anula la
+                    // copia; después se pone al día lo que toque (lo que ya generó el otro aparato no se repite).
+                    if event.type == .import, event.endDate != nil, event.succeeded {
+                        AppAutomations.afterSync(container: context.container)
+                    }
+                }
             }
+            // Al abrir (también si el Mac la abre en segundo plano) y cada vez que vuelve al primer plano.
+            .task { AppAutomations.run(container: context.container) }
+            .onChange(of: scenePhase) { _, phase in
+                if phase == .active { AppAutomations.run(container: context.container) }
+            }
+    }
+}
+
+/// Automatizaciones de la app (DATOS-V2 §1–2): `runAutomations()` genera los recurrentes que tocan hasta hoy y registra
+/// los pagos con cargo automático; `resolveRecurringDuplicates()` repara repeticiones duplicadas tras sincronizar.
+///
+/// No bloquean la interfaz: corren en una tarea de prioridad baja cuando la pantalla ya está dibujada, cada vez con un
+/// `ModelContext` propio (no el de las pantallas: así nunca guardan ni deshacen lo que el usuario tiene a medias) y lo
+/// que guardan llega solo a las pantallas. `Bookkeeper` es `@MainActor`, así que el trabajo en sí va en el hilo
+/// principal; son unas pocas consultas. Son idempotentes: llamarlas de más no duplica nada. Mientras se traen los
+/// libros de iCloud por primera vez no corren (generarían lo que el otro aparato ya generó). Si un pago automático
+/// falla, queda programado y la campana de Inicio lo avisa (`Notice.scheduledPaymentDue`).
+/// Cargos automáticos que fallaron en la última pasada de `AppAutomations` (id de la factura → motivo).
+@Observable
+final class AutomationFailures {
+    static let shared = AutomationFailures()
+    var byBill: [UUID: String] = [:]
+}
+
+enum AppAutomations {
+    private static var running = false
+    private static var pendingResolve = false
+
+    static func run(container: ModelContainer, resolvingDuplicates: Bool = false) {
+        guard !SyncMonitor.shared.isFirstImport else { return }
+        if running {
+            if resolvingDuplicates { pendingResolve = true }
+            return
         }
+        running = true
+        let resolve = resolvingDuplicates || pendingResolve
+        pendingResolve = false
+        Task(priority: .utility) {
+            // Que la pantalla se dibuje antes.
+            try? await Task.sleep(for: .milliseconds(400))
+            let books = Bookkeeper(context: ModelContext(container))
+            if (try? books.company()) != nil {
+                if resolve { _ = try? books.resolveRecurringDuplicates() }
+                await Task.yield()
+                if let result = try? books.runAutomations() {
+                    // Cargos automáticos que no se pudieron registrar (periodo cerrado, cuenta archivada…): la campana los
+                    // marca en su aviso de pago programado. Se recuerdan solo mientras la app está abierta.
+                    AutomationFailures.shared.byBill = Dictionary(
+                        result.autoPayments.failures.map { ($0.bill.id, $0.error.localizedDescription) }, uniquingKeysWith: { a, _ in a })
+                }
+            }
+            running = false
+            if pendingResolve { run(container: container, resolvingDuplicates: true) }
+        }
+    }
+
+    static func afterSync(container: ModelContainer) {
+        run(container: container, resolvingDuplicates: true)
     }
 }
 

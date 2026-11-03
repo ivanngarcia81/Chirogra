@@ -169,6 +169,16 @@
         }
       }
     },
+    "%@ es la tasa predeterminada en facturas nuevas." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ is the default rate on new invoices."
+          }
+        }
+      }
+    },
     "%@ esta semana" : {
       "localizations" : {
         "en" : {
@@ -467,6 +477,16 @@
         }
       }
     },
+    "%@ · predeterminada" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · default"
+          }
+        }
+      }
+    },
     "%@ · saldo %@" : {
       "localizations" : {
         "en" : {
@@ -529,6 +549,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ · was due %@"
+          }
+        }
+      }
+    },
+    "%@ · venció hace %lld días" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · overdue by %lld days"
           }
         }
       }
@@ -1617,6 +1647,16 @@
         }
       }
     },
+    "%lld periodos cerrados" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld closed periods"
+          }
+        }
+      }
+    },
     "%lld proveedores" : {
       "localizations" : {
         "en" : {
@@ -1990,6 +2030,16 @@
         }
       }
     },
+    "Abre el documento" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens the document"
+          }
+        }
+      }
+    },
     "Abre el perfil de la empresa" : {
       "localizations" : {
         "en" : {
@@ -2100,6 +2150,26 @@
         }
       }
     },
+    "Aceptar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        }
+      }
+    },
+    "Acerca del cierre" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "About closing"
+          }
+        }
+      }
+    },
     "Acreedora" : {
       "localizations" : {
         "en" : {
@@ -2116,6 +2186,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Active"
+          }
+        }
+      }
+    },
+    "Activada" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On"
           }
         }
       }
@@ -2396,6 +2476,16 @@
         }
       }
     },
+    "Al menos 4 caracteres. Se pedirá para reabrir un periodo y para registrar con una fecha cerrada. Si la olvidas, no se puede recuperar." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "At least 4 characters. It will be required to reopen a period and to record with a closed date. If you forget it, it can't be recovered."
+          }
+        }
+      }
+    },
     "Al recibir" : {
       "localizations" : {
         "en" : {
@@ -2432,6 +2522,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Previous"
+          }
+        }
+      }
+    },
+    "Antes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Before"
           }
         }
       }
@@ -2576,6 +2676,16 @@
         }
       }
     },
+    "Aparato" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Device"
+          }
+        }
+      }
+    },
     "Aparece al pie de la factura, debajo de los totales." : {
       "localizations" : {
         "en" : {
@@ -2602,6 +2712,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "This is where you’ll see how your business is doing"
+          }
+        }
+      }
+    },
+    "Aquí verás los pagos programados, las facturas vencidas y el impuesto por declarar." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scheduled payments, overdue invoices and sales tax to file will show up here."
           }
         }
       }
@@ -2742,6 +2862,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Automatic"
+          }
+        }
+      }
+    },
+    "Avisos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notifications"
+          }
+        }
+      }
+    },
+    "Avisos, %lld sin leer" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notifications, %lld unread"
           }
         }
       }
@@ -2893,6 +3033,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Year"
+          }
+        }
+      }
+    },
+    "Aún no has cerrado ningún periodo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You haven't closed any period yet."
           }
         }
       }
@@ -3303,6 +3453,26 @@
         }
       }
     },
+    "Cambiar contraseña de cierre" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Change closing password"
+          }
+        }
+      }
+    },
+    "Cambiar contraseña…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Change Password…"
+          }
+        }
+      }
+    },
     "Cambiar pago programado" : {
       "localizations" : {
         "en" : {
@@ -3329,6 +3499,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Change payment…"
+          }
+        }
+      }
+    },
+    "Cambiar…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Change…"
           }
         }
       }
@@ -3513,6 +3693,16 @@
         }
       }
     },
+    "Cerrar %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close %@"
+          }
+        }
+      }
+    },
     "Cerrar hasta el %@" : {
       "localizations" : {
         "en" : {
@@ -3539,6 +3729,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Close periods"
+          }
+        }
+      }
+    },
+    "Cerrar un periodo impide crear, editar o borrar transacciones con fecha igual o anterior a la fecha de cierre. Solo se puede reabrir el último periodo cerrado." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Closing a period prevents creating, editing or deleting transactions dated on or before the closing date. Only the last closed period can be reopened."
           }
         }
       }
@@ -3609,6 +3809,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Chirogra reminds you to pay; the money moves from your bank."
+          }
+        }
+      }
+    },
+    "Cierre" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close"
           }
         }
       }
@@ -3785,6 +3995,16 @@
         }
       }
     },
+    "Combinadas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Combined"
+          }
+        }
+      }
+    },
     "Comercio" : {
       "localizations" : {
         "en" : {
@@ -3955,6 +4175,16 @@
         }
       }
     },
+    "Con impuesto incluido, el precio de cada línea ya lleva el impuesto y Chirogra lo separa al emitir. El origen de las ventas es informativo: tú eliges la tasa de cada factura." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "With tax included, each line's price already includes tax and Chirogra separates it when issuing. Sales sourcing is for reference: you choose the rate on each invoice."
+          }
+        }
+      }
+    },
     "Con saldo" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4032,6 +4262,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Payment terms"
+          }
+        }
+      }
+    },
+    "Confirma el gasto recurrente de %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirm the recurring expense from %@"
           }
         }
       }
@@ -4116,6 +4356,26 @@
         }
       }
     },
+    "Contraseña" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Password"
+          }
+        }
+      }
+    },
+    "Contraseña actual" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Current password"
+          }
+        }
+      }
+    },
     "Contraseña de cierre" : {
       "localizations" : {
         "en" : {
@@ -4142,6 +4402,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Closing password removed"
+          }
+        }
+      }
+    },
+    "Contraseña nueva" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New password"
           }
         }
       }
@@ -4467,6 +4737,16 @@
         }
       }
     },
+    "Cuenta bancaria" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bank account"
+          }
+        }
+      }
+    },
     "Cuenta de ingreso" : {
       "localizations" : {
         "en" : {
@@ -4503,6 +4783,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "System account: Chirogra uses it to post documents, so it can't be archived."
+          }
+        }
+      }
+    },
+    "Cuenta del sistema: Chirogra la usa al contabilizar los documentos, así que su tipo no cambia." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "System account: Chirogra uses it to post documents, so its type can't change."
           }
         }
       }
@@ -4747,6 +5037,16 @@
         }
       }
     },
+    "Declarar sales tax · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "File sales tax · %@"
+          }
+        }
+      }
+    },
     "Declarar y pagar" : {
       "localizations" : {
         "en" : {
@@ -4827,6 +5127,16 @@
         }
       }
     },
+    "Desbloquear y registrar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unlock and Record"
+          }
+        }
+      }
+    },
     "Descartar" : {
       "localizations" : {
         "en" : {
@@ -4853,6 +5163,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Description"
+          }
+        }
+      }
+    },
+    "Descripción (opcional)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Description (optional)"
           }
         }
       }
@@ -4953,6 +5273,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Unschedule"
+          }
+        }
+      }
+    },
+    "Destino (el cliente)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Destination (the customer)"
           }
         }
       }
@@ -5187,6 +5517,16 @@
         }
       }
     },
+    "Editar cuenta" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit Account"
+          }
+        }
+      }
+    },
     "Editar gasto" : {
       "localizations" : {
         "en" : {
@@ -5203,6 +5543,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Edit recurring"
+          }
+        }
+      }
+    },
+    "Editar tasa" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit Rate"
+          }
+        }
+      }
+    },
+    "Editar tasa…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit Rate…"
           }
         }
       }
@@ -5347,6 +5707,16 @@
         }
       }
     },
+    "El documento ya no existe" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The document no longer exists"
+          }
+        }
+      }
+    },
     "El día 20 del mes siguiente es la fecha habitual en Texas y otros estados; confírmala con tu agencia." : {
       "localizations" : {
         "en" : {
@@ -5447,6 +5817,16 @@
         }
       }
     },
+    "El origen es informativo: tú eliges la tasa de cada factura." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sourcing is for reference: you choose the rate on each invoice."
+          }
+        }
+      }
+    },
     "El pago de cada factura queda programado a su vencimiento y se registra solo." : {
       "localizations" : {
         "en" : {
@@ -5483,6 +5863,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "The books are closed through %@."
+          }
+        }
+      }
+    },
+    "El periodo está cerrado hasta el %@. Para registrar con una fecha anterior te pediremos la contraseña de cierre." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The books are closed through %@. To record with an earlier date you'll be asked for the closing password."
           }
         }
       }
@@ -5543,6 +5933,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "The type decides where the account shows up in reports."
+          }
+        }
+      }
+    },
+    "El tipo decide dónde aparece la cuenta en los reportes. Una subcuenta suma en su cuenta principal." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The type decides where the account appears in reports. A subaccount rolls up into its parent account."
           }
         }
       }
@@ -5948,6 +6348,16 @@
         }
       }
     },
+    "Escribe los 4 dígitos o deja el campo vacío." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter the 4 digits or leave the field empty."
+          }
+        }
+      }
+    },
     "Escribe los importes al debe y al haber" : {
       "localizations" : {
         "en" : {
@@ -6315,6 +6725,16 @@
         }
       }
     },
+    "Factura %@ vencida" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invoice %@ overdue"
+          }
+        }
+      }
+    },
     "Factura %@ · %@" : {
       "localizations" : {
         "en" : {
@@ -6544,6 +6964,16 @@
         }
       }
     },
+    "Facturas nuevas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New Invoices"
+          }
+        }
+      }
+    },
     "Facturas por cobrar" : {
       "localizations" : {
         "en" : {
@@ -6560,6 +6990,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bills to pay"
+          }
+        }
+      }
+    },
+    "Falló el cargo automático a %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatic charge to %@ failed"
           }
         }
       }
@@ -6624,6 +7064,16 @@
         }
       }
     },
+    "Fecha de cierre" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Closing date"
+          }
+        }
+      }
+    },
     "Fecha de corte" : {
       "localizations" : {
         "en" : {
@@ -6650,6 +7100,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Due date"
+          }
+        }
+      }
+    },
+    "Fecha límite %@ · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deadline %@ · %@"
           }
         }
       }
@@ -6690,6 +7150,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dates and language"
+          }
+        }
+      }
+    },
+    "Fijar contraseña de cierre" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set closing password"
+          }
+        }
+      }
+    },
+    "Fijar contraseña…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set Password…"
+          }
+        }
+      }
+    },
+    "Fijar…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set…"
           }
         }
       }
@@ -7302,6 +7792,16 @@
         }
       }
     },
+    "Hecho el" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Done on"
+          }
+        }
+      }
+    },
     "Historial" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -7309,6 +7809,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "History"
+          }
+        }
+      }
+    },
+    "Historial de cierres" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Closing history"
           }
         }
       }
@@ -7595,6 +8105,16 @@
       }
     },
     "Impuesto por defecto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Default tax"
+          }
+        }
+      }
+    },
+    "Impuesto predeterminado" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -7914,6 +8434,26 @@
         }
       }
     },
+    "La cuenta tiene subcuentas: su tipo no cambia." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The account has subaccounts: its type can't change."
+          }
+        }
+      }
+    },
+    "La cuenta ya tiene movimientos: su tipo no cambia. Si hace falta, crea otra cuenta y reclasifica con un asiento." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The account already has activity: its type can't change. If needed, create another account and reclassify with a journal entry."
+          }
+        }
+      }
+    },
     "La empresa ya está configurada." : {
       "localizations" : {
         "en" : {
@@ -7960,6 +8500,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "The invoice was already issued."
+          }
+        }
+      }
+    },
+    "La fecha cae en un periodo cerrado (hasta el %@). Al registrar te pediremos confirmarlo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The date falls in a closed period (through %@). When you record it, you'll be asked to confirm."
+          }
+        }
+      }
+    },
+    "La fecha cae en un periodo cerrado (hasta el %@). Al registrar te pediremos la contraseña de cierre." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The date falls in a closed period (through %@). When you record it, you'll be asked for the closing password."
           }
         }
       }
@@ -8094,12 +8654,32 @@
         }
       }
     },
+    "Las contraseñas no coinciden." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The passwords don't match."
+          }
+        }
+      }
+    },
     "Las cuentas de sistema no cambian de tipo." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "System accounts can't change type."
+          }
+        }
+      }
+    },
+    "Las facturas ya emitidas conservan su impuesto y no cambian. Los borradores y las facturas nuevas usarán la tasa nueva." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invoices already issued keep their tax and don't change. Drafts and new invoices will use the new rate."
           }
         }
       }
@@ -8114,12 +8694,32 @@
         }
       }
     },
+    "Las transacciones con fecha hasta el %@ están bloqueadas. Para corregirlas hay que reabrir el periodo con la contraseña de cierre." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transactions dated through %@ are locked. To correct them, reopen the period with the closing password."
+          }
+        }
+      }
+    },
     "Las transacciones con fecha hasta el %@ están bloqueadas. Para corregirlas, reabre el periodo." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Transactions dated through %@ are locked. To correct them, reopen the period."
+          }
+        }
+      }
+    },
+    "Leído" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Read"
           }
         }
       }
@@ -8190,6 +8790,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Books reopened"
+          }
+        }
+      }
+    },
+    "Lista de revisión" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checklist"
           }
         }
       }
@@ -8344,12 +8954,42 @@
         }
       }
     },
+    "Los libros están cerrados hasta el %@. Escribe la contraseña de cierre para registrar con esa fecha." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The books are closed through %@. Enter the closing password to record with that date."
+          }
+        }
+      }
+    },
+    "Los libros están cerrados hasta el %@. Si registras con esa fecha cambiarán reportes que ya pudiste entregar. Quedará anotado." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The books are closed through %@. Recording with that date will change reports you may have already delivered. It will be logged."
+          }
+        }
+      }
+    },
     "Los libros no están cerrados." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "The books aren't closed."
+          }
+        }
+      }
+    },
+    "Los libros quedarán cerrados hasta el %@ y se podrá registrar otra vez en el periodo reabierto. Quedará en el historial." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The books will be closed through %@ and you'll be able to record in the reopened period again. It will be kept in the history."
           }
         }
       }
@@ -8440,6 +9080,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Check the bills you want to pay together"
+          }
+        }
+      }
+    },
+    "Marcar como leído" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mark as Read"
+          }
+        }
+      }
+    },
+    "Marcar todo como leído" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mark All as Read"
           }
         }
       }
@@ -9156,6 +9816,16 @@
         }
       }
     },
+    "No quedará ningún periodo cerrado. Quedará en el historial." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No period will remain closed. It will be kept in the history."
+          }
+        }
+      }
+    },
     "No requiere 1099" : {
       "localizations" : {
         "en" : {
@@ -9428,6 +10098,16 @@
         }
       }
     },
+    "Nueva" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New"
+          }
+        }
+      }
+    },
     "Nueva agencia…" : {
       "localizations" : {
         "en" : {
@@ -9659,6 +10339,16 @@
         }
       }
     },
+    "Opcional: con contraseña, nadie puede reabrir un periodo ni registrar con una fecha cerrada sin escribirla." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Optional: with a password, no one can reopen a period or record with a closed date without entering it."
+          }
+        }
+      }
+    },
     "Opcional: para refacturárselo" : {
       "localizations" : {
         "en" : {
@@ -9675,6 +10365,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Source"
+          }
+        }
+      }
+    },
+    "Origen (tu negocio)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Origin (your business)"
+          }
+        }
+      }
+    },
+    "Origen de ventas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sales sourcing"
           }
         }
       }
@@ -10023,6 +10733,16 @@
         }
       }
     },
+    "Pagar a %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pay %@"
+          }
+        }
+      }
+    },
     "Pagar desde" : {
       "localizations" : {
         "en" : {
@@ -10150,6 +10870,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Scheduled payment"
+          }
+        }
+      }
+    },
+    "Pago programado a %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scheduled payment to %@"
           }
         }
       }
@@ -10480,7 +11210,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Closed period"
+            "value" : "Closed Period"
           }
         }
       }
@@ -10511,6 +11241,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Period or reference (e.g., Q3 2026)"
+          }
+        }
+      }
+    },
+    "Periodo seleccionado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selected period"
           }
         }
       }
@@ -10572,6 +11312,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "You'll be able to bring in your transactions as CSV or OFX, categorize them from an inbox, and reconcile with your bank statement."
+          }
+        }
+      }
+    },
+    "Por" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "By"
           }
         }
       }
@@ -10643,6 +11393,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "To confirm"
+          }
+        }
+      }
+    },
+    "Por confirmar · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To confirm · %@"
           }
         }
       }
@@ -10788,6 +11548,26 @@
         }
       }
     },
+    "Precios con impuesto incluido" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prices include tax"
+          }
+        }
+      }
+    },
+    "Predeterminada" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Default"
+          }
+        }
+      }
+    },
     "Primer día de la semana" : {
       "localizations" : {
         "en" : {
@@ -10875,6 +11655,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Scheduled"
+          }
+        }
+      }
+    },
+    "Programado para el %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scheduled for %@"
+          }
+        }
+      }
+    },
+    "Programado para hoy" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scheduled for today"
           }
         }
       }
@@ -11271,6 +12071,36 @@
         }
       }
     },
+    "Quitar como predeterminada" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove as Default"
+          }
+        }
+      }
+    },
+    "Quitar contraseña de cierre" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove closing password"
+          }
+        }
+      }
+    },
+    "Quitar contraseña…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove Password…"
+          }
+        }
+      }
+    },
     "Quitar filtro" : {
       "localizations" : {
         "en" : {
@@ -11287,6 +12117,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Clear filters"
+          }
+        }
+      }
+    },
+    "Quitar la contraseña de cierre" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove the Closing Password"
           }
         }
       }
@@ -11321,6 +12161,16 @@
         }
       }
     },
+    "Quitar…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove…"
+          }
+        }
+      }
+    },
     "Qué crea cada repetición" : {
       "localizations" : {
         "en" : {
@@ -11351,6 +12201,16 @@
         }
       }
     },
+    "Reabrir" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reopen"
+          }
+        }
+      }
+    },
     "Reabrir %@" : {
       "localizations" : {
         "en" : {
@@ -11367,6 +12227,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Resume"
+          }
+        }
+      }
+    },
+    "Reapertura" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reopen"
           }
         }
       }
@@ -11671,6 +12541,16 @@
         }
       }
     },
+    "Registrar de todos modos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Record Anyway"
+          }
+        }
+      }
+    },
     "Registrar pago" : {
       "localizations" : {
         "en" : {
@@ -11777,6 +12657,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Duplicate occurrence"
+          }
+        }
+      }
+    },
+    "Repite la contraseña" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repeat the password"
           }
         }
       }
@@ -12477,6 +13367,16 @@
         }
       }
     },
+    "Se muestran así: %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shown as: %@."
+          }
+        }
+      }
+    },
     "Se paga el %@" : {
       "localizations" : {
         "en" : {
@@ -12493,6 +13393,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Will be paid from %@"
+          }
+        }
+      }
+    },
+    "Se pide para reabrir un periodo y para registrar algo con una fecha cerrada." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Required to reopen a period and to record something with a closed date."
           }
         }
       }
@@ -12533,6 +13443,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "A reversing entry will be posted. The invoice stays in the history as void."
+          }
+        }
+      }
+    },
+    "Se registró el recurrente de %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recurring expense from %@ recorded"
           }
         }
       }
@@ -12757,6 +13677,16 @@
         }
       }
     },
+    "Siguiente cierre" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next close"
+          }
+        }
+      }
+    },
     "Sin agencia" : {
       "localizations" : {
         "en" : {
@@ -12773,6 +13703,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No entries"
+          }
+        }
+      }
+    },
+    "Sin avisos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Notifications"
           }
         }
       }
@@ -12863,6 +13803,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No connection to iCloud. You are working with the data saved on this device."
+          }
+        }
+      }
+    },
+    "Sin contraseña" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No password"
+          }
+        }
+      }
+    },
+    "Sin contraseña, cualquiera con acceso a la app podrá reabrir los periodos cerrados." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Without a password, anyone with access to the app will be able to reopen closed periods."
           }
         }
       }
@@ -13014,6 +13974,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No tax collected in the period."
+          }
+        }
+      }
+    },
+    "Sin leer" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unread"
           }
         }
       }
@@ -13325,6 +14295,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Only issued invoices can be sent."
+          }
+        }
+      }
+    },
+    "Solo se puede cerrar hasta hoy: elige una fecha que ya pasó." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You can only close through today: choose a date that has already passed."
           }
         }
       }
@@ -14243,6 +15223,16 @@
         }
       }
     },
+    "Usar como predeterminada" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use as Default"
+          }
+        }
+      }
+    },
     "Usar este plan" : {
       "localizations" : {
         "en" : {
@@ -14390,6 +15380,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Due today"
+          }
+        }
+      }
+    },
+    "Vence mañana" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Due tomorrow"
           }
         }
       }
@@ -14738,6 +15738,26 @@
         }
       }
     },
+    "Ver asientos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View Entries"
+          }
+        }
+      }
+    },
+    "Ver balanza" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View Trial Balance"
+          }
+        }
+      }
+    },
     "Ver cliente" : {
       "localizations" : {
         "en" : {
@@ -14998,6 +16018,16 @@
         }
       }
     },
+    "Ya existe una cuenta con ese número." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "An account with that number already exists."
+          }
+        }
+      }
+    },
     "Ya hay una cuenta activa con el número %@." : {
       "localizations" : {
         "en" : {
@@ -15205,6 +16235,16 @@
     "· %@" : {
       "shouldTranslate" : false
     },
+    "· Predeterminada" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "· Default"
+          }
+        }
+      }
+    },
     "¿A qué se dedica tu negocio?" : {
       "localizations" : {
         "en" : {
@@ -15290,7 +16330,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Record in a closed period?"
+            "value" : "Record in a Closed Period?"
           }
         }
       }
@@ -15332,6 +16372,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Last sync"
+          }
+        }
+      }
+    },
+    "Últimos 4 dígitos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last 4 digits"
           }
         }
       }

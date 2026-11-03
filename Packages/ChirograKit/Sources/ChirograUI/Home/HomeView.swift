@@ -34,6 +34,8 @@ struct HomeView: View {
     @State private var width: CGFloat = 0
     /// Sección elegida en la columna del iPad (`iPadInicio`).
     @State private var padSection: PadSection = .results
+    /// Aviso de la campana cuyo documento se abre encima.
+    @State private var openedNotice: Notice?
     @ScaledMetric(relativeTo: .footnote) private var legendDot: CGFloat = 8
     @ScaledMetric(relativeTo: .body) private var padColumnWidth: CGFloat = 340
     #if os(macOS)
@@ -131,6 +133,7 @@ struct HomeView: View {
             }
             .editorSheetSizing()
         }
+        .navigationDestination(item: $openedNotice) { NoticeDestination(notice: $0) }
         #if os(macOS)
         .macReportInspector(title: macInvoice.map(invoiceTitle) ?? String(localized: "Por cobrar"), hasSelection: macInvoice != nil,
                             placeholder: String(localized: "No tienes facturas pendientes de cobro."),
@@ -152,6 +155,7 @@ struct HomeView: View {
     private var toolbar: some ToolbarContent {
         switch layout {
         case .phone:
+            ToolbarItem(placement: .primaryAction) { bell }
             ToolbarItem(placement: .primaryAction) { newMenu }
             if let company = companies.first {
                 ToolbarSpacer(.fixed, placement: .primaryAction)
@@ -159,6 +163,7 @@ struct HomeView: View {
                     .sharedBackgroundVisibility(.hidden)
             }
         case .pad:
+            ToolbarItem(placement: .primaryAction) { bell }
             ToolbarItem(placement: .primaryAction) {
                 Button { sheet = .expense } label: { Label("Nuevo gasto", systemImage: "wallet.bifold") }.headerButton()
             }
@@ -180,7 +185,13 @@ struct HomeView: View {
                 }
                 .headerButton()
             }
+            ToolbarItem(placement: .primaryAction) { bell }
         }
+    }
+
+    /// Campana de avisos (canvas `Home`, `iPadInicio`), junto a «+» en el mismo grupo de vidrio.
+    private var bell: some View {
+        NoticesButton { openedNotice = $0 }.headerButton()
     }
 
     private var newMenu: some View {
@@ -654,7 +665,7 @@ struct HomeView: View {
 
     private func accountRow(_ account: Account) -> some View {
         NavigationLink { LedgerView(account: account) } label: {
-            HomeRow(title: account.name, subtitle: "\(account.code) · \(account.subtype.title)") {
+            HomeRow(title: account.maskedName, subtitle: "\(account.code) · \(account.subtype.title)") {
                 accountTile(account)
             } trailing: {
                 Text(ledger.cashBalance(of: account).money).monospacedDigit().foregroundStyle(Palette.ink)
@@ -866,7 +877,7 @@ struct HomeView: View {
                     HStack(spacing: 10) {
                         accountTile(account)
                         VStack(alignment: .leading, spacing: 0) {
-                            Text(account.name).lineLimit(1)
+                            Text(account.maskedName).lineLimit(1)
                             Text("\(account.code) · \(account.subtype.title)").font(.subheadline).foregroundStyle(Palette.ink2).lineLimit(1)
                         }
                         Spacer(minLength: 8)

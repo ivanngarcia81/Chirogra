@@ -87,6 +87,7 @@ struct ChartOfAccountsView: View {
     @ScaledMetric(relativeTo: .body) private var codeWidth: CGFloat = 48
     @Query private var journalLines: [JournalLine]
     @State private var showingNew = false
+    @State private var editing: Account?
     @State private var showArchived = false
     @State private var query = ""
 
@@ -101,14 +102,17 @@ struct ChartOfAccountsView: View {
                 }
                 if !rows.isEmpty {
                     Section {
-                        ForEach(rows) { account in
+                        ForEach(Self.outline(rows), id: \.account.id) { item in
+                            let account = item.account
                             NavigationLink { LedgerView(account: account) } label: {
                                 HStack(spacing: 12) {
                                     Text(account.code).foregroundStyle(Palette.ink2).monospacedDigit().frame(minWidth: codeWidth, alignment: .leading)
                                     VStack(alignment: .leading, spacing: 1) {
-                                        Text(account.name).strikethrough(account.isArchived).foregroundStyle(Palette.ink)
+                                        Text(account.maskedName).strikethrough(account.isArchived).foregroundStyle(Palette.ink)
                                         Text(account.subtype.title).font(.footnote).foregroundStyle(Palette.ink2)
                                     }
+                                    // Subcuenta: sangrada bajo su cuenta principal (canvas `MacPlanCuentas`).
+                                    .padding(.leading, CGFloat(item.depth) * 16)
                                     Spacer(minLength: 8)
                                     Text(ledger.balance(of: account).money).monospacedDigit().foregroundStyle(Palette.ink)
                                 }
@@ -117,6 +121,14 @@ struct ChartOfAccountsView: View {
                             .swipeActions {
                                 if !account.isSystem {
                                     Button(account.isArchived ? "Restaurar" : "Archivar") { account.isArchived.toggle() }
+                                }
+                                Button("Editar") { editing = account }.tint(Palette.blue)
+                            }
+                            .contextMenu {
+                                Button("Editar…", systemImage: "pencil") { editing = account }
+                                if !account.isSystem {
+                                    Button(account.isArchived ? "Restaurar" : "Archivar",
+                                           systemImage: account.isArchived ? "arrow.uturn.backward" : "archivebox") { account.isArchived.toggle() }
                                 }
                             }
                         }
@@ -142,60 +154,18 @@ struct ChartOfAccountsView: View {
             ToolbarItem { Toggle("Archivadas", isOn: $showArchived).headerButton() }
         }
         .sheet(isPresented: $showingNew) { NavigationStack { AccountEditorView() }.editorSheetSizing() }
+        .sheet(item: $editing) { account in NavigationStack { AccountEditorView(account: account) }.editorSheetSizing() }
     }
-}
 
-struct AccountEditorView: View {
-    @Environment(\.modelContext) private var context
-    @Environment(\.dismiss) private var dismiss
-    @Environment(\.unsavedChanges) private var unsavedChanges
-    /// Testigo del editor en `UnsavedChanges`: se retira al guardar, antes de cerrar.
-    @State private var editorToken = EditorToken()
-    @Query private var accounts: [Account]
-    @State private var code = ""
-    @State private var name = ""
-    @State private var subtype: AccountSubtype = .operatingExpense
-
-    private var codeTaken: Bool { accounts.contains { $0.code == code && !code.isEmpty } }
-
-    var body: some View {
-        Form {
-            Section {
-                TextField("Código", text: $code)
-                TextField("Nombre", text: $name)
-                Picker("Tipo", selection: $subtype) {
-                    ForEach(AccountType.allCases, id: \.self) { type in
-                        Section(heading: type.title) {
-                            ForEach(AccountSubtype.allCases.filter { $0.accountType == type }, id: \.self) { Text($0.title).tag($0) }
-                        }
-                    }
-                }
-            } header: {
-                SectionLabel(text: String(localized: "Cuenta"))
-            } footer: {
-                if codeTaken {
-                    Text("Ya existe una cuenta con ese código.").foregroundStyle(Palette.negative)
-                } else {
-                    Text("El tipo decide dónde aparece la cuenta en los reportes.")
-                }
-            }
+    /// Las cuentas con sus subcuentas justo debajo y su nivel (0 = principal). Una subcuenta cuya principal no está en
+    /// la lista (búsqueda, archivada) va en el primer nivel.
+    static func outline(_ accounts: [Account]) -> [(account: Account, depth: Int)] {
+        let ids = Set(accounts.map(\.id))
+        func walk(_ account: Account, _ depth: Int) -> [(account: Account, depth: Int)] {
+            let kids = accounts.filter { $0.parent?.id == account.id }
+            return [(account, depth)] + kids.flatMap { walk($0, min(depth + 1, 4)) }
         }
-        .formStyle(.grouped)
-        .screenBackground()
-        .navigationTitle("Nueva cuenta")
-        .inlineTitle()
-        .discardableEditor(tracking: "\(code)|\(name)|\(subtype)", token: editorToken)
-        .toolbar {
-            ToolbarItem(placement: .confirmationAction) {
-                Button("Guardar") {
-                    context.insert(Account(code: code, name: name, subtype: subtype))
-                    try? context.save()
-                    unsavedChanges?.remove(editorToken); dismiss()
-                }
-                .disabled(name.isEmpty || codeTaken)
-                .headerButton()
-            }
-        }
+        return accounts.filter { $0.parent.map { !ids.contains($0.id) } ?? true }.flatMap { walk($0, 0) }
     }
 }
 
@@ -300,6 +270,8 @@ struct JournalEntryEditorView: View {
     @State private var memo = ""
     @State private var lines: [LineDraft] = [LineDraft(), LineDraft()]
     @State private var errorMessage: String?
+    /// Registrar en un periodo cerrado: se pide la contraseña de cierre y se repite.
+    @State private var closedPeriodRetry: ClosedPeriodRetry?
 
     private var books: Bookkeeper { Bookkeeper(context: context) }
     private var postable: [Account] { accounts.filter(\.isPostable) }
@@ -320,9 +292,16 @@ struct JournalEntryEditorView: View {
         })
     }
 
+    /// Errores que impiden registrar. La fecha en un periodo cerrado no impide: al registrar se pide la contraseña.
     private var validationErrors: [JournalValidationError] {
         guard let validator = try? books.validator() else { return [] }
-        return validator.errors(for: draft)
+        return validator.errors(for: draft).filter { if case .periodLocked = $0 { false } else { true } }
+    }
+
+    /// La fecha cae en un periodo cerrado.
+    private var dateIsLocked: Bool {
+        guard let lock = companies.first?.lockDate else { return false }
+        return Calendar.current.startOfDay(for: date) <= Calendar.current.startOfDay(for: lock)
     }
 
     /// Diseño de `MacDiario` en iPad y Mac, salvo con los dos tamaños de accesibilidad más grandes.
@@ -345,6 +324,18 @@ struct JournalEntryEditorView: View {
         .toolbar {
             ToolbarItem(placement: .confirmationAction) { Button("Registrar asiento", action: save).disabled(!isValid).headerButton() }
         }
+        .closedPeriodUnlock($closedPeriodRetry) { errorMessage = $0 }
+        #if DEBUG
+        // `-qa.asiento cerrado`: un asiento de $10 que cuadra, con la fecha de cierre (para probar la contraseña).
+        .task {
+            guard UserDefaults.standard.string(forKey: "qa.asiento") == "cerrado", let lock = companies.first?.lockDate,
+                  let bank = postable.first(where: { $0.subtype == .bank }),
+                  let expense = postable.first(where: { $0.type == .expense }) else { return }
+            date = lock
+            memo = "QA"
+            lines = [LineDraft(accountID: expense.id, debit: 1_000), LineDraft(accountID: bank.id, credit: 1_000)]
+        }
+        #endif
     }
 
     private func formEditor(_ entry: JournalEntryDraft) -> some View {
@@ -355,6 +346,10 @@ struct JournalEntryEditorView: View {
                 TextField("Concepto", text: $memo)
             } header: {
                 SectionLabel(text: String(localized: "Datos del asiento"))
+            } footer: {
+                if dateIsLocked, let lock = companies.first?.lockDate {
+                    Label(lockedNote(lock), systemImage: "lock").foregroundStyle(Palette.warning)
+                }
             }
             Section {
                 ForEach(Array($lines.enumerated()), id: \.element.id) { index, $line in
@@ -408,9 +403,9 @@ struct JournalEntryEditorView: View {
                     statusBanner(entry)
                     if let lockDate = companies.first?.lockDate {
                         HStack(alignment: .firstTextBaseline, spacing: 10) {
-                            Image(systemName: "lock").foregroundStyle(Palette.ink2).accessibilityHidden(true)
-                            Text("El periodo está cerrado hasta el \(lockDate.shortDate). Para registrar con una fecha anterior, cambia el cierre en Cierre de periodo.")
-                                .font(.footnote).foregroundStyle(Palette.ink2)
+                            Image(systemName: "lock").foregroundStyle(dateIsLocked ? Palette.warning : Palette.ink2).accessibilityHidden(true)
+                            Text(lockedNote(lockDate))
+                                .font(.footnote).foregroundStyle(dateIsLocked ? Palette.warning : Palette.ink2)
                                 .fixedSize(horizontal: false, vertical: true)
                         }
                         .padding(.horizontal, 14).padding(.vertical, 10)
@@ -587,12 +582,31 @@ struct JournalEntryEditorView: View {
         .accessibilityAddTraits(.updatesFrequently)
     }
 
+    /// Aviso del cierre: con la fecha dentro del periodo cerrado, que se pedirá la contraseña.
+    private func lockedNote(_ lock: Date) -> String {
+        let hasPassword = companies.first?.hasClosingPassword ?? false
+        if dateIsLocked {
+            return hasPassword
+                ? String(localized: "La fecha cae en un periodo cerrado (hasta el \(lock.shortDate)). Al registrar te pediremos la contraseña de cierre.")
+                : String(localized: "La fecha cae en un periodo cerrado (hasta el \(lock.shortDate)). Al registrar te pediremos confirmarlo.")
+        }
+        return String(localized: "El periodo está cerrado hasta el \(lock.shortDate). Para registrar con una fecha anterior te pediremos la contraseña de cierre.")
+    }
+
     private func save() {
+        let entry = draft
         do {
-            try books.post(draft)
+            try books.post(entry)
             unsavedChanges?.remove(editorToken); dismiss()
         } catch {
-            errorMessage = error.localizedDescription
+            if let lock = PeriodClosing.lockDate(of: error) {
+                closedPeriodRetry = ClosedPeriodRetry(lockDate: lock) { unlocked in
+                    try unlocked.post(entry)
+                    unsavedChanges?.remove(editorToken); dismiss()
+                }
+            } else {
+                errorMessage = error.localizedDescription
+            }
         }
     }
 }
@@ -750,6 +764,7 @@ struct LedgerView: View {
     @State private var from = DateInterval.month(containing: .now).start
     @State private var to = Date()
     @State private var width: CGFloat = 0
+    @State private var editing = false
     @ScaledMetric(relativeTo: .subheadline) private var amountWidth: CGFloat = 100
     @ScaledMetric(relativeTo: .subheadline) private var dateWidth: CGFloat = 58
     @ScaledMetric(relativeTo: .subheadline) private var kindWidth: CGFloat = 110
@@ -805,6 +820,14 @@ struct LedgerView: View {
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
         .navigationTitle(account.name)
         .modifier(LedgerTitle(inDetailColumn: inDetailColumn))
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button { editing = true } label: { Label("Editar cuenta", systemImage: "pencil") }
+                    .help("Editar cuenta")
+                    .headerButton()
+            }
+        }
+        .sheet(isPresented: $editing) { NavigationStack { AccountEditorView(account: account) }.editorSheetSizing() }
     }
 
     /// Nombre, saldo en grande y tipo (canvas `iPadBancaCuentas`: «Corriente ••4821 · $42,130.18 · Saldo en libros»).
@@ -1016,61 +1039,5 @@ private struct LedgerTitle: ViewModifier {
     let inDetailColumn: Bool
     func body(content: Content) -> some View {
         if inDetailColumn { content.inlineTitle() } else { content.headerTitle() }
-    }
-}
-
-/// Cierre de periodo: fecha hasta la que no se admiten asientos (DISEÑO §4.2).
-struct PeriodCloseView: View {
-    @Query private var companies: [Company]
-    @Environment(\.modelContext) private var context
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-    #if os(iOS)
-    @LayoutSizeClass private var sizeClass
-    #endif
-
-    /// `MacCierre` en iPad y Mac (hasta AX3); la lista del iPhone en pantallas estrechas.
-    private var isWide: Bool {
-        #if os(iOS)
-        if sizeClass != .regular { return false }
-        #endif
-        return dynamicTypeSize < .accessibility4
-    }
-
-    var body: some View {
-        if isWide { PeriodCloseWideView() } else { compactBody }
-    }
-
-    private var compactBody: some View {
-        Form {
-            if let company = companies.first {
-                Section {
-                    HStack(spacing: 12) {
-                        LargeIconTile(systemImage: company.lockDate == nil ? "lock.open" : "lock", color: Palette.indigo)
-                        VStack(alignment: .leading, spacing: 1) {
-                            Text(company.lockDate == nil ? String(localized: "Libros abiertos") : String(localized: "Libros cerrados hasta"))
-                                .font(.footnote).foregroundStyle(Palette.ink2)
-                            Text(company.lockDate?.shortDate ?? String(localized: "Sin cierre")).font(.amount(24)).foregroundStyle(Palette.ink)
-                        }
-                    }
-                    .accessibilityElement(children: .combine)
-                }
-                Section {
-                    Toggle("Cerrar periodos", isOn: Binding(
-                        get: { company.lockDate != nil },
-                        set: { company.lockDate = $0 ? Calendar.current.date(byAdding: .day, value: -1, to: DateInterval.month(containing: .now).start) : nil }
-                    ))
-                    if let lockDate = company.lockDate {
-                        DatePicker("Cerrado hasta", selection: Binding(get: { lockDate }, set: { company.lockDate = $0 }), displayedComponents: .date)
-                    }
-                } footer: {
-                    Text("No se podrá registrar nada con fecha igual o anterior al cierre. Así los reportes que ya entregaste no cambian.")
-                }
-            }
-        }
-        .formStyle(.grouped)
-        .screenBackground()
-        .navigationTitle("Cierre de periodo")
-        .headerTitle()
-        .onDisappear { try? context.save() }
     }
 }

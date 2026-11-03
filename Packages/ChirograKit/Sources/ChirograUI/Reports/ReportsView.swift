@@ -1646,6 +1646,10 @@ struct ReportsView: View {
                 }
                 MacInspectorRow(String(localized: "Estado del pago"),
                                 value: lastPayment.map { String(localized: "Pagado el \($0.shortDate)") } ?? String(localized: "Sin pagos registrados"))
+                // Canvas «Origen de ventas · Austin, TX»: la regla que eligió la empresa en Impuestos (informativa).
+                if let company = companies.first {
+                    MacInspectorRow(String(localized: "Origen de ventas"), value: company.salesTaxSourcing.title)
+                }
             }
         }
     }
