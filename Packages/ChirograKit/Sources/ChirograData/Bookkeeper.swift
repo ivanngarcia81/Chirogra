@@ -12,6 +12,8 @@ public enum BookkeepingError: Error, Equatable, LocalizedError {
     case invalidState(String)
     case overpayment(balanceDue: Int64)
     case exceedsCreditable(Int64)
+    case wrongClosingPassword
+    case duplicateAccountCode(String)
 
     public var errorDescription: String? {
         switch self {
@@ -25,6 +27,8 @@ public enum BookkeepingError: Error, Equatable, LocalizedError {
         case .overpayment(let balance): String(localized: "El importe supera el saldo pendiente (\(Money(minorUnits: balance).formatted())).")
         case .exceedsCreditable(let available):
             String(localized: "La nota supera lo que queda por acreditar de la factura (\(Money(minorUnits: available).formatted())).")
+        case .wrongClosingPassword: String(localized: "La contraseña de cierre no es correcta.")
+        case .duplicateAccountCode(let code): String(localized: "Ya hay una cuenta activa con el número \(code).")
         }
     }
 }
@@ -63,10 +67,26 @@ extension PostingError {
 public struct Bookkeeper {
     public let context: ModelContext
     public var actor: String
+    /// `true` en la copia que devuelve `unlockedForClosedPeriod(password:)`: deja registrar en un periodo cerrado.
+    public private(set) var allowsPostingInClosedPeriod = false
 
     public init(context: ModelContext, actor: String = "") {
         self.context = context
         self.actor = actor
+    }
+
+    /// Copia de este `Bookkeeper` que puede registrar con fecha en un periodo cerrado. Si la empresa tiene
+    /// contraseña de cierre hay que darla; si no tiene, basta con pedirlo explícitamente (DISEÑO §6.6). Queda en la auditoría.
+    public func unlockedForClosedPeriod(password: String?) throws -> Bookkeeper {
+        if let company = try company(), company.hasClosingPassword {
+            guard let password, ClosingPassword.verify(password, against: company.closingPasswordHash) else {
+                throw BookkeepingError.wrongClosingPassword
+            }
+        }
+        var unlocked = self
+        unlocked.allowsPostingInClosedPeriod = true
+        audit("Company", try company()?.id, "unlockClosedPeriod", String(localized: "Registro en periodo cerrado autorizado"))
+        return unlocked
     }
 
     // MARK: - Consultas
@@ -149,9 +169,10 @@ public struct Bookkeeper {
         for entry in sector.template.entries {
             context.insert(Account(code: entry.code, name: entry.name(for: locale), subtype: entry.subtype, isSystem: entry.isSystem))
         }
-        context.insert(NumberSequence(kind: .journalEntry, prefix: "", minimumDigits: 1))
-        context.insert(NumberSequence(kind: .invoice, prefix: "F-", nextNumber: 1001))
-        context.insert(NumberSequence(kind: .creditNote, prefix: "NC-", nextNumber: 1))
+        for kind in DocumentKind.allCases {
+            let format = kind.defaultFormat
+            context.insert(NumberSequence(kind: kind, prefix: format.prefix, nextNumber: format.firstNumber, minimumDigits: format.minimumDigits))
+        }
         audit("Company", company.id, "create", String(localized: "Alta de \(legalName)"))
         try context.save()
         return company
@@ -161,7 +182,8 @@ public struct Bookkeeper {
 
     public func validator() throws -> JournalValidator {
         let infos = Dictionary(uniqueKeysWithValues: try accounts(includeArchived: true).map { ($0.id, $0.accountInfo) })
-        return JournalValidator(lockDate: try company()?.lockDate, accountLookup: { infos[$0] })
+        let lockDate = allowsPostingInClosedPeriod ? nil : try company()?.lockDate
+        return JournalValidator(lockDate: lockDate, accountLookup: { infos[$0] })
     }
 
     public func validate(_ draft: JournalEntryDraft) throws {
@@ -215,7 +237,11 @@ public struct Bookkeeper {
             throw BookkeepingError.invalidState(String(localized: "Solo se pueden editar facturas en borrador."))
         }
         let invoice = existing ?? Invoice(customer: input.customer, issueDate: input.issueDate, dueDate: input.dueDate)
-        if existing == nil { context.insert(invoice) }
+        if existing == nil {
+            context.insert(invoice)
+            invoice.pricesIncludeTax = try company()?.pricesIncludeTax ?? false
+        }
+        if let pricesIncludeTax = input.pricesIncludeTax { invoice.pricesIncludeTax = pricesIncludeTax }
 
         invoice.customer = input.customer
         invoice.issueDate = input.issueDate
@@ -235,16 +261,41 @@ public struct Bookkeeper {
         return invoice
     }
 
-    /// Componentes de impuesto de un grupo, con la cuenta de pasivo de cada agencia.
+    /// Componentes de impuesto de un grupo, con la cuenta de pasivo de cada agencia. El id también puede ser
+    /// el de una sola `TaxRate` (esquema 2: «tasa predeterminada»), que cuenta como grupo de un componente.
     public func taxComponents(groupID: UUID?, on date: Date) throws -> [TaxComponent] {
         guard let groupID else { return [] }
         var descriptor = FetchDescriptor<TaxGroup>(predicate: #Predicate { $0.id == groupID })
         descriptor.fetchLimit = 1
-        guard let group = try context.fetch(descriptor).first else { return [] }
+        let rates: [TaxRate]
+        if let group = try context.fetch(descriptor).first {
+            rates = group.rates ?? []
+        } else if let rate = try taxRate(id: groupID) {
+            rates = [rate]
+        } else {
+            return []
+        }
         let fallback = try systemAccount(.salesTaxPayable).id
-        return (group.rates ?? []).filter { $0.isEffective(on: date) }.map { rate in
+        return rates.filter { $0.isEffective(on: date) }.map { rate in
             TaxComponent(id: rate.id, name: rate.name, rateMillionths: rate.rateMillionths,
                          liabilityAccountID: rate.agency?.liabilityAccountID ?? fallback)
+        }
+    }
+
+    public func taxRate(id: UUID?) throws -> TaxRate? {
+        guard let id else { return nil }
+        var descriptor = FetchDescriptor<TaxRate>(predicate: #Predicate { $0.id == id })
+        descriptor.fetchLimit = 1
+        return try context.fetch(descriptor).first
+    }
+
+    /// Componentes con que se **emitió** una factura (tasas guardadas en `taxLines`), para que las notas de crédito
+    /// y los reportes no cambien si después se edita una tasa. La cuenta de pasivo es la actual de cada agencia.
+    public func issuedTaxComponents(of invoice: Invoice) throws -> [TaxComponent] {
+        let fallback = try systemAccount(.salesTaxPayable).id
+        return try (invoice.taxLines ?? []).sorted { $0.name < $1.name }.map { line in
+            TaxComponent(id: line.taxRateID ?? line.id, name: line.name, rateMillionths: line.rateMillionths,
+                         liabilityAccountID: try taxRate(id: line.taxRateID)?.agency?.liabilityAccountID ?? fallback)
         }
     }
 
@@ -273,7 +324,8 @@ public struct Bookkeeper {
                 taxComponents: components,
                 customerIsTaxExempt: invoice.customer?.isTaxExempt ?? false,
                 discount: invoice.discount,
-                discountAccountID: discountAccountID
+                discountAccountID: discountAccountID,
+                pricesIncludeTax: invoice.pricesIncludeTax
             )
         } catch {
             throw BookkeepingError.invalidDocument(error)
@@ -331,7 +383,8 @@ public struct Bookkeeper {
     }
 
     /// Emite una nota de crédito contra una factura emitida: Debe Ingresos (+ Sales Tax Payable) / Haber CxC.
-    /// El impuesto se calcula con el grupo de la factura en su fecha de emisión.
+    /// El impuesto se calcula con las tasas con que se emitió la factura (`issuedTaxComponents`), aunque
+    /// después se hayan editado. `amount` es siempre sin impuesto, también en facturas con precios con impuesto incluido.
     ///
     /// Se aplica primero al saldo pendiente de la factura; lo que sobra (p. ej. una devolución sobre una factura
     /// ya pagada) queda como **saldo a favor** del cliente: un saldo acreedor en CxC que luego se aplica a otra
@@ -345,7 +398,7 @@ public struct Bookkeeper {
         }
         let receivable = try systemAccount(.accountsReceivable)
         let lines = try creditLines(for: invoice, amount: amount, isTaxable: isTaxable, lineID: lineID)
-        let components = try taxComponents(groupID: invoice.taxGroupID, on: invoice.issueDate)
+        let components = try issuedTaxComponents(of: invoice)
         let number = try peekDocumentNumber(.creditNote)
         let posting: InvoicePosting
         do {
@@ -465,13 +518,14 @@ public struct Bookkeeper {
 
     /// Registra una factura de proveedor: Debe Gastos / Haber CxP.
     @discardableResult
-    public func record(_ bill: Bill) throws -> JournalEntry {
+    public func record(_ bill: Bill, save: Bool = true) throws -> JournalEntry {
         guard bill.journalEntryID == nil else { throw BookkeepingError.invalidState(String(localized: "La factura del proveedor ya está registrada.")) }
         let payable = try account(id: bill.payableAccountID) ?? systemAccount(.accountsPayable)
         let lines = try costLines(bill.sortedLines.map { ($0.accountID, $0.amount, $0.details) })
+        let reference = bill.vendorNumber.isEmpty ? bill.memo : bill.vendorNumber
         let draft: JournalEntryDraft
         do {
-            draft = try PostingRules.bill(date: bill.billDate, memo: String(localized: "Factura \(bill.vendorNumber) · \(bill.vendor?.name ?? "")"),
+            draft = try PostingRules.bill(date: bill.billDate, memo: String(localized: "Factura \(reference) · \(bill.vendor?.name ?? "")"),
                                           payableAccountID: payable.id, lines: lines)
         } catch {
             throw BookkeepingError.invalidDocument(error)
@@ -482,14 +536,15 @@ public struct Bookkeeper {
         bill.journalEntryID = entry.id
         bill.total = draft.totalCredits
         bill.status = .open
-        try saveOrRollback()
+        if save { try saveOrRollback() }
         return entry
     }
 
     /// Paga (total o parcialmente) una factura de proveedor: Debe CxP / Haber Banco.
     @discardableResult
     public func pay(
-        _ bill: Bill, amount: Int64, date: Date = Date(), from paymentAccount: Account, method: PaymentMethod = .bankTransfer
+        _ bill: Bill, amount: Int64, date: Date = Date(), from paymentAccount: Account, method: PaymentMethod = .bankTransfer,
+        reference: String = "", save: Bool = true
     ) throws -> BillPayment {
         guard bill.isOpen, bill.journalEntryID != nil else { throw BookkeepingError.invalidState(String(localized: "La factura del proveedor no está pendiente.")) }
         guard amount <= bill.balanceDue else { throw BookkeepingError.overpayment(balanceDue: bill.balanceDue) }
@@ -502,35 +557,42 @@ public struct Bookkeeper {
             throw BookkeepingError.invalidDocument(error)
         }
         let payment = BillPayment(bill: bill, date: date, amount: amount, method: method, paymentAccountID: paymentAccount.id)
+        payment.reference = reference
         let entry = try post(draft, sourceDocumentID: payment.id, save: false)
         context.insert(payment)
         entry.lines?.forEach { $0.vendorID = bill.vendor?.id }
         payment.journalEntryID = entry.id
         bill.amountPaid += amount
         bill.status = bill.balanceDue == 0 ? .paid : .partiallyPaid
-        try saveOrRollback()
+        if bill.balanceDue == 0 { clearSchedule(of: bill) }
+        if save { try saveOrRollback() }
         return payment
     }
 
     /// Registra un gasto pagado al momento: Debe Gastos / Haber cuenta de pago.
     @discardableResult
-    public func record(_ expense: Expense) throws -> JournalEntry {
+    public func record(_ expense: Expense, save: Bool = true) throws -> JournalEntry {
         guard !expense.isPosted else { throw BookkeepingError.invalidState(String(localized: "El gasto ya está registrado.")) }
+        guard !expense.isVoid else { throw BookkeepingError.invalidState(String(localized: "El gasto está anulado.")) }
+        let draft = try expenseDraft(for: expense)
+        let entry = try post(draft, sourceDocumentID: expense.id, save: false)
+        entry.lines?.forEach { $0.vendorID = expense.vendor?.id; $0.customerID = expense.customer?.id }
+        expense.journalEntryID = entry.id
+        expense.total = draft.totalCredits
+        if save { try saveOrRollback() }
+        return entry
+    }
+
+    /// Asiento que corresponde a los datos actuales de un gasto: Debe Gastos / Haber cuenta de pago.
+    func expenseDraft(for expense: Expense) throws -> JournalEntryDraft {
         guard let paymentAccount = try account(id: expense.paymentAccountID) else { throw BookkeepingError.unknownAccount }
         let lines = try costLines(expense.sortedLines.map { ($0.accountID, $0.amount, $0.details) })
-        let draft: JournalEntryDraft
         do {
-            draft = try PostingRules.expense(date: expense.date, memo: String(localized: "Gasto · \(expense.payee)"),
-                                             paymentAccountID: paymentAccount.id, lines: lines)
+            return try PostingRules.expense(date: expense.date, memo: String(localized: "Gasto · \(expense.payee)"),
+                                            paymentAccountID: paymentAccount.id, lines: lines)
         } catch {
             throw BookkeepingError.invalidDocument(error)
         }
-        let entry = try post(draft, sourceDocumentID: expense.id, save: false)
-        entry.lines?.forEach { $0.vendorID = expense.vendor?.id }
-        expense.journalEntryID = entry.id
-        expense.total = draft.totalCredits
-        try saveOrRollback()
-        return entry
     }
 
     // MARK: - Antigüedad
@@ -562,20 +624,23 @@ public struct Bookkeeper {
                 SalesTaxDocument.Tax(rateID: $0.taxRateID, name: $0.name, rateMillionths: $0.rateMillionths,
                                      taxableBase: $0.taxableBase, amount: $0.amount)
             }
-            // Misma base que al emitir: líneas gravables menos su parte proporcional del descuento.
+            // Misma base que al emitir: líneas gravables menos su parte proporcional del descuento
+            // (con precios con impuesto incluido, la base ya sin impuesto que quedó en el desglose).
             let taxableLines = invoice.sortedLines.filter(\.isTaxable).reduce(0) { $0 + $1.amount }
             let taxableDiscount = invoice.subtotal == 0 ? 0
                 : (invoice.discount * taxableLines).dividedRoundingHalfAwayFromZero(by: invoice.subtotal)
-            return SalesTaxDocument(date: invoice.issueDate, netSales: invoice.subtotal - invoice.discount,
-                                    taxableBase: exempt ? 0 : taxableLines - taxableDiscount, isExempt: exempt, taxes: taxes)
+            let grossBase = taxableLines - taxableDiscount
+            let base = invoice.pricesIncludeTax ? (invoice.taxLines?.first?.taxableBase ?? grossBase) : grossBase
+            return SalesTaxDocument(date: invoice.issueDate, netSales: invoice.netSales,
+                                    taxableBase: exempt ? 0 : base, isExempt: exempt, taxes: taxes)
         }
         for note in try context.fetch(FetchDescriptor<CreditNote>()) {
             guard let invoice = note.invoice else { continue }
             let exempt = invoice.customer?.isTaxExempt ?? false
             let base = note.isTaxable && !exempt ? note.amount : 0
-            // Mismo cálculo que al emitir la nota: grupo de la factura en su fecha.
+            // Mismo cálculo que al emitir la nota: tasas con que se emitió la factura.
             let taxes = base > 0
-                ? SalesTaxCalculator.taxes(onTaxableBase: base, components: try taxComponents(groupID: invoice.taxGroupID, on: invoice.issueDate))
+                ? SalesTaxCalculator.taxes(onTaxableBase: base, components: try issuedTaxComponents(of: invoice))
                     .map { SalesTaxDocument.Tax(rateID: $0.component.id, name: $0.component.name, rateMillionths: $0.component.rateMillionths,
                                                 taxableBase: -$0.taxableBase, amount: -$0.amount) }
                 : []
@@ -606,19 +671,20 @@ public struct Bookkeeper {
 
     // MARK: - Auxiliares
 
-    private func costLines(_ raw: [(UUID?, Int64, String)]) throws -> [CostLine] {
+    func costLines(_ raw: [(UUID?, Int64, String)]) throws -> [CostLine] {
         try raw.map { accountID, amount, memo in
             guard let accountID else { throw BookkeepingError.unknownAccount }
             return CostLine(accountID: accountID, amount: amount, memo: memo)
         }
     }
 
-    private func sequence(_ kind: DocumentKind) throws -> NumberSequence {
+    func sequence(_ kind: DocumentKind) throws -> NumberSequence {
         let raw = kind.rawValue
         if let existing = try context.fetch(FetchDescriptor<NumberSequence>(predicate: #Predicate { $0.kindRaw == raw })).first {
             return existing
         }
-        let created = NumberSequence(kind: kind, prefix: "")
+        let format = kind.defaultFormat
+        let created = NumberSequence(kind: kind, prefix: format.prefix, nextNumber: format.firstNumber, minimumDigits: format.minimumDigits)
         context.insert(created)
         return created
     }
@@ -645,7 +711,7 @@ public struct Bookkeeper {
         context.insert(AuditEvent(actor: actor, entityName: entity, entityID: id, action: action, summary: summary))
     }
 
-    private func saveOrRollback() throws {
+    func saveOrRollback() throws {
         do {
             try context.save()
         } catch {

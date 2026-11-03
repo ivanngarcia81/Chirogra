@@ -65,4 +65,29 @@ public enum SalesTaxCalculator {
     public static func totalTax(onTaxableBase base: Int64, components: [TaxComponent]) -> Int64 {
         taxes(onTaxableBase: base, components: components).reduce(0) { $0 + $1.amount }
     }
+
+    /// Separa el impuesto de un importe gravable que ya lo incluye («precios con impuesto incluido»).
+    ///
+    /// La base es `gross / (1 + tasa combinada)` redondeada al centavo y el impuesto es **lo que falta** hasta el bruto,
+    /// así que `base + impuesto == gross` siempre (el cliente paga exactamente el precio anunciado). El impuesto se
+    /// reparte por componente calculándolo sobre la base, con el residuo de redondeo en el componente de mayor tasa.
+    public static func taxesIncluded(inGross gross: Int64, components: [TaxComponent]) -> (base: Int64, taxes: [TaxComponentAmount]) {
+        let combinedRate = components.reduce(0) { $0 + $1.rateMillionths }
+        guard gross > 0, combinedRate > 0 else { return (gross, []) }
+        let base = (gross * millionth).dividedRoundingHalfAwayFromZero(by: millionth + combinedRate)
+        let totalTax = gross - base
+
+        var amounts = components.map { component in
+            TaxComponentAmount(
+                component: component,
+                taxableBase: base,
+                amount: (base * component.rateMillionths).dividedRoundingHalfAwayFromZero(by: millionth)
+            )
+        }
+        let residual = totalTax - amounts.reduce(0) { $0 + $1.amount }
+        if residual != 0, let largest = amounts.indices.max(by: { amounts[$0].component.rateMillionths < amounts[$1].component.rateMillionths }) {
+            amounts[largest].amount += residual
+        }
+        return (base, amounts)
+    }
 }

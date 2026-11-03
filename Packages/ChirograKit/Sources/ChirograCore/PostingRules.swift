@@ -39,8 +39,12 @@ public struct InvoicePosting: Hashable, Sendable {
     public var taxableBase: Int64
     public var taxes: [TaxComponentAmount]
     public var total: Int64
+    /// Los importes de las líneas ya incluían el impuesto: `subtotal` es bruto y `total = subtotal − discount`.
+    public var pricesIncludeTax: Bool = false
 
     public var totalTax: Int64 { taxes.reduce(0) { $0 + $1.amount } }
+    /// Ventas sin impuesto: lo que va a ingresos netos de descuento.
+    public var netSales: Int64 { subtotal - discount - (pricesIncludeTax ? totalTax : 0) }
 }
 
 public enum PostingError: Error, Hashable, Sendable {
@@ -67,7 +71,8 @@ public enum PostingRules {
         taxComponents: [TaxComponent],
         customerIsTaxExempt: Bool = false,
         discount: Int64 = 0,
-        discountAccountID: UUID? = nil
+        discountAccountID: UUID? = nil,
+        pricesIncludeTax: Bool = false
     ) throws(PostingError) -> InvoicePosting {
         guard !lines.isEmpty else { throw .noLines }
         guard lines.allSatisfy({ $0.amount > 0 }) else { throw .nonPositiveAmount }
@@ -76,15 +81,33 @@ public enum PostingRules {
         guard discount >= 0, discount <= subtotal, discount == 0 || discountAccountID != nil else { throw .invalidDiscount }
         let taxableSubtotal = customerIsTaxExempt ? 0 : lines.filter(\.isTaxable).reduce(0) { $0 + $1.amount }
         let taxableDiscount = subtotal == 0 ? 0 : (discount * taxableSubtotal).dividedRoundingHalfAwayFromZero(by: subtotal)
-        let taxableBase = taxableSubtotal - taxableDiscount
-        let taxes = taxableBase > 0
-            ? SalesTaxCalculator.taxes(onTaxableBase: taxableBase, components: taxComponents).filter { $0.amount != 0 }
-            : []
-        let total = subtotal - discount + taxes.reduce(0) { $0 + $1.amount }
+        var taxableBase = taxableSubtotal - taxableDiscount
+        let taxes: [TaxComponentAmount]
+        var incomeLines = lines
+        let total: Int64
+        if pricesIncludeTax {
+            // El bruto gravable ya trae el impuesto: se separa y se descuenta de los ingresos de las líneas gravables,
+            // repartido en proporción a su importe. El cliente paga exactamente las líneas menos el descuento.
+            let included = SalesTaxCalculator.taxesIncluded(inGross: taxableBase, components: taxComponents)
+            taxes = included.taxes.filter { $0.amount != 0 }
+            taxableBase = included.base
+            let totalTax = taxes.reduce(0) { $0 + $1.amount }
+            if totalTax > 0 {
+                let taxableIndices = lines.indices.filter { lines[$0].isTaxable }
+                let shares = allocate(totalTax, weights: taxableIndices.map { lines[$0].amount })
+                for (index, share) in zip(taxableIndices, shares) { incomeLines[index].amount -= share }
+            }
+            total = subtotal - discount
+        } else {
+            taxes = taxableBase > 0
+                ? SalesTaxCalculator.taxes(onTaxableBase: taxableBase, components: taxComponents).filter { $0.amount != 0 }
+                : []
+            total = subtotal - discount + taxes.reduce(0) { $0 + $1.amount }
+        }
 
         var entryLines: [JournalLineDraft] = total > 0 ? [.debit(receivableAccountID, total)] : []
         if discount > 0, let discountAccountID { entryLines.append(.debit(discountAccountID, discount)) }
-        entryLines += grouped(lines.map { ($0.incomeAccountID, $0.amount) }).map { .credit($0.0, $0.1) }
+        entryLines += grouped(incomeLines.filter { $0.amount > 0 }.map { ($0.incomeAccountID, $0.amount) }).map { .credit($0.0, $0.1) }
         entryLines += grouped(taxes.map { ($0.component.liabilityAccountID, $0.amount) }).map { .credit($0.0, $0.1) }
 
         return InvoicePosting(
@@ -94,8 +117,25 @@ public enum PostingRules {
             taxableSubtotal: taxableSubtotal,
             taxableBase: taxableBase,
             taxes: taxes,
-            total: total
+            total: total,
+            pricesIncludeTax: pricesIncludeTax
         )
+    }
+
+    /// Reparte `amount` según `weights` (mayor resto; a igualdad, el primero). La suma es exacta.
+    public static func allocate(_ amount: Int64, weights: [Int64]) -> [Int64] {
+        let total = weights.reduce(0, +)
+        guard amount > 0, total > 0 else { return weights.map { _ in 0 } }
+        var shares = weights.map { weight -> (amount: Int64, remainder: Int64) in
+            let (share, remainder) = total.dividingFullWidth(amount.multipliedFullWidth(by: weight))
+            return (share, remainder)
+        }
+        var leftover = amount - shares.reduce(0) { $0 + $1.amount }
+        for index in shares.indices.sorted(by: { shares[$0].remainder > shares[$1].remainder }) where leftover > 0 {
+            shares[index].amount += 1
+            leftover -= 1
+        }
+        return shares.map(\.amount)
     }
 
     /// Nota de crédito: el asiento inverso de una factura con esas mismas líneas.

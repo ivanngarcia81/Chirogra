@@ -2,14 +2,12 @@ import ChirograCore
 import Foundation
 import SwiftData
 
-// Reglas del esquema (DISEÑO §5.1), pensadas para la sincronización con CloudKit desde la v1:
-// - todas las propiedades tienen valor por defecto y todas las relaciones son opcionales;
-// - sin `@Attribute(.unique)`: la unicidad (números de documento) la valida la capa de dominio;
-// - sin la regla de borrado `.deny` (CloudKit no la admite): impedir borrar cuentas o clientes con movimientos
-//   es responsabilidad de la capa de dominio (se archivan);
-// - toda relación tiene inversa. Las referencias secundarias (cuenta de ingreso de una línea,
-//   asiento generado por un documento…) se guardan como `UUID` para no multiplicar inversas en `Account`;
-// - el dinero va en `Int64` de centavos; los enums se guardan como `String` (`…Raw`).
+// Esquema 1.0.0, CONGELADO. Es la forma exacta con la que la app guardó los datos hasta el esquema 2
+// (DISEÑO §6.4). SwiftData lo necesita para reconocer los almacenes viejos y migrarlos a `SchemaV2`.
+//
+// No cambiar nada aquí: ni nombres, ni tipos, ni valores por defecto, ni relaciones. Solo lleva las
+// propiedades guardadas; la lógica (propiedades calculadas, inicializadores con datos) vive en `SchemaV2`,
+// que es lo que usa la app a través de los `typealias` de `SchemaV2.swift`.
 
 public enum SchemaV1: VersionedSchema {
     public static let versionIdentifier = Schema.Version(1, 0, 0)
@@ -26,69 +24,6 @@ public enum SchemaV1: VersionedSchema {
     }
 }
 
-public enum ChirograMigrationPlan: SchemaMigrationPlan {
-    public static var schemas: [any VersionedSchema.Type] { [SchemaV1.self] }
-    public static var stages: [MigrationStage] { [] }
-}
-
-public typealias Company = SchemaV1.Company
-public typealias Account = SchemaV1.Account
-public typealias JournalEntry = SchemaV1.JournalEntry
-public typealias JournalLine = SchemaV1.JournalLine
-public typealias Customer = SchemaV1.Customer
-public typealias Vendor = SchemaV1.Vendor
-public typealias Item = SchemaV1.Item
-public typealias Invoice = SchemaV1.Invoice
-public typealias InvoiceLine = SchemaV1.InvoiceLine
-public typealias InvoiceTaxLine = SchemaV1.InvoiceTaxLine
-public typealias CreditNote = SchemaV1.CreditNote
-public typealias CreditApplication = SchemaV1.CreditApplication
-public typealias PaymentReceived = SchemaV1.PaymentReceived
-public typealias PaymentApplication = SchemaV1.PaymentApplication
-public typealias Bill = SchemaV1.Bill
-public typealias BillLine = SchemaV1.BillLine
-public typealias BillPayment = SchemaV1.BillPayment
-public typealias Expense = SchemaV1.Expense
-public typealias ExpenseLine = SchemaV1.ExpenseLine
-public typealias Attachment = SchemaV1.Attachment
-public typealias TaxAgency = SchemaV1.TaxAgency
-public typealias TaxRate = SchemaV1.TaxRate
-public typealias TaxGroup = SchemaV1.TaxGroup
-public typealias NumberSequence = SchemaV1.NumberSequence
-public typealias AuditEvent = SchemaV1.AuditEvent
-
-// MARK: - Enums persistidos como texto
-
-public enum EntityType: String, CaseIterable, Sendable, Codable {
-    case soleProprietorship, llc, sCorp, cCorp, partnership
-}
-
-public enum EntryStatus: String, Sendable, Codable {
-    case draft, posted
-}
-
-public enum InvoiceStatus: String, CaseIterable, Sendable, Codable {
-    case draft, sent, partiallyPaid, paid, void
-}
-
-public enum BillStatus: String, CaseIterable, Sendable, Codable {
-    case open, partiallyPaid, paid, void
-}
-
-public enum PaymentMethod: String, CaseIterable, Sendable, Codable {
-    case cash, check, bankTransfer, card, other
-}
-
-public enum DocumentKind: String, CaseIterable, Sendable, Codable {
-    case journalEntry, invoice, creditNote
-}
-
-public enum FilingFrequency: String, CaseIterable, Sendable, Codable {
-    case monthly, quarterly, annual
-}
-
-// MARK: - Modelos
-
 extension SchemaV1 {
 
     @Model
@@ -99,31 +34,16 @@ extension SchemaV1 {
         public var ein: String = ""
         public var entityTypeRaw: String = EntityType.soleProprietorship.rawValue
         public var state: String = ""
-        /// Sector elegido en el alta (`BusinessSector`); decidió la plantilla del plan de cuentas.
         public var sectorRaw: String = BusinessSector.services.rawValue
         public var address: String = ""
         public var email: String = ""
         public var phone: String = ""
         public var currencyCode: String = "USD"
-        /// Mes (1–12) en que empieza el año fiscal.
         public var fiscalYearStartMonth: Int = 1
-        /// Fecha de cierre: no se contabiliza en o antes de este día.
         public var lockDate: Date?
         public var createdAt: Date = Date()
 
-        public init(legalName: String, displayName: String = "", entityType: EntityType = .soleProprietorship, state: String = "") {
-            self.legalName = legalName
-            self.displayName = displayName.isEmpty ? legalName : displayName
-            self.entityTypeRaw = entityType.rawValue
-            self.state = state
-        }
-
-        public var entityType: EntityType {
-            get { EntityType(rawValue: entityTypeRaw) ?? .soleProprietorship }
-            set { entityTypeRaw = newValue.rawValue }
-        }
-
-        public var currency: CurrencyCode { CurrencyCode(code: currencyCode) }
+        public init() {}
     }
 
     @Model
@@ -133,42 +53,17 @@ extension SchemaV1 {
         public var name: String = ""
         public var subtypeRaw: String = AccountSubtype.otherAsset.rawValue
         public var details: String = ""
-        /// Cuentas de sistema (CxC, CxP, Sales Tax Payable…): no se borran ni cambian de tipo.
         public var isSystem: Bool = false
         public var isArchived: Bool = false
         public var createdAt: Date = Date()
 
-        public var parent: Account?
-        @Relationship(deleteRule: .nullify, inverse: \Account.parent)
-        public var children: [Account]? = []
-        @Relationship(deleteRule: .nullify, inverse: \JournalLine.account)
-        public var lines: [JournalLine]? = []
+        public var parent: SchemaV1.Account?
+        @Relationship(deleteRule: .nullify, inverse: \SchemaV1.Account.parent)
+        public var children: [SchemaV1.Account]? = []
+        @Relationship(deleteRule: .nullify, inverse: \SchemaV1.JournalLine.account)
+        public var lines: [SchemaV1.JournalLine]? = []
 
-        public init(code: String, name: String, subtype: AccountSubtype, isSystem: Bool = false, parent: Account? = nil) {
-            self.code = code
-            self.name = name
-            self.subtypeRaw = subtype.rawValue
-            self.isSystem = isSystem
-            self.parent = parent
-        }
-
-        public var subtype: AccountSubtype {
-            get { AccountSubtype(rawValue: subtypeRaw) ?? .otherAsset }
-            set { subtypeRaw = newValue.rawValue }
-        }
-
-        public var type: AccountType { subtype.accountType }
-        public var isLeaf: Bool { (children ?? []).isEmpty }
-        public var isPostable: Bool { !isArchived && isLeaf }
-        public var displayName: String { code.isEmpty ? name : "\(code) · \(name)" }
-
-        public var ledgerAccount: LedgerAccount {
-            LedgerAccount(id: id, code: code, name: name, subtype: subtype)
-        }
-
-        public var accountInfo: AccountInfo {
-            AccountInfo(id: id, type: type, isPostable: isPostable)
-        }
+        public init() {}
     }
 
     @Model
@@ -179,37 +74,15 @@ extension SchemaV1 {
         public var memo: String = ""
         public var statusRaw: String = EntryStatus.posted.rawValue
         public var sourceRaw: String = EntrySource.manual.rawValue
-        /// Documento que generó el asiento (factura, pago, gasto…), si lo hay.
         public var sourceDocumentID: UUID?
-        /// Asiento al que este revierte / asiento que revirtió a este.
         public var reversesEntryID: UUID?
         public var reversedByEntryID: UUID?
         public var createdAt: Date = Date()
 
-        @Relationship(deleteRule: .cascade, inverse: \JournalLine.entry)
-        public var lines: [JournalLine]? = []
+        @Relationship(deleteRule: .cascade, inverse: \SchemaV1.JournalLine.entry)
+        public var lines: [SchemaV1.JournalLine]? = []
 
-        public init(number: Int, date: Date, memo: String, source: EntrySource, status: EntryStatus = .posted) {
-            self.number = number
-            self.date = date
-            self.memo = memo
-            self.sourceRaw = source.rawValue
-            self.statusRaw = status.rawValue
-        }
-
-        public var status: EntryStatus { EntryStatus(rawValue: statusRaw) ?? .draft }
-        public var source: EntrySource { EntrySource(rawValue: sourceRaw) ?? .manual }
-        public var isReversed: Bool { reversedByEntryID != nil }
-        public var sortedLines: [JournalLine] { (lines ?? []).sorted { $0.order < $1.order } }
-        public var totalDebits: Int64 { (lines ?? []).reduce(0) { $0 + $1.debit } }
-        public var totalCredits: Int64 { (lines ?? []).reduce(0) { $0 + $1.credit } }
-
-        public var draft: JournalEntryDraft {
-            JournalEntryDraft(date: date, memo: memo, source: source, lines: sortedLines.compactMap { line in
-                guard let accountID = line.account?.id else { return nil }
-                return JournalLineDraft(accountID: accountID, debit: line.debit, credit: line.credit, memo: line.memo)
-            })
-        }
+        public init() {}
     }
 
     @Model
@@ -222,16 +95,10 @@ extension SchemaV1 {
         public var customerID: UUID?
         public var vendorID: UUID?
 
-        public var entry: JournalEntry?
-        public var account: Account?
+        public var entry: SchemaV1.JournalEntry?
+        public var account: SchemaV1.Account?
 
-        public init(account: Account, debit: Int64, credit: Int64, memo: String = "", order: Int) {
-            self.account = account
-            self.debit = debit
-            self.credit = credit
-            self.memo = memo
-            self.order = order
-        }
+        public init() {}
     }
 
     @Model
@@ -243,7 +110,6 @@ extension SchemaV1 {
         public var phone: String = ""
         public var billingAddress: String = ""
         public var shippingAddress: String = ""
-        /// 0 = al recibir (Due on receipt).
         public var paymentTermsDays: Int = 30
         public var isTaxExempt: Bool = false
         public var exemptionReason: String = ""
@@ -252,32 +118,14 @@ extension SchemaV1 {
         public var isArchived: Bool = false
         public var createdAt: Date = Date()
 
-        @Relationship(deleteRule: .nullify, inverse: \Invoice.customer)
-        public var invoices: [Invoice]? = []
-        @Relationship(deleteRule: .nullify, inverse: \PaymentReceived.customer)
-        public var payments: [PaymentReceived]? = []
-        @Relationship(deleteRule: .nullify, inverse: \CreditNote.customer)
-        public var creditNotes: [CreditNote]? = []
+        @Relationship(deleteRule: .nullify, inverse: \SchemaV1.Invoice.customer)
+        public var invoices: [SchemaV1.Invoice]? = []
+        @Relationship(deleteRule: .nullify, inverse: \SchemaV1.PaymentReceived.customer)
+        public var payments: [SchemaV1.PaymentReceived]? = []
+        @Relationship(deleteRule: .nullify, inverse: \SchemaV1.CreditNote.customer)
+        public var creditNotes: [SchemaV1.CreditNote]? = []
 
-        public init(name: String, email: String = "", paymentTermsDays: Int = 30) {
-            self.name = name
-            self.email = email
-            self.paymentTermsDays = paymentTermsDays
-        }
-
-        /// Saldo pendiente de las facturas emitidas.
-        public var openBalance: Int64 {
-            (invoices ?? []).filter(\.isOpen).reduce(0) { $0 + $1.balanceDue }
-        }
-
-        /// Saldo a favor: notas de crédito aún no aplicadas a una factura ni reembolsadas.
-        public var creditBalance: Int64 {
-            (creditNotes ?? []).reduce(0) { $0 + $1.unappliedAmount }
-        }
-
-        public var initials: String {
-            Initials.from(name)
-        }
+        public init() {}
     }
 
     @Model
@@ -291,25 +139,17 @@ extension SchemaV1 {
         public var paymentTermsDays: Int = 30
         public var defaultExpenseAccountID: UUID?
         public var is1099: Bool = false
-        /// Solo los últimos 4 dígitos; el TIN completo iría al llavero (§6.6).
         public var tinLast4: String = ""
         public var notes: String = ""
         public var isArchived: Bool = false
         public var createdAt: Date = Date()
 
-        @Relationship(deleteRule: .nullify, inverse: \Bill.vendor)
-        public var bills: [Bill]? = []
-        @Relationship(deleteRule: .nullify, inverse: \Expense.vendor)
-        public var expenses: [Expense]? = []
+        @Relationship(deleteRule: .nullify, inverse: \SchemaV1.Bill.vendor)
+        public var bills: [SchemaV1.Bill]? = []
+        @Relationship(deleteRule: .nullify, inverse: \SchemaV1.Expense.vendor)
+        public var expenses: [SchemaV1.Expense]? = []
 
-        public init(name: String, email: String = "") {
-            self.name = name
-            self.email = email
-        }
-
-        public var openBalance: Int64 {
-            (bills ?? []).filter(\.isOpen).reduce(0) { $0 + $1.balanceDue }
-        }
+        public init() {}
     }
 
     @Model
@@ -322,12 +162,7 @@ extension SchemaV1 {
         public var incomeAccountID: UUID?
         public var isArchived: Bool = false
 
-        public init(name: String, unitPrice: Int64, isTaxable: Bool = true, incomeAccountID: UUID? = nil) {
-            self.name = name
-            self.unitPrice = unitPrice
-            self.isTaxable = isTaxable
-            self.incomeAccountID = incomeAccountID
-        }
+        public init() {}
     }
 
     @Model
@@ -342,58 +177,27 @@ extension SchemaV1 {
         public var shippingAddress: String = ""
         public var taxGroupID: UUID?
         public var journalEntryID: UUID?
-        // Totales guardados al emitir, para listas rápidas.
         public var subtotal: Int64 = 0
-        /// Descuento del documento, antes de impuesto.
         public var discount: Int64 = 0
         public var taxTotal: Int64 = 0
         public var total: Int64 = 0
         public var amountPaid: Int64 = 0
-        /// Suma de las notas de crédito aplicadas a esta factura.
         public var creditsApplied: Int64 = 0
         public var createdAt: Date = Date()
 
-        public var customer: Customer?
-        @Relationship(deleteRule: .nullify, inverse: \CreditNote.invoice)
-        public var creditNotes: [CreditNote]? = []
-        /// Notas de crédito (de esta factura o saldo a favor de otras) aplicadas a su saldo.
-        @Relationship(deleteRule: .nullify, inverse: \CreditApplication.invoice)
-        public var creditApplications: [CreditApplication]? = []
-        @Relationship(deleteRule: .cascade, inverse: \InvoiceLine.invoice)
-        public var lines: [InvoiceLine]? = []
-        @Relationship(deleteRule: .cascade, inverse: \InvoiceTaxLine.invoice)
-        public var taxLines: [InvoiceTaxLine]? = []
-        @Relationship(deleteRule: .nullify, inverse: \PaymentApplication.invoice)
-        public var paymentApplications: [PaymentApplication]? = []
+        public var customer: SchemaV1.Customer?
+        @Relationship(deleteRule: .nullify, inverse: \SchemaV1.CreditNote.invoice)
+        public var creditNotes: [SchemaV1.CreditNote]? = []
+        @Relationship(deleteRule: .nullify, inverse: \SchemaV1.CreditApplication.invoice)
+        public var creditApplications: [SchemaV1.CreditApplication]? = []
+        @Relationship(deleteRule: .cascade, inverse: \SchemaV1.InvoiceLine.invoice)
+        public var lines: [SchemaV1.InvoiceLine]? = []
+        @Relationship(deleteRule: .cascade, inverse: \SchemaV1.InvoiceTaxLine.invoice)
+        public var taxLines: [SchemaV1.InvoiceTaxLine]? = []
+        @Relationship(deleteRule: .nullify, inverse: \SchemaV1.PaymentApplication.invoice)
+        public var paymentApplications: [SchemaV1.PaymentApplication]? = []
 
-        public init(customer: Customer?, issueDate: Date = Date(), dueDate: Date? = nil) {
-            self.customer = customer
-            self.issueDate = issueDate
-            let terms = customer?.paymentTermsDays ?? 30
-            self.dueDate = dueDate ?? Calendar.current.date(byAdding: .day, value: terms, to: issueDate) ?? issueDate
-        }
-
-        public var status: InvoiceStatus {
-            get { InvoiceStatus(rawValue: statusRaw) ?? .draft }
-            set { statusRaw = newValue.rawValue }
-        }
-
-        public var sortedLines: [InvoiceLine] { (lines ?? []).sorted { $0.order < $1.order } }
-        public var balanceDue: Int64 { total - amountPaid - creditsApplied }
-        public var isOpen: Bool { status == .sent || status == .partiallyPaid }
-
-        /// Vencida es un estado derivado: emitida, con saldo y pasada la fecha de vencimiento.
-        public func daysOverdue(asOf date: Date = Date(), calendar: Calendar = .current) -> Int? {
-            guard isOpen, balanceDue > 0 else { return nil }
-            let days = calendar.dateComponents([.day], from: calendar.startOfDay(for: dueDate), to: calendar.startOfDay(for: date)).day ?? 0
-            return days > 0 ? days : nil
-        }
-
-        /// Subtotal provisional (borradores) a partir de las líneas.
-        public var linesSubtotal: Int64 { (lines ?? []).reduce(0) { $0 + $1.amount } }
-
-        /// Importe provisional de un borrador: líneas menos descuento, sin impuesto.
-        public var draftAmount: Int64 { linesSubtotal - discount }
+        public init() {}
     }
 
     @Model
@@ -407,21 +211,9 @@ extension SchemaV1 {
         public var itemID: UUID?
         public var order: Int = 0
 
-        public var invoice: Invoice?
+        public var invoice: SchemaV1.Invoice?
 
-        public init(details: String, quantity: Decimal = 1, unitPrice: Int64, isTaxable: Bool = true, incomeAccountID: UUID?, order: Int = 0) {
-            self.details = details
-            self.quantity = quantity
-            self.unitPrice = unitPrice
-            self.isTaxable = isTaxable
-            self.incomeAccountID = incomeAccountID
-            self.order = order
-        }
-
-        /// Cantidad × precio, redondeado a centavos.
-        public var amount: Int64 {
-            Money(decimal: quantity * Money(minorUnits: unitPrice).decimalValue).minorUnits
-        }
+        public init() {}
     }
 
     @Model
@@ -433,69 +225,45 @@ extension SchemaV1 {
         public var taxableBase: Int64 = 0
         public var amount: Int64 = 0
 
-        public var invoice: Invoice?
+        public var invoice: SchemaV1.Invoice?
 
-        public init(taxRateID: UUID?, name: String, rateMillionths: Int64, taxableBase: Int64, amount: Int64) {
-            self.taxRateID = taxRateID
-            self.name = name
-            self.rateMillionths = rateMillionths
-            self.taxableBase = taxableBase
-            self.amount = amount
-        }
+        public init() {}
     }
 
-    /// Nota de crédito contra una factura emitida (DISEÑO §4.3): revierte ingreso e impuesto y reduce lo que se debe.
     @Model
     public final class CreditNote {
         public var id: UUID = UUID()
         public var number: String = ""
         public var date: Date = Date()
         public var reason: String = ""
-        /// Importe neto acreditado, antes de impuesto.
         public var amount: Int64 = 0
         public var isTaxable: Bool = true
         public var incomeAccountID: UUID?
         public var taxTotal: Int64 = 0
         public var total: Int64 = 0
-        /// Parte del total que queda como saldo a favor del cliente (no aplicada ni reembolsada).
         public var unappliedAmount: Int64 = 0
         public var refundedAmount: Int64 = 0
         public var journalEntryID: UUID?
         public var createdAt: Date = Date()
 
-        public var customer: Customer?
-        /// Factura de origen de la nota.
-        public var invoice: Invoice?
-        @Relationship(deleteRule: .cascade, inverse: \CreditApplication.note)
-        public var applications: [CreditApplication]? = []
+        public var customer: SchemaV1.Customer?
+        public var invoice: SchemaV1.Invoice?
+        @Relationship(deleteRule: .cascade, inverse: \SchemaV1.CreditApplication.note)
+        public var applications: [SchemaV1.CreditApplication]? = []
 
-        public init(invoice: Invoice, date: Date, amount: Int64, isTaxable: Bool, reason: String) {
-            self.invoice = invoice
-            self.customer = invoice.customer
-            self.date = date
-            self.amount = amount
-            self.isTaxable = isTaxable
-            self.reason = reason
-        }
+        public init() {}
     }
 
-    /// Aplicación de (parte de) una nota de crédito al saldo de una factura. No genera asiento:
-    /// el saldo a favor y la factura viven en la misma cuenta por cobrar.
     @Model
     public final class CreditApplication {
         public var id: UUID = UUID()
         public var date: Date = Date()
         public var amount: Int64 = 0
 
-        public var note: CreditNote?
-        public var invoice: Invoice?
+        public var note: SchemaV1.CreditNote?
+        public var invoice: SchemaV1.Invoice?
 
-        public init(note: CreditNote, invoice: Invoice, amount: Int64, date: Date) {
-            self.note = note
-            self.invoice = invoice
-            self.amount = amount
-            self.date = date
-        }
+        public init() {}
     }
 
     @Model
@@ -508,17 +276,11 @@ extension SchemaV1 {
         public var depositAccountID: UUID?
         public var journalEntryID: UUID?
 
-        public var customer: Customer?
-        @Relationship(deleteRule: .cascade, inverse: \PaymentApplication.payment)
-        public var applications: [PaymentApplication]? = []
+        public var customer: SchemaV1.Customer?
+        @Relationship(deleteRule: .cascade, inverse: \SchemaV1.PaymentApplication.payment)
+        public var applications: [SchemaV1.PaymentApplication]? = []
 
-        public init(customer: Customer?, date: Date, amount: Int64, method: PaymentMethod, depositAccountID: UUID?) {
-            self.customer = customer
-            self.date = date
-            self.amount = amount
-            self.methodRaw = method.rawValue
-            self.depositAccountID = depositAccountID
-        }
+        public init() {}
     }
 
     @Model
@@ -526,13 +288,10 @@ extension SchemaV1 {
         public var id: UUID = UUID()
         public var amount: Int64 = 0
 
-        public var payment: PaymentReceived?
-        public var invoice: Invoice?
+        public var payment: SchemaV1.PaymentReceived?
+        public var invoice: SchemaV1.Invoice?
 
-        public init(amount: Int64, invoice: Invoice) {
-            self.amount = amount
-            self.invoice = invoice
-        }
+        public init() {}
     }
 
     @Model
@@ -549,30 +308,15 @@ extension SchemaV1 {
         public var amountPaid: Int64 = 0
         public var createdAt: Date = Date()
 
-        public var vendor: Vendor?
-        @Relationship(deleteRule: .cascade, inverse: \BillLine.bill)
-        public var lines: [BillLine]? = []
-        @Relationship(deleteRule: .nullify, inverse: \BillPayment.bill)
-        public var payments: [BillPayment]? = []
-        @Relationship(deleteRule: .cascade, inverse: \Attachment.bill)
-        public var attachments: [Attachment]? = []
+        public var vendor: SchemaV1.Vendor?
+        @Relationship(deleteRule: .cascade, inverse: \SchemaV1.BillLine.bill)
+        public var lines: [SchemaV1.BillLine]? = []
+        @Relationship(deleteRule: .nullify, inverse: \SchemaV1.BillPayment.bill)
+        public var payments: [SchemaV1.BillPayment]? = []
+        @Relationship(deleteRule: .cascade, inverse: \SchemaV1.Attachment.bill)
+        public var attachments: [SchemaV1.Attachment]? = []
 
-        public init(vendor: Vendor?, vendorNumber: String, billDate: Date = Date(), dueDate: Date? = nil) {
-            self.vendor = vendor
-            self.vendorNumber = vendorNumber
-            self.billDate = billDate
-            let terms = vendor?.paymentTermsDays ?? 30
-            self.dueDate = dueDate ?? Calendar.current.date(byAdding: .day, value: terms, to: billDate) ?? billDate
-        }
-
-        public var status: BillStatus {
-            get { BillStatus(rawValue: statusRaw) ?? .open }
-            set { statusRaw = newValue.rawValue }
-        }
-
-        public var sortedLines: [BillLine] { (lines ?? []).sorted { $0.order < $1.order } }
-        public var balanceDue: Int64 { total - amountPaid }
-        public var isOpen: Bool { status == .open || status == .partiallyPaid }
+        public init() {}
     }
 
     @Model
@@ -583,14 +327,9 @@ extension SchemaV1 {
         public var accountID: UUID?
         public var order: Int = 0
 
-        public var bill: Bill?
+        public var bill: SchemaV1.Bill?
 
-        public init(details: String, amount: Int64, accountID: UUID?, order: Int = 0) {
-            self.details = details
-            self.amount = amount
-            self.accountID = accountID
-            self.order = order
-        }
+        public init() {}
     }
 
     @Model
@@ -603,15 +342,9 @@ extension SchemaV1 {
         public var paymentAccountID: UUID?
         public var journalEntryID: UUID?
 
-        public var bill: Bill?
+        public var bill: SchemaV1.Bill?
 
-        public init(bill: Bill, date: Date, amount: Int64, method: PaymentMethod, paymentAccountID: UUID?) {
-            self.bill = bill
-            self.date = date
-            self.amount = amount
-            self.methodRaw = method.rawValue
-            self.paymentAccountID = paymentAccountID
-        }
+        public init() {}
     }
 
     @Model
@@ -627,21 +360,13 @@ extension SchemaV1 {
         public var total: Int64 = 0
         public var createdAt: Date = Date()
 
-        public var vendor: Vendor?
-        @Relationship(deleteRule: .cascade, inverse: \ExpenseLine.expense)
-        public var lines: [ExpenseLine]? = []
-        @Relationship(deleteRule: .cascade, inverse: \Attachment.expense)
-        public var attachments: [Attachment]? = []
+        public var vendor: SchemaV1.Vendor?
+        @Relationship(deleteRule: .cascade, inverse: \SchemaV1.ExpenseLine.expense)
+        public var lines: [SchemaV1.ExpenseLine]? = []
+        @Relationship(deleteRule: .cascade, inverse: \SchemaV1.Attachment.expense)
+        public var attachments: [SchemaV1.Attachment]? = []
 
-        public init(date: Date = Date(), payee: String, paymentAccountID: UUID?, vendor: Vendor? = nil) {
-            self.date = date
-            self.payee = payee
-            self.paymentAccountID = paymentAccountID
-            self.vendor = vendor
-        }
-
-        public var sortedLines: [ExpenseLine] { (lines ?? []).sorted { $0.order < $1.order } }
-        public var isPosted: Bool { journalEntryID != nil }
+        public init() {}
     }
 
     @Model
@@ -652,14 +377,9 @@ extension SchemaV1 {
         public var accountID: UUID?
         public var order: Int = 0
 
-        public var expense: Expense?
+        public var expense: SchemaV1.Expense?
 
-        public init(details: String, amount: Int64, accountID: UUID?, order: Int = 0) {
-            self.details = details
-            self.amount = amount
-            self.accountID = accountID
-            self.order = order
-        }
+        public init() {}
     }
 
     @Model
@@ -670,14 +390,10 @@ extension SchemaV1 {
         @Attribute(.externalStorage) public var data: Data?
         public var createdAt: Date = Date()
 
-        public var expense: Expense?
-        public var bill: Bill?
+        public var expense: SchemaV1.Expense?
+        public var bill: SchemaV1.Bill?
 
-        public init(filename: String, contentType: String, data: Data?) {
-            self.filename = filename
-            self.contentType = contentType
-            self.data = data
-        }
+        public init() {}
     }
 
     @Model
@@ -685,18 +401,13 @@ extension SchemaV1 {
         public var id: UUID = UUID()
         public var name: String = ""
         public var filingFrequencyRaw: String = FilingFrequency.quarterly.rawValue
-        /// Subcuenta de Sales Tax Payable donde se acumula lo cobrado para esta agencia.
         public var liabilityAccountID: UUID?
         public var isArchived: Bool = false
 
-        @Relationship(deleteRule: .cascade, inverse: \TaxRate.agency)
-        public var rates: [TaxRate]? = []
+        @Relationship(deleteRule: .cascade, inverse: \SchemaV1.TaxRate.agency)
+        public var rates: [SchemaV1.TaxRate]? = []
 
-        public init(name: String, filingFrequency: FilingFrequency = .quarterly, liabilityAccountID: UUID?) {
-            self.name = name
-            self.filingFrequencyRaw = filingFrequency.rawValue
-            self.liabilityAccountID = liabilityAccountID
-        }
+        public init() {}
     }
 
     @Model
@@ -708,21 +419,11 @@ extension SchemaV1 {
         public var effectiveTo: Date?
         public var isArchived: Bool = false
 
-        public var agency: TaxAgency?
-        @Relationship(deleteRule: .nullify, inverse: \TaxGroup.rates)
-        public var groups: [TaxGroup]? = []
+        public var agency: SchemaV1.TaxAgency?
+        @Relationship(deleteRule: .nullify, inverse: \SchemaV1.TaxGroup.rates)
+        public var groups: [SchemaV1.TaxGroup]? = []
 
-        public init(name: String, rateMillionths: Int64, agency: TaxAgency?) {
-            self.name = name
-            self.rateMillionths = rateMillionths
-            self.agency = agency
-        }
-
-        public var percent: Decimal { Decimal(rateMillionths) / 10_000 }
-
-        public func isEffective(on date: Date) -> Bool {
-            !isArchived && (effectiveFrom.map { $0 <= date } ?? true) && (effectiveTo.map { date <= $0 } ?? true)
-        }
+        public init() {}
     }
 
     @Model
@@ -731,15 +432,9 @@ extension SchemaV1 {
         public var name: String = ""
         public var isArchived: Bool = false
 
-        public var rates: [TaxRate]? = []
+        public var rates: [SchemaV1.TaxRate]? = []
 
-        public init(name: String, rates: [TaxRate]) {
-            self.name = name
-            self.rates = rates
-        }
-
-        public var combinedRateMillionths: Int64 { (rates ?? []).reduce(0) { $0 + $1.rateMillionths } }
-        public var percent: Decimal { Decimal(combinedRateMillionths) / 10_000 }
+        public init() {}
     }
 
     @Model
@@ -750,17 +445,7 @@ extension SchemaV1 {
         public var nextNumber: Int = 1
         public var minimumDigits: Int = 4
 
-        public init(kind: DocumentKind, prefix: String, nextNumber: Int = 1, minimumDigits: Int = 4) {
-            self.kindRaw = kind.rawValue
-            self.prefix = prefix
-            self.nextNumber = nextNumber
-            self.minimumDigits = minimumDigits
-        }
-
-        public func format(_ number: Int) -> String {
-            let digits = String(number)
-            return prefix + String(repeating: "0", count: max(0, minimumDigits - digits.count)) + digits
-        }
+        public init() {}
     }
 
     @Model
@@ -773,12 +458,6 @@ extension SchemaV1 {
         public var action: String = ""
         public var summary: String = ""
 
-        public init(actor: String, entityName: String, entityID: UUID?, action: String, summary: String) {
-            self.actor = actor
-            self.entityName = entityName
-            self.entityID = entityID
-            self.action = action
-            self.summary = summary
-        }
+        public init() {}
     }
 }

@@ -1,0 +1,256 @@
+import ChirograCore
+import Foundation
+import SwiftData
+
+// MARK: - Clientes: notas fechadas (canvas `ClienteFicha`, `MacClienteFicha`)
+
+extension Bookkeeper {
+
+    /// Añade una nota fechada a la ficha del cliente. El autor es el `actor` de este `Bookkeeper`.
+    @discardableResult
+    public func addNote(to customer: Customer, text: String, date: Date = Date()) throws -> CustomerNote {
+        let text = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty else { throw BookkeepingError.invalidState(String(localized: "La nota está vacía.")) }
+        let note = CustomerNote(customer: customer, date: date, text: text, author: actor)
+        context.insert(note)
+        try saveOrRollback()
+        return note
+    }
+
+    public func updateNote(_ note: CustomerNote, text: String, date: Date? = nil) throws {
+        let text = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty else { throw BookkeepingError.invalidState(String(localized: "La nota está vacía.")) }
+        note.text = text
+        if let date { note.date = date }
+        try saveOrRollback()
+    }
+
+    public func deleteNote(_ note: CustomerNote) throws {
+        context.delete(note)
+        try saveOrRollback()
+    }
+}
+
+// MARK: - Facturas: historial de envíos y recordatorios (canvas `FacturaEnviar`, `MacClienteFicha`, `MacInicio`)
+
+extension Bookkeeper {
+
+    /// Registra que la factura se envió (hoja «Para / Asunto»). La app no manda correos: abre el redactor del sistema
+    /// y, al volver, anota el envío aquí.
+    @discardableResult
+    public func recordInvoiceSent(_ invoice: Invoice, to recipient: String, subject: String, message: String = "",
+                                  date: Date = Date()) throws -> InvoiceEvent {
+        try recordInvoiceEvent(.sent, invoice: invoice, recipient: recipient, subject: subject, message: message, date: date)
+    }
+
+    /// Registra un recordatorio de pago («Recordatorio enviado hoy»). Solo para facturas pendientes de cobro.
+    @discardableResult
+    public func recordReminder(_ invoice: Invoice, to recipient: String, subject: String, message: String = "",
+                               date: Date = Date()) throws -> InvoiceEvent {
+        guard invoice.isOpen else { throw BookkeepingError.invalidState(String(localized: "La factura no está pendiente de cobro.")) }
+        return try recordInvoiceEvent(.reminder, invoice: invoice, recipient: recipient, subject: subject, message: message, date: date)
+    }
+
+    private func recordInvoiceEvent(_ kind: InvoiceEventKind, invoice: Invoice, recipient: String, subject: String,
+                                    message: String, date: Date) throws -> InvoiceEvent {
+        guard invoice.status != .draft, invoice.status != .void else {
+            throw BookkeepingError.invalidState(String(localized: "Solo se envían facturas emitidas."))
+        }
+        let event = InvoiceEvent(invoice: invoice, kind: kind, date: date, recipient: recipient, subject: subject, message: message)
+        context.insert(event)
+        audit("Invoice", invoice.id, kind.rawValue,
+              kind == .sent ? String(localized: "Factura \(invoice.number) enviada a \(recipient)") : String(localized: "Recordatorio de \(invoice.number) a \(recipient)"))
+        try saveOrRollback()
+        return event
+    }
+}
+
+// MARK: - Estimados (canvas `Estimado`)
+
+/// Totales de un estimado o de un borrador, calculados igual que al emitir la factura.
+public struct DocumentTotals: Sendable, Equatable {
+    public var subtotal: Int64
+    public var discount: Int64
+    public var tax: Int64
+    public var total: Int64
+    public var taxes: [TaxComponentAmount]
+
+    public static let zero = DocumentTotals(subtotal: 0, discount: 0, tax: 0, total: 0, taxes: [])
+}
+
+extension Bookkeeper {
+
+    public func estimates() throws -> [Estimate] {
+        try context.fetch(FetchDescriptor<Estimate>(sortBy: [SortDescriptor(\.issueDate, order: .reverse)]))
+    }
+
+    /// Facturas creadas a partir del estimado.
+    public func invoices(for estimate: Estimate) throws -> [Invoice] {
+        let estimateID: UUID? = estimate.id
+        return try context.fetch(FetchDescriptor<Invoice>(predicate: #Predicate { $0.estimateID == estimateID },
+                                                          sortBy: [SortDescriptor(\.createdAt)]))
+    }
+
+    /// Crea o edita un estimado (no hace asiento). El número `E-` se asigna la primera vez. No se edita uno convertido
+    /// ni uno que ya tiene facturas.
+    @discardableResult
+    public func saveEstimate(_ input: EstimateInput, into existing: Estimate? = nil) throws -> Estimate {
+        if let existing, existing.status == .converted || existing.hasInvoices {
+            throw BookkeepingError.invalidState(String(localized: "Un estimado que ya pasó a factura no se edita."))
+        }
+        let estimate = existing ?? Estimate(customer: input.customer, issueDate: input.issueDate, expirationDate: input.expirationDate)
+        if existing == nil {
+            context.insert(estimate)
+            estimate.number = try nextDocumentNumber(.estimate)
+            estimate.pricesIncludeTax = try company()?.pricesIncludeTax ?? false
+        }
+        if let pricesIncludeTax = input.pricesIncludeTax { estimate.pricesIncludeTax = pricesIncludeTax }
+        estimate.customer = input.customer
+        estimate.title = input.title
+        estimate.issueDate = input.issueDate
+        estimate.expirationDate = input.expirationDate
+        estimate.taxGroupID = input.taxGroupID
+        estimate.discount = input.discount
+        estimate.customerMessage = input.customerMessage
+        estimate.memo = input.memo
+        for line in estimate.lines ?? [] { context.delete(line) }
+        estimate.lines = []
+        for (index, line) in input.lines.enumerated() {
+            let model = EstimateLine(details: line.details, quantity: line.quantity, unitPrice: line.unitPrice,
+                                     isTaxable: line.isTaxable, incomeAccountID: line.incomeAccountID, order: index)
+            model.estimate = estimate
+            context.insert(model)
+        }
+        let totals = try totals(for: estimate)
+        estimate.subtotal = totals.subtotal
+        estimate.taxTotal = totals.tax
+        estimate.total = totals.total
+        audit("Estimate", estimate.id, existing == nil ? "create" : "update", String(localized: "Estimado \(estimate.number)"))
+        try saveOrRollback()
+        return estimate
+    }
+
+    /// Totales del estimado con las mismas reglas que una factura (descuento antes de impuesto, cliente exento,
+    /// precios con impuesto incluido). Las líneas sin importe no cuentan.
+    public func totals(for estimate: Estimate) throws -> DocumentTotals {
+        let lines = estimate.sortedLines.map {
+            SalesLine(incomeAccountID: $0.incomeAccountID ?? UUID(), amount: $0.amount, isTaxable: $0.isTaxable)
+        }
+        return try documentTotals(lines: lines, discount: estimate.discount, taxGroupID: estimate.taxGroupID, on: estimate.issueDate,
+                                  customer: estimate.customer, pricesIncludeTax: estimate.pricesIncludeTax)
+    }
+
+    /// Totales de un borrador de factura (para la vista previa antes de emitir).
+    public func totals(for invoice: Invoice) throws -> DocumentTotals {
+        let lines = invoice.sortedLines.map {
+            SalesLine(incomeAccountID: $0.incomeAccountID ?? UUID(), amount: $0.amount, isTaxable: $0.isTaxable)
+        }
+        return try documentTotals(lines: lines, discount: invoice.discount, taxGroupID: invoice.taxGroupID, on: invoice.issueDate,
+                                  customer: invoice.customer, pricesIncludeTax: invoice.pricesIncludeTax)
+    }
+
+    private func documentTotals(lines: [SalesLine], discount: Int64, taxGroupID: UUID?, on date: Date, customer: Customer?,
+                                pricesIncludeTax: Bool) throws -> DocumentTotals {
+        let lines = lines.filter { $0.amount > 0 }
+        guard !lines.isEmpty else { return .zero }
+        let subtotal = lines.reduce(0) { $0 + $1.amount }
+        let posting: InvoicePosting
+        do {
+            posting = try PostingRules.invoice(
+                date: date, memo: "", receivableAccountID: UUID(), lines: lines,
+                taxComponents: try taxComponents(groupID: taxGroupID, on: date),
+                customerIsTaxExempt: customer?.isTaxExempt ?? false,
+                discount: min(max(discount, 0), subtotal), discountAccountID: UUID(), pricesIncludeTax: pricesIncludeTax)
+        } catch {
+            return DocumentTotals(subtotal: subtotal, discount: 0, tax: 0, total: subtotal, taxes: [])
+        }
+        return DocumentTotals(subtotal: posting.subtotal, discount: posting.discount, tax: posting.totalTax, total: posting.total, taxes: posting.taxes)
+    }
+
+    /// Cambia el estado de un estimado: enviado, aceptado (por quién), rechazado o vencido. «Convertido» solo lo pone
+    /// `convertToInvoice`; uno convertido ya no cambia.
+    public func setStatus(_ status: EstimateStatus, of estimate: Estimate, acceptedBy: String = "", date: Date = Date()) throws {
+        guard estimate.status != .converted else {
+            throw BookkeepingError.invalidState(String(localized: "El estimado ya se convirtió en factura."))
+        }
+        guard status != .converted else {
+            throw BookkeepingError.invalidState(String(localized: "Para convertirlo en factura usa «Convertir en factura»."))
+        }
+        estimate.status = status
+        switch status {
+        case .sent: estimate.sentDate = estimate.sentDate ?? date
+        case .accepted:
+            estimate.acceptedDate = date
+            estimate.acceptedBy = acceptedBy
+        default: break
+        }
+        audit("Estimate", estimate.id, status.rawValue, String(localized: "Estimado \(estimate.number): \(status.rawValue)"))
+        try saveOrRollback()
+    }
+
+    /// Convierte (todo o parte de) un estimado en una **factura en borrador** con sus líneas, impuesto, mensaje y la
+    /// parte proporcional del descuento. No hace asiento: el asiento llega al emitir la factura.
+    ///
+    /// Cada línea del estimado lleva la cantidad ya facturada; cuando no queda nada por facturar el estimado pasa a
+    /// «convertido». Con un anticipo (`.percent(50)`) queda «aceptado» con el resto pendiente.
+    @discardableResult
+    public func convertToInvoice(_ estimate: Estimate, portion: EstimateConversion = .all, issueDate: Date = Date(),
+                                 calendar: Calendar = .current) throws -> Invoice {
+        guard estimate.status != .converted, estimate.status != .declined else {
+            throw BookkeepingError.invalidState(String(localized: "Este estimado no se puede convertir."))
+        }
+        let lines = estimate.sortedLines
+        let quantities: [Decimal] = lines.map { line in
+            let remaining = max(line.remainingQuantity, 0)
+            switch portion {
+            case .all: return remaining
+            case .percent(let percent):
+                return min(remaining, line.quantity * max(percent, 0) / 100)
+            case .lines(let ids): return ids.contains(line.id) ? remaining : 0
+            }
+        }
+        let chosen = zip(lines, quantities).filter { $0.1 > 0 && EstimateLine.amount(quantity: $0.1, unitPrice: $0.0.unitPrice) > 0 }
+        guard !chosen.isEmpty else { throw BookkeepingError.invalidState(String(localized: "No queda nada por facturar en lo elegido.")) }
+
+        let invoice = Invoice(customer: estimate.customer, issueDate: issueDate)
+        context.insert(invoice)
+        let defaults = try newInvoiceDefaults(for: estimate.customer, issueDate: issueDate, calendar: calendar)
+        invoice.dueDate = defaults.dueDate
+        invoice.taxGroupID = estimate.taxGroupID
+        invoice.pricesIncludeTax = estimate.pricesIncludeTax
+        invoice.customerMessage = estimate.customerMessage.isEmpty ? defaults.customerMessage : estimate.customerMessage
+        invoice.memo = String(localized: "Estimado \(estimate.number)")
+        invoice.estimateID = estimate.id
+        for (index, (line, quantity)) in chosen.enumerated() {
+            let model = InvoiceLine(details: line.details, quantity: quantity, unitPrice: line.unitPrice, isTaxable: line.isTaxable,
+                                    incomeAccountID: line.incomeAccountID, order: index)
+            model.itemID = line.itemID
+            model.invoice = invoice
+            context.insert(model)
+            line.invoicedQuantity += quantity
+        }
+        // Descuento: la parte proporcional a lo facturado; la última factura se lleva lo que quede.
+        let invoicedNow = chosen.reduce(Int64(0)) { $0 + EstimateLine.amount(quantity: $1.1, unitPrice: $1.0.unitPrice) }
+        let remainingDiscount = estimate.discount - estimate.discountInvoiced
+        let share: Int64
+        if estimate.isFullyInvoiced {
+            share = remainingDiscount
+        } else {
+            let base = estimate.linesSubtotal
+            share = base == 0 ? 0 : min(remainingDiscount, (estimate.discount * invoicedNow).dividedRoundingHalfAwayFromZero(by: base))
+        }
+        invoice.discount = min(max(share, 0), invoicedNow)
+        estimate.discountInvoiced += invoice.discount
+
+        if estimate.isFullyInvoiced {
+            estimate.status = .converted
+            estimate.convertedDate = issueDate
+        } else if estimate.status == .draft || estimate.status == .sent || estimate.status == .expired {
+            estimate.status = .accepted
+            estimate.acceptedDate = estimate.acceptedDate ?? issueDate
+        }
+        audit("Estimate", estimate.id, "convert", String(localized: "Estimado \(estimate.number) convertido en factura borrador"))
+        try saveOrRollback()
+        return invoice
+    }
+}
