@@ -20,9 +20,18 @@ extension Bill {
 
 extension StatusChip {
     /// Estado de una factura por pagar con el atraso, como el de las facturas de venta (canvas `MacPorPagar`:
-    /// «● Vencida · 4 días» en rojo); el resto, el de `init(bill:)`.
-    init(billWithAge bill: Bill, compact: Bool = true) {
-        if let days = bill.daysOverdue {
+    /// «● Vencida · 4 días» en rojo, «● Programada · 7 nov» en Tinta, «● Recurrente · cargo automático» en azul
+    /// verdoso); el resto, el de `init(bill:)`. Lo programado manda sobre el vencimiento: ya tiene fecha de pago.
+    /// `short`: sin la fecha ni «Recurrente», para las filas estrechas del iPhone, que ya la dicen en el subtítulo.
+    init(billWithAge bill: Bill, compact: Bool = true, short: Bool = false) {
+        if bill.isOpen, bill.autoPay {
+            self.init(text: short ? String(localized: "Cargo automático") : String(localized: "Recurrente · cargo automático"),
+                      foreground: Palette.info, background: .clear, compact: compact, dot: Palette.teal)
+        } else if bill.isScheduled, let date = bill.scheduledPaymentDate {
+            self.init(text: short ? String(localized: "Programada") : String(localized: "Programada · \(date.dayMonth)"),
+                      foreground: bill.isScheduleLate ? Palette.negative : Palette.brand, background: .clear,
+                      compact: compact, dot: bill.isScheduleLate ? Palette.red : Palette.indigo)
+        } else if let days = bill.daysOverdue {
             self.init(text: String(localized: "Vencida · \(days) días"), foreground: Palette.negative, background: Palette.negativeWash,
                       compact: compact, dot: Palette.red)
         } else {

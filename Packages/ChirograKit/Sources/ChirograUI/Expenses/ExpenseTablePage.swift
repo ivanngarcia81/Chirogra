@@ -13,9 +13,12 @@ import UniformTypeIdentifiers
 /// elegido (lo de `ExpenseDetailView` en filas y el recibo) con «Ver recibo» (Vista Rápida) o «Adjuntar recibo…», y
 /// acepta que se le suelte una foto o un PDF. Doble clic abre la ficha completa (`ExpenseDetailView`).
 ///
-/// No está en el canvas pero sí en el modelo: Método y Nota en el inspector, varios recibos por gasto. Está en el
-/// canvas y no en el modelo: «Corriente ••4821» (la cuenta no guarda sus últimos dígitos; se muestra su nombre) y
-/// «Editar» (un gasto contabilizado no se edita: no hay editor ni servicio para eso; «Abrir gasto» en su lugar).
+/// «Editar» abre el editor del gasto: en uno contabilizado, guardar revierte su asiento y registra uno nuevo, y el
+/// inspector muestra el historial. Los «por confirmar» (de una recurrente sin cargo automático) llevan su estado y
+/// «Registrar»; los anulados no salen. «Recurrentes» en la barra abre la lista de plantillas.
+///
+/// No está en el canvas pero sí en el modelo: Método, Nota, Impuesto incluido, Cliente o proyecto e Historial en el
+/// inspector, varios recibos por gasto.
 struct ExpenseTablePage: View {
     static let isReady = true
     @Binding var selection: UUID?
@@ -28,6 +31,9 @@ struct ExpenseTablePage: View {
     @State private var creating = false
     @State private var openedExpense: Expense?
     @State private var openedVendor: Vendor?
+    @State private var openedEntry: JournalEntry?
+    @State private var editing: Expense?
+    @State private var showingRecurring = false
     /// Gasto al que se adjunta lo que se elija en «Adjuntar recibo…».
     @State private var attachingTo: Expense?
     @State private var removing: Attachment?
@@ -54,10 +60,15 @@ struct ExpenseTablePage: View {
 
     // MARK: Datos
 
+    /// Sin los anulados: su asiento se revirtió y no cuentan.
     private var rows: [ExpenseTableRow] {
         let names = Dictionary(accounts.map { ($0.id, $0.name) }, uniquingKeysWith: { first, _ in first })
-        return expenses.map { ExpenseTableRow($0, accountNames: names) }
+        let labels = Dictionary(accounts.map { ($0.id, $0.paymentLabel) }, uniquingKeysWith: { first, _ in first })
+        return expenses.filter { !$0.isVoid }.map { ExpenseTableRow($0, accountNames: names, paymentLabels: labels) }
     }
+
+    /// Lo que cuenta en la tarjeta del mes: solo lo contabilizado.
+    private var postedExpenses: [Expense] { expenses.filter { $0.isPosted && !$0.isVoid } }
 
     /// Los gastos del periodo, antes de la búsqueda y de «Solo sin recibo».
     private func inPeriod(_ rows: [ExpenseTableRow]) -> [ExpenseTableRow] {
@@ -139,7 +150,7 @@ struct ExpenseTablePage: View {
             }
             .width(min: 52, ideal: 60, max: 100)
             TableColumn("Proveedor", value: \.payee) { row in
-                Text(row.payee).lineLimit(1)
+                ExpensePayeeCell(payee: row.payee, isPending: row.isPending)
             }
             .width(min: 100, ideal: 140)
             TableColumn("Categoría", value: \.category) { row in
@@ -163,7 +174,7 @@ struct ExpenseTablePage: View {
         } filter: {
             VStack(alignment: .leading, spacing: 14) {
                 if case .month(let start) = period {
-                    ExpenseMonthCard(month: start, expenses: expenses, accounts: accounts)
+                    ExpenseMonthCard(month: start, expenses: postedExpenses, accounts: accounts)
                 }
                 Toggle("Solo sin recibo", isOn: $withoutReceipt)
                     .toggleStyle(.checkbox)
@@ -171,6 +182,7 @@ struct ExpenseTablePage: View {
         } inspector: { row in
             ExpenseInspector(expense: row.expense, category: row.category, errorMessage: errorMessage,
                              openVendor: { openedVendor = $0 },
+                             openEntry: { openedEntry = $0 },
                              preview: { preview($0, from: $1) },
                              attach: { attachingTo = row.expense },
                              attachFiles: { files in files.forEach { attach($0, to: row.expense) } },
@@ -181,11 +193,19 @@ struct ExpenseTablePage: View {
         .onAppear(perform: startOnLatestMonth)
         .toolbar {
             ToolbarItem(placement: .primaryAction) { periodPicker }
+            ToolbarItem(placement: .primaryAction) {
+                Button { showingRecurring = true } label: {
+                    Label("Recurrentes", systemImage: "arrow.trianglehead.2.clockwise").labelStyle(.titleAndIcon)
+                }
+                .help("Gastos y facturas que se repiten")
+                .headerButton()
+            }
         }
         .onChange(of: selection) { errorMessage = nil }
-        .sheet(isPresented: $creating) { NavigationStack { ExpenseEditorView() }.editorSheetSizing() }
-        .navigationDestination(item: $openedExpense) { ExpenseDetailView(expense: $0) }
-        .navigationDestination(item: $openedVendor) { VendorDetailView(vendor: $0) }
+        .modifier(ExpensePageDestinations(creating: $creating, editing: $editing, openedExpense: $openedExpense,
+                                          openedVendor: $openedVendor, openedEntry: $openedEntry,
+                                          showingRecurring: $showingRecurring))
+        .task { RecurringAutomation.run(in: context) }
         .fileImporter(isPresented: Binding(get: { attachingTo != nil }, set: { if !$0 { attachingTo = nil } }),
                       allowedContentTypes: [.pdf, .image], allowsMultipleSelection: true) { result in
             guard let expense = attachingTo, case .success(let urls) = result else { return }
@@ -224,17 +244,30 @@ struct ExpenseTablePage: View {
         .help("Periodo")
     }
 
-    /// Botones al pie del inspector (canvas: «Editar» y la acción del recibo, uno junto al otro).
+    /// Botones al pie del inspector (canvas: «Editar» y la acción del recibo, uno junto al otro); un gasto «por
+    /// confirmar», además, «Registrar».
     @ViewBuilder
     private func actions(for expense: Expense) -> some View {
         let attachments = expense.sortedAttachments
+        if expense.isPendingConfirmation {
+            Button(String(localized: "Registrar \(expense.total.money)")) { record(expense) }.buttonStyle(.primary)
+        }
         HStack(spacing: 8) {
-            Button("Abrir gasto") { openedExpense = expense }.buttonStyle(.secondary)
+            Button("Editar") { editing = expense }.buttonStyle(.secondary)
             if attachments.isEmpty {
                 Button("Adjuntar recibo…") { attachingTo = expense }.buttonStyle(.primary)
             } else {
                 Button("Ver recibo") { preview(attachments, from: 0) }.buttonStyle(.primary)
             }
+        }
+    }
+
+    private func record(_ expense: Expense) {
+        do {
+            try Bookkeeper(context: context).record(expense)
+            errorMessage = nil
+        } catch {
+            errorMessage = error.localizedDescription
         }
     }
 
@@ -296,6 +329,7 @@ struct ExpenseTablePage: View {
         let defaults = UserDefaults.standard
         try? await Task.sleep(for: .seconds(1))
         if defaults.bool(forKey: "qa.nuevo") { creating = true; return }
+        if defaults.bool(forKey: "qa.recurrentes") { showingRecurring = true; return }
         guard let id = selection, let expense = expenses.first(where: { $0.id == id }) else { return }
         if defaults.bool(forKey: "qa.adjuntar"), expense.sortedAttachments.isEmpty, let data = Self.qaReceiptPNG(for: expense) {
             attach(ReceiptFile(data: data, name: "recibo-prueba.png", type: .png), to: expense)
@@ -305,6 +339,7 @@ struct ExpenseTablePage: View {
             preview(expense.sortedAttachments, from: 0)
         }
         if defaults.bool(forKey: "qa.abrir") { openedExpense = expense }
+        if defaults.bool(forKey: "qa.editar") { editing = expense }
     }
 
     private static func qaReceiptPNG(for expense: Expense) -> Data? {
@@ -324,6 +359,30 @@ struct ExpenseTablePage: View {
         return NSBitmapImageRep(cgImage: image).representation(using: .png, properties: [:])
     }
     #endif
+}
+
+/// Hojas y destinos de la página (separados del cuerpo para que el compilador no tarde en comprobarlo).
+private struct ExpensePageDestinations: ViewModifier {
+    @Binding var creating: Bool
+    @Binding var editing: Expense?
+    @Binding var openedExpense: Expense?
+    @Binding var openedVendor: Vendor?
+    @Binding var openedEntry: JournalEntry?
+    @Binding var showingRecurring: Bool
+
+    func body(content: Content) -> some View {
+        content
+            .sheet(isPresented: $creating) { NavigationStack { ExpenseEditorView() }.editorSheetSizing() }
+            .sheet(item: $editing) { expense in NavigationStack { ExpenseEditorView(expense: expense) }.editorSheetSizing() }
+            .navigationDestination(item: $openedExpense) { expense in ExpenseDetailView(expense: expense) }
+            .navigationDestination(item: $openedVendor) { vendor in VendorDetailView(vendor: vendor) }
+            .navigationDestination(item: $openedEntry) { entry in JournalEntryDetailView(entry: entry) }
+            .navigationDestination(isPresented: $showingRecurring) {
+                RecurringListView(showsAddButton: true)
+                    .navigationTitle("Recurrentes")
+                    .navigationSubtitle(String(localized: "Gastos"))
+            }
+    }
 }
 
 // MARK: - Periodo
@@ -376,11 +435,13 @@ nonisolated private struct ExpenseTableRow: Identifiable {
     let account: String
     let hasReceipt: Bool
     let amount: Int64
+    /// Sin asiento: lo generó una recurrente sin cargo automático.
+    let isPending: Bool
 
     /// Para ordenar por «Recibo»: primero los que no lo tienen.
     var receiptRank: Int { hasReceipt ? 1 : 0 }
 
-    init(_ expense: Expense, accountNames: [UUID: String]) {
+    init(_ expense: Expense, accountNames: [UUID: String], paymentLabels: [UUID: String]) {
         self.expense = expense
         id = expense.id
         date = expense.date
@@ -397,9 +458,23 @@ nonisolated private struct ExpenseTableRow: Identifiable {
             category = String(localized: "Sin categoría")
             categoryStyleName = nil
         }
-        account = expense.paymentAccountID.flatMap { accountNames[$0] } ?? "—"
+        account = expense.paymentAccountID.flatMap { paymentLabels[$0] } ?? "—"
         hasReceipt = !(expense.attachments ?? []).isEmpty
         amount = expense.total
+        isPending = expense.isPendingConfirmation
+    }
+}
+
+/// Proveedor de una fila y, si falta registrarlo, «● Por confirmar».
+private struct ExpensePayeeCell: View {
+    let payee: String
+    let isPending: Bool
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Text(payee).lineLimit(1)
+            if isPending { MacCellStatus(chip: ExpenseStatus.pending.chip()).fixedSize() }
+        }
     }
 }
 
@@ -565,6 +640,7 @@ private struct ExpenseInspector: View {
     let category: String
     let errorMessage: String?
     let openVendor: (Vendor) -> Void
+    let openEntry: (JournalEntry) -> Void
     let preview: ([Attachment], Int) -> Void
     let attach: () -> Void
     let attachFiles: ([ReceiptFile]) -> Void
@@ -581,10 +657,13 @@ private struct ExpenseInspector: View {
             if let errorMessage { ErrorBanner(message: errorMessage) }
             HStack(spacing: 10) {
                 LargeIconTile(systemImage: ExpenseCategoryStyle.symbol(for: styleName), color: ExpenseCategoryStyle.color(for: styleName))
-                MacInspectorSummary(title: title, amount: expense.total.money) { EmptyView() }
+                MacInspectorSummary(title: title, amount: expense.total.money) {
+                    if let status = ExpenseStatus(expense) { status.chip() }
+                }
             }
             details
             receipts
+            ExpenseHistoryInspectorSection(expense: expense, open: openEntry)
         }
         .padding(isTargeted ? 6 : 0)
         .overlay {
@@ -621,9 +700,15 @@ private struct ExpenseInspector: View {
             } else {
                 MacInspectorRow(String(localized: "Categoría"), value: category)
             }
-            MacInspectorRow(String(localized: "Cuenta de pago"), value: accountName(expense.paymentAccountID) ?? "—")
+            MacInspectorRow(String(localized: "Cuenta de pago"), value: accounts.account(expense.paymentAccountID)?.paymentLabel ?? "—")
             MacInspectorRow(String(localized: "Método"),
                             value: ExpenseEditorView.title(for: PaymentMethod(rawValue: expense.methodRaw) ?? .other))
+            if expense.salesTaxIncluded > 0 {
+                MacInspectorRow(String(localized: "Subtotal"), value: expense.subtotalBeforeTax.money)
+                MacInspectorRow(String(localized: "Impuesto incluido"), value: expense.salesTaxIncluded.money)
+            }
+            if let customer = expense.customer { MacInspectorRow(String(localized: "Cliente o proyecto"), value: customer.name) }
+            if expense.recurringTemplateID != nil { MacInspectorRow(String(localized: "Origen"), value: String(localized: "Recurrente")) }
             if !expense.memo.isEmpty { MacInspectorRow(String(localized: "Nota"), value: expense.memo) }
         }
     }

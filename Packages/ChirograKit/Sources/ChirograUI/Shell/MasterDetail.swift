@@ -53,7 +53,7 @@ enum VendorFilter: String, CaseIterable, Identifiable {
 }
 
 enum BillFilter: String, CaseIterable, Identifiable {
-    case open = "Por pagar", overdue = "Vencidas", thisWeek = "Esta semana", paid = "Pagadas"
+    case open = "Por pagar", overdue = "Vencidas", thisWeek = "Esta semana", scheduled = "Programadas", paid = "Pagadas"
     var id: String { rawValue }
 }
 
@@ -523,9 +523,13 @@ private struct ExpenseMasterList: View {
         return accounts.first { $0.id == id }
     }
 
+    @State private var showingRecurring = false
+    @Environment(\.modelContext) private var context
+
+    /// Sin los anulados (no cuentan); los «por confirmar» llevan su estado.
     private var filtered: [Expense] {
         expenses.filter {
-            (!withoutReceipt || ($0.attachments ?? []).isEmpty)
+            !$0.isVoid && (!withoutReceipt || ($0.attachments ?? []).isEmpty)
                 && matches(query, $0.payee, category($0)?.name ?? "", $0.total.money)
         }
     }
@@ -536,7 +540,9 @@ private struct ExpenseMasterList: View {
                 // Sin «−»: en la lista de Gastos todo es gasto (como en el iPhone y en el detalle).
                 MasterRow(title: expense.payee, amount: expense.total.money,
                           subtitle: "\(category(expense)?.name ?? String(localized: "Sin categoría")) · \(expense.date.dayMonth)") {
-                    if !(expense.attachments ?? []).isEmpty {
+                    if expense.isPendingConfirmation {
+                        MasterStatus(chip: ExpenseStatus.pending.chip())
+                    } else if !(expense.attachments ?? []).isEmpty {
                         MasterSymbol(systemImage: "paperclip", label: "Recibo adjunto")
                     }
                 }
@@ -553,9 +559,23 @@ private struct ExpenseMasterList: View {
                 Toggle(isOn: $withoutReceipt) { Label("Solo sin recibo", systemImage: "paperclip") }
                     .headerButton()
             }
+            ToolbarItem(placement: .secondaryAction) {
+                Button("Recurrentes", systemImage: "arrow.trianglehead.2.clockwise") { showingRecurring = true }
+                    .headerButton()
+            }
         }
         .masterAddButton(String(localized: "Gasto"), label: String(localized: "Nuevo gasto")) { creating = true }
         .sheet(isPresented: $creating) { NavigationStack { ExpenseEditorView() }.editorSheetSizing() }
+        .sheet(isPresented: $showingRecurring) {
+            NavigationStack {
+                RecurringListView(showsAddButton: true)
+                    .navigationTitle("Recurrentes")
+                    .inlineTitle()
+                    .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Cerrar") { showingRecurring = false }.headerButton() } }
+            }
+            .editorSheetSizing()
+        }
+        .task { RecurringAutomation.run(in: context) }
     }
 }
 
@@ -601,9 +621,16 @@ private struct VendorMasterList: View {
 private struct BillMasterList: View {
     @Binding var selection: UUID?
     @Query(sort: \Bill.dueDate) private var bills: [Bill]
+    @Query(sort: \Account.code) private var accounts: [Account]
     @State private var filter: BillFilter = .open
     @State private var query = ""
     @State private var creating = false
+    @State private var scheduling: Bill?
+    /// Modo de selección para el pago en lote (canvas `MacPorPagar`, en la columna del iPad).
+    @State private var isSelecting = false
+    @State private var checked: Set<UUID> = []
+    @State private var payingBatch = false
+    @Environment(\.modelContext) private var context
 
     private var weekEnd: Date { Calendar.current.date(byAdding: .day, value: 7, to: Calendar.current.startOfDay(for: .now)) ?? .now }
 
@@ -612,22 +639,40 @@ private struct BillMasterList: View {
         case .open: bill.isOpen
         case .overdue: bill.isOverdue
         case .thisWeek: bill.isOpen && !bill.isOverdue && bill.dueDate < weekEnd
+        case .scheduled: bill.isScheduled
         case .paid: bill.status == .paid
         }
     }
 
     private var filtered: [Bill] {
-        bills.filter { inFilter($0, filter) && matches(query, $0.vendor?.name ?? "", $0.vendorNumber, $0.total.money) }
+        bills.filter { inFilter($0, filter) && (!isSelecting || $0.isOpen) && matches(query, $0.vendor?.name ?? "", $0.vendorNumber, $0.total.money) }
     }
 
+    private var checkedBills: [Bill] { bills.filter { checked.contains($0.id) && $0.isOpen } }
+
     var body: some View {
-        List(selection: $selection) {
+        List(selection: isSelecting ? .constant(nil) : $selection) {
             ForEach(filtered) { bill in
-                MasterRow(title: bill.vendor?.name ?? String(localized: "Proveedor"), amount: bill.balanceDue.money,
-                          subtitle: bill.vendorNumber.isEmpty ? bill.dueDate.dueLabel : "\(bill.vendorNumber) · \(bill.dueDate.dueLabel)") {
-                    MasterStatus(chip: StatusChip(bill: bill))
+                if isSelecting {
+                    let isOn = checked.contains(bill.id)
+                    Button {
+                        if isOn { checked.remove(bill.id) } else { checked.insert(bill.id) }
+                    } label: {
+                        HStack(spacing: 10) {
+                            SelectionMark(isOn: isOn)
+                            row(bill)
+                        }
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityAddTraits(isOn ? [.isSelected] : [])
+                    .accessibilityHint(Text("Incluir en el pago en lote"))
+                    .listRowBackground(Palette.surface)
+                } else {
+                    row(bill)
+                        .masterRow(bill.id, selection: selection)
+                        .contextMenu { BillScheduleMenuItems(bill: bill) { scheduling = bill } }
                 }
-                .masterRow(bill.id, selection: selection)
             }
             if filtered.isEmpty {
                 Text(bills.isEmpty ? String(localized: "Sin facturas por pagar") : String(localized: "Ninguna factura coincide"))
@@ -640,8 +685,36 @@ private struct BillMasterList: View {
                 bills.filter { inFilter($0, option) }.count
             }
         }
+        .toolbar {
+            if bills.contains(where: \.isOpen) {
+                ToolbarItem(placement: .primaryAction) {
+                    Button(isSelecting ? "Listo" : "Seleccionar", systemImage: "checkmark.circle") {
+                        withAnimation { isSelecting.toggle(); checked = [] }
+                    }
+                    .headerButton()
+                }
+            }
+        }
+        .safeAreaInset(edge: .bottom) {
+            if isSelecting {
+                BatchPayBar(selected: checkedBills, accounts: accounts, clear: { checked = [] }) { payingBatch = true }
+            }
+        }
         .masterAddButton(nil, label: String(localized: "Nueva factura de proveedor")) { creating = true }
         .sheet(isPresented: $creating) { NavigationStack { BillEditorView() }.editorSheetSizing() }
+        .sheet(item: $scheduling) { bill in NavigationStack { SchedulePaymentView(bill: bill) }.editorSheetSizing() }
+        .sheet(isPresented: $payingBatch) {
+            NavigationStack { BatchPayView(bills: checkedBills) { checked = []; isSelecting = false } }.editorSheetSizing()
+        }
+        .task { RecurringAutomation.run(in: context) }
+    }
+
+    private func row(_ bill: Bill) -> some View {
+        MasterRow(title: bill.vendor?.name ?? String(localized: "Proveedor"), amount: (bill.isOpen ? bill.balanceDue : bill.total).money,
+                  subtitle: bill.paymentSummary(accounts: accounts)
+                    ?? (bill.vendorNumber.isEmpty ? bill.dueDate.dueLabel : "\(bill.vendorNumber) · \(bill.dueDate.dueLabel)")) {
+            MasterStatus(chip: StatusChip(billWithAge: bill))
+        }
     }
 }
 
@@ -659,7 +732,7 @@ private struct BankingMasterList: View {
         let shown = ledger.moneyAccounts.filter { $0.subtype == .bank || $0.subtype == .creditCard || ledger.balance(of: $0) != 0 }
         List(selection: $selection) {
             ForEach(shown) { account in
-                MasterRow(title: account.name, amount: ledger.cashBalance(of: account).money,
+                MasterRow(title: account.maskedName, amount: ledger.cashBalance(of: account).money,
                           subtitle: String(localized: "Saldo en libros · \(account.code)")) {
                     MasterSymbol(systemImage: account.subtype == .creditCard ? "creditcard" : "building.columns", label: nil)
                 }
@@ -827,15 +900,19 @@ private struct ChartMasterRow: View {
 
 // MARK: - Factura por pagar
 
-/// Ficha de una factura de proveedor (detalle de «Facturas por pagar»): proveedor, número, fechas, líneas, pagos y
-/// «Registrar pago» mientras quede saldo.
+/// Ficha de una factura de proveedor (detalle de «Facturas por pagar»): proveedor, número, fechas, el pago programado
+/// («Programar pago», canvas `ProveedorFicha`), líneas, pagos y «Registrar pago» mientras quede saldo.
 struct BillDetailView: View {
     let bill: Bill
+    @Environment(\.modelContext) private var context
     @Query(sort: \Account.code) private var accounts: [Account]
     @State private var paying = false
+    @State private var scheduling = false
+    @State private var errorMessage: String?
 
     var body: some View {
         List {
+            if let errorMessage { ErrorBanner(message: errorMessage).listRowBackground(Color.clear).listRowInsets(EdgeInsets()) }
             // Cabecera como la factura del canvas (`iPadVentas`, `FacturaDetalle`): proveedor y número, saldo de 40 pt y
             // el estado con el vencimiento debajo; «Registrar pago» como botón principal.
             Section {
@@ -846,7 +923,7 @@ struct BillDetailView: View {
                     Text(bill.balanceDue.money).font(.amount(40)).foregroundStyle(Palette.ink)
                         .lineLimit(1).minimumScaleFactor(0.6)
                     HStack(alignment: .firstTextBaseline, spacing: 6) {
-                        StatusChip(bill: bill, compact: false)
+                        StatusChip(billWithAge: bill, compact: false)
                         Text(verbatim: "· " + (bill.isOpen ? String(localized: "Saldo por pagar · \(bill.dueDate.dueLabel)")
                                                           : String(localized: "Total \(bill.total.money)")))
                             .font(.subheadline).foregroundStyle(bill.isOverdue ? Palette.negative : Palette.ink2)
@@ -865,11 +942,14 @@ struct BillDetailView: View {
                 }
             }
 
+            if bill.isOpen { scheduleSection }
+
             Section("Factura") {
                 LabeledContent("Número", value: bill.vendorNumber.isEmpty ? "—" : bill.vendorNumber)
                 LabeledContent("Fecha", value: bill.billDate.shortDate)
                 LabeledContent("Vence", value: bill.dueDate.shortDate)
                 LabeledContent("Total", value: bill.total.money)
+                if bill.recurringTemplateID != nil { LabeledContent("Origen", value: String(localized: "Recurrente")) }
                 if !bill.memo.isEmpty { LabeledContent("Notas", value: bill.memo) }
             }
             .listRowBackground(Palette.surface)
@@ -894,7 +974,13 @@ struct BillDetailView: View {
             if !payments.isEmpty {
                 Section("Pagos") {
                     ForEach(payments) { payment in
-                        LabeledContent(payment.date.shortDate) { Text(payment.amount.money).monospacedDigit() }
+                        LabeledContent {
+                            Text(payment.amount.money).monospacedDigit()
+                        } label: {
+                            Text(payment.date.shortDate)
+                            Text([accounts.account(payment.paymentAccountID)?.paymentLabel,
+                                  PaymentMethod(rawValue: payment.methodRaw)?.title].compactMap { $0 }.joined(separator: " · "))
+                        }
                     }
                 }
                 .listRowBackground(Palette.surface)
@@ -904,6 +990,43 @@ struct BillDetailView: View {
         .navigationTitle(bill.vendorNumber.isEmpty ? String(localized: "Factura por pagar") : bill.vendorNumber)
         .inlineTitle()
         .sheet(isPresented: $paying) { NavigationStack { PayBillView(bill: bill) }.editorSheetSizing() }
+        .sheet(isPresented: $scheduling) { NavigationStack { SchedulePaymentView(bill: bill) }.editorSheetSizing() }
+    }
+
+    /// «Pago programado» (canvas `ProveedorFicha`): la fecha, la cuenta y el método, con «Cambiar» y «Cancelar pago
+    /// programado»; sin programar, «Programar pago» en Tinta.
+    @ViewBuilder
+    private var scheduleSection: some View {
+        Section {
+            if bill.isScheduled, let date = bill.scheduledPaymentDate {
+                LabeledContent("Fecha de pago", value: date.shortDate)
+                LabeledContent("Pagar desde", value: accounts.account(bill.scheduledPaymentAccountID ?? bill.vendor?.preferredPaymentAccountID)?.paymentLabel ?? "—")
+                LabeledContent("Método", value: (bill.scheduledPaymentMethod ?? .bankTransfer).title)
+                if bill.autoPay { LabeledContent("Cargo automático", value: String(localized: "Sí")) }
+                Button("Cambiar pago programado…", systemImage: "calendar.badge.clock") { scheduling = true }
+                    .frame(minHeight: Metrics.target)
+                Button("Cancelar pago programado", systemImage: "xmark.circle", role: .destructive, action: unschedule)
+                    .foregroundStyle(Palette.negative)
+                    .frame(minHeight: Metrics.target)
+            } else {
+                Button("Programar pago", systemImage: "calendar.badge.clock") { scheduling = true }
+                    .frame(minHeight: Metrics.target)
+            }
+        } header: {
+            Text("Pago programado")
+        } footer: {
+            Text("Chirogra te recuerda el pago; el dinero se mueve desde tu banco.")
+        }
+        .listRowBackground(Palette.surface)
+    }
+
+    private func unschedule() {
+        do {
+            try Bookkeeper(context: context).unschedulePayment(for: bill)
+            errorMessage = nil
+        } catch {
+            errorMessage = error.localizedDescription
+        }
     }
 }
 

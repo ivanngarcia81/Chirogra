@@ -5,16 +5,16 @@ import SwiftData
 import SwiftUI
 
 /// Mac: Facturas por pagar como tabla + inspector (canvas `MacPorPagar`). Arriba las cajas Total por pagar · Vencido ·
-/// Vence esta semana · Pagado en el mes y el segmentado Por pagar · Vencidas · Esta semana · Pagadas con su cuenta; la
-/// tabla Vence · Proveedor · Número · Estado · Importe con «Registrar pago» en cada factura abierta. El inspector muestra
-/// la elegida (Detalles, Importes, Pagos) con «Registrar pago…» (`PayBillView`), «Ver proveedor» y «Abrir la factura».
+/// Vence esta semana · Pagos programados y el segmentado Por pagar · Vencidas · Esta semana · Programadas · Pagadas con
+/// su cuenta; la tabla con la casilla del pago en lote, Vence · Proveedor · Número · Estado · Importe y «Registrar pago»
+/// en cada factura abierta; al pie, la barra del pago en lote («Pagar $X»). El inspector muestra la elegida (Detalles,
+/// Pago, Importes, Pagos) con «Registrar pago…» (`PayBillView`), «Programar pago…», «Ver proveedor» y «Abrir la factura».
 /// Doble clic abre la factura completa (`BillDetailView`).
 struct BillTablePage: View {
     static let isReady = true
     @Binding var selection: UUID?
     @Query(sort: \Bill.dueDate) private var bills: [Bill]
     @Query(sort: \Account.code) private var accounts: [Account]
-    @Query private var payments: [BillPayment]
     @State private var filter: BillFilter = .open
     @State private var query = ""
     @State private var creating = false
@@ -25,6 +25,11 @@ struct BillTablePage: View {
     @State private var paidHere: Set<UUID> = []
     @State private var openedBill: Bill?
     @State private var openedVendor: Vendor?
+    @State private var scheduling: Bill?
+    /// Facturas marcadas para el pago en lote (casillas de la tabla).
+    @State private var checked: Set<UUID> = []
+    @State private var payingBatch = false
+    @Environment(\.modelContext) private var context
 
     private var weekEnd: Date { Calendar.current.date(byAdding: .day, value: 7, to: Calendar.current.startOfDay(for: .now)) ?? .now }
 
@@ -33,8 +38,17 @@ struct BillTablePage: View {
         case .open: bill.isOpen
         case .overdue: bill.isOverdue
         case .thisWeek: bill.isOpen && !bill.isOverdue && bill.dueDate < weekEnd
+        case .scheduled: bill.isScheduled
         case .paid: bill.status == .paid
         }
+    }
+
+    private var checkedBills: [Bill] { bills.filter { checked.contains($0.id) && $0.isOpen } }
+
+    private func isChecked(_ bill: Bill) -> Binding<Bool> {
+        Binding(get: { checked.contains(bill.id) }, set: { on in
+            if on { checked.insert(bill.id) } else { checked.remove(bill.id) }
+        })
     }
 
     private var filtered: [Bill] {
@@ -57,15 +71,14 @@ struct BillTablePage: View {
         let open = bills.filter(\.isOpen)
         let overdue = open.filter(\.isOverdue)
         let week = open.filter { !$0.isOverdue && $0.dueDate < weekEnd }
-        let month = DateInterval.month(containing: .now)
-        let paid = payments.filter { month.contains($0.date) }.reduce(0) { $0 + $1.amount }
-        let monthName = Date.now.formatted(.appDateTime.month(.wide))
+        let scheduled = open.filter(\.isScheduled).sorted { ($0.scheduledPaymentDate ?? .distantFuture) < ($1.scheduledPaymentDate ?? .distantFuture) }
         return [
             KPIItem(title: String(localized: "Total por pagar"), value: open.reduce(0) { $0 + $1.balanceDue }.money),
             KPIItem(title: String(localized: "Vencido"), value: overdue.reduce(0) { $0 + $1.balanceDue }.money,
                     foot: overdue.isEmpty ? nil : String(localized: "\(overdue.count) vencidas"), footColor: Palette.negative),
             KPIItem(title: String(localized: "Vence esta semana"), value: week.reduce(0) { $0 + $1.balanceDue }.money),
-            KPIItem(title: String(localized: "Pagado en \(monthName)"), value: paid.money),
+            KPIItem(title: String(localized: "Pagos programados"), value: scheduled.reduce(0) { $0 + $1.balanceDue }.money,
+                    foot: scheduled.first?.scheduledPaymentDate.map { String(localized: "Próximo el \($0.dayMonth)") }),
         ]
     }
 
@@ -104,6 +117,17 @@ struct BillTablePage: View {
             },
             inspectorPlaceholder: String(localized: "Selecciona una factura para ver sus detalles.")
         ) {
+            TableColumn(Text(verbatim: "")) { bill in
+                if bill.isOpen {
+                    Toggle(isOn: isChecked(bill)) { EmptyView() }
+                        .toggleStyle(.checkbox)
+                        .labelsHidden()
+                        .accessibilityLabel(bill.vendorNumber.isEmpty ? String(localized: "Incluir en el pago en lote")
+                                                                       : String(localized: "Incluir \(bill.vendorNumber) en el pago en lote"))
+                        .help("Incluir en el pago en lote")
+                }
+            }
+            .width(min: 20, ideal: 22, max: 26)
             TableColumn("Vence", value: \.dueDate) { bill in
                 MacCellText(text: bill.dueDate.dayMonth, color: bill.isOverdue ? Palette.negative : Palette.ink2)
             }
@@ -144,11 +168,24 @@ struct BillTablePage: View {
                            selection: $filter, label: \.localizedTitle) { option in
                 bills.filter { inFilter($0, option) }.count
             }
+            // Pago en lote (canvas `MacPorPagar`: al pie; aquí arriba de la tabla para no cruzar el inspector).
+            if !checkedBills.isEmpty {
+                BatchPayBar(selected: checkedBills, accounts: accounts, clear: { checked = [] },
+                            selectAll: { checked.formUnion(filtered.filter(\.isOpen).map(\.id)) }) { payingBatch = true }
+                    .padding(.horizontal, -12)
+                    .padding(.bottom, -8)
+            }
         } inspector: { bill in
-            BillInspector(bill: bill, accounts: accounts) { openedVendor = $0 }
+            BillInspector(bill: bill, accounts: accounts, inBatch: checked.contains(bill.id)) { openedVendor = $0 }
         } actions: { bill in
             if bill.isOpen {
                 Button("Registrar pago…") { pay(bill) }.buttonStyle(.primary)
+                HStack(spacing: 8) {
+                    Button(bill.isScheduled ? "Cambiar pago…" : "Programar pago…") { scheduling = bill }.buttonStyle(.secondary)
+                    if bill.isScheduled {
+                        Button("Desprogramar") { unschedule(bill) }.buttonStyle(.destructive)
+                    }
+                }
             }
             HStack(spacing: 8) {
                 if let vendor = bill.vendor {
@@ -158,6 +195,17 @@ struct BillTablePage: View {
             }
         }
         .onChange(of: filter) { paidHere = [] }
+        .sheet(item: $scheduling) { bill in NavigationStack { SchedulePaymentView(bill: bill) }.editorSheetSizing() }
+        .sheet(isPresented: $payingBatch) {
+            NavigationStack {
+                BatchPayView(bills: checkedBills) {
+                    paidHere.formUnion(checked)
+                    checked = []
+                }
+            }
+            .editorSheetSizing()
+        }
+        .task { RecurringAutomation.run(in: context) }
         .sheet(isPresented: $creating) { NavigationStack { BillEditorView() }.editorSheetSizing() }
         .sheet(item: $paying, onDismiss: {
             if let bill = payingBill, bill.status == .paid { paidHere.insert(bill.id) }
@@ -174,6 +222,11 @@ struct BillTablePage: View {
             guard let id = selection, let bill = bills.first(where: { $0.id == id }) else { return }
             if UserDefaults.standard.bool(forKey: "qa.pago"), bill.isOpen { pay(bill) }
             if UserDefaults.standard.bool(forKey: "qa.abrir") { openedBill = bill }
+            if UserDefaults.standard.bool(forKey: "qa.programar"), bill.isOpen { scheduling = bill }
+            // `-qa.lote 1` marca todas las abiertas que se ven; `-qa.lote 2` además abre «Pago en lote».
+            let lote = UserDefaults.standard.integer(forKey: "qa.lote")
+            if lote > 0 { checked = Set(filtered.filter(\.isOpen).map(\.id)) }
+            if lote > 1 { payingBatch = true }
         }
         #endif
     }
@@ -183,6 +236,10 @@ struct BillTablePage: View {
         payingBill = bill
         paying = bill
     }
+
+    private func unschedule(_ bill: Bill) {
+        try? Bookkeeper(context: context).unschedulePayment(for: bill)
+    }
 }
 
 /// Inspector de la factura por pagar (canvas `MacPorPagar`): proveedor, importe de 24 y estado; Detalles (Proveedor,
@@ -191,9 +248,17 @@ struct BillTablePage: View {
 private struct BillInspector: View {
     let bill: Bill
     let accounts: [Account]
+    let inBatch: Bool
     let openVendor: (Vendor) -> Void
 
-    private func accountName(_ id: UUID?) -> String? { accounts.first { $0.id == id }?.name }
+    private func accountName(_ id: UUID?) -> String? { accounts.account(id)?.paymentLabel }
+
+    /// «Cargo automático», «Programado · 7 nov» o «Manual» (canvas `MacPorPagar`, «Método»).
+    private var how: String {
+        if bill.autoPay { return String(localized: "Cargo automático") }
+        if let date = bill.scheduledPaymentDate, bill.isScheduled { return String(localized: "Programado · \(date.dayMonth)") }
+        return String(localized: "Manual")
+    }
 
     /// La cuenta de gasto de las líneas, o «Varias» si son distintas.
     private var category: String {
@@ -226,6 +291,16 @@ private struct BillInspector: View {
                 MacInspectorRow(String(localized: "Concepto"), value: bill.concept)
             }
         }
+        if bill.isOpen {
+            MacInspectorSection(title: String(localized: "Pago")) {
+                MacInspectorRow(String(localized: "Cuenta"),
+                                value: accountName(bill.scheduledPaymentAccountID ?? bill.vendor?.preferredPaymentAccountID) ?? "—")
+                MacInspectorRow(String(localized: "Método"),
+                                value: (bill.scheduledPaymentMethod ?? bill.vendor?.preferredPaymentMethod)?.title ?? "—")
+                MacInspectorRow(String(localized: "Pago"), value: how)
+                MacInspectorRow(String(localized: "En pago en lote"), value: inBatch ? String(localized: "Sí") : String(localized: "No"))
+            }
+        }
         MacInspectorSection(title: String(localized: "Importes")) {
             MacInspectorRow(String(localized: "Total"), value: bill.total.money)
             MacInspectorRow(String(localized: "Pagado"), value: bill.amountPaid.money)
@@ -249,7 +324,7 @@ private struct BillInspector: View {
 
     /// «Banco · Transferencia»: la cuenta desde la que se pagó y el método.
     private func paymentDetail(_ payment: BillPayment) -> String {
-        let method = PaymentMethod(rawValue: payment.methodRaw).map(ExpenseEditorView.title(for:))
+        let method = PaymentMethod(rawValue: payment.methodRaw)?.title
         return [accountName(payment.paymentAccountID), method].compactMap { $0 }.joined(separator: " · ")
     }
 }
@@ -262,6 +337,7 @@ extension Bill {
 
     /// Orden de los estados al ordenar por «Estado»: Vencida, Pago parcial, Por pagar, Pagada, Anulada.
     nonisolated var payableStatusRank: Int {
+        if isOpen && scheduledPaymentDate != nil { return 2 }
         if isOpen && dueDate < Calendar.current.startOfDay(for: .now) { return 0 }
         return switch status {
         case .partiallyPaid: 1

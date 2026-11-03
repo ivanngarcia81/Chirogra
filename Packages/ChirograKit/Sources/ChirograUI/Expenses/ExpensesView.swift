@@ -4,13 +4,14 @@ import SwiftData
 import SwiftUI
 import UniformTypeIdentifiers
 
-/// Gastos (canvas `Gastos`): gastos pagados y facturas por pagar con el segmentado, y los proveedores desde una fila.
-/// Es la pantalla del iPhone (y la de la columna estrecha del iPad, o con AX4 o más); en iPad y Mac cada subsección va
-/// con columna maestro (`MasterPage`).
+/// Gastos (canvas `Gastos`): gastos pagados, facturas por pagar y recurrentes con el segmentado, y los proveedores
+/// desde una fila. Es la pantalla del iPhone (y la de la columna estrecha del iPad, o con AX4 o más); en iPad y Mac
+/// cada subsección va con columna maestro (`MasterPage`) o tabla.
 struct ExpensesView: View {
     enum Segment: String, CaseIterable, Identifiable {
         case expenses = "Gastos"
         case bills = "Por pagar"
+        case recurring = "Recurrentes"
         case vendors = "Proveedores"
         var id: String { rawValue }
     }
@@ -23,16 +24,16 @@ struct ExpensesView: View {
 
     private var segment: Segment { fixedSegment ?? selectedSegment }
 
-    /// El segmentado del canvas es Gastos · Por pagar · Recurrentes; Recurrentes es de la fase 2 y Proveedores va como
-    /// fila de la pantalla de Gastos.
+    /// El segmentado del canvas es Gastos · Por pagar · Recurrentes; Proveedores va como fila de la pantalla de Gastos.
     private var picker: Binding<Segment>? { fixedSegment == nil ? $selectedSegment : nil }
 
     private var title: String {
-        // En iPhone las dos van bajo «Gastos» con el selector; desde un enlace cada una tiene su título.
+        // En iPhone van bajo «Gastos» con el selector; desde un enlace cada una tiene su título.
         guard fixedSegment != nil else { return String(localized: "Gastos") }
         return switch segment {
         case .expenses: String(localized: "Gastos")
         case .bills: String(localized: "Facturas por pagar")
+        case .recurring: String(localized: "Recurrentes")
         case .vendors: String(localized: "Proveedores")
         }
     }
@@ -41,6 +42,7 @@ struct ExpensesView: View {
         switch segment {
         case .expenses: "Nuevo gasto"
         case .bills: "Nueva factura de proveedor"
+        case .recurring: "Nueva recurrente"
         case .vendors: "Nuevo proveedor"
         }
     }
@@ -50,6 +52,7 @@ struct ExpensesView: View {
             switch segment {
             case .expenses: ExpenseListView(section: picker) { selectedSegment = .bills }
             case .bills: BillListView(section: picker)
+            case .recurring: RecurringListView(section: picker)
             case .vendors: VendorListView()
             }
         }
@@ -65,12 +68,17 @@ struct ExpensesView: View {
                 switch segment {
                 case .expenses: ExpenseEditorView()
                 case .bills: BillEditorView()
+                case .recurring: RecurringTemplateEditorView()
                 case .vendors: VendorEditorView()
                 }
             }
             .editorSheetSizing()
         }
+        // Lo que la app hace sola (recurrentes de hoy y cargos automáticos) también al abrir Gastos: es idempotente.
+        .task { RecurringAutomation.run(in: context) }
     }
+
+    @Environment(\.modelContext) private var context
 }
 
 extension View {
@@ -85,13 +93,14 @@ extension View {
     }
 }
 
-/// Segmentado Gastos · Por pagar arriba de la lista, bajo el título grande (se desplaza con ella, como en el canvas).
-private struct ExpensesSegmentRow: View {
+/// Segmentado Gastos · Por pagar · Recurrentes arriba de la lista, bajo el título grande (se desplaza con ella, como
+/// en el canvas).
+struct ExpensesSegmentRow: View {
     @Binding var selection: ExpensesView.Segment
 
     var body: some View {
         Section {
-            FilterPicker(title: String(localized: "Sección"), options: [.expenses, .bills], selection: $selection) { $0.localizedTitle }
+            FilterPicker(title: String(localized: "Sección"), options: [.expenses, .bills, .recurring], selection: $selection) { $0.localizedTitle }
                 .labelsHidden()
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .listRowInsets(EdgeInsets())
@@ -152,16 +161,24 @@ struct ExpenseListView: View {
     @Query(sort: \Bill.dueDate) private var bills: [Bill]
     @State private var filter: ExpenseReceiptFilter = .all
     @State private var cardWidth: CGFloat = 0
+    @State private var errorMessage: String?
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.modelContext) private var context
 
     private func category(_ expense: Expense) -> Account? {
         let id = expense.sortedLines.first?.accountID
         return accounts.first { $0.id == id }
     }
 
+    /// Los anulados no cuentan ni se listan; los «por confirmar» (sin asiento, de una recurrente sin cargo automático)
+    /// van en su grupo con «Registrar».
+    private var posted: [Expense] { expenses.filter { $0.isPosted && !$0.isVoid } }
+    private var pending: [Expense] { expenses.filter(\.isPendingConfirmation) }
+
     var body: some View {
-        let shown = expenses.filter(filter.includes)
+        let shown = posted.filter(filter.includes)
         List {
+            if let errorMessage { ErrorBanner(message: errorMessage).listRowBackground(Color.clear).listRowInsets(EdgeInsets()) }
             if let section { ExpensesSegmentRow(selection: section) }
 
             Section {
@@ -177,6 +194,20 @@ struct ExpenseListView: View {
                 NavigationLink { ExpensesView(fixedSegment: .vendors) } label: {
                     Label { Text("Proveedores") } icon: { IconTile(systemImage: "truck.box", foreground: Palette.purple) }
                         .labelStyle(TileLabelStyle())
+                }
+            }
+
+            if !pending.isEmpty {
+                Section {
+                    ForEach(pending) { expense in
+                        PendingExpenseRow(expense: expense, category: category(expense)) { record(expense) }
+                    }
+                } header: {
+                    ListGroupHeader(title: String(localized: "Por confirmar")) {
+                        Text("\(pending.count) de recurrentes").font(.subheadline).foregroundStyle(Palette.ink2)
+                    }
+                } footer: {
+                    Text("Los generó una recurrente sin cargo automático: revisa el importe y regístralos.")
                 }
             }
 
@@ -201,6 +232,15 @@ struct ExpenseListView: View {
         }
         .groupedList()
         .screenBackground()
+    }
+
+    private func record(_ expense: Expense) {
+        do {
+            try Bookkeeper(context: context).record(expense)
+            errorMessage = nil
+        } catch {
+            errorMessage = error.localizedDescription
+        }
     }
 
     /// «Filtrar» en Tinta; con un filtro puesto, su nombre.
@@ -254,8 +294,8 @@ struct ExpenseListView: View {
     /// en el Mac (decisión del usuario, 2-nov).
     private var cardMonth: DateInterval {
         let current = DateInterval.month(containing: .now)
-        guard !expenses.contains(where: { current.contains($0.date) && $0.date < current.end }),
-              let latest = expenses.first?.date else { return current }
+        guard !posted.contains(where: { current.contains($0.date) && $0.date < current.end }),
+              let latest = posted.first?.date else { return current }
         return DateInterval.month(containing: latest)
     }
 
@@ -266,7 +306,7 @@ struct ExpenseListView: View {
         let month = cardMonth
         let names = Dictionary(accounts.map { ($0.id, $0.name) }, uniquingKeysWith: { first, _ in first })
         var totals: [String: Int64] = [:]
-        for expense in expenses where month.contains(expense.date) && expense.date < month.end {
+        for expense in posted where month.contains(expense.date) && expense.date < month.end {
             var categorized: Int64 = 0
             for line in expense.sortedLines {
                 guard let id = line.accountID, let name = names[id] else { continue }
@@ -366,8 +406,17 @@ struct ExpenseRow: View {
     let expense: Expense
     let category: Account?
 
+    /// «Software · recurrente · 27 oct» (canvas `Gastos`): la categoría, si lo generó una recurrente, y el día.
+    private var subtitle: String {
+        var parts = [category?.name ?? String(localized: "Sin categoría")]
+        if expense.recurringTemplateID != nil { parts.append(String(localized: "recurrente")) }
+        if expense.isBillable, let customer = expense.customer { parts.append(customer.name) }
+        parts.append(expense.date.relativeDay)
+        return parts.joined(separator: " · ")
+    }
+
     var body: some View {
-        LedgerRow(title: expense.payee, subtitle: "\(category?.name ?? String(localized: "Sin categoría")) · \(expense.date.relativeDay)") {
+        LedgerRow(title: expense.payee, subtitle: subtitle) {
             IconTile(systemImage: ExpenseCategoryStyle.symbol(for: category?.name), foreground: ExpenseCategoryStyle.color(for: category?.name))
         } trailing: {
             HStack(spacing: 6) {
@@ -390,249 +439,20 @@ extension Date {
     }
 }
 
-// MARK: - Nuevo gasto
-
-struct ExpenseEditorView: View {
-    /// Desde la ficha de un proveedor («+ Gasto», «Recibo»).
-    var preselectedVendor: Vendor? = nil
-    @Environment(\.modelContext) private var context
-    @Environment(\.dismiss) private var dismiss
-    @Environment(\.unsavedChanges) private var unsavedChanges
-    /// Testigo del editor en `UnsavedChanges`: se retira al guardar, antes de cerrar.
-    @State private var editorToken = EditorToken()
-    @Query(sort: \Account.code) private var accounts: [Account]
-    @Query(sort: \Vendor.name) private var vendors: [Vendor]
-
-    @State private var payee = ""
-    @State private var vendorID: UUID?
-    @State private var date = Date()
-    @State private var amount: Int64 = 0
-    @State private var categoryID: UUID?
-    @State private var paymentAccountID: UUID?
-    @State private var memo = ""
-    @State private var receipts: [ReceiptFile] = []
-    @State private var method: PaymentMethod = .card
-    @State private var errorMessage: String?
-    @State private var editorWidth: CGFloat = 0
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-    #if os(iOS)
-    @LayoutSizeClass private var sizeClass
-    #endif
-
-    /// `MacGastoNuevo` en iPad y Mac (hasta AX3): el recibo a la izquierda y el formulario a la derecha. En el
-    /// iPhone, el formulario con el recibo como una sección más.
-    private var isWide: Bool {
-        #if os(iOS)
-        if sizeClass != .regular { return false }
-        #endif
-        return dynamicTypeSize < .accessibility4
-    }
-
-    private var canSave: Bool { amount > 0 && categoryID != nil && paymentAccountID != nil && !(payee.isEmpty && vendorID == nil) }
-
-    private var expenseAccounts: [Account] { accounts.filtered { $0.accountType == .expense || $0 == .fixedAsset || $0 == .otherCurrentAsset } }
-    private var paymentAccounts: [Account] { accounts.filtered { $0.isMoneyAccount && $0 != .undepositedFunds } }
-
-    var body: some View {
-        Group {
-            if isWide { wideForm } else { compactForm }
-        }
-        .navigationTitle("Nuevo gasto")
-        .inlineTitle()
-        .discardableEditor(tracking: "\(payee)|\(vendorID?.uuidString ?? "")|\(date)|\(amount)|\(categoryID?.uuidString ?? "")|\(paymentAccountID?.uuidString ?? "")|\(memo)|\(receipts.count)|\(method)", token: editorToken)
-        .toolbar {
-            #if os(macOS)
-            // Una hoja del Mac solo muestra «Cancelar» y la acción de confirmar (con Return); «Guardar y nuevo» va en
-            // el contenido.
-            ToolbarItem(placement: .confirmationAction) {
-                Button("Guardar gasto") { save() }.disabled(!canSave)
-            }
-            #else
-            if isWide {
-                ToolbarItem(placement: .primaryAction) {
-                    Button("Guardar y nuevo") { save(another: true) }.disabled(!canSave).headerButton()
-                }
-                ToolbarSpacer(.fixed, placement: .primaryAction)
-                ToolbarItem(placement: .primaryAction) {
-                    Button("Guardar gasto") { save() }.disabled(!canSave).headerButton()
-                }
-            } else {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Guardar") { save() }.disabled(!canSave).headerButton()
-                }
-            }
-            #endif
-        }
-        .onChange(of: vendorID) {
-            guard let vendor = vendors.first(where: { $0.id == vendorID }) else { return }
-            if payee.isEmpty { payee = vendor.name }
-            if let defaultAccount = vendor.defaultExpenseAccountID { categoryID = defaultAccount }
-        }
-        .onAppear {
-            paymentAccountID = paymentAccountID ?? paymentAccounts.first { $0.subtype == .bank }?.id
-            if vendorID == nil, let preselectedVendor { vendorID = preselectedVendor.id }
-        }
-    }
-
-    // MARK: Secciones (las mismas en las dos formas)
-
-    @ViewBuilder
-    private var amountSection: some View {
-        Section {
-            LabeledContent("Monto") {
-                MoneyField(title: String(localized: "Monto"), minorUnits: $amount)
-                    .font(.amount(isWide ? 17 : 24))
-                    .multilineTextAlignment(.trailing)
-                    .labelsHidden()
-            }
-            DatePicker("Fecha", selection: $date, displayedComponents: .date)
-        } header: {
-            SectionLabel(text: String(localized: "Importe"))
-        } footer: {
-            Text("En EE. UU. el sales tax de tus compras forma parte del gasto.")
-        }
-    }
-
-    @ViewBuilder
-    private var detailsSection: some View {
-        Section {
-            Picker("Proveedor", selection: $vendorID) {
-                Text("Ninguno").tag(UUID?.none)
-                ForEach(vendors.filter { !$0.isArchived || $0.id == vendorID }) { Text($0.name).tag(Optional($0.id)) }
-            }
-            TextField("Pagado a (comercio o persona)", text: $payee)
-            AccountPicker(title: String(localized: "Categoría"), accounts: expenseAccounts, selection: $categoryID)
-            AccountPicker(title: String(localized: "Cuenta de pago"), accounts: paymentAccounts, selection: $paymentAccountID)
-            Picker("Método de pago", selection: $method) {
-                ForEach(Self.methods, id: \.self) { Text(Self.title(for: $0)).tag($0) }
-            }
-        } header: {
-            SectionLabel(text: String(localized: "Detalles"))
-        }
-    }
-
-    @ViewBuilder
-    private var noteSection: some View {
-        Section {
-            TextField("Ej. materiales para una obra", text: $memo, axis: .vertical)
-                .lineLimit(2...5)
-                .accessibilityLabel("Nota")
-        } header: {
-            SectionLabel(text: String(localized: "Nota"))
-        }
-    }
-
-    // MARK: iPhone
-
-    private var compactForm: some View {
-        Form {
-            if let errorMessage { ErrorBanner(message: errorMessage) }
-            amountSection
-            detailsSection
-            noteSection
-            Section {
-                ForEach(receipts) { receipt in
-                    HStack(spacing: 12) {
-                        ReceiptThumbnail(data: receipt.data, contentType: receipt.type.identifier, side: 48)
-                        Text(receipt.name).lineLimit(1)
-                    }
-                }
-                .onDelete { receipts.remove(atOffsets: $0) }
-                ReceiptPickerButtons { receipts.append($0) }
-            } header: {
-                SectionLabel(text: String(localized: "Recibo"))
-            }
-        }
-        .formStyle(.grouped)
-        .screenBackground()
-    }
-
-    // MARK: iPad y Mac (`MacGastoNuevo`)
-
-    /// Recibo a la izquierda (zona para arrastrar una foto o un PDF) y el formulario agrupado a la derecha. «Impuesto
-    /// incluido», «Cliente o proyecto» y «Gasto recurrente» del canvas no tienen columna en el modelo: quedan fuera.
-    private var wideForm: some View {
-        HStack(alignment: .top, spacing: 0) {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 12) {
-                    if let errorMessage { ErrorBanner(message: errorMessage) }
-                    ReceiptDropPanel(receipts: $receipts)
-                    #if os(macOS)
-                    Button("Guardar y nuevo") { save(another: true) }
-                        .disabled(!canSave)
-                    #endif
-                }
-                .padding(Metrics.gutter)
-            }
-            .frame(width: editorWidth >= 700 ? 300 : 260)
-            Divider()
-            Form {
-                amountSection
-                detailsSection
-                noteSection
-            }
-            .formStyle(.grouped)
-            .scrollContentBackground(.hidden)
-        }
-        .background(Palette.background)
-        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { editorWidth = $0 }
-        #if os(macOS)
-        .frame(minWidth: 760, idealWidth: 860, minHeight: 520, idealHeight: 600)
-        #endif
-    }
-
-    private static let methods: [PaymentMethod] = [.card, .bankTransfer, .cash, .check]
-
-    static func title(for method: PaymentMethod) -> String {
-        switch method {
-        case .card: String(localized: "Tarjeta")
-        case .bankTransfer: String(localized: "Transferencia")
-        case .cash: String(localized: "Efectivo")
-        case .check: String(localized: "Cheque")
-        case .other: String(localized: "Otro")
-        }
-    }
-
-    /// Con `another`, deja el formulario limpio para el siguiente gasto («Guardar y nuevo»).
-    private func save(another: Bool = false) {
-        let vendor = vendors.first { $0.id == vendorID }
-        let expense = Expense(date: date, payee: payee.isEmpty ? (vendor?.name ?? "") : payee, paymentAccountID: paymentAccountID, vendor: vendor)
-        expense.memo = memo
-        expense.methodRaw = method.rawValue
-        let line = ExpenseLine(details: memo.isEmpty ? expense.payee : memo, amount: amount, accountID: categoryID)
-        context.insert(expense)
-        line.expense = expense
-        context.insert(line)
-        let books = Bookkeeper(context: context)
-        do {
-            try books.record(expense)
-        } catch {
-            context.delete(expense)
-            errorMessage = error.localizedDescription
-            return
-        }
-        // El gasto ya está registrado; un recibo ilegible no lo deshace, solo se avisa.
-        var failed: [String] = []
-        for receipt in receipts {
-            do { try books.attachReceipt(receipt.data, filename: receipt.name, contentType: receipt.type, to: expense) }
-            catch { failed.append(receipt.name) }
-        }
-        if failed.isEmpty, another {
-            amount = 0; payee = ""; vendorID = nil; memo = ""; receipts = []; categoryID = nil; errorMessage = nil
-        } else if failed.isEmpty { unsavedChanges?.remove(editorToken); dismiss() } else {
-            errorMessage = String(localized: "El gasto se guardó, pero no se pudo adjuntar: \(failed.joined(separator: ", ")). Ábrelo desde la lista para reintentar.")
-        }
-    }
-}
-
 // MARK: - Por pagar
 
 /// Facturas por pagar (canvas `Gastos` · Por pagar): por grupos (vencidas, esta semana, más adelante, pagadas), cada
-/// una con su hoja de calendario. Al tocarla se abre su ficha; deslizando, «Pagar».
+/// una con su hoja de calendario. Al tocarla se abre su ficha; deslizando, «Pagar» o «Programar». «Seleccionar» pasa
+/// al modo de selección para pagar varias en lote (canvas `MacPorPagar`), con la barra «Pagar $X» al pie.
 struct BillListView: View {
     var section: Binding<ExpensesView.Segment>? = nil
     @Query(sort: \Bill.dueDate) private var bills: [Bill]
+    @Query(sort: \Account.code) private var accounts: [Account]
     @State private var paying: Bill?
+    @State private var scheduling: Bill?
+    @State private var isSelecting = false
+    @State private var selected: Set<UUID> = []
+    @State private var payingBatch = false
 
     private struct BillGroup: Identifiable {
         let id: String
@@ -645,18 +465,26 @@ struct BillListView: View {
         let calendar = Calendar.current
         let weekEnd = calendar.date(byAdding: .day, value: 7, to: calendar.startOfDay(for: .now)) ?? .now
         let open = bills.filter(\.isOpen)
-        return [
+        var groups = [
             BillGroup(id: "overdue", title: String(localized: "Vencidas"), bills: open.filter(\.isOverdue)),
             BillGroup(id: "week", title: String(localized: "Esta semana"), bills: open.filter { !$0.isOverdue && $0.dueDate < weekEnd }),
             BillGroup(id: "later", title: String(localized: "Más adelante"), bills: open.filter { $0.dueDate >= weekEnd }),
-            BillGroup(id: "paid", title: String(localized: "Pagadas"), bills: bills.filter { $0.status == .paid }.sorted { $0.dueDate > $1.dueDate }),
-            BillGroup(id: "void", title: String(localized: "Anuladas"), bills: bills.filter { $0.status == .void }),
-        ].filter { !$0.bills.isEmpty }
+        ]
+        // En el modo de selección solo cuentan las abiertas.
+        if !isSelecting {
+            groups += [
+                BillGroup(id: "paid", title: String(localized: "Pagadas"), bills: bills.filter { $0.status == .paid }.sorted { $0.dueDate > $1.dueDate }),
+                BillGroup(id: "void", title: String(localized: "Anuladas"), bills: bills.filter { $0.status == .void }),
+            ]
+        }
+        return groups.filter { !$0.bills.isEmpty }
     }
+
+    private var selectedBills: [Bill] { bills.filter { selected.contains($0.id) && $0.isOpen } }
 
     var body: some View {
         List {
-            if let section { ExpensesSegmentRow(selection: section) }
+            if let section, !isSelecting { ExpensesSegmentRow(selection: section) }
             if bills.isEmpty {
                 Section {
                     EmptyStateView(systemImage: "doc.text", title: String(localized: "Sin facturas por pagar"),
@@ -666,13 +494,27 @@ struct BillListView: View {
             ForEach(groups) { group in
                 Section {
                     ForEach(group.bills) { bill in
-                        NavigationLink { BillDetailView(bill: bill) } label: { BillRow(bill: bill) }
-                            .navigationLinkIndicatorVisibility(.hidden)
-                            .swipeActions {
-                                if bill.isOpen {
-                                    Button("Pagar") { paying = bill }.tint(Palette.brandFill)
+                        if isSelecting {
+                            selectableRow(bill)
+                        } else {
+                            NavigationLink { BillDetailView(bill: bill) } label: { BillRow(bill: bill, accounts: accounts) }
+                                .navigationLinkIndicatorVisibility(.hidden)
+                                .swipeActions {
+                                    if bill.isOpen {
+                                        Button("Pagar") { paying = bill }.tint(Palette.brandFill)
+                                    }
                                 }
-                            }
+                                .swipeActions(edge: .leading) {
+                                    if bill.isOpen {
+                                        Button(bill.isScheduled ? "Cambiar" : "Programar", systemImage: "calendar.badge.clock") { scheduling = bill }
+                                            .tint(Palette.indigo)
+                                    }
+                                }
+                                .contextMenu {
+                                    if bill.isOpen { Button("Registrar pago…", systemImage: "checkmark.circle") { paying = bill } }
+                                    BillScheduleMenuItems(bill: bill) { scheduling = bill }
+                                }
+                        }
                     }
                 } header: {
                     HStack(alignment: .firstTextBaseline) {
@@ -689,17 +531,63 @@ struct BillListView: View {
         }
         .groupedList()
         .screenBackground()
+        .toolbar {
+            if bills.contains(where: \.isOpen) {
+                ToolbarItem(placement: .primaryAction) {
+                    Button(isSelecting ? "Listo" : "Seleccionar") { toggleSelecting() }
+                        .headerButton()
+                }
+            }
+        }
+        .safeAreaInset(edge: .bottom) {
+            if isSelecting {
+                BatchPayBar(selected: selectedBills, accounts: accounts, clear: { selected = [] }) { payingBatch = true }
+            }
+        }
         .sheet(item: $paying) { bill in NavigationStack { PayBillView(bill: bill) }.editorSheetSizing() }
+        .sheet(item: $scheduling) { bill in NavigationStack { SchedulePaymentView(bill: bill) }.editorSheetSizing() }
+        .sheet(isPresented: $payingBatch) {
+            NavigationStack {
+                BatchPayView(bills: selectedBills) { selected = []; isSelecting = false }
+            }
+            .editorSheetSizing()
+        }
+    }
+
+    private func toggleSelecting() {
+        withAnimation {
+            isSelecting.toggle()
+            if !isSelecting { selected = [] }
+        }
+    }
+
+    /// Fila del modo de selección: el círculo a la izquierda y la fila de siempre; tocarla la marca o desmarca.
+    private func selectableRow(_ bill: Bill) -> some View {
+        let isOn = selected.contains(bill.id)
+        return Button {
+            if isOn { selected.remove(bill.id) } else { selected.insert(bill.id) }
+        } label: {
+            HStack(spacing: 12) {
+                SelectionMark(isOn: isOn)
+                BillRow(bill: bill, accounts: accounts)
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(isOn ? [.isSelected] : [])
+        .accessibilityHint(Text("Incluir en el pago en lote"))
     }
 }
 
 /// Fila de factura por pagar (canvas `Gastos` · Por pagar): hoja de calendario con el vencimiento, proveedor, número y
-/// concepto, y el saldo con su estado.
+/// concepto (o «Programado · Corriente ••4821»), y el saldo con su estado.
 struct BillRow: View {
     let bill: Bill
+    var accounts: [Account] = []
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     private var subtitle: String {
+        if let payment = bill.paymentSummary(accounts: accounts) { return payment }
         let parts = [bill.vendorNumber, bill.concept].filter { !$0.isEmpty }
         return parts.isEmpty ? bill.dueDate.dueLabel : parts.joined(separator: " · ")
     }
@@ -710,7 +598,7 @@ struct BillRow: View {
         } trailing: {
             VStack(alignment: dynamicTypeSize.amountAlignment, spacing: 3) {
                 Text((bill.isOpen ? bill.balanceDue : bill.total).money).monospacedDigit().foregroundStyle(Palette.ink)
-                StatusChip(billWithAge: bill)
+                StatusChip(billWithAge: bill, short: true)
             }
         }
         .accessibilityHint(Text(String(localized: "Vence el \(bill.dueDate.shortDate)")))
@@ -818,8 +706,9 @@ struct PayBillView: View {
     @State private var method: PaymentMethod = .bankTransfer
     @State private var errorMessage: String?
 
-    private var paymentAccounts: [Account] { accounts.filtered { $0.isMoneyAccount && $0 != .undepositedFunds } }
+    private var paymentAccounts: [Account] { accounts.paymentAccounts }
     private var canPay: Bool { amount > 0 && amount <= bill.balanceDue && accountID != nil }
+    @State private var loaded = false
 
     var body: some View {
         Form {
@@ -839,9 +728,9 @@ struct PayBillView: View {
                     MoneyField(title: String(localized: "Monto"), minorUnits: $amount).multilineTextAlignment(.trailing).labelsHidden()
                 }
                 DatePicker("Fecha de pago", selection: $date, displayedComponents: .date)
-                AccountPicker(title: String(localized: "Pagar desde"), accounts: paymentAccounts, selection: $accountID)
+                PaymentAccountPicker(title: String(localized: "Pagar desde"), accounts: paymentAccounts, selection: $accountID)
                 Picker("Método", selection: $method) {
-                    ForEach([PaymentMethod.bankTransfer, .check, .card, .cash], id: \.self) { Text(ExpenseEditorView.title(for: $0)).tag($0) }
+                    ForEach(PaymentMethod.billMethods, id: \.self) { Text($0.title).tag($0) }
                 }
             } header: {
                 SectionLabel(text: String(localized: "Pago"))
@@ -862,8 +751,13 @@ struct PayBillView: View {
             ToolbarItem(placement: .confirmationAction) { Button("Registrar pago", action: pay).disabled(!canPay).headerButton() }
         }
         .onAppear {
+            // El pago programado, si lo hay; si no, el pago preferido del proveedor; si no, la primera cuenta de banco.
+            guard !loaded else { return }
+            loaded = true
             amount = bill.balanceDue
-            accountID = accountID ?? paymentAccounts.first { $0.subtype == .bank }?.id
+            accountID = bill.scheduledPaymentAccountID ?? bill.vendor?.preferredPaymentAccountID
+                ?? paymentAccounts.first { $0.subtype == .bank }?.id
+            method = bill.scheduledPaymentMethod ?? bill.vendor?.preferredPaymentMethod ?? .bankTransfer
         }
     }
 
@@ -928,6 +822,8 @@ struct VendorRow: View {
     }
 }
 
+/// Alta y edición de proveedor: contacto, condiciones, 1099 con el W-9 (recibido, fecha y copia) y el pago preferido
+/// (método y cuenta), que es el que se propone al pagarle (canvas `MacProveedorFicha`, docs/DATOS-V2.md §6).
 struct VendorEditorView: View {
     var vendor: Vendor?
     @Environment(\.modelContext) private var context
@@ -944,9 +840,17 @@ struct VendorEditorView: View {
     @State private var defaultAccountID: UUID?
     @State private var is1099 = false
     @State private var tinLast4 = ""
+    @State private var w9Received = false
+    @State private var w9Date = Date()
+    /// Copia del W-9 elegida en el editor (se adjunta al guardar).
+    @State private var w9File: ReceiptFile?
+    @State private var preferredMethod: PaymentMethod?
+    @State private var preferredAccountID: UUID?
+    @State private var errorMessage: String?
 
     var body: some View {
         Form {
+            if let errorMessage { ErrorBanner(message: errorMessage) }
             Section {
                 TextField("Nombre o empresa", text: $name)
                 TextField("Correo", text: $email)
@@ -965,19 +869,52 @@ struct VendorEditorView: View {
                     Text("Al recibir").tag(0); Text("Neto 15").tag(15); Text("Neto 30").tag(30); Text("Neto 60").tag(60)
                 }
                 AccountPicker(title: String(localized: "Categoría por defecto"), accounts: accounts.filtered { $0.accountType == .expense }, selection: $defaultAccountID)
-                Toggle("Sujeto a 1099", isOn: $is1099)
-                if is1099 { TextField("Últimos 4 dígitos del TIN", text: $tinLast4) }
+                Picker("Método preferido", selection: $preferredMethod) {
+                    Text("Sin preferencia").tag(PaymentMethod?.none)
+                    ForEach(PaymentMethod.billMethods, id: \.self) { Text($0.title).tag(Optional($0)) }
+                }
+                PaymentAccountPicker(title: String(localized: "Pagar desde"), accounts: accounts.paymentAccounts, selection: $preferredAccountID)
             } header: {
                 SectionLabel(text: String(localized: "Pagos"))
             } footer: {
-                Text("Chirogra solo guarda los últimos 4 dígitos del TIN.")
+                Text("El pago preferido se propone al pagarle o programar un pago.")
+            }
+            Section {
+                Toggle("Sujeto a 1099", isOn: $is1099)
+                if is1099 { TextField("Últimos 4 dígitos del TIN", text: $tinLast4) }
+                Toggle("W-9 recibido", isOn: $w9Received.animation())
+                if w9Received {
+                    DatePicker("Recibido el", selection: $w9Date, displayedComponents: .date)
+                }
+                if let w9File {
+                    HStack(spacing: 12) {
+                        ReceiptThumbnail(data: w9File.data, contentType: w9File.type.identifier, side: 40)
+                        Text(w9File.name).lineLimit(1).truncationMode(.middle)
+                        Spacer(minLength: 8)
+                        Button("Quitar") { self.w9File = nil }.buttonStyle(.borderless)
+                            .accessibilityLabel("Quitar \(w9File.name)")
+                    }
+                } else if let attachment = vendor?.w9Attachment {
+                    HStack(spacing: 12) {
+                        ReceiptThumbnail(data: attachment.data, contentType: attachment.contentType, side: 40)
+                        Text(attachment.filename).lineLimit(1).truncationMode(.middle)
+                    }
+                }
+                W9PickerButtons { file in
+                    w9File = file
+                    w9Received = true
+                }
+            } header: {
+                SectionLabel(text: String(localized: "Formulario 1099 y W-9"))
+            } footer: {
+                Text("Chirogra solo guarda los últimos 4 dígitos del TIN. Pide el W-9 antes de pagarle a un contratista.")
             }
         }
         .formStyle(.grouped)
         .screenBackground()
         .navigationTitle(vendor == nil ? String(localized: "Nuevo proveedor") : vendor!.name)
         .inlineTitle()
-        .discardableEditor(tracking: "\(name)|\(email)|\(phone)|\(terms)|\(defaultAccountID?.uuidString ?? "")|\(is1099)|\(tinLast4)", token: editorToken)
+        .discardableEditor(tracking: "\(name)|\(email)|\(phone)|\(terms)|\(defaultAccountID?.uuidString ?? "")|\(is1099)|\(tinLast4)|\(w9Received)|\(w9Date)|\(w9File?.id.uuidString ?? "")|\(preferredMethod?.rawValue ?? "")|\(preferredAccountID?.uuidString ?? "")", token: editorToken)
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
                 Button("Guardar", action: save).disabled(name.trimmingCharacters(in: .whitespaces).isEmpty).headerButton()
@@ -987,6 +924,8 @@ struct VendorEditorView: View {
             guard let vendor else { return }
             name = vendor.name; email = vendor.email; phone = vendor.phone; terms = vendor.paymentTermsDays
             defaultAccountID = vendor.defaultExpenseAccountID; is1099 = vendor.is1099; tinLast4 = vendor.tinLast4
+            w9Received = vendor.w9Received; w9Date = vendor.w9ReceivedDate ?? Date()
+            preferredMethod = vendor.preferredPaymentMethod; preferredAccountID = vendor.preferredPaymentAccountID
         }
     }
 
@@ -997,7 +936,36 @@ struct VendorEditorView: View {
         target.email = email; target.phone = phone; target.paymentTermsDays = terms
         target.defaultExpenseAccountID = defaultAccountID; target.is1099 = is1099
         target.tinLast4 = String(tinLast4.filter(\.isNumber).suffix(4))
-        try? context.save()
-        unsavedChanges?.remove(editorToken); dismiss()
+        let books = Bookkeeper(context: context)
+        do {
+            try books.setPreferredPayment(for: target, method: preferredMethod, account: accounts.account(preferredAccountID))
+            if target.w9Received != w9Received || (w9Received && target.w9ReceivedDate.map { !Calendar.current.isDate($0, inSameDayAs: w9Date) } ?? true) {
+                try books.setW9(for: target, received: w9Received, on: w9Date)
+            }
+            if let w9File {
+                try books.attachW9(w9File.data, filename: w9File.name, contentType: w9File.type, to: target, receivedOn: w9Date)
+            }
+            unsavedChanges?.remove(editorToken); dismiss()
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+}
+
+/// Foto o archivo (PDF o imagen) del W-9, como los botones del recibo.
+private struct W9PickerButtons: View {
+    let onPick: (ReceiptFile) -> Void
+    @State private var importing = false
+
+    var body: some View {
+        Button("Adjuntar copia del W-9 (PDF o foto)", systemImage: "doc.badge.plus") { importing = true }
+            .frame(minHeight: Metrics.target)
+            .fileImporter(isPresented: $importing, allowedContentTypes: [.pdf, .image]) { result in
+                guard case .success(let url) = result else { return }
+                let scoped = url.startAccessingSecurityScopedResource()
+                defer { if scoped { url.stopAccessingSecurityScopedResource() } }
+                guard let file = try? ReceiptFile(url: url, fallback: .data) else { return }
+                onPick(file)
+            }
     }
 }

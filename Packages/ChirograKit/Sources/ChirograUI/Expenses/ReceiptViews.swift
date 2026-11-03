@@ -161,7 +161,9 @@ struct AttachmentFile: Transferable {
 }
 
 /// Detalle de un gasto (canvas `MacGastos`, inspector «Gasto»): icono de la categoría con el beneficiario y el importe,
-/// «Detalles» en filas «etiqueta gris · valor» y el recibo. El título es el beneficiario.
+/// «Detalles» en filas «etiqueta gris · valor», el recibo y el historial de asientos. El título es el beneficiario.
+/// «Editar» abre el editor; en un gasto contabilizado, guardar revierte su asiento y registra uno nuevo. Un gasto «por
+/// confirmar» (sin asiento) se registra desde aquí.
 struct ExpenseDetailView: View {
     @Bindable var expense: Expense
     @Environment(\.modelContext) private var context
@@ -169,6 +171,7 @@ struct ExpenseDetailView: View {
     @State private var errorMessage: String?
     @State private var removing: Attachment?
     @State private var isTargeted = false
+    @State private var editing = false
 
     private func accountName(_ id: UUID?) -> String? { accounts.first { $0.id == id }?.name }
     private var category: String? { expense.sortedLines.first.flatMap { accountName($0.accountID) } }
@@ -180,12 +183,24 @@ struct ExpenseDetailView: View {
             Section { header }
                 .listRowBackground(Color.clear)
                 .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+            if expense.isPendingConfirmation { pendingSection }
             details
             receipts
+            if expense.isPosted || expense.isVoid {
+                ExpenseHistorySection(expense: expense)
+            }
         }
         .formStyle(.grouped)
         .screenBackground()
         .recordTitle(title, section: String(localized: "Gasto"))
+        .toolbar {
+            if !expense.isVoid {
+                ToolbarItem(placement: .primaryAction) {
+                    Button("Editar") { editing = true }.headerButton()
+                }
+            }
+        }
+        .sheet(isPresented: $editing) { NavigationStack { ExpenseEditorView(expense: expense) }.editorSheetSizing() }
         .dropDestination(for: ReceiptFile.self) { files, _ in
             files.forEach(attach)
             return !files.isEmpty
@@ -204,7 +219,8 @@ struct ExpenseDetailView: View {
             LargeIconTile(systemImage: ExpenseCategoryStyle.symbol(for: category), color: ExpenseCategoryStyle.color(for: category))
             VStack(alignment: .leading, spacing: 1) {
                 Text(title).font(.subheadline.weight(.semibold)).foregroundStyle(Palette.ink)
-                Text(expense.total.money).font(.amount(28)).foregroundStyle(Palette.ink)
+                Text(expense.total.money).font(.amount(28)).foregroundStyle(Palette.ink).strikethrough(expense.isVoid)
+                if let status = ExpenseStatus(expense) { status.chip(compact: false) }
             }
             Spacer(minLength: 0)
         }
@@ -225,8 +241,14 @@ struct ExpenseDetailView: View {
                     LabeledContent(accountName(line.accountID) ?? String(localized: "Sin categoría"), value: line.amount.money)
                 }
             }
-            LabeledContent("Cuenta de pago", value: accountName(expense.paymentAccountID) ?? "—")
+            LabeledContent("Cuenta de pago", value: accounts.account(expense.paymentAccountID)?.paymentLabel ?? "—")
             LabeledContent("Método", value: ExpenseEditorView.title(for: PaymentMethod(rawValue: expense.methodRaw) ?? .other))
+            if expense.salesTaxIncluded > 0 {
+                LabeledContent("Subtotal", value: expense.subtotalBeforeTax.money)
+                LabeledContent("Impuesto incluido", value: expense.salesTaxIncluded.money)
+            }
+            if let customer = expense.customer { LabeledContent("Cliente o proyecto", value: customer.name) }
+            if expense.recurringTemplateID != nil { LabeledContent("Origen", value: String(localized: "Recurrente")) }
             if !expense.memo.isEmpty { LabeledContent("Nota", value: expense.memo) }
         } header: {
             SectionLabel(text: String(localized: "Detalles"))
@@ -272,6 +294,26 @@ struct ExpenseDetailView: View {
             }
         }
         .listRowBackground(isTargeted ? Palette.brandWash : Palette.surface)
+    }
+
+    /// «Por confirmar»: lo generó una recurrente sin cargo automático y todavía no tiene asiento.
+    private var pendingSection: some View {
+        Section {
+            Button("Registrar \(expense.total.money)", action: record).buttonStyle(.primary)
+                .listRowInsets(EdgeInsets())
+                .listRowBackground(Color.clear)
+        } footer: {
+            Text("Este gasto lo generó una recurrente sin cargo automático: revisa el importe (con «Editar» si cambió) y regístralo.")
+        }
+    }
+
+    private func record() {
+        do {
+            try Bookkeeper(context: context).record(expense)
+            errorMessage = nil
+        } catch {
+            errorMessage = error.localizedDescription
+        }
     }
 
     /// Compartir y quitar un recibo.

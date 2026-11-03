@@ -12,6 +12,7 @@ struct VendorDetailView: View {
     @Query(sort: \Account.code) private var accounts: [Account]
     @State private var editing = false
     @State private var paying: Bill?
+    @State private var scheduling: Bill?
     @State private var addingExpense = false
     @State private var payFromID: UUID?
     @State private var payDate = Date()
@@ -34,7 +35,19 @@ struct VendorDetailView: View {
     private var openBills: [Bill] { bills.filter(\.isOpen).sorted { $0.dueDate < $1.dueDate } }
     private var expenses: [Expense] { vendor.expenses ?? [] }
     private var category: String? { accounts.first { $0.id == vendor.defaultExpenseAccountID }?.name }
-    private var paymentAccounts: [Account] { accounts.filtered { $0.isMoneyAccount && $0 != .undepositedFunds } }
+    private var paymentAccounts: [Account] { accounts.paymentAccounts }
+
+    /// «Transferencia · Corriente ••4821» (canvas `MacProveedorFicha`: «Pago preferido»), o `nil` sin preferencia.
+    private var preferredPayment: String? {
+        let parts = [vendor.preferredPaymentMethod?.title, accounts.account(vendor.preferredPaymentAccountID)?.paymentLabel].compactMap { $0 }
+        return parts.isEmpty ? nil : parts.joined(separator: " · ")
+    }
+
+    /// «Recibido el 4 ago 2026», «Pendiente».
+    private var w9Status: String {
+        guard vendor.w9Received else { return String(localized: "Pendiente") }
+        return vendor.w9ReceivedDate.map { String(localized: "Recibido el \($0.shortDate)") } ?? String(localized: "Recibido")
+    }
     private var terms: String {
         vendor.paymentTermsDays == 0 ? String(localized: "Al recibir") : String(localized: "Neto \(vendor.paymentTermsDays)")
     }
@@ -57,10 +70,13 @@ struct VendorDetailView: View {
         }
         .sheet(isPresented: $editing) { NavigationStack { VendorEditorView(vendor: vendor) }.editorSheetSizing() }
         .sheet(item: $paying) { bill in NavigationStack { PayBillView(bill: bill) }.editorSheetSizing() }
+        .sheet(item: $scheduling) { bill in NavigationStack { SchedulePaymentView(bill: bill) }.editorSheetSizing() }
         .sheet(isPresented: $addingExpense) {
             NavigationStack { ExpenseEditorView(preselectedVendor: vendor) }.editorSheetSizing()
         }
-        .onAppear { payFromID = payFromID ?? paymentAccounts.first { $0.subtype == .bank }?.id }
+        .onAppear {
+            payFromID = payFromID ?? vendor.preferredPaymentAccountID ?? paymentAccounts.first { $0.subtype == .bank }?.id
+        }
     }
 
     // MARK: iPhone (`ProveedorFicha`)
@@ -83,6 +99,22 @@ struct VendorDetailView: View {
             Section { summary }
 
             if let bill = openBills.first { payCard(bill) }
+
+            Section {
+                LabeledContent("Pago preferido", value: preferredPayment ?? String(localized: "Sin preferencia"))
+                if vendor.is1099 || vendor.w9Received {
+                    LabeledContent("Formulario W-9") {
+                        Text(w9Status).foregroundStyle(vendor.w9Received ? Palette.positive : Palette.warning)
+                    }
+                    if let attachment = vendor.w9Attachment { w9Link(attachment) }
+                }
+            } header: {
+                SectionLabel(text: String(localized: "Pagos e impuestos"))
+            } footer: {
+                if vendor.is1099 && !vendor.w9Received {
+                    Text("Pídele el W-9 antes de pagarle: lo necesitas para el 1099-NEC.")
+                }
+            }
 
             Section {
                 if historyItems.isEmpty {
@@ -165,13 +197,24 @@ struct VendorDetailView: View {
                 .accessibilityElement(children: .combine)
             }
             .navigationLinkIndicatorVisibility(.hidden)
-            AccountPicker(title: String(localized: "Pagar desde"), accounts: paymentAccounts, selection: $payFromID)
+            PaymentAccountPicker(title: String(localized: "Pagar desde"), accounts: paymentAccounts, selection: $payFromID)
             DatePicker("Fecha de pago", selection: $payDate, displayedComponents: .date)
             Button { pay(bill) } label: {
                 Label(String(localized: "Registrar pago de \(bill.balanceDue.money)"), systemImage: "checkmark.circle")
                     .frame(minHeight: Metrics.target)
             }
             .disabled(payFromID == nil)
+            if bill.isScheduled {
+                Button(role: .destructive) { unschedule(bill) } label: {
+                    Label("Cancelar pago programado", systemImage: "xmark.circle").frame(minHeight: Metrics.target)
+                }
+                .foregroundStyle(Palette.negative)
+            } else {
+                Button { schedule(bill) } label: {
+                    Label("Programar pago", systemImage: "calendar.badge.clock").frame(minHeight: Metrics.target)
+                }
+                .disabled(payFromID == nil)
+            }
             Button { paying = bill } label: {
                 Text("Otro importe…").frame(minHeight: Metrics.target)
             }
@@ -179,17 +222,52 @@ struct VendorDetailView: View {
             SectionLabel(text: openBills.count > 1 ? String(localized: "Próxima factura por pagar · \(openBills.count) abiertas")
                                                    : String(localized: "Factura por pagar"))
         } footer: {
-            Text("El pago se registra en tus libros; el dinero se mueve desde tu banco.")
+            Text("Chirogra te recuerda el pago; el dinero se mueve desde tu banco.")
         }
     }
 
     private func pay(_ bill: Bill) {
         guard let account = accounts.first(where: { $0.id == payFromID }) else { return }
         do {
-            try Bookkeeper(context: context).pay(bill, amount: bill.balanceDue, date: payDate, from: account)
+            try Bookkeeper(context: context).pay(bill, amount: bill.balanceDue, date: payDate, from: account,
+                                                 method: vendor.preferredPaymentMethod ?? .bankTransfer)
             errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription
+        }
+    }
+
+    /// «Programar pago» con la cuenta y la fecha de la tarjeta (canvas `ProveedorFicha`), sin hoja.
+    private func schedule(_ bill: Bill) {
+        guard let account = accounts.first(where: { $0.id == payFromID }) else { return }
+        do {
+            try Bookkeeper(context: context).schedulePayment(for: bill, on: payDate, from: account,
+                                                             method: vendor.preferredPaymentMethod ?? .bankTransfer)
+            errorMessage = nil
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    private func unschedule(_ bill: Bill) {
+        do {
+            try Bookkeeper(context: context).unschedulePayment(for: bill)
+            errorMessage = nil
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    /// La copia del W-9 para compartirla o abrirla.
+    @ViewBuilder
+    private func w9Link(_ attachment: Attachment) -> some View {
+        if let data = attachment.data {
+            ShareLink(item: AttachmentFile(data: data, filename: attachment.filename, contentType: attachment.contentType),
+                      preview: SharePreview(attachment.filename)) {
+                Label(String(localized: "Copia del W-9 · \(attachment.filename)"), systemImage: "doc.text")
+                    .lineLimit(1)
+                    .frame(minHeight: Metrics.target)
+            }
         }
     }
 
@@ -215,7 +293,7 @@ struct VendorDetailView: View {
     private func account(of item: Item) -> String {
         switch item {
         case .bill: String(localized: "Cuentas por pagar")
-        case .expense(let expense): accounts.first { $0.id == expense.paymentAccountID }?.name ?? "—"
+        case .expense(let expense): accounts.account(expense.paymentAccountID)?.paymentLabel ?? "—"
         }
     }
 
@@ -326,6 +404,10 @@ struct VendorDetailView: View {
                             .frame(width: 140, alignment: .trailing)
                     }
                     .zebra(index)
+                    .contextMenu {
+                        Button("Registrar pago…", systemImage: "checkmark.circle") { paying = bill }
+                        BillScheduleMenuItems(bill: bill) { scheduling = bill }
+                    }
                 }
                 if openBills.isEmpty {
                     Text("Nada por pagar").font(.subheadline).foregroundStyle(Palette.ink2).frame(maxWidth: .infinity).padding(.vertical, 20)
@@ -389,10 +471,14 @@ struct VendorDetailView: View {
                         .buttonStyle(.primary)
                 }
             }
+            if let bill = openBills.first {
+                Button(bill.isScheduled ? String(localized: "Cambiar pago programado…") : String(localized: "Programar pago…")) { scheduling = bill }
+                    .buttonStyle(.secondary)
+            }
         }
     }
 
-    /// Solo lectura: se cambia desde «Editar». El W-9 no se guarda todavía.
+    /// Solo lectura: se cambia desde «Editar».
     private var form1099Card: some View {
         VStack(alignment: .leading, spacing: 4) {
             SectionLabel(text: String(localized: "Formulario 1099")).accessibilityAddTraits(.isHeader)
@@ -400,6 +486,19 @@ struct VendorDetailView: View {
                 DetailRow(String(localized: "Requiere 1099"), value: vendor.is1099 ? String(localized: "Sí") : String(localized: "No"))
                 Divider()
                 DetailRow(String(localized: "TIN"), value: vendor.tinLast4.isEmpty ? "—" : "•••–••–\(vendor.tinLast4)")
+                if vendor.is1099 || vendor.w9Received {
+                    Divider()
+                    DetailRow(title: String(localized: "Formulario W-9")) {
+                        HStack(spacing: 5) {
+                            StatusDot(color: vendor.w9Received ? Palette.green : Palette.orange)
+                            Text(w9Status).foregroundStyle(vendor.w9Received ? Palette.positive : Palette.warning)
+                        }
+                    }
+                }
+                if let attachment = vendor.w9Attachment {
+                    Divider()
+                    w9Link(attachment).buttonStyle(.borderless)
+                }
                 if vendor.is1099 {
                     Divider()
                     Text("Si le pagas $600 o más en el año, envíale el 1099-NEC antes del 31 de enero.")
@@ -424,6 +523,8 @@ struct VendorDetailView: View {
                 DetailRow(String(localized: "Categoría"), value: category ?? "—")
                 Divider()
                 DetailRow(String(localized: "Plazo de pago"), value: terms)
+                Divider()
+                DetailRow(String(localized: "Pago preferido"), value: preferredPayment ?? String(localized: "Sin preferencia"))
             }
             .padding(.horizontal, Metrics.cardPadding)
             .card(padding: 0)

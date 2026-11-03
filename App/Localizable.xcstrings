@@ -1117,6 +1117,16 @@
         }
       }
     },
+    "%lld de recurrentes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld from recurring"
+          }
+        }
+      }
+    },
     "%lld días" : {
       "localizations" : {
         "en" : {
@@ -1353,6 +1363,16 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "%lld facturas seleccionadas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld bills selected"
           }
         }
       }
@@ -1818,6 +1838,16 @@
         }
       }
     },
+    "1 factura seleccionada" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 bill selected"
+          }
+        }
+      }
+    },
     "1099" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1845,6 +1875,26 @@
         }
       }
     },
+    "15 días" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "15 days"
+          }
+        }
+      }
+    },
+    "30 días" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "30 days"
+          }
+        }
+      }
+    },
     "6 M" : {
       "shouldTranslate" : false
     },
@@ -1854,6 +1904,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "6 months"
+          }
+        }
+      }
+    },
+    "60 días" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "60 days"
           }
         }
       }
@@ -2186,6 +2246,16 @@
         }
       }
     },
+    "Adjuntar copia del W-9 (PDF o foto)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Attach W-9 copy (PDF or photo)"
+          }
+        }
+      }
+    },
     "Adjuntar foto del recibo" : {
       "localizations" : {
         "en" : {
@@ -2476,6 +2546,16 @@
         }
       }
     },
+    "Anulado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voided"
+          }
+        }
+      }
+    },
     "Anular" : {
       "localizations" : {
         "en" : {
@@ -2656,6 +2736,16 @@
         }
       }
     },
+    "Automático" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatic"
+          }
+        }
+      }
+    },
     "Añade a quienes te venden bienes o servicios." : {
       "localizations" : {
         "en" : {
@@ -2712,6 +2802,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Add"
+          }
+        }
+      }
+    },
+    "Añadir categoría" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add category"
           }
         }
       }
@@ -2981,12 +3081,42 @@
         }
       }
     },
+    "Borrar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete"
+          }
+        }
+      }
+    },
+    "Borrar %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete %@"
+          }
+        }
+      }
+    },
     "Borrar búsqueda" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Clear search"
+          }
+        }
+      }
+    },
+    "Borrar recurrente" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete recurring"
           }
         }
       }
@@ -3063,12 +3193,142 @@
         }
       }
     },
+    "Cada 3 meses, el día %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Every 3 months on day %lld"
+          }
+        }
+      }
+    },
+    "Cada año, el %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Every year on %@"
+          }
+        }
+      }
+    },
+    "Cada factura queda por pagar; la pagas o programas tú." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Each bill stays unpaid; you pay or schedule it."
+          }
+        }
+      }
+    },
+    "Cada mes, el día %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Every month on day %lld"
+          }
+        }
+      }
+    },
+    "Cada repetición es un gasto pagado de la cuenta elegida." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Each occurrence is an expense paid from the chosen account."
+          }
+        }
+      }
+    },
+    "Cada repetición es una factura por pagar del proveedor, que vence a los días elegidos." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Each occurrence is a bill from the vendor, due after the chosen days."
+          }
+        }
+      }
+    },
+    "Cada repetición queda «por confirmar» en Gastos hasta que la registres." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Each occurrence stays “to confirm” in Expenses until you record it."
+          }
+        }
+      }
+    },
+    "Cada repetición se registra sola en la cuenta elegida." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Each occurrence is recorded automatically to the chosen account."
+          }
+        }
+      }
+    },
+    "Cada semana, el %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Every week on %@"
+          }
+        }
+      }
+    },
     "Calle, ciudad y código postal" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Street, city, and ZIP code"
+          }
+        }
+      }
+    },
+    "Cambiar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Change"
+          }
+        }
+      }
+    },
+    "Cambiar pago programado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Change scheduled payment"
+          }
+        }
+      }
+    },
+    "Cambiar pago programado…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Change scheduled payment…"
+          }
+        }
+      }
+    },
+    "Cambiar pago…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Change payment…"
           }
         }
       }
@@ -3089,6 +3349,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cancel"
+          }
+        }
+      }
+    },
+    "Cancelar pago programado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel scheduled payment"
           }
         }
       }
@@ -3119,6 +3389,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Owner's equity"
+          }
+        }
+      }
+    },
+    "Cargo automático" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autopay"
+          }
+        }
+      }
+    },
+    "Cargos recurrentes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recurring charges"
           }
         }
       }
@@ -3159,6 +3449,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Default category: %@"
+          }
+        }
+      }
+    },
+    "Categorías" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Categories"
           }
         }
       }
@@ -3293,6 +3593,26 @@
         }
       }
     },
+    "Chirogra solo guarda los últimos 4 dígitos del TIN. Pide el W-9 antes de pagarle a un contratista." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chirogra only keeps the last 4 digits of the TIN. Get the W-9 before paying a contractor."
+          }
+        }
+      }
+    },
+    "Chirogra te recuerda el pago; el dinero se mueve desde tu banco." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chirogra reminds you to pay; the money moves from your bank."
+          }
+        }
+      }
+    },
     "Cierre de periodo" : {
       "localizations" : {
         "en" : {
@@ -3329,6 +3649,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Customer exempt from sales tax"
+          }
+        }
+      }
+    },
+    "Cliente o proyecto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Customer or project"
           }
         }
       }
@@ -3605,6 +3935,26 @@
         }
       }
     },
+    "Con cargo automático se registran solos; sin él, quedan por confirmar." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "With autopay they’re recorded automatically; without it, they wait for you to confirm."
+          }
+        }
+      }
+    },
+    "Con fecha de fin" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Has end date"
+          }
+        }
+      }
+    },
     "Con saldo" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3766,6 +4116,16 @@
         }
       }
     },
+    "Contraseña de cierre" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Closing password"
+          }
+        }
+      }
+    },
     "Contraseña de cierre cambiada" : {
       "localizations" : {
         "en" : {
@@ -3802,6 +4162,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Exportable backup"
+          }
+        }
+      }
+    },
+    "Copia del W-9 · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "W-9 copy · %@"
           }
         }
       }
@@ -3882,6 +4252,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Costs"
+          }
+        }
+      }
+    },
+    "Crea" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Creates"
           }
         }
       }
@@ -4537,12 +4917,42 @@
         }
       }
     },
+    "Deseleccionar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deselect"
+          }
+        }
+      }
+    },
     "Desglose · %@ %@" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Breakdown · %@ %@"
+          }
+        }
+      }
+    },
+    "Desliza una línea (o usa su menú) para quitarla." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Swipe a line (or use its menu) to remove it."
+          }
+        }
+      }
+    },
+    "Desprogramar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unschedule"
           }
         }
       }
@@ -4707,6 +5117,46 @@
         }
       }
     },
+    "Editado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edited"
+          }
+        }
+      }
+    },
+    "Editado %lld veces" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edited %lld times"
+          }
+        }
+      }
+    },
+    "Editado %lld veces: cada edición revierte el asiento anterior en su fecha y registra uno nuevo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edited %lld times: each edit reverses the previous entry on its date and posts a new one."
+          }
+        }
+      }
+    },
+    "Editado una vez: la edición revirtió el asiento anterior en su fecha y registró uno nuevo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edited once: the edit reversed the previous entry on its date and posted a new one."
+          }
+        }
+      }
+    },
     "Editar" : {
       "localizations" : {
         "en" : {
@@ -4733,6 +5183,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Edit customer"
+          }
+        }
+      }
+    },
+    "Editar gasto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit expense"
+          }
+        }
+      }
+    },
+    "Editar recurrente" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit recurring"
+          }
+        }
+      }
+    },
+    "Editar…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit…"
           }
         }
       }
@@ -4907,6 +5387,16 @@
         }
       }
     },
+    "El gasto se guardó, pero no se pudo crear la repetición: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The expense was saved, but the recurrence couldn’t be created: %@"
+          }
+        }
+      }
+    },
     "El gasto y su asiento no cambian; solo se borra el archivo adjunto." : {
       "localizations" : {
         "en" : {
@@ -4937,12 +5427,42 @@
         }
       }
     },
+    "El impuesto incluido debe ser menor que el monto." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tax included must be less than the amount."
+          }
+        }
+      }
+    },
     "El monto supera el saldo de %@." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "The amount is more than the balance of %@."
+          }
+        }
+      }
+    },
+    "El pago de cada factura queda programado a su vencimiento y se registra solo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Each bill’s payment is scheduled for its due date and recorded automatically."
+          }
+        }
+      }
+    },
+    "El pago preferido se propone al pagarle o programar un pago." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The preferred payment is suggested when you pay or schedule a payment."
           }
         }
       }
@@ -5093,6 +5613,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Choose at least one bill."
+          }
+        }
+      }
+    },
+    "Elige la cuenta al confirmar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose the account when you confirm"
           }
         }
       }
@@ -5317,6 +5847,46 @@
         }
       }
     },
+    "En EE. UU. el sales tax de tus compras forma parte del gasto. Si el recibo lo desglosa, anótalo en «Impuesto incluido»." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In the US, sales tax on your purchases is part of the expense. If the receipt shows it, enter it in “Tax included.”"
+          }
+        }
+      }
+    },
+    "En pago en lote" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In batch payment"
+          }
+        }
+      }
+    },
+    "En pausa" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paused"
+          }
+        }
+      }
+    },
+    "En pausa o terminadas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paused or ended"
+          }
+        }
+      }
+    },
     "Enviada" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -5521,6 +6091,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "This estimate can't be converted."
+          }
+        }
+      }
+    },
+    "Este gasto lo generó una recurrente sin cargo automático: revisa el importe (con «Editar» si cambió) y regístralo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A recurring charge without autopay created this expense: check the amount (use “Edit” if it changed) and record it."
+          }
+        }
+      }
+    },
+    "Este gasto ya está en tus libros. Si cambias la fecha, los importes, la categoría, la cuenta, el proveedor o el cliente, Chirogra revierte su asiento y registra uno nuevo; los dos quedan en el historial del gasto." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This expense is already in your books. If you change the date, amounts, category, account, vendor or customer, Chirogra reverses its entry and posts a new one; both stay in the expense’s history."
           }
         }
       }
@@ -6224,6 +6814,26 @@
         }
       }
     },
+    "Formulario 1099 y W-9" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Form 1099 and W-9"
+          }
+        }
+      }
+    },
+    "Formulario W-9" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Form W-9"
+          }
+        }
+      }
+    },
     "Foto del recibo" : {
       "localizations" : {
         "en" : {
@@ -6375,6 +6985,16 @@
         }
       }
     },
+    "Gasto recurrente" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recurring expense"
+          }
+        }
+      }
+    },
     "Gasto recurrente generado: %@" : {
       "localizations" : {
         "en" : {
@@ -6458,6 +7078,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Operating expenses"
+          }
+        }
+      }
+    },
+    "Gastos y facturas que se repiten" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Expenses and bills that repeat"
           }
         }
       }
@@ -7014,6 +7644,26 @@
         }
       }
     },
+    "Incluir %@ en el pago en lote" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Include %@ in the batch payment"
+          }
+        }
+      }
+    },
+    "Incluir en el pago en lote" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Include in the batch payment"
+          }
+        }
+      }
+    },
     "Incluye sales tax" : {
       "localizations" : {
         "en" : {
@@ -7314,6 +7964,26 @@
         }
       }
     },
+    "La fecha cae en un periodo cerrado. El cambio quedará en el historial." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The date falls in a closed period. The change will be logged."
+          }
+        }
+      }
+    },
+    "La fecha cae en un periodo cerrado. Escribe la contraseña de cierre para registrar el cambio; quedará en el historial." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The date falls in a closed period. Enter the closing password to record the change; it will be logged."
+          }
+        }
+      }
+    },
     "La fecha final es anterior al inicio." : {
       "localizations" : {
         "en" : {
@@ -7390,6 +8060,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "The template needs a name."
+          }
+        }
+      }
+    },
+    "La recurrente se guardó, pero no se pudo generar la del %@: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The recurring charge was saved, but the one for %@ couldn’t be created: %@"
           }
         }
       }
@@ -7564,6 +8244,16 @@
         }
       }
     },
+    "Lo que ya generó se queda en tus libros; solo deja de repetirse." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What it already created stays in your books; it just stops repeating."
+          }
+        }
+      }
+    },
     "Logo cambiado" : {
       "localizations" : {
         "en" : {
@@ -7640,6 +8330,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Debits must equal credits."
+          }
+        }
+      }
+    },
+    "Los generó una recurrente sin cargo automático: revisa el importe y regístralos." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recurring charges without autopay created these: check the amount and record them."
           }
         }
       }
@@ -7730,6 +8430,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Manual"
+          }
+        }
+      }
+    },
+    "Marca las facturas que quieras pagar juntas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check the bills you want to pay together"
           }
         }
       }
@@ -8031,6 +8741,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Payment method"
+          }
+        }
+      }
+    },
+    "Método preferido" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preferred method"
           }
         }
       }
@@ -8506,6 +9226,16 @@
         }
       }
     },
+    "Nombre (ej. Renta del taller)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Name (e.g. Shop rent)"
+          }
+        }
+      }
+    },
     "Nombre (p. ej. Austin, TX)" : {
       "localizations" : {
         "en" : {
@@ -8613,6 +9343,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Note"
+          }
+        }
+      }
+    },
+    "Nota (opcional)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Note (optional)"
           }
         }
       }
@@ -8734,6 +9474,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "New closing date"
+          }
+        }
+      }
+    },
+    "Nueva recurrente" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New recurring"
           }
         }
       }
@@ -8909,12 +9659,32 @@
         }
       }
     },
+    "Opcional: para refacturárselo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Optional: to bill it back"
+          }
+        }
+      }
+    },
     "Origen" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Source"
+          }
+        }
+      }
+    },
+    "Original, revertido al editar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Original, reversed when edited"
           }
         }
       }
@@ -9333,6 +10103,16 @@
         }
       }
     },
+    "Pago en lote" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Batch payment"
+          }
+        }
+      }
+    },
     "Pago en lote de %lld facturas: %@" : {
       "localizations" : {
         "en" : {
@@ -9350,6 +10130,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Partially paid"
+          }
+        }
+      }
+    },
+    "Pago preferido" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preferred payment"
+          }
+        }
+      }
+    },
+    "Pago programado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scheduled payment"
           }
         }
       }
@@ -9424,12 +10224,32 @@
         }
       }
     },
+    "Pagos e impuestos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Payments and taxes"
+          }
+        }
+      }
+    },
     "Pagos en %@: %@, por encima del mínimo de $600. Envíale el 1099-NEC antes del 31 de enero." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Payments in %@: %@, above the $600 minimum. Send them a 1099-NEC by January 31."
+          }
+        }
+      }
+    },
+    "Pagos programados" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scheduled payments"
           }
         }
       }
@@ -9585,6 +10405,16 @@
         }
       }
     },
+    "Pausar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pause"
+          }
+        }
+      }
+    },
     "País o región" : {
       "localizations" : {
         "en" : {
@@ -9641,6 +10471,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Period"
+          }
+        }
+      }
+    },
+    "Periodo cerrado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Closed period"
           }
         }
       }
@@ -9797,6 +10637,16 @@
         }
       }
     },
+    "Por confirmar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To confirm"
+          }
+        }
+      }
+    },
     "Por cuenta" : {
       "localizations" : {
         "en" : {
@@ -9948,6 +10798,16 @@
         }
       }
     },
+    "Primera fecha" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "First date"
+          }
+        }
+      }
+    },
     "Primeros pasos" : {
       "localizations" : {
         "en" : {
@@ -9984,6 +10844,77 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Products and services"
+          }
+        }
+      }
+    },
+    "Programada" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scheduled"
+          }
+        }
+      }
+    },
+    "Programada · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scheduled · %@"
+          }
+        }
+      }
+    },
+    "Programadas" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scheduled"
+          }
+        }
+      }
+    },
+    "Programado · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scheduled · %@"
+          }
+        }
+      }
+    },
+    "Programar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schedule"
+          }
+        }
+      }
+    },
+    "Programar pago" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schedule payment"
+          }
+        }
+      }
+    },
+    "Programar pago…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schedule payment…"
           }
         }
       }
@@ -10130,6 +11061,16 @@
         }
       }
     },
+    "Próxima" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next"
+          }
+        }
+      }
+    },
     "Próxima factura por pagar · %lld abiertas" : {
       "localizations" : {
         "en" : {
@@ -10190,6 +11131,36 @@
         }
       }
     },
+    "Próximo el %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next on %@"
+          }
+        }
+      }
+    },
+    "Próximo el %@. Cada repetición queda «por confirmar» hasta que la registres." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next on %@. Each occurrence stays “to confirm” until you record it."
+          }
+        }
+      }
+    },
+    "Próximo el %@. Cada repetición se registra sola. Lo cambias en Gastos › Recurrentes." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next on %@. Each occurrence is recorded automatically. Change it in Expenses › Recurring."
+          }
+        }
+      }
+    },
     "Próximo vencimiento %@" : {
       "localizations" : {
         "en" : {
@@ -10236,6 +11207,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Page 1 of 1 · PDF"
+          }
+        }
+      }
+    },
+    "Pídele el W-9 antes de pagarle: lo necesitas para el 1099-NEC." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ask for the W-9 before paying: you need it for the 1099-NEC."
           }
         }
       }
@@ -10320,12 +11301,32 @@
         }
       }
     },
+    "Quitar línea" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove line"
+          }
+        }
+      }
+    },
     "Quitar recibo" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Remove receipt"
+          }
+        }
+      }
+    },
+    "Qué crea cada repetición" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What each occurrence creates"
           }
         }
       }
@@ -10360,12 +11361,52 @@
         }
       }
     },
+    "Reanudar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Resume"
+          }
+        }
+      }
+    },
     "Rebaja %@" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Reduces %@"
+          }
+        }
+      }
+    },
+    "Recibido" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Received"
+          }
+        }
+      }
+    },
+    "Recibido el" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Received on"
+          }
+        }
+      }
+    },
+    "Recibido el %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Received %@"
           }
         }
       }
@@ -10470,6 +11511,16 @@
         }
       }
     },
+    "Recurrente" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recurring"
+          }
+        }
+      }
+    },
     "Recurrente borrada: %@" : {
       "localizations" : {
         "en" : {
@@ -10480,12 +11531,32 @@
         }
       }
     },
+    "Recurrente · cargo automático" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recurring · autopay"
+          }
+        }
+      }
+    },
     "Recurrente: %@" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Recurring: %@"
+          }
+        }
+      }
+    },
+    "Recurrentes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recurring"
           }
         }
       }
@@ -10526,6 +11597,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Customer refund"
+          }
+        }
+      }
+    },
+    "Referencia (opcional)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reference (optional)"
           }
         }
       }
@@ -10656,6 +11737,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Try Again"
+          }
+        }
+      }
+    },
+    "Renta, suscripciones, seguros: crea una recurrente y Chirogra registra cada cargo por ti." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rent, subscriptions, insurance: create a recurring charge and Chirogra records each one for you."
+          }
+        }
+      }
+    },
+    "Repartir en varias categorías" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Split across categories"
+          }
+        }
+      }
+    },
+    "Repetición" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repeat"
           }
         }
       }
@@ -10858,6 +11969,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Reversal"
+          }
+        }
+      }
+    },
+    "Reversión del #%lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reversal of #%lld"
           }
         }
       }
@@ -11356,6 +12477,26 @@
         }
       }
     },
+    "Se paga el %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paid on %@"
+          }
+        }
+      }
+    },
+    "Se pagarán desde %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Will be paid from %@"
+          }
+        }
+      }
+    },
     "Se registra la salida de dinero del banco y se cancela ese saldo a favor en cuentas por cobrar." : {
       "localizations" : {
         "en" : {
@@ -11376,12 +12517,32 @@
         }
       }
     },
+    "Se registra un pago por factura, por su saldo completo. El dinero se mueve desde tu banco." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "One payment per bill is recorded, for its full balance. The money moves from your bank."
+          }
+        }
+      }
+    },
     "Se registrará un asiento de reversión. La factura queda en el historial como anulada." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "A reversing entry will be posted. The invoice stays in the history as void."
+          }
+        }
+      }
+    },
+    "Se repite" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repeats"
           }
         }
       }
@@ -11502,6 +12663,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Select an invoice to see its details."
+          }
+        }
+      }
+    },
+    "Seleccionar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select"
+          }
+        }
+      }
+    },
+    "Seleccionar todas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select all"
+          }
+        }
+      }
+    },
+    "Semanal" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weekly"
           }
         }
       }
@@ -11907,6 +13098,16 @@
         }
       }
     },
+    "Sin preferencia" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No preference"
+          }
+        }
+      }
+    },
     "Sin proveedor" : {
       "localizations" : {
         "en" : {
@@ -11943,6 +13144,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No receipt. Keep it: the IRS asks you to hold on to it."
+          }
+        }
+      }
+    },
+    "Sin recurrentes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No recurring charges"
           }
         }
       }
@@ -12154,6 +13365,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Subtotal"
+          }
+        }
+      }
+    },
+    "Subtotal %@ + impuesto %@. Es informativo: en EE. UU. el sales tax de tus compras forma parte del gasto." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Subtotal %@ + tax %@. For reference only: in the US, sales tax on your purchases is part of the expense."
           }
         }
       }
@@ -12415,6 +13636,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Phone"
+          }
+        }
+      }
+    },
+    "Termina" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ends"
+          }
+        }
+      }
+    },
+    "Terminada · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ended · %@"
           }
         }
       }
@@ -13092,6 +14333,16 @@
         }
       }
     },
+    "Vence a los" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Due in"
+          }
+        }
+      }
+    },
     "Vence el %@" : {
       "localizations" : {
         "en" : {
@@ -13477,6 +14728,16 @@
         }
       }
     },
+    "Ver asiento" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View entry"
+          }
+        }
+      }
+    },
     "Ver cliente" : {
       "localizations" : {
         "en" : {
@@ -13627,6 +14888,26 @@
         }
       }
     },
+    "Vigente" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Current"
+          }
+        }
+      }
+    },
+    "Vigente, tras editar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Current, after editing"
+          }
+        }
+      }
+    },
     "Vista previa" : {
       "localizations" : {
         "en" : {
@@ -13683,6 +14964,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "W-9 pending: %@"
+          }
+        }
+      }
+    },
+    "W-9 recibido" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "W-9 received"
           }
         }
       }
@@ -13757,6 +15048,16 @@
         }
       }
     },
+    "hasta el %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "until %@"
+          }
+        }
+      }
+    },
     "hoy" : {
       "localizations" : {
         "en" : {
@@ -13807,6 +15108,16 @@
         }
       }
     },
+    "recurrente" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "recurring"
+          }
+        }
+      }
+    },
     "saldo total %@" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -13824,6 +15135,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "calculated when issued"
+          }
+        }
+      }
+    },
+    "sin fecha de fin" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "no end date"
           }
         }
       }
@@ -13904,6 +15225,16 @@
         }
       }
     },
+    "¿Borrar esta recurrente?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete this recurring charge?"
+          }
+        }
+      }
+    },
     "¿Conservar el borrador?" : {
       "localizations" : {
         "en" : {
@@ -13950,6 +15281,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Remove this receipt?"
+          }
+        }
+      }
+    },
+    "¿Registrar en un periodo cerrado?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Record in a closed period?"
           }
         }
       }

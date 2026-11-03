@@ -37,10 +37,14 @@ struct VendorTablePage: View {
             let paidExpenses: Int64 = expenses.filter { calendar.component(.year, from: $0.date) == year }.reduce(0) { $0 + $1.total }
             let paid = paidBills + paidExpenses
             let last = (bills.map(\.billDate) + expenses.map(\.date)).max()
+            let preferred = [vendor.preferredPaymentMethod?.title, accounts.account(vendor.preferredPaymentAccountID)?.paymentLabel]
+                .compactMap { $0 }.joined(separator: " · ")
             return VendorTableRow(vendor: vendor, id: vendor.id, name: vendor.name,
                                   category: vendor.defaultExpenseAccountID.flatMap { names[$0] } ?? "",
                                   openBalance: vendor.openBalance, spentThisYear: spent, paidThisYear: paid,
-                                  lastPurchase: last, is1099: vendor.is1099, email: vendor.email)
+                                  lastPurchase: last, is1099: vendor.is1099, email: vendor.email,
+                                  w9Received: vendor.w9Received, w9Date: vendor.w9ReceivedDate,
+                                  preferredPayment: preferred.isEmpty ? nil : preferred)
         }
     }
 
@@ -179,6 +183,10 @@ nonisolated struct VendorTableRow: Identifiable {
     let lastPurchase: Date?
     let is1099: Bool
     let email: String
+    let w9Received: Bool
+    let w9Date: Date?
+    /// «Transferencia · Corriente ••4821», o `nil` sin preferencia.
+    let preferredPayment: String?
 
     /// Claves de orden: los que requieren 1099 primero al ordenar de mayor a menor; sin compras, al final.
     var form1099Rank: Int { is1099 ? 1 : 0 }
@@ -224,8 +232,8 @@ private struct Form1099Cell: View {
     }
 }
 
-/// Inspector del proveedor (canvas `MacProveedores`): monograma, nombre y categoría; Resumen (Por pagar, Gastado en el
-/// año, Última compra) e Impuestos (Formulario 1099 con su nota).
+/// Inspector del proveedor (canvas `MacProveedores`, `MacProveedorFicha`): monograma, nombre y categoría; Resumen (Por
+/// pagar, Gastado en el año, Última compra, Pago preferido) e Impuestos (Formulario 1099 y W-9, con su nota).
 private struct VendorInspector: View {
     let row: VendorTableRow
 
@@ -255,6 +263,8 @@ private struct VendorInspector: View {
             MacInspectorRow(String(localized: "Por pagar"), value: row.openBalance.money)
             MacInspectorRow(String(localized: "Gastado en \(yearText)"), value: row.spentThisYear.money)
             MacInspectorRow(String(localized: "Última compra"), value: row.lastPurchase?.dayMonth ?? "—")
+            MacInspectorRow(String(localized: "Pago preferido"), value: row.preferredPayment ?? String(localized: "Sin preferencia"),
+                            color: row.preferredPayment == nil ? Palette.ink2 : Palette.ink)
         }
         VStack(alignment: .leading, spacing: 6) {
             MacInspectorSection(title: String(localized: "Impuestos")) {
@@ -263,6 +273,16 @@ private struct VendorInspector: View {
                         StatusDot(color: row.is1099 ? Palette.teal : Palette.gray)
                         Text(row.is1099 ? String(localized: "Requiere 1099-NEC") : String(localized: "No aplica"))
                             .foregroundStyle(row.is1099 ? Palette.info : Palette.ink2)
+                    }
+                }
+                if row.is1099 || row.w9Received {
+                    MacInspectorRow(label: String(localized: "Formulario W-9")) {
+                        HStack(spacing: 5) {
+                            StatusDot(color: row.w9Received ? Palette.green : Palette.orange)
+                            Text(row.w9Received ? (row.w9Date.map { String(localized: "Recibido el \($0.dayMonth)") } ?? String(localized: "Recibido"))
+                                                : String(localized: "Pendiente"))
+                                .foregroundStyle(row.w9Received ? Palette.positive : Palette.warning)
+                        }
                     }
                 }
             }

@@ -21,7 +21,7 @@ struct BankingView: View {
                 }
                 ForEach(shown) { account in
                     NavigationLink { LedgerView(account: account) } label: {
-                        LedgerRow(title: account.name, subtitle: String(localized: "Saldo en libros · \(account.code)")) {
+                        LedgerRow(title: account.maskedName, subtitle: String(localized: "Saldo en libros · \(account.code)")) {
                             IconTile(systemImage: account.bankSymbol, foreground: account.bankColor)
                         } trailing: {
                             Text(ledger.cashBalance(of: account).money).monospacedDigit().foregroundStyle(Palette.ink)
@@ -95,7 +95,7 @@ struct AccountMovementsView: View {
         let balance = Ledger(accounts: accounts, lines: journalLines).cashBalance(of: account)
         return VStack(alignment: .leading, spacing: 16) {
             VStack(alignment: .leading, spacing: 2) {
-                Text(account.name).font(.subheadline).foregroundStyle(Palette.ink2)
+                Text(account.maskedName).font(.subheadline).foregroundStyle(Palette.ink2)
                 Text(balance.money).font(.amount(40)).foregroundStyle(Palette.ink).lineLimit(1).minimumScaleFactor(0.6)
                 Text("Saldo en libros · \(account.code)").font(.subheadline).foregroundStyle(Palette.ink2)
             }
@@ -175,7 +175,7 @@ struct AccountMovementsView: View {
     /// La otra cuenta del asiento («Varias» si hay más de una).
     private func counterpart(of line: JournalLine?) -> String {
         guard let line, let entry = line.entry else { return "—" }
-        let others = Set((entry.lines ?? []).compactMap(\.account).filter { $0.id != line.account?.id }.map(\.name))
+        let others = Set((entry.lines ?? []).compactMap(\.account).filter { $0.id != line.account?.id }.map(\.maskedName))
         return others.count == 1 ? others.first! : others.isEmpty ? "—" : String(localized: "Varias")
     }
 }

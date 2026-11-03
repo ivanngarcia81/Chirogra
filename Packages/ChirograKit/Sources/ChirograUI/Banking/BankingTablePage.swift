@@ -255,7 +255,7 @@ private struct BankStatement {
 
     private static func counterpart(of line: JournalLine?) -> String {
         guard let line, let entry = line.entry else { return "—" }
-        let others = Set((entry.lines ?? []).compactMap(\.account).filter { $0.id != line.account?.id }.map(\.name))
+        let others = Set((entry.lines ?? []).compactMap(\.account).filter { $0.id != line.account?.id }.map(\.maskedName))
         return others.count == 1 ? others.first! : others.isEmpty ? "—" : String(localized: "Varias")
     }
 }
@@ -291,7 +291,7 @@ private struct BankAccountCards: View {
                         .foregroundStyle(.white)
                         .frame(width: 22, height: 22)
                         .background(account.bankColor, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
-                    Text(account.name).font(.body.weight(.semibold)).foregroundStyle(Palette.ink).lineLimit(1)
+                    Text(account.maskedName).font(.body.weight(.semibold)).foregroundStyle(Palette.ink).lineLimit(1)
                 }
                 Text(amount).font(.amount(24)).foregroundStyle(Palette.ink).lineLimit(1).minimumScaleFactor(0.6)
                     .padding(.top, 4)
@@ -305,7 +305,7 @@ private struct BankAccountCards: View {
         }
         .buttonStyle(.plain)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(Text(verbatim: "\(account.name), \(amount)"))
+        .accessibilityLabel(Text(verbatim: "\(account.maskedName), \(amount)"))
         .accessibilityHint(String(localized: "Muestra sus movimientos"))
         .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
     }
@@ -319,7 +319,7 @@ private struct MovementsHeader: View {
 
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 8) {
-            Text("Movimientos · \(account.name)").font(.headline).foregroundStyle(Palette.ink).lineLimit(1)
+            Text("Movimientos · \(account.maskedName)").font(.headline).foregroundStyle(Palette.ink).lineLimit(1)
                 .accessibilityAddTraits(.isHeader)
             Spacer(minLength: 8)
             HStack(spacing: 2) {
@@ -359,7 +359,7 @@ private struct BankMovementInspector: View {
         .accessibilityElement(children: .combine)
         MacInspectorSection(title: String(localized: "Detalles")) {
             MacInspectorRow(String(localized: "Fecha"), value: movement.date.shortDate)
-            if let account { MacInspectorRow(String(localized: "Cuenta"), value: account.name) }
+            if let account { MacInspectorRow(String(localized: "Cuenta"), value: account.maskedName) }
             MacInspectorRow(String(localized: "Categoría o cuenta"), value: movement.counterpart)
             MacInspectorRow(kind, value: amount.money)
             MacInspectorRow(String(localized: "Saldo después"), value: movement.balance.money, bold: true)
