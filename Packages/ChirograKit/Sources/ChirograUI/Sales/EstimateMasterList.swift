@@ -51,6 +51,11 @@ struct EstimateMasterList: View {
             }
         }
         .listStyle(.plain)
+        #if os(iOS)
+        // Sin el anillo de foco del sistema con trackpad o teclado (como `MasterListStyle`).
+        .tint(Color.clear)
+        .focusEffectDisabled()
+        #endif
         .scrollContentBackground(.hidden)
         .background(Palette.surface)
         .tint(Palette.brandFill)

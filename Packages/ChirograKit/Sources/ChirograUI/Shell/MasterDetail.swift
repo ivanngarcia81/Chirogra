@@ -222,8 +222,11 @@ private struct MasterListStyle: ViewModifier {
             .scrollContentBackground(.hidden)
             .background(Palette.surface)
             #if os(iOS)
-            // Si el sistema pinta la selección, en el mismo relleno de Tinta que `masterRow`.
-            .tint(Palette.brandFill)
+            // Acento transparente: con trackpad o teclado, UIKit dibuja en el acento un anillo de foco cuadrado alrededor
+            // de la celda elegida (se veía en Gastos, iPad del usuario, 3-nov); `focusEffectDisabled` no llega a la celda.
+            // El relleno de Tinta de la fila elegida lo pinta `MasterRowBackground`, no el sistema.
+            .tint(Color.clear)
+            .focusEffectDisabled()
             #endif
             .navigationTitle(title)
             .masterTitle()
