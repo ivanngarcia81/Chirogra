@@ -707,6 +707,7 @@ struct CreditNoteEditorView: View {
                      + String(localized: "Lo que no cubra el saldo de esta factura queda a favor del cliente: puedes aplicarlo a otra factura o reembolsarlo desde su ficha."))
             }
         }
+        .formStyle(.grouped)
         .screenBackground()
         .navigationTitle("Nota de crédito")
         .inlineTitle()

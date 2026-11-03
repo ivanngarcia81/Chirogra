@@ -157,6 +157,7 @@ struct VendorTablePage: View {
         // `-qa.abrir 1` abre la ficha del proveedor de la fila elegida con `-qa.fila`.
         .task {
             try? await Task.sleep(for: .seconds(1))
+            if UserDefaults.standard.bool(forKey: "qa.nuevo") { creating = true; return }
             guard UserDefaults.standard.bool(forKey: "qa.abrir"), let id = selection,
                   let vendor = vendors.first(where: { $0.id == id }) else { return }
             openedVendor = vendor

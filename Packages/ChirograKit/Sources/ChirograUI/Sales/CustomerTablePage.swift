@@ -144,6 +144,7 @@ struct CustomerTablePage: View {
             default: break
             }
             try? await Task.sleep(for: .seconds(1))
+            if defaults.bool(forKey: "qa.nuevo") { creating = true; return }
             guard let id = selection, let customer = customers.first(where: { $0.id == id }) else { return }
             if defaults.bool(forKey: "qa.abrir") { openedCustomer = customer }
         }

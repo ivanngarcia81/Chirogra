@@ -122,6 +122,7 @@ struct InvoiceTablePage: View {
         // `-qa.pago 1` abre «Registrar pago…» y `-qa.abrir 1` la factura completa de la fila elegida con `-qa.fila`.
         .task {
             try? await Task.sleep(for: .seconds(1))
+            if UserDefaults.standard.bool(forKey: "qa.nuevo") { creating = true; return }
             guard let id = selection, let invoice = invoices.first(where: { $0.id == id }) else { return }
             if UserDefaults.standard.bool(forKey: "qa.pago"), invoice.isOpen { paying = invoice }
             if UserDefaults.standard.bool(forKey: "qa.abrir") { openedInvoice = invoice }

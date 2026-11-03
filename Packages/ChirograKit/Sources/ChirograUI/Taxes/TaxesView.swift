@@ -668,6 +668,7 @@ struct TaxRateEditorView: View {
                     #endif
             }
         }
+        .formStyle(.grouped)
         .screenBackground()
         .navigationTitle("Nueva tasa")
         .inlineTitle()
@@ -722,6 +723,7 @@ struct TaxGroupEditorView: View {
             LabeledContent("Tasa combinada",
                            value: String(localized: "\((Decimal(rates.filter { selected.contains($0.id) }.reduce(0) { $0 + $1.rateMillionths }) / 10_000).formatted())%"))
         }
+        .formStyle(.grouped)
         .screenBackground()
         .navigationTitle("Nuevo grupo")
         .inlineTitle()
@@ -783,6 +785,7 @@ struct SalesTaxPaymentView: View {
                 TextField("Periodo o referencia (p. ej. Q3 2026)", text: $reference)
             }
         }
+        .formStyle(.grouped)
         .screenBackground()
         .navigationTitle("Pago de sales tax")
         .inlineTitle()

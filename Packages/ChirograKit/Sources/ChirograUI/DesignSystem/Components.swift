@@ -100,13 +100,27 @@ private struct EditorSheetSizing: ViewModifier {
     }
 }
 
-/// Alto de página, ancho de formulario holgado: la hoja de página del iPad en vertical ocupaba casi toda la pantalla.
+/// Alto de página y un ancho según la ventana: 760 pt en vertical (la hoja de página ocupaba casi toda la pantalla) y
+/// hasta 980 pt en horizontal (la hoja de página del sistema daba ~650 pt en el iPad de 12,9″ y la tabla de líneas de
+/// la factura iba apretada, 2-nov). Siempre deja 32 pt de margen a cada lado de la ventana.
 private struct EditorPageSizing: PresentationSizing {
-    static let maxWidth: CGFloat = 760
+    static let portraitWidth: CGFloat = 760
+    static let landscapeWidth: CGFloat = 980
 
     func proposedSize(for root: PresentationSizingRoot, context: PresentationSizingContext) -> ProposedViewSize {
         var size = PagePresentationSizing.page.proposedSize(for: root, context: context)
-        size.width = min(size.width ?? Self.maxWidth, Self.maxWidth)
+        #if os(iOS)
+        let window = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+            .first { $0.activationState == .foregroundActive }?.coordinateSpace.bounds.size
+        #else
+        let window: CGSize? = nil
+        #endif
+        guard let window else {
+            size.width = min(size.width ?? Self.portraitWidth, Self.portraitWidth)
+            return size
+        }
+        let target = window.width > window.height ? Self.landscapeWidth : Self.portraitWidth
+        size.width = min(target, window.width - 64)
         return size
     }
 }

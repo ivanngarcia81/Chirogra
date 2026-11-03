@@ -807,6 +807,7 @@ struct CustomerEditorView: View {
                 if isTaxExempt { TextField("Motivo (reventa, sin fines de lucro…)", text: $exemptionReason) }
             }
         }
+        .formStyle(.grouped)
         .screenBackground()
         .navigationTitle(customer == nil ? "Nuevo cliente" : "Editar cliente")
         .inlineTitle()
@@ -872,6 +873,7 @@ struct CustomerRefundView: View {
                 Text("Se registra la salida de dinero del banco y se cancela ese saldo a favor en cuentas por cobrar.")
             }
         }
+        .formStyle(.grouped)
         .screenBackground()
         .navigationTitle("Reembolso")
         .inlineTitle()

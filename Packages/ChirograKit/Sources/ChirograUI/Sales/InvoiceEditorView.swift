@@ -103,6 +103,8 @@ struct InvoiceEditorView: View {
         .navigationTitle(editorTitle)
         #if os(macOS)
         .modifier(InlineTitleUnless(wide: isWide))
+        // La hoja tomaba ~684 pt y la tabla de artículos iba apretada (2-nov): ancho de `MacFacturaNueva`.
+        .frame(minWidth: 860, idealWidth: 920, minHeight: 620, idealHeight: 760)
         #else
         // En línea también en la hoja ancha del iPad: con el título grande, «×» se iba al menú de desbordamiento.
         .inlineTitle()
@@ -359,6 +361,7 @@ struct InvoiceEditorView: View {
                 Text("Al emitirla se registra el asiento contable: débito a cuentas por cobrar, crédito a ingresos y sales tax.")
             }
         }
+        .formStyle(.grouped)
         .screenBackground()
         .scrollDismissesKeyboard(.interactively)
         #if os(iOS)
@@ -890,6 +893,7 @@ private struct InvoiceNotesEditor: View {
                 Text("Aparece al pie de la factura, debajo de los totales.")
             }
         }
+        .formStyle(.grouped)
         .screenBackground()
         .navigationTitle("Notas y términos")
         .inlineTitle()
