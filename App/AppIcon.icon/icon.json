@@ -22,18 +22,66 @@
     {
       "layers" : [
         {
-          "blend-mode" : "normal",
-          "fill" : "none",
-          "hidden" : false,
-          "image-name" : "chirogra-paginas-solido 5.svg",
-          "name" : "chirogra-paginas-solido 5",
-          "position" : {
-            "scale" : 1.42,
-            "translation-in-points" : [
-              0,
-              0
-            ]
-          }
+          "fill-specializations" : [
+            {
+              "appearance" : "dark",
+              "value" : {
+                "solid" : "display-p3:0.11751,0.12548,0.30474,1.00000"
+              }
+            }
+          ],
+          "image-name" : "05-grafica.svg",
+          "name" : "05-grafica",
+          "opacity-specializations" : [
+            {
+              "appearance" : "dark",
+              "value" : 1
+            }
+          ]
+        },
+        {
+          "fill-specializations" : [
+            {
+              "appearance" : "dark",
+              "value" : {
+                "linear-gradient" : [
+                  "display-p3:0.27685,0.29062,0.63041,1.00000",
+                  "display-p3:0.15762,0.17014,0.39765,1.00000"
+                ]
+              }
+            }
+          ],
+          "image-name" : "04-carpeta.svg",
+          "name" : "04-carpeta",
+          "opacity-specializations" : [
+            {
+              "appearance" : "dark",
+              "value" : 0.95
+            }
+          ]
+        },
+        {
+          "image-name" : "03-hoja.svg",
+          "name" : "03-hoja"
+        },
+        {
+          "image-name" : "02-recibo.svg",
+          "name" : "02-recibo"
+        },
+        {
+          "fill-specializations" : [
+            {
+              "appearance" : "dark",
+              "value" : {
+                "linear-gradient" : [
+                  "display-p3:0.23740,0.24891,0.40675,1.00000",
+                  "display-p3:0.12012,0.12825,0.25875,1.00000"
+                ]
+              }
+            }
+          ],
+          "image-name" : "01-fondo.svg",
+          "name" : "01-fondo"
         }
       ],
       "shadow" : {
