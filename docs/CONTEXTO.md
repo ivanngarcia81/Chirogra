@@ -1,126 +1,112 @@
 # Chirogra: contexto para retomar en otro chat
 
-Resumen del chat de coordinación de Chirogra (desarrollo + QA), al 3 de noviembre de 2026. Léelo antes de seguir. El diseño técnico completo está en [DISEÑO.md](DISEÑO.md); aquí solo va el estado, las decisiones del usuario y cómo se trabaja.
+Resumen del chat de coordinación de Chirogra al **3 de noviembre de 2026**. Léelo entero antes de seguir. El diseño técnico está en [DISEÑO.md](DISEÑO.md), el sistema visual en [REDISEÑO-NATIVO.md](REDISEÑO-NATIVO.md) y la API del esquema 2 en [DATOS-V2.md](DATOS-V2.md); aquí van el estado, las decisiones del usuario, lo pendiente y cómo se trabaja. Al usuario se le habla siempre en español.
+
+## Dónde nos quedamos (empieza aquí)
+
+1. **Lo primero: confirmar con el usuario el anillo de foco del iPad.** En Gastos (columna maestro del iPad), al hacer clic con el trackpad en una fila, salía un marco cuadrado del color de acento alrededor del relleno de Tinta; en las demás listas no. Dos intentos: `e8c43d2` (`.focusEffectDisabled()` en la fila) **no lo arregló**; `830ed69` deja el acento de las listas maestro en `Color.clear` (`MasterListStyle` en `Shell/MasterDetail.swift` y `Sales/EstimateMasterList.swift`), porque el anillo lo dibuja UIKit en el acento. Está instalado en el iPad, **sin confirmar**: el simulador y las pruebas automáticas solo mandan toques y ahí no aparece. Si sigue, buscar qué tiene la lista o el detalle de Gastos (`ExpenseMasterList`, `ExpenseDetailView` en `Expenses/ReceiptViews.swift`) para que el foco se quede en la celda (en Ventas pasa al detalle).
+2. `main` = `830ed69`, igual en GitHub y en local. No hay ramas ni worktrees abiertos.
+3. Instalado en los tres aparatos: iPhone y Mac con `add429f`, iPad con `830ed69` (la diferencia es solo el arreglo del anillo, que es de iPad).
 
 ## Estado actual
 
-- **Versión aprobada:** el rediseño nativo, aprobado por el usuario y subido a `main` en GitHub (github.com/ivanngarcia81/Chirogra) el 2-nov. La anterior era `038b168`.
-- **Instalada en:** iPhone 17 Pro Max, iPad Pro 12,9″ y Mac (`/Applications/Chirogra.app`, Release) con el esquema 2 (`main`, 3-nov). Los datos de los tres aparatos ya migraron a V2: una versión anterior no los abre.
-- **Esquema 2 (3-nov):** lo que dibujaba el canvas y la app no tenía, construido sobre `SchemaV2` (migración ligera desde V1, solo aditiva). API en [DATOS-V2.md](DATOS-V2.md). **Antes de publicar en la App Store: desplegar el esquema de CloudKit a producción** (8 tipos de registro y campos nuevos) y actualizar todos los aparatos a la vez.
-- **Rediseño nativo (2-nov), hecho en la rama `integracion-rediseno` y ya en `main` (subido el 2-nov).** El usuario pidió rehacer la app con el canvas actualizado («Claude code actualizó el diseño»), lo que deja sin efecto el descarte de `7a8b97f`. El sistema y el mapa por áreas están en [REDISEÑO-NATIVO.md](REDISEÑO-NATIVO.md). Lo hizo un equipo de agentes en worktrees (`.claude/worktrees/`), uno por tarea, y el coordinador lo fusionó. Para resolver choques del catálogo de textos hay un script de fusión por claves (ver «Fusionar el catálogo de textos» abajo).
+- **App aprobada y en `main`:** rediseño nativo (2-nov) + Mac con tabla e inspector (2-nov) + esquema 2 con lo que dibujaba el canvas (3-nov) + ícono nuevo (`541169a`, `App/AppIcon.icon` = `chirogra.icon` de Icon Composer).
+- **Datos:** los tres aparatos ya migraron a `SchemaV2` (migración ligera, solo aditiva, desde V1). **Una versión anterior de la app ya no abre esos datos.** La empresa del usuario es «Ríos Diseño & Obra», «Solo en este dispositivo» (sin iCloud), con datos de ejemplo.
+- **Antes de publicar en la App Store:** desplegar el esquema de CloudKit a producción (8 tipos de registro nuevos y campos nuevos) y actualizar todos los aparatos a la vez (un aparato con la versión vieja que edite un registro puede perder los campos nuevos).
 
-## Qué se hizo en este chat (de lo más antiguo a lo más nuevo)
+## Qué se hizo en este chat
 
-| Commit | Qué |
-|---|---|
-| `430ccf7` | Barra lateral, estados de iCloud, detalles menores |
-| `1d3a31d` | Confirmación de borradores |
-| `9df80c1`, `9a4990c`, `46c3cfd` | Aviso de «¿Descartar los cambios?» en 12 editores, sin avisos fantasma (token débil por editor + 1,2 s de margen) |
-| `68ebad9` | Ícono de la app desde Icon Composer (`App/AppIcon.icon`) |
-| `f21e0bf` | Cabecera, botones de la barra y botones primarios en Liquid Glass del sistema, sin morado |
-| `752c879` | Columna maestro-detalle en Facturas, Clientes, Gastos, Proveedores, Por pagar, Banca, Asientos y Plan de cuentas (`Shell/MasterDetail.swift`, nuevo `BillDetailView`) |
-| `10bf2c5`, `281d573` | Mac: que no parezca un iPhone estirado (densidad de Mac, un solo título, barra lateral de 220 pt, hojas con `.confirmationAction` / `.cancellationAction`, contraste AA de la fila seleccionada) |
-| `6bb7a97`, `038b168` | Títulos de la columna maestro visibles en el iPad; «+» solo como ícono en Por pagar y Plan de cuentas |
+### Antes del 2-nov (versión `038b168`)
+Barra lateral, estados de iCloud, aviso «¿Descartar los cambios?» en los editores, ícono de Icon Composer, Liquid Glass, columna maestro-detalle en iPad y Mac, densidad de Mac.
 
-### Rediseño nativo (2-nov, de `integracion-rediseno`, ya en `main`)
+### 2-nov: hallazgos del iPad en vertical y rediseño nativo (equipo de agentes)
+- iPad vertical: barra lateral que se cierra sola en las páginas de lista y de ancho fijo (`d343fa1`); hojas de editor grandes (`de93afd`); título en línea en los detalles (`9476336`); VoiceOver en «Registrar pago» (`2742f53`).
+- Rediseño nativo según el canvas: base (`62f5b58`), botón principal en vidrio sin relleno (`4db4ec2`), áreas A–D (`96c44e1`, `7fdc121`, `6975c8f`, `5229973`), QA del coordinador (`106c441`).
 
-| Commit | Qué |
-|---|---|
-| `d343fa1` | iPad vertical: la barra lateral se cierra sola en las páginas de lista; barra de 280 pt en todas las páginas |
-| `de93afd` | Hojas de editor en el iPad: alto de página y 760 pt de ancho (`editorSheetSizing`) |
-| `9476336` | Título pequeño en línea en todos los detalles del iPad |
-| `2742f53` | VoiceOver: «Depositar en» y «Fecha» con nombre y valor en Registrar pago |
-| `62f5b58` | Base del rediseño nativo (`Palette`, `Components`, `docs/REDISEÑO-NATIVO.md`) |
-| `4db4ec2` | Botón principal en vidrio sin relleno; decisiones del usuario sobre el canvas |
-| `96c44e1` | Área A: Inicio, Reportes, Impuestos |
-| `7fdc121` | Área B: Ventas y Clientes |
-| `6975c8f` | Área C: Gastos, Proveedores, Por pagar, Banca, Contabilidad |
-| `5229973` | Área D: pestañas, barra lateral, columna maestro, estados, Alta, Ajustes |
-| `106c441` | QA del coordinador: cabecera de la factura (total si está pagada; «Por cobrar de un total de…») y gastos sin «−» en la columna maestro |
+### 2-nov: Mac con tabla + inspector (equipo de agentes)
+- Estructura y pieza común `Shell/MacTablePage.swift`, Facturas (`6d5a395`); Clientes (`f4f48cc`); Gastos (`67556f1`); Banca, Asientos y Plan (`ff7d81b`); Proveedores y Por pagar (`db976e7`); inspector de Inicio, Reportes e Impuestos (`ed07f05`).
+- Arreglos del coordinador: «Estado» en inglés = «Status» y los selectores de estado de EE. UU. = clave «Estado de EE. UU.» (`af3c994`); Gastos y Banca arrancan en el último mes con movimientos y la tarjeta de Gastos suma solo la tabla (`8a82ec1`); hojas menos apretadas: iPad horizontal hasta 980 pt, «Nueva factura» del Mac 860–920 pt, `.formStyle(.grouped)` en 7 formularios (`8952b61`); tarjeta de Gastos de iPhone/iPad igual que la del Mac, VoiceOver sin títulos dobles, hojas de Impuestos (`4f4e68e`).
 
-Visto por el coordinador en simulador (iPhone 17 Pro e iPad Pro 13″, claro y oscuro, horizontal y vertical): las 5 pestañas del iPhone, las 8 páginas del iPad, detalle de factura y de gasto. Compila para iOS y Mac; `swift test` pasa. **Sin ver: el Mac en pantalla** (la Debug comparte datos con la app instalada), VoiceOver de verdad, iPad con letra grande, registrar un asiento de punta a punta.
+### 3-nov: lo que dibujaba el canvas (esquema 2, equipo de agentes)
+- Datos: `SchemaV2` + migración + servicios en `Bookkeeper` + pruebas (`463355f`, `97b15d4`, ver [DATOS-V2.md](DATOS-V2.md)).
+- Gastos/Proveedores/Por pagar/Banca (`0b9db97`): programar pago, pago en lote, recurrentes (cargo automático o «por confirmar»), editar gasto contabilizado (reversión + asiento nuevo, con historial), impuesto incluido y cliente en gastos, W-9 y pago preferido, «Corriente ••4821».
+- Contabilidad/Impuestos/Inicio (`67aecf8`, `4af935d`, `04e62a6`): editar cuenta (y últimos 4 dígitos), plan de cuentas agrupado y plegable en el Mac (`MacTablePage` admite `children:`), cierre con historial y contraseña (hash con sal), editar tasa, impuesto predeterminado, precios con impuesto incluido, origen de ventas, campana de avisos, automatizaciones al abrir (`runAutomations()` en `monitorsCloudSync()`).
+- Ventas/Clientes (`f503010`): estimados (lista, editor, detalle, convertir en factura completa/anticipo/por líneas), enviar con Para/Asunto/copia, recordatorios, contacto y notas fechadas del cliente, plantilla de factura (logo, color, estilo; también en el PDF), facturas con impuesto incluido.
+- Arreglo: el campo de importe va vacío con cero; escribir «500» guardaba $0.01 (`84bf407`).
+- Probado en el iPad físico: migración, campana, Por pagar programado, ficha de proveedor, Estimados, Recurrentes, plantilla, Impuestos y Cierre.
 
 ## Decisiones del usuario (no deshacer sin preguntar)
 
-- **Liquid Glass** en cabecera, barra y botones primarios, en todas las páginas. Nada de botones morados. **Botón principal en vidrio sin relleno** aunque el canvas lo rellene de Tinta (2-nov).
-- **Rediseño nativo según el canvas actual** (2-nov): manda el canvas salvo lo que diga esta lista. Pestañas del iPhone Inicio · Ventas · Gastos · Banca · Más (Reportes en «Más»); fila elegida de la columna maestro rellena de Tinta; barra lateral con grupos «Negocio» y «Libros».
-- **iPad: maestro-detalle; Mac: tabla + inspector (2-nov).** En el iPad, las páginas de lista siguen con columna maestro + detalle. En el Mac son como el canvas (`MacVentas`, `MacClientes`, `MacGastos`…): barra lateral + contenido, tabla a todo el ancho e inspector de ~300 pt a la derecha con lo elegido (ver [REDISEÑO-NATIVO.md](REDISEÑO-NATIVO.md), «Mac: tabla + inspector»). Hechas las 8 páginas de lista (Facturas, Clientes, Gastos, Proveedores, Por pagar, Banca, Asientos, Plan de cuentas) y el inspector de Inicio, Reportes e Impuestos.
-- **Mac con densidad de Mac**, no de iPhone (objetivos de 28 pt en Mac, 44 pt en iOS: `Metrics.target`).
-- **Ícono de la app** = el de Icon Composer. El **logo de la empresa** queda para después.
-- **Modo oscuro en Mac:** «salta por ahora esa parte». QA prueba el Mac solo en claro.
-- Todo esto también está anotado en [DISEÑO.md §7.4](DISEÑO.md).
+- **Rediseño nativo según el canvas actual** (2-nov), que deja sin efecto el descarte de `7a8b97f`. Manda el canvas salvo lo de esta lista.
+- **Botón principal en vidrio sin relleno** (`.glass`), aunque el canvas lo rellene de Tinta. Nada de botones morados.
+- **Pestañas del iPhone:** Inicio · Ventas · Gastos · Banca · Más (Reportes en «Más»).
+- **Fila elegida de la columna maestro rellena de Tinta** con texto blanco; **barra lateral** con grupos «Negocio» y «Libros».
+- **iPad: maestro-detalle. Mac: tabla a todo el ancho + inspector de ~300 pt** (⌥⌘I), como el canvas.
+- **Mac con densidad de Mac** (`Metrics.target` 28 pt en Mac, 44 pt en iOS; barra lateral de 220 pt en el Mac, 280 pt en el iPad).
+- **Gastos y Banca** arrancan en el último mes con movimientos si el actual está vacío; la tarjeta de Gastos suma solo los gastos (sin facturas por pagar), en los tres aparatos.
+- **Editar algo contabilizado** = reversión + asiento nuevo (los asientos contabilizados son inmutables, DISEÑO §6.5).
+- **Ícono de la app** = `chirogra.icon`. El **logo de la empresa** queda para después.
+- **Modo oscuro del Mac:** el Mac del usuario está en oscuro; las hojas siguen al sistema.
+
+## Pendiente
+
+**Por confirmar con el usuario:** el anillo de foco en Gastos del iPad (arriba).
+
+**Probado por el usuario y funciona (2-nov):** Escape y Return en los editores del Mac, ⌥⌘I, doble clic, ordenar columnas, soltar un recibo, «Registrar pago» en la hoja.
+
+**Sin comprobar**
+- VoiceOver de verdad (iPhone, iPad y Mac) e iPad con letra grande.
+- Correo real (`MFMailComposeViewController`, `NSSharingService`), logo desde Fotos, que un cargo automático se cobre solo al vencer.
+- Registrar un asiento de punta a punta; revertir y archivar cuentas en el Mac; estado vacío del Mac.
+
+**Pendiente menor**
+- Los totales de borradores en las listas siguen sin impuesto (el detalle y el PDF sí).
+- El editor de factura en la hoja del iPad sale con el diseño del iPhone.
+- La columna maestro del iPad no muestra ••4821 ni la sangría de subcuentas.
+- En la tabla de Por pagar del Mac, «Registrar pago» se corta en la columna Acción.
+- Subir a `DesignSystem` las piezas repetidas que los agentes hicieron dentro de cada pantalla (grupos de filas, `ComparisonBars`, cebra, monogramas de varios tamaños, `ActivityMark`, `LineEditRow`, filas maestro copiadas en `EstimateMasterList`).
+
+**No construido a propósito:** «Vista por el cliente» (necesita servidor). **Fase 2:** OCR, bandeja del banco e importar/conciliar (Plaid solo en un backend), usuarios y permisos, varias empresas, deducibles y «Exportar para mi contador».
 
 ## Reglas de trabajo
 
-- **Subir a GitHub solo cuando el usuario lo pida.** Subir el commit aprobado explícitamente: `git push origin <hash>:refs/heads/main`, para no subir un commit sin revisar.
-- **Instalar en los aparatos** cuando el usuario lo pida (ver abajo).
-- Fase 2 queda fuera: OCR, bandeja del banco y conciliación, presupuestos, usuarios y permisos, varias empresas.
-- Las claves de Plaid solo irán en un backend futuro (fase 3), nunca en la app.
-- Accesibilidad: 44 pt en iOS, Dynamic Type, VoiceOver, contraste AA.
-- Bilingüe español/inglés; las fechas numéricas siguen la región del aparato.
-- Avisar al usuario antes de borrar cualquier cosa de su computadora. No cambiar ajustes del sistema ni de Xcode.
-- El canvas de Claude Design es de solo lectura: https://claude.ai/artifact/Ai344mUq54BECC4Pw4quV9
+- **Commit y push solo cuando el usuario lo pida** (suele decir «commitea y empújalo»). Instalar en los aparatos cuando lo pida.
+- **Verificar uno mismo antes de pedirle que pruebe:** simulador, copia de prueba del Mac y el iPad físico (abajo).
+- Accesibilidad: 44 pt en iOS, Dynamic Type, VoiceOver, contraste AA. Bilingüe español/inglés: textos nuevos en `App/Localizable.xcstrings` con su inglés y los mismos marcadores (`%@`, no `%1$@`; lo exige `StringCatalogTests`).
+- Hojas de editor con `.editorSheetSizing()` y formularios con `.formStyle(.grouped)` (sin él, en el Mac se desbordan).
+- Avisar antes de borrar nada del ordenador del usuario. No cambiar ajustes del sistema ni de Xcode.
+- El canvas de Claude Design es de solo lectura: https://claude.ai/artifact/Ai344mUq54BECC4Pw4quV9 (se lee con la herramienta Artifact, `path: project/<tablero>.dc.html`).
+- **No tocar el simulador de iPad `BEB1EA39`:** es de otro proyecto (Tamio).
+
+### Cómo se trabajó: equipo de agentes
+Para bloques grandes, el coordinador lanza agentes en worktrees (`isolation: worktree`; la sesión tiene que estar con el directorio actual dentro del repo o falla), **cada uno con archivos distintos y su propio simulador y copia del Mac**. Si varias funciones necesitan cambiar el modelo, primero un agente de datos y después los de pantallas. Los agentes hacen commit en su rama; el coordinador los junta en una rama de integración, compila, pasa `swift test`, revisa en pantalla y, cuando el usuario lo aprueba, pasa a `main`. Después se borran las worktrees y ramas.
 
 ### Fusionar el catálogo de textos
+Si dos ramas añaden textos, git choca en `App/Localizable.xcstrings`. Usar `scripts/merge-xcstrings.py` (las tres versiones salen de `git show ":1:App/Localizable.xcstrings"`, `":2:…"`, `":3:…"`; en zsh, con comillas o `${n}`, porque `$n:` lo interpreta zsh). Revisar a mano las claves que lista como cambiadas en las dos ramas.
 
-Si dos ramas añaden textos a `App/Localizable.xcstrings`, git choca. Se resuelve por claves: sacar las tres versiones (`git show ":1:App/Localizable.xcstrings"`, `:2:`, `:3:`; en zsh, con comillas o `${n}`) y unirlas con un script que conserve las claves de las dos ramas y, si una clave cambió en las dos, elija a mano. Escribir el JSON con `indent=2` y `separators=(',', ' : ')` como Xcode. La prueba `StringCatalogTests` exige el inglés con los mismos marcadores que el español (`%@`, no `%1$@`).
+## Comprobar en pantalla
 
-### Flujo con dos sesiones
-
-1. **Desarrollo** hace un bloque, termina con «SECCIÓN LISTA» y un commit local, sin subir.
-2. El coordinador lee el commit (`git show`) y lo pasa a **QA** con los puntos a probar.
-3. QA da un veredicto y la ruta de su informe; QA no edita el repo.
-4. El coordinador pasa los hallazgos a desarrollo y le informa al usuario en español.
+- **Simulador** (iPhone/iPad): pruebas de interfaz temporales con un target `UITestsQA` añadido a `project.yml` + `xcodegen`, en una copia del repo en el scratchpad (**nunca commitear** `UITestsQA`, el cambio de `project.yml` ni el `.xcodeproj` regenerado). Datos: «Try with sample data». Las capturas horizontales salen giradas.
+- **Mac sin tocar los datos del usuario:** copia de prueba con otro identificador (`PRODUCT_BUNDLE_IDENTIFIER=com.chirogra.qa.<nombre> CODE_SIGN_IDENTITY=- CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM=`), argumentos de prueba `-qa.*` (solo Debug, ver REDISEÑO-NATIVO §5: `-qa.muestra 1 -qa.seccion <página> -qa.fila N -qa.inspector 1 -qa.nuevo 1 -qa.apariencia claro`…), `open -g -j -n <app> --args …`, captura de su ventana con `screencapture -l <windowID> -o -x` (id por PID con `CGWindowListCopyWindowInfo`, ventana de capa 0 y más de 300 pt de alto), `kill` de su PID y `rm -rf ~/Library/Containers/com.chirogra.qa.<nombre>` al terminar. Sin mover el ratón: el usuario usa el Mac.
+- **iPad físico:** `xcodebuild test … -destination 'id=00008103-001439A91E6B001E' -resultBundlePath r.xcresult DEVELOPMENT_TEAM=4N9XEU7F4P -allowProvisioningUpdates` con capturas como `XCTAttachment`; sacarlas con `xcrun xcresulttool export attachments --path r.xcresult --output-path <dir>`. Al terminar, `xcrun devicectl device uninstall app --device <UDID> com.chirogra.uitestsqa.xctrunner`. Lo que se pruebe ahí cambia los datos del iPad del usuario.
 
 ## Compilar e instalar en los aparatos
 
 - Equipo de firma: `4N9XEU7F4P`. Bundle id: `com.chirogra.app`.
-- iPhone 17 Pro Max: `00008150-0005793E3EC0401C`
-- iPad Pro 12,9″ (5.ª gen.): `00008103-001439A91E6B001E`
+- iPhone 17 Pro Max: `00008150-0005793E3EC0401C`. iPad Pro 12,9″ (5.ª gen.): `00008103-001439A91E6B001E`.
 
-Compilar desde un clon limpio del commit aprobado, en una carpeta temporal (`$T`):
+Desde un clon limpio del commit aprobado, en una carpeta temporal (`$T`):
 
 ```bash
 git clone -q ~/Documents/GitHub/Chirogra $T/src && git -C $T/src checkout -q <hash>
-```
-
-```bash
 cd $T/src && xcodebuild -project Chirogra.xcodeproj -scheme Chirogra -configuration Debug -destination 'generic/platform=iOS' -derivedDataPath $T/dd DEVELOPMENT_TEAM=4N9XEU7F4P -allowProvisioningUpdates build
-```
-
-```bash
-xcrun devicectl list devices | grep physical
-```
-
-```bash
 xcrun devicectl device install app --device <UDID> $T/dd/Build/Products/Debug-iphoneos/Chirogra.app
 ```
 
 Para el Mac, compilar con `-configuration Release -destination 'platform=macOS'` y luego:
 
 ```bash
-osascript -e 'tell application id "com.chirogra.app" to quit'; rm -rf /Applications/Chirogra.app && ditto $T/dd/Build/Products/Release/Chirogra.app /Applications/Chirogra.app && codesign -v /Applications/Chirogra.app
+osascript -e 'tell application id "com.chirogra.app" to quit'; rm -rf /Applications/Chirogra.app && ditto $T/dd/Build/Products/Release/Chirogra.app /Applications/Chirogra.app && codesign -v /Applications/Chirogra.app && open /Applications/Chirogra.app
 ```
 
-Problemas conocidos: si el aparato sale «desconectado», reintentar. «The developer disk image could not be mounted» = el aparato está bloqueado; desbloquearlo y reintentar.
-
-## Pendiente
-
-Probado por el usuario el 2-nov y funciona: Escape y Return en los editores del Mac, ⌥⌘I, doble clic, ordenar columnas, soltar un recibo, «Registrar pago» en la hoja, y el iPad sin el anillo de foco.
-
-**Sin comprobar**
-- VoiceOver de verdad (iPhone, iPad y Mac) e iPad con letra grande.
-- Registrar un asiento de diario de punta a punta; revertir y archivar cuentas en el Mac.
-- Estado vacío del Mac (empresa sin datos).
-- Las hojas del Mac siguen la apariencia del sistema (el Mac del usuario está en oscuro); `-qa.apariencia` solo cambia la ventana de la copia de prueba, no sus hojas.
-
-**Hecho el 3-nov (esquema 2)**: pagos programados y en lote, recurrentes, editar gasto contabilizado (reversión + asiento nuevo), impuesto incluido y cliente en gastos, W-9 y pago preferido, ••4821, estimados con conversión, enviar con Para/Asunto/copia, recordatorios, contacto y notas del cliente, plantilla de factura, precios con impuesto incluido, editar cuenta y tasa, impuesto predeterminado, origen de ventas, plan agrupado en el Mac, cierre con historial y contraseña, campana, automatizaciones al abrir. Probado en el iPad físico (migración incluida).
-
-**Sin comprobar del esquema 2**: correo real (MFMail/NSSharingService), logo desde Fotos, que un cargo automático se cobre solo al vencer, VoiceOver. Pendiente menor: los totales de borradores en listas siguen sin impuesto; el editor de factura en la hoja del iPad sale con el diseño del iPhone; la columna maestro del iPad no muestra ••4821 ni la sangría de subcuentas; «Vista por el cliente» no existe (necesita servidor).
-
-**Fase 2 (fuera del MVP)**: OCR, bandeja del banco e importar/conciliar (Plaid en un backend), usuarios y permisos, varias empresas, deducibles y «Exportar para mi contador».
-
-**Más adelante**
-- Logo de la empresa (el ícono de la app ya está: `541169a`).
-- Subir a `DesignSystem` las piezas que los agentes hicieron dentro de cada pantalla: grupos de filas, `ComparisonBars`, cebra de tablas, monogramas de varios tamaños, `ActivityMark`, `LineEditRow`.
-- QA no debe tocar el simulador de iPad `BEB1EA39`: ahí corren las pruebas de interfaz de otro proyecto (Tamio).
+Problemas conocidos: si el aparato sale «desconectado», reintentar. «The developer disk image could not be mounted» o «device was still locked» = el aparato está bloqueado; desbloquearlo y reintentar. Al empujar en zsh, escribir el hash entre comillas (`"<hash>:refs/heads/main"`): `$H:r` es un modificador de zsh.
