@@ -104,6 +104,8 @@ struct BankingTablePage: View {
             }
         }
         .onChange(of: monthOffset) { selection = nil }
+        .onAppear { showLatestMonthIfEmpty() }
+        .onChange(of: accountID) { showLatestMonthIfEmpty() }
         .confirmationDialog("Nuevo movimiento", isPresented: $choosingMovement) {
             Button("Gasto") { adding = .expense }
             Button("Asiento manual") { adding = .entry }
@@ -175,6 +177,28 @@ struct BankingTablePage: View {
         #else
         0
         #endif
+    }
+
+    /// La cuenta de las tarjetas que se ve (la misma regla que `body`).
+    private var visibleAccount: Account? {
+        let ledger = Ledger(accounts: accounts, lines: journalLines)
+        let shown = ledger.moneyAccounts.filter { $0.subtype == .bank || $0.subtype == .creditCard || ledger.balance(of: $0) != 0 }
+        return shown.first { $0.id == accountID } ?? shown[safe: Self.initialAccountIndex] ?? shown.first
+    }
+
+    /// Decisión del usuario (2-nov): si la cuenta no tiene movimientos en el mes que se ve (p. ej. a primeros de mes),
+    /// se pasa al último mes en que sí los tiene, en lugar de una tabla vacía. Al abrir y al cambiar de cuenta.
+    private func showLatestMonthIfEmpty() {
+        #if DEBUG
+        if UserDefaults.standard.object(forKey: "qa.mes") != nil { return }
+        #endif
+        guard let account = visibleAccount else { return }
+        let month = DateInterval.month(containing: .now, offset: monthOffset)
+        let dates = (account.lines ?? []).compactMap { $0.entry?.date }
+        guard !dates.contains(where: { month.contains($0) && $0 < month.end }), let latest = dates.max() else { return }
+        let months = Calendar.current.dateComponents([.month], from: DateInterval.month(containing: latest).start,
+                                                     to: DateInterval.month(containing: .now).start).month ?? 0
+        monthOffset = -max(months, 0)
     }
 
     private static var initialMonthOffset: Int {

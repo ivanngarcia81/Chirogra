@@ -22,7 +22,6 @@ struct ExpenseTablePage: View {
     @Environment(\.modelContext) private var context
     @Query(sort: \Expense.date, order: .reverse) private var expenses: [Expense]
     @Query(sort: \Account.code) private var accounts: [Account]
-    @Query private var journalLines: [JournalLine]
     @State private var period: ExpensePeriod
     @State private var withoutReceipt = false
     @State private var query = ""
@@ -39,6 +38,18 @@ struct ExpenseTablePage: View {
     init(selection: Binding<UUID?>) {
         _selection = selection
         _period = State(initialValue: ExpensePeriod.initial)
+    }
+
+    /// Decisión del usuario (2-nov): si el mes actual aún no tiene gastos (p. ej. a primeros de mes), se arranca en el
+    /// último mes que sí tiene, en lugar de una tabla vacía. Solo al abrir, y no si QA eligió el periodo.
+    private func startOnLatestMonth() {
+        #if DEBUG
+        if UserDefaults.standard.string(forKey: "qa.periodo") != nil { return }
+        #endif
+        guard case .month(let start) = period, start == DateInterval.month(containing: .now).start,
+              let interval = period.interval, !expenses.contains(where: { interval.contains($0.date) && $0.date < interval.end }),
+              let latest = expenses.first?.date else { return }
+        period = .month(DateInterval.month(containing: latest).start)
     }
 
     // MARK: Datos
@@ -152,7 +163,7 @@ struct ExpenseTablePage: View {
         } filter: {
             VStack(alignment: .leading, spacing: 14) {
                 if case .month(let start) = period {
-                    ExpenseMonthCard(month: start, accounts: accounts, journalLines: journalLines)
+                    ExpenseMonthCard(month: start, expenses: expenses, accounts: accounts)
                 }
                 Toggle("Solo sin recibo", isOn: $withoutReceipt)
                     .toggleStyle(.checkbox)
@@ -167,6 +178,7 @@ struct ExpenseTablePage: View {
         } actions: { row in
             actions(for: row.expense)
         }
+        .onAppear(perform: startOnLatestMonth)
         .toolbar {
             ToolbarItem(placement: .primaryAction) { periodPicker }
         }
@@ -427,10 +439,12 @@ private struct ExpenseReceiptCell: View {
 /// Gasto del mes por categoría (canvas `MacGastos`: «Gastos de octubre», la cifra, la comparación con el mes anterior,
 /// la barra y la leyenda). Las mismas cifras que el estado de resultados (gastos y costo de ventas), como la tarjeta del
 /// mes de `ExpenseListView` y «Gastos» de Inicio; las cuatro mayores y el resto en «Otros».
+/// Suma solo los gastos de la tabla (decisión del usuario, 2-nov): antes salía del estado de resultados e incluía las
+/// facturas por pagar, y no cuadraba con las filas de abajo.
 private struct ExpenseMonthCard: View {
     let month: Date
+    let expenses: [Expense]
     let accounts: [Account]
-    let journalLines: [JournalLine]
 
     private struct Slice {
         let name: String
@@ -439,10 +453,9 @@ private struct ExpenseMonthCard: View {
     }
 
     var body: some View {
-        let ledger = Ledger(accounts: accounts, lines: journalLines)
-        let rows = categoryRows(ledger, DateInterval.month(containing: month))
+        let rows = categoryRows(DateInterval.month(containing: month))
         let total = rows.reduce(0) { $0 + $1.amount }
-        let previous = categoryRows(ledger, DateInterval.month(containing: month, offset: -1)).reduce(0) { $0 + $1.amount }
+        let previous = categoryRows(DateInterval.month(containing: month, offset: -1)).reduce(0) { $0 + $1.amount }
         let slices = slices(rows)
         let monthName = month.formatted(.appDateTime.month(.wide))
         let shape = RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous)
@@ -464,15 +477,26 @@ private struct ExpenseMonthCard: View {
         .accessibilityLabel(String(localized: "Gastos del mes por categoría"))
     }
 
-    private func categoryRows(_ ledger: Ledger, _ interval: DateInterval) -> [ReportRow] {
-        let statement = ledger.incomeStatement(interval)
-        return (statement.costOfGoodsSold + statement.expenses).filter { $0.amount > 0 }.sorted { $0.amount > $1.amount }
+    /// Importe por categoría de los gastos del intervalo (sus líneas); lo que no tiene categoría va a «Sin categoría».
+    private func categoryRows(_ interval: DateInterval) -> [(name: String, amount: Int64)] {
+        let names = Dictionary(accounts.map { ($0.id, $0.name) }, uniquingKeysWith: { first, _ in first })
+        var totals: [String: Int64] = [:]
+        for expense in expenses where interval.contains(expense.date) && expense.date < interval.end {
+            var categorized: Int64 = 0
+            for line in expense.sortedLines {
+                guard let id = line.accountID, let name = names[id] else { continue }
+                totals[name, default: 0] += line.amount
+                categorized += line.amount
+            }
+            if expense.total > categorized { totals[String(localized: "Sin categoría"), default: 0] += expense.total - categorized }
+        }
+        return totals.filter { $0.value > 0 }.map { (name: $0.key, amount: $0.value) }.sorted { $0.amount > $1.amount }
     }
 
-    private func slices(_ rows: [ReportRow]) -> [Slice] {
+    private func slices(_ rows: [(name: String, amount: Int64)]) -> [Slice] {
         let top = Array(rows.prefix(4))
-        let colors = ExpenseCategoryStyle.barColors(for: top.map(\.account.name))
-        var slices = top.indices.map { Slice(name: top[$0].account.name, amount: top[$0].amount, color: colors[$0]) }
+        let colors = ExpenseCategoryStyle.barColors(for: top.map(\.name))
+        var slices = top.indices.map { Slice(name: top[$0].name, amount: top[$0].amount, color: colors[$0]) }
         let rest = rows.dropFirst(4).reduce(0) { $0 + $1.amount }
         if rest > 0 { slices.append(Slice(name: String(localized: "Otros"), amount: rest, color: Palette.gray)) }
         return slices
