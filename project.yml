@@ -36,6 +36,13 @@ targets:
           UIApplicationSupportsMultipleScenes: true
         UISupportedInterfaceOrientations~ipad: [UIInterfaceOrientationPortrait, UIInterfaceOrientationPortraitUpsideDown, UIInterfaceOrientationLandscapeLeft, UIInterfaceOrientationLandscapeRight]
         UISupportedInterfaceOrientations~iphone: [UIInterfaceOrientationPortrait]
+        # Copia de seguridad (`BackupArchive`, `UTType.chirograBackup`).
+        UTExportedTypeDeclarations:
+          - UTTypeIdentifier: com.chirogra.backup
+            UTTypeDescription: Copia de Chirogra
+            UTTypeConformsTo: [public.data]
+            UTTypeTagSpecification:
+              public.filename-extension: [chirogra]
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.chirogra.app

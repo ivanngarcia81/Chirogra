@@ -65,24 +65,21 @@ Sin la capacidad, la app usa un almacén local aunque el interruptor esté activ
 
 ## Estado
 
-Esqueleto del MVP (ver DISEÑO §3.1 y §10). Funciona:
+MVP completo (DISEÑO §3.1), con parte de la fase 2 ya hecha (recurrentes, estimados, envío con plantilla). Funciona:
 
 - **Alta de empresa** con sector, que define la plantilla del plan de cuentas.
-- **Contabilidad:** plan de cuentas, asientos manuales con aviso de cuadre, reversiones, libro mayor con filtro de fechas y cierre de periodo.
+- **Contabilidad:** plan de cuentas, asientos manuales con aviso de cuadre, reversiones, libro mayor con filtro de fechas y cierre de periodo con historial.
 - **Ventas:**
-  - clientes;
-  - facturas con descuento y sales tax, con edición de borradores;
-  - PDF con vista previa y compartir;
+  - clientes con contacto y notas;
+  - estimados que se convierten en factura;
+  - facturas con descuento, sales tax (también incluido en el precio) y edición de borradores;
+  - PDF con plantilla propia, envío por correo y recordatorios;
   - cobros, notas de crédito y anulación.
-- **Compras:** proveedores, facturas por pagar y pagos; gastos con foto o PDF del recibo.
+- **Compras:** proveedores con W-9, facturas por pagar, pagos programados y en lote, recurrentes; gastos con foto o PDF del recibo.
 - **Sales tax:** tasas, grupos, resumen por periodo y pago a la agencia.
 - **Reportes:** resultados, balance general, balanza, antigüedad por cobrar y por pagar, y sales tax, todos con CSV.
-- **Seguridad y datos:** bloqueo con Face ID y datos de ejemplo.
+- **Seguridad y datos:** bloqueo con Face ID, iCloud opcional, copia de seguridad `.chirogra` (crear, restaurar y deshacer) y datos de ejemplo.
 
-Pendiente del MVP:
-
-- copia de seguridad exportable;
-- envío de facturas por correo desde la app (hoy se comparten como PDF);
-- ícono definitivo exportado del canvas.
+La copia de seguridad se genera desde los modelos: después de cambiar el esquema, ejecuta `scripts/gen-backup.py` (`BackupTests` falla si no está al día).
 
 Fase 2: conciliación bancaria, lectura automática de recibos, estimados y flujo de efectivo. Fase 3: conexión bancaria con Plaid (DISEÑO §3.3).

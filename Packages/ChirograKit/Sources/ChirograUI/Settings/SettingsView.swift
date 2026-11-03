@@ -69,7 +69,12 @@ enum SettingsPage: String, CaseIterable, Identifiable {
 struct SettingsWideView: View {
     @Environment(\.modelContext) private var context
     @Query private var companies: [Company]
+    #if DEBUG
+    /// `-qa.ajustes data` (solo Debug): la página con la que arranca.
+    @State private var page: SettingsPage = UserDefaults.standard.string(forKey: "qa.ajustes").flatMap(SettingsPage.init(rawValue:)) ?? .profile
+    #else
     @State private var page: SettingsPage = .profile
+    #endif
     @State private var saved = false
 
     var body: some View {
@@ -319,8 +324,8 @@ struct FormatsView: View {
     }
 }
 
-/// Datos y seguridad (canvas `AjustesDatos`): iCloud, copias y bloqueo, como filas con icono de color. Las copias
-/// exportables y la exportación de datos llegan más adelante; no se dibujan como si ya existieran.
+/// Datos y seguridad (canvas `AjustesDatos`): iCloud, copias de seguridad (`BackupSection`) y bloqueo, como filas con
+/// icono de color.
 struct DataAndSecurityView: View {
     /// Dentro de `SettingsWideView`: el título de la ventana sigue siendo «Ajustes».
     var embedded = false
@@ -351,16 +356,7 @@ struct DataAndSecurityView: View {
             } footer: {
                 Text("Tus libros viajan cifrados en tu cuenta privada de iCloud entre tu iPhone, iPad y Mac. El cambio se aplica al volver a abrir la app.")
             }
-            Section {
-                HStack(spacing: 12) {
-                    IconTile(systemImage: "clock.arrow.circlepath", foreground: Palette.green)
-                    LabeledContent("Copia de seguridad exportable", value: String(localized: "Próximamente"))
-                }
-            } header: {
-                SectionLabel(text: String(localized: "Copias de seguridad"))
-            } footer: {
-                Text("Pronto podrás guardar una copia de tus libros en un archivo y restaurarla, sin depender de iCloud.")
-            }
+            BackupSection()
             Section {
                 HStack(spacing: 12) {
                     IconTile(systemImage: "faceid", foreground: Palette.green)

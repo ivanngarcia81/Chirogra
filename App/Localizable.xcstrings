@@ -1838,6 +1838,16 @@
         }
       }
     },
+    "%lld registros" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld records"
+          }
+        }
+      }
+    },
     "%lld tasas" : {
       "localizations" : {
         "en" : {
@@ -2714,6 +2724,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Before closing %@"
+          }
+        }
+      }
+    },
+    "Antes se guarda una copia de los libros actuales para poder deshacerlo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A copy of your current books is saved first so you can undo it."
           }
         }
       }
@@ -4858,12 +4878,12 @@
         }
       }
     },
-    "Copia de seguridad exportable" : {
+    "Copia del %@" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exportable backup"
+            "value" : "Backup from %@"
           }
         }
       }
@@ -4874,6 +4894,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "W-9 copy · %@"
+          }
+        }
+      }
+    },
+    "Copia guardada." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Backup saved."
+          }
+        }
+      }
+    },
+    "Copia restaurada" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Backup restored"
+          }
+        }
+      }
+    },
+    "Copia restaurada del %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restored backup from %@"
           }
         }
       }
@@ -5045,6 +5095,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Create customer"
+          }
+        }
+      }
+    },
+    "Crear copia ahora" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Back Up Now"
           }
         }
       }
@@ -5719,6 +5779,26 @@
         }
       }
     },
+    "Deshacer" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Undo"
+          }
+        }
+      }
+    },
+    "Deshacer la última restauración" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Undo Last Restore"
+          }
+        }
+      }
+    },
     "Desliza una línea (o usa su menú) para quitarla." : {
       "localizations" : {
         "en" : {
@@ -6105,6 +6185,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "The PDF is attached."
+          }
+        }
+      }
+    },
+    "El archivo no es una copia de Chirogra." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This file isn’t a Chirogra backup."
           }
         }
       }
@@ -8454,6 +8544,16 @@
         }
       }
     },
+    "Guarda tus libros, con los recibos, en un archivo .chirogra que puedes restaurar en cualquier aparato con Chirogra, sin depender de iCloud." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save your books, receipts included, to a .chirogra file you can restore on any device with Chirogra, without relying on iCloud."
+          }
+        }
+      }
+    },
     "Guardado ✓" : {
       "localizations" : {
         "en" : {
@@ -9252,6 +9352,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "The closing password is incorrect."
+          }
+        }
+      }
+    },
+    "La copia es de una versión más nueva de Chirogra. Actualiza la app para restaurarla." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This backup is from a newer version of Chirogra. Update the app to restore it."
+          }
+        }
+      }
+    },
+    "La copia está dañada y no se puede leer." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The backup is damaged and can’t be read."
+          }
+        }
+      }
+    },
+    "La copia está incompleta: le falta un registro relacionado." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The backup is incomplete: a related record is missing."
           }
         }
       }
@@ -13011,16 +13141,6 @@
         }
       }
     },
-    "Pronto podrás guardar una copia de tus libros en un archivo y restaurarla, sin depender de iCloud." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Soon you’ll be able to save a copy of your books to a file and restore it, without relying on iCloud."
-          }
-        }
-      }
-    },
     "Proporción" : {
       "localizations" : {
         "en" : {
@@ -13823,6 +13943,26 @@
         }
       }
     },
+    "Reemplaza todos los libros de este aparato y, con iCloud, los de tus otros aparatos." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Replaces all the books on this device and, with iCloud, on your other devices."
+          }
+        }
+      }
+    },
+    "Reemplaza todos los libros de este aparato." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Replaces all the books on this device."
+          }
+        }
+      }
+    },
     "Referencia (opcional)" : {
       "localizations" : {
         "en" : {
@@ -14079,6 +14219,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Restore"
+          }
+        }
+      }
+    },
+    "Restaurar desde una copia…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restore from Backup…"
           }
         }
       }
@@ -16625,6 +16775,16 @@
         }
       }
     },
+    "Tus libros son ahora los de la copia del %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your books now match the backup from %@"
+          }
+        }
+      }
+    },
     "Tus libros viajan cifrados en tu cuenta privada de iCloud entre tu iPhone, iPad y Mac. El cambio se aplica al volver a abrir la app." : {
       "localizations" : {
         "en" : {
@@ -17937,6 +18097,22 @@
         }
       }
     },
+    "«%@», copia del %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "«%1$@», copia del %2$@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@”, backup from %@"
+          }
+        }
+      }
+    },
     "·" : {
       "shouldTranslate" : false
     },
@@ -18023,6 +18199,16 @@
         }
       }
     },
+    "¿Deshacer la restauración?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Undo the Restore?"
+          }
+        }
+      }
+    },
     "¿Eliminar el borrador?" : {
       "localizations" : {
         "en" : {
@@ -18073,6 +18259,16 @@
         }
       }
     },
+    "¿Restaurar esta copia?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restore This Backup?"
+          }
+        }
+      }
+    },
     "¿Revertir este asiento?" : {
       "localizations" : {
         "en" : {
@@ -18090,6 +18286,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Last purchase"
+          }
+        }
+      }
+    },
+    "Última copia: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last backup: %@"
           }
         }
       }

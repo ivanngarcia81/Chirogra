@@ -67,6 +67,7 @@ public struct ChirograRootView: View {
     @AppStorage("appLockEnabled") private var appLockEnabled = false
     @State private var lock = AppLockState()
     @State private var sync = SyncMonitor.shared
+    @State private var replacement = BooksReplacement.shared
     /// «Crear una empresa nueva» desde la pantalla de sincronización.
     @State private var skipsSyncWait = false
     #if os(iOS)
@@ -90,13 +91,20 @@ public struct ChirograRootView: View {
                     .onAppear { if QALaunch.loadsSample { try? SampleData.populate(modelContext) } }
                     #endif
             } else {
+                // Al restaurar una copia se rehace la navegación: las pantallas abiertas apuntaban a registros borrados.
                 #if os(iOS)
                 // La app sigue montada debajo de la ventana de bloqueo: al desbloquear, todo está donde estaba.
-                AppShell()
+                AppShell().id(replacement.generation)
                 #else
-                if isLocked { LockView(lock: lock) } else { AppShell() }
+                if isLocked { LockView(lock: lock) } else { AppShell().id(replacement.generation) }
                 #endif
             }
+        }
+        .alert("Copia restaurada", isPresented: Binding(get: { replacement.restored != nil }, set: { if !$0 { replacement.restored = nil } }),
+               presenting: replacement.restored) { _ in
+            Button("Aceptar", role: .cancel) {}
+        } message: { info in
+            Text("Tus libros son ahora los de la copia del \(info.createdAt.formatted(date: .abbreviated, time: .shortened))")
         }
         .tint(Palette.brand)
         .background(Palette.background)

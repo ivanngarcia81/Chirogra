@@ -47,5 +47,25 @@
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
 	</array>
+	<key>UTExportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Copia de Chirogra</string>
+			<key>UTTypeIdentifier</key>
+			<string>com.chirogra.backup</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>chirogra</string>
+				</array>
+			</dict>
+		</dict>
+	</array>
 </dict>
 </plist>
