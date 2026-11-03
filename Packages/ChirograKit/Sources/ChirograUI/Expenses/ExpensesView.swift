@@ -293,6 +293,13 @@ struct ExpenseListView: View {
     /// Mes de la tarjeta: el actual o, si aún no tiene gastos (a primeros de mes), el último que sí tiene, como Gastos
     /// en el Mac (decisión del usuario, 2-nov).
     private var cardMonth: DateInterval {
+        #if DEBUG
+        // `-qa.mes anterior` (solo Debug): el mes anterior, para las capturas de la App Store.
+        if UserDefaults.standard.string(forKey: "qa.mes") == "anterior",
+           let previous = Calendar.current.date(byAdding: .month, value: -1, to: .now) {
+            return DateInterval.month(containing: previous)
+        }
+        #endif
         let current = DateInterval.month(containing: .now)
         guard !posted.contains(where: { current.contains($0.date) && $0.date < current.end }),
               let latest = posted.first?.date else { return current }

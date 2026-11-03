@@ -28,7 +28,12 @@ struct HomeView: View {
     #endif
 
     /// Mes mostrado: 0 el actual, −1 el anterior…
+    #if DEBUG
+    /// `-qa.mes anterior` (solo Debug): arranca en el mes anterior (capturas de la App Store a principios de mes).
+    @State private var monthOffset = UserDefaults.standard.string(forKey: "qa.mes") == "anterior" ? -1 : 0
+    #else
     @State private var monthOffset = 0
+    #endif
     @State private var chartMonths = 6
     @State private var sheet: NewItem?
     @State private var width: CGFloat = 0

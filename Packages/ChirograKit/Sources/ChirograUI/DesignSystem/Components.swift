@@ -765,6 +765,8 @@ struct LedgerRow<Leading: View, Trailing: View>: View {
     let subtitle: String
     /// Líneas del subtítulo: 2 para correos, que recortados por el medio no se leían.
     var subtitleLines = 1
+    /// Líneas del título: 2 para nombres de cuenta con sus últimos dígitos («Cuenta corriente ••4821»).
+    var titleLines = 1
     @ViewBuilder var leading: Leading
     @ViewBuilder var trailing: Trailing
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
@@ -798,7 +800,7 @@ struct LedgerRow<Leading: View, Trailing: View>: View {
     private var texts: some View {
         let lines = dynamicTypeSize.isAccessibilitySize ? nil : 1 as Int?
         return VStack(alignment: .leading, spacing: 1) {
-            Text(title).font(.body).foregroundStyle(Palette.ink).lineLimit(lines)
+            Text(title).font(.body).foregroundStyle(Palette.ink).lineLimit(lines.map { _ in titleLines })
             Text(subtitle).font(Self.subtitleFont).foregroundStyle(Palette.ink2)
                 .lineLimit(lines.map { _ in subtitleLines })
                 .minimumScaleFactor(0.85)

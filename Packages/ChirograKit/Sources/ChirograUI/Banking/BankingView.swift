@@ -21,7 +21,8 @@ struct BankingView: View {
                 }
                 ForEach(shown) { account in
                     NavigationLink { LedgerView(account: account) } label: {
-                        LedgerRow(title: account.maskedName, subtitle: String(localized: "Saldo en libros · \(account.code)")) {
+                        // Hasta dos líneas: en el iPhone «Cuenta corriente ••4821» se cortaba en «••4…» (3-nov).
+                        LedgerRow(title: account.maskedName, subtitle: String(localized: "Saldo en libros · \(account.code)"), titleLines: 2) {
                             IconTile(systemImage: account.bankSymbol, foreground: account.bankColor)
                         } trailing: {
                             Text(ledger.cashBalance(of: account).money).monospacedDigit().foregroundStyle(Palette.ink)

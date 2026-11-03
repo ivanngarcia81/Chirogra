@@ -240,7 +240,15 @@ struct AppShell: View {
     /// Hasta cuándo se vuelve a cerrar la barra lateral si la vista dividida recién hecha la abre.
     @State private var keepsSidebarClosedUntil = Date.distantPast
     #endif
+    #if DEBUG
+    /// `-qa.pestana sales|expenses|banking|reports` (solo Debug): la pestaña del iPhone con la que arranca; `reports`
+    /// abre Más › Estado de resultados.
+    @State private var tab: AppSection = UserDefaults.standard.string(forKey: "qa.pestana").map { $0 == "reports" ? "settings" : $0 }
+        .flatMap(AppSection.init(rawValue:)) ?? .home
+    @State private var qaOpensReports = UserDefaults.standard.string(forKey: "qa.pestana") == "reports"
+    #else
     @State private var tab: AppSection = .home
+    #endif
     #if DEBUG
     /// Con `-qa.seccion` (solo Debug), la página con la que arranca.
     @State private var selection: SidebarItem = QALaunch.salesItem ?? QALaunch.sidebarItem ?? .section(.home)
@@ -315,7 +323,12 @@ struct AppShell: View {
                 }
             }
             Tab("Más", systemImage: "ellipsis.circle", value: AppSection.settings) {
-                NavigationStack { MoreView().safeAreaInset(edge: .top, spacing: 0) { SyncErrorBanner() } }
+                NavigationStack {
+                    MoreView().safeAreaInset(edge: .top, spacing: 0) { SyncErrorBanner() }
+                        #if DEBUG
+                        .navigationDestination(isPresented: $qaOpensReports) { ReportsView(fixedKind: .income) }
+                        #endif
+                }
             }
         }
     }

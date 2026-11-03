@@ -85,7 +85,20 @@ struct ReportsView: View {
     @Query(sort: \TaxRate.name) private var taxRates: [TaxRate]
     @Query private var entries: [JournalEntry]
 
+    #if DEBUG
+    /// `-qa.periodo mes|trimestre|año` (solo Debug).
+    @State private var period: Period = Self.qaPeriod
+
+    private static var qaPeriod: Period {
+        switch UserDefaults.standard.string(forKey: "qa.periodo") {
+        case "trimestre": .quarter
+        case "año": .year
+        default: .month
+        }
+    }
+    #else
     @State private var period: Period = .month
+    #endif
     @State private var compare = true
     @State private var customStart = Period.month.interval().start
     @State private var customEnd = Period.month.interval().end.addingTimeInterval(-1)

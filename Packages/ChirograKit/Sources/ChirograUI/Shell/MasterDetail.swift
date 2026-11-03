@@ -277,6 +277,12 @@ private extension View {
     }
 }
 
+#if DEBUG
+private enum QAMasterRow {
+    static var index: Int? { UserDefaults.standard.object(forKey: "qa.fila") == nil ? nil : UserDefaults.standard.integer(forKey: "qa.fila") }
+}
+#endif
+
 private func matches(_ text: String, _ fields: String...) -> Bool {
     let text = text.trimmingCharacters(in: .whitespaces)
     return text.isEmpty || fields.contains { $0.localizedStandardContains(text) }
@@ -328,6 +334,10 @@ private struct InvoiceMasterList: View {
         }
         .masterAddButton(String(localized: "Factura"), label: String(localized: "Nueva factura")) { creating = true }
         .sheet(isPresented: $creating) { NavigationStack { InvoiceEditorView() }.editorSheetSizing() }
+        #if DEBUG
+        // `-qa.fila N` (solo Debug): elige la fila N de la columna maestro al abrir (capturas de la App Store).
+        .task { if selection == nil, let index = QAMasterRow.index, filtered.indices.contains(index) { selection = filtered[index].id } }
+        #endif
     }
 }
 
@@ -436,6 +446,10 @@ private struct ExpenseMasterList: View {
         }
         .masterAddButton(String(localized: "Gasto"), label: String(localized: "Nuevo gasto")) { creating = true }
         .sheet(isPresented: $creating) { NavigationStack { ExpenseEditorView() }.editorSheetSizing() }
+        #if DEBUG
+        // `-qa.fila N` (solo Debug): elige la fila N de la columna maestro al abrir (capturas de la App Store).
+        .task { if selection == nil, let index = QAMasterRow.index, filtered.indices.contains(index) { selection = filtered[index].id } }
+        #endif
         .sheet(isPresented: $showingRecurring) {
             NavigationStack {
                 RecurringListView(showsAddButton: true)
