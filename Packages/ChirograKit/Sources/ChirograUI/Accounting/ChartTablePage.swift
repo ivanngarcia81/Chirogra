@@ -4,37 +4,42 @@ import ChirograData
 import SwiftData
 import SwiftUI
 
-/// Mac: Plan de cuentas como tabla + inspector (canvas `MacPlanCuentas`). Arriba el segmentado por tipo con su cuenta
-/// (y «Mostrar archivadas» si hay alguna) y la tabla Número · Cuenta · Tipo · Tipo de detalle · Saldo, con las
-/// subcuentas sangradas bajo su cuenta principal, a la que suman. El inspector muestra la cuenta elegida (saldo de hoy,
-/// Cuenta, Grupo) con «Ver libro mayor» y «Archivar»; doble clic abre su libro mayor (`MacLibroMayor`, `LedgerView`).
-/// «Exportar CSV» en la barra, como el canvas.
+/// Mac: Plan de cuentas como tabla + inspector (canvas `MacPlanCuentas`). Arriba el segmentado por grupo con su cuenta
+/// (y «Mostrar archivadas» si hay alguna) y la tabla agrupada por tipo: una fila por grupo (Activos, Pasivos,
+/// Patrimonio, Ingresos, Costo de ventas, Gastos) con su número de cuentas, su total y el triángulo para plegarlo; debajo
+/// las cuentas (Cuenta · Tipo de detalle · Saldo) y, con su propio triángulo, sus subcuentas, que suman en la cuenta
+/// principal. El inspector muestra la cuenta elegida (saldo de hoy, Cuenta, Grupo) con «Editar…», «Ver libro mayor» y
+/// «Archivar», o el grupo elegido; doble clic abre su libro mayor (`MacLibroMayor`, `LedgerView`). «Exportar CSV» en la
+/// barra, como el canvas.
 struct ChartTablePage: View {
     static let isReady = true
     @Binding var selection: UUID?
     @Query(sort: \Account.code) private var accounts: [Account]
     @Query private var journalLines: [JournalLine]
     @Query private var companies: [Company]
+    @Environment(\.modelContext) private var context
     @State private var filter: ChartFilter = .all
     @State private var showArchived = false
     @State private var query = ""
     @State private var creating = false
+    @State private var editing: Account?
     @State private var openedLedger: Account?
 
     var body: some View {
         let chart = ChartBalances(accounts: accounts, lines: journalLines)
         let visible = accounts.filter { showArchived || !$0.isArchived }
-        let rows = visible.filter { filter.matches($0) && matches($0) }.map { chart.row(for: $0) }
+        let matching = visible.filter { filter.matches($0) && matches($0) }
+        let rows = chart.tree(of: matching, all: visible)
         let hasArchived = accounts.contains(where: \.isArchived)
         MacTablePage(
             title: String(localized: "Plan de cuentas"),
             subtitle: subtitle,
-            rows: rows, footer: footer(shown: rows.count, total: visible.count, hasSubaccounts: chart.hasSubaccounts),
+            rows: rows, footer: footer(shown: matching.count, total: visible.count, hasSubaccounts: chart.hasSubaccounts),
             query: $query, searchPrompt: Text("Número o nombre"),
             selection: $selection,
             sortOrder: [KeyPathComparator(\ChartRow.code)],
             addTitle: String(localized: "Nueva cuenta"), onAdd: { creating = true },
-            onOpen: { openedLedger = $0.account },
+            onOpen: { row in if let account = row.account { openedLedger = account } },
             empty: accounts.isEmpty
                 ? MacTableEmpty(systemImage: "list.bullet.indent", title: String(localized: "Sin cuentas"),
                                 message: String(localized: "El plan de cuentas está vacío."),
@@ -42,32 +47,25 @@ struct ChartTablePage: View {
                 : MacTableEmpty(title: String(localized: "Sin resultados"),
                                 message: String(localized: "Ninguna cuenta coincide con la búsqueda."),
                                 actionTitle: String(localized: "Quitar filtros"), action: { query = ""; filter = .all }),
-            inspectorTitle: { row in row.map { "\($0.code) · \($0.name)" } ?? String(localized: "Cuenta") },
+            children: \.children,
+            inspectorTitle: { row in
+                guard let row else { return String(localized: "Cuenta") }
+                return row.account == nil ? row.name : "\(row.code) · \(row.name)"
+            },
             inspectorPlaceholder: String(localized: "Selecciona una cuenta para ver su saldo.")
         ) {
-            TableColumn("Número", value: \.code) { row in
-                MacCellText(text: row.code).monospacedDigit()
+            TableColumn("Cuenta", value: \.code) { row in
+                ChartNameCell(row: row)
             }
-            .width(min: 58, ideal: 66, max: 100)
-            TableColumn("Cuenta", value: \.name) { row in
-                Text(row.name)
-                    .strikethrough(row.account.isArchived)
-                    .lineLimit(1)
-                    .padding(.leading, CGFloat(row.depth) * 16)
-            }
-            .width(min: 140, ideal: 190)
-            TableColumn("Tipo", value: \.typeRank) { row in
-                MacCellText(text: row.account.type.title)
-            }
-            .width(min: 70, ideal: 88, max: 140)
+            .width(min: 180, ideal: 280)
             TableColumn("Tipo de detalle", value: \.detail) { row in
                 MacCellText(text: row.detail)
             }
-            .width(min: 90, ideal: 150, max: 240)
+            .width(min: 90, ideal: 170, max: 260)
             TableColumn("Saldo", value: \.balance) { row in
-                Text(row.balance.money).monospacedDigit()
+                Text(row.balance.money).monospacedDigit().fontWeight(row.account == nil ? .semibold : .regular)
             }
-            .width(min: 80, ideal: 100, max: 150)
+            .width(min: 80, ideal: 110, max: 160)
             .alignment(.trailing)
         } filter: {
             HStack(spacing: 12) {
@@ -81,12 +79,23 @@ struct ChartTablePage: View {
                 }
             }
         } inspector: { row in
-            ChartAccountInspector(row: row, groupTotal: chart.total(of: row.account.type))
+            if row.account != nil {
+                ChartAccountInspector(row: row, groupTotal: chart.total(of: row.group))
+            } else {
+                ChartGroupInspector(row: row)
+            }
         } actions: { row in
-            Button("Ver libro mayor") { openedLedger = row.account }.buttonStyle(.primary)
-            if !row.account.isSystem {
-                Button(row.account.isArchived ? "Restaurar" : "Archivar") { row.account.isArchived.toggle() }
-                    .buttonStyle(.secondary)
+            if let account = row.account {
+                Button("Ver libro mayor") { openedLedger = account }.buttonStyle(.primary)
+                HStack(spacing: 8) {
+                    Button("Editar…") { editing = account }.buttonStyle(.secondary)
+                    if !account.isSystem {
+                        Button(account.isArchived ? "Restaurar" : "Archivar") { account.isArchived.toggle() }
+                            .buttonStyle(.secondary)
+                    }
+                }
+            } else {
+                Button("Nueva cuenta") { creating = true }.buttonStyle(.secondary)
             }
         }
         .toolbar {
@@ -99,15 +108,23 @@ struct ChartTablePage: View {
             }
         }
         .sheet(isPresented: $creating) { NavigationStack { AccountEditorView() }.editorSheetSizing() }
+        .sheet(item: $editing) { account in NavigationStack { AccountEditorView(account: account) }.editorSheetSizing() }
         .navigationDestination(item: $openedLedger) { LedgerView(account: $0, inDetailColumn: true) }
         #if DEBUG
-        // `-qa.abrir 1` abre el libro mayor de la fila elegida con `-qa.fila`.
+        // `-qa.abrir 1` abre el libro mayor de la fila elegida con `-qa.fila`; `-qa.editar 1`, su editor.
         .task {
             try? await Task.sleep(for: .seconds(1))
             if UserDefaults.standard.bool(forKey: "qa.nuevo") { creating = true; return }
-            guard UserDefaults.standard.bool(forKey: "qa.abrir"), let id = selection,
-                  let account = accounts.first(where: { $0.id == id }) else { return }
-            openedLedger = account
+            // `-qa.subcuenta 1510>1500`: hace de 1510 una subcuenta de 1500 (con `updateAccount`, como el editor).
+            if let pair = UserDefaults.standard.string(forKey: "qa.subcuenta")?.split(separator: ">").map(String.init), pair.count == 2,
+               let child = accounts.first(where: { $0.code == pair[0] }), let parent = accounts.first(where: { $0.code == pair[1] }) {
+                var input = AccountInput(child)
+                input.parentID = parent.id
+                try? Bookkeeper(context: context).updateAccount(child, with: input)
+            }
+            guard let id = selection, let account = accounts.first(where: { $0.id == id }) else { return }
+            if UserDefaults.standard.bool(forKey: "qa.editar") { editing = account; return }
+            if UserDefaults.standard.bool(forKey: "qa.abrir") { openedLedger = account }
         }
         #endif
     }
@@ -141,25 +158,54 @@ struct ChartTablePage: View {
     }
 }
 
-/// Filtro por tipo (canvas: «Tipo: Todas · Activo · Pasivo · …»). El canvas separa «Costo de ventas», que en el modelo
-/// es un tipo de detalle de los gastos: va con Gastos.
+/// Grupo del plan (canvas: Activo · Pasivo · Patrimonio · Ingresos · Costo de ventas · Gastos). «Costo de ventas» es
+/// en el modelo un tipo de detalle de los gastos: aquí va en su propio grupo, como el canvas.
+enum ChartGroup: Int, CaseIterable, Hashable, Sendable {
+    case asset, liability, equity, income, costOfSales, expense
+
+    init(_ account: Account) {
+        switch account.type {
+        case .asset: self = .asset
+        case .liability: self = .liability
+        case .equity: self = .equity
+        case .income: self = .income
+        case .expense: self = account.subtype == .costOfGoodsSold ? .costOfSales : .expense
+        }
+    }
+
+    var title: String {
+        switch self {
+        case .asset: AccountType.asset.title
+        case .liability: AccountType.liability.title
+        case .equity: AccountType.equity.title
+        case .income: AccountType.income.title
+        case .costOfSales: AccountSubtype.costOfGoodsSold.title
+        case .expense: AccountType.expense.title
+        }
+    }
+
+    /// Identificador fijo de la fila del grupo (no choca con los de las cuentas).
+    var rowID: UUID { UUID(uuidString: String(format: "C0A10000-0000-4000-8000-%012d", rawValue + 1))! }
+}
+
+/// Filtro por grupo (canvas: «Tipo: Todas · Activo · Pasivo · …»).
 private enum ChartFilter: Hashable, CaseIterable {
     case all
-    case type(AccountType)
+    case group(ChartGroup)
 
-    static var allCases: [ChartFilter] { [.all] + AccountType.allCases.map { .type($0) } }
+    static var allCases: [ChartFilter] { [.all] + ChartGroup.allCases.map { .group($0) } }
 
     var title: String {
         switch self {
         case .all: String(localized: "Todas")
-        case .type(let type): type.title
+        case .group(let group): group.title
         }
     }
 
     func matches(_ account: Account) -> Bool {
         switch self {
         case .all: true
-        case .type(let type): account.type == type
+        case .group(let group): ChartGroup(account) == group
         }
     }
 }
@@ -168,7 +214,7 @@ private enum ChartFilter: Hashable, CaseIterable {
 /// suma con sus subcuentas (canvas: «Las subcuentas suman en su cuenta principal»).
 private struct ChartBalances {
     private var own: [UUID: Int64] = [:]
-    private var totalsByType: [AccountType: Int64] = [:]
+    private var totalsByGroup: [ChartGroup: Int64] = [:]
     let hasSubaccounts: Bool
 
     init(accounts: [Account], lines: [JournalLine]) {
@@ -182,7 +228,7 @@ private struct ChartBalances {
             let sum = sums[account.id] ?? (0, 0)
             let balance = account.type.naturalBalance(debit: sum.debit, credit: sum.credit)
             own[account.id] = balance
-            totalsByType[account.type, default: 0] += balance
+            totalsByGroup[ChartGroup(account), default: 0] += balance
         }
         hasSubaccounts = accounts.contains { $0.parent != nil }
     }
@@ -192,66 +238,123 @@ private struct ChartBalances {
         (own[account.id] ?? 0) + (account.children ?? []).reduce(0) { $0 + balance(of: $1) }
     }
 
-    /// Total del grupo (todas las cuentas del tipo; cada movimiento cuenta una sola vez).
-    func total(of type: AccountType) -> Int64 { totalsByType[type] ?? 0 }
+    /// Total del grupo (todas sus cuentas; cada movimiento cuenta una sola vez).
+    func total(of group: ChartGroup) -> Int64 { totalsByGroup[group] ?? 0 }
 
-    func row(for account: Account) -> ChartRow {
-        var depth = 0
-        var parent = account.parent
-        while let current = parent, depth < 4 { depth += 1; parent = current.parent }
-        return ChartRow(id: account.id, account: account, code: account.code, name: account.name, depth: depth,
-                        typeRank: AccountType.allCases.firstIndex(of: account.type) ?? 0,
-                        detail: account.subtype.title, balance: balance(of: account))
+    /// Filas de la tabla: un grupo por tipo con las cuentas que coinciden (`matching`); dentro, las cuentas principales
+    /// con sus subcuentas. Una subcuenta cuya principal no coincide (búsqueda) sube al nivel del grupo.
+    func tree(of matching: [Account], all: [Account]) -> [ChartRow] {
+        let ids = Set(matching.map(\.id))
+        let shown = Set(all.map(\.id))
+        func node(_ account: Account) -> ChartRow {
+            let kids = (account.children ?? []).filter { ids.contains($0.id) }.map(node)
+            return ChartRow(id: account.id, account: account, group: ChartGroup(account), code: account.code, name: account.name,
+                            detail: account.subtype.title, balance: balance(of: account), count: 0,
+                            children: kids.isEmpty ? nil : kids)
+        }
+        return ChartGroup.allCases.compactMap { group in
+            let members = matching.filter { ChartGroup($0) == group }
+            guard !members.isEmpty else { return nil }
+            let roots = members.filter { account in account.parent.map { !ids.contains($0.id) } ?? true }
+            let count = all.filter { ChartGroup($0) == group && shown.contains($0.id) }.count
+            return ChartRow(id: group.rowID, account: nil, group: group, code: String(group.rawValue), name: group.title,
+                            detail: "", balance: total(of: group), count: count, children: roots.map(node))
+        }
     }
 }
 
-/// Fila de la tabla: la cuenta con su saldo (con subcuentas) y claves de orden `nonisolated`.
-private nonisolated struct ChartRow: Identifiable {
+/// Fila de la tabla: un grupo (sin cuenta) o una cuenta con su saldo (con subcuentas), y claves de orden `nonisolated`.
+nonisolated struct ChartRow: Identifiable {
     let id: UUID
-    let account: Account
+    /// `nil` en la fila del grupo.
+    let account: Account?
+    let group: ChartGroup
+    /// Número de la cuenta; en el grupo, su orden (así «Cuenta ↑» deja los grupos en su orden de siempre).
     let code: String
     let name: String
-    /// Nivel de subcuenta (0 = cuenta principal), para la sangría.
-    let depth: Int
-    /// Orden del tipo: Activos, Pasivos, Patrimonio, Ingresos, Gastos.
-    let typeRank: Int
     let detail: String
     let balance: Int64
+    /// Cuentas del grupo (solo en la fila del grupo).
+    let count: Int
+    var children: [ChartRow]?
+}
+
+/// Celda «Cuenta» (canvas: número gris de ancho fijo y nombre; en el grupo, el nombre en negrita y «5 cuentas»).
+private struct ChartNameCell: View {
+    let row: ChartRow
+    @ScaledMetric(relativeTo: .body) private var codeWidth: CGFloat = 40
+
+    var body: some View {
+        if let account = row.account {
+            HStack(spacing: 8) {
+                MacCellText(text: row.code).monospacedDigit().frame(minWidth: codeWidth, alignment: .leading)
+                Text(account.maskedName).strikethrough(account.isArchived).lineLimit(1)
+            }
+            .accessibilityElement(children: .combine)
+        } else {
+            HStack(spacing: 8) {
+                Text(row.name).fontWeight(.semibold).lineLimit(1)
+                MacCellText(text: String(localized: "\(row.count) cuentas"))
+            }
+            .accessibilityElement(children: .combine)
+        }
+    }
 }
 
 /// Inspector de la cuenta (canvas `MacPlanCuentas`): «Saldo al …» de 24 con el tipo debajo; Cuenta (Número, Nombre,
-/// Tipo, Tipo de detalle, Cuenta principal, Subcuentas, Estado) y Grupo (total del tipo).
+/// Tipo, Tipo de detalle, Últimos 4 dígitos, Cuenta principal, Subcuentas, Estado) y Grupo (total del grupo).
 private struct ChartAccountInspector: View {
     let row: ChartRow
     let groupTotal: Int64
 
     var body: some View {
-        let account = row.account
-        let children = (account.children ?? []).filter { !$0.isArchived }.count
+        if let account = row.account {
+            let children = (account.children ?? []).filter { !$0.isArchived }.count
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Saldo al \(Date.now.shortDate)").font(.label).foregroundStyle(Palette.ink2)
+                Text(row.balance.money).font(.amount(24)).foregroundStyle(Palette.ink).lineLimit(1).minimumScaleFactor(0.6)
+                Text(verbatim: "\(account.type.title) · \(account.subtype.title)").font(.subheadline).foregroundStyle(Palette.ink2)
+            }
+            .accessibilityElement(children: .combine)
+            MacInspectorSection(title: String(localized: "Cuenta")) {
+                MacInspectorRow(String(localized: "Número"), value: account.code.isEmpty ? "—" : account.code)
+                MacInspectorRow(String(localized: "Nombre"), value: account.name)
+                MacInspectorRow(String(localized: "Tipo"), value: account.type.title)
+                MacInspectorRow(String(localized: "Tipo de detalle"), value: account.subtype.title)
+                if !account.last4.isEmpty { MacInspectorRow(String(localized: "Últimos 4 dígitos"), value: "••\(account.last4)") }
+                if !account.details.isEmpty { MacInspectorRow(String(localized: "Descripción"), value: account.details) }
+                MacInspectorRow(String(localized: "Cuenta principal"), value: account.parent?.displayName ?? "—")
+                MacInspectorRow(String(localized: "Subcuentas"), value: children == 0 ? String(localized: "Ninguna") : "\(children)")
+                MacInspectorRow(String(localized: "Estado"),
+                                value: account.isArchived ? String(localized: "Archivada") : String(localized: "Activa"),
+                                color: account.isArchived ? Palette.ink2 : Palette.ink)
+            }
+            MacInspectorSection(title: String(localized: "Grupo")) {
+                MacInspectorRow(String(localized: "Total de \(row.group.title.lowercased())"), value: groupTotal.money, bold: true)
+            }
+            if account.isSystem {
+                Text("Cuenta del sistema: Chirogra la usa al contabilizar los documentos y no se puede archivar.")
+                    .font(.subheadline).foregroundStyle(Palette.ink2).fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+}
+
+/// Inspector del grupo: su total, cuántas cuentas tiene y sus cuentas principales con su saldo.
+private struct ChartGroupInspector: View {
+    let row: ChartRow
+
+    var body: some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text("Saldo al \(Date.now.shortDate)").font(.label).foregroundStyle(Palette.ink2)
+            Text("Total de \(row.group.title.lowercased())").font(.label).foregroundStyle(Palette.ink2)
             Text(row.balance.money).font(.amount(24)).foregroundStyle(Palette.ink).lineLimit(1).minimumScaleFactor(0.6)
-            Text(verbatim: "\(account.type.title) · \(account.subtype.title)").font(.subheadline).foregroundStyle(Palette.ink2)
+            Text("\(row.count) cuentas").font(.subheadline).foregroundStyle(Palette.ink2)
         }
         .accessibilityElement(children: .combine)
-        MacInspectorSection(title: String(localized: "Cuenta")) {
-            MacInspectorRow(String(localized: "Número"), value: account.code)
-            MacInspectorRow(String(localized: "Nombre"), value: account.name)
-            MacInspectorRow(String(localized: "Tipo"), value: account.type.title)
-            MacInspectorRow(String(localized: "Tipo de detalle"), value: account.subtype.title)
-            if !account.details.isEmpty { MacInspectorRow(String(localized: "Descripción"), value: account.details) }
-            MacInspectorRow(String(localized: "Cuenta principal"), value: account.parent?.displayName ?? "—")
-            MacInspectorRow(String(localized: "Subcuentas"), value: children == 0 ? String(localized: "Ninguna") : "\(children)")
-            MacInspectorRow(String(localized: "Estado"),
-                            value: account.isArchived ? String(localized: "Archivada") : String(localized: "Activa"),
-                            color: account.isArchived ? Palette.ink2 : Palette.ink)
-        }
-        MacInspectorSection(title: String(localized: "Grupo")) {
-            MacInspectorRow(String(localized: "Total de \(account.type.title.lowercased())"), value: groupTotal.money, bold: true)
-        }
-        if account.isSystem {
-            Text("Cuenta del sistema: Chirogra la usa al contabilizar los documentos y no se puede archivar.")
-                .font(.subheadline).foregroundStyle(Palette.ink2).fixedSize(horizontal: false, vertical: true)
+        MacInspectorSection(title: String(localized: "Cuentas")) {
+            ForEach(row.children ?? []) { child in
+                MacInspectorRow(child.account?.displayName ?? child.name, value: child.balance.money)
+            }
         }
     }
 }
