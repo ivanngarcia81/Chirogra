@@ -4,9 +4,9 @@ Resumen del chat de coordinación de Chirogra (desarrollo + QA), al 2 de noviemb
 
 ## Estado actual
 
-- **Versión aprobada:** `038b168`. Pasó QA y es la última de `main` en GitHub (github.com/ivanngarcia81/Chirogra).
+- **Versión aprobada:** el rediseño nativo, aprobado por el usuario y subido a `main` en GitHub (github.com/ivanngarcia81/Chirogra) el 2-nov. La anterior era `038b168`.
 - **Instalada en:** iPhone 17 Pro Max, iPad Pro 12,9″ y Mac (`/Applications/Chirogra.app`, Release) con `integracion-rediseno` `8952b61` (Mac con tabla + inspector; hojas de editor menos apretadas), el 2-nov.
-- **Rediseño nativo (2-nov), en la rama local `integracion-rediseno`, SIN fusionar en `main` ni subir.** El usuario pidió rehacer la app con el canvas actualizado («Claude code actualizó el diseño»), lo que deja sin efecto el descarte de `7a8b97f`. El sistema y el mapa por áreas están en [REDISEÑO-NATIVO.md](REDISEÑO-NATIVO.md). Lo hizo un equipo de agentes en worktrees (`.claude/worktrees/`), uno por tarea, y el coordinador lo fusionó. Para resolver choques del catálogo de textos hay un script de fusión por claves (ver «Fusionar el catálogo de textos» abajo).
+- **Rediseño nativo (2-nov), hecho en la rama `integracion-rediseno` y ya en `main` (subido el 2-nov).** El usuario pidió rehacer la app con el canvas actualizado («Claude code actualizó el diseño»), lo que deja sin efecto el descarte de `7a8b97f`. El sistema y el mapa por áreas están en [REDISEÑO-NATIVO.md](REDISEÑO-NATIVO.md). Lo hizo un equipo de agentes en worktrees (`.claude/worktrees/`), uno por tarea, y el coordinador lo fusionó. Para resolver choques del catálogo de textos hay un script de fusión por claves (ver «Fusionar el catálogo de textos» abajo).
 
 ## Qué se hizo en este chat (de lo más antiguo a lo más nuevo)
 
@@ -21,7 +21,7 @@ Resumen del chat de coordinación de Chirogra (desarrollo + QA), al 2 de noviemb
 | `10bf2c5`, `281d573` | Mac: que no parezca un iPhone estirado (densidad de Mac, un solo título, barra lateral de 220 pt, hojas con `.confirmationAction` / `.cancellationAction`, contraste AA de la fila seleccionada) |
 | `6bb7a97`, `038b168` | Títulos de la columna maestro visibles en el iPad; «+» solo como ícono en Por pagar y Plan de cuentas |
 
-### En `integracion-rediseno` (2-nov, sin fusionar en `main`)
+### Rediseño nativo (2-nov, de `integracion-rediseno`, ya en `main`)
 
 | Commit | Qué |
 |---|---|
@@ -105,7 +105,6 @@ Problemas conocidos: si el aparato sale «desconectado», reintentar. «The deve
 
 ## Pendiente
 
-- **Rediseño:** que el usuario lo revise; ver el Mac en pantalla; fusionar `integracion-rediseno` en `main` cuando lo apruebe; borrar las worktrees de los agentes (`git worktree remove`, ~8 GB) con su permiso.
 - Piezas que los agentes construyeron dentro de sus archivos y convendría subir a `DesignSystem` (lista en sus informes): grupos de filas, `ComparisonBars`, cebra de tablas, `ActivityMark`, `LineEditRow`.
 - Sin datos detrás, no construido aunque el canvas lo dibuje: campana de avisos, «12 por revisar», Programar pago, Impuesto incluido, W-9, persona de contacto, plantilla de factura, Para/Asunto al enviar.
 
