@@ -257,8 +257,34 @@ public struct Bookkeeper {
             model.invoice = invoice
             context.insert(model)
         }
+        try storeDraftTotals(of: invoice)
         try saveOrRollback()
         return invoice
+    }
+
+    /// Guarda en el borrador los totales con las reglas de emisión (impuesto, descuento, impuesto incluido), para que
+    /// las listas muestren lo mismo que el detalle sin calcularlos por fila. Devuelve si cambió algo.
+    @discardableResult
+    func storeDraftTotals(of invoice: Invoice) throws -> Bool {
+        guard invoice.status == .draft else { return false }
+        let totals = try totals(for: invoice)
+        guard invoice.subtotal != totals.subtotal || invoice.taxTotal != totals.tax || invoice.total != totals.total else { return false }
+        invoice.subtotal = totals.subtotal
+        invoice.taxTotal = totals.tax
+        invoice.total = totals.total
+        return true
+    }
+
+    /// Recalcula los totales guardados de los borradores (los de antes de guardarse así, o si cambió una tasa o la
+    /// exención del cliente). Solo guarda si alguno cambió. Devuelve cuántos cambiaron.
+    @discardableResult
+    public func refreshDraftTotals() throws -> Int {
+        let draft = InvoiceStatus.draft.rawValue
+        let drafts = try context.fetch(FetchDescriptor<Invoice>(predicate: #Predicate { $0.statusRaw == draft }))
+        var changed = 0
+        for invoice in drafts where try storeDraftTotals(of: invoice) { changed += 1 }
+        if changed > 0 { try saveOrRollback() }
+        return changed
     }
 
     /// Componentes de impuesto de un grupo, con la cuenta de pasivo de cada agencia. El id también puede ser

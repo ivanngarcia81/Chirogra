@@ -589,7 +589,8 @@ extension SchemaV2 {
         }
 
         public var sortedLines: [InvoiceLine] { (lines ?? []).sorted { $0.order < $1.order } }
-        public var balanceDue: Int64 { total - amountPaid - creditsApplied }
+        /// Un borrador no se debe nada todavía, aunque guarde su total provisional.
+        public var balanceDue: Int64 { status == .draft ? 0 : total - amountPaid - creditsApplied }
         public var isOpen: Bool { status == .sent || status == .partiallyPaid }
 
         /// Vencida es un estado derivado: emitida, con saldo y pasada la fecha de vencimiento.
@@ -602,8 +603,9 @@ extension SchemaV2 {
         /// Subtotal provisional (borradores) a partir de las líneas.
         public var linesSubtotal: Int64 { (lines ?? []).reduce(0) { $0 + $1.amount } }
 
-        /// Importe provisional de un borrador: líneas menos descuento, sin impuesto.
-        public var draftAmount: Int64 { linesSubtotal - discount }
+        /// Importe provisional de un borrador: el total con impuesto que guarda `Bookkeeper.saveDraft`; si aún no lo
+        /// tiene (borradores de antes), líneas menos descuento.
+        public var draftAmount: Int64 { total != 0 ? total : linesSubtotal - discount }
 
         /// Envíos y recordatorios, del más reciente al más antiguo.
         public var sortedEvents: [InvoiceEvent] { (events ?? []).sorted { $0.date > $1.date } }

@@ -649,16 +649,9 @@ private struct MoreRow<Destination: View>: View {
 struct CompanyMonogram: View {
     let name: String
     var side: CGFloat = 36
-    @ScaledMetric(relativeTo: .body) private var scale: CGFloat = 1
 
     var body: some View {
-        let size = side * min(scale, 1.6)
-        Text(Initials.from(name))
-            .font(.system(size: size * 0.4, weight: .semibold))
-            .foregroundStyle(.white)
-            .frame(width: size, height: size)
-            .background(Palette.monogram, in: Circle())
-            .accessibilityHidden(true)
+        Monogram(initials: Initials.from(name), side: side, fontScale: 0.4, maxScale: 1.6)
     }
 }
 

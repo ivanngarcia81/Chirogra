@@ -82,7 +82,7 @@ struct CustomerTablePage: View {
         ) {
             TableColumn("Cliente", value: \.tableName) { customer in
                 HStack(spacing: 8) {
-                    CustomerMonogram(initials: customer.initials, side: 20)
+                    Monogram(initials: customer.initials, side: 20)
                     Text(customer.name).lineLimit(1)
                 }
             }
@@ -201,7 +201,7 @@ private struct CustomerInspector: View {
     /// Monograma de 48, nombre (17 bold) y contacto (11, en Tinta).
     private var header: some View {
         HStack(spacing: 12) {
-            CustomerMonogram(initials: customer.initials, side: 48)
+            Monogram(initials: customer.initials, side: 48)
             VStack(alignment: .leading, spacing: 1) {
                 Text(customer.name)
                     .font(.title2.weight(.bold))
@@ -217,29 +217,6 @@ private struct CustomerInspector: View {
             }
         }
         .accessibilityElement(children: .combine)
-    }
-}
-
-/// Monograma gris redondo (canvas: 20 pt en la fila, 48 en el inspector), con el tamaño de letra de Accesibilidad.
-/// Pieza propia de esta página: `InitialsTile` tiene un solo tamaño (`Metrics.avatar`).
-private struct CustomerMonogram: View {
-    let initials: String
-    @ScaledMetric private var side: CGFloat
-
-    init(initials: String, side: CGFloat) {
-        self.initials = initials
-        _side = ScaledMetric(wrappedValue: side, relativeTo: .body)
-    }
-
-    var body: some View {
-        Text(initials)
-            .font(.system(size: side * 0.42, weight: .semibold))
-            .lineLimit(1)
-            .minimumScaleFactor(0.6)
-            .frame(width: side, height: side)
-            .foregroundStyle(.white)
-            .background(Palette.monogram, in: Circle())
-            .accessibilityHidden(true)
     }
 }
 

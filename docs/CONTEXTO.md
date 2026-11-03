@@ -59,12 +59,14 @@ Barra lateral, estados de iCloud, aviso «¿Descartar los cambios?» en los edit
 - Correo real (`MFMailComposeViewController`, `NSSharingService`), logo desde Fotos, que un cargo automático se cobre solo al vencer.
 - Registrar un asiento de punta a punta; revertir y archivar cuentas en el Mac; estado vacío del Mac.
 
-**Pendiente menor**
-- Los totales de borradores en las listas siguen sin impuesto (el detalle y el PDF sí).
-- El editor de factura en la hoja del iPad sale con el diseño del iPhone.
-- La columna maestro del iPad no muestra ••4821 ni la sangría de subcuentas.
-- En la tabla de Por pagar del Mac, «Registrar pago» se corta en la columna Acción.
-- Subir a `DesignSystem` las piezas repetidas que los agentes hicieron dentro de cada pantalla (grupos de filas, `ComparisonBars`, cebra, monogramas de varios tamaños, `ActivityMark`, `LineEditRow`, filas maestro copiadas en `EstimateMasterList`).
+**Pendiente menor hecho el 3-nov (sin commitear; verificado en el simulador del iPad y la copia de prueba del Mac):**
+- Borradores con impuesto en las listas: `saveDraft` y `convertToInvoice` guardan `subtotal/taxTotal/total` del borrador (como los estimados) y `runAutomations()` los pone al día al abrir (`refreshDraftTotals()`, borradores de antes o tasas cambiadas). `draftAmount` usa `total`; `balanceDue` de un borrador es 0.
+- Editor de factura en la hoja del iPad: en el iPad elige el diseño ancho por el ancho medido (≥ 640 pt), porque dentro de la hoja la clase de tamaño es compacta. El iPhone sigue igual.
+- Plan de cuentas en la columna maestro del iPad: ••4821 (`maskedName`, hasta 3 líneas) y subcuentas sangradas (`ChartOfAccountsView.outline`).
+- Por pagar del Mac: anchos ideales de las columnas que caben con el inspector abierto en una ventana de 1280 pt; antes la tabla se desplazaba de lado y «Registrar pago» quedaba cortado.
+
+- Piezas repetidas subidas a `DesignSystem`: `RowGroup` (antes `HomeRowGroup`, `PhoneGroup`, `TaxGroupCard`; `macBorder` = el filete de Reportes en el Mac), `Monogram` (antes `CustomerMonogram`, `VendorMonogram` y el de la ficha de proveedor; `InitialsTile` y `CompanyMonogram` lo usan por dentro), `.zebra(_:onIOS:)` (antes una en la ficha de proveedor, copias en Ventas, Clientes, Impuestos y Reportes, y a mano en Inicio, que la lleva también en el iPad) y las filas maestro en `DesignSystem/MasterRows.swift` (`MasterRow`, `.masterRow`…), que ahora usa también Estimados. Comprobado con capturas antes/después idénticas píxel a píxel en 18 pantallas (Mac, iPad, iPhone).
+- No se movieron `ComparisonBars`, `ActivityMark` ni `LineEditRow`: solo los usa una pantalla. Subirlos cuando otra los necesite.
 
 **No construido a propósito:** «Vista por el cliente» (necesita servidor). **Fase 2:** OCR, bandeja del banco e importar/conciliar (Plaid solo en un backend), usuarios y permisos, varias empresas, deducibles y «Exportar para mi contador».
 

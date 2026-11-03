@@ -325,6 +325,8 @@ struct DataV2Tests {
         try books.issue(issued)
         #expect(issued.taxTotal == 825)
         let draft = try books.saveDraft(InvoiceDraftInput(customer: customer, issueDate: today, dueDate: day(15), taxGroupID: group.id, lines: [line]))
+        // El borrador guarda su total con impuesto, que es lo que muestran las listas.
+        #expect(draft.taxTotal == 825 && draft.draftAmount == 10_825)
 
         let texas = try #require(group.rates?.first { $0.name == "Texas" })
         try books.updateTaxRate(texas, name: "Texas (estatal)", agency: texas.agency, rateMillionths: 70_000)
@@ -337,6 +339,9 @@ struct DataV2Tests {
         let note = try books.issueCreditNote(for: issued, amount: 10_000, isTaxable: true, reason: "Devolución", date: today)
         #expect(note.taxTotal == 825)   // con las tasas con que se emitió
         #expect(try books.totals(for: draft).tax == 900)
+        #expect(draft.draftAmount == 10_825)   // hasta que se recalcula al abrir la app
+        #expect(try books.refreshDraftTotals() == 1 && draft.draftAmount == 10_900)
+        #expect(try books.refreshDraftTotals() == 0)
         try books.issue(draft)
         #expect(draft.taxTotal == 900)
         let summary = try books.salesTaxSummary(from: day(-30), to: day(30))

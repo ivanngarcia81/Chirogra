@@ -131,23 +131,23 @@ struct BillTablePage: View {
             TableColumn("Vence", value: \.dueDate) { bill in
                 MacCellText(text: bill.dueDate.dayMonth, color: bill.isOverdue ? Palette.negative : Palette.ink2)
             }
-            .width(min: 52, ideal: 60, max: 100)
+            .width(min: 52, ideal: 56, max: 100)
             TableColumn("Proveedor", value: \.payableVendorName) { bill in
                 Text(bill.vendor?.name ?? String(localized: "Sin proveedor")).lineLimit(1)
             }
-            .width(min: 100, ideal: 140)
+            .width(min: 96, ideal: 120)
             TableColumn("Número", value: \.vendorNumber) { bill in
                 MacCellText(text: bill.vendorNumber.isEmpty ? "—" : bill.vendorNumber).lineLimit(1)
             }
-            .width(min: 56, ideal: 76, max: 120)
+            .width(min: 56, ideal: 60, max: 120)
             TableColumn("Estado", value: \.payableStatusRank) { bill in
                 MacCellStatus(chip: StatusChip(billWithAge: bill))
             }
-            .width(min: 96, ideal: 120, max: 200)
+            .width(min: 96, ideal: 122, max: 200)
             TableColumn("Importe", value: \.payableAmount) { bill in
                 Text(bill.payableAmount.money).monospacedDigit()
             }
-            .width(min: 76, ideal: 86, max: 140)
+            .width(min: 72, ideal: 76, max: 140)
             .alignment(.trailing)
             TableColumn("Acción") { bill in
                 if bill.isOpen {
@@ -162,7 +162,10 @@ struct BillTablePage: View {
                         .frame(maxWidth: .infinity, alignment: .trailing)
                 }
             }
-            .width(min: 100, ideal: 110, max: 130)
+            // El botón pequeño mide ~110 pt («Registrar pago», «Record payment»); con 110 se cortaba (3-nov). Los ideales
+            // de todas las columnas caben en lo que deja el inspector en una ventana de 1280 pt: si no, la tabla se
+            // desplazaba de lado y esta columna quedaba fuera.
+            .width(min: 120, ideal: 124, max: 160)
         } filter: {
             MacTableFilter(title: String(localized: "Filtrar por estado"), options: BillFilter.allCases,
                            selection: $filter, label: \.localizedTitle) { option in

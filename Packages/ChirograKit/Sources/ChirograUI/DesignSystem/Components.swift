@@ -630,6 +630,48 @@ struct FilterMenu<Option: Hashable>: View {
 
 // MARK: - Piezas de lista
 
+extension View {
+    /// Cebra de las tablas (canvas: filas impares en `--row2`, `Palette.surface`). En el Mac siempre; en iPhone e iPad
+    /// las filas van lisas salvo con `onIOS` (las tablas de Inicio del iPad, que la llevan como el Mac).
+    @ViewBuilder
+    func zebra(_ index: Int, onIOS: Bool = false) -> some View {
+        #if os(macOS)
+        background(index.isMultiple(of: 2) ? Color.clear : Palette.surface)
+        #else
+        if onIOS { background(index.isMultiple(of: 2) ? Color.clear : Palette.surface) } else { self }
+        #endif
+    }
+}
+
+/// Grupo de filas de la lista agrupada (canvas `Home`, `Reportes`, `Impuestos`): una celda de radio 24 con separadores
+/// sangrados desde el texto (`dividerInset`: 16 pt, o más si la fila lleva icono). Con `macBorder`, en el Mac un
+/// filete de 0,5 pt alrededor (Reportes).
+struct RowGroup<Content: View>: View {
+    var dividerInset: CGFloat = 16
+    var macBorder = false
+    @ViewBuilder var content: Content
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Group(subviews: content) { rows in
+                ForEach(rows.indices, id: \.self) { index in
+                    if index > 0 { Divider().padding(.leading, dividerInset) }
+                    rows[index]
+                }
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .background(Palette.surface, in: RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous))
+        #if os(macOS)
+        .overlay {
+            if macBorder {
+                RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous).strokeBorder(Palette.separator, lineWidth: 0.5)
+            }
+        }
+        #endif
+    }
+}
+
 /// Monograma de cliente o proveedor, como en Contactos: iniciales blancas en un círculo con el degradado gris del
 /// sistema (canvas `Clientes`, `FacturaNueva`). `foreground`, `background` y `round` ya no cambian nada: se conservan
 /// para no tocar las pantallas.
@@ -638,12 +680,39 @@ struct InitialsTile: View {
     var foreground: Color = Palette.brand
     var background: Color = Palette.brandWash
     var round = false
-    @ScaledMetric(relativeTo: .subheadline) private var side = Metrics.avatar
 
     var body: some View {
-        Text(text)
-            .font(.system(size: side * 0.38, weight: .semibold))
-            .frame(width: side, height: side)
+        Monogram(initials: text, side: Metrics.avatar, fontScale: 0.38, relativeTo: .subheadline)
+    }
+}
+
+/// Monograma como en Contactos: iniciales blancas en un círculo con el degradado gris del sistema. Crece con la letra
+/// de Accesibilidad (según `relativeTo`), con un tope opcional (`maxScale`: la empresa, 1,6×). Las filas de las
+/// tablas del Mac lo usan de 18–20 pt, los inspectores de 40–48 y la ficha del proveedor de 48.
+struct Monogram: View {
+    let initials: String
+    let side: CGFloat
+    /// Tamaño de las iniciales respecto al círculo.
+    var fontScale: CGFloat = 0.42
+    var maxScale: CGFloat = .infinity
+    @ScaledMetric private var scale: CGFloat
+
+    init(initials: String, side: CGFloat, fontScale: CGFloat = 0.42, relativeTo textStyle: Font.TextStyle = .body,
+         maxScale: CGFloat = .infinity) {
+        self.initials = initials
+        self.side = side
+        self.fontScale = fontScale
+        self.maxScale = maxScale
+        _scale = ScaledMetric(wrappedValue: 1, relativeTo: textStyle)
+    }
+
+    var body: some View {
+        let size = side * min(scale, maxScale)
+        Text(initials)
+            .font(.system(size: size * fontScale, weight: .semibold))
+            .lineLimit(1)
+            .minimumScaleFactor(0.6)
+            .frame(width: size, height: size)
             .foregroundStyle(.white)
             .background(Palette.monogram, in: Circle())
             .accessibilityHidden(true)

@@ -94,7 +94,7 @@ struct VendorTablePage: View {
         ) {
             TableColumn("Proveedor", value: \.name) { row in
                 HStack(spacing: 8) {
-                    VendorMonogram(initials: Initials.from(row.name), side: 18)
+                    Monogram(initials: Initials.from(row.name), side: 18)
                     Text(row.name).lineLimit(1)
                 }
             }
@@ -193,28 +193,6 @@ nonisolated struct VendorTableRow: Identifiable {
     var lastPurchaseRank: Date { lastPurchase ?? .distantPast }
 }
 
-/// Monograma gris del proveedor (canvas: 18 pt en la fila, 40 en el inspector).
-private struct VendorMonogram: View {
-    let initials: String
-    @ScaledMetric private var side: CGFloat
-
-    init(initials: String, side: CGFloat) {
-        self.initials = initials
-        _side = ScaledMetric(wrappedValue: side, relativeTo: .body)
-    }
-
-    var body: some View {
-        Text(initials)
-            .font(.system(size: side * 0.42, weight: .semibold))
-            .lineLimit(1)
-            .minimumScaleFactor(0.6)
-            .frame(width: side, height: side)
-            .foregroundStyle(.white)
-            .background(Palette.monogram, in: Circle())
-            .accessibilityHidden(true)
-    }
-}
-
 /// Celda «1099»: una marca en azul (blanca sobre la fila elegida) o una raya.
 private struct Form1099Cell: View {
     let is1099: Bool
@@ -250,7 +228,7 @@ private struct VendorInspector: View {
 
     var body: some View {
         HStack(spacing: 10) {
-            VendorMonogram(initials: Initials.from(row.name), side: 40)
+            Monogram(initials: Initials.from(row.name), side: 40)
             VStack(alignment: .leading, spacing: 1) {
                 Text(row.name).font(.body.weight(.bold)).foregroundStyle(Palette.ink).lineLimit(2)
                 if !row.category.isEmpty {

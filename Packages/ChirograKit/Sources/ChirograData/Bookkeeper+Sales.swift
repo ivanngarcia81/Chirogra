@@ -249,6 +249,7 @@ extension Bookkeeper {
             estimate.status = .accepted
             estimate.acceptedDate = estimate.acceptedDate ?? issueDate
         }
+        try storeDraftTotals(of: invoice)
         audit("Estimate", estimate.id, "convert", String(localized: "Estimado \(estimate.number) convertido en factura borrador"))
         try saveOrRollback()
         return invoice

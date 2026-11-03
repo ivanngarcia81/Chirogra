@@ -410,7 +410,7 @@ struct CustomerDetailView: View {
                         Text(invoice.balanceDue.money)
                             .foregroundStyle(invoice.isOpen ? Palette.ink : Palette.ink2).frame(width: amountWidth, alignment: .trailing)
                     }
-                    .background(zebra(index))
+                    .zebra(index)
                 }
                 .buttonStyle(.plain)
             }
@@ -440,21 +440,12 @@ struct CustomerDetailView: View {
                             estimate.statusChip().fixedSize().frame(minWidth: 130, maxWidth: .infinity, alignment: .leading)
                             Text(estimate.total.money).frame(width: amountWidth, alignment: .trailing)
                         }
-                        .background(zebra(index))
+                        .zebra(index)
                     }
                     .buttonStyle(.plain)
                 }
             }
         }
-    }
-
-    /// Cebra del Mac (`--row2` en las filas impares); en iPhone e iPad, la celda lisa.
-    private func zebra(_ index: Int) -> Color {
-        #if os(macOS)
-        index.isMultiple(of: 2) ? Color.clear : Palette.surface
-        #else
-        Color.clear
-        #endif
     }
 
     private var contactBox: some View {

@@ -82,6 +82,9 @@ struct InvoiceEditorView: View {
     @State private var skipCustomerDefaults = false
     /// Teclado a la vista (iPhone): la barra de abajo se oculta para no tapar la línea que se edita.
     @State private var keyboardShown = false
+    /// Ancho del editor (iOS). En la hoja del iPad la clase de tamaño ya es compacta aunque mida 760–980 pt, así que el
+    /// diseño ancho se elige por el ancho; `nil` hasta medirlo.
+    @State private var width: CGFloat?
 
     private var books: Bookkeeper { Bookkeeper(context: context) }
     private var customer: Customer? { customers.first { $0.id == customerID } }
@@ -133,6 +136,9 @@ struct InvoiceEditorView: View {
         Group {
             if isWide { wideForm } else { compactForm }
         }
+        #if os(iOS)
+        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
+        #endif
         .sheet(item: $previewing) { invoice in
             NavigationStack { InvoicePreviewView(invoice: invoice, company: companies.first) }.editorSheetSizing()
         }
@@ -498,10 +504,18 @@ struct InvoiceEditorView: View {
         lines.append(LineDraft(incomeAccountID: incomeAccounts.first?.id))
     }
 
-    /// `MacFacturaNueva` en iPad y Mac (hasta AX3); el formulario del iPhone en pantallas o columnas estrechas.
+    /// Desde aquí cabe la tabla de artículos de `MacFacturaNueva` (la hoja del iPad mide 760 pt en vertical).
+    static let wideMinimumWidth: CGFloat = 640
+
+    /// `MacFacturaNueva` en iPad y Mac (hasta AX3); el formulario del iPhone en pantallas, columnas u hojas estrechas.
     private var isWide: Bool {
         #if os(iOS)
-        if sizeClass != .regular { return false }
+        // El iPhone sigue con la clase de tamaño (en horizontal, solo los Max son regulares).
+        if UIDevice.current.userInterfaceIdiom == .pad, let width {
+            if width < Self.wideMinimumWidth { return false }
+        } else if sizeClass != .regular {
+            return false
+        }
         #endif
         return dynamicTypeSize < .accessibility4
     }
@@ -761,7 +775,7 @@ struct InvoiceEditorView: View {
                         .disabled(lines.count <= 1)
                         .accessibilityLabel("Quitar la línea \(index + 1)")
                     }
-                    .background(zebra(index))
+                    .zebra(index)
                 }
                 Divider()
                 Button("Añadir línea", systemImage: "plus", action: addLine)
@@ -781,15 +795,6 @@ struct InvoiceEditorView: View {
     private static let quantityColumn: CGFloat = 104
     private static let taxColumn: CGFloat = 116
     #endif
-
-    /// Cebra del Mac (`--row2` en las filas pares del canvas); en el iPad, la celda lisa.
-    private func zebra(_ index: Int) -> Color {
-        #if os(macOS)
-        index.isMultiple(of: 2) ? Color.clear : Palette.surface
-        #else
-        Color.clear
-        #endif
-    }
 
     private var messageBox: some View {
         box(String(localized: "Mensaje y términos")) {

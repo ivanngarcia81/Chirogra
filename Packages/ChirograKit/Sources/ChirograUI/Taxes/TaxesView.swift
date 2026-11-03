@@ -270,7 +270,7 @@ struct TaxesView: View {
 
         if let summary = summary(interval) {
             groupLabel(String(localized: "Desglose · \(quarterMonths(interval)) \(interval.start.formatted(.appDateTime.year()))"))
-            TaxGroupCard {
+            RowGroup {
                 valueRow(String(localized: "Ventas gravables"), summary.taxableSales.money)
                 valueRow(String(localized: "Ventas no gravables y exentas"), (summary.nonTaxableSales + summary.exemptSales).money)
                 ForEach(summary.rows) { row in valueRow("\(row.name) · \(row.percent.formatted())%", row.tax.money) }
@@ -283,7 +283,7 @@ struct TaxesView: View {
         let payments = entries.filter { $0.source == .salesTaxPayment && $0.reversesEntryID == nil }
         if !payments.isEmpty {
             groupLabel(String(localized: "Pagos a la agencia"))
-            TaxGroupCard {
+            RowGroup {
                 ForEach(payments.prefix(5)) { entry in
                     TaxRow(title: entry.memo, subtitle: entry.date.shortDate) {
                         EmptyView()
@@ -321,7 +321,7 @@ struct TaxesView: View {
     private var ratesTab: some View {
         if let errorMessage { ErrorBanner(message: errorMessage).padding(.top, 12) }
         groupLabel(String(localized: "Tasas de impuesto"))
-        TaxGroupCard {
+        RowGroup {
             ForEach(groups.filter { !$0.isArchived }) { group in
                 let kind = String(localized: "Combinada · \((group.rates ?? []).count) tasas")
                 rateRow(group.name, group.id == defaultTaxID ? String(localized: "\(kind) · predeterminada") : kind, group.percent)
@@ -352,7 +352,7 @@ struct TaxesView: View {
 
         if let company {
             groupLabel(String(localized: "Facturas nuevas"))
-            TaxGroupCard {
+            RowGroup {
                 TaxDefaultsRows(company: company, groups: groups, agencies: agencies, onDefault: setDefault)
             }
             footer(String(localized: "Con impuesto incluido, el precio de cada línea ya lleva el impuesto y Chirogra lo separa al emitir. El origen de las ventas es informativo: tú eliges la tasa de cada factura."))
@@ -360,7 +360,7 @@ struct TaxesView: View {
 
         if !agencies.isEmpty {
             groupLabel(String(localized: "Periodo de declaración"))
-            TaxGroupCard {
+            RowGroup {
                 ForEach(agencies) { agency in
                     AdaptiveRow {
                         Text(agency.name).foregroundStyle(Palette.ink)
@@ -523,14 +523,6 @@ struct TaxesView: View {
         }
     }
 
-    private func zebra(_ index: Int) -> Color {
-        #if os(macOS)
-        index.isMultiple(of: 2) ? .clear : Palette.surface
-        #else
-        .clear
-        #endif
-    }
-
     /// Fila de la tabla de tasas; en el Mac se elige con un clic para verla en el inspector (`MacReportRow`).
     @ViewBuilder
     private func rateTableRow(_ name: String, kind: String, percent: Decimal, collected: Int64, bold: Bool,
@@ -544,7 +536,7 @@ struct TaxesView: View {
         #else
         Button { if let rate { editingRate = rate } } label: {
             TableRow { rateCells(name, kind: kind, percent: percent, collected: collected, bold: bold, isDefault: isDefault) }
-                .background(zebra(index))
+                .zebra(index)
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -696,7 +688,7 @@ private struct TaxDefaultsRows: View {
     let groups: [TaxGroup]
     let agencies: [TaxAgency]
     let onDefault: (UUID?) -> Void
-    /// Con líneas entre filas (caja del Mac y del iPad); en el iPhone las pone `TaxGroupCard`.
+    /// Con líneas entre filas (caja del Mac y del iPad); en el iPhone las pone `RowGroup`.
     var dividers = false
     @Environment(\.modelContext) private var context
 
@@ -761,24 +753,6 @@ extension SalesTaxSourcing {
         case .origin: String(localized: "Origen (tu negocio)")
         case .destination: String(localized: "Destino (el cliente)")
         }
-    }
-}
-
-/// Grupo de filas de la lista agrupada (celda de radio 24 con separadores sangrados). Pieza propia del área A.
-private struct TaxGroupCard<Content: View>: View {
-    @ViewBuilder var content: Content
-
-    var body: some View {
-        VStack(spacing: 0) {
-            Group(subviews: content) { rows in
-                ForEach(rows.indices, id: \.self) { index in
-                    if index > 0 { Divider().padding(.leading, 16) }
-                    rows[index]
-                }
-            }
-        }
-        .frame(maxWidth: .infinity)
-        .background(Palette.surface, in: RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous))
     }
 }
 

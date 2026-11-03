@@ -361,7 +361,7 @@ struct VendorDetailView: View {
     /// Monograma de 48 pt, nombre de 20 bold y, debajo, condiciones y «1099-NEC» en azul si aplica.
     private var wideHeader: some View {
         HStack(spacing: 12) {
-            Monogram(initials: Initials.from(vendor.name))
+            Monogram(initials: Initials.from(vendor.name), side: 48, fontScale: 0.38, relativeTo: .title3)
             VStack(alignment: .leading, spacing: 2) {
                 Text(vendor.name).font(.title3.weight(.bold)).foregroundStyle(Palette.ink).accessibilityAddTraits(.isHeader)
                 HStack(spacing: 6) {
@@ -541,33 +541,6 @@ struct VendorDetailView: View {
         let calendar = Calendar.current
         return bills.filter { calendar.component(.year, from: $0.billDate) == year }.reduce(0) { $0 + $1.total }
             + expenses.filter { calendar.component(.year, from: $0.date) == year }.reduce(0) { $0 + $1.total }
-    }
-}
-
-/// Monograma de 48 pt de la cabecera de una ficha del Mac (canvas `MacProveedorFicha`).
-private struct Monogram: View {
-    let initials: String
-    @ScaledMetric(relativeTo: .title3) private var side: CGFloat = 48
-
-    var body: some View {
-        Text(initials)
-            .font(.system(size: side * 0.38, weight: .semibold))
-            .frame(width: side, height: side)
-            .foregroundStyle(.white)
-            .background(Palette.monogram, in: Circle())
-            .accessibilityHidden(true)
-    }
-}
-
-extension View {
-    /// Cebra de las tablas del Mac (canvas: filas alternas en `--row2`); en iPhone e iPad las filas van sin cebra.
-    @ViewBuilder
-    func zebra(_ index: Int) -> some View {
-        #if os(macOS)
-        background(index.isMultiple(of: 2) ? Color.clear : Palette.surface)
-        #else
-        self
-        #endif
     }
 }
 

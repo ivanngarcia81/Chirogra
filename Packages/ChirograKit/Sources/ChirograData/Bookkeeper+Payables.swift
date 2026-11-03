@@ -108,11 +108,13 @@ extension Bookkeeper {
     }
 
     /// Lo que la app hace sola al abrirse o volver al primer plano: genera los recurrentes hasta hoy y registra los
-    /// pagos de cargo automático que vencen hoy o antes. Es idempotente.
+    /// pagos de cargo automático que vencen hoy o antes; también pone al día los totales de los borradores. Es idempotente.
     @discardableResult
     public func runAutomations(asOf date: Date = Date(), calendar: Calendar = .current) throws -> AutomationRun {
         let recurring = try generateRecurring(through: date, calendar: calendar)
         let payments = try payScheduledBills(dueOnOrBefore: date, onlyAutoPay: true, calendar: calendar)
+        // Que un fallo aquí no tape los recurrentes y cargos de arriba: lo intenta otra vez al abrir.
+        _ = try? refreshDraftTotals()
         return AutomationRun(recurring: recurring, autoPayments: payments)
     }
 

@@ -404,7 +404,7 @@ struct HomeView: View {
             (String(localized: "Cliente"), "person.badge.plus", .customer),
         ]
         if dynamicTypeSize.isAccessibilitySize {
-            HomeRowGroup(dividerInset: 16 + 30 + 12) {
+            RowGroup(dividerInset: 16 + 30 + 12) {
                 ForEach(actions, id: \.2) { action in
                     Button { sheet = action.2 } label: {
                         HomeRow(title: action.0, chevron: false) {
@@ -644,7 +644,7 @@ struct HomeView: View {
     }
 
     private var payablesCard: some View {
-        HomeRowGroup(dividerInset: 16 + 38 + 12) {
+        RowGroup(dividerInset: 16 + 38 + 12) {
             if soonBills.isEmpty {
                 emptyRow(String(localized: "Nada por pagar en las próximas dos semanas."))
             }
@@ -675,7 +675,7 @@ struct HomeView: View {
     }
 
     private var accountsCard: some View {
-        HomeRowGroup(dividerInset: 16 + 30 + 12) {
+        RowGroup(dividerInset: 16 + 30 + 12) {
             if shownAccounts.isEmpty { emptyRow(String(localized: "Aún no tienes cuentas de banco ni tarjetas.")) }
             ForEach(shownAccounts) { accountRow($0) }
         }
@@ -796,7 +796,7 @@ struct HomeView: View {
                 receivablesSummary(amountSize: 28, counts: true)
                     .padding(.horizontal, 20).padding(.vertical, 16)
                     .background(Palette.surface, in: RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous))
-                HomeRowGroup(dividerInset: 16) {
+                RowGroup(dividerInset: 16) {
                     if openInvoices.isEmpty { emptyRow(String(localized: "No tienes facturas pendientes de cobro.")) }
                     ForEach(receivableRows.prefix(8)) { invoiceRow($0) }
                 }
@@ -950,7 +950,7 @@ struct HomeView: View {
                             StatusChip(invoice: invoice).frame(width: 120, alignment: .leading)
                             Text(invoice.balanceDue.money).frame(width: 90, alignment: .trailing)
                         }
-                        .background(index.isMultiple(of: 2) ? Color.clear : Palette.surface)
+                        .zebra(index, onIOS: true)
                     }
                     .buttonStyle(.plain)
                 }
@@ -986,7 +986,7 @@ struct HomeView: View {
                             Text(bill.vendorNumber).foregroundStyle(Palette.ink2).lineLimit(1).frame(width: 90, alignment: .leading)
                             Text(bill.balanceDue.money).frame(width: 90, alignment: .trailing)
                         }
-                        .background(index.isMultiple(of: 2) ? Color.clear : Palette.surface)
+                        .zebra(index, onIOS: true)
                     }
                     .buttonStyle(.plain)
                 }
@@ -1165,26 +1165,6 @@ struct HomeView: View {
 }
 
 // MARK: - Filas del canvas
-
-/// Grupo de filas en una celda de radio 24 (`Home`: Por pagar, Cuentas), con separadores sangrados desde el texto.
-/// Pieza propia del área A; podría subir al sistema junto a `LedgerRow`.
-private struct HomeRowGroup<Content: View>: View {
-    var dividerInset: CGFloat = 16
-    @ViewBuilder var content: Content
-
-    var body: some View {
-        VStack(spacing: 0) {
-            Group(subviews: content) { rows in
-                ForEach(rows.indices, id: \.self) { index in
-                    if index > 0 { Divider().padding(.leading, dividerInset) }
-                    rows[index]
-                }
-            }
-        }
-        .frame(maxWidth: .infinity)
-        .background(Palette.surface, in: RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous))
-    }
-}
 
 /// Fila del canvas `Home`: icono opcional, título `.body` y subtítulo `.footnote` gris, importe a la derecha y chevron.
 /// Con letra de accesibilidad, todo en columna.

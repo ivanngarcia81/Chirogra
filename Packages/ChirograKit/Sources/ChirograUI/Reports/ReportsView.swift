@@ -482,7 +482,7 @@ struct ReportsView: View {
         let current = ledger.incomeStatement(interval())
         let previous = ledger.incomeStatement(interval(offset: -1))
         periodPicker.padding(.top, 4)
-        PhoneGroup {
+        RowGroup(macBorder: true) {
             Toggle(String(localized: "Comparar con \(previousName)"), isOn: $compare).tint(Palette.green)
                 .padding(.horizontal, 16).frame(minHeight: Metrics.target).padding(.vertical, 4)
         }
@@ -539,7 +539,7 @@ struct ReportsView: View {
         if let title = block.title {
             SectionLabel(text: title).padding(.horizontal, Metrics.gutter).padding(.top, 22).padding(.bottom, 7)
         }
-        PhoneGroup {
+        RowGroup(macBorder: true) {
             // Solo el total: el grupo no tuvo movimientos.
             if block.title != nil && block.lines.count == 1 {
                 Text("Sin movimientos").foregroundStyle(Palette.ink2)
@@ -574,7 +574,7 @@ struct ReportsView: View {
     private var otherReports: some View {
         SectionHeader(String(localized: "Otros reportes"))
             .padding(.top, 26).padding(.bottom, 8)
-        PhoneGroup(dividerInset: 16 + 30 + 12) {
+        RowGroup(dividerInset: 16 + 30 + 12, macBorder: true) {
             ForEach(Kind.allCases.filter { $0 != .income }) { other in
                 NavigationLink { ReportsView(fixedKind: other) } label: {
                     HStack(spacing: 12) {
@@ -594,7 +594,7 @@ struct ReportsView: View {
 
     @ViewBuilder
     private var phoneAsOf: some View {
-        PhoneGroup {
+        RowGroup(macBorder: true) {
             DatePicker("Al", selection: $asOf, in: ...Date.now, displayedComponents: .date)
                 .padding(.horizontal, 16).frame(minHeight: Metrics.target).padding(.vertical, 4)
         }
@@ -626,7 +626,7 @@ struct ReportsView: View {
         let report = trialBalanceReport
         phoneAsOf
         SectionLabel(text: String(localized: "Cuentas")).padding(.horizontal, Metrics.gutter).padding(.top, 22).padding(.bottom, 7)
-        PhoneGroup {
+        RowGroup(macBorder: true) {
             if report.rows.isEmpty { phoneLine(Line(name: String(localized: "Sin movimientos"), amount: 0)) }
             ForEach(report.rows) { row in
                 AdaptiveRow {
@@ -645,7 +645,7 @@ struct ReportsView: View {
                 .accessibilityElement(children: .combine)
             }
         }
-        PhoneGroup {
+        RowGroup(macBorder: true) {
             phoneLine(Line(name: String(localized: "Total débitos"), amount: report.totalDebit, style: .total))
             phoneLine(Line(name: String(localized: "Total créditos"), amount: report.totalCredit, style: .total))
         }
@@ -671,7 +671,7 @@ struct ReportsView: View {
     private func phoneAging(_ report: AgingReport, empty: String) -> some View {
         phoneAsOf
         SectionLabel(text: String(localized: "Por antigüedad")).padding(.horizontal, Metrics.gutter).padding(.top, 22).padding(.bottom, 7)
-        PhoneGroup {
+        RowGroup(macBorder: true) {
             ForEach(AgingReport.Bucket.allCases, id: \.self) { bucket in
                 let amount = report.total(for: bucket)
                 AdaptiveRow {
@@ -687,7 +687,7 @@ struct ReportsView: View {
         }
         SectionLabel(text: kind == .receivables ? String(localized: "Clientes") : String(localized: "Proveedores"))
             .padding(.horizontal, Metrics.gutter).padding(.top, 22).padding(.bottom, 7)
-        PhoneGroup {
+        RowGroup(macBorder: true) {
             if report.rows.isEmpty {
                 Text(empty).font(.subheadline).foregroundStyle(Palette.ink2)
                     .frame(maxWidth: .infinity, minHeight: Metrics.target, alignment: .leading).padding(.horizontal, 16)
@@ -728,14 +728,14 @@ struct ReportsView: View {
         .accessibilityElement(children: .combine)
         .padding(.top, 16)
         SectionLabel(text: String(localized: "Ventas")).padding(.horizontal, Metrics.gutter).padding(.top, 22).padding(.bottom, 7)
-        PhoneGroup {
+        RowGroup(macBorder: true) {
             phoneLine(Line(name: String(localized: "Gravables"), amount: report.taxableSales))
             phoneLine(Line(name: String(localized: "No gravables"), amount: report.nonTaxableSales))
             phoneLine(Line(name: String(localized: "Exentas (clientes exentos)"), amount: report.exemptSales))
             phoneLine(Line(name: String(localized: "Ventas totales"), amount: report.totalSales, style: .total))
         }
         SectionLabel(text: String(localized: "Por tasa")).padding(.horizontal, Metrics.gutter).padding(.top, 22).padding(.bottom, 7)
-        PhoneGroup {
+        RowGroup(macBorder: true) {
             if report.rows.isEmpty {
                 Text("Sin impuesto cobrado en el periodo.").foregroundStyle(Palette.ink2)
                     .frame(maxWidth: .infinity, minHeight: Metrics.target, alignment: .leading).padding(.horizontal, 16)
@@ -794,7 +794,7 @@ struct ReportsView: View {
             statementDocument(title: Kind.income.fullTitle, range: String(localized: "\(rangeTitle) · base devengado · \(companies.first?.currencyCode ?? "USD")"),
                               blocks: incomeBlocks, columns: incomeColumns)
         } else {
-            PhoneGroup {
+            RowGroup(macBorder: true) {
                 Toggle("Comparar con periodo anterior", isOn: $compare).tint(Palette.green)
                     .padding(.horizontal, 16).frame(minHeight: 52)
             }
@@ -868,7 +868,7 @@ struct ReportsView: View {
                 } else {
                     Color.clear.frame(height: 12)
                 }
-                PhoneGroup {
+                RowGroup(macBorder: true) {
                     ForEach(block.lines) { line in
                         let weight: Font.Weight = switch line.style { case .line: .regular; case .total: .semibold; case .result, .grand: .bold }
                         HStack(spacing: 0) {
@@ -1057,11 +1057,6 @@ struct ReportsView: View {
             .font(.footnote).foregroundStyle(Palette.ink2).padding(.horizontal, 2).padding(.top, 8)
     }
 
-    /// Cebra de las tablas del Mac (`--row2` en las filas impares); en iPhone e iPad, sin cebra.
-    private func zebra(_ index: Int) -> Color {
-        isMac && !index.isMultiple(of: 2) ? Palette.surface : .clear
-    }
-
     /// Fila de tabla: en el Mac se elige con un clic para verla en el inspector (`MacReportRow`); en el iPad, la de
     /// siempre.
     @ViewBuilder
@@ -1069,7 +1064,7 @@ struct ReportsView: View {
         #if os(macOS)
         MacReportRow(isSelected: key == picked, zebra: !index.isMultiple(of: 2), select: { macPick = key }) { content() }
         #else
-        TableRow { content() }.background(zebra(index))
+        TableRow { content() }.zebra(index)
         #endif
     }
 
@@ -1716,29 +1711,6 @@ struct ReportsView: View {
 }
 
 // MARK: - Piezas
-
-/// Grupo de filas de la lista agrupada (celda de radio 24 con separadores sangrados). Pieza propia del área A; podría
-/// subir al sistema.
-private struct PhoneGroup<Content: View>: View {
-    var dividerInset: CGFloat = 16
-    @ViewBuilder var content: Content
-
-    var body: some View {
-        VStack(spacing: 0) {
-            Group(subviews: content) { rows in
-                ForEach(rows.indices, id: \.self) { index in
-                    if index > 0 { Divider().padding(.leading, dividerInset) }
-                    rows[index]
-                }
-            }
-        }
-        .frame(maxWidth: .infinity)
-        .background(Palette.surface, in: RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous))
-        #if os(macOS)
-        .overlay(RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous).strokeBorder(Palette.separator, lineWidth: 0.5))
-        #endif
-    }
-}
 
 /// Barras del periodo (Tinta) frente al anterior (gris) por concepto (`ReportePyG`), con guías y escala a la derecha.
 private struct ComparisonBars: View {
