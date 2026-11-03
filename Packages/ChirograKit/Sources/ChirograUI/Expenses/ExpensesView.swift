@@ -149,7 +149,6 @@ struct ExpenseListView: View {
     var showBills: () -> Void = {}
     @Query(sort: \Expense.date, order: .reverse) private var expenses: [Expense]
     @Query(sort: \Account.code) private var accounts: [Account]
-    @Query private var journalLines: [JournalLine]
     @Query(sort: \Bill.dueDate) private var bills: [Bill]
     @State private var filter: ExpenseReceiptFilter = .all
     @State private var cardWidth: CGFloat = 0
@@ -168,7 +167,7 @@ struct ExpenseListView: View {
             Section {
                 monthCard
             } header: {
-                ListGroupHeader(title: Date.now.formatted(.appDateTime.month(.wide)).sentenceCased) {
+                ListGroupHeader(title: cardMonth.start.formatted(.appDateTime.month(.wide)).sentenceCased) {
                     Text("Por categoría").font(.subheadline).foregroundStyle(Palette.ink2)
                 }
             }
@@ -251,14 +250,34 @@ struct ExpenseListView: View {
         .accessibilityAddTraits(.isButton)
     }
 
-    /// Gasto del mes por categoría: las mismas cifras que el estado de resultados (gastos y costo de ventas), para que
-    /// coincida con «Gastos» de Inicio. Las cuatro mayores y el resto en «Otros».
+    /// Mes de la tarjeta: el actual o, si aún no tiene gastos (a primeros de mes), el último que sí tiene, como Gastos
+    /// en el Mac (decisión del usuario, 2-nov).
+    private var cardMonth: DateInterval {
+        let current = DateInterval.month(containing: .now)
+        guard !expenses.contains(where: { current.contains($0.date) && $0.date < current.end }),
+              let latest = expenses.first?.date else { return current }
+        return DateInterval.month(containing: latest)
+    }
+
+    /// Gasto del mes por categoría: solo los gastos de la lista (sus líneas), como la tarjeta de Gastos del Mac
+    /// (decisión del usuario, 2-nov: antes salía del estado de resultados e incluía las facturas por pagar). Las cuatro
+    /// mayores y el resto en «Otros».
     private var monthCard: some View {
-        let month = DateInterval.month(containing: .now)
-        let statement = Ledger(accounts: accounts, lines: journalLines).incomeStatement(month)
-        let rows = (statement.costOfGoodsSold + statement.expenses).filter { $0.amount > 0 }.sorted { $0.amount > $1.amount }
+        let month = cardMonth
+        let names = Dictionary(accounts.map { ($0.id, $0.name) }, uniquingKeysWith: { first, _ in first })
+        var totals: [String: Int64] = [:]
+        for expense in expenses where month.contains(expense.date) && expense.date < month.end {
+            var categorized: Int64 = 0
+            for line in expense.sortedLines {
+                guard let id = line.accountID, let name = names[id] else { continue }
+                totals[name, default: 0] += line.amount
+                categorized += line.amount
+            }
+            if expense.total > categorized { totals[String(localized: "Sin categoría"), default: 0] += expense.total - categorized }
+        }
+        let rows = totals.filter { $0.value > 0 }.map { (name: $0.key, amount: $0.value) }.sorted { $0.amount > $1.amount }
         let total = rows.reduce(0) { $0 + $1.amount }
-        var slices = rows.prefix(4).map { (name: $0.account.name, amount: $0.amount) }
+        var slices = rows.prefix(4).map { (name: $0.name, amount: $0.amount) }
         let colors = ExpenseCategoryStyle.barColors(for: slices.map(\.name))
         let rest = rows.dropFirst(4).reduce(0) { $0 + $1.amount }
         if rest > 0 { slices.append((String(localized: "Otros"), rest)) }

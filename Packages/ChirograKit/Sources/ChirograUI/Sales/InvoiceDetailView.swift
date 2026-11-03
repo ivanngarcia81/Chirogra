@@ -323,6 +323,8 @@ struct InvoiceDetailView: View {
                             .multilineTextAlignment(.trailing)
                     } else {
                         Text(invoice.balanceDue.money).monospacedDigit().foregroundStyle(Palette.ink)
+                            .accessibilityLabel("Monto")
+                            .accessibilityValue(invoice.balanceDue.money)
                     }
                 }
                 paymentRow(String(localized: "Método")) {
@@ -397,13 +399,15 @@ struct InvoiceDetailView: View {
         VStack(spacing: 0) {
             Divider().padding(.leading, Metrics.cardPadding)
             ViewThatFits(in: .horizontal) {
+                // El título visible no se anuncia: cada control ya lleva su nombre y su valor («Método, Transferencia»);
+                // si no, VoiceOver lo leía dos veces.
                 HStack {
-                    Text(title).foregroundStyle(Palette.ink).fixedSize()
+                    Text(title).foregroundStyle(Palette.ink).fixedSize().accessibilityHidden(true)
                     Spacer(minLength: 8)
                     content()
                 }
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(title).foregroundStyle(Palette.ink)
+                    Text(title).foregroundStyle(Palette.ink).accessibilityHidden(true)
                     content()
                 }
             }

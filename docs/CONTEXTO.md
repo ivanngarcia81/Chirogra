@@ -105,11 +105,23 @@ Problemas conocidos: si el aparato sale «desconectado», reintentar. «The deve
 
 ## Pendiente
 
-- Piezas que los agentes construyeron dentro de sus archivos y convendría subir a `DesignSystem` (lista en sus informes): grupos de filas, `ComparisonBars`, cebra de tablas, `ActivityMark`, `LineEditRow`.
-- Sin datos detrás, no construido aunque el canvas lo dibuje: campana de avisos, «12 por revisar», Programar pago, Impuesto incluido, W-9, persona de contacto, plantilla de factura, Para/Asunto al enviar.
+Probado por el usuario el 2-nov y funciona: Escape y Return en los editores del Mac, ⌥⌘I, doble clic, ordenar columnas, soltar un recibo, «Registrar pago» en la hoja, y el iPad sin el anillo de foco.
 
-- Instalar `038b168` en el iPad (desbloqueado).
-- Que el usuario pruebe en el Mac, en **Nuevo gasto** y **Nueva factura**: Escape cierra (o pregunta si hay cambios) y Return guarda o emite. Ni desarrollo ni QA pudieron mandar teclas.
-- Sin verificar todavía: iPad en vertical, VoiceOver en iOS, el estado vacío del Mac, modo oscuro del Mac (aplazado por el usuario).
-- Logo de la empresa: para después.
+**Sin comprobar**
+- VoiceOver de verdad (iPhone, iPad y Mac) e iPad con letra grande.
+- Registrar un asiento de diario de punta a punta; revertir y archivar cuentas en el Mac.
+- Estado vacío del Mac (empresa sin datos).
+- Las hojas del Mac siguen la apariencia del sistema (el Mac del usuario está en oscuro); `-qa.apariencia` solo cambia la ventana de la copia de prueba, no sus hojas.
+
+**Lo que dibuja el canvas y la app no tiene (decidir si se construye; necesita datos o funciones nuevas)**
+- Pagos programados y en lote, gastos recurrentes, «Programar pago», «Impuesto incluido», W-9.
+- Editar un gasto o una cuenta ya contabilizados; editar una tasa de impuesto.
+- Plantilla de factura, «Para/Asunto» al enviar, persona de contacto del cliente, «vista por el cliente» y recordatorio enviado.
+- Campana de avisos; plan de cuentas agrupado por tipo con triángulos (la tabla común del Mac solo admite filas planas).
+
+**Fase 2 (fuera del MVP)**: OCR, bandeja del banco e importar/conciliar (Plaid en un backend), usuarios y permisos, varias empresas, deducibles y «Exportar para mi contador».
+
+**Más adelante**
+- Logo de la empresa (el ícono de la app ya está: `541169a`).
+- Subir a `DesignSystem` las piezas que los agentes hicieron dentro de cada pantalla: grupos de filas, `ComparisonBars`, cebra de tablas, monogramas de varios tamaños, `ActivityMark`, `LineEditRow`.
 - QA no debe tocar el simulador de iPad `BEB1EA39`: ahí corren las pruebas de interfaz de otro proyecto (Tamio).

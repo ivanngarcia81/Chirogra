@@ -89,9 +89,9 @@ struct TaxesView: View {
                 }
             }
         }
-        .sheet(isPresented: $showingRate) { NavigationStack { TaxRateEditorView() } }
-        .sheet(isPresented: $showingPayment) { NavigationStack { SalesTaxPaymentView(owed: payable) } }
-        .sheet(isPresented: $showingGroup) { NavigationStack { TaxGroupEditorView() } }
+        .sheet(isPresented: $showingRate) { NavigationStack { TaxRateEditorView() }.editorSheetSizing() }
+        .sheet(isPresented: $showingPayment) { NavigationStack { SalesTaxPaymentView(owed: payable) }.editorSheetSizing() }
+        .sheet(isPresented: $showingGroup) { NavigationStack { TaxGroupEditorView() }.editorSheetSizing() }
         #if os(macOS)
         .macReportInspector(title: macSelectedItem?.name ?? String(localized: "Tasas"), hasSelection: macSelectedItem != nil,
                             placeholder: String(localized: "Aún no hay tasas de impuesto. Añade una con «+» bajo la tabla."),
