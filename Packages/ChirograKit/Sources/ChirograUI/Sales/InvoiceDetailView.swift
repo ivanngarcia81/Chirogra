@@ -21,6 +21,10 @@ struct InvoiceDetailView: View {
     @Query(sort: \Account.code) private var accounts: [Account]
     @State private var showingCreditNote = false
     @State private var showingPreview = false
+    /// «Enviar factura» (y «PDF»): la hoja de envío con Para y Asunto (canvas `FacturaEnviar`).
+    @State private var sending = false
+    /// «Recordatorio»: la misma hoja con el texto del recordatorio; al enviarlo queda anotado.
+    @State private var reminding = false
     @State private var editingDraft = false
     @State private var duplicate: Invoice?
     @State private var confirmingVoid = false
@@ -42,6 +46,9 @@ struct InvoiceDetailView: View {
     private var depositAccounts: [Account] { accounts.filtered { $0.isMoneyAccount && $0 != .creditCard } }
     private var amountToRecord: Int64 { paymentMode == .total ? invoice.balanceDue : paymentAmount }
     private var isDraft: Bool { invoice.status == .draft }
+    private var remindedToday: Bool { invoice.lastReminderDate.map(Calendar.current.isDateInToday) ?? false }
+    /// Emitida y aún sin enviar por correo desde la app: se propone «Enviar factura».
+    private var needsSending: Bool { invoice.isOpen && invoice.lastSentDate == nil }
 
     /// iPad (columna ancha) y Mac: el detalle de `iPadVentas`; en el iPhone y la columna estrecha, el de `FacturaDetalle`.
     private var isWide: Bool {
@@ -58,8 +65,13 @@ struct InvoiceDetailView: View {
                 summary
                 if isDraft {
                     draftActions.padding(.top, 16)
-                } else if !isWide {
-                    actionTiles.padding(.top, 14)
+                } else {
+                    if needsSending {
+                        Button("Enviar factura", systemImage: "paperplane") { sending = true }
+                            .buttonStyle(.primary)
+                            .padding(.top, 14)
+                    }
+                    if !isWide { actionTiles.padding(.top, 14) }
                 }
                 if !isDraft {
                     if isWide {
@@ -71,7 +83,7 @@ struct InvoiceDetailView: View {
                     }
                 }
                 linesSection
-                if !isDraft { totalsSection }
+                totalsSection
                 creditNotesSection
             }
             .padding(.horizontal, Metrics.gutter)
@@ -87,12 +99,11 @@ struct InvoiceDetailView: View {
             if isWide && !isDraft {
                 ToolbarItemGroup(placement: .primaryAction) {
                     Button("Duplicar", systemImage: "plus.square.on.square", action: duplicateInvoice).headerButton()
-                    Button("PDF", systemImage: "doc.richtext") { showingPreview = true }.headerButton()
+                    Button("PDF", systemImage: "doc.richtext") { sending = true }.headerButton()
                     if invoice.isOpen {
-                        ShareLink(item: reminderText, subject: Text("Recordatorio de pago")) {
-                            Label("Recordatorio", systemImage: "bell")
-                        }
-                        .headerButton()
+                        Button(remindedToday ? "Recordatorio enviado hoy" : "Recordatorio",
+                               systemImage: remindedToday ? "checkmark" : "bell") { reminding = true }
+                            .headerButton()
                     }
                 }
                 ToolbarSpacer(.fixed, placement: .primaryAction)
@@ -101,6 +112,12 @@ struct InvoiceDetailView: View {
         }
         .sheet(isPresented: $showingPreview) {
             NavigationStack { InvoicePreviewView(invoice: invoice, company: companies.first) }.editorSheetSizing()
+        }
+        .sheet(isPresented: $sending) {
+            NavigationStack { SendDocumentView(source: .invoice(invoice)) }.editorSheetSizing()
+        }
+        .sheet(isPresented: $reminding) {
+            NavigationStack { SendDocumentView(source: .invoice(invoice), purpose: .reminder) }.editorSheetSizing()
         }
         .sheet(isPresented: $editingDraft) {
             NavigationStack { InvoiceEditorView(editing: invoice) }.editorSheetSizing()
@@ -134,7 +151,8 @@ struct InvoiceDetailView: View {
     private var summary: some View {
         let customer = invoice.customer?.name ?? String(localized: "Sin cliente")
         // Abierta: lo que falta por cobrar. Pagada o anulada: el total (un «$0.00» grande no dice nada).
-        let shown = isDraft ? invoice.draftAmount
+        // Borrador: el total con las reglas de emisión (impuesto, descuento, impuesto incluido), como el PDF.
+        let shown = isDraft ? ((try? books.totals(for: invoice).total) ?? invoice.draftAmount)
             : (invoice.status == .paid || invoice.status == .void) ? invoice.total : invoice.balanceDue
         let amount = Text(shown.money)
             .font(.system(.largeTitle, weight: .bold)).monospacedDigit()
@@ -156,6 +174,7 @@ struct InvoiceDetailView: View {
                         Text(detail).font(.subheadline).foregroundStyle(Palette.ink2)
                     }
                 }
+                if remindedToday && invoice.isOpen { reminderNote }
             }
             .padding(.horizontal, 8)
             .padding(.vertical, 6)
@@ -166,6 +185,7 @@ struct InvoiceDetailView: View {
                 amount
                 StatusChip(invoice: invoice, compact: false)
                 Text(detail).font(.footnote).foregroundStyle(Palette.ink2).padding(.top, 2)
+                if remindedToday && invoice.isOpen { reminderNote.padding(.top, 2) }
             }
             .multilineTextAlignment(.center)
             .frame(maxWidth: .infinity)
@@ -175,9 +195,16 @@ struct InvoiceDetailView: View {
         }
     }
 
+    /// «✓ Recordatorio enviado hoy» (canvas `MacClienteFicha`).
+    private var reminderNote: some View {
+        Label("Recordatorio enviado hoy", systemImage: "checkmark.circle.fill")
+            .font(.footnote.weight(.semibold))
+            .foregroundStyle(Palette.positive)
+    }
+
     private var detail: String {
         switch invoice.status {
-        case .draft: String(localized: "Borrador: líneas menos descuento, sin impuesto")
+        case .draft: String(localized: "Borrador: el asiento se registra al emitirla")
         case .paid: String(localized: "Total cobrado \(invoice.total.money)")
         case .void: String(localized: "Total de \(invoice.total.money)")
         case .sent, .partiallyPaid:
@@ -205,12 +232,14 @@ struct InvoiceDetailView: View {
     private var actionTiles: some View {
         tileRow {
             actionTile(String(localized: "Duplicar"), "plus.square.on.square", action: duplicateInvoice)
-            actionTile(String(localized: "PDF"), "doc.richtext") { showingPreview = true }
+            actionTile(String(localized: "PDF"), "doc.richtext") { sending = true }
             if invoice.isOpen {
-                ShareLink(item: reminderText, subject: Text("Recordatorio de pago")) {
-                    tileLabel(String(localized: "Recordatorio"), "bell", tint: Palette.brand)
+                if remindedToday {
+                    actionTile(String(localized: "Enviado hoy"), "checkmark.circle", tint: Palette.positive) { reminding = true }
+                        .accessibilityLabel("Recordatorio enviado hoy")
+                } else {
+                    actionTile(String(localized: "Recordatorio"), "bell") { reminding = true }
                 }
-                .buttonStyle(.plain)
             }
         }
     }
@@ -235,8 +264,6 @@ struct InvoiceDetailView: View {
         .background(Palette.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
         .contentShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
-
-    private var reminderText: String { invoice.reminderText }
 
     /// «⋯» de la barra (canvas: editar, duplicar, anular).
     private var moreMenu: some View {
@@ -266,18 +293,27 @@ struct InvoiceDetailView: View {
 
     // MARK: Actividad
 
-    /// Creada → Enviada → Pago → Pagada (o Anulada), con círculos rellenos de Tinta en los pasos cumplidos.
+    /// Creada → Enviada (cada envío y recordatorio anotado, con su destinatario) → Pago → Pagada (o Anulada), con círculos
+    /// rellenos de Tinta en los pasos cumplidos. Sin envío anotado, «Emitida» y «Enviada · Sin enviar».
     private var activity: some View {
         let payments = (invoice.paymentApplications ?? []).compactMap(\.payment?.date).sorted()
-        var steps: [(title: String, value: String, done: Bool)] = [
-            (String(localized: "Creada"), min(invoice.createdAt, invoice.issueDate).dayMonth, true),
-            (String(localized: "Enviada"), invoice.issueDate.dayMonth, true),
+        var steps: [(title: String, detail: String, value: String, done: Bool)] = [
+            (String(localized: "Creada"), "", min(invoice.createdAt, invoice.issueDate).dayMonth, true),
         ]
+        let events = invoice.sortedEvents.reversed()
+        if !events.contains(where: { $0.kind == .sent }) {
+            steps.append((String(localized: "Emitida"), "", invoice.issueDate.dayMonth, true))
+            if invoice.status != .void { steps.append((String(localized: "Enviada"), "", String(localized: "Sin enviar"), false)) }
+        }
+        for event in events {
+            steps.append((event.kind == .sent ? String(localized: "Enviada") : String(localized: "Recordatorio enviado"),
+                          event.recipient, event.date.dayMonth, true))
+        }
         if invoice.status == .void {
-            steps.append((String(localized: "Anulada"), "", true))
+            steps.append((String(localized: "Anulada"), "", "", true))
         } else {
-            steps.append((String(localized: "Pago"), invoice.amountPaid > 0 ? invoice.amountPaid.money : String(localized: "Pendiente"), invoice.amountPaid > 0))
-            steps.append((String(localized: "Pagada"), invoice.status == .paid ? (payments.last ?? invoice.issueDate).dayMonth : "—",
+            steps.append((String(localized: "Pago"), "", invoice.amountPaid > 0 ? invoice.amountPaid.money : String(localized: "Pendiente"), invoice.amountPaid > 0))
+            steps.append((String(localized: "Pagada"), "", invoice.status == .paid ? (payments.last ?? invoice.issueDate).dayMonth : "—",
                           invoice.status == .paid))
         }
         return VStack(alignment: .leading, spacing: 0) {
@@ -289,7 +325,12 @@ struct InvoiceDetailView: View {
                     HStack(spacing: 12) {
                         ActivityMark(done: step.done)
                         AdaptiveRow {
-                            Text(step.title).foregroundStyle(step.done ? Palette.ink : Palette.ink2)
+                            VStack(alignment: .leading, spacing: 1) {
+                                Text(step.title).foregroundStyle(step.done ? Palette.ink : Palette.ink2)
+                                if !step.detail.isEmpty {
+                                    Text(step.detail).font(.footnote).foregroundStyle(Palette.ink2).lineLimit(2).truncationMode(.middle)
+                                }
+                            }
                         } trailing: {
                             Text(step.value).foregroundStyle(Palette.ink2).monospacedDigit()
                         }
@@ -458,21 +499,23 @@ struct InvoiceDetailView: View {
         }
     }
 
+    /// Subtotal, descuento, impuesto, total, cobrado y notas de crédito. Con precios con impuesto incluido el impuesto
+    /// va después del total, en gris («Incluye Austin 8.25 %»): Subtotal − Descuento = Total (DATOS-V2 §4).
     private var totalsSection: some View {
-        var rows: [(String, String, Bool)] = [(String(localized: "Subtotal"), invoice.subtotal.money, false)]
-        if invoice.discount > 0 { rows.append((String(localized: "Descuento"), "−\(invoice.discount.money)", false)) }
-        for tax in invoice.taxLines ?? [] {
-            rows.append(("\(tax.name) · \((Decimal(tax.rateMillionths) / 10_000).formatted())%", tax.amount.money, false))
-        }
-        rows.append((String(localized: "Total"), invoice.total.money, true))
-        rows.append((String(localized: "Cobrado"), invoice.amountPaid.money, false))
-        if invoice.creditsApplied > 0 { rows.append((String(localized: "Notas de crédito"), "−\(invoice.creditsApplied.money)", false)) }
+        // Un borrador aún no tiene los totales guardados: los calcula `SalesDocument` como al emitirlo.
+        let base: [SalesDocument.Total] = isDraft ? SalesDocument(invoice: invoice).totals : SalesDocument.rows(
+            subtotal: invoice.subtotal, discount: invoice.discount,
+            taxes: (invoice.taxLines ?? []).sorted { $0.name < $1.name }.map { ($0.name, $0.rateMillionths, $0.amount) },
+            total: invoice.total, pricesIncludeTax: invoice.pricesIncludeTax)
+        var rows: [(String, String, Bool, Bool)] = base.map { ($0.title, $0.value, $0.style == .accent, $0.style == .subtle) }
+        if !isDraft { rows.append((String(localized: "Cobrado"), invoice.amountPaid.money, false, false)) }
+        if invoice.creditsApplied > 0 { rows.append((String(localized: "Notas de crédito"), "−\(invoice.creditsApplied.money)", false, false)) }
         return VStack(spacing: 0) {
             ForEach(rows.indices, id: \.self) { index in
-                let (title, value, bold) = rows[index]
+                let (title, value, bold, subtle) = rows[index]
                 if index > 0 { Divider().padding(.leading, Metrics.cardPadding) }
                 AdaptiveRow {
-                    Text(title).foregroundStyle(Palette.ink).fontWeight(bold ? .semibold : .regular)
+                    Text(title).foregroundStyle(subtle ? Palette.ink2 : Palette.ink).fontWeight(bold ? .semibold : .regular)
                 } trailing: {
                     Text(value).monospacedDigit().foregroundStyle(bold ? Palette.ink : Palette.ink2).fontWeight(bold ? .semibold : .regular)
                 }
@@ -565,7 +608,8 @@ struct InvoiceDetailView: View {
         let terms = invoice.customer?.paymentTermsDays ?? 30
         let input = InvoiceDraftInput(
             customer: invoice.customer, issueDate: .now,
-            dueDate: Calendar.current.date(byAdding: .day, value: terms, to: .now) ?? .now,
+            dueDate: (try? books.newInvoiceDefaults(for: invoice.customer).dueDate)
+                ?? Calendar.current.date(byAdding: .day, value: terms, to: .now) ?? .now,
             taxGroupID: invoice.taxGroupID, discount: invoice.discount, customerMessage: invoice.customerMessage,
             lines: invoice.sortedLines.map {
                 .init(details: $0.details, quantity: $0.quantity, unitPrice: $0.unitPrice, isTaxable: $0.isTaxable, incomeAccountID: $0.incomeAccountID)

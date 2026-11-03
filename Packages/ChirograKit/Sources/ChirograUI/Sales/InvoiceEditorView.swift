@@ -8,7 +8,18 @@ import SwiftUI
 /// total, «Vista previa» y «Emitir». iPad y Mac (canvas `MacFacturaNueva`): cajas «Cliente» y «Condiciones», tabla de
 /// artículos, «Mensaje y términos» y «Totales». Trabaja con estado local y solo escribe en el modelo al guardar, así
 /// cancelar no deja nada a medias.
+///
+/// También es el editor de estimados (`mode: .estimate`, canvas `Estimado`): el mismo formulario con «Concepto», «Válido
+/// hasta» en lugar de los términos y «Guardar estimado» en lugar de «Emitir»; no hace asiento. Las facturas y estimados
+/// nuevos nacen con los valores de la empresa y del cliente (`Bookkeeper.newInvoiceDefaults`), y los totales siguen las
+/// reglas de emisión, también con precios con impuesto incluido.
 struct InvoiceEditorView: View {
+    /// Factura (nueva o borrador) o estimado (nuevo o existente).
+    enum Mode {
+        case invoice
+        case estimate(Estimate?)
+    }
+
     struct LineDraft: Identifiable {
         let id = UUID()
         var details = ""
@@ -23,6 +34,7 @@ struct InvoiceEditorView: View {
     var preselectedCustomer: Customer?
     /// Borrador existente que se edita; `nil` para una factura nueva.
     var editing: Invoice?
+    var mode: Mode = .invoice
 
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
@@ -47,8 +59,14 @@ struct InvoiceEditorView: View {
     /// «Añadir descuento» muestra el campo (canvas `FacturaNueva`).
     @State private var showingDiscount = false
     @State private var customerMessage = ""
+    /// Concepto del estimado («Remodelación del lobby»).
+    @State private var estimateTitle = ""
+    /// Precios con impuesto incluido: el del borrador o estimado que se edita; `nil` = el de la empresa.
+    @State private var pricesIncludeTax: Bool?
     @State private var errorMessage: String?
     @State private var savedInvoice: Invoice?
+    @State private var savedEstimate: Estimate?
+    @State private var previewingEstimate: Estimate?
     @State private var showingNewCustomer = false
     @State private var previewing: Invoice?
     @State private var confirmingCancel = false
@@ -67,6 +85,9 @@ struct InvoiceEditorView: View {
 
     private var books: Bookkeeper { Bookkeeper(context: context) }
     private var customer: Customer? { customers.first { $0.id == customerID } }
+    private var isEstimate: Bool { if case .estimate = mode { true } else { false } }
+    private var editingEstimate: Estimate? { if case .estimate(let estimate) = mode { estimate } else { nil } }
+    private var includesTax: Bool { pricesIncludeTax ?? companies.first?.pricesIncludeTax ?? false }
     private var incomeAccounts: [Account] { accounts.filtered { $0.accountType == .income } }
     private var validLines: [LineDraft] { lines.filter { $0.amount > 0 } }
     private var linesSubtotal: Int64 { validLines.reduce(0) { $0 + $1.amount } }
@@ -79,17 +100,32 @@ struct InvoiceEditorView: View {
             date: issueDate, memo: "", receivableAccountID: UUID(),
             lines: validLines.map { SalesLine(incomeAccountID: $0.incomeAccountID ?? defaultIncome, amount: $0.amount, isTaxable: $0.isTaxable) },
             taxComponents: components, customerIsTaxExempt: customer?.isTaxExempt ?? false,
-            discount: discount, discountAccountID: discount > 0 ? UUID() : nil
+            discount: discount, discountAccountID: discount > 0 ? UUID() : nil, pricesIncludeTax: includesTax
         )
     }
+
+    /// «Sales tax» o, con precios con impuesto incluido, «Sales tax incluido» (no se suma: ya va en el subtotal).
+    private var taxRowTitle: String { includesTax ? String(localized: "Sales tax incluido") : String(localized: "Sales tax") }
 
     /// Lo que escribe el usuario (no los valores por defecto que pone el cliente).
     private var signature: String {
         let lineText = lines.map { "\($0.details)|\($0.quantity)|\($0.unitPrice)|\($0.isTaxable)" }.joined(separator: ";")
-        return "\(customerID?.uuidString ?? "")#\(lineText)#\(discount)#\(customerMessage)"
+        return "\(customerID?.uuidString ?? "")#\(lineText)#\(discount)#\(customerMessage)#\(estimateTitle)"
     }
 
-    private var editorTitle: String { editing == nil ? String(localized: "Nueva factura") : String(localized: "Editar borrador") }
+    private var editorTitle: String {
+        if isEstimate { return editingEstimate == nil ? String(localized: "Nuevo estimado") : String(localized: "Editar estimado") }
+        return editing == nil ? String(localized: "Nueva factura") : String(localized: "Editar borrador")
+    }
+
+    /// «Emitir factura» o «Guardar estimado».
+    private var primaryTitle: String { isEstimate ? String(localized: "Guardar estimado") : String(localized: "Emitir factura") }
+
+    private var ledgerNote: String {
+        isEstimate
+            ? String(localized: "Un estimado no registra nada en la contabilidad. Al convertirlo en factura se crea un borrador.")
+            : String(localized: "Al emitirla se registra el asiento contable: débito a cuentas por cobrar, crédito a ingresos y sales tax.")
+    }
 
     private var hasChanges: Bool { hasNewDraft || (baseline.map { $0 != signature } ?? false) }
 
@@ -99,6 +135,9 @@ struct InvoiceEditorView: View {
         }
         .sheet(item: $previewing) { invoice in
             NavigationStack { InvoicePreviewView(invoice: invoice, company: companies.first) }.editorSheetSizing()
+        }
+        .sheet(item: $previewingEstimate) { estimate in
+            NavigationStack { DocumentPreviewView(source: .estimate(estimate), company: companies.first) }.editorSheetSizing()
         }
         .navigationTitle(editorTitle)
         #if os(macOS)
@@ -120,12 +159,13 @@ struct InvoiceEditorView: View {
                     Label("Cancelar", systemImage: "xmark").labelStyle(.iconOnly)
                     #endif
                 }
-                .confirmationDialog("¿Conservar el borrador?", isPresented: $confirmingCancel, titleVisibility: .visible) {
-                    Button("Conservar borrador", action: saveDraft)
-                    Button("Descartar borrador", role: .destructive, action: discardDraft)
+                .confirmationDialog(isEstimate ? "¿Conservar el estimado?" : "¿Conservar el borrador?", isPresented: $confirmingCancel,
+                                    titleVisibility: .visible) {
+                    Button(isEstimate ? "Conservar estimado" : "Conservar borrador", action: saveDraft)
+                    Button(isEstimate ? "Descartar estimado" : "Descartar borrador", role: .destructive, action: discardDraft)
                     Button("Seguir editando", role: .cancel) {}
                 } message: {
-                    Text("Al ver la vista previa se guardó como borrador.")
+                    Text(isEstimate ? "Al ver la vista previa se guardó el estimado." : "Al ver la vista previa se guardó como borrador.")
                 }
                 .confirmationDialog("¿Descartar los cambios?", isPresented: $confirmingDiscardChanges, titleVisibility: .visible) {
                     Button("Descartar", role: .destructive) { close() }
@@ -138,9 +178,10 @@ struct InvoiceEditorView: View {
             // «Vista previa» y «Guardar borrador» van en el contenido.
             ToolbarItem(placement: .confirmationAction) {
                 if isWide {
-                    Button("Emitir factura", action: issue).disabled(!canIssue)
+                    Button(primaryTitle, action: primaryAction).disabled(!canIssue)
                 } else {
-                    Button("Guardar", action: saveDraft).disabled(customerID == nil).accessibilityLabel("Guardar borrador")
+                    Button("Guardar", action: saveDraft).disabled(customerID == nil)
+                        .accessibilityLabel(isEstimate ? "Guardar estimado" : "Guardar borrador")
                 }
             }
             #else
@@ -149,7 +190,7 @@ struct InvoiceEditorView: View {
             if !isWide {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(action: saveDraft) {
-                        Label("Guardar borrador", systemImage: "checkmark").labelStyle(.iconOnly)
+                        Label(isEstimate ? "Guardar estimado" : "Guardar borrador", systemImage: "checkmark").labelStyle(.iconOnly)
                     }
                     .disabled(customerID == nil)
                     .headerButton()
@@ -163,7 +204,7 @@ struct InvoiceEditorView: View {
                 }
                 ToolbarSpacer(.fixed, placement: .primaryAction)
                 ToolbarItem(placement: .primaryAction) {
-                    Button("Emitir factura", action: issue).disabled(!canIssue).headerButton()
+                    Button(primaryTitle, action: primaryAction).disabled(!canIssue).headerButton()
                 }
             }
             #endif
@@ -173,6 +214,8 @@ struct InvoiceEditorView: View {
         .interactiveDismissDisabled(hasChanges)
         .onAppear {
             if let editing, !loadedDraft { load(editing) }
+            if let editingEstimate, !loadedDraft { load(editingEstimate) }
+            if !loadedDraft, baseline == nil { applyNewDocumentDefaults() }
             if customerID == nil { customerID = preselectedCustomer?.id }
             if lines.first?.incomeAccountID == nil { lines[0].incomeAccountID = incomeAccounts.first?.id }
             if baseline == nil { baseline = signature }
@@ -181,15 +224,27 @@ struct InvoiceEditorView: View {
         // La barra lateral pregunta antes de cambiar de pantalla si hay cambios (y al descartar borra el borrador
         // que guardó la vista previa).
         .reportsUnsavedChanges(hasChanges, token: editorToken, onDiscard: deleteSavedDraft)
+        #if DEBUG
+        // `-qa.impuestoIncluido 1`: activa «Precios con impuesto incluido» en la empresa (su interruptor está en Impuestos).
+        .task {
+            if UserDefaults.standard.bool(forKey: "qa.impuestoIncluido"), let company = companies.first, !company.pricesIncludeTax {
+                company.pricesIncludeTax = true
+            }
+        }
+        #endif
         // Con un aviso de «Cancelar» abierto o cerrándose, su acción aún puede retirar el editor
         // (ver `UnsavedChanges.confirmation`).
         .onChange(of: confirmingCancel || confirmingDiscardChanges) { _, open in unsavedChanges?.confirmation(isOpen: open) }
         .onChange(of: customerID) {
             if skipCustomerDefaults { skipCustomerDefaults = false; return }
             guard let customer else { return }
-            taxGroupID = customer.defaultTaxGroupID
-            customDue = false
-            dueDate = Calendar.current.date(byAdding: .day, value: customer.paymentTermsDays, to: issueDate) ?? issueDate
+            // Impuesto del cliente o el de la empresa (ninguno si está exento) y vencimiento según sus condiciones.
+            let defaults = try? books.newInvoiceDefaults(for: customer, issueDate: issueDate)
+            taxGroupID = defaults?.taxGroupID ?? customer.defaultTaxGroupID
+            if !isEstimate {
+                customDue = false
+                dueDate = defaults?.dueDate ?? Calendar.current.date(byAdding: .day, value: customer.paymentTermsDays, to: issueDate) ?? issueDate
+            }
         }
         // Con unos términos (Neto 15…), el vencimiento se mueve con la fecha; con «Otra fecha», nunca queda antes.
         .onChange(of: issueDate) { old, new in
@@ -248,8 +303,16 @@ struct InvoiceEditorView: View {
         DatePicker("Vence", selection: $dueDate, in: issueDate..., displayedComponents: .date)
     }
 
+    /// Validez del estimado (canvas `Estimado`: «válido hasta 30 nov»).
+    private var validUntilPicker: some View {
+        DatePicker("Válido hasta", selection: $dueDate, in: issueDate..., displayedComponents: .date)
+    }
+
     private var documentNumber: String {
-        savedInvoice.map { $0.number.isEmpty ? String(localized: "Al emitir") : $0.number }
+        if isEstimate {
+            return savedEstimate?.number ?? (try? books.peekDocumentNumber(.estimate)) ?? "—"
+        }
+        return savedInvoice.map { $0.number.isEmpty ? String(localized: "Al emitir") : $0.number }
             ?? (try? books.peekDocumentNumber(.invoice)) ?? "—"
     }
 
@@ -306,11 +369,18 @@ struct InvoiceEditorView: View {
             // Número · Fecha · Términos como filas del formulario; el vencimiento, en el pie.
             Section {
                 LabeledContent("Número", value: documentNumber)
+                if isEstimate {
+                    TextField("Concepto", text: $estimateTitle, prompt: Text("Concepto (opcional)"))
+                }
                 DatePicker("Fecha", selection: $issueDate, displayedComponents: .date)
-                termsPicker
-                if termsSelection.wrappedValue == Self.otherTerms { dueDatePicker }
+                if isEstimate {
+                    validUntilPicker
+                } else {
+                    termsPicker
+                    if termsSelection.wrappedValue == Self.otherTerms { dueDatePicker }
+                }
             } footer: {
-                Text("Vence el \(dueDate.shortDate).")
+                if isEstimate { Text("Válido hasta el \(dueDate.shortDate).") } else { Text("Vence el \(dueDate.shortDate).") }
             }
 
             Section(title: "Productos y servicios") {
@@ -330,7 +400,7 @@ struct InvoiceEditorView: View {
             Section {
                 LabeledContent("Subtotal", value: linesSubtotal.money)
                 taxPicker
-                LabeledContent("Sales tax", value: (preview?.totalTax ?? 0).money)
+                LabeledContent(taxRowTitle, value: (preview?.totalTax ?? 0).money)
                 if showingDiscount || discount > 0 {
                     LabeledContent("Descuento") {
                         MoneyField(title: String(localized: "Descuento"), minorUnits: $discount)
@@ -347,6 +417,10 @@ struct InvoiceEditorView: View {
                 } label: {
                     Text("Total").fontWeight(.semibold)
                 }
+            } footer: {
+                if includesTax {
+                    Text("Los precios ya incluyen el sales tax: el total es el subtotal menos el descuento.")
+                }
             }
 
             Section {
@@ -358,7 +432,7 @@ struct InvoiceEditorView: View {
                     }
                 }
             } footer: {
-                Text("Al emitirla se registra el asiento contable: débito a cuentas por cobrar, crédito a ingresos y sales tax.")
+                Text(ledgerNote)
             }
         }
         .formStyle(.grouped)
@@ -394,12 +468,12 @@ struct InvoiceEditorView: View {
             .accessibilityElement(children: .combine)
             if dynamicTypeSize.isAccessibilitySize {
                 Button("Vista previa", action: showPreview).buttonStyle(.secondary).disabled(!canIssue)
-                Button("Emitir factura", action: issue).buttonStyle(.primary).disabled(!canIssue)
+                Button(primaryTitle, action: primaryAction).buttonStyle(.primary).disabled(!canIssue)
             } else {
                 Button("Vista previa", action: showPreview).buttonStyle(FillCapsuleButtonStyle(fullWidth: false)).disabled(!canIssue)
-                Button(action: issue) { Text("Emitir") }
+                Button(action: primaryAction) { Text(isEstimate ? "Guardar" : "Emitir") }
                     .buttonStyle(.primaryCompact)
-                    .accessibilityLabel("Emitir factura")
+                    .accessibilityLabel(primaryTitle)
                     .disabled(!canIssue)
             }
         }
@@ -520,13 +594,15 @@ struct InvoiceEditorView: View {
                     }
                     VStack(alignment: .leading, spacing: 16) { messageBox; totalsBox }
                 }
-                Text("Al emitirla se registra el asiento contable: débito a cuentas por cobrar, crédito a ingresos y sales tax.")
+                Text(ledgerNote)
                     .font(.footnote).foregroundStyle(Palette.ink2)
                 HStack(spacing: 10) {
                     #if os(macOS)
                     Button("Vista previa", action: showPreview).disabled(!canIssue)
                     #endif
-                    Button("Guardar borrador", action: saveDraft).disabled(customerID == nil)
+                    if !isEstimate {
+                        Button("Guardar borrador", action: saveDraft).disabled(customerID == nil)
+                    }
                 }
                 .buttonStyle(.secondary).fixedSize()
             }
@@ -601,6 +677,12 @@ struct InvoiceEditorView: View {
             boxRow(String(localized: "Número")) {
                 Text(documentNumber).foregroundStyle(Palette.ink2).monospacedDigit()
             }
+            if isEstimate {
+                boxRow(String(localized: "Concepto")) {
+                    TextField("Concepto", text: $estimateTitle, prompt: Text("Opcional"))
+                        .labelsHidden().multilineTextAlignment(.trailing).fieldBox().frame(maxWidth: 260)
+                }
+            }
             if let customer, customer.isTaxExempt {
                 boxRow(String(localized: "Sales tax")) {
                     Label("Cliente exento de sales tax", systemImage: "checkmark.seal").foregroundStyle(Palette.positive)
@@ -614,14 +696,20 @@ struct InvoiceEditorView: View {
             boxRow(String(localized: "Fecha"), first: true) {
                 DatePicker("Fecha", selection: $issueDate, displayedComponents: .date).labelsHidden()
             }
-            boxRow(String(localized: "Condiciones")) {
-                termsPicker.labelsHidden().fixedSize()
-            }
-            boxRow(String(localized: "Vence")) {
-                if termsSelection.wrappedValue == Self.otherTerms {
-                    dueDatePicker.labelsHidden()
-                } else {
-                    Text(dueDate.shortDate).foregroundStyle(Palette.ink2)
+            if isEstimate {
+                boxRow(String(localized: "Válido hasta")) {
+                    validUntilPicker.labelsHidden()
+                }
+            } else {
+                boxRow(String(localized: "Condiciones")) {
+                    termsPicker.labelsHidden().fixedSize()
+                }
+                boxRow(String(localized: "Vence")) {
+                    if termsSelection.wrappedValue == Self.otherTerms {
+                        dueDatePicker.labelsHidden()
+                    } else {
+                        Text(dueDate.shortDate).foregroundStyle(Palette.ink2)
+                    }
                 }
             }
         }
@@ -731,7 +819,7 @@ struct InvoiceEditorView: View {
                 Text("El descuento no puede ser mayor que el subtotal.").font(.footnote).foregroundStyle(Palette.negative)
                     .padding(.horizontal, 12).padding(.bottom, 6)
             }
-            boxRow(String(localized: "Sales tax")) {
+            boxRow(taxRowTitle) {
                 Text((preview?.totalTax ?? 0).money).monospacedDigit()
             }
             VStack(spacing: 0) {
@@ -759,11 +847,42 @@ struct InvoiceEditorView: View {
         taxGroupID = invoice.taxGroupID
         discount = invoice.discount
         customerMessage = invoice.customerMessage
+        pricesIncludeTax = invoice.pricesIncludeTax
         lines = invoice.sortedLines.map {
             LineDraft(details: $0.details, quantity: $0.quantity, unitPrice: $0.unitPrice,
                       isTaxable: $0.isTaxable, incomeAccountID: $0.incomeAccountID)
         }
         if lines.isEmpty { lines = [LineDraft(incomeAccountID: incomeAccounts.first?.id)] }
+    }
+
+    private func load(_ estimate: Estimate) {
+        loadedDraft = true
+        savedEstimate = estimate
+        skipCustomerDefaults = estimate.customer != nil
+        customerID = estimate.customer?.id
+        estimateTitle = estimate.title
+        issueDate = estimate.issueDate
+        dueDate = estimate.expirationDate
+        customDue = true
+        taxGroupID = estimate.taxGroupID
+        discount = estimate.discount
+        customerMessage = estimate.customerMessage
+        pricesIncludeTax = estimate.pricesIncludeTax
+        lines = estimate.sortedLines.map {
+            LineDraft(details: $0.details, quantity: $0.quantity, unitPrice: $0.unitPrice,
+                      isTaxable: $0.isTaxable, incomeAccountID: $0.incomeAccountID)
+        }
+        if lines.isEmpty { lines = [LineDraft(incomeAccountID: incomeAccounts.first?.id)] }
+    }
+
+    /// Factura o estimado nuevo: impuesto predeterminado de la empresa (o el del cliente), vencimiento según los términos
+    /// predeterminados y el mensaje por defecto de la plantilla.
+    private func applyNewDocumentDefaults() {
+        guard editing == nil, editingEstimate == nil,
+              let defaults = try? books.newInvoiceDefaults(for: preselectedCustomer, issueDate: issueDate) else { return }
+        if customerMessage.isEmpty { customerMessage = defaults.customerMessage }
+        taxGroupID = defaults.taxGroupID
+        if !isEstimate { dueDate = defaults.dueDate }
     }
 
     private var input: InvoiceDraftInput {
@@ -773,8 +892,28 @@ struct InvoiceEditorView: View {
             lines: validLines.map {
                 .init(details: $0.details, quantity: $0.quantity, unitPrice: $0.unitPrice,
                       isTaxable: $0.isTaxable, incomeAccountID: $0.incomeAccountID)
-            }
+            },
+            pricesIncludeTax: pricesIncludeTax
         )
+    }
+
+    private var estimateInput: EstimateInput {
+        EstimateInput(customer: customer, title: estimateTitle.trimmingCharacters(in: .whitespaces), issueDate: issueDate,
+                      expirationDate: dueDate, taxGroupID: taxGroupID, discount: discount, customerMessage: customerMessage,
+                      lines: input.lines, pricesIncludeTax: pricesIncludeTax)
+    }
+
+    /// Guarda (o reescribe) el estimado con lo que hay ahora en pantalla.
+    @discardableResult
+    private func persistEstimate() throws -> Estimate {
+        let estimate = try books.saveEstimate(estimateInput, into: savedEstimate)
+        savedEstimate = estimate
+        return estimate
+    }
+
+    /// «Emitir factura» o «Guardar estimado».
+    private func primaryAction() {
+        if isEstimate { saveDraft() } else { issue() }
     }
 
     /// Guarda (o reescribe) el borrador con lo que hay ahora en pantalla.
@@ -785,12 +924,19 @@ struct InvoiceEditorView: View {
         return invoice
     }
 
-    /// Borrador creado en esta pantalla (por la vista previa) al hacer una factura nueva.
-    private var hasNewDraft: Bool { editing == nil && savedInvoice != nil }
+    /// Borrador (o estimado) creado en esta pantalla por la vista previa al hacer uno nuevo.
+    private var hasNewDraft: Bool {
+        isEstimate ? editingEstimate == nil && savedEstimate != nil : editing == nil && savedInvoice != nil
+    }
 
     private func deleteSavedDraft() {
-        guard editing == nil, let savedInvoice else { return }
-        context.delete(savedInvoice)
+        if isEstimate {
+            guard editingEstimate == nil, let savedEstimate else { return }
+            context.delete(savedEstimate)
+        } else {
+            guard editing == nil, let savedInvoice else { return }
+            context.delete(savedInvoice)
+        }
         try? context.save()
     }
 
@@ -805,26 +951,23 @@ struct InvoiceEditorView: View {
     }
 
     private func discardDraft() {
-        if let savedInvoice {
-            context.delete(savedInvoice)
-            try? context.save()
-        }
+        deleteSavedDraft()
         close()
     }
 
     private func saveDraft() {
         do {
-            try persistDraft()
+            if isEstimate { try persistEstimate() } else { try persistDraft() }
             close()
         } catch {
             errorMessage = error.localizedDescription
         }
     }
 
-    /// La vista previa sale del PDF real, así que primero se guarda el borrador.
+    /// La vista previa sale del PDF real, así que primero se guarda el borrador (o el estimado).
     private func showPreview() {
         do {
-            previewing = try persistDraft()
+            if isEstimate { previewingEstimate = try persistEstimate() } else { previewing = try persistDraft() }
         } catch {
             errorMessage = error.localizedDescription
         }

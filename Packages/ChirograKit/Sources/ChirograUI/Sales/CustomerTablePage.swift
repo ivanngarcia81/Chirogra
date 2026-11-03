@@ -17,6 +17,7 @@ struct CustomerTablePage: View {
     @State private var creating = false
     @State private var editing: Customer?
     @State private var invoicing: Customer?
+    @State private var estimating: Customer?
     @State private var openedCustomer: Customer?
 
     /// Los archivados no salen, como en la lista del iPhone y la columna maestro.
@@ -120,8 +121,9 @@ struct CustomerTablePage: View {
             Button("Abrir ficha") { openedCustomer = customer }.buttonStyle(.primary)
             HStack(spacing: 8) {
                 Button("Nueva factura") { invoicing = customer }.buttonStyle(.secondary)
-                Button("Editar") { editing = customer }.buttonStyle(.secondary)
+                Button("Nuevo estimado") { estimating = customer }.buttonStyle(.secondary)
             }
+            Button("Editar") { editing = customer }.buttonStyle(.secondary)
         }
         .sheet(isPresented: $creating) {
             // El cliente nuevo queda elegido en la tabla y en el inspector.
@@ -130,6 +132,9 @@ struct CustomerTablePage: View {
         .sheet(item: $editing) { customer in NavigationStack { CustomerEditorView(customer: customer) }.editorSheetSizing() }
         .sheet(item: $invoicing) { customer in
             NavigationStack { InvoiceEditorView(preselectedCustomer: customer) }.editorSheetSizing()
+        }
+        .sheet(item: $estimating) { customer in
+            NavigationStack { InvoiceEditorView(preselectedCustomer: customer, mode: .estimate(nil)) }.editorSheetSizing()
         }
         .navigationDestination(item: $openedCustomer) { CustomerDetailView(customer: $0) }
         #if DEBUG
@@ -173,6 +178,9 @@ private struct CustomerInspector: View {
             MacInspectorRow(label: String(localized: "Estado")) { customer.tableStatus }
         }
         MacInspectorSection(title: String(localized: "Contacto")) {
+            if !customer.contactLine.isEmpty {
+                MacInspectorRow(String(localized: "Persona"), value: customer.contactLine)
+            }
             MacInspectorRow(label: String(localized: "Correo")) {
                 if let emailURL {
                     Button(customer.email) { openURL(emailURL) }

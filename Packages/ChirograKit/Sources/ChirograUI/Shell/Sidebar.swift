@@ -51,6 +51,11 @@ enum SidebarItem: Hashable {
     var destination: some View {
         switch self {
         case .section(let section): section.destination
+        #if os(macOS)
+        // Mac: Estimados con tabla + inspector (`EstimateTablePage`). No es una `MasterPage`: así no cambia el `switch`
+        // de `MacTablePage.swift`.
+        case .sales(.estimates): EstimatesMacPage()
+        #endif
         case .sales(let segment): SalesView(fixedSegment: segment)
         case .expenses(let segment): ExpensesView(fixedSegment: segment)
         case .report(let kind): ReportsView(fixedKind: kind)
@@ -62,7 +67,8 @@ enum SidebarItem: Hashable {
     static func subsections(of section: AppSection) -> [(title: String, item: SidebarItem)] {
         switch section {
         case .sales:
-            [(String(localized: "Facturas"), .sales(.invoices)), (String(localized: "Clientes"), .sales(.customers))]
+            [(String(localized: "Facturas"), .sales(.invoices)), (String(localized: "Estimados"), .sales(.estimates)),
+             (String(localized: "Clientes"), .sales(.customers))]
         case .expenses:
             [(String(localized: "Gastos"), .expenses(.expenses)), (String(localized: "Proveedores"), .expenses(.vendors)),
              (String(localized: "Facturas por pagar"), .expenses(.bills))]
@@ -369,6 +375,7 @@ private struct SidebarCaptionLabelStyle: LabelStyle {
 struct SearchResultsView: View {
     let query: String
     @Query(sort: \Invoice.createdAt, order: .reverse) private var invoices: [Invoice]
+    @Query(sort: \Estimate.issueDate, order: .reverse) private var estimates: [Estimate]
     @Query(sort: \Customer.name) private var customers: [Customer]
     @Query(sort: \Vendor.name) private var vendors: [Vendor]
     @Query(sort: \Expense.date, order: .reverse) private var expenses: [Expense]
@@ -380,12 +387,14 @@ struct SearchResultsView: View {
 
     var body: some View {
         let foundInvoices = invoices.filter { matches($0.number) || matches($0.customer?.name ?? "") || $0.total.money.contains(text) }
+        let foundEstimates = estimates.filter { EstimateFilter.search($0, text) }
         let foundCustomers = customers.filter { !$0.isArchived && (matches($0.name) || matches($0.email)) }
         let foundVendors = vendors.filter { matches($0.name) || matches($0.email) }
         let foundExpenses = expenses.filter { matches($0.payee) || $0.total.money.contains(text) }
         let foundAccounts = accounts.filter { !$0.isArchived && (matches($0.name) || $0.code.hasPrefix(text)) }
         List {
-            if foundInvoices.isEmpty && foundCustomers.isEmpty && foundVendors.isEmpty && foundExpenses.isEmpty && foundAccounts.isEmpty {
+            if foundInvoices.isEmpty && foundEstimates.isEmpty && foundCustomers.isEmpty && foundVendors.isEmpty && foundExpenses.isEmpty
+                && foundAccounts.isEmpty {
                 EmptyStateView(systemImage: "magnifyingglass", title: String(localized: "Sin resultados"),
                                message: String(localized: "Prueba con un cliente, un número de factura, un proveedor o un monto."))
             }
@@ -393,6 +402,13 @@ struct SearchResultsView: View {
                 Section(title: "Facturas") {
                     ForEach(foundInvoices.prefix(20)) { invoice in
                         NavigationLink { InvoiceDetailView(invoice: invoice) } label: { InvoiceRow(invoice: invoice) }
+                    }
+                }
+            }
+            if !foundEstimates.isEmpty {
+                Section(title: "Estimados") {
+                    ForEach(foundEstimates.prefix(20)) { estimate in
+                        NavigationLink { EstimateDetailView(estimate: estimate) } label: { EstimateRow(estimate: estimate) }
                     }
                 }
             }
