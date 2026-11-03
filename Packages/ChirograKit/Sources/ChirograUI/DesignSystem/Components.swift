@@ -1235,17 +1235,19 @@ struct MoneyField: View {
     @Binding var minorUnits: Int64
 
     var body: some View {
-        TextField(title, value: decimal, format: .currency(code: "USD"))
+        // Con cero, el campo va vacío y «$0.00» es solo la guía: si el texto era «$0.00», lo escrito se pegaba detrás
+        // («$0.00500» → $0.01, 2-nov).
+        TextField(title, value: decimal, format: .currency(code: "USD"), prompt: Text(Int64(0).money))
             .monospacedDigit()
             #if os(iOS)
             .keyboardType(.decimalPad)
             #endif
     }
 
-    private var decimal: Binding<Decimal> {
+    private var decimal: Binding<Decimal?> {
         Binding(
-            get: { Money(minorUnits: minorUnits).decimalValue },
-            set: { minorUnits = Money(decimal: $0).minorUnits }
+            get: { minorUnits == 0 ? nil : Money(minorUnits: minorUnits).decimalValue },
+            set: { minorUnits = $0.map { Money(decimal: $0).minorUnits } ?? 0 }
         )
     }
 }
