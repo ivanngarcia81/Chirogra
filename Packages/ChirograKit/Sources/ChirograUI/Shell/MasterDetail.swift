@@ -370,6 +370,10 @@ private extension View {
             .environment(\.isMasterRowSelected, isSelected)
             .listRowBackground(MasterRowBackground(isSelected: isSelected))
             .listRowSeparator(isSelected ? .hidden : .automatic)
+            // Con teclado o trackpad, el sistema dibujaba encima su anillo de foco: cuadrado, sin las esquinas de la
+            // fila rellena de Tinta y cortado por la derecha (iPad, 2-nov). La fila elegida ya se ve; las flechas del
+            // teclado siguen moviendo la selección.
+            .focusEffectDisabled()
     }
 
     /// Filtro de la columna, fijo encima de la lista con fondo opaco. Con `safeAreaBar` formaba parte de la barra y
