@@ -214,11 +214,21 @@ struct CustomerDetailView: View {
     @State private var openOnly = false
     @State private var editing = false
     @State private var newInvoice = false
+    @State private var newEstimate = false
     @State private var refunding = false
+    @State private var addingNote = false
+    @State private var deletingNote: CustomerNote?
+    @State private var reminding: Invoice?
     @State private var tab: Tab = .history
+    @Environment(\.modelContext) private var context
 
     private var openInvoices: [Invoice] { (customer.invoices ?? []).filter { $0.isOpen && $0.balanceDue > 0 } }
     private var overdue: Int64 { customer.overdueBalance }
+    /// La factura del recordatorio: la abierta que vence (o venció) antes.
+    private var reminderInvoice: Invoice? { openInvoices.min { $0.dueDate < $1.dueDate } }
+    /// «Recordatorio enviado» si hoy ya se mandó uno de sus facturas abiertas (DATOS-V2 §9).
+    private var remindedToday: Bool { openInvoices.contains { $0.lastReminderDate.map(Calendar.current.isDateInToday) ?? false } }
+    private var estimates: [Estimate] { (customer.estimates ?? []).sorted { $0.issueDate > $1.issueDate } }
 
     /// `MacClienteFicha` en iPad y Mac hasta AX3; la ficha del iPhone en pantallas o columnas estrechas.
     private var isWide: Bool {
@@ -239,15 +249,19 @@ struct CustomerDetailView: View {
                 // Canvas `MacClienteFicha`: «Editar | Enviar recordatorio» en un grupo y «Nueva factura» aparte.
                 ToolbarItemGroup(placement: .primaryAction) {
                     Button("Editar", systemImage: "pencil") { editing = true }.labelStyle(.titleAndIcon).headerButton()
-                    if customer.openBalance > 0 {
-                        ShareLink(item: reminderText, subject: Text("Recordatorio de pago")) {
-                            Label("Enviar recordatorio", systemImage: "bell").labelStyle(.titleAndIcon)
+                    if let reminderInvoice {
+                        Button { reminding = reminderInvoice } label: {
+                            Label(remindedToday ? "Recordatorio enviado" : "Enviar recordatorio",
+                                  systemImage: remindedToday ? "checkmark" : "bell")
+                                .labelStyle(.titleAndIcon)
                         }
                         .headerButton()
                     }
                 }
                 ToolbarSpacer(.fixed, placement: .primaryAction)
-                ToolbarItem(placement: .primaryAction) {
+                ToolbarItemGroup(placement: .primaryAction) {
+                    Button { newEstimate = true } label: { Label("Nuevo estimado", systemImage: "list.clipboard").labelStyle(.titleAndIcon) }
+                        .headerButton()
                     Button { newInvoice = true } label: { Label("Nueva factura", systemImage: "plus").labelStyle(.titleAndIcon) }
                         .headerButton()
                 }
@@ -262,6 +276,32 @@ struct CustomerDetailView: View {
             NavigationStack { InvoiceEditorView(preselectedCustomer: customer) }.editorSheetSizing()
         }
         .sheet(isPresented: $refunding) { NavigationStack { CustomerRefundView(customer: customer) }.editorSheetSizing() }
+        .sheet(isPresented: $newEstimate) {
+            NavigationStack { InvoiceEditorView(preselectedCustomer: customer, mode: .estimate(nil)) }.editorSheetSizing()
+        }
+        .sheet(isPresented: $addingNote) { NavigationStack { CustomerNoteEditor(customer: customer) }.editorSheetSizing() }
+        .sheet(item: $reminding) { invoice in
+            NavigationStack { SendDocumentView(source: .invoice(invoice), purpose: .reminder) }.editorSheetSizing()
+        }
+        .confirmationDialog("¿Borrar la nota?", isPresented: Binding(get: { deletingNote != nil }, set: { if !$0 { deletingNote = nil } }),
+                            titleVisibility: .visible, presenting: deletingNote) { note in
+            Button("Borrar nota", role: .destructive) { deleteNote(note) }
+        } message: { note in
+            Text(note.text).lineLimit(2)
+        }
+        #if DEBUG
+        // `-qa.nota 1` abre «Nueva nota» y `-qa.recordar 1` «Enviar recordatorio» en la ficha (pruebas sin tocar la pantalla).
+        .task {
+            try? await Task.sleep(for: .seconds(1))
+            if UserDefaults.standard.bool(forKey: "qa.nota") { addingNote = true }
+            if UserDefaults.standard.bool(forKey: "qa.recordar") { reminding = reminderInvoice }
+        }
+        #endif
+    }
+
+    private func deleteNote(_ note: CustomerNote) {
+        try? Bookkeeper(context: context).deleteNote(note)
+        deletingNote = nil
     }
 
     // MARK: iPad y Mac (`MacClienteFicha`)
@@ -283,6 +323,7 @@ struct CustomerDetailView: View {
                 ])
                 if customer.creditBalance > 0 { creditCard }
                 invoiceTable
+                if !estimates.isEmpty { estimateTable }
                 ViewThatFits(in: .horizontal) {
                     HStack(alignment: .top, spacing: 16) {
                         contactBox.frame(minWidth: 300, maxWidth: .infinity)
@@ -308,6 +349,9 @@ struct CustomerDetailView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(customer.name).font(Self.wideNameFont).foregroundStyle(Palette.ink).accessibilityAddTraits(.isHeader)
                 Text(headerDetail).font(.subheadline).foregroundStyle(Palette.ink2)
+                if !customer.contactLine.isEmpty {
+                    Text(customer.contactLine).font(.subheadline).foregroundStyle(Palette.ink2)
+                }
                 if !customer.email.isEmpty {
                     Button(customer.email) { if let url = URL(string: "mailto:\(customer.email)") { openURL(url) } }
                         .buttonStyle(.plain).font(.subheadline).foregroundStyle(Palette.brand)
@@ -376,6 +420,34 @@ struct CustomerDetailView: View {
         }
     }
 
+    /// Estimados del cliente: Número · Emitido · Válido hasta · Estado · Importe.
+    private var estimateTable: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Estimados").font(.cardTitle).foregroundStyle(Palette.ink).accessibilityAddTraits(.isHeader)
+            TableCard {
+                Text("Número").frame(width: 70, alignment: .leading)
+                Text("Emitido").frame(width: 70, alignment: .leading)
+                Text("Válido hasta").frame(width: 90, alignment: .leading)
+                Text("Estado").frame(minWidth: 130, maxWidth: .infinity, alignment: .leading)
+                Text("Importe").frame(width: amountWidth, alignment: .trailing)
+            } rows: {
+                ForEach(Array(estimates.enumerated()), id: \.element.id) { index, estimate in
+                    NavigationLink { EstimateDetailView(estimate: estimate) } label: {
+                        TableRow {
+                            Text(estimate.number).frame(width: 70, alignment: .leading)
+                            Text(estimate.issueDate.dayMonth).foregroundStyle(Palette.ink2).frame(width: 70, alignment: .leading)
+                            Text(estimate.expirationDate.dayMonth).foregroundStyle(Palette.ink2).frame(width: 90, alignment: .leading)
+                            estimate.statusChip().fixedSize().frame(minWidth: 130, maxWidth: .infinity, alignment: .leading)
+                            Text(estimate.total.money).frame(width: amountWidth, alignment: .trailing)
+                        }
+                        .background(zebra(index))
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+    }
+
     /// Cebra del Mac (`--row2` en las filas impares); en iPhone e iPad, la celda lisa.
     private func zebra(_ index: Int) -> Color {
         #if os(macOS)
@@ -389,9 +461,11 @@ struct CustomerDetailView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Contacto").font(.cardTitle).foregroundStyle(Palette.ink).accessibilityAddTraits(.isHeader)
             VStack(spacing: 0) {
-                contactRow(String(localized: "Correo"), customer.email, link: customer.email.isEmpty ? nil : URL(string: "mailto:\(customer.email)"), first: true)
+                contactRow(String(localized: "Persona"), customer.contactLine, first: true)
+                contactRow(String(localized: "Correo"), customer.email, link: customer.email.isEmpty ? nil : URL(string: "mailto:\(customer.email)"))
                 contactRow(String(localized: "Teléfono"), customer.phone, link: phoneURL)
                 contactRow(String(localized: "Dirección"), customer.billingAddress)
+                if !customer.taxID.isEmpty { contactRow(String(localized: "ID fiscal"), customer.taxID) }
                 contactRow(String(localized: "Condiciones"), termsText)
                 contactRow(String(localized: "Sales tax"), customer.isTaxExempt ? String(localized: "Exento") : String(localized: "Gravable"))
             }
@@ -422,8 +496,65 @@ struct CustomerDetailView: View {
     private var notesBox: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Notas").font(.cardTitle).foregroundStyle(Palette.ink).accessibilityAddTraits(.isHeader)
+            datedNotes
+            fixedNote
+        }
+    }
+
+    /// Notas fechadas, de la más reciente a la más antigua (canvas `ClienteFicha` · Notas: el texto y «22 oct · Ana R.»
+    /// debajo), cada una con «Borrar», y «Nueva nota» al final.
+    private var datedNotes: some View {
+        VStack(spacing: 0) {
+            ForEach(Array(customer.sortedNotes.enumerated()), id: \.element.id) { index, note in
+                if index > 0 { Divider().padding(.leading, Metrics.cardPadding) }
+                HStack(alignment: .top, spacing: 8) {
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(note.text).foregroundStyle(Palette.ink).fixedSize(horizontal: false, vertical: true)
+                        Text(note.author.isEmpty ? note.date.dayMonth : "\(note.date.dayMonth) · \(note.author)")
+                            .font(.footnote).foregroundStyle(Palette.ink2)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .accessibilityElement(children: .combine)
+                    Button { deletingNote = note } label: {
+                        Image(systemName: "trash")
+                            .foregroundStyle(Palette.ink2)
+                            .frame(minWidth: Metrics.target, minHeight: Metrics.target)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Borrar nota del \(note.date.dayMonth)")
+                }
+                .padding(.leading, Metrics.cardPadding)
+                .padding(.trailing, 4)
+                .padding(.vertical, 6)
+            }
+            if customer.sortedNotes.isEmpty {
+                Text("Sin notas todavía").foregroundStyle(Palette.ink2)
+                    .frame(maxWidth: .infinity, minHeight: Metrics.target, alignment: .leading)
+                    .padding(.horizontal, Metrics.cardPadding)
+            }
+            Divider().padding(.leading, Metrics.cardPadding)
+            Button { addingNote = true } label: {
+                Label {
+                    Text("Nueva nota").foregroundStyle(Palette.brand)
+                } icon: {
+                    Image(systemName: "plus.circle.fill").symbolRenderingMode(.palette).foregroundStyle(.white, Palette.green)
+                }
+                .frame(maxWidth: .infinity, minHeight: Metrics.target, alignment: .leading)
+                .padding(.horizontal, Metrics.cardPadding)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+        }
+        .card(padding: 0)
+    }
+
+    /// Nota fija del cliente (`Customer.notes`), aparte de las fechadas.
+    private var fixedNote: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            SectionLabel(text: String(localized: "Nota fija")).padding(.horizontal, Metrics.cardPadding).padding(.top, 8)
             TextField("Añadir una nota…", text: $customer.notes, axis: .vertical)
-                .lineLimit(3...)
+                .lineLimit(2...)
                 .textFieldStyle(.plain)
                 .card(padding: 12)
         }
@@ -476,7 +607,7 @@ struct CustomerDetailView: View {
 
     /// Llamar · Mensaje · Correo · Factura; con tamaños de accesibilidad, en 2×2.
     private var actions: some View {
-        let columns = Array(repeating: GridItem(.flexible(), spacing: 8, alignment: .top), count: dynamicTypeSize.isAccessibilitySize ? 2 : 4)
+        let columns = Array(repeating: GridItem(.flexible(), spacing: 4, alignment: .top), count: dynamicTypeSize.isAccessibilitySize ? 2 : 5)
         return LazyVGrid(columns: columns, spacing: 12) {
             ProfileAction(title: String(localized: "Llamar"), systemImage: "phone.fill") {
                 if let phoneURL { openURL(phoneURL) }
@@ -491,6 +622,7 @@ struct CustomerDetailView: View {
             }
             .disabled(customer.email.isEmpty)
             ProfileAction(title: String(localized: "Factura"), systemImage: "doc.badge.plus") { newInvoice = true }
+            ProfileAction(title: String(localized: "Estimado"), systemImage: "list.clipboard") { newEstimate = true }
         }
     }
 
@@ -535,11 +667,11 @@ struct CustomerDetailView: View {
             .padding(.horizontal, Metrics.cardPadding)
             .padding(.top, 14)
             .padding(.bottom, 12)
-            if total > 0 {
+            if total > 0, let reminderInvoice {
                 Divider().padding(.leading, Metrics.cardPadding)
-                ShareLink(item: reminderText, subject: Text("Recordatorio de pago")) {
-                    Label("Recordar pago", systemImage: "bell")
-                        .foregroundStyle(Palette.brand)
+                Button { reminding = reminderInvoice } label: {
+                    Label(remindedToday ? "Recordatorio enviado hoy" : "Recordar pago", systemImage: remindedToday ? "checkmark.circle" : "bell")
+                        .foregroundStyle(remindedToday ? Palette.positive : Palette.brand)
                         .frame(maxWidth: .infinity, minHeight: Metrics.target, alignment: .leading)
                         .padding(.horizontal, Metrics.cardPadding)
                         .contentShape(Rectangle())
@@ -575,12 +707,6 @@ struct CustomerDetailView: View {
         return days.isEmpty ? nil : days.reduce(0, +) / days.count
     }
 
-    private var reminderText: String {
-        overdue > 0
-            ? String(localized: "Hola, \(customer.name): tienes \(overdue.money) vencido con nosotros. ¿Nos ayudas con el pago? ¡Gracias!")
-            : String(localized: "Hola, \(customer.name): te recordamos que tienes \(customer.openBalance.money) pendiente de pago. ¡Gracias!")
-    }
-
     private var creditCard: some View {
         VStack(alignment: .leading, spacing: 8) {
             LabeledContent("Saldo a favor", value: customer.creditBalance.money)
@@ -598,7 +724,8 @@ struct CustomerDetailView: View {
     private var history: some View {
         let invoices = (customer.invoices ?? []).map { HistoryItem.invoice($0) }
         let payments = (customer.payments ?? []).map { HistoryItem.payment($0) }
-        let items = (invoices + payments).sorted { $0.date > $1.date }
+        let estimates = estimates.map { HistoryItem.estimate($0) }
+        let items = (invoices + payments + estimates).sorted { $0.date > $1.date }
         return VStack(spacing: 0) {
             if items.isEmpty {
                 Text("Sin facturas").foregroundStyle(Palette.ink2)
@@ -610,6 +737,8 @@ struct CustomerDetailView: View {
                 switch item {
                 case .invoice(let invoice):
                     NavigationLink { InvoiceDetailView(invoice: invoice) } label: { historyRow(item, chevron: true) }.buttonStyle(.plain)
+                case .estimate(let estimate):
+                    NavigationLink { EstimateDetailView(estimate: estimate) } label: { historyRow(item, chevron: true) }.buttonStyle(.plain)
                 case .payment:
                     historyRow(item, chevron: false)
                 }
@@ -645,10 +774,12 @@ struct CustomerDetailView: View {
     /// Canvas `ClienteFicha` · Contacto: etiqueta pequeña encima y el valor (en Tinta si abre algo).
     private var contact: some View {
         let rows: [(String, String, URL?)] = [
+            (String(localized: "Contacto"), customer.contactLine, nil),
             (String(localized: "Correo"), customer.email, customer.email.isEmpty ? nil : URL(string: "mailto:\(customer.email)")),
             (String(localized: "Teléfono"), customer.phone, phoneURL),
             (String(localized: "Dirección de facturación"), customer.billingAddress, nil),
-        ] + (customer.shippingAddress.isEmpty ? [] : [(String(localized: "Dirección de envío"), customer.shippingAddress, nil)]) + [
+        ] + (customer.shippingAddress.isEmpty ? [] : [(String(localized: "Dirección de envío"), customer.shippingAddress, nil)])
+          + (customer.taxID.isEmpty ? [] : [(String(localized: "ID fiscal"), customer.taxID, nil)]) + [
             (String(localized: "Condiciones"), termsText, nil),
             (String(localized: "Sales tax"), customer.isTaxExempt ? String(localized: "Exento") : String(localized: "Gravable"), nil),
         ]
@@ -674,9 +805,70 @@ struct CustomerDetailView: View {
     }
 
     private var notes: some View {
-        TextField("Añadir una nota…", text: $customer.notes, axis: .vertical)
-            .lineLimit(4...)
-            .card()
+        VStack(alignment: .leading, spacing: 8) {
+            datedNotes
+            fixedNote
+        }
+    }
+}
+
+/// «Nueva nota» de la ficha del cliente: el texto y la fecha (hoy).
+struct CustomerNoteEditor: View {
+    let customer: Customer
+    @Environment(\.modelContext) private var context
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.unsavedChanges) private var unsavedChanges
+    @State private var editorToken = EditorToken()
+    @State private var text = ""
+    @State private var date = Date()
+    @State private var errorMessage: String?
+
+    var body: some View {
+        Form {
+            if let errorMessage { ErrorBanner(message: errorMessage) }
+            Section {
+                TextField("Nota", text: $text, prompt: Text("Qué quieres recordar de \(customer.name)"), axis: .vertical)
+                    .lineLimit(4...)
+                DatePicker("Fecha", selection: $date, displayedComponents: .date)
+            } footer: {
+                Text("Las notas solo las ves tú; no salen en las facturas.")
+            }
+        }
+        .formStyle(.grouped)
+        .screenBackground()
+        .navigationTitle("Nueva nota")
+        .inlineTitle()
+        .discardableEditor(tracking: "\(text)|\(date)", token: editorToken)
+        .toolbar {
+            ToolbarItem(placement: .confirmationAction) {
+                Button("Guardar", action: save)
+                    .disabled(text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    .headerButton()
+            }
+        }
+        #if os(macOS)
+        .frame(minWidth: 420, minHeight: 280)
+        #endif
+        #if DEBUG
+        // `-qa.nota.texto <texto>`: escribe y guarda la nota sola (pruebas del Mac sin teclado).
+        .task {
+            guard let qaText = UserDefaults.standard.string(forKey: "qa.nota.texto") else { return }
+            try? await Task.sleep(for: .seconds(1))
+            text = qaText
+            try? await Task.sleep(for: .seconds(0.5))
+            save()
+        }
+        #endif
+    }
+
+    private func save() {
+        do {
+            try Bookkeeper(context: context).addNote(to: customer, text: text, date: date)
+            unsavedChanges?.remove(editorToken)
+            dismiss()
+        } catch {
+            errorMessage = error.localizedDescription
+        }
     }
 }
 
@@ -684,11 +876,13 @@ struct CustomerDetailView: View {
 private enum HistoryItem: Identifiable {
     case invoice(Invoice)
     case payment(PaymentReceived)
+    case estimate(Estimate)
 
     var id: UUID {
         switch self {
         case .invoice(let invoice): invoice.id
         case .payment(let payment): payment.id
+        case .estimate(let estimate): estimate.id
         }
     }
 
@@ -696,17 +890,21 @@ private enum HistoryItem: Identifiable {
         switch self {
         case .invoice(let invoice): invoice.issueDate
         case .payment(let payment): payment.date
+        case .estimate(let estimate): estimate.issueDate
         }
     }
 
     var title: String {
         switch self {
         case .invoice(let invoice):
-            let number = invoice.number.isEmpty ? String(localized: "Borrador") : invoice.number
-            return String(localized: "Factura \(number) · \(invoice.statusTitle.lowercased())")
+            if invoice.number.isEmpty { return String(localized: "Factura en borrador") }
+            return String(localized: "Factura \(invoice.number) · \(invoice.statusTitle.lowercased())")
         case .payment(let payment):
             let numbers = (payment.applications ?? []).compactMap(\.invoice?.number).joined(separator: ", ")
             return numbers.isEmpty ? String(localized: "Pago recibido") : String(localized: "Pago recibido · \(numbers)")
+        case .estimate(let estimate):
+            // Canvas `ClienteFicha`: «Estimado E-0009 · aceptado».
+            return String(localized: "Estimado \(estimate.number) · \(estimate.statusTitle.lowercased())")
         }
     }
 
@@ -720,13 +918,17 @@ private enum HistoryItem: Identifiable {
             return invoice.isOpen ? "\(invoice.issueDate.dayMonth) · \(invoice.dueDate.dueLabel)" : invoice.issueDate.dayMonth
         case .payment(let payment):
             return "\(payment.date.dayMonth) · \((PaymentMethod(rawValue: payment.methodRaw) ?? .other).title.lowercased())"
+        case .estimate(let estimate):
+            return estimate.title.isEmpty ? estimate.issueDate.dayMonth : "\(estimate.issueDate.dayMonth) · \(estimate.title)"
         }
     }
 
     var amount: String {
         switch self {
-        case .invoice(let invoice): invoice.total.money
+        // Un borrador aún no tiene total guardado: lo que suman sus líneas.
+        case .invoice(let invoice): (invoice.status == .draft ? invoice.draftAmount : invoice.total).money
         case .payment(let payment): "+\(payment.amount.money)"
+        case .estimate(let estimate): estimate.total.money
         }
     }
 
@@ -734,6 +936,7 @@ private enum HistoryItem: Identifiable {
         switch self {
         case .invoice(let invoice): invoice.statusDotColor
         case .payment: Palette.green
+        case .estimate: Palette.gray
         }
     }
 
@@ -742,6 +945,7 @@ private enum HistoryItem: Identifiable {
         case .invoice(let invoice):
             invoice.daysOverdue() != nil ? Palette.negative : (invoice.status == .void || invoice.status == .draft) ? Palette.ink2 : Palette.ink
         case .payment: Palette.positive
+        case .estimate: Palette.ink2
         }
     }
 }
@@ -761,9 +965,12 @@ struct CustomerEditorView: View {
     @Query(sort: \TaxGroup.name) private var taxGroups: [TaxGroup]
 
     @State private var name = ""
+    @State private var contactName = ""
+    @State private var contactTitle = ""
     @State private var email = ""
     @State private var phone = ""
     @State private var billingAddress = ""
+    @State private var taxID = ""
     @State private var terms = 30
     @State private var taxGroupID: UUID?
     @State private var isTaxExempt = false
@@ -792,7 +999,19 @@ struct CustomerEditorView: View {
                     #endif
                 TextField("Dirección de facturación", text: $billingAddress, axis: .vertical)
             }
+            // Canvas `ClienteFicha` · Contacto: «Laura Méndez · Gerente».
+            Section {
+                TextField("Nombre", text: $contactName, prompt: Text("Nombre de la persona"))
+                    .textContentType(.name)
+                TextField("Cargo", text: $contactTitle, prompt: Text("Cargo (opcional)"))
+                    .textContentType(.jobTitle)
+            } header: {
+                SectionLabel(text: String(localized: "Persona de contacto"))
+            } footer: {
+                Text("A quién te diriges en los correos y quién suele aceptar los estimados.")
+            }
             Section(title: "Cobro") {
+                TextField("ID fiscal", text: $taxID, prompt: Text("ID fiscal (opcional)"))
                 Picker("Condiciones de pago", selection: $terms) {
                     Text("Al recibir").tag(0)
                     Text("Neto 15").tag(15)
@@ -811,7 +1030,7 @@ struct CustomerEditorView: View {
         .screenBackground()
         .navigationTitle(customer == nil ? "Nuevo cliente" : "Editar cliente")
         .inlineTitle()
-        .discardableEditor(tracking: "\(name)|\(email)|\(phone)|\(billingAddress)|\(terms)|\(taxGroupID?.uuidString ?? "")|\(isTaxExempt)|\(exemptionReason)", token: editorToken)
+        .discardableEditor(tracking: "\(name)|\(contactName)|\(contactTitle)|\(email)|\(phone)|\(billingAddress)|\(taxID)|\(terms)|\(taxGroupID?.uuidString ?? "")|\(isTaxExempt)|\(exemptionReason)", token: editorToken)
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
                 Button("Guardar", action: save).disabled(name.trimmingCharacters(in: .whitespaces).isEmpty).headerButton()
@@ -823,6 +1042,7 @@ struct CustomerEditorView: View {
                 return
             }
             name = customer.name; email = customer.email; phone = customer.phone
+            contactName = customer.contactName; contactTitle = customer.contactTitle; taxID = customer.taxID
             billingAddress = customer.billingAddress; terms = customer.paymentTermsDays
             taxGroupID = customer.defaultTaxGroupID; isTaxExempt = customer.isTaxExempt
             exemptionReason = customer.exemptionReason
@@ -834,6 +1054,9 @@ struct CustomerEditorView: View {
         if customer == nil { context.insert(target) }
         target.name = name.trimmingCharacters(in: .whitespaces)
         target.email = email; target.phone = phone; target.billingAddress = billingAddress
+        target.contactName = contactName.trimmingCharacters(in: .whitespaces)
+        target.contactTitle = contactTitle.trimmingCharacters(in: .whitespaces)
+        target.taxID = taxID.trimmingCharacters(in: .whitespaces)
         target.paymentTermsDays = terms; target.defaultTaxGroupID = taxGroupID
         target.isTaxExempt = isTaxExempt; target.exemptionReason = exemptionReason
         try? context.save()

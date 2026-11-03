@@ -3,19 +3,21 @@ import ChirograData
 import SwiftData
 import SwiftUI
 
-/// Ventas (canvas `Ventas`, `Clientes`): título grande con el menú de sección debajo (Facturas ·
-/// Clientes; Estimados, Recibos, Pagos y Productos son de fase 2), búsqueda del sistema y, en Facturas, el botón de
-/// filtro de la barra junto a «+». Es la pantalla del iPhone (y del iPad con la columna estrecha o AX4); en iPad y Mac,
-/// Facturas y Clientes van con columna maestro (`MasterPage`).
+/// Ventas (canvas `Ventas`, `Clientes`, `Estimado`): título grande con el menú de sección debajo (Facturas · Estimados ·
+/// Clientes; Recibos, Pagos y Productos son de fase 2), búsqueda del sistema y, en Facturas y Estimados, el botón de
+/// filtro de la barra junto a «+». Es la pantalla del iPhone (y del iPad con la columna estrecha o AX4); en el iPad
+/// van con columna maestro (`MasterPage`) y en el Mac, con tabla + inspector.
 struct SalesView: View {
     enum Segment: String, CaseIterable, Identifiable {
         case invoices = "Facturas"
+        case estimates = "Estimados"
         case customers = "Clientes"
         var id: String { rawValue }
 
         var systemImage: String {
             switch self {
             case .invoices: "doc.text"
+            case .estimates: "list.clipboard"
             case .customers: "person.2"
             }
         }
@@ -28,7 +30,9 @@ struct SalesView: View {
     @State private var showingEditor = false
     @State private var query = ""
     @State private var filter: InvoiceListView.Filter = .all
+    @State private var estimateFilter: EstimateFilter = .all
     @Query(sort: \Invoice.createdAt, order: .reverse) private var invoices: [Invoice]
+    @Query(sort: \Estimate.issueDate, order: .reverse) private var estimates: [Estimate]
 
     private var segment: Segment { fixedSegment ?? selectedSegment }
     private var sectionMenu: SalesSectionMenu? { fixedSegment == nil ? SalesSectionMenu(selection: $selectedSegment) : nil }
@@ -37,16 +41,18 @@ struct SalesView: View {
         Group {
             switch segment {
             case .invoices: InvoiceListView(query: $query, filter: $filter, sectionMenu: sectionMenu) { showingEditor = true }
+            case .estimates:
+                EstimateListView(query: $query, filter: $estimateFilter, sectionMenu: sectionMenu) { showingEditor = true }
             case .customers: CustomerListView(query: query, sectionMenu: sectionMenu) { showingEditor = true }
             }
         }
         .background(Palette.background)
-        .navigationTitle(fixedSegment == .customers ? "Clientes" : "Ventas")
+        .navigationTitle(fixedSegment == .customers ? "Clientes" : fixedSegment == .estimates ? "Estimados" : "Ventas")
         .headerTitle()
         // Una sola búsqueda en el contenedor y siempre visible: puesta en cada lista, desaparecía al volver de
         // una factura, porque la barra ya no encontraba la lista.
         .modifier(SalesSearch(query: $query,
-                              prompt: segment == .invoices ? Text("Cliente, número o monto") : Text("Nombre, correo o teléfono")))
+                              prompt: segment == .customers ? Text("Nombre, correo o teléfono") : Text("Cliente, número o monto")))
         .toolbar {
             // Canvas `Ventas`: filtro y «+» en un mismo grupo de vidrio.
             ToolbarItemGroup(placement: .primaryAction) {
@@ -55,15 +61,32 @@ struct SalesView: View {
                         invoices.filter(option.matches).count
                     }
                     .accessibilityLabel("Filtrar por estado")
+                } else if segment == .estimates {
+                    FilterMenu(options: EstimateFilter.allCases, selection: $estimateFilter, label: \.title) { option in
+                        estimates.filter(option.matches).count
+                    }
+                    .accessibilityLabel("Filtrar por estado")
                 }
-                AddButton(title: segment == .invoices ? "Nueva factura" : "Nuevo cliente") { showingEditor = true }
+                AddButton(title: addTitle) { showingEditor = true }
             }
         }
         .sheet(isPresented: $showingEditor) {
             NavigationStack {
-                if segment == .invoices { InvoiceEditorView() } else { CustomerEditorView() }
+                switch segment {
+                case .invoices: InvoiceEditorView()
+                case .estimates: InvoiceEditorView(mode: .estimate(nil))
+                case .customers: CustomerEditorView()
+                }
             }
             .editorSheetSizing()
+        }
+    }
+
+    private var addTitle: LocalizedStringResource {
+        switch segment {
+        case .invoices: "Nueva factura"
+        case .estimates: "Nuevo estimado"
+        case .customers: "Nuevo cliente"
         }
     }
 }

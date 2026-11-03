@@ -467,6 +467,16 @@
         }
       }
     },
+    "%@ · queda %@ por facturar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · %@ left to invoice"
+          }
+        }
+      }
+    },
     "%@ · saldo %@" : {
       "localizations" : {
         "en" : {
@@ -1031,6 +1041,16 @@
         }
       }
     },
+    "%lld de %lld estimados" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld of %lld estimates"
+          }
+        }
+      }
+    },
     "%lld de %lld facturas" : {
       "localizations" : {
         "en" : {
@@ -1190,6 +1210,46 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "%lld este mes"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld estimados" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld estimate"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld estimates"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld estimado"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld estimados"
                 }
               }
             }
@@ -1798,6 +1858,16 @@
         }
       }
     },
+    "* Gravable · precio con sales tax incluido" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "* Taxable · price includes sales tax"
+          }
+        }
+      }
+    },
     "+ %lld más" : {
       "localizations" : {
         "en" : {
@@ -1854,6 +1924,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "6 months"
+          }
+        }
+      }
+    },
+    "A quién te diriges en los correos y quién suele aceptar los estimados." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Who you write to and who usually accepts estimates."
           }
         }
       }
@@ -1930,6 +2010,17 @@
         }
       }
     },
+    "Abiertos" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open"
+          }
+        }
+      }
+    },
     "Abre el perfil de la empresa" : {
       "localizations" : {
         "en" : {
@@ -1976,6 +2067,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Open Entry"
+          }
+        }
+      }
+    },
+    "Abrir estimado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Estimate"
           }
         }
       }
@@ -2036,6 +2137,67 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Action"
+          }
+        }
+      }
+    },
+    "Aceptado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accepted"
+          }
+        }
+      }
+    },
+    "Aceptado el %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accepted on %@"
+          }
+        }
+      }
+    },
+    "Aceptado por" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accepted by"
+          }
+        }
+      }
+    },
+    "Aceptado por %@ el %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accepted by %@ on %@"
+          }
+        }
+      }
+    },
+    "Aceptados" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accepted"
+          }
+        }
+      }
+    },
+    "Aceptados por facturar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accepted, to invoice"
           }
         }
       }
@@ -2346,6 +2508,16 @@
         }
       }
     },
+    "Al ver la vista previa se guardó el estimado." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The estimate was saved when you previewed it."
+          }
+        }
+      }
+    },
     "Alta de %@" : {
       "localizations" : {
         "en" : {
@@ -2372,6 +2544,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Before closing %@"
+          }
+        }
+      }
+    },
+    "Anticipo del %lld %%" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld%% deposit"
           }
         }
       }
@@ -2496,12 +2678,32 @@
         }
       }
     },
+    "Aparece al final de cada factura, junto a los términos." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appears at the end of every invoice, next to the terms."
+          }
+        }
+      }
+    },
     "Aparece al pie de la factura, debajo de los totales." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Appears at the bottom of the invoice, below the totals."
+          }
+        }
+      }
+    },
+    "Apariencia" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appearance"
           }
         }
       }
@@ -2632,6 +2834,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Journal entries"
+          }
+        }
+      }
+    },
+    "Asunto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Subject"
           }
         }
       }
@@ -2950,6 +3162,16 @@
         }
       }
     },
+    "Borrador: el asiento se registra al emitirla" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Draft: the entry is recorded when you issue it"
+          }
+        }
+      }
+    },
     "Borrador: líneas menos descuento, sin impuesto" : {
       "localizations" : {
         "en" : {
@@ -2987,6 +3209,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Clear search"
+          }
+        }
+      }
+    },
+    "Borrar nota" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete Note"
+          }
+        }
+      }
+    },
+    "Borrar nota del %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete note from %@"
+          }
+        }
+      }
+    },
+    "Bosque" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Forest"
           }
         }
       }
@@ -3073,6 +3325,26 @@
         }
       }
     },
+    "Cambiar desde Fotos…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Change from Photos…"
+          }
+        }
+      }
+    },
+    "Cambiar imagen…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Change Image…"
+          }
+        }
+      }
+    },
     "Cambios pendientes" : {
       "localizations" : {
         "en" : {
@@ -3119,6 +3391,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Owner's equity"
+          }
+        }
+      }
+    },
+    "Cargo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Title"
+          }
+        }
+      }
+    },
+    "Cargo (opcional)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Title (optional)"
           }
         }
       }
@@ -3364,6 +3656,16 @@
         }
       }
     },
+    "Clásica" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Classic"
+          }
+        }
+      }
+    },
     "Cobrado" : {
       "localizations" : {
         "en" : {
@@ -3395,6 +3697,16 @@
         }
       }
     },
+    "Cobre" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copper"
+          }
+        }
+      }
+    },
     "Cobro" : {
       "localizations" : {
         "en" : {
@@ -3421,6 +3733,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Payment of %@"
+          }
+        }
+      }
+    },
+    "Color de la plantilla" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Template color"
           }
         }
       }
@@ -3471,6 +3793,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Retail or store"
+          }
+        }
+      }
+    },
+    "Compacta" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compact"
           }
         }
       }
@@ -3605,6 +3937,16 @@
         }
       }
     },
+    "Con estos términos y este mensaje nacen las facturas y los estimados nuevos (los del cliente mandan si los tiene)." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New invoices and estimates start with these terms and this message (the customer's own terms win if set)."
+          }
+        }
+      }
+    },
     "Con saldo" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3636,6 +3978,16 @@
         }
       }
     },
+    "Concepto (opcional)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Description (optional)"
+          }
+        }
+      }
+    },
     "Concepto, número o monto" : {
       "localizations" : {
         "en" : {
@@ -3652,6 +4004,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Description, number, account or amount"
+          }
+        }
+      }
+    },
+    "Conceptos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Items"
           }
         }
       }
@@ -3692,6 +4054,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Keep draft"
+          }
+        }
+      }
+    },
+    "Conservar estimado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keep Estimate"
           }
         }
       }
@@ -3792,6 +4164,66 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Contractors, remodeling, electricians, plumbers…"
+          }
+        }
+      }
+    },
+    "Convertido" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Converted"
+          }
+        }
+      }
+    },
+    "Convertido en factura el %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Converted to an invoice on %@"
+          }
+        }
+      }
+    },
+    "Convertidos en %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Converted in %@"
+          }
+        }
+      }
+    },
+    "Convertir" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Convert"
+          }
+        }
+      }
+    },
+    "Convertir en factura" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Convert to Invoice"
+          }
+        }
+      }
+    },
+    "Convertir en factura…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Convert to Invoice…"
           }
         }
       }
@@ -3933,6 +4365,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Created"
+          }
+        }
+      }
+    },
+    "Creado el %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Created on %@"
           }
         }
       }
@@ -4267,6 +4709,16 @@
         }
       }
     },
+    "Datos de la empresa" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Company details"
+          }
+        }
+      }
+    },
     "Datos del asiento" : {
       "localizations" : {
         "en" : {
@@ -4467,6 +4919,16 @@
         }
       }
     },
+    "Descartar estimado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discard Estimate"
+          }
+        }
+      }
+    },
     "Descripción" : {
       "localizations" : {
         "en" : {
@@ -4627,6 +5089,16 @@
         }
       }
     },
+    "Diseño de barra y mostrador" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bar and counter design"
+          }
+        }
+      }
+    },
     "Disponible en una próxima versión" : {
       "localizations" : {
         "en" : {
@@ -4707,6 +5179,16 @@
         }
       }
     },
+    "ESTIMADO" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ESTIMATE"
+          }
+        }
+      }
+    },
     "Editar" : {
       "localizations" : {
         "en" : {
@@ -4737,6 +5219,16 @@
         }
       }
     },
+    "Editar estimado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit Estimate"
+          }
+        }
+      }
+    },
     "Efectivo" : {
       "localizations" : {
         "en" : {
@@ -4763,6 +5255,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "E.g. materials for a job"
+          }
+        }
+      }
+    },
+    "El PDF va adjunto." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The PDF is attached."
           }
         }
       }
@@ -4997,6 +5499,16 @@
         }
       }
     },
+    "El resto queda pendiente en el estimado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The rest stays open on the estimate"
+          }
+        }
+      }
+    },
     "El saldo coincide con la naturaleza de la cuenta." : {
       "localizations" : {
         "en" : {
@@ -5057,6 +5569,16 @@
         }
       }
     },
+    "Elegir de Fotos…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose from Photos…"
+          }
+        }
+      }
+    },
     "Elegir fechas…" : {
       "localizations" : {
         "en" : {
@@ -5073,6 +5595,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Choose photo"
+          }
+        }
+      }
+    },
+    "Elegir imagen…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose Image…"
+          }
+        }
+      }
+    },
+    "Elegir líneas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose lines"
           }
         }
       }
@@ -5143,6 +5685,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Choose a customer"
+          }
+        }
+      }
+    },
+    "Elige un estimado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose an estimate"
           }
         }
       }
@@ -5227,7 +5779,27 @@
         }
       }
     },
+    "Eliminar estimado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete Estimate"
+          }
+        }
+      }
+    },
     "Emitida" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Issued"
+          }
+        }
+      }
+    },
+    "Emitido" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5328,12 +5900,122 @@
         }
       }
     },
+    "Enviado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sent"
+          }
+        }
+      }
+    },
+    "Enviado el %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sent on %@"
+          }
+        }
+      }
+    },
+    "Enviado hoy" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sent today"
+          }
+        }
+      }
+    },
+    "Enviar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send"
+          }
+        }
+      }
+    },
+    "Enviar estimado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send Estimate"
+          }
+        }
+      }
+    },
+    "Enviar estimado…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send Estimate…"
+          }
+        }
+      }
+    },
+    "Enviar factura" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send Invoice"
+          }
+        }
+      }
+    },
+    "Enviar factura…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send Invoice…"
+          }
+        }
+      }
+    },
+    "Enviar por correo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send by email"
+          }
+        }
+      }
+    },
     "Enviar recordatorio" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Send reminder"
+          }
+        }
+      }
+    },
+    "Enviar recordatorio…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send Reminder…"
+          }
+        }
+      }
+    },
+    "Enviarme una copia" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send me a copy"
           }
         }
       }
@@ -5545,6 +6227,26 @@
         }
       }
     },
+    "Estilo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Style"
+          }
+        }
+      }
+    },
+    "Estimado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estimate"
+          }
+        }
+      }
+    },
     "Estimado %@" : {
       "localizations" : {
         "en" : {
@@ -5565,12 +6267,52 @@
         }
       }
     },
+    "Estimado %@ · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estimate %@ · %@"
+          }
+        }
+      }
+    },
+    "Estimado %@.pdf" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estimate %@.pdf"
+          }
+        }
+      }
+    },
     "Estimado %@: %@" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Estimate %@: %@"
+          }
+        }
+      }
+    },
+    "Estimado.pdf" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estimate.pdf"
+          }
+        }
+      }
+    },
+    "Estimados" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estimates"
           }
         }
       }
@@ -5765,6 +6507,16 @@
         }
       }
     },
+    "Factura creada como borrador" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invoice created as a draft"
+          }
+        }
+      }
+    },
     "Factura de proveedor" : {
       "localizations" : {
         "en" : {
@@ -5795,12 +6547,32 @@
         }
       }
     },
+    "Factura en borrador" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Draft invoice"
+          }
+        }
+      }
+    },
     "Factura pagada por completo" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Invoice paid in full"
+          }
+        }
+      }
+    },
+    "Factura por etapas de la obra" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invoice the job in stages"
           }
         }
       }
@@ -5857,6 +6629,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Billed in %@: %@"
+          }
+        }
+      }
+    },
+    "Facturado en parte" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Partly invoiced"
           }
         }
       }
@@ -5918,6 +6700,16 @@
         }
       }
     },
+    "Facturas de este estimado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invoices from this estimate"
+          }
+        }
+      }
+    },
     "Facturas de proveedor de %@ (%lld)" : {
       "localizations" : {
         "en" : {
@@ -5950,6 +6742,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Open vendor bills · days past due · %@ overdue"
+          }
+        }
+      }
+    },
+    "Facturas nuevas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New invoices"
           }
         }
       }
@@ -6462,6 +7264,26 @@
         }
       }
     },
+    "Gracias por su preferencia." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thank you for your business."
+          }
+        }
+      }
+    },
+    "Grafito" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Graphite"
+          }
+        }
+      }
+    },
     "Gravable" : {
       "localizations" : {
         "en" : {
@@ -6572,6 +7394,16 @@
         }
       }
     },
+    "Guardar estimado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save Estimate"
+          }
+        }
+      }
+    },
     "Guardar gasto" : {
       "localizations" : {
         "en" : {
@@ -6652,6 +7484,16 @@
         }
       }
     },
+    "Haz un estimado para tu cliente y, cuando lo acepte, conviértelo en factura." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Make an estimate for your customer and, once they accept it, turn it into an invoice."
+          }
+        }
+      }
+    },
     "Hecho" : {
       "localizations" : {
         "en" : {
@@ -6703,6 +7545,26 @@
         }
       }
     },
+    "Hola, %@: te enviamos el estimado %@ por %@, válido hasta el %@. Lo encontrarás adjunto en PDF." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hi %@, here is estimate %@ for %@, valid until %@. You'll find it attached as a PDF."
+          }
+        }
+      }
+    },
+    "Hola, %@: te enviamos la factura %@ por %@, con vencimiento el %@. La encontrarás adjunta en PDF." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hi %@, here is invoice %@ for %@, due %@. You'll find it attached as a PDF."
+          }
+        }
+      }
+    },
     "Hola, %@: te recordamos que la factura %@ por %@ vence el %@. ¡Gracias!" : {
       "localizations" : {
         "en" : {
@@ -6733,12 +7595,32 @@
         }
       }
     },
+    "ID fiscal" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tax ID"
+          }
+        }
+      }
+    },
     "ID fiscal (EIN)" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tax ID (EIN)"
+          }
+        }
+      }
+    },
+    "ID fiscal (opcional)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tax ID (optional)"
           }
         }
       }
@@ -7014,6 +7896,16 @@
         }
       }
     },
+    "Incluye %@ %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Includes %@ %@"
+          }
+        }
+      }
+    },
     "Incluye sales tax" : {
       "localizations" : {
         "en" : {
@@ -7124,6 +8016,16 @@
         }
       }
     },
+    "Instalación de repisas (h)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shelf installation (h)"
+          }
+        }
+      }
+    },
     "Inventario" : {
       "localizations" : {
         "en" : {
@@ -7190,6 +8092,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "The closing password is incorrect."
+          }
+        }
+      }
+    },
+    "La copia va a %@. El PDF va adjunto." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The copy goes to %@. The PDF is attached."
           }
         }
       }
@@ -7424,6 +8336,16 @@
         }
       }
     },
+    "Las notas solo las ves tú; no salen en las facturas." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Only you see notes; they don't appear on invoices."
+          }
+        }
+      }
+    },
     "Las subcuentas suman en su cuenta principal." : {
       "localizations" : {
         "en" : {
@@ -7564,6 +8486,36 @@
         }
       }
     },
+    "Lo que queda por facturar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What's left to invoice"
+          }
+        }
+      }
+    },
+    "Logo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Logo"
+          }
+        }
+      }
+    },
+    "Logo actual" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Current logo"
+          }
+        }
+      }
+    },
     "Logo cambiado" : {
       "localizations" : {
         "en" : {
@@ -7664,6 +8616,16 @@
         }
       }
     },
+    "Los precios ya incluyen el sales tax: el total es el subtotal menos el descuento." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prices already include sales tax: the total is the subtotal minus the discount."
+          }
+        }
+      }
+    },
     "Los saldos deudores van en Débito y los acreedores en Crédito." : {
       "localizations" : {
         "en" : {
@@ -7714,6 +8676,16 @@
         }
       }
     },
+    "Madera de roble (m²)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oak wood (m²)"
+          }
+        }
+      }
+    },
     "Manual" : {
       "localizations" : {
         "en" : {
@@ -7730,6 +8702,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Manual"
+          }
+        }
+      }
+    },
+    "Marcar como aceptado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mark as Accepted"
+          }
+        }
+      }
+    },
+    "Marcar como aceptado…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mark as Accepted…"
+          }
+        }
+      }
+    },
+    "Marcar como enviado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mark as Sent"
+          }
+        }
+      }
+    },
+    "Marcar como rechazado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mark as Declined"
           }
         }
       }
@@ -7760,6 +8772,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Message to customer"
+          }
+        }
+      }
+    },
+    "Mensaje por defecto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Default message"
           }
         }
       }
@@ -7865,12 +8887,32 @@
         }
       }
     },
+    "Mostrar ID fiscal (EIN)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show tax ID (EIN)"
+          }
+        }
+      }
+    },
     "Mostrar archivadas" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Show archived"
+          }
+        }
+      }
+    },
+    "Mostrar dirección" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show address"
           }
         }
       }
@@ -7891,6 +8933,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Show Inspector (⌥⌘I)"
+          }
+        }
+      }
+    },
+    "Mostrar logo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show logo"
+          }
+        }
+      }
+    },
+    "Mostrar teléfono" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show phone"
           }
         }
       }
@@ -8256,6 +9318,26 @@
         }
       }
     },
+    "Ningún estimado coincide" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No matching estimates"
+          }
+        }
+      }
+    },
+    "Ningún estimado coincide con la búsqueda o el filtro." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No estimates match the search or filter."
+          }
+        }
+      }
+    },
     "Ningún gasto coincide" : {
       "localizations" : {
         "en" : {
@@ -8326,6 +9408,16 @@
         }
       }
     },
+    "No afecta a la contabilidad." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "It doesn't affect your books."
+          }
+        }
+      }
+    },
     "No aplica" : {
       "localizations" : {
         "en" : {
@@ -8392,6 +9484,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No open invoices."
+          }
+        }
+      }
+    },
+    "No hay una app de correo configurada en este Mac. Usa «Compartir PDF…»." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "There's no email app set up on this Mac. Use “Share PDF…”."
           }
         }
       }
@@ -8556,6 +9658,26 @@
         }
       }
     },
+    "Nombre de la persona" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Person's name"
+          }
+        }
+      }
+    },
+    "Nombre de quien lo aceptó" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Name of who accepted it"
+          }
+        }
+      }
+    },
     "Nombre o categoría" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -8617,6 +9739,16 @@
         }
       }
     },
+    "Nota al pie" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Footer note"
+          }
+        }
+      }
+    },
     "Nota de crédito" : {
       "localizations" : {
         "en" : {
@@ -8643,6 +9775,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Credit memo or refund"
+          }
+        }
+      }
+    },
+    "Nota fija" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pinned note"
           }
         }
       }
@@ -8738,6 +9880,16 @@
         }
       }
     },
+    "Nueva nota" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New Note"
+          }
+        }
+      }
+    },
     "Nueva tasa" : {
       "localizations" : {
         "en" : {
@@ -8784,6 +9936,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "New customer"
+          }
+        }
+      }
+    },
+    "Nuevo estimado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New Estimate"
           }
         }
       }
@@ -9015,6 +10177,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Other reports"
+          }
+        }
+      }
+    },
+    "PARA" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "FOR"
           }
         }
       }
@@ -9354,6 +10526,16 @@
         }
       }
     },
+    "Pago por transferencia a la cuenta…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Payment by bank transfer to account…"
+          }
+        }
+      }
+    },
     "Pago programado de %@ para el %@" : {
       "localizations" : {
         "en" : {
@@ -9434,6 +10616,16 @@
         }
       }
     },
+    "Para" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To"
+          }
+        }
+      }
+    },
     "Para %@" : {
       "localizations" : {
         "en" : {
@@ -9470,6 +10662,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "To reopen, the new closing date must be earlier than the current one."
+          }
+        }
+      }
+    },
+    "Para recibir una copia, añade el correo de la empresa en Ajustes › Perfil de la empresa." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To get a copy, add the company email in Settings › Company Profile."
           }
         }
       }
@@ -9675,6 +10877,26 @@
         }
       }
     },
+    "Persona" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contact"
+          }
+        }
+      }
+    },
+    "Persona de contacto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contact person"
+          }
+        }
+      }
+    },
     "Personalizado" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -9682,6 +10904,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Custom"
+          }
+        }
+      }
+    },
+    "Petróleo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Petroleum"
           }
         }
       }
@@ -9702,6 +10934,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Suggested chart of accounts"
+          }
+        }
+      }
+    },
+    "Plantilla de factura" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invoice Template"
           }
         }
       }
@@ -9732,6 +10974,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "You'll be able to bring in your transactions as CSV or OFX, categorize them from an inbox, and reconcile with your bank statement."
+          }
+        }
+      }
+    },
+    "Por aceptar %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Awaiting approval %@"
           }
         }
       }
@@ -9807,6 +11059,16 @@
         }
       }
     },
+    "Por facturar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To invoice"
+          }
+        }
+      }
+    },
     "Por jurisdicción" : {
       "localizations" : {
         "en" : {
@@ -9868,6 +11130,16 @@
         }
       }
     },
+    "Por responder" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Awaiting reply"
+          }
+        }
+      }
+    },
     "Por tasa" : {
       "localizations" : {
         "en" : {
@@ -9924,6 +11196,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Percentage"
+          }
+        }
+      }
+    },
+    "Porcentaje: %lld %%" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Percentage: %lld%%"
           }
         }
       }
@@ -10250,6 +11532,16 @@
         }
       }
     },
+    "Queda anotado en el estimado. Después podrás convertirlo en factura." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "It's noted on the estimate. You can then convert it to an invoice."
+          }
+        }
+      }
+    },
     "Quitar" : {
       "localizations" : {
         "en" : {
@@ -10320,6 +11612,16 @@
         }
       }
     },
+    "Quitar logo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove Logo"
+          }
+        }
+      }
+    },
     "Quitar recibo" : {
       "localizations" : {
         "en" : {
@@ -10330,12 +11632,32 @@
         }
       }
     },
+    "Qué quieres recordar de %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What you want to remember about %@"
+          }
+        }
+      }
+    },
     "Qué se acredita" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "What's credited"
+          }
+        }
+      }
+    },
+    "RECHAZADO" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DECLINED"
           }
         }
       }
@@ -10366,6 +11688,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Reduces %@"
+          }
+        }
+      }
+    },
+    "Rechazado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Declined"
           }
         }
       }
@@ -10466,6 +11798,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Payment reminder"
+          }
+        }
+      }
+    },
+    "Recordatorio de pago · Factura %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Payment reminder · Invoice %@"
+          }
+        }
+      }
+    },
+    "Recordatorio enviado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reminder Sent"
+          }
+        }
+      }
+    },
+    "Recordatorio enviado hoy" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reminder sent today"
           }
         }
       }
@@ -10972,6 +12334,16 @@
         }
       }
     },
+    "Revisar y enviar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Review and Send"
+          }
+        }
+      }
+    },
     "Ríos Diseño & Obra" : {
       "shouldTranslate" : false
     },
@@ -11255,6 +12627,16 @@
         }
       }
     },
+    "Salen en el encabezado de tus facturas y estimados. Se editan en Perfil de la empresa." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "They appear in the header of your invoices and estimates. Edit them in Company Profile."
+          }
+        }
+      }
+    },
     "Sales tax" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -11292,6 +12674,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sales tax collected"
+          }
+        }
+      }
+    },
+    "Sales tax incluido" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sales tax included"
           }
         }
       }
@@ -11352,6 +12744,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Calculated automatically"
+          }
+        }
+      }
+    },
+    "Se creará una factura en borrador por %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A draft invoice for %@ will be created."
           }
         }
       }
@@ -11452,6 +12854,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Select a customer to see their balance."
+          }
+        }
+      }
+    },
+    "Selecciona un estimado para ver sus detalles." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select an estimate to see its details."
           }
         }
       }
@@ -11726,6 +13138,16 @@
         }
       }
     },
+    "Sin enviar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not sent"
+          }
+        }
+      }
+    },
     "Sin facturas" : {
       "localizations" : {
         "en" : {
@@ -11827,6 +13249,26 @@
         }
       }
     },
+    "Sin logo · se usan tus iniciales" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No logo · your initials are used"
+          }
+        }
+      }
+    },
+    "Sin logo, la factura lleva tus iniciales en el color de la plantilla. La imagen se reduce a 512 px." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Without a logo, the invoice shows your initials in the template color. The image is scaled down to 512 px."
+          }
+        }
+      }
+    },
     "Sin líneas" : {
       "localizations" : {
         "en" : {
@@ -11873,6 +13315,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No transactions this month"
+          }
+        }
+      }
+    },
+    "Sin notas todavía" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No notes yet"
           }
         }
       }
@@ -12429,6 +13881,16 @@
         }
       }
     },
+    "Tinta" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ink"
+          }
+        }
+      }
+    },
     "Tipo" : {
       "localizations" : {
         "en" : {
@@ -12510,6 +13972,16 @@
         }
       }
     },
+    "Todavía no hay estimados" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Estimates Yet"
+          }
+        }
+      }
+    },
     "Todavía no hay facturas" : {
       "localizations" : {
         "en" : {
@@ -12536,6 +14008,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "All"
+          }
+        }
+      }
+    },
+    "Todo el estimado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The whole estimate"
           }
         }
       }
@@ -12601,6 +14083,16 @@
         }
       }
     },
+    "Total (impuesto incluido)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total (tax included)"
+          }
+        }
+      }
+    },
     "Total abierto" : {
       "localizations" : {
         "en" : {
@@ -12657,6 +14149,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Total of %@"
+          }
+        }
+      }
+    },
+    "Total de %@ · estimado cerrado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total of %@ · estimate closed"
           }
         }
       }
@@ -12932,6 +14434,16 @@
         }
       }
     },
+    "Términos predeterminados" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Default terms"
+          }
+        }
+      }
+    },
     "USD · Dólar" : {
       "localizations" : {
         "en" : {
@@ -12948,6 +14460,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "A journal entry needs at least two lines."
+          }
+        }
+      }
+    },
+    "Un estimado no registra nada en la contabilidad. Al convertirlo en factura se crea un borrador." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "An estimate doesn't record anything in your books. Converting it creates a draft invoice."
           }
         }
       }
@@ -12998,6 +14520,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "A recurring bill needs a vendor."
+          }
+        }
+      }
+    },
+    "Una sola factura" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A single invoice"
           }
         }
       }
@@ -13357,6 +14889,16 @@
         }
       }
     },
+    "Venció el %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Expired on %@"
+          }
+        }
+      }
+    },
     "Venció hace %lld días" : {
       "localizations" : {
         "en" : {
@@ -13453,6 +14995,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Total sales"
+          }
+        }
+      }
+    },
+    "Ventas · %lld estimados" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Sales · %lld estimate"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Sales · %lld estimates"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Ventas · %lld estimado"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Ventas · %lld estimados"
+                }
+              }
+            }
           }
         }
       }
@@ -13637,12 +15219,52 @@
         }
       }
     },
+    "Vista previa con %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preview with %@"
+          }
+        }
+      }
+    },
+    "Vista previa de %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preview of %@"
+          }
+        }
+      }
+    },
     "Vista previa de la factura %@" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Preview of invoice %@"
+          }
+        }
+      }
+    },
+    "Vista previa de la plantilla" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Template preview"
+          }
+        }
+      }
+    },
+    "Vista previa del PDF" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PDF Preview"
           }
         }
       }
@@ -13663,6 +15285,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Vs. previous"
+          }
+        }
+      }
+    },
+    "Válido hasta" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Valid until"
+          }
+        }
+      }
+    },
+    "Válido hasta el %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Valid until %@."
+          }
+        }
+      }
+    },
+    "Válido hasta: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Valid until: %@"
           }
         }
       }
@@ -13737,6 +15389,16 @@
         }
       }
     },
+    "correo@cliente.com" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "email@customer.com"
+          }
+        }
+      }
+    },
     "de %@" : {
       "localizations" : {
         "en" : {
@@ -13753,6 +15415,52 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "since %@"
+          }
+        }
+      }
+    },
+    "estimate.expired" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Expired"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vencido"
+          }
+        }
+      }
+    },
+    "facturado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "invoiced"
+          }
+        }
+      }
+    },
+    "facturado %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ invoiced"
+          }
+        }
+      }
+    },
+    "gravable" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "taxable"
           }
         }
       }
@@ -13878,6 +15586,16 @@
         }
       }
     },
+    "válido hasta %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "valid until %@"
+          }
+        }
+      }
+    },
     "·" : {
       "shouldTranslate" : false
     },
@@ -13904,12 +15622,32 @@
         }
       }
     },
+    "¿Borrar la nota?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete the note?"
+          }
+        }
+      }
+    },
     "¿Conservar el borrador?" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Keep the draft?"
+          }
+        }
+      }
+    },
+    "¿Conservar el estimado?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keep the estimate?"
           }
         }
       }
@@ -13930,6 +15668,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Delete the draft?"
+          }
+        }
+      }
+    },
+    "¿Eliminar el estimado?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete the estimate?"
           }
         }
       }

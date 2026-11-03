@@ -215,7 +215,7 @@ struct AppShell: View {
     @State private var tab: AppSection = .home
     #if DEBUG
     /// Con `-qa.seccion` (solo Debug), la página con la que arranca.
-    @State private var selection: SidebarItem = QALaunch.sidebarItem ?? .section(.home)
+    @State private var selection: SidebarItem = QALaunch.salesItem ?? QALaunch.sidebarItem ?? .section(.home)
     #else
     @State private var selection: SidebarItem = .section(.home)
     #endif
@@ -531,6 +531,9 @@ struct MoreView: View {
                     MoreRow(title: String(localized: "Perfil de la empresa"), systemImage: "building.2", color: Palette.gray) {
                         CompanyProfileView(company: company)
                     }
+                    // Canvas `AjustesPlantilla` (se abre desde «Más»).
+                    MoreRow(title: String(localized: "Plantilla de factura"), value: company.invoiceAccent?.title,
+                            systemImage: "doc.richtext", color: Palette.indigo) { InvoiceTemplateView(company: company) }
                     MoreRow(title: String(localized: "Moneda y formatos"), value: company.currencyCode,
                             systemImage: "dollarsign", color: Palette.green) { FormatsView(company: company) }
                 }

@@ -2,8 +2,8 @@ import ChirograData
 import SwiftData
 import SwiftUI
 
-/// Ajustes (canvas `AjustesEmpresa`, `AjustesFormatos`, `AjustesDatos`, `MacAjustes`): formularios agrupados del sistema.
-/// «Usuarios y permisos» es de fase 2 y «Plantilla de factura» no está en el MVP (DISEÑO §7.4): no salen.
+/// Ajustes (canvas `AjustesEmpresa`, `AjustesPlantilla`, `AjustesFormatos`, `AjustesDatos`, `MacAjustes`): formularios
+/// agrupados del sistema. «Usuarios y permisos» es de fase 2: no sale.
 struct SettingsView: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     #if os(iOS)
@@ -33,12 +33,13 @@ struct SettingsView: View {
 
 /// Páginas de Ajustes, con su icono de color como en Ajustes del sistema (canvas `MacAjustes`).
 enum SettingsPage: String, CaseIterable, Identifiable {
-    case profile, formats, data
+    case profile, template, formats, data
     var id: String { rawValue }
 
     var title: String {
         switch self {
         case .profile: String(localized: "Perfil de la empresa")
+        case .template: String(localized: "Plantilla de factura")
         case .formats: String(localized: "Moneda y formatos")
         case .data: String(localized: "iCloud, copias y seguridad")
         }
@@ -47,6 +48,7 @@ enum SettingsPage: String, CaseIterable, Identifiable {
     var symbol: String {
         switch self {
         case .profile: "building.2.fill"
+        case .template: "doc.richtext.fill"
         case .formats: "dollarsign"
         case .data: "icloud.fill"
         }
@@ -55,6 +57,7 @@ enum SettingsPage: String, CaseIterable, Identifiable {
     var color: Color {
         switch self {
         case .profile: Palette.blue
+        case .template: Palette.indigo
         case .formats: Palette.green
         case .data: Palette.teal
         }
@@ -85,6 +88,7 @@ struct SettingsWideView: View {
                 if let company = companies.first {
                     switch page {
                     case .profile: CompanyProfileView(company: company, embedded: true)
+                    case .template: InvoiceTemplateView(company: company, embedded: true)
                     case .formats: FormatsView(company: company, embedded: true)
                     case .data: DataAndSecurityView(embedded: true)
                     }
@@ -102,7 +106,7 @@ struct SettingsWideView: View {
         #endif
         .headerTitle()
         .toolbar {
-            if page == .profile {
+            if page == .profile || page == .template {
                 ToolbarItem(placement: .primaryAction) {
                     Button(saved ? String(localized: "Guardado ✓") : String(localized: "Guardar cambios")) {
                         try? context.save()
@@ -113,6 +117,11 @@ struct SettingsWideView: View {
             }
         }
         .onDisappear { try? context.save() }
+        .onChange(of: page) { _, _ in try? context.save() }
+        #if DEBUG
+        // `-qa.ajustes plantilla`: abre la página de la plantilla de factura.
+        .task { if UserDefaults.standard.string(forKey: "qa.ajustes") == "plantilla" { page = .template } }
+        #endif
     }
 
     private func pageRow(_ option: SettingsPage) -> some View {
@@ -157,6 +166,7 @@ struct SettingsLinks: View {
             if showsCompanyProfile {
                 link(.profile) { CompanyProfileView(company: company) }
             }
+            link(.template) { InvoiceTemplateView(company: company) }
             link(.formats) { FormatsView(company: company) }
         }
         link(.data) { DataAndSecurityView() }

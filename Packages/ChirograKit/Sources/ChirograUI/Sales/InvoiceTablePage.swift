@@ -18,6 +18,8 @@ struct InvoiceTablePage: View {
     @State private var query = ""
     @State private var creating = false
     @State private var paying: Invoice?
+    @State private var sending: Invoice?
+    @State private var reminding: Invoice?
     @State private var editing: Invoice?
     @State private var openedInvoice: Invoice?
     @State private var openedCustomer: Customer?
@@ -115,6 +117,10 @@ struct InvoiceTablePage: View {
         .onChange(of: selection) { errorMessage = nil }
         .sheet(isPresented: $creating) { NavigationStack { InvoiceEditorView() }.editorSheetSizing() }
         .sheet(item: $paying) { invoice in NavigationStack { InvoicePaymentSheet(invoice: invoice) }.editorSheetSizing() }
+        .sheet(item: $sending) { invoice in NavigationStack { SendDocumentView(source: .invoice(invoice)) }.editorSheetSizing() }
+        .sheet(item: $reminding) { invoice in
+            NavigationStack { SendDocumentView(source: .invoice(invoice), purpose: .reminder) }.editorSheetSizing()
+        }
         .sheet(item: $editing) { invoice in NavigationStack { InvoiceEditorView(editing: invoice) }.editorSheetSizing() }
         .navigationDestination(item: $openedInvoice) { InvoiceDetailView(invoice: $0) }
         .navigationDestination(item: $openedCustomer) { CustomerDetailView(customer: $0) }
@@ -126,6 +132,9 @@ struct InvoiceTablePage: View {
             guard let id = selection, let invoice = invoices.first(where: { $0.id == id }) else { return }
             if UserDefaults.standard.bool(forKey: "qa.pago"), invoice.isOpen { paying = invoice }
             if UserDefaults.standard.bool(forKey: "qa.abrir") { openedInvoice = invoice }
+            // `-qa.enviar 1` abre «Enviar factura…» y `-qa.recordar 1` «Enviar recordatorio» de la fila elegida.
+            if UserDefaults.standard.bool(forKey: "qa.enviar"), invoice.status != .draft { sending = invoice }
+            if UserDefaults.standard.bool(forKey: "qa.recordar"), invoice.isOpen { reminding = invoice }
         }
         #endif
     }
@@ -138,10 +147,15 @@ struct InvoiceTablePage: View {
             Button("Editar borrador") { editing = invoice }.buttonStyle(.secondary)
         } else if invoice.isOpen {
             Button("Registrar pago…") { paying = invoice }.buttonStyle(.primary)
-            ShareLink(item: invoice.reminderText, subject: Text("Recordatorio de pago")) {
-                Text("Enviar recordatorio")
+            if invoice.lastSentDate == nil {
+                Button("Enviar factura…") { sending = invoice }.buttonStyle(.secondary)
             }
-            .buttonStyle(.secondary)
+            // Canvas `MacClienteFicha`: «Recordatorio enviado» cuando ya se mandó hoy (se puede mandar otro).
+            Button(invoice.lastReminderDate.map(Calendar.current.isDateInToday) == true
+                   ? String(localized: "Recordatorio enviado hoy") : String(localized: "Enviar recordatorio…")) { reminding = invoice }
+                .buttonStyle(.secondary)
+        } else if invoice.status != .void {
+            Button("Enviar factura…") { sending = invoice }.buttonStyle(.secondary)
         }
         HStack(spacing: 8) {
             Button("Abrir factura") { openedInvoice = invoice }.buttonStyle(.secondary)
@@ -183,6 +197,14 @@ private struct InvoiceInspector: View {
             MacInspectorRow(String(localized: "Emitida"), value: invoice.issueDate.shortDate)
             MacInspectorRow(String(localized: "Vence"), value: invoice.dueDate.shortDate,
                             color: invoice.daysOverdue() != nil ? Palette.negative : Palette.ink)
+            if let sent = invoice.lastSentDate {
+                MacInspectorRow(String(localized: "Enviada"), value: sent.shortDate)
+            }
+            if let reminder = invoice.lastReminderDate {
+                MacInspectorRow(String(localized: "Recordatorio"),
+                                value: Calendar.current.isDateInToday(reminder) ? String(localized: "Enviado hoy") : reminder.shortDate,
+                                color: Calendar.current.isDateInToday(reminder) ? Palette.positive : Palette.ink)
+            }
         }
         MacInspectorSection(title: String(localized: "Importes")) {
             MacInspectorRow(String(localized: "Importe"), value: invoice.tableAmount.money)

@@ -11,10 +11,17 @@ import SwiftUI
 /// (`hasMacTable`, `macTable(selection:)` en `Shell/MacTablePage.swift`); hasta entonces sigue con estas columnas.
 enum MasterPage: Hashable {
     case invoices, customers, expenses, vendors, bills, banking, journal, chart
+    #if os(iOS)
+    /// Estimados: columna maestro en el iPad (`EstimateMasterList`). En el Mac van con su tabla (`EstimatesMacPage`).
+    case estimates
+    #endif
 
     init?(_ item: SidebarItem) {
         switch item {
         case .section(.sales), .sales(.invoices): self = .invoices
+        #if os(iOS)
+        case .sales(.estimates): self = .estimates
+        #endif
         case .sales(.customers): self = .customers
         case .section(.expenses), .expenses(.expenses): self = .expenses
         case .expenses(.vendors): self = .vendors
@@ -37,6 +44,9 @@ enum MasterPage: Hashable {
         case .banking: ("building.columns", String(localized: "Elige una cuenta"))
         case .journal: ("doc.plaintext", String(localized: "Elige un asiento"))
         case .chart: ("list.bullet.indent", String(localized: "Elige una cuenta"))
+        #if os(iOS)
+        case .estimates: ("list.clipboard", String(localized: "Elige un estimado"))
+        #endif
         }
     }
 }
@@ -80,6 +90,9 @@ struct MasterColumn: View {
         case .banking: BankingMasterList(selection: $selection)
         case .journal: JournalMasterList(selection: $selection)
         case .chart: ChartMasterList(selection: $selection)
+        #if os(iOS)
+        case .estimates: EstimateMasterList(selection: $selection)
+        #endif
         }
     }
 }
@@ -100,6 +113,9 @@ struct MasterDetailColumn: View {
             case .banking: ModelLookup(id: id, key: \Account.id, page: page) { BankAccountDetail(account: $0) }
             case .journal: ModelLookup(id: id, key: \JournalEntry.id, page: page) { JournalEntryDetailView(entry: $0) }
             case .chart: ModelLookup(id: id, key: \Account.id, page: page) { LedgerView(account: $0, inDetailColumn: true) }
+            #if os(iOS)
+            case .estimates: ModelLookup(id: id, key: \Estimate.id, page: page) { EstimateDetailView(estimate: $0) }
+            #endif
             }
         } else {
             MasterPlaceholder(page: page)
