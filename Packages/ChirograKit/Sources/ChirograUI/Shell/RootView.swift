@@ -68,6 +68,9 @@ public struct ChirograRootView: View {
     @State private var lock = AppLockState()
     @State private var sync = SyncMonitor.shared
     @State private var replacement = BooksReplacement.shared
+    @State private var subscription = SubscriptionStore.shared
+    /// La pantalla de suscripción ya salió sola en esta sesión (después solo con «Suscribirme» o al intentar registrar).
+    @State private var paywallShownOnce = false
     /// «Crear una empresa nueva» desde la pantalla de sincronización.
     @State private var skipsSyncWait = false
     #if os(iOS)
@@ -92,12 +95,29 @@ public struct ChirograRootView: View {
                     #endif
             } else {
                 // Al restaurar una copia se rehace la navegación: las pantallas abiertas apuntaban a registros borrados.
-                #if os(iOS)
-                // La app sigue montada debajo de la ventana de bloqueo: al desbloquear, todo está donde estaba.
-                AppShell().id(replacement.generation)
-                #else
-                if isLocked { LockView(lock: lock) } else { AppShell().id(replacement.generation) }
-                #endif
+                // iPhone y iPad: el aviso de solo lectura encima y no superpuesto. En el Mac va al pie de la barra
+                // lateral (`ReadOnlySidebarNote`): arriba de las columnas, el contenido quedaba debajo del aviso.
+                VStack(spacing: 0) {
+                    #if os(iOS)
+                    if subscription.isReadOnly { ReadOnlyBanner() }
+                    #endif
+                    #if os(iOS)
+                    // La app sigue montada debajo de la ventana de bloqueo: al desbloquear, todo está donde estaba.
+                    AppShell().id(replacement.generation)
+                    #else
+                    if isLocked { LockView(lock: lock) } else { AppShell().id(replacement.generation) }
+                    #endif
+                }
+            }
+        }
+        .sheet(isPresented: $subscription.showsPaywall) { PaywallView() }
+        .task { subscription.start() }
+        .onChange(of: subscription.isReadOnly && !companies.isEmpty, initial: true) { _, readOnly in
+            Bookkeeper.isReadOnly = readOnly
+            // Al crear la empresa sin suscripción, o al abrir la app con la suscripción vencida, una vez.
+            if readOnly && !paywallShownOnce {
+                paywallShownOnce = true
+                subscription.showsPaywall = true
             }
         }
         .alert("Copia restaurada", isPresented: Binding(get: { replacement.restored != nil }, set: { if !$0 { replacement.restored = nil } }),

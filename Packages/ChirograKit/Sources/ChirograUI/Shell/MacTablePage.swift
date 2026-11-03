@@ -155,7 +155,7 @@ where Value: Identifiable, Value.ID == UUID,
         .searchable(text: $query, placement: .toolbar, prompt: searchPrompt)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                Button(action: onAdd) { Label(addTitle, systemImage: "plus").labelStyle(.titleAndIcon) }
+                Button { SubscriptionStore.shared.whenWritable(onAdd) } label: { Label(addTitle, systemImage: "plus").labelStyle(.titleAndIcon) }
                     .help(addTitle)
                     .headerButton()
             }

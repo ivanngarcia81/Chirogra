@@ -1,0 +1,71 @@
+{
+  "identifier" : "5C7F2A10",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+
+  ],
+  "settings" : {
+    "_applicationInternalID" : "6740000001",
+    "_failTransactionsEnabled" : false,
+    "_locale" : "es_US",
+    "_storefront" : "USA",
+    "_storeKitErrors" : [
+
+    ]
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "21600001",
+      "localizations" : [
+
+      ],
+      "name" : "Chirogra",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "24.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "6740000002",
+          "introductoryOffer" : {
+            "internalID" : "6740000003",
+            "numberOfPeriods" : 1,
+            "paymentMode" : "free",
+            "subscriptionPeriod" : "P2W"
+          },
+          "localizations" : [
+            {
+              "description" : "Tus libros completos en iPhone, iPad y Mac.",
+              "displayName" : "Chirogra mensual",
+              "locale" : "es_US"
+            },
+            {
+              "description" : "Your complete books on iPhone, iPad and Mac.",
+              "displayName" : "Chirogra Monthly",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.chirogra.app.mensual",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Chirogra mensual",
+          "subscriptionGroupID" : "21600001",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 4,
+    "minor" : 0
+  }
+}

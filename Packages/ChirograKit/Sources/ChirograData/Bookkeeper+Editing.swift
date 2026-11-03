@@ -16,6 +16,7 @@ extension Bookkeeper {
         apply(input, to: expense)
         do {
             if post { try record(expense, save: false) }
+            try ensureWritable()
             try context.save()
         } catch {
             context.rollback()
@@ -72,6 +73,7 @@ extension Bookkeeper {
             expense.total = draft.totalCredits
             expense.revision += 1
             audit("Expense", expense.id, "edit", String(localized: "Gasto editado: \(Money(minorUnits: before.total).formatted()) → \(Money(minorUnits: draft.totalCredits).formatted()) (asiento \(original.number) revertido, nuevo \(replacement.number))"))
+            try ensureWritable()
             try context.save()
             return replacement
         } catch {
@@ -89,6 +91,7 @@ extension Bookkeeper {
             }
             expense.voidedAt = date
             audit("Expense", expense.id, "void", String(localized: "Gasto anulado: \(expense.payee)\(reason.isEmpty ? "" : " · \(reason)")"))
+            try ensureWritable()
             try context.save()
         } catch {
             context.rollback()

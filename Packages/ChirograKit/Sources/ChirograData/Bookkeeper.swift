@@ -14,6 +14,8 @@ public enum BookkeepingError: Error, Equatable, LocalizedError {
     case exceedsCreditable(Int64)
     case wrongClosingPassword
     case duplicateAccountCode(String)
+    /// La suscripción terminó: los libros se pueden ver y exportar, pero no se registra nada (`Bookkeeper.isReadOnly`).
+    case readOnly
 
     public var errorDescription: String? {
         switch self {
@@ -29,6 +31,7 @@ public enum BookkeepingError: Error, Equatable, LocalizedError {
             String(localized: "La nota supera lo que queda por acreditar de la factura (\(Money(minorUnits: available).formatted())).")
         case .wrongClosingPassword: String(localized: "La contraseña de cierre no es correcta.")
         case .duplicateAccountCode(let code): String(localized: "Ya hay una cuenta activa con el número \(code).")
+        case .readOnly: String(localized: "Tus libros están en solo lectura porque la suscripción terminó. Suscríbete para seguir registrando.")
         }
     }
 }
@@ -737,8 +740,17 @@ public struct Bookkeeper {
         context.insert(AuditEvent(actor: actor, entityName: entity, entityID: id, action: action, summary: summary))
     }
 
+    /// Libros en solo lectura: la app lo activa cuando la suscripción terminó (`SubscriptionStore`). Se pueden ver,
+    /// exportar y sacar copias, pero ningún servicio de `Bookkeeper` guarda. Las pruebas lo dejan en `false`.
+    public static var isReadOnly = false
+
+    func ensureWritable() throws {
+        if Self.isReadOnly { throw BookkeepingError.readOnly }
+    }
+
     func saveOrRollback() throws {
         do {
+            try ensureWritable()
             try context.save()
         } catch {
             context.rollback()

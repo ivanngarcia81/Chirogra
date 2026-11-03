@@ -135,7 +135,15 @@ struct Sidebar: View {
             .padding(.vertical, 8)
         }
         .scrollIndicators(.never)
-        .safeAreaInset(edge: .bottom, spacing: 0) { companyCard }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            VStack(spacing: 6) {
+                #if os(macOS)
+                // En el Mac el aviso de solo lectura va aquí: arriba de las columnas desplazaba el contenido.
+                if SubscriptionStore.shared.isReadOnly { ReadOnlySidebarNote() }
+                #endif
+                companyCard
+            }
+        }
         // Al vaciar la búsqueda se suelta el foco del campo.
         .onChange(of: query) { _, text in if text.isEmpty { searching = false } }
         .background(Palette.sidebar)

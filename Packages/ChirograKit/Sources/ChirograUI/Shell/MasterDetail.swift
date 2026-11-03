@@ -263,7 +263,7 @@ private extension View {
     func masterAddButton(_ title: String?, label: String, action: @escaping () -> Void) -> some View {
         toolbar {
             ToolbarItem(placement: .primaryAction) {
-                Button(action: action) {
+                Button { SubscriptionStore.shared.whenWritable(action) } label: {
                     HStack(spacing: 4) {
                         Image(systemName: "plus")
                         if let title { Text(title) }

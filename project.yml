@@ -20,6 +20,10 @@ targets:
     supportedDestinations: [iOS, macOS]
     sources:
       - path: App
+        excludes: [Chirogra.storekit]
+      # Pruebas de compras de StoreKit desde Xcode (no va dentro de la app).
+      - path: App/Chirogra.storekit
+        buildPhase: none
     dependencies:
       - package: ChirograKit
         products: [ChirograUI, ChirograData, ChirograCore]
@@ -58,5 +62,8 @@ schemes:
     build:
       targets:
         Chirogra: all
+    run:
+      # Al ejecutar desde Xcode, la suscripción usa este archivo (compras de prueba, sin cobrar).
+      storeKitConfiguration: App/Chirogra.storekit
     test:
       gather_coverage_data: true

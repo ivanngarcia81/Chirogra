@@ -356,6 +356,7 @@ struct DataAndSecurityView: View {
             } footer: {
                 Text("Tus libros viajan cifrados en tu cuenta privada de iCloud entre tu iPhone, iPad y Mac. El cambio se aplica al volver a abrir la app.")
             }
+            SubscriptionSection()
             BackupSection()
             Section {
                 HStack(spacing: 12) {

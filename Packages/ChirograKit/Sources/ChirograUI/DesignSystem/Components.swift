@@ -1073,7 +1073,7 @@ struct QuickAction: View {
     @ScaledMetric(relativeTo: .title3) private var side: CGFloat = 58
 
     var body: some View {
-        Button(action: action) {
+        Button { SubscriptionStore.shared.whenWritable(action) } label: {
             VStack(spacing: 6) {
                 Image(systemName: systemImage)
                     .font(.title3.weight(.medium))
@@ -1127,7 +1127,7 @@ struct AddButton: View {
     let action: () -> Void
 
     var body: some View {
-        Button(action: action) {
+        Button { SubscriptionStore.shared.whenWritable(action) } label: {
             Label(String(localized: title), systemImage: "plus").labelStyle(.iconOnly)
         }
         .headerButton()

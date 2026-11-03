@@ -5,7 +5,7 @@ Resumen del chat de coordinación de Chirogra al **3 de noviembre de 2026**. Lé
 ## Dónde nos quedamos (empieza aquí)
 
 1. **Lo primero: confirmar con el usuario el anillo de foco del iPad.** En Gastos (columna maestro del iPad), al hacer clic con el trackpad en una fila, salía un marco cuadrado del color de acento alrededor del relleno de Tinta; en las demás listas no. Dos intentos: `e8c43d2` (`.focusEffectDisabled()` en la fila) **no lo arregló**; `830ed69` deja el acento de las listas maestro en `Color.clear` (`MasterListStyle` en `Shell/MasterDetail.swift` y `Sales/EstimateMasterList.swift`), porque el anillo lo dibuja UIKit en el acento. Está instalado en el iPad, **sin confirmar**: el simulador y las pruebas automáticas solo mandan toques y ahí no aparece. Si sigue, buscar qué tiene la lista o el detalle de Gastos (`ExpenseMasterList`, `ExpenseDetailView` en `Expenses/ReceiptViews.swift`) para que el foco se quede en la celda (en Ventas pasa al detalle).
-2. `main` = `e9db54e` en GitHub (pendientes menores y piezas en `DesignSystem`). Encima, **sin commitear**: la copia de seguridad (abajo), que cierra el MVP. No hay ramas ni worktrees abiertos.
+2. `main` = `e9db54e` en GitHub (pendientes menores y piezas en `DesignSystem`). Después `de6ef43` (copia de seguridad, cierra el MVP; sin empujar) y encima, **sin commitear**, la suscripción (abajo). No hay ramas ni worktrees abiertos.
 3. Instalado en los tres aparatos: iPhone y Mac con `add429f`, iPad con `830ed69`. **Falta instalar** `e9db54e` y la copia de seguridad cuando el usuario tenga los aparatos.
 4. **Siguiente: fase 2.** Antes, que el usuario decida si se publica la 1.0 (desplegar el esquema de CloudKit) y la lista y el orden de la fase 2: DISEÑO §3.2 y este documento no coinciden (Plaid, usuarios y permisos son fase 3 en DISEÑO). Lo primero técnico sería el esquema 3 con los datos de la conciliación (DISEÑO §4.6).
 
@@ -38,6 +38,9 @@ Barra lateral, estados de iCloud, aviso «¿Descartar los cambios?» en los edit
 
 ## Decisiones del usuario (no deshacer sin preguntar)
 
+- **Precio (3-nov):** un solo plan **mensual** con **14 días de prueba gratis**. Lanzamiento a **$24.99/mes durante los 3 primeros meses**; después **$29.99/mes** para los nuevos, **conservando el precio** a los ya suscritos (en App Store Connect). El usuario pensó en $69.99 y lo bajó al ver el mercado (QuickBooks Simple Start $38, Xero Early $27). Subir más solo cuando llegue la conexión con el banco.
+- **Suscripción vencida = solo lectura** (se ven los libros y se sacan copias, CSV y PDF; no se registra nada).
+
 - **Rediseño nativo según el canvas actual** (2-nov), que deja sin efecto el descarte de `7a8b97f`. Manda el canvas salvo lo de esta lista.
 - **Botón principal en vidrio sin relleno** (`.glass`), aunque el canvas lo rellene de Tinta. Nada de botones morados.
 - **Pestañas del iPhone:** Inicio · Ventas · Gastos · Banca · Más (Reportes en «Más»).
@@ -56,6 +59,8 @@ Barra lateral, estados de iCloud, aviso «¿Descartar los cambios?» en los edit
 **Probado por el usuario y funciona (2-nov):** Escape y Return en los editores del Mac, ⌥⌘I, doble clic, ordenar columnas, soltar un recibo, «Registrar pago» en la hoja.
 
 **Copia de seguridad (3-nov, cierra el MVP):** Ajustes › iCloud, copias y seguridad: «Crear copia ahora» (archivo `.chirogra`, tipo `com.chirogra.backup` declarado en `Info.plist` y `project.yml`), «Restaurar desde una copia…» (confirmación con empresa, fecha y registros; guarda antes una copia de lo actual en Application Support/«Copias antes de restaurar», las 3 últimas) y «Deshacer la última restauración». Tras restaurar se rehace la navegación (`BooksReplacement`, `.id` del `AppShell`) y sale «Copia restaurada». Código: `ChirograData/Backup.swift` + `Backup+Generated.swift` (lo escribe `scripts/gen-backup.py`; **volver a ejecutarlo al cambiar el esquema**, `BackupTests` lo exige). Probado: 5 pruebas (cubre todo el esquema, ida y vuelta idéntica, valores por defecto de una copia vieja, archivos malos sin tocar nada) y en la copia de prueba del Mac de punta a punta (crear, restaurar, deshacer, con la base comprobada por SQLite). Argumentos de QA (Debug): `-qa.ajustes data`, `-qa.copia <ruta>`, `-qa.restaurar <ruta>` (rutas dentro del contenedor de la copia de prueba).
+
+**Suscripción (3-nov, sin commitear):** `Shell/Subscription.swift`: `SubscriptionStore` (StoreKit 2, producto `com.chirogra.app.mensual`; `notConfigured` mientras el producto no exista en App Store Connect → no bloquea nada, así que las versiones instaladas hoy siguen abiertas), `PaywallView` (`SubscriptionStoreView`, sale sola una vez al crear la empresa o al abrir con la suscripción vencida), aviso de solo lectura (arriba en iPhone/iPad; al pie de la barra lateral en el Mac), «Suscripción» en Ajustes › iCloud, copias y seguridad. Los «+» (`AddButton`, `masterAddButton`, `MacTablePage`, `QuickAction`) abren la suscripción en solo lectura; `Bookkeeper.isReadOnly` bloquea todo guardado de `Bookkeeper` (`BookkeepingError.readOnly`, `ReadOnlyTests`) y `AppAutomations` no corre. `App/Chirogra.storekit` + esquema de Xcode (`project.yml` `run.storeKitConfiguration`): **al ejecutar desde Xcode** se puede comprar de prueba. QA: `-qa.suscripcion prueba|activa|vencida`. Fuera de Xcode y sin el producto en App Store Connect la pantalla dice «Subscription Unavailable» (normal). **Falta:** crear la suscripción en App Store Connect (grupo «Chirogra», mensual, prueba de 2 semanas, $24.99), la URL de la política de privacidad (`ChirograLinks.privacyPolicy`, hoy `nil`; condiciones = EULA de Apple) y probar la compra desde Xcode.
 
 **Comprobado el 3-nov:** archivar una cuenta en el Mac (inspector del plan de cuentas; se guarda con el autoguardado). Los cargos automáticos, las reversiones y los asientos manuales tienen pruebas de datos.
 
@@ -76,6 +81,10 @@ Barra lateral, estados de iCloud, aviso «¿Descartar los cambios?» en los edit
 - No se movieron `ComparisonBars`, `ActivityMark` ni `LineEditRow`: solo los usa una pantalla. Subirlos cuando otra los necesite.
 
 **No construido a propósito:** «Vista por el cliente» (necesita servidor). **Fase 2:** OCR, bandeja del banco e importar/conciliar (Plaid solo en un backend), usuarios y permisos, varias empresas, deducibles y «Exportar para mi contador».
+
+**Cobro en línea (decidido el 3-nov para la fase 2):**
+1. **Sin servidor:** enlace de pago propio del usuario en Ajustes (Stripe Payment Link, Square, PayPal.me, datos de Zelle o transferencia) → botón «Pagar ahora» y QR en el PDF y el correo de la factura. El cobro se registra a mano.
+2. **Con servidor, junto con Plaid:** Stripe Connect (la cuenta de Stripe de cada usuario; el dinero no pasa por Chirogra), un enlace por factura con su importe, aviso de Stripe al servidor y la app registra el cobro al abrir (el servidor no escribe en el iCloud del usuario). Comisión de Stripe como gasto, cuenta puente «Fondos no depositados» hasta el depósito, que se concilia con la importación del banco. Posible comisión de Chirogra por pago (p. ej. 0.5 %). Entraría en el plan «Chirogra + Banco» ($39.99/mes; el plan sin banco sigue a $29.99), en el mismo grupo de suscripción.
 
 ## Reglas de trabajo
 

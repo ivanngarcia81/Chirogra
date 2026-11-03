@@ -74,6 +74,7 @@ extension Bookkeeper {
         let attachment = Attachment(filename: prepared.filename, contentType: prepared.contentType, data: prepared.data)
         attachment.expense = expense
         context.insert(attachment)
+        try ensureWritable()
         try context.save()
         return attachment
     }
@@ -83,6 +84,7 @@ extension Bookkeeper {
         let owner = attachment.expense?.payee ?? attachment.bill?.vendorNumber ?? ""
         audit("Attachment", attachment.id, "delete", String(localized: "Recibo quitado: \(attachment.filename)\(owner.isEmpty ? "" : " · \(owner)")"))
         context.delete(attachment)
+        try ensureWritable()
         try context.save()
     }
 }

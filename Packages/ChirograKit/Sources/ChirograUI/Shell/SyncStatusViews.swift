@@ -152,7 +152,8 @@ enum AppAutomations {
     private static var pendingResolve = false
 
     static func run(container: ModelContainer, resolvingDuplicates: Bool = false) {
-        guard !SyncMonitor.shared.isFirstImport else { return }
+        // En solo lectura no se genera ni se cobra nada (los recurrentes se ponen al día al renovar).
+        guard !SyncMonitor.shared.isFirstImport, !Bookkeeper.isReadOnly else { return }
         if running {
             if resolvingDuplicates { pendingResolve = true }
             return

@@ -1995,6 +1995,16 @@
         }
       }
     },
+    "14 días gratis; cancela cuando quieras" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "14 days free; cancel anytime"
+          }
+        }
+      }
+    },
     "15 días" : {
       "localizations" : {
         "en" : {
@@ -2362,6 +2372,16 @@
         }
       }
     },
+    "Activa · se renueva el %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Active · renews %@"
+          }
+        }
+      }
+    },
     "Activada" : {
       "localizations" : {
         "en" : {
@@ -2534,6 +2554,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Attach receipt…"
+          }
+        }
+      }
+    },
+    "Administrar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manage"
           }
         }
       }
@@ -7207,6 +7237,16 @@
         }
       }
     },
+    "Estado de resultados, balance y sales tax" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Profit & loss, balance sheet and sales tax"
+          }
+        }
+      }
+    },
     "Estado del pago" : {
       "localizations" : {
         "en" : {
@@ -7872,6 +7912,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bills to pay"
+          }
+        }
+      }
+    },
+    "Facturas, estimados y cobros" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invoices, estimates and payments"
           }
         }
       }
@@ -13253,6 +13303,16 @@
         }
       }
     },
+    "Prueba gratis hasta el %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Free trial until %@"
+          }
+        }
+      }
+    },
     "Próxima" : {
       "localizations" : {
         "en" : {
@@ -15751,6 +15811,26 @@
         }
       }
     },
+    "Sin servidores: tus datos en tus aparatos e iCloud" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No servers: your data stays on your devices and iCloud"
+          }
+        }
+      }
+    },
+    "Sin suscripción · solo lectura" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No subscription · read-only"
+          }
+        }
+      }
+    },
     "Sin tasas todavía" : {
       "localizations" : {
         "en" : {
@@ -15827,6 +15907,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "On this device only"
+          }
+        }
+      }
+    },
+    "Solo lectura: tu suscripción terminó. Puedes ver tus libros y sacar copias." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Read-only: your subscription ended. You can still view your books and make backups."
           }
         }
       }
@@ -15967,6 +16057,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Subject to 1099"
+          }
+        }
+      }
+    },
+    "Suscribirme" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Subscribe"
+          }
+        }
+      }
+    },
+    "Suscripción" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Subscription"
           }
         }
       }
@@ -16765,6 +16875,26 @@
         }
       }
     },
+    "Tus libros completos en tu iPhone, iPad y Mac: facturas, gastos, sales tax y reportes, privados en tu cuenta." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your complete books on your iPhone, iPad and Mac: invoices, expenses, sales tax and reports, private to your account."
+          }
+        }
+      }
+    },
+    "Tus libros están en solo lectura porque la suscripción terminó. Suscríbete para seguir registrando." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your books are read-only because your subscription ended. Subscribe to keep recording."
+          }
+        }
+      }
+    },
     "Tus libros se llevan en dólares (USD). El estado decide el sales tax que cobras; es obligatorio." : {
       "localizations" : {
         "en" : {
@@ -17546,6 +17676,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Show Paid"
+          }
+        }
+      }
+    },
+    "Ver planes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "See Plans"
           }
         }
       }

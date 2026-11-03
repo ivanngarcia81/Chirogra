@@ -65,6 +65,7 @@ extension Bookkeeper {
                 try pay(bill, amount: bill.balanceDue, date: date, from: paymentAccount, method: method, reference: reference, save: false)
             }
             audit("BillPayment", nil, "batchPay", String(localized: "Pago en lote de \(bills.count) facturas: \(Money(minorUnits: payments.reduce(0) { $0 + $1.amount }).formatted())"))
+            try ensureWritable()
             try context.save()
             return payments
         } catch {
