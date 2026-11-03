@@ -336,6 +336,7 @@ Usuario guarda factura ─► ChirograUI (InvoiceEditor)
 ### 6.4 Esquema y migraciones
 
 - `VersionedSchema` desde la v1 y `SchemaMigrationPlan`, aunque al principio solo haya una versión: evita dolores al primer cambio con usuarios reales.
+- **Esquema 2.0.0 (2-nov-2026):** migración ligera desde la v1, solo cambios aditivos (pagos programados, recurrentes, estimados, notas de cliente, envíos de factura, cierres, avisos…). La v1 queda congelada en `SchemaV1.swift`. Detalle y API en [DATOS-V2.md](DATOS-V2.md).
 - Copia de seguridad exportable/importable (archivo `.chirogra` = JSON comprimido + adjuntos) independiente de iCloud.
 
 ### 6.5 Sincronización con iCloud / CloudKit (opcional)
