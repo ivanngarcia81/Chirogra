@@ -18,7 +18,9 @@ Resumen del chat de coordinación de Chirogra al **4 de noviembre de 2026**. Lé
 
 **Próxima subida:** subir `CURRENT_PROJECT_VERSION` en `project.yml` a **2** (y regenerar el proyecto, ver «Proyecto de Xcode» abajo); cómo se sube, en «TestFlight».
 
-**Pendiente menor sin hacer:** «Impuesto predeterminado» se parte en «predetermi-nado» en la caja «Facturas nuevas» de Impuestos del iPad; en el Mac no se probó en pantalla registrar y revertir un asiento ni el estado vacío.
+**Pendiente menor sin hacer:** en el Mac no se probó en pantalla registrar y revertir un asiento ni el estado vacío.
+
+**Hecho el 4-nov (sin commitear):** caja «Facturas nuevas» de Impuestos (`TaxDefaultsRows`): si la etiqueta y el menú no caben en una línea, la etiqueta va arriba y el menú debajo, alineado con ella (antes «predetermi-nado» se partía en el iPad); «Precios con impuesto incluido» con el interruptor a la derecha del texto (en el iPad caía debajo; en el Mac era una casilla). Visto en el simulador del iPad de 13″ y en la copia de prueba del Mac; el iPhone no se vio en pantalla.
 
 ## Estado actual
 
@@ -118,6 +120,14 @@ Barra lateral, estados de iCloud, aviso «¿Descartar los cambios?» en los edit
 - No se movieron `ComparisonBars`, `ActivityMark` ni `LineEditRow`: solo los usa una pantalla. Subirlos cuando otra los necesite.
 
 **No construido a propósito:** «Vista por el cliente» (necesita servidor). **Fase 2:** OCR, bandeja del banco e importar/conciliar (Plaid solo en un backend), usuarios y permisos, varias empresas, deducibles y «Exportar para mi contador».
+
+**Guía de uso (4-nov, sin commitear):** `sitio/guia/` (es) y `sitio/guide/` (en), 13 secciones con 18 capturas del Mac por idioma en `sitio/img/guia/` (copia de prueba del Mac con los argumentos `-qa.*` y datos de ejemplo; las hojas se capturan como ventana aparte y se recorta su franja vacía de 33 px). Enlazada desde el menú de todas las páginas y desde Soporte. Revisada con Chrome sin ventana a 1280 y 390 px y en oscuro. Falta: el enlace «Ayuda» dentro de la app (build 2 o 1.1). Al cambiar una pantalla, rehacer su captura.
+
+**Hallazgos del 4-nov para la próxima subida (sin hacer, a decidir con el usuario):**
+- **No se puede salir de los datos de ejemplo:** tras «Probar con datos de ejemplo» no hay forma de borrarlos y crear la empresa propia (solo borrando la app). Hace falta un «Empezar con mi empresa» que borre los datos de ejemplo. La guía no lo menciona hasta que exista.
+- **1099-NEC con $600:** la ficha del proveedor avisa con el mínimo de $600, pero para pagos hechos desde el 1-ene-2026 el mínimo es **$2,000** (One Big Beautiful Bill Act, §70433; se ajusta por inflación desde 2027). Confirmar con las instrucciones del IRS de 2026 y corregir el texto y el cálculo (`Requiere 1099-NEC`).
+
+**Plan para contadores (decidido el 4-nov; el usuario lo quiere para la siguiente versión después de la 1.0, «el build 2»: entendido como la 1.1, no como el build 2 de la 1.0):** caso A: el contador independiente lleva los libros de **hasta 5 empresas** desde su propia app y su iCloud; el cliente no usa Chirogra. **Conviven los dos planes:** el individual de siempre (el dueño lleva sus propios libros, 1 empresa) y el de contador; una empresa puede pasar de uno a otro en cualquier sentido con la copia `.chirogra` (el contador se la entrega al dueño, o el dueño se la da a su contador) (el caso B, el contador dentro de la app del cliente con permisos, queda para después: SwiftData no comparte datos de iCloud entre cuentas). Segundo nivel de suscripción en el grupo «Chirogra», plan alto; precio sin fijar (propuesta: $89.99–$99.99/mes; QuickBooks Online Accountant es gratis para el contador y cobra a cada cliente). Piezas: selector de empresa, lista de empresas con lo pendiente de cada una, alta de otra empresa, límite de 5 en la app; la copia `.chirogra` por empresa sirve para entregarle los libros al cliente. **Prueba del 4-nov (Mac, iCloud de desarrollo): un almacén por empresa en el mismo contenedor NO sirve.** Dos almacenes SwiftData con `.private("iCloud.com.chirogra.app")` comparten la misma zona de CloudKit: se guardó «SPIKE-A» en A y B, recién creado, la recibió al importar (10 s). Registros de prueba borrados de iCloud y de la Mac. Caminos: (1) **recomendado:** un solo almacén con la empresa en cada registro (esquema 3, migración que asigna la empresa actual; añadir campos es compatible con el esquema de producción); (2) un contenedor de iCloud por empresa (5 contenedores más creados en el portal, cada cambio de esquema desplegado 6 veces).
 
 **Cobro en línea (decidido el 3-nov para la fase 2):**
 1. **Sin servidor:** enlace de pago propio del usuario en Ajustes (Stripe Payment Link, Square, PayPal.me, datos de Zelle o transferencia) → botón «Pagar ahora» y QR en el PDF y el correo de la factura. El cobro se registra a mano.
