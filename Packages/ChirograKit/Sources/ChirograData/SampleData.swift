@@ -4,8 +4,19 @@ import SwiftData
 
 /// Datos de ejemplo para vistas previas, capturas y el botón "Probar con datos de ejemplo".
 /// Todo pasa por `Bookkeeper`, así que los asientos de ejemplo cumplen las mismas reglas que los reales.
+///
+/// **Saber si los libros son de ejemplo** (`isSample`) sin tocar el esquema: `populate` da de alta la empresa con
+/// `Bookkeeper(actor: SampleData.actor)`, así que su alta queda en el registro de auditoría como
+/// `AuditEvent(actor: "Ejemplo", entityName: "Company", action: "create", entityID: <id de la empresa>)`. Ese registro
+/// es parte de los libros: se sincroniza con iCloud y viaja en las copias `.chirogra`, así que la marca vale en
+/// cualquier aparato (no como `UserDefaults`, que es de un solo aparato y se queda vieja al restaurar una copia).
+/// Una empresa real nunca lo tiene: el alta (`OnboardingView`) usa `Bookkeeper` sin actor, y nada más en la app
+/// escribe el actor «Ejemplo»; el nombre de la empresa no cuenta (alguien puede llamarse igual).
 @MainActor
 public enum SampleData {
+    /// Actor del registro de auditoría de todo lo que crean los datos de ejemplo. No cambiarlo: los datos de ejemplo
+    /// ya cargados en los aparatos se reconocen por él.
+    public static let actor = "Ejemplo"
 
     public static func makeContainer(locale: Locale = .current) -> ModelContainer {
         do {
@@ -21,7 +32,7 @@ public enum SampleData {
     /// clientes, proveedores y descripciones son contenido de ejemplo «escrito por el usuario» y no se traducen.
     public static func populate(_ context: ModelContext, today: Date = Date(), calendar: Calendar = .current,
                                 locale: Locale = .current) throws {
-        let books = Bookkeeper(context: context, actor: "Ejemplo")
+        let books = Bookkeeper(context: context, actor: actor)
         try books.setUpCompany(legalName: "Ríos Diseño & Obra LLC", displayName: "Ríos Diseño & Obra",
                                entityType: .llc, state: "TX", locale: locale)
         func day(_ offset: Int) -> Date { calendar.date(byAdding: .day, value: offset, to: today) ?? today }
@@ -174,5 +185,49 @@ public enum SampleData {
         ))
         try books.setStatus(.sent, of: estimate, date: day(-5))
         try books.setStatus(.accepted, of: estimate, acceptedBy: "Laura Méndez", date: day(-2))
+    }
+
+    // MARK: - Datos de ejemplo o libros propios
+
+    /// Altas de empresa hechas por los datos de ejemplo, para una `@Query` (`isSample(companies:sampleCreations:)`).
+    public static var sampleCreationsPredicate: Predicate<AuditEvent> {
+        let actor = actor
+        return #Predicate<AuditEvent> { $0.actor == actor && $0.entityName == "Company" && $0.action == "create" }
+    }
+
+    /// `true` si hay empresa y todas son de ejemplo (con iCloud podrían llegar dos copias de la de ejemplo, una por
+    /// aparato). Con una sola empresa real, `false`.
+    public static func isSample(companies: [Company], sampleCreations: [AuditEvent]) -> Bool {
+        guard !companies.isEmpty else { return false }
+        let sampleIDs = Set(sampleCreations.compactMap { event -> UUID? in
+            event.actor == actor && event.entityName == "Company" && event.action == "create" ? event.entityID : nil
+        })
+        return companies.allSatisfy { sampleIDs.contains($0.id) }
+    }
+
+    /// Los libros de `context` son los de ejemplo (ver la explicación del tipo).
+    public static func isSample(_ context: ModelContext) throws -> Bool {
+        isSample(companies: try context.fetch(FetchDescriptor<Company>()),
+                 sampleCreations: try context.fetch(FetchDescriptor(predicate: sampleCreationsPredicate)))
+    }
+
+    /// «Empezar con mi empresa»: borra **todo** lo de los libros de ejemplo (todos los modelos, uno a uno para que el
+    /// borrado llegue por iCloud a los otros aparatos) en un solo guardado. Después no queda empresa y la app vuelve al
+    /// alta. Si los libros no son de ejemplo no borra nada y lanza `SampleDataError.notSample`: así nunca se borran
+    /// unos libros reales por error.
+    public static func discard(from context: ModelContext) throws {
+        guard try isSample(context) else { throw SampleDataError.notSample }
+        try BackupArchive.eraseAll(in: context)
+    }
+}
+
+public enum SampleDataError: Error, Equatable, LocalizedError {
+    /// Los libros no son los de ejemplo: no se borran.
+    case notSample
+
+    public var errorDescription: String? {
+        switch self {
+        case .notSample: String(localized: "Estos libros no son los de ejemplo, así que no se borraron.")
+        }
     }
 }

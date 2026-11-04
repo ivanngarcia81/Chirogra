@@ -339,6 +339,11 @@ struct HomeView: View {
             periodMenu(compact: true, prefix: companyName)
                 .padding(.horizontal, Metrics.gutter)
 
+            // Mientras los libros son los de ejemplo: «Empezar con mi empresa».
+            SampleBooksBanner()
+                .padding(.horizontal, Metrics.gutter)
+                .padding(.top, 8)
+
             VStack(alignment: .leading, spacing: 14) {
                 cashHeader(amountSize: 36)
                 Rectangle().fill(Palette.separator).frame(height: 0.5)
@@ -689,18 +694,23 @@ struct HomeView: View {
     // MARK: - iPad (`iPadInicio`)
 
     private var padBody: some View {
-        HStack(alignment: .top, spacing: 0) {
-            padColumn
-                .frame(width: padColumnWidth)
-            ScrollView {
-                VStack(alignment: .leading, spacing: 0) { padDetail }
-                    .padding(.horizontal, 24)
-                    .padding(.top, 8)
-                    .padding(.bottom, 32)
-                    .frame(maxWidth: 900, alignment: .leading)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+        VStack(spacing: 0) {
+            // Mientras los libros son los de ejemplo, a todo el ancho encima de la columna y el detalle.
+            SampleBooksBanner()
+                .padding(.leading, 8).padding(.trailing, 24).padding(.bottom, 12)
+            HStack(alignment: .top, spacing: 0) {
+                padColumn
+                    .frame(width: padColumnWidth)
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 0) { padDetail }
+                        .padding(.horizontal, 24)
+                        .padding(.top, 8)
+                        .padding(.bottom, 32)
+                        .frame(maxWidth: 900, alignment: .leading)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .id(padSection)
             }
-            .id(padSection)
         }
     }
 
@@ -840,6 +850,8 @@ struct HomeView: View {
     private var macBody: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text(companyName).font(.subheadline).foregroundStyle(Palette.ink2)
+            // Mientras los libros son los de ejemplo: «Empezar con mi empresa».
+            SampleBooksBanner()
             KPIGrid(items: macKPIs, large: true)
             macPair(firstShare: 2) {
                 chartCard(height: 190, barWidth: 12, pickerOnTop: false, months: 12,

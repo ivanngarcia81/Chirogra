@@ -3563,6 +3563,16 @@
         }
       }
     },
+    "Borrar y empezar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete and Start"
+          }
+        }
+      }
+    },
     "Bosque" : {
       "localizations" : {
         "en" : {
@@ -5469,6 +5479,16 @@
         }
       }
     },
+    "Datos de ejemplo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sample data"
+          }
+        }
+      }
+    },
     "Datos de la empresa" : {
       "localizations" : {
         "en" : {
@@ -6879,6 +6899,26 @@
         }
       }
     },
+    "Empezar con mi empresa" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start with my company"
+          }
+        }
+      }
+    },
+    "Empezar con mi empresa…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start with my company…"
+          }
+        }
+      }
+    },
     "Emítelos o bórralos antes de cerrar" : {
       "localizations" : {
         "en" : {
@@ -7473,6 +7513,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "These details appear on your invoices. You can change them later in Settings."
+          }
+        }
+      }
+    },
+    "Estos libros no son los de ejemplo, así que no se borraron." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "These books aren’t the sample data, so they weren’t deleted."
+          }
+        }
+      }
+    },
+    "Estás usando los datos de ejemplo de «%@». Bórralos y crea tu empresa desde cero." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You’re using the sample data for “%@”. Delete it and set up your company from scratch."
+          }
+        }
+      }
+    },
+    "Estás viendo datos de ejemplo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You’re viewing sample data"
           }
         }
       }
@@ -11118,6 +11188,16 @@
         }
       }
     },
+    "No se pudieron borrar los datos de ejemplo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn’t Delete the Sample Data"
+          }
+        }
+      }
+    },
     "No se pudo adjuntar el archivo: usa una foto o un PDF." : {
       "localizations" : {
         "en" : {
@@ -11637,6 +11717,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Required"
+          }
+        }
+      }
+    },
+    "Ocultar aviso" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hide notice"
           }
         }
       }
@@ -12714,6 +12804,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "You can add, rename, or archive accounts in Accounting."
+          }
+        }
+      }
+    },
+    "Podrás empezar con tu empresa desde Ajustes › iCloud, copias y seguridad." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You can still start with your company from Settings › iCloud, backups and security."
           }
         }
       }
@@ -14949,6 +15049,16 @@
         }
       }
     },
+    "Se borran todos los datos de ejemplo de «%@»: clientes, facturas, gastos, asientos y ajustes. Después creas tu empresa desde cero." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All the sample data for “%@” is deleted: customers, invoices, expenses, journal entries and settings. Then you set up your company from scratch."
+          }
+        }
+      }
+    },
     "Se calcula sola" : {
       "localizations" : {
         "en" : {
@@ -15911,6 +16021,16 @@
         }
       }
     },
+    "Solo lectura" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Read-only"
+          }
+        }
+      }
+    },
     "Solo lectura: tu suscripción terminó. Puedes ver tus libros y sacar copias." : {
       "localizations" : {
         "en" : {
@@ -16147,6 +16267,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "TOTAL"
+          }
+        }
+      }
+    },
+    "También se borran en tus otros aparatos con iCloud." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "It’s also deleted on your other devices with iCloud."
           }
         }
       }
@@ -16841,6 +16971,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Quarter settled"
+          }
+        }
+      }
+    },
+    "Tu suscripción terminó. Puedes ver tus libros y sacar copias." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your subscription ended. You can still view your books and make backups."
           }
         }
       }
@@ -18237,6 +18377,16 @@
         }
       }
     },
+    "«%@» es una empresa inventada para probar Chirogra. Cuando quieras, bórrala y crea la tuya." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” is a made-up company for trying out Chirogra. Whenever you’re ready, delete it and create your own."
+          }
+        }
+      }
+    },
     "«%@», copia del %@" : {
       "localizations" : {
         "es" : {
@@ -18305,6 +18455,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Delete the note?"
+          }
+        }
+      }
+    },
+    "¿Borrar los datos de ejemplo?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete Sample Data?"
           }
         }
       }

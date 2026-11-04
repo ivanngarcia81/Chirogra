@@ -79,6 +79,10 @@ public struct ChirograRootView: View {
 
     public init() {}
 
+    #if DEBUG
+    private static var qaLoadedSample = false
+    #endif
+
     private var isLocked: Bool { appLockEnabled && !lock.isUnlocked && !companies.isEmpty }
 
     public var body: some View {
@@ -90,8 +94,14 @@ public struct ChirograRootView: View {
             } else if companies.isEmpty {
                 OnboardingView()
                     #if DEBUG
-                    // `-qa.muestra 1`: los datos de ejemplo sin pasar por el alta («Probar con datos de ejemplo»).
-                    .onAppear { if QALaunch.loadsSample { try? SampleData.populate(modelContext) } }
+                    // `-qa.muestra 1`: los datos de ejemplo sin pasar por el alta («Probar con datos de ejemplo»). Una sola
+                    // vez por sesión: tras «Empezar con mi empresa» el alta tiene que quedar vacía.
+                    .onAppear {
+                        if QALaunch.loadsSample && !Self.qaLoadedSample {
+                            Self.qaLoadedSample = true
+                            try? SampleData.populate(modelContext)
+                        }
+                    }
                     #endif
             } else {
                 // Al restaurar una copia se rehace la navegación: las pantallas abiertas apuntaban a registros borrados.
@@ -111,6 +121,16 @@ public struct ChirograRootView: View {
             }
         }
         .sheet(isPresented: $subscription.showsPaywall) { PaywallView() }
+        // «Empezar con mi empresa» (aviso de Inicio y Ajustes): tras borrar los datos de ejemplo no queda empresa y sale el
+        // alta. La pantalla de suscripción vuelve a salir sola al crear la empresa propia (si salió con los de ejemplo, ya
+        // se había gastado su «una vez»), y no se espera a iCloud: el borrado que se sube no son libros que lleguen.
+        .sampleBooksConfirmation {
+            paywallShownOnce = false
+            skipsSyncWait = true
+            #if DEBUG
+            Self.qaLoadedSample = true
+            #endif
+        }
         .task { subscription.start() }
         .onChange(of: subscription.isReadOnly && !companies.isEmpty, initial: true) { _, readOnly in
             Bookkeeper.isReadOnly = readOnly
