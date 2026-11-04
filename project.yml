@@ -9,7 +9,7 @@ options:
 settings:
   base:
     SWIFT_VERSION: "6.0"
-    MARKETING_VERSION: "0.1.0"
+    MARKETING_VERSION: "1.0.0"
     CURRENT_PROJECT_VERSION: "1"
 packages:
   ChirograKit:
@@ -31,6 +31,12 @@ targets:
       path: App/Info.plist
       properties:
         CFBundleDisplayName: Chirogra
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        # Solo HTTPS y el cifrado del sistema: no hace falta la declaración de exportación en cada subida.
+        ITSAppUsesNonExemptEncryption: false
+        # Avisos silenciosos de CloudKit para sincronizar al momento (iOS).
+        UIBackgroundModes: [remote-notification]
         CFBundleDevelopmentRegion: es
         CFBundleLocalizations: [es, en]
         LSApplicationCategoryType: public.app-category.finance
@@ -47,8 +53,17 @@ targets:
             UTTypeConformsTo: [public.data]
             UTTypeTagSpecification:
               public.filename-extension: [chirogra]
+    # iCloud (CloudKit, contenedor iCloud.com.chirogra.app) y avisos de CloudKit. El Mac usa otro archivo porque la
+    # clave de los avisos se llama distinto (`com.apple.developer.aps-environment`).
+    entitlements:
+      path: App/Chirogra.entitlements
+      properties:
+        com.apple.developer.icloud-container-identifiers: [iCloud.com.chirogra.app]
+        com.apple.developer.icloud-services: [CloudKit]
+        aps-environment: development
     settings:
       base:
+        "CODE_SIGN_ENTITLEMENTS[sdk=macosx*]": App/Chirogra-macOS.entitlements
         PRODUCT_BUNDLE_IDENTIFIER: com.chirogra.app
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon # App/AppIcon.icon (Icon Composer), recurso por estar en App/
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor

@@ -5,13 +5,28 @@ import SwiftUI
 
 @main
 struct ChirograApp: App {
-    /// Identificador del contenedor de iCloud. Para activar la sincronización, añade la capacidad
-    /// de iCloud (CloudKit) con este contenedor al target y firma con tu equipo (ver README).
+    /// Contenedor de iCloud (capacidad de iCloud con CloudKit en `App/Chirogra.entitlements`).
     static let cloudKitContainer = "iCloud.com.chirogra.app"
 
     let container: ModelContainer
 
     init() {
+        #if DEBUG
+        // `-qa.esquemaCloudKit 1` (solo Debug, en un aparato con sesión de iCloud): crea el esquema de CloudKit en
+        // desarrollo y anota el resultado en el registro y en `qa.esquemaCloudKit.resultado` de los ajustes.
+        if UserDefaults.standard.bool(forKey: "qa.esquemaCloudKit") {
+            let result: String
+            do {
+                try ChirograStore.initializeCloudKitSchema(containerIdentifier: Self.cloudKitContainer)
+                result = "listo"
+            } catch {
+                result = "error \(error)"
+            }
+            NSLog("Chirogra esquema CloudKit: %@", result)
+            // También en los ajustes de la app, para leerlo con `defaults read` (el registro no siempre se ve).
+            UserDefaults.standard.set("\(Date.now.formatted(.iso8601)) \(result)", forKey: "qa.esquemaCloudKit.resultado")
+        }
+        #endif
         let wantsSync = UserDefaults.standard.bool(forKey: "iCloudSyncEnabled")
         do {
             container = try ChirograStore.makeContainer(cloudKitContainer: wantsSync ? Self.cloudKitContainer : nil)

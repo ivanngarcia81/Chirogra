@@ -19,6 +19,7 @@
 
 /* Begin PBXFileReference section */
 		09A11343C2E5E7E54815564C /* Chirogra.storekit */ = {isa = PBXFileReference; path = Chirogra.storekit; sourceTree = "<group>"; };
+		1A4C6B0910B9B972D130B8D4 /* Chirogra.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Chirogra.entitlements; sourceTree = "<group>"; };
 		3BF4A529585E38589928C266 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		53FB421440D95AA4F9DB69E7 /* ChirograApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChirograApp.swift; sourceTree = "<group>"; };
 		5CC24A74A69DD9CDC364AE58 /* ChirograKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ChirograKit; path = Packages/ChirograKit; sourceTree = SOURCE_ROOT; };
@@ -27,6 +28,7 @@
 		7364B1960027C08F87F64E1F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		89B034281E78B27BB74D6F66 /* Chirogra.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Chirogra.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8A84B8A2D0C4E08FFB4D297A /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = wrapper.icon; path = AppIcon.icon; sourceTree = "<group>"; };
+		D55008B458B936C43009F114 /* Chirogra-macOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Chirogra-macOS.entitlements"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -64,6 +66,8 @@
 			children = (
 				8A84B8A2D0C4E08FFB4D297A /* AppIcon.icon */,
 				7364B1960027C08F87F64E1F /* Assets.xcassets */,
+				D55008B458B936C43009F114 /* Chirogra-macOS.entitlements */,
+				1A4C6B0910B9B972D130B8D4 /* Chirogra.entitlements */,
 				09A11343C2E5E7E54815564C /* Chirogra.storekit */,
 				53FB421440D95AA4F9DB69E7 /* ChirograApp.swift */,
 				5E80BC58C6541FB633123F25 /* Info.plist */,
@@ -224,7 +228,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 0.1.0;
+				MARKETING_VERSION = 1.0.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -241,6 +245,8 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = App/Chirogra.entitlements;
+				"CODE_SIGN_ENTITLEMENTS[sdk=macosx*]" = "App/Chirogra-macOS.entitlements";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				ENABLE_APP_SANDBOX = YES;
@@ -266,6 +272,8 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = App/Chirogra.entitlements;
+				"CODE_SIGN_ENTITLEMENTS[sdk=macosx*]" = "App/Chirogra-macOS.entitlements";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				ENABLE_APP_SANDBOX = YES;
@@ -334,7 +342,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 0.1.0;
+				MARKETING_VERSION = 1.0.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
