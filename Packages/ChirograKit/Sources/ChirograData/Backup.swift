@@ -72,9 +72,7 @@ public enum BackupArchive {
         try file.payload.insert(into: trial.mainContext)
         try trial.mainContext.save()
         do {
-            for type in BackupPayload.modelTypes {
-                try deleteAll(type, in: context)
-            }
+            try deleteEverything(in: context)
             try file.payload.insert(into: context)
             let summary = String(localized: "Copia restaurada del \(file.info.createdAt.formatted(date: .abbreviated, time: .shortened))")
             context.insert(AuditEvent(actor: actor, entityName: "Backup", entityID: nil, action: "restore", summary: summary))
@@ -110,6 +108,27 @@ public enum BackupArchive {
             return try JSONDecoder().decode(BackupFile.self, from: json)
         } catch {
             throw BackupError.damaged
+        }
+    }
+
+    /// Borra todos los registros de los libros (todos los modelos del esquema) en un solo guardado; si algo falla no
+    /// cambia nada. Lo usa «Empezar con mi empresa» para quitar los datos de ejemplo (`SampleData.discard`).
+    @MainActor
+    public static func eraseAll(in context: ModelContext) throws {
+        do {
+            try deleteEverything(in: context)
+            try context.save()
+        } catch {
+            context.rollback()
+            throw error
+        }
+    }
+
+    /// Marca para borrar todos los registros, sin guardar.
+    @MainActor
+    private static func deleteEverything(in context: ModelContext) throws {
+        for type in BackupPayload.modelTypes {
+            try deleteAll(type, in: context)
         }
     }
 

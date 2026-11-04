@@ -325,7 +325,7 @@ struct FormatsView: View {
 }
 
 /// Datos y seguridad (canvas `AjustesDatos`): iCloud, copias de seguridad (`BackupSection`) y bloqueo, como filas con
-/// icono de color.
+/// icono de color. Con los datos de ejemplo, arriba, «Empezar con mi empresa» (`SampleBooksSection`).
 struct DataAndSecurityView: View {
     /// Dentro de `SettingsWideView`: el título de la ventana sigue siendo «Ajustes».
     var embedded = false
@@ -335,6 +335,8 @@ struct DataAndSecurityView: View {
 
     var body: some View {
         Form {
+            // Solo con los datos de ejemplo: «Empezar con mi empresa», también para quien ocultó el aviso de Inicio.
+            SampleBooksSection()
             Section {
                 HStack(spacing: 12) {
                     IconTile(systemImage: "icloud.fill", foreground: Palette.blue)
