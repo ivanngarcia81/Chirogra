@@ -145,7 +145,7 @@ struct VendorTablePage: View {
                 }
             }
         } inspector: { row in
-            VendorInspector(row: row)
+            VendorInspector(row: row, year: year)
         } actions: { row in
             HStack(spacing: 8) {
                 Button("Nuevo gasto") { addingExpense = row.vendor }.buttonStyle(.secondary)
@@ -214,16 +214,22 @@ private struct Form1099Cell: View {
 /// pagar, Gastado en el año, Última compra, Pago preferido) e Impuestos (Formulario 1099 y W-9, con su nota).
 private struct VendorInspector: View {
     let row: VendorTableRow
+    /// Año de las cifras del inspector («Gastado en 2026», lo pagado): el del mínimo del 1099 que se aplica.
+    let year: Int
 
     private var yearText: String { Date.now.formatted(.appDateTime.year()) }
 
-    /// Nota del 1099 con lo que hay en los libros: el umbral de $600 se compara con lo pagado en el año.
+    /// Nota del 1099 con lo que hay en los libros: lo pagado en el año frente al mínimo de ese año
+    /// (`Form1099`: $600 hasta 2025, $2,000 desde 2026).
     private var note1099: String {
-        guard row.is1099 else { return String(localized: "Este proveedor no se reporta en el formulario 1099-NEC.") }
-        if row.paidThisYear >= 60_000 {
-            return String(localized: "Pagos en \(yearText): \(row.paidThisYear.money), por encima del mínimo de $600. Envíale el 1099-NEC antes del 31 de enero.")
+        switch Form1099.notice(is1099: row.is1099, paid: row.paidThisYear, taxYear: year) {
+        case .notReportable:
+            String(localized: "Este proveedor no se reporta en el formulario 1099-NEC.")
+        case let .reached(paid, threshold):
+            String(localized: "Pagos en \(yearText): \(paid.money), por encima del mínimo de \(threshold.money). Envíale el 1099-NEC antes del 31 de enero.")
+        case let .belowThreshold(threshold):
+            String(localized: "Si le pagas \(threshold.money) o más en el año, envíale el 1099-NEC antes del 31 de enero.")
         }
-        return String(localized: "Si le pagas $600 o más en el año, envíale el 1099-NEC antes del 31 de enero.")
     }
 
     var body: some View {
