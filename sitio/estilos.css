@@ -69,13 +69,20 @@ footer { max-width: 760px; margin: 0 auto; padding: 0 16px 40px; color: var(--ti
 .capturas img { width: 100%; height: auto; border-radius: 22px; box-shadow: 0 18px 40px rgba(30, 30, 90, .18); }
 .capturas .mac { grid-column: 1 / -1; border-radius: 14px; }
 .funciones {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px;
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px;
   max-width: 1080px; margin: 48px auto 0; padding: 0 16px;
 }
 .funciones .tarjeta { margin: 0; }
 .funciones h3 { margin: 6px 0 4px; font-size: 18px; }
 .funciones p { margin: 0; color: var(--tinta2); font-size: 16px; }
-.funciones .simbolo { font-size: 26px; }
+.simbolo {
+  display: inline-grid; place-items: center; width: 44px; height: 44px; border-radius: 12px;
+  background: var(--c, var(--marca)); color: #fff;
+}
+.simbolo svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.simbolo.grande { width: 56px; height: 56px; border-radius: 15px; margin-bottom: 4px; }
+.simbolo.grande svg { width: 30px; height: 30px; }
+@media (prefers-color-scheme: dark) { .privado .simbolo { background: var(--marca); } }
 .privado { max-width: 760px; margin: 40px auto 0; padding: 0 16px; text-align: center; }
 .privado .tarjeta { text-align: left; }
 @media (max-width: 640px) {

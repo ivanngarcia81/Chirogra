@@ -64,6 +64,8 @@ Barra lateral, estados de iCloud, aviso «¿Descartar los cambios?» en los edit
 
 **Probado por el usuario en su iPad (3-nov) y funciona:** hoja de nueva factura con el diseño ancho (vertical y horizontal), borrador con impuesto en la lista ($108.25), plan de cuentas con ••4821 completo y subcuentas sangradas, «Crear copia ahora» con el panel de guardar.
 
+**Sitio web (4-nov):** `sitio/` (portada con ícono, capturas, seis funciones con íconos SVG y «Tus libros son tuyos»; `/privacidad`, `/privacy`, `/soporte`, `/support`, rutas relativas) publicado con GitHub Pages por `.github/workflows/sitio.yml` en **https://chirogra.com** (dominio comprado por el usuario en Cloudflare; DNS en Cloudflare «DNS only»: 4 A y 4 AAAA de GitHub Pages y `www` CNAME → `ivanngarcia81.github.io`; certificado aprobado y HTTPS obligatorio; `www` y `http` redirigen). La app enlaza `https://chirogra.com/privacidad/` o `/privacy/` según el idioma (`ChirograLinks.privacyPolicy`). En App Store Connect: privacidad `https://chirogra.com/privacidad/` (o `/privacy/` en inglés) y soporte `https://chirogra.com/soporte/` (`/support/`). Correo de soporte en las páginas: `soporte@chirogra.com` (reenvío de correo de Cloudflare, lo crea el usuario).
+
 **Comprobado el 3-nov:** archivar una cuenta en el Mac (inspector del plan de cuentas; se guarda con el autoguardado). Los cargos automáticos, las reversiones y los asientos manuales tienen pruebas de datos.
 
 **Sin comprobar**

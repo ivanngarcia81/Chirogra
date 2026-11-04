@@ -89,8 +89,11 @@ final class SubscriptionStore {
 enum ChirograLinks {
     /// Condiciones de uso: las estándar de Apple (EULA) mientras no haya unas propias.
     static let termsOfUse = URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!
-    /// Política de privacidad. **Pendiente**: App Store Connect y la pantalla de suscripción la piden.
-    static let privacyPolicy: URL? = nil
+    /// Política de privacidad (`sitio/` en GitHub Pages, chirogra.com): en español o en inglés según el idioma de la app.
+    static var privacyPolicy: URL? {
+        let spanish = Bundle.main.preferredLocalizations.first?.hasPrefix("es") ?? true
+        return URL(string: spanish ? "https://chirogra.com/privacidad/" : "https://chirogra.com/privacy/")
+    }
     static let manageSubscriptions = URL(string: "https://apps.apple.com/account/subscriptions")!
 }
 
