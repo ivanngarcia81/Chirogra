@@ -12406,12 +12406,12 @@
         }
       }
     },
-    "Pagos en %@: %@, por encima del mínimo de $600. Envíale el 1099-NEC antes del 31 de enero." : {
+    "Pagos en %@: %@, por encima del mínimo de %@. Envíale el 1099-NEC antes del 31 de enero." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Payments in %@: %@, above the $600 minimum. Send them a 1099-NEC by January 31."
+            "value" : "Payments in %@: %@, above the %@ minimum. Send them a 1099-NEC by January 31."
           }
         }
       }
@@ -15389,12 +15389,12 @@
         }
       }
     },
-    "Si le pagas $600 o más en el año, envíale el 1099-NEC antes del 31 de enero." : {
+    "Si le pagas %@ o más en el año, envíale el 1099-NEC antes del 31 de enero." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "If you pay them $600 or more in the year, send them a 1099-NEC by January 31."
+            "value" : "If you pay them %@ or more in the year, send them a 1099-NEC by January 31."
           }
         }
       }
