@@ -4,9 +4,9 @@ Resumen del chat de coordinación de Chirogra al **3 de noviembre de 2026**. Lé
 
 ## Dónde nos quedamos (empieza aquí)
 
-1. **Lo primero: confirmar con el usuario el anillo de foco del iPad.** En Gastos (columna maestro del iPad), al hacer clic con el trackpad en una fila, salía un marco cuadrado del color de acento alrededor del relleno de Tinta; en las demás listas no. Dos intentos: `e8c43d2` (`.focusEffectDisabled()` en la fila) **no lo arregló**; `830ed69` deja el acento de las listas maestro en `Color.clear` (`MasterListStyle` en `Shell/MasterDetail.swift` y `Sales/EstimateMasterList.swift`), porque el anillo lo dibuja UIKit en el acento. Está instalado en el iPad, **sin confirmar**: el simulador y las pruebas automáticas solo mandan toques y ahí no aparece. Si sigue, buscar qué tiene la lista o el detalle de Gastos (`ExpenseMasterList`, `ExpenseDetailView` en `Expenses/ReceiptViews.swift`) para que el foco se quede en la celda (en Ventas pasa al detalle).
+1. **Anillo de foco del iPad: arreglado y confirmado por el usuario (3-nov).** En Gastos ya no sale el marco cuadrado al hacer clic con el trackpad. Lo arregló `830ed69` (acento de las listas maestro en `Color.clear`, `MasterListStyle`); `e8c43d2` (`.focusEffectDisabled()` en la fila) no bastaba.
 2. `main` = `e9db54e` en GitHub (pendientes menores y piezas en `DesignSystem`). Después `de6ef43` (copia de seguridad, cierra el MVP; sin empujar) y encima, **sin commitear**, la suscripción (abajo). No hay ramas ni worktrees abiertos.
-3. Instalado en los tres aparatos: iPhone y Mac con `add429f`, iPad con `830ed69`. **Falta instalar** `e9db54e` y la copia de seguridad cuando el usuario tenga los aparatos.
+3. Instalado en los tres aparatos (iPhone, iPad y Mac) con `82348a9` el 3-nov por la tarde.
 4. **Siguiente: fase 2.** Antes, que el usuario decida si se publica la 1.0 (desplegar el esquema de CloudKit) y la lista y el orden de la fase 2: DISEÑO §3.2 y este documento no coinciden (Plaid, usuarios y permisos son fase 3 en DISEÑO). Lo primero técnico sería el esquema 3 con los datos de la conciliación (DISEÑO §4.6).
 
 ## Estado actual
@@ -54,8 +54,6 @@ Barra lateral, estados de iCloud, aviso «¿Descartar los cambios?» en los edit
 
 ## Pendiente
 
-**Por confirmar con el usuario:** el anillo de foco en Gastos del iPad (arriba).
-
 **Probado por el usuario y funciona (2-nov):** Escape y Return en los editores del Mac, ⌥⌘I, doble clic, ordenar columnas, soltar un recibo, «Registrar pago» en la hoja.
 
 **Copia de seguridad (3-nov, cierra el MVP):** Ajustes › iCloud, copias y seguridad: «Crear copia ahora» (archivo `.chirogra`, tipo `com.chirogra.backup` declarado en `Info.plist` y `project.yml`), «Restaurar desde una copia…» (confirmación con empresa, fecha y registros; guarda antes una copia de lo actual en Application Support/«Copias antes de restaurar», las 3 últimas) y «Deshacer la última restauración». Tras restaurar se rehace la navegación (`BooksReplacement`, `.id` del `AppShell`) y sale «Copia restaurada». Código: `ChirograData/Backup.swift` + `Backup+Generated.swift` (lo escribe `scripts/gen-backup.py`; **volver a ejecutarlo al cambiar el esquema**, `BackupTests` lo exige). Probado: 5 pruebas (cubre todo el esquema, ida y vuelta idéntica, valores por defecto de una copia vieja, archivos malos sin tocar nada) y en la copia de prueba del Mac de punta a punta (crear, restaurar, deshacer, con la base comprobada por SQLite). Argumentos de QA (Debug): `-qa.ajustes data`, `-qa.copia <ruta>`, `-qa.restaurar <ruta>` (rutas dentro del contenedor de la copia de prueba).
@@ -64,12 +62,14 @@ Barra lateral, estados de iCloud, aviso «¿Descartar los cambios?» en los edit
 
 **Capturas de la App Store (3-nov):** en el escritorio del usuario, «Chirogra – capturas App Store» (`es`/`en` × iPhone 6.9″ 1320×2868, iPad 13″ 2064×2752, Mac 2880×1800 con la ventana sobre un fondo). Argumentos de QA para repetirlas (Debug): `-qa.mes anterior` (Inicio y Gastos en el mes anterior), `-qa.periodo trimestre|año` (Reportes), `-qa.pestana sales|expenses|banking|reports` (iPhone), `-qa.fila N` también en Ventas y Gastos del iPad. En el Mac la ventana no cabe en 16:10 con el inspector (pantalla de 1050 pt de alto): se captura a 1624×986 y se compone en 2880×1800.
 
+**Probado por el usuario en su iPad (3-nov) y funciona:** hoja de nueva factura con el diseño ancho (vertical y horizontal), borrador con impuesto en la lista ($108.25), plan de cuentas con ••4821 completo y subcuentas sangradas, «Crear copia ahora» con el panel de guardar.
+
 **Comprobado el 3-nov:** archivar una cuenta en el Mac (inspector del plan de cuentas; se guarda con el autoguardado). Los cargos automáticos, las reversiones y los asientos manuales tienen pruebas de datos.
 
 **Sin comprobar**
 - VoiceOver de verdad (iPhone, iPad y Mac) e iPad con letra grande.
 - Correo real (`MFMailComposeViewController`, `NSSharingService`), logo desde Fotos, que un cargo automático se cobre solo al vencer en un aparato.
-- En pantalla: registrar un asiento de punta a punta y revertirlo en el Mac; estado vacío del Mac; el panel de guardar la copia (`fileExporter`).
+- En pantalla: registrar un asiento de punta a punta y revertirlo en el Mac; estado vacío del Mac; el panel de guardar la copia en el Mac (en el iPad funciona).
 
 **Para la copia de prueba del Mac con accesibilidad:** System Events busca los procesos **por nombre**, y la copia también se llama «Chirogra»: renombrarla (ejecutable y `CFBundleName` «ChirograQA», volver a firmar con `--entitlements` de la original para conservar el sandbox). Sin el sandbox usa `~/Library/Application Support/Chirogra.store` (ahí hay uno sobrante del 31-oct, no es del usuario).
 
