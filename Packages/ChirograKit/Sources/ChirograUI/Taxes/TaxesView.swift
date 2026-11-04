@@ -714,13 +714,23 @@ private struct TaxDefaultsRows: View {
             .pickerStyle(.menu)
         }
         if dividers { Divider() }
-        row(nil) {
+        // El texto a la izquierda y el interruptor a su derecha, como en Ajustes: en la caja de 320 pt del iPad el
+        // `Toggle` con su etiqueta bajaba el interruptor a otra línea.
+        AdaptiveRow {
+            Text("Precios con impuesto incluido").foregroundStyle(Palette.ink)
+                .fixedSize(horizontal: false, vertical: true)
+                .accessibilityHidden(true)
+        } trailing: {
             Toggle("Precios con impuesto incluido", isOn: Binding(get: { company.pricesIncludeTax }, set: {
                 company.pricesIncludeTax = $0
                 try? context.save()
             }))
+            .labelsHidden()
+            .toggleStyle(.switch)
             .tint(Palette.green)
         }
+        .padding(.horizontal, dividers ? 0 : 16).padding(.vertical, 4)
+        .frame(maxWidth: .infinity, minHeight: Metrics.target, alignment: .leading)
         if dividers { Divider() }
         row(String(localized: "Origen de ventas")) {
             Picker("Origen de ventas", selection: Binding(get: { company.salesTaxSourcing }, set: {
@@ -734,12 +744,25 @@ private struct TaxDefaultsRows: View {
     }
 
     /// Fila con su etiqueta a la izquierda y el menú a la derecha (un `Picker` de menú fuera de un `Form` solo muestra
-    /// el valor); con letra de accesibilidad, el menú debajo.
-    private func row(_ title: String?, @ViewBuilder _ content: () -> some View) -> some View {
-        AdaptiveRow {
-            if let title { Text(title).foregroundStyle(Palette.ink) } else { content() }
-        } trailing: {
-            if title != nil { content().labelsHidden().fixedSize() }
+    /// el valor). Si no caben en una línea (caja de 320 pt del iPad, letra de accesibilidad), la etiqueta va arriba y el
+    /// menú debajo: al lado de un menú ancho la etiqueta se partía a media palabra («predetermi-nado»).
+    private func row(_ title: String, @ViewBuilder _ content: () -> some View) -> some View {
+        let menu = content().labelsHidden().fixedSize()
+        return ViewThatFits(in: .horizontal) {
+            HStack {
+                Text(title).foregroundStyle(Palette.ink).fixedSize()
+                Spacer(minLength: 8)
+                menu
+            }
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title).foregroundStyle(Palette.ink).fixedSize(horizontal: false, vertical: true)
+                #if os(iOS)
+                // El menú de iOS 26 lleva 12 pt de margen dentro: así el valor queda alineado con la etiqueta.
+                menu.padding(.leading, -12)
+                #else
+                menu
+                #endif
+            }
         }
         .padding(.horizontal, dividers ? 0 : 16).padding(.vertical, 4)
         .frame(maxWidth: .infinity, minHeight: Metrics.target, alignment: .leading)
