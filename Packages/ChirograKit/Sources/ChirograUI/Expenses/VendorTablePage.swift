@@ -226,9 +226,9 @@ private struct VendorInspector: View {
         case .notReportable:
             String(localized: "Este proveedor no se reporta en el formulario 1099-NEC.")
         case let .reached(paid, threshold):
-            String(localized: "Pagos en \(yearText): \(paid.money), por encima del mínimo de \(threshold.money). Envíale el 1099-NEC antes del 31 de enero.")
+            String(localized: "Pagos en \(yearText): \(paid.money), por encima del mínimo de \(threshold.moneyWhole). Envíale el 1099-NEC antes del 31 de enero.")
         case let .belowThreshold(threshold):
-            String(localized: "Si le pagas \(threshold.money) o más en el año, envíale el 1099-NEC antes del 31 de enero.")
+            String(localized: "Si le pagas \(threshold.moneyWhole) o más en el año, envíale el 1099-NEC antes del 31 de enero.")
         }
     }
 

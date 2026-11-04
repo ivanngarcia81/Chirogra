@@ -82,6 +82,8 @@ struct SettingsWideView: View {
             ScrollView {
                 VStack(spacing: 2) {
                     ForEach(SettingsPage.allCases) { option in pageRow(option) }
+                    Divider().padding(.vertical, 6)
+                    guideRow
                 }
                 .padding(.horizontal, 10)
                 .padding(.vertical, 8)
@@ -149,6 +151,29 @@ struct SettingsWideView: View {
         .accessibilityAddTraits(selected ? .isSelected : [])
     }
 
+    /// «Guía de uso» bajo las páginas: abre chirogra.com en el navegador (no es una página de Ajustes).
+    private var guideRow: some View {
+        Link(destination: ChirograLinks.guide) {
+            HStack(spacing: 8) {
+                IconTile(systemImage: "questionmark.circle", foreground: Palette.blue)
+                Text("Guía de uso")
+                    .foregroundStyle(Palette.ink)
+                    .lineLimit(2)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Image(systemName: "arrow.up.right")
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(Palette.ink2)
+                    .accessibilityHidden(true)
+            }
+            .padding(.horizontal, 6)
+            .padding(.vertical, 4)
+            .frame(minHeight: Self.rowHeight)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityHint(Text("Se abre en el navegador"))
+    }
+
     #if os(macOS)
     private static let navWidth: CGFloat = 220
     private static let rowHeight: CGFloat = 30
@@ -175,6 +200,7 @@ struct SettingsLinks: View {
             link(.formats) { FormatsView(company: company) }
         }
         link(.data) { DataAndSecurityView() }
+        GuideLinkRow()
     }
 
     private func link<Destination: View>(_ page: SettingsPage, @ViewBuilder destination: @escaping () -> Destination) -> some View {

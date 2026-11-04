@@ -45,6 +45,7 @@ struct ChirograApp: App {
             ChirograRootView()
         }
         .modelContainer(container)
+        .commands { ChirograHelpCommands() }
         #if os(macOS)
         .defaultSize(width: 1280, height: 820)
         #endif

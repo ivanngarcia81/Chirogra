@@ -502,7 +502,7 @@ struct VendorDetailView: View {
                 if vendor.is1099 {
                     Divider()
                     // El mínimo del año de la ficha («Gastado en 2026»): $600 hasta 2025, $2,000 desde 2026.
-                    Text("Si le pagas \(Form1099.threshold(forTaxYear: year).money) o más en el año, envíale el 1099-NEC antes del 31 de enero.")
+                    Text("Si le pagas \(Form1099.threshold(forTaxYear: year).moneyWhole) o más en el año, envíale el 1099-NEC antes del 31 de enero.")
                         .font(.footnote).foregroundStyle(Palette.ink2)
                         .fixedSize(horizontal: false, vertical: true)
                         .padding(.vertical, 8)

@@ -3148,6 +3148,16 @@
         }
       }
     },
+    "Ayuda" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Help"
+          }
+        }
+      }
+    },
     "Añade a quienes te venden bienes o servicios." : {
       "localizations" : {
         "en" : {
@@ -8750,6 +8760,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Save and new"
+          }
+        }
+      }
+    },
+    "Guía de uso" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "User Guide"
+          }
+        }
+      }
+    },
+    "Guía de uso de Chirogra" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chirogra User Guide"
           }
         }
       }
@@ -15035,6 +15065,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Health and wellness"
+          }
+        }
+      }
+    },
+    "Se abre en el navegador" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens in your browser"
           }
         }
       }

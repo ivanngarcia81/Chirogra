@@ -605,6 +605,8 @@ struct MoreView: View {
                         value: appLockEnabled ? String(localized: "Face ID") : String(localized: "Desactivado"),
                         systemImage: "faceid", color: Palette.red) { DataAndSecurityView() }
             }
+
+            Section(title: "Ayuda") { GuideLinkRow() }
         }
         .listRowBackground(Palette.surface)
         .screenBackground()
