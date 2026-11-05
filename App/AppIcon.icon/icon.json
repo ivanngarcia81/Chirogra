@@ -1,87 +1,110 @@
 {
   "fill-specializations" : [
     {
-      "value" : {
-        "linear-gradient" : [
-          "display-p3:0.45615,0.77596,0.97643,1.00000",
-          "display-p3:0.48778,0.18069,0.92766,1.00000"
-        ]
-      }
+      "value" : "automatic"
     },
     {
       "appearance" : "dark",
-      "value" : {
-        "linear-gradient" : [
-          "display-p3:0.15032,0.25754,0.41431,1.00000",
-          "display-p3:0.17698,0.08597,0.34323,1.00000"
-        ]
-      }
+      "value" : "automatic"
     }
   ],
   "groups" : [
     {
+      "hidden" : false,
       "layers" : [
         {
           "fill-specializations" : [
             {
+              "value" : "automatic"
+            },
+            {
               "appearance" : "dark",
               "value" : {
-                "solid" : "display-p3:0.11751,0.12548,0.30474,1.00000"
+                "linear-gradient" : [
+                  "display-p3:0.28470,0.30286,0.63823,1.00000",
+                  "display-p3:0.17328,0.18530,0.42495,1.00000"
+                ]
               }
             }
           ],
-          "image-name" : "05-grafica.svg",
-          "name" : "05-grafica",
+          "hidden" : false,
+          "image-name" : "06-carpeta 3.svg",
+          "name" : "06-carpeta 3",
           "opacity-specializations" : [
             {
-              "appearance" : "dark",
               "value" : 1
+            },
+            {
+              "appearance" : "dark",
+              "value" : 0.98
             }
           ]
         },
         {
-          "fill-specializations" : [
+          "fill" : "automatic",
+          "glass-specializations" : [
+            {
+              "value" : false
+            },
             {
               "appearance" : "dark",
-              "value" : {
-                "linear-gradient" : [
-                  "display-p3:0.27685,0.29062,0.63041,1.00000",
-                  "display-p3:0.15762,0.17014,0.39765,1.00000"
-                ]
-              }
+              "value" : false
             }
           ],
-          "image-name" : "04-carpeta.svg",
-          "name" : "04-carpeta",
-          "opacity-specializations" : [
-            {
-              "appearance" : "dark",
-              "value" : 0.95
-            }
-          ]
-        },
-        {
-          "image-name" : "03-hoja.svg",
-          "name" : "03-hoja"
-        },
-        {
-          "image-name" : "02-recibo.svg",
-          "name" : "02-recibo"
+          "image-name" : "05-sello 3.svg",
+          "name" : "05-sello 3",
+          "position" : {
+            "scale" : 1.22,
+            "translation-in-points" : [
+              -49,
+              39
+            ]
+          }
         },
         {
           "fill-specializations" : [
             {
+              "value" : "automatic"
+            },
+            {
+              "appearance" : "dark",
+              "value" : "none"
+            }
+          ],
+          "hidden" : false,
+          "image-name" : "04-hoja 3.svg",
+          "name" : "04-hoja 3"
+        },
+        {
+          "fill" : "automatic",
+          "hidden" : false,
+          "image-name" : "03-hoja-atras-1 3.svg",
+          "name" : "03-hoja-atras-1 3"
+        },
+        {
+          "fill" : "automatic",
+          "hidden" : false,
+          "image-name" : "02-hoja-atras-2 3.svg",
+          "name" : "02-hoja-atras-2 3"
+        },
+        {
+          "fill-specializations" : [
+            {
+              "value" : "automatic"
+            },
+            {
               "appearance" : "dark",
               "value" : {
                 "linear-gradient" : [
-                  "display-p3:0.23740,0.24891,0.40675,1.00000",
-                  "display-p3:0.12012,0.12825,0.25875,1.00000"
+                  "display-p3:0.22188,0.23718,0.39481,1.00000",
+                  "display-p3:0.12794,0.14032,0.26659,1.00000"
                 ]
               }
             }
           ],
-          "image-name" : "01-fondo.svg",
-          "name" : "01-fondo"
+          "hidden" : false,
+          "image-name" : "01-fondo 3.svg",
+          "name" : "01-fondo 3"
         }
       ],
       "shadow" : {

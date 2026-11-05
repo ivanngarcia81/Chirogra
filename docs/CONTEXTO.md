@@ -4,7 +4,7 @@ Resumen del chat de coordinación de Chirogra al **4 de noviembre de 2026**. Lé
 
 ## Dónde nos quedamos (empieza aquí)
 
-**La 1.0 está casi lista para la App Store.** MVP cerrado, suscripción hecha, iCloud funcionando, web y guía publicadas. Subidas a App Store Connect (iOS y macOS): 1.0.0 (1) y **1.0.0 (2)** el 4-nov. **Para enviar a revisión hay que elegir el build 2** (lleva «Empezar con mi empresa», el 1099 a $2,000, la «Guía de uso» y el arreglo de Impuestos). El usuario aún no ha enviado nada a revisión.
+**La 1.0 está casi lista para la App Store.** MVP cerrado, suscripción hecha, iCloud funcionando, web y guía publicadas. Subidas a App Store Connect (iOS y macOS) el 4-nov: 1.0.0 (1), (2) y **(3)**. **Para enviar a revisión hay que elegir el build 3**: lleva todo lo del build 2 («Empezar con mi empresa», el 1099 a $2,000, la «Guía de uso», el arreglo de Impuestos) y el **ícono nuevo**. El usuario aún no ha enviado nada a revisión.
 
 **Lo siguiente, en orden (marcado quién):**
 1. **Usuario · TestFlight:** la build 1 de iOS ya está procesada (correo del 4-nov); en TestFlight no salía porque falta crear un grupo de Internal Testing, añadirse e instalar desde la app TestFlight en iPhone, iPad y Mac. TestFlight usa el iCloud de **producción** (esquema ya desplegado).
@@ -14,9 +14,9 @@ Resumen del chat de coordinación de Chirogra al **4 de noviembre de 2026**. Lé
 5. **Probar iCloud de verdad:** activar «Sincronizar con iCloud» **primero en un aparato**, esperar a que suba y luego en los demás (si se activa en los tres a la vez, cada uno sube sus datos de ejemplo y se duplican). Nunca se ha probado la sincronización real: hasta la 1.0 la app no tenía el permiso.
 6. **Después de publicar: fase 2.** El usuario no ha fijado la lista ni el orden (ver «Fase 2» abajo). Lo primero técnico: esquema 3 con la conciliación (DISEÑO §4.6) e importar el banco.
 
-**Estado del repositorio:** `main` con el build 2 (`d2eb0b0`) y este resumen encima, empujado. Instalado en iPhone, iPad y Mac: el build 2 (Debug en iOS, Release en el Mac), revisado por el usuario.
+**Estado del repositorio:** `main` con el build 3 (ícono nuevo) y este resumen, empujado. Instalado en iPhone, iPad y Mac: el build 3 (Debug en iOS, Release en el Mac).
 
-**Próxima subida:** `CURRENT_PROJECT_VERSION` a **3** en `project.yml` y en el `project.pbxproj` (comprobar con xcodegen en una copia que coinciden); cómo se sube, en «TestFlight». Si el usuario prefiere subir él con Transporter: `xcodebuild -exportArchive` con `destination` `export` deja el `.ipa` y el `.pkg`.
+**Próxima subida:** `CURRENT_PROJECT_VERSION` a **4** en `project.yml` y en el `project.pbxproj` (comprobar con xcodegen en una copia que coinciden); cómo se sube, en «TestFlight». Si el usuario prefiere subir él con Transporter: `xcodebuild -exportArchive` con `destination` `export` deja el `.ipa` y el `.pkg`.
 
 **Pendiente menor sin hacer:** en el Mac no se probó en pantalla registrar y revertir un asiento ni el estado vacío.
 
@@ -80,7 +80,7 @@ Barra lateral, estados de iCloud, aviso «¿Descartar los cambios?» en los edit
 - **Mac con densidad de Mac** (`Metrics.target` 28 pt en Mac, 44 pt en iOS; barra lateral de 220 pt en el Mac, 280 pt en el iPad).
 - **Gastos y Banca** arrancan en el último mes con movimientos si el actual está vacío; la tarjeta de Gastos suma solo los gastos (sin facturas por pagar), en los tres aparatos.
 - **Editar algo contabilizado** = reversión + asiento nuevo (los asientos contabilizados son inmutables, DISEÑO §6.5).
-- **Ícono de la app** = `chirogra.icon`. El **logo de la empresa** queda para después.
+- **Ícono de la app** = el que hizo el usuario en Icon Composer el 4-nov (carpeta con hojas y el sello de Chirogra; original en su escritorio, «Chirogra 1.icon»), copiado tal cual en `App/AppIcon.icon` desde el build 3. Sustituye a `chirogra.icon`. El de la web (`sitio/img/icono.png`, 256 px) sale del `AppIcon.icns` de la compilación del Mac (`iconutil -c iconset`). El **logo de la empresa** queda para después.
 - **Modo oscuro del Mac:** el Mac del usuario está en oscuro; las hojas siguen al sistema.
 
 ## Detalle de lo hecho y lo pendiente
