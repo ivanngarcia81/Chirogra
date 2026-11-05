@@ -3,6 +3,7 @@ import ChirograData
 import LocalAuthentication
 import SwiftData
 import SwiftUI
+import TipKit
 
 /// Secciones de navegación del canvas (DISEÑO §7.1).
 enum AppSection: String, Hashable, CaseIterable, Identifiable {
@@ -556,9 +557,21 @@ struct MoreView: View {
     @Query private var rates: [TaxRate]
     @AppStorage("iCloudSyncEnabled") private var iCloudSyncEnabled = false
     @AppStorage("appLockEnabled") private var appLockEnabled = false
+    /// «Abrir Impuestos» de la pista de arriba.
+    @State private var showingTaxes = false
 
     var body: some View {
         List {
+            // Pista de una sola vez: Impuestos queda abajo, después de Reportes y Contabilidad.
+            Section {
+                InlineTip(tip: TaxesTip()) { _ in
+                    TaxesTip().invalidate(reason: .actionPerformed)
+                    showingTaxes = true
+                }
+            }
+            .listRowBackground(Color.clear)
+            .listRowInsets(EdgeInsets())
+
             if let company = companies.first {
                 Section { companyRow(company) }
             }
@@ -580,11 +593,15 @@ struct MoreView: View {
                         systemImage: "lock", color: Palette.gray) { PeriodCloseView() }
             }
 
-            Section(title: "Impuestos") {
+            Section {
                 MoreRow(title: String(localized: "Resumen"), value: taxSubtitle, valueColor: taxOwed > 0 ? Palette.warning : Palette.ink2,
                         systemImage: "percent", color: Palette.red) { TaxesView() }
                 MoreRow(title: String(localized: "Tasas"), value: String(localized: "\(rates.count) activas"),
                         systemImage: "list.number", color: Palette.pink) { TaxesView(tab: .rates) }
+            } header: {
+                SectionLabel(text: String(localized: "Impuestos"))
+            } footer: {
+                Text("Tasas y declaración del sales tax: lo que cobras a tus clientes y le pagas al estado.")
             }
 
             Section(title: "Ajustes") {
@@ -612,6 +629,7 @@ struct MoreView: View {
         .screenBackground()
         .navigationTitle("Más")
         .headerTitle()
+        .navigationDestination(isPresented: $showingTaxes) { TaxesView() }
     }
 
     private var entriesThisMonth: Int {

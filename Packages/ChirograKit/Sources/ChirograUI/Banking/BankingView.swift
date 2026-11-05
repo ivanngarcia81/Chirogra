@@ -9,6 +9,7 @@ import SwiftUI
 struct BankingView: View {
     @Query(sort: \Account.code) private var accounts: [Account]
     @Query private var journalLines: [JournalLine]
+    @State private var addingAccount = false
 
     var body: some View {
         let ledger = Ledger(accounts: accounts, lines: journalLines)
@@ -16,8 +17,7 @@ struct BankingView: View {
         List {
             Section {
                 if shown.isEmpty {
-                    EmptyStateView(systemImage: "building.columns", title: String(localized: "Sin cuentas de banco"),
-                                   message: String(localized: "Añade tus cuentas de banco y tarjetas en el plan de cuentas."))
+                    EmptyStateView(guide: .banking) { addingAccount = true }
                 }
                 ForEach(shown) { account in
                     NavigationLink { LedgerView(account: account) } label: {
@@ -30,7 +30,14 @@ struct BankingView: View {
                     }
                 }
             } header: {
-                SectionLabel(text: String(localized: "Cuentas"))
+                HStack(spacing: 0) {
+                    SectionLabel(text: String(localized: "Cuentas · saldo en libros"))
+                    TermHelp(.bookBalance)
+                }
+            } footer: {
+                if !shown.isEmpty {
+                    Text("Cuánto dinero tiene cada cuenta según lo que registras. Toca una para ver sus movimientos.")
+                }
             }
 
             Section {
@@ -52,6 +59,7 @@ struct BankingView: View {
         .navigationTitle("Banca")
         .navigationSubtitle(String(localized: "\(shown.count) cuentas · \(Date.now.monthYear)"))
         .headerTitle()
+        .sheet(isPresented: $addingAccount) { NavigationStack { AccountEditorView(newSubtype: .bank) }.editorSheetSizing() }
     }
 }
 

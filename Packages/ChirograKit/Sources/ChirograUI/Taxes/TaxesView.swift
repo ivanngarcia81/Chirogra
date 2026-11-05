@@ -320,7 +320,11 @@ struct TaxesView: View {
     @ViewBuilder
     private var ratesTab: some View {
         if let errorMessage { ErrorBanner(message: errorMessage).padding(.top, 12) }
-        groupLabel(String(localized: "Tasas de impuesto"))
+        HStack(alignment: .lastTextBaseline) {
+            groupLabel(String(localized: "Tasas de impuesto"))
+            Spacer(minLength: 8)
+            TermHelp(.combinedRate, showsTerm: true).padding(.trailing, Metrics.gutter - 12)
+        }
         RowGroup {
             ForEach(groups.filter { !$0.isArchived }) { group in
                 let kind = String(localized: "Combinada · \((group.rates ?? []).count) tasas")
@@ -477,6 +481,7 @@ struct TaxesView: View {
         return VStack(alignment: .leading, spacing: 6) {
             HStack(alignment: .firstTextBaseline) {
                 Text("Tasas por jurisdicción").font(.cardTitle).accessibilityAddTraits(.isHeader)
+                TermHelp(.combinedRate, showsTerm: true)
                 Spacer(minLength: 8)
                 Text("\(activeGroups.count + rates.count) tasas").font(.subheadline).foregroundStyle(Palette.ink2)
             }
@@ -833,21 +838,27 @@ extension SalesTaxPosition {
 struct TaxRateEditorView: View {
     /// Tasa que se edita; `nil` para una nueva.
     let rate: TaxRate?
+    /// Tras guardar una tasa nueva (la factura la deja elegida, build 4).
+    var onSaved: ((TaxRate) -> Void)? = nil
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     @Environment(\.unsavedChanges) private var unsavedChanges
     /// Testigo del editor en `UnsavedChanges`: se retira al guardar, antes de cerrar.
     @State private var editorToken = EditorToken()
     @Query(sort: \TaxAgency.name) private var agencies: [TaxAgency]
+    @Query private var companies: [Company]
 
     @State private var agencyID: UUID?
+    /// Desde la factura, sin impuesto predeterminado: usar la tasa nueva en las facturas que vengan.
+    @State private var makeDefault = true
     @State private var newAgencyName = ""
     @State private var name: String
     @State private var percent: Decimal
     @State private var errorMessage: String?
 
-    init(rate: TaxRate? = nil) {
+    init(rate: TaxRate? = nil, onSaved: ((TaxRate) -> Void)? = nil) {
         self.rate = rate
+        self.onSaved = onSaved
         _agencyID = State(initialValue: rate?.agency?.id)
         _name = State(initialValue: rate?.name ?? "")
         _percent = State(initialValue: rate?.percent ?? 0)
@@ -861,11 +872,11 @@ struct TaxRateEditorView: View {
                     Text("Nueva agencia…").tag(UUID?.none)
                     ForEach(agencies) { Text($0.name).tag(Optional($0.id)) }
                 }
-                if agencyID == nil { TextField("Nombre (p. ej. Texas Comptroller)", text: $newAgencyName) }
+                if agencyID == nil { TextField("Nombre de la agencia", text: $newAgencyName, prompt: Text("Nombre (p. ej. Texas Comptroller)")) }
             }
             Section {
-                TextField("Nombre (p. ej. Travis County)", text: $name)
-                TextField("Porcentaje", value: $percent, format: .number.precision(.fractionLength(0...4)))
+                TextField("Nombre", text: $name, prompt: Text("Nombre (p. ej. Travis County)"))
+                TextField("Porcentaje", value: $percent, format: .number.precision(.fractionLength(0...4)), prompt: Text("Porcentaje"))
                     #if os(iOS)
                     .keyboardType(.decimalPad)
                     #endif
@@ -875,6 +886,15 @@ struct TaxRateEditorView: View {
                 if rate != nil {
                     Label("Las facturas ya emitidas conservan su impuesto y no cambian. Los borradores y las facturas nuevas usarán la tasa nueva.",
                           systemImage: "info.circle")
+                } else {
+                    Text("El porcentaje lo publica tu estado; si cobras también el del condado o la ciudad, súmalos o añade cada uno.")
+                }
+            }
+            if offersDefault {
+                Section {
+                    Toggle("Usarla en las facturas nuevas", isOn: $makeDefault)
+                } footer: {
+                    Text("Podrás cambiarla en Impuestos.")
                 }
             }
         }
@@ -893,6 +913,9 @@ struct TaxRateEditorView: View {
         }
     }
 
+    /// Solo desde la factura y si la empresa aún no tiene un impuesto predeterminado.
+    private var offersDefault: Bool { rate == nil && onSaved != nil && companies.first?.defaultTaxGroupID == nil }
+
     private func save() {
         do {
             let books = Bookkeeper(context: context)
@@ -908,8 +931,11 @@ struct TaxRateEditorView: View {
             if let rate {
                 try books.updateTaxRate(rate, name: name, agency: agency, rateMillionths: millionths)
             } else {
-                context.insert(TaxRate(name: name.trimmingCharacters(in: .whitespaces), rateMillionths: millionths, agency: agency))
+                let created = TaxRate(name: name.trimmingCharacters(in: .whitespaces), rateMillionths: millionths, agency: agency)
+                context.insert(created)
                 try context.save()
+                if offersDefault && makeDefault { try books.setDefaultTax(created.id) }
+                onSaved?(created)
             }
             unsavedChanges?.remove(editorToken); dismiss()
         } catch {
@@ -939,8 +965,14 @@ struct TaxGroupEditorView: View {
                     }
                 }
             }
-            LabeledContent("Tasa combinada",
-                           value: String(localized: "\((Decimal(rates.filter { selected.contains($0.id) }.reduce(0) { $0 + $1.rateMillionths }) / 10_000).formatted())%"))
+            LabeledContent {
+                Text("\((Decimal(rates.filter { selected.contains($0.id) }.reduce(0) { $0 + $1.rateMillionths }) / 10_000).formatted())%")
+            } label: {
+                HStack(spacing: 0) {
+                    Text("Tasa combinada")
+                    TermHelp(.combinedRate)
+                }
+            }
         }
         .formStyle(.grouped)
         .screenBackground()

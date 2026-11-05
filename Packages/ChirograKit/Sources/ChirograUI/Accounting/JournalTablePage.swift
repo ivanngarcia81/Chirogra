@@ -50,9 +50,7 @@ struct JournalTablePage: View {
             addTitle: String(localized: "Nuevo asiento"), onAdd: { creating = true },
             onOpen: { opened = $0 },
             empty: entries.isEmpty
-                ? MacTableEmpty(systemImage: "doc.plaintext", title: String(localized: "Sin asientos"),
-                                message: String(localized: "Los documentos generan asientos automáticamente; también puedes crear uno manual."),
-                                actionTitle: String(localized: "Nuevo asiento"), action: { creating = true })
+                ? MacTableEmpty(guide: .journal, action: { creating = true })
                 : MacTableEmpty(title: String(localized: "Sin resultados"),
                                 message: String(localized: "Ningún asiento coincide con la búsqueda o el filtro."),
                                 actionTitle: String(localized: "Quitar filtros"), action: { query = ""; filter = .all }),

@@ -175,13 +175,7 @@ struct EstimateListView: View {
     @ViewBuilder
     private var emptyState: some View {
         if estimates.isEmpty {
-            ContentUnavailableView {
-                Label("Todavía no hay estimados", systemImage: "list.clipboard")
-            } description: {
-                Text("Haz un estimado para tu cliente y, cuando lo acepte, conviértelo en factura.")
-            } actions: {
-                Button("Nuevo estimado", action: onCreate).buttonStyle(.primaryCompact)
-            }
+            EmptyStateView(guide: .estimates, action: onCreate)
         } else {
             ContentUnavailableView {
                 Label("Sin resultados", systemImage: "magnifyingglass")

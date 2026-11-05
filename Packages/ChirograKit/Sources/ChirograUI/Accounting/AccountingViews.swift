@@ -178,7 +178,7 @@ struct JournalListView: View {
     var body: some View {
         List {
             if entries.isEmpty {
-                EmptyStateView(systemImage: "doc.plaintext", title: String(localized: "Sin asientos"), message: String(localized: "Los documentos generan asientos automáticamente; también puedes crear uno manual."))
+                EmptyStateView(guide: .journal) { showingEditor = true }
             }
             Section {
                 ForEach(entries) { entry in
@@ -265,10 +265,33 @@ struct JournalEntryEditorView: View {
     @Query private var journalLines: [JournalLine]
     @Query private var companies: [Company]
 
+    /// Qué se registra: una plantilla en llano o el asiento a mano; `nil` hasta elegir (build 4).
+    @State private var mode: Mode?
     @State private var date = Date()
     @State private var editorWidth: CGFloat = 0
     @State private var memo = ""
     @State private var lines: [LineDraft] = [LineDraft(), LineDraft()]
+    /// Plantilla: importe, cuenta de dinero y, en el traspaso, la de destino.
+    @State private var templateAmount: Int64 = 0
+    @State private var templateMoney: UUID?
+    @State private var templateDestination: UUID?
+
+    enum Mode: Hashable {
+        case template(JournalTemplate)
+        case manual
+    }
+
+    init(template: JournalTemplate? = nil) {
+        _mode = State(initialValue: template.map(Mode.template))
+        if let template { _memo = State(initialValue: template.defaultMemo) }
+    }
+
+    private var template: JournalTemplate? { if case .template(let template) = mode { template } else { nil } }
+    private var moneyAccounts: [Account] { JournalTemplate.moneyAccounts(in: accounts) }
+    /// Cuenta de dinero de la plantilla: la elegida o, sin elegir, la primera (el banco).
+    private var templateMoneyID: UUID? { templateMoney ?? moneyAccounts.first?.id }
+    /// Destino del traspaso: el elegido o, sin elegir, la primera cuenta distinta del origen.
+    private var templateDestinationID: UUID? { templateDestination ?? moneyAccounts.first { $0.id != templateMoneyID }?.id }
     @State private var errorMessage: String?
     /// Registrar en un periodo cerrado: se pide la contraseña de cierre y se repite.
     @State private var closedPeriodRetry: ClosedPeriodRetry?
@@ -286,7 +309,12 @@ struct JournalEntryEditorView: View {
     }
 
     private var draft: JournalEntryDraft {
-        JournalEntryDraft(date: date, memo: memo, source: .manual, lines: lines.compactMap { line in
+        if let template {
+            return template.draft(date: date, memo: memo, amount: templateAmount, money: templateMoneyID,
+                                  destination: templateDestinationID, accounts: accounts)
+                ?? JournalEntryDraft(date: date, memo: memo, source: .manual, lines: [])
+        }
+        return JournalEntryDraft(date: date, memo: memo, source: .manual, lines: lines.compactMap { line in
             guard let accountID = line.accountID else { return nil }
             return JournalLineDraft(accountID: accountID, debit: line.debit, credit: line.credit, memo: line.memo)
         })
@@ -314,23 +342,46 @@ struct JournalEntryEditorView: View {
 
     var body: some View {
         let entry = draft
-        let isValid = validationErrors.isEmpty && lines.allSatisfy { $0.accountID != nil || ($0.debit == 0 && $0.credit == 0) }
-        Group {
-            if isWide { wideEditor(entry) } else { formEditor(entry) }
+        let isValid: Bool = switch mode {
+        case .manual: validationErrors.isEmpty && lines.allSatisfy { $0.accountID != nil || ($0.debit == 0 && $0.credit == 0) }
+        case .template: !entry.lines.isEmpty && validationErrors.isEmpty
+        case nil: false
         }
+        Group {
+            if mode == .manual {
+                if isWide { wideEditor(entry) } else { formEditor(entry) }
+            } else {
+                templateEditor(entry)
+            }
+        }
+        #if os(macOS)
+        // La hoja del Mac toma el tamaño del contenido: sin esto, la tabla de líneas quedaba en 470 pt y cortaba «Cuenta».
+        .frame(minWidth: mode == .manual ? 780 : 560, minHeight: mode == .manual ? 640 : 600)
+        #endif
         .navigationTitle("Nuevo asiento")
         .inlineTitle()
-        .discardableEditor(tracking: "\(date)|\(memo)|" + lines.map { "\($0.accountID?.uuidString ?? "")/\($0.debit)/\($0.credit)" }.joined(separator: ";"), token: editorToken)
+        .discardableEditor(tracking: trackedText, token: editorToken)
         .toolbar {
-            ToolbarItem(placement: .confirmationAction) { Button("Registrar asiento", action: save).disabled(!isValid).headerButton() }
+            ToolbarItem(placement: .confirmationAction) { Button("Registrar", action: save).disabled(!isValid).headerButton().accessibilityLabel("Registrar asiento") }
         }
         .closedPeriodUnlock($closedPeriodRetry) { errorMessage = $0 }
         #if DEBUG
+        // `-qa.asiento aportacion|retiro|traspaso|manual`: el editor con esa plantilla (y $500) o a mano.
+        .task {
+            switch UserDefaults.standard.string(forKey: "qa.asiento") {
+            case "aportacion": choose(.template(.ownerContribution)); templateAmount = 50_000
+            case "retiro": choose(.template(.ownerDraw)); templateAmount = 50_000
+            case "traspaso": choose(.template(.transfer)); templateAmount = 50_000
+            case "manual": choose(.manual)
+            default: break
+            }
+        }
         // `-qa.asiento cerrado`: un asiento de $10 que cuadra, con la fecha de cierre (para probar la contraseña).
         .task {
             guard UserDefaults.standard.string(forKey: "qa.asiento") == "cerrado", let lock = companies.first?.lockDate,
                   let bank = postable.first(where: { $0.subtype == .bank }),
                   let expense = postable.first(where: { $0.type == .expense }) else { return }
+            mode = .manual
             date = lock
             memo = "QA"
             lines = [LineDraft(accountID: expense.id, debit: 1_000), LineDraft(accountID: bank.id, credit: 1_000)]
@@ -338,9 +389,173 @@ struct JournalEntryEditorView: View {
         #endif
     }
 
+    /// Lo que cuenta como cambio para «¿Descartar los cambios?»: elegir una plantilla sin escribir nada no lo es.
+    private var trackedText: String {
+        switch mode {
+        case .template:
+            return "\(date)|\(templateAmount)"
+        case .manual, nil:
+            return "\(date)|\(JournalTemplate.allCases.map(\.defaultMemo).contains(memo) ? "" : memo)|"
+                + lines.map { "\($0.accountID?.uuidString ?? "")/\($0.debit)/\($0.credit)" }.joined(separator: ";")
+        }
+    }
+
+    /// Elige plantilla o asiento a mano; el concepto propuesto cambia con la plantilla si no se había escrito otro.
+    private func choose(_ newMode: Mode) {
+        let proposed = JournalTemplate.allCases.map(\.defaultMemo)
+        if memo.isEmpty || proposed.contains(memo) {
+            if case .template(let template) = newMode { memo = template.defaultMemo } else { memo = "" }
+        }
+        withAnimation { mode = newMode }
+    }
+
+    // MARK: Plantillas (build 4)
+
+    /// Las opciones: tres plantillas en llano y el asiento a mano.
+    private var choices: [Mode] { JournalTemplate.allCases.map(Mode.template) + [.manual] }
+
+    private func choiceTitle(_ choice: Mode) -> String {
+        switch choice {
+        case .template(let template): template.title
+        case .manual: String(localized: "Asiento a mano, para tu contador")
+        }
+    }
+
+    private func choiceImage(_ choice: Mode) -> String {
+        switch choice {
+        case .template(let template): template.systemImage
+        case .manual: "list.bullet.rectangle"
+        }
+    }
+
+    /// Una opción del selector: icono, texto y la marca si es la elegida.
+    private func choiceRow(_ choice: Mode) -> some View {
+        Button { choose(choice) } label: {
+            HStack(spacing: 12) {
+                Image(systemName: choiceImage(choice)).font(.title3).foregroundStyle(Palette.brand).frame(width: 28)
+                    .accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(choiceTitle(choice)).foregroundStyle(Palette.ink).fixedSize(horizontal: false, vertical: true)
+                    if choice == .manual {
+                        Text("Con débitos y créditos, cuenta por cuenta").font(.footnote).foregroundStyle(Palette.ink2)
+                    }
+                }
+                Spacer(minLength: 8)
+                if mode == choice {
+                    Image(systemName: "checkmark").fontWeight(.semibold).foregroundStyle(Palette.brand).accessibilityHidden(true)
+                }
+            }
+            .frame(maxWidth: .infinity, minHeight: Metrics.target, alignment: .leading)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(mode == choice ? [.isSelected] : [])
+    }
+
+    private var chooserTitle: String { String(localized: "¿Qué quieres registrar?") }
+
+    /// Las cuatro opciones en un solo bloque con sus líneas (en el formulario del Mac, filas sueltas con dos textos
+    /// salían fuera del grupo).
+    private var chooserRows: some View {
+        VStack(spacing: 0) {
+            ForEach(Array(choices.enumerated()), id: \.offset) { index, choice in
+                if index > 0 { Divider().padding(.leading, 40) }
+                choiceRow(choice)
+            }
+        }
+    }
+
+    /// El selector en una caja, encima del editor ancho del asiento a mano.
+    private var chooserBox: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            SectionLabel(text: chooserTitle)
+            chooserRows
+                .padding(.horizontal, 12)
+                .card(padding: 0)
+        }
+    }
+
+    /// Editor de las plantillas (y la pantalla de elegir): un formulario corto con las cuentas de dinero, el importe y
+    /// la fecha, y abajo cómo queda en los libros.
+    private func templateEditor(_ entry: JournalEntryDraft) -> some View {
+        Form {
+            if let errorMessage { ErrorBanner(message: errorMessage) }
+            Section {
+                chooserRows
+            } header: {
+                SectionLabel(text: chooserTitle)
+            } footer: {
+                if mode == nil {
+                    Text("Elige una opción y Chirogra hace las cuentas por ti. Las facturas, los cobros y los gastos se registran solos: para ellos no hace falta un asiento.")
+                }
+            }
+            if let template {
+                Section {
+                    templateMoneyPicker(template.moneyAccountLabel, selection: Binding(get: { templateMoneyID }, set: { templateMoney = $0 }))
+                    if template.needsDestination {
+                        templateMoneyPicker(String(localized: "¿A qué cuenta entró?"),
+                                            selection: Binding(get: { templateDestinationID }, set: { templateDestination = $0 }))
+                    }
+                    LabeledContent("Importe") {
+                        MoneyField(title: String(localized: "Importe"), minorUnits: $templateAmount).labelsHidden().multilineTextAlignment(.trailing)
+                    }
+                    DatePicker("Fecha", selection: $date, displayedComponents: .date)
+                    TextField("Concepto", text: $memo)
+                } footer: {
+                    if moneyAccounts.isEmpty {
+                        Text("No tienes cuentas de dinero: añade tu banco en el plan de cuentas.")
+                    } else if template.needsDestination, templateDestinationID == templateMoneyID {
+                        Text("Elige dos cuentas distintas.").foregroundStyle(Palette.negative)
+                    } else if dateIsLocked, let lock = companies.first?.lockDate {
+                        Label(lockedNote(lock), systemImage: "lock").foregroundStyle(Palette.warning)
+                    }
+                }
+                if !entry.lines.isEmpty {
+                    Section {
+                        ForEach(Array(entry.lines.enumerated()), id: \.offset) { _, line in templateLine(line) }
+                    } header: {
+                        HStack(spacing: 0) {
+                            SectionLabel(text: String(localized: "Así queda en tus libros"))
+                            TermHelp(.debitCredit)
+                        }
+                    } footer: {
+                        Text("No tienes que hacer nada más: Chirogra ya puso cada importe en su lado.")
+                    }
+                }
+            }
+        }
+        .formStyle(.grouped)
+        .screenBackground()
+    }
+
+    private func templateMoneyPicker(_ title: String, selection: Binding<UUID?>) -> some View {
+        Picker(title, selection: selection) {
+            if selection.wrappedValue == nil { Text("Elegir…").tag(UUID?.none) }
+            ForEach(moneyAccounts) { Text($0.maskedName).tag(Optional($0.id)) }
+        }
+    }
+
+    /// Una línea del asiento de la plantilla: la cuenta y «Débito $500» o «Crédito $500»; en Capital del dueño, su ⓘ.
+    private func templateLine(_ line: JournalLineDraft) -> some View {
+        let account = accounts.first { $0.id == line.accountID }
+        let side = line.debit > 0 ? String(localized: "Débito \(line.debit.money)") : String(localized: "Crédito \(line.credit.money)")
+        return HStack(spacing: 0) {
+            Text(account?.displayName ?? "—").foregroundStyle(Palette.ink)
+            if account?.subtype == .ownersEquity { TermHelp(.ownersEquity) }
+            Spacer(minLength: 8)
+            Text(side).monospacedDigit().foregroundStyle(Palette.ink2)
+        }
+        .frame(minHeight: Metrics.target)
+    }
+
     private func formEditor(_ entry: JournalEntryDraft) -> some View {
         Form {
             if let errorMessage { ErrorBanner(message: errorMessage) }
+            Section {
+                chooserRows
+            } header: {
+                SectionLabel(text: chooserTitle)
+            }
             Section {
                 DatePicker("Fecha", selection: $date, displayedComponents: .date)
                 TextField("Concepto", text: $memo)
@@ -366,7 +581,10 @@ struct JournalEntryEditorView: View {
                 .onDelete { lines.remove(atOffsets: $0) }
                 Button("Añadir línea", systemImage: "plus") { lines.append(LineDraft()) }
             } header: {
-                SectionLabel(text: String(localized: "Líneas del asiento"))
+                HStack(spacing: 0) {
+                    SectionLabel(text: String(localized: "Líneas del asiento"))
+                    TermHelp(.debitCredit)
+                }
             } footer: {
                 Text("Los débitos deben ser iguales a los créditos.")
             }
@@ -388,6 +606,7 @@ struct JournalEntryEditorView: View {
             HStack(alignment: .top, spacing: 20) {
                 VStack(alignment: .leading, spacing: 14) {
                     if let errorMessage { ErrorBanner(message: errorMessage) }
+                    chooserBox
                     entryBox
                     VStack(alignment: .leading, spacing: 6) {
                         ViewThatFits(in: .horizontal) {
@@ -423,7 +642,10 @@ struct JournalEntryEditorView: View {
     }
 
     private var linesTitle: some View {
-        Text("Líneas del asiento").font(.cardTitle).foregroundStyle(Palette.ink).accessibilityAddTraits(.isHeader)
+        HStack(spacing: 0) {
+            Text("Líneas del asiento").font(.cardTitle).foregroundStyle(Palette.ink).accessibilityAddTraits(.isHeader)
+            TermHelp(.debitCredit)
+        }
     }
 
     private var linesNote: some View {

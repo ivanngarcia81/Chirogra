@@ -2,6 +2,7 @@ import ChirograCore
 import ChirograData
 import SwiftData
 import SwiftUI
+import TipKit
 
 /// Factura. iPhone (canvas `FacturaDetalle`): cliente, saldo de 40 y estado centrados; baldosas Duplicar · PDF ·
 /// Recordatorio; «Registrar pago» como grupo con Total · Parcial y el botón dentro; «Actividad» con círculos de Tinta.
@@ -352,6 +353,7 @@ struct InvoiceDetailView: View {
     private var paymentSection: some View {
         VStack(alignment: .leading, spacing: 0) {
             sectionLabel(String(localized: "Registrar pago"))
+            InlineTip(tip: RecordPaymentTip()).padding(.bottom, 8)
             VStack(spacing: 0) {
                 FilterPicker(title: String(localized: "Tipo de pago"), options: PaymentMode.allCases, selection: $paymentMode, label: \.localizedTitle)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -595,6 +597,7 @@ struct InvoiceDetailView: View {
         guard let account = accounts.first(where: { $0.id == depositAccountID }) else { return }
         do {
             try books.recordPayment(for: invoice, amount: amountToRecord, date: paymentDate, depositAccount: account, method: method)
+            RecordPaymentTip().invalidate(reason: .actionPerformed)
             errorMessage = nil
             paymentAmount = invoice.balanceDue
             paymentMode = .total

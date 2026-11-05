@@ -238,13 +238,7 @@ struct InvoiceListView: View {
     @ViewBuilder
     private var emptyState: some View {
         if invoices.isEmpty {
-            ContentUnavailableView {
-                Label("Todavía no hay facturas", systemImage: "doc.text")
-            } description: {
-                Text("Crea tu primera factura con el botón +.")
-            } actions: {
-                Button("Nueva factura", action: onCreate).buttonStyle(.primaryCompact)
-            }
+            EmptyStateView(guide: .invoices, action: onCreate)
         } else {
             // Canvas `Ventas`: «Sin resultados» con «Quitar filtros» en la cápsula gris.
             ContentUnavailableView {

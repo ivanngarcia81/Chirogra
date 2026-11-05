@@ -67,9 +67,7 @@ struct InvoiceTablePage: View {
             addTitle: String(localized: "Nueva factura"), onAdd: { creating = true },
             onOpen: { openedInvoice = $0 },
             empty: invoices.isEmpty
-                ? MacTableEmpty(systemImage: "doc.text", title: String(localized: "Sin facturas todavía"),
-                                message: String(localized: "Crea tu primera factura para empezar a cobrar."),
-                                actionTitle: String(localized: "Nueva factura"), action: { creating = true })
+                ? MacTableEmpty(guide: .invoices, action: { creating = true })
                 : MacTableEmpty(title: String(localized: "Sin resultados"),
                                 message: String(localized: "Ninguna factura coincide con la búsqueda o el filtro."),
                                 actionTitle: String(localized: "Quitar filtros"), action: { query = ""; filter = .all }),

@@ -111,9 +111,7 @@ struct ExpenseTablePage: View {
 
     private func empty(periodRows: [ExpenseTableRow]) -> MacTableEmpty {
         if expenses.isEmpty {
-            return MacTableEmpty(systemImage: "wallet.bifold", title: String(localized: "Sin gastos todavía"),
-                                 message: String(localized: "Registra un gasto con el botón + y adjunta el recibo."),
-                                 actionTitle: String(localized: "Nuevo gasto"), action: { creating = true })
+            return MacTableEmpty(guide: .expenses, action: { creating = true })
         }
         if periodRows.isEmpty, case .month(let start) = period {
             return MacTableEmpty(systemImage: "calendar",

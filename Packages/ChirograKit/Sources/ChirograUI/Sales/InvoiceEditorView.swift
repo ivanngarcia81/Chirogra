@@ -46,7 +46,10 @@ struct InvoiceEditorView: View {
     @Query(sort: \Customer.name) private var customers: [Customer]
     @Query(sort: \Account.code) private var accounts: [Account]
     @Query(sort: \TaxGroup.name) private var taxGroups: [TaxGroup]
+    @Query(sort: \TaxRate.name) private var taxRates: [TaxRate]
     @Query private var companies: [Company]
+    /// «Añadir tasa…» del menú de impuesto (sin ninguna tasa todavía): abre el editor de tasa de Impuestos.
+    @State private var addingTaxRate = false
 
     @State private var customerID: UUID?
     @State private var issueDate = Date()
@@ -231,6 +234,13 @@ struct InvoiceEditorView: View {
         // que guardó la vista previa).
         .reportsUnsavedChanges(hasChanges, token: editorToken, onDiscard: deleteSavedDraft)
         #if DEBUG
+        // `-qa.tasaNueva 1`: sin ninguna tasa, abre «Añadir tasa…» del menú de impuesto (en el Mac el menú no se captura).
+        .task {
+            if UserDefaults.standard.bool(forKey: "qa.tasaNueva"), hasNoTaxRates {
+                try? await Task.sleep(for: .seconds(1))
+                addingTaxRate = true
+            }
+        }
         // `-qa.impuestoIncluido 1`: activa «Precios con impuesto incluido» en la empresa (su interruptor está en Impuestos).
         .task {
             if UserDefaults.standard.bool(forKey: "qa.impuestoIncluido"), let company = companies.first, !company.pricesIncludeTax {
@@ -322,15 +332,56 @@ struct InvoiceEditorView: View {
             ?? (try? books.peekDocumentNumber(.invoice)) ?? "—"
     }
 
+    /// Tasas que no van en ningún grupo: también se pueden elegir solas (p. ej. la que se crea desde aquí).
+    private var looseTaxRates: [TaxRate] {
+        let grouped = Set(taxGroups.filter { !$0.isArchived }.flatMap { ($0.rates ?? []).map(\.id) })
+        return taxRates.filter { !$0.isArchived && !grouped.contains($0.id) }
+    }
+
+    /// La empresa no tiene ninguna tasa: el menú ofrece «Añadir tasa…».
+    private var hasNoTaxRates: Bool { taxGroups.allSatisfy(\.isArchived) && taxRates.allSatisfy(\.isArchived) }
+
+    /// Etiqueta de «Añadir tasa…» en el menú (no es una tasa: al elegirla se abre el editor y el menú no cambia).
+    private static let addTaxRateTag = UUID(uuidString: "00000000-0000-0000-0000-00000000A0DD")!
+
+    private var taxSelection: Binding<UUID?> {
+        Binding(get: { taxGroupID }, set: { id in
+            if id == Self.addTaxRateTag { addingTaxRate = true } else { taxGroupID = id }
+        })
+    }
+
     private var taxPicker: some View {
         // «Impuesto» y no «Impuesto sobre ventas»: así etiqueta y grupo caben en una línea, como en el canvas.
-        Picker("Impuesto", selection: $taxGroupID) {
+        Picker("Impuesto", selection: taxSelection) {
             Text("Sin impuesto").tag(UUID?.none)
             ForEach(taxGroups.filter { !$0.isArchived }) { group in
                 Text("\(group.name) · \(group.percent.formatted())%").tag(Optional(group.id))
             }
+            ForEach(looseTaxRates) { rate in
+                Text("\(rate.name) · \(rate.percent.formatted())%").tag(Optional(rate.id))
+            }
+            if hasNoTaxRates {
+                Divider()
+                Text("Añadir tasa…").tag(Optional(Self.addTaxRateTag))
+            }
         }
         .accessibilityLabel("Impuesto sobre ventas")
+        .sheet(isPresented: $addingTaxRate) {
+            NavigationStack { TaxRateEditorView { taxGroupID = $0.id } }.editorSheetSizing()
+        }
+    }
+
+    /// La factura sale sin sales tax (sin tasa elegida, cliente exento o ninguna línea gravable): se dice bajo los totales.
+    private var carriesNoTax: Bool {
+        taxGroupID == nil || (customer?.isTaxExempt ?? false) || (!validLines.isEmpty && (preview?.totalTax ?? 0) == 0)
+    }
+
+    private var noTaxNote: String {
+        if customer?.isTaxExempt ?? false { return String(localized: "El cliente está exento: esta factura no lleva impuesto.") }
+        if taxGroupID == nil && hasNoTaxRates {
+            return String(localized: "Esta factura no lleva impuesto. Si cobras sales tax, elige «Añadir tasa…» en Impuesto.")
+        }
+        return String(localized: "Esta factura no lleva impuesto.")
     }
 
     private func incomeAccountName(_ id: UUID?) -> String {
@@ -424,7 +475,9 @@ struct InvoiceEditorView: View {
                     Text("Total").fontWeight(.semibold)
                 }
             } footer: {
-                if includesTax {
+                if carriesNoTax {
+                    Text(noTaxNote)
+                } else if includesTax {
                     Text("Los precios ya incluyen el sales tax: el total es el subtotal menos el descuento.")
                 }
             }
@@ -560,6 +613,7 @@ struct InvoiceEditorView: View {
             .foregroundStyle(Palette.brand)
             .accessibilityLabel("Gravable")
             .accessibilityValue(line.wrappedValue.isTaxable ? Text("Sí") : Text("No"))
+            TermHelp(.taxable)
         }
         .font(.footnote)
     }
@@ -739,7 +793,11 @@ struct InvoiceEditorView: View {
                 Text("Producto o servicio").frame(minWidth: 140, maxWidth: .infinity, alignment: .leading)
                 Text("Cant.").frame(width: Self.quantityColumn, alignment: .trailing)
                 Text("Precio").frame(width: amountColumn, alignment: .trailing)
-                Text("Impuesto").frame(width: Self.taxColumn, alignment: .leading)
+                HStack(spacing: 0) {
+                    Text("Impuesto")
+                    TermHelp(.taxable).font(.footnote)
+                }
+                .frame(width: Self.taxColumn, alignment: .leading)
                 Text("Importe").frame(width: amountColumn, alignment: .trailing)
                 Color.clear.frame(width: 24, height: 1)
             } rows: {
@@ -838,6 +896,12 @@ struct InvoiceEditorView: View {
                 .padding(.horizontal, 12)
                 .padding(.vertical, 10)
                 .accessibilityElement(children: .combine)
+                if carriesNoTax {
+                    Text(noTaxNote).font(.footnote).foregroundStyle(Palette.ink2)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 12).padding(.bottom, 10)
+                }
             }
         }
     }

@@ -25,9 +25,10 @@ struct AccountEditorView: View {
     @State private var last4: String
     @State private var errorMessage: String?
 
-    init(account: Account? = nil) {
+    /// `newSubtype`: el tipo de una cuenta nueva (Banca la abre como cuenta de banco).
+    init(account: Account? = nil, newSubtype: AccountSubtype = .operatingExpense) {
         self.account = account
-        let input = account.map(AccountInput.init) ?? AccountInput(code: "", name: "", subtype: .operatingExpense)
+        let input = account.map(AccountInput.init) ?? AccountInput(code: "", name: "", subtype: newSubtype)
         _code = State(initialValue: input.code)
         _name = State(initialValue: input.name)
         _type = State(initialValue: input.subtype.accountType)
