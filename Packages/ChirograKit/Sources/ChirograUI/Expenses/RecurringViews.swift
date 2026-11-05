@@ -79,9 +79,7 @@ struct RecurringListView: View {
 
             if templates.isEmpty {
                 Section {
-                    EmptyStateView(systemImage: "arrow.trianglehead.2.clockwise", title: String(localized: "Sin recurrentes"),
-                                   message: String(localized: "Renta, suscripciones, seguros: crea una recurrente y Chirogra registra cada cargo por ti."),
-                                   actionTitle: String(localized: "Nueva recurrente")) { creating = true }
+                    EmptyStateView(guide: .recurring) { creating = true }
                 }
             }
             if !active.isEmpty {

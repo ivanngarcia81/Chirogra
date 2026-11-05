@@ -83,9 +83,7 @@ struct VendorTablePage: View {
             addTitle: String(localized: "Nuevo proveedor"), onAdd: { creating = true },
             onOpen: { openedVendor = $0.vendor },
             empty: rows.isEmpty
-                ? MacTableEmpty(systemImage: "shippingbox", title: String(localized: "Sin proveedores"),
-                                message: String(localized: "Añade a quienes te venden bienes o servicios."),
-                                actionTitle: String(localized: "Nuevo proveedor"), action: { creating = true })
+                ? MacTableEmpty(guide: .vendors, action: { creating = true })
                 : MacTableEmpty(title: String(localized: "Sin resultados"),
                                 message: String(localized: "Ningún proveedor coincide con la búsqueda o el filtro."),
                                 actionTitle: String(localized: "Quitar filtros"), action: { query = ""; filter = .all }),

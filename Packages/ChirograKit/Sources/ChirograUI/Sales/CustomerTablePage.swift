@@ -55,9 +55,7 @@ struct CustomerTablePage: View {
 
     private var empty: MacTableEmpty {
         if active.isEmpty {
-            return MacTableEmpty(systemImage: "person.2", title: String(localized: "Sin clientes todavía"),
-                                 message: String(localized: "Añade tu primer cliente para empezar a facturar."),
-                                 actionTitle: String(localized: "Nuevo cliente"), action: { creating = true })
+            return MacTableEmpty(guide: .customers, action: { creating = true })
         }
         let text = trimmedQuery
         return MacTableEmpty(title: String(localized: "Sin resultados"),

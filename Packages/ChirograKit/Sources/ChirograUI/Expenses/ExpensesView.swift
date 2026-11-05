@@ -2,6 +2,7 @@ import ChirograCore
 import ChirograData
 import SwiftData
 import SwiftUI
+import TipKit
 import UniformTypeIdentifiers
 
 /// Gastos (canvas `Gastos`): gastos pagados, facturas por pagar y recurrentes con el segmentado, y los proveedores
@@ -50,10 +51,10 @@ struct ExpensesView: View {
     var body: some View {
         Group {
             switch segment {
-            case .expenses: ExpenseListView(section: picker) { selectedSegment = .bills }
-            case .bills: BillListView(section: picker)
+            case .expenses: ExpenseListView(section: picker, showBills: { selectedSegment = .bills }) { showingEditor = true }
+            case .bills: BillListView(section: picker) { showingEditor = true }
             case .recurring: RecurringListView(section: picker)
-            case .vendors: VendorListView()
+            case .vendors: VendorListView { showingEditor = true }
             }
         }
         .navigationTitle(title)
@@ -156,6 +157,8 @@ struct ExpenseListView: View {
     var section: Binding<ExpensesView.Segment>? = nil
     /// Abre «Por pagar» desde la fila de esta semana.
     var showBills: () -> Void = {}
+    /// «Anotar mi primer gasto» del estado vacío (el «+» de `ExpensesView`).
+    var onCreate: (() -> Void)? = nil
     @Query(sort: \Expense.date, order: .reverse) private var expenses: [Expense]
     @Query(sort: \Account.code) private var accounts: [Account]
     @Query(sort: \Bill.dueDate) private var bills: [Bill]
@@ -179,7 +182,20 @@ struct ExpenseListView: View {
         let shown = posted.filter(filter.includes)
         List {
             if let errorMessage { ErrorBanner(message: errorMessage).listRowBackground(Color.clear).listRowInsets(EdgeInsets()) }
-            if let section { ExpensesSegmentRow(selection: section) }
+            if let section {
+                ExpensesSegmentRow(selection: section)
+                #if os(iOS)
+                // Recurrentes: cuando ya hay algún gasto, una vez (abre la sección).
+                Section {
+                    InlineTip(tip: RecurringTip()) { _ in
+                        RecurringTip().invalidate(reason: .actionPerformed)
+                        section.wrappedValue = .recurring
+                    }
+                }
+                .listRowBackground(Color.clear)
+                .listRowInsets(EdgeInsets())
+                #endif
+            }
 
             Section {
                 monthCard
@@ -213,8 +229,7 @@ struct ExpenseListView: View {
 
             Section {
                 if expenses.isEmpty {
-                    EmptyStateView(systemImage: "wallet.bifold", title: String(localized: "Sin gastos todavía"),
-                                   message: String(localized: "Registra un gasto con el botón + y adjunta el recibo."))
+                    EmptyStateView(guide: .expenses, action: onCreate)
                 } else if shown.isEmpty {
                     EmptyStateView(systemImage: "line.3.horizontal.decrease.circle", title: String(localized: "Sin resultados"),
                                    message: String(localized: "Ningún gasto coincide con el filtro."),
@@ -232,6 +247,7 @@ struct ExpenseListView: View {
         }
         .groupedList()
         .screenBackground()
+        .task(id: expenses.isEmpty) { RecurringTip.hasExpenses = !expenses.isEmpty }
     }
 
     private func record(_ expense: Expense) {
@@ -453,6 +469,8 @@ extension Date {
 /// al modo de selección para pagar varias en lote (canvas `MacPorPagar`), con la barra «Pagar $X» al pie.
 struct BillListView: View {
     var section: Binding<ExpensesView.Segment>? = nil
+    /// «Anotar una factura por pagar» del estado vacío (el «+» de `ExpensesView`).
+    var onCreate: (() -> Void)? = nil
     @Query(sort: \Bill.dueDate) private var bills: [Bill]
     @Query(sort: \Account.code) private var accounts: [Account]
     @State private var paying: Bill?
@@ -494,8 +512,7 @@ struct BillListView: View {
             if let section, !isSelecting { ExpensesSegmentRow(selection: section) }
             if bills.isEmpty {
                 Section {
-                    EmptyStateView(systemImage: "doc.text", title: String(localized: "Sin facturas por pagar"),
-                                   message: String(localized: "Registra las facturas de tus proveedores para saber qué vence y cuándo."))
+                    EmptyStateView(guide: .bills, action: onCreate)
                 }
             }
             ForEach(groups) { group in
@@ -783,6 +800,8 @@ struct PayBillView: View {
 
 /// Proveedores del iPhone (canvas `MacProveedores` en lista): monograma, 1099 o correo, y lo que se le debe.
 struct VendorListView: View {
+    /// «Añadir mi primer proveedor» del estado vacío (el «+» de `ExpensesView`).
+    var onCreate: (() -> Void)? = nil
     @Query(sort: \Vendor.name) private var vendors: [Vendor]
     @State private var query = ""
 
@@ -794,7 +813,7 @@ struct VendorListView: View {
     var body: some View {
         List {
             if vendors.isEmpty {
-                EmptyStateView(systemImage: "truck.box", title: String(localized: "Sin proveedores"), message: String(localized: "Añade a quienes te venden bienes o servicios."))
+                EmptyStateView(guide: .vendors, action: onCreate)
             } else if shown.isEmpty {
                 EmptyStateView(systemImage: "magnifyingglass", title: String(localized: "Sin resultados"), message: String(localized: "Ningún proveedor coincide"))
             }
