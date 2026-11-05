@@ -3,10 +3,14 @@ import SwiftData
 import SwiftUI
 
 /// Alta de empresa (canvas `OnbEmpresa`, `OnbTipo`; `AltaPaso1`, `AltaPaso2` e `iPadAltaPaso1` en iPad y Mac).
-/// Paso 1: nombre, estado, año fiscal e ID fiscal. Paso 2: tipo de negocio, que decide la plantilla del plan de cuentas.
-/// Las dos como formularios agrupados del sistema con un encabezado grande centrado; en iPhone e iPad, una barra de
+/// Paso 1: nombre, idioma de la app, estado (con lo que se hará con su sales tax), año fiscal e ID fiscal. Paso 2: tipo
+/// de negocio, que decide la plantilla del plan de cuentas. Paso 3 (en el sitio del «Conectar banco» del canvas, que es
+/// de la fase 2): con cuánto dinero empieza la cuenta del banco y, opcional, lo que se debe en la tarjeta; se puede
+/// saltar y hacerlo después desde los primeros pasos de Inicio.
+/// Los tres como formularios agrupados del sistema con un encabezado grande centrado; en iPhone e iPad, una barra de
 /// vidrio abajo con los puntos de paso y «Continuar»; en el Mac, el pie de la ventana con «Atrás» y «Continuar».
-/// El paso 3 del canvas («Conectar banco») y el logotipo de la empresa no están en el MVP.
+/// Al crear la empresa se crean también la tasa estatal base como impuesto predeterminado (`setUpStateSalesTax`) y el
+/// asiento de apertura (`recordOpeningBalances`). El logotipo de la empresa no está en el MVP.
 struct OnboardingView: View {
     /// Tipos de negocio del canvas; cada uno usa una de las plantillas de plan de cuentas.
     enum Kind: String, CaseIterable, Identifiable {
@@ -65,11 +69,20 @@ struct OnboardingView: View {
     @State private var ein = ""
     @State private var entityType: EntityType = .soleProprietorship
     @State private var kind: Kind = .construction
+    @State private var openingBank: Int64 = 0
+    @State private var openingCard: Int64 = 0
+    @State private var openingDate = Date()
     @State private var errorMessage: String?
+
+    private static let stepCount = 3
 
     var body: some View {
         Form {
-            if step == 1 { companyStep } else { typeStep }
+            switch step {
+            case 1: companyStep
+            case 2: typeStep
+            default: bankStep
+            }
             if let errorMessage {
                 Section { ErrorBanner(message: errorMessage) }
             }
@@ -88,7 +101,37 @@ struct OnboardingView: View {
         #else
         .safeAreaInset(edge: .bottom, spacing: 0) { macFooter }
         #endif
+        #if DEBUG
+        .onAppear(perform: applyQALaunch)
+        #endif
     }
+
+    #if DEBUG
+    /// Argumentos de QA (solo Debug), para capturas del alta sin tocar la pantalla: `-qa.alta N` abre el paso N con el
+    /// nombre «Taller Uno»; `-qa.altaEstado TX` elige el estado; `-qa.altaBanco 1250000` y `-qa.altaTarjeta 30000`
+    /// ponen los saldos (en centavos); `-qa.altaCrear 1` crea la empresa al momento.
+    private func applyQALaunch() {
+        let defaults = UserDefaults.standard
+        guard defaults.object(forKey: "qa.alta") != nil, displayName.isEmpty else { return }
+        displayName = "Taller Uno"
+        state = defaults.string(forKey: "qa.altaEstado") ?? state
+        openingBank = Int64(defaults.integer(forKey: "qa.altaBanco"))
+        openingCard = Int64(defaults.integer(forKey: "qa.altaTarjeta"))
+        step = min(max(defaults.integer(forKey: "qa.alta"), 1), Self.stepCount)
+        guard defaults.bool(forKey: "qa.altaCrear") else { return }
+        createCompany()
+        // `-qa.altaGasto 1`: además, un gasto de $45 pagado con el banco (Inicio pasa al tablero con los pasos pendientes).
+        guard defaults.bool(forKey: "qa.altaGasto"), let accounts = try? Bookkeeper(context: context).accounts(),
+              let bank = accounts.first(where: { $0.subtype == .bank }),
+              let supplies = accounts.first(where: { $0.subtype == .operatingExpense }) else { return }
+        let expense = Expense(payee: "Office Depot", paymentAccountID: bank.id)
+        context.insert(expense)
+        let line = ExpenseLine(details: "Office Depot", amount: 4_500, accountID: supplies.id)
+        line.expense = expense
+        context.insert(line)
+        try? Bookkeeper(context: context).record(expense)
+    }
+    #endif
 
     #if os(macOS)
     private static let columnWidth: CGFloat = 560
@@ -102,7 +145,7 @@ struct OnboardingView: View {
     }
 
     private func advance() {
-        if step == 1 { step = 2 } else { createCompany() }
+        if step < Self.stepCount { step += 1 } else { createCompany() }
     }
 
     // MARK: Encabezado
@@ -115,6 +158,8 @@ struct OnboardingView: View {
             VStack(spacing: 8) {
                 icon().padding(.bottom, 8)
                 Text(title).font(Self.titleFont).foregroundStyle(Palette.ink)
+                    // En el iPad el encabezado de la sección lo dejaba en una línea («…tu cu…»).
+                    .fixedSize(horizontal: false, vertical: true)
                     .accessibilityAddTraits(.isHeader)
                 Text(subtitle).font(Self.subtitleFont).foregroundStyle(Palette.ink2)
             }
@@ -155,12 +200,14 @@ struct OnboardingView: View {
             }
         }
 
+        AppLanguageSection()
+
         Section {
             LabeledContent("País o región") { Text("Estados Unidos") }
             LabeledContent("Moneda") { Text("USD · Dólar") }
             Picker("Estado de EE. UU.", selection: $state) {
                 Text("Elige tu estado").tag("")
-                ForEach(USState.all, id: \.self) { Text($0).tag($0) }
+                ForEach(StateSalesTax.all, id: \.code) { Text(verbatim: $0.name).tag($0.code) }
             }
             Picker("Inicio del año fiscal", selection: $fiscalStartMonth) {
                 ForEach(1...12, id: \.self) { month in
@@ -172,7 +219,13 @@ struct OnboardingView: View {
         } header: {
             SectionLabel(text: String(localized: "Detalles"))
         } footer: {
-            Text("Tus libros se llevan en dólares (USD). El estado decide el sales tax que cobras; es obligatorio.")
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Tus libros se llevan en dólares (USD). El estado decide el sales tax que cobras; es obligatorio.")
+                if let note = StateTaxNote.text(for: state) {
+                    Label { Text(note) } icon: { Image(systemName: "percent").foregroundStyle(Palette.brand) }
+                        .foregroundStyle(Palette.ink)
+                }
+            }
         }
     }
 
@@ -266,17 +319,54 @@ struct OnboardingView: View {
         return rest > 0 ? String(localized: "\(names) y \(rest) más.") : names
     }
 
+    // MARK: Paso 3: saldo del banco
+
+    @ViewBuilder
+    private var bankStep: some View {
+        OpeningBalanceFields(bank: $openingBank, card: $openingCard, date: $openingDate) {
+            header("¿Cuánto dinero tiene hoy tu cuenta del negocio?",
+                   subtitle: "Así «Efectivo disponible» empieza con el dinero que de verdad tienes. Si ahora no lo sabes, salta este paso: podrás ponerlo desde Inicio.",
+                   group: String(localized: "Cuenta del banco")) {
+                Image(systemName: "building.columns")
+                    .font(.system(size: Self.logoSize * 0.55, weight: .regular))
+                    .foregroundStyle(Palette.brand)
+                    .accessibilityHidden(true)
+            }
+        }
+    }
+
+    private var hasOpeningBalances: Bool { openingBank > 0 || openingCard > 0 }
+
+    /// «Saltar por ahora»: crea la empresa sin saldos.
+    private func skipBalances() {
+        openingBank = 0
+        openingCard = 0
+        createCompany()
+    }
+
     // MARK: Barra de abajo
 
     /// Puntos de paso (canvas: el actual en `label`, los demás al 25 %).
     private var stepDots: some View {
         HStack(spacing: 8) {
-            ForEach(1...2, id: \.self) { index in
+            ForEach(1...Self.stepCount, id: \.self) { index in
                 Circle().fill(Palette.ink).opacity(index == step ? 1 : 0.25).frame(width: Self.dotSide, height: Self.dotSide)
             }
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(Text("Paso \(step) de 2"))
+        .accessibilityLabel(Text("Paso \(step) de \(Self.stepCount)"))
+    }
+
+    private var primaryTitle: LocalizedStringKey {
+        switch step {
+        case 1: "Continuar"
+        #if os(macOS)
+        case 2: "Continuar"
+        #else
+        case 2: "Usar este plan"
+        #endif
+        default: "Crear empresa"
+        }
     }
 
     #if os(macOS)
@@ -291,18 +381,22 @@ struct OnboardingView: View {
     private var bottomBar: some View {
         VStack(spacing: 12) {
             stepDots
-            Button(step == 1 ? "Continuar" : "Usar este plan", action: advance)
+            Button(primaryTitle, action: advance)
                 .buttonStyle(.primary)
                 .disabled(!canContinue)
             if step == 1 {
                 Button("Probar con datos de ejemplo", action: loadSample)
                     .font(.body.weight(.semibold))
                     .frame(minHeight: Metrics.target)
+            } else if step == Self.stepCount {
+                Button("Saltar por ahora", action: skipBalances)
+                    .font(.body.weight(.semibold))
+                    .frame(minHeight: Metrics.target)
             }
         }
         .padding(.horizontal, 12)
         .padding(.top, 14)
-        .padding(.bottom, step == 1 ? 2 : 12)
+        .padding(.bottom, step == 2 ? 12 : 2)
         .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 36, style: .continuous))
         .padding(.horizontal, 12)
         .padding(.bottom, 4)
@@ -335,10 +429,12 @@ struct OnboardingView: View {
             Spacer(minLength: 12)
             if step == 1 {
                 Button("Probar con datos de ejemplo", action: loadSample).buttonStyle(.link)
+            } else if step == Self.stepCount {
+                Button("Saltar por ahora", action: skipBalances).buttonStyle(.link)
             }
             Button("Atrás") { step -= 1 }
                 .disabled(step == 1)
-            Button(step == 1 ? "Continuar" : "Crear empresa", action: advance)
+            Button(primaryTitle, action: advance)
                 .buttonStyle(.primaryCompact)
                 .keyboardShortcut(.defaultAction)
                 .disabled(!canContinue)
@@ -363,6 +459,13 @@ struct OnboardingView: View {
             company.fiscalYearStartMonth = fiscalStartMonth
             company.ein = ein.trimmingCharacters(in: .whitespaces)
             try context.save()
+            let books = Bookkeeper(context: context)
+            // La tasa estatal base como impuesto predeterminado (nada en los estados sin sales tax estatal).
+            try books.setUpStateSalesTax()
+            if hasOpeningBalances {
+                try books.recordOpeningBalances(bank: openingBank, creditCard: openingCard,
+                                                on: Calendar.current.startOfDay(for: openingDate))
+            }
         } catch {
             errorMessage = error.localizedDescription
         }
