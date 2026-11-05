@@ -1546,3 +1546,32 @@ struct ErrorBanner: View {
             .background(Palette.negativeWash, in: RoundedRectangle(cornerRadius: Metrics.fieldRadius, style: .continuous))
     }
 }
+
+// MARK: - Teclado
+
+public extension View {
+    /// «Listo» sobre el teclado y cerrar el teclado al desplazar (iOS). El teclado numérico y el decimal no tienen
+    /// tecla para cerrarse: sin esto tapan los campos y botones de debajo (recorrido «cliente nuevo», 5-nov).
+    /// Ponerlo en el `Form`/`ScrollView` de cada pantalla con campos de importe o porcentaje. En el Mac no hace nada.
+    func keyboardDoneButton() -> some View {
+        modifier(KeyboardDoneButton())
+    }
+}
+
+private struct KeyboardDoneButton: ViewModifier {
+    func body(content: Content) -> some View {
+        #if os(iOS)
+        content
+            .scrollDismissesKeyboard(.interactively)
+            .toolbar {
+                ToolbarItem(placement: .keyboard) {
+                    Button("Listo") {
+                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                    }
+                }
+            }
+        #else
+        content
+        #endif
+    }
+}
