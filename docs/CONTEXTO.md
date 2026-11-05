@@ -1,33 +1,73 @@
 # Chirogra: contexto para retomar en otro chat
 
-Resumen del chat de coordinación de Chirogra al **4 de noviembre de 2026**. Léelo entero antes de seguir. El diseño técnico está en [DISEÑO.md](DISEÑO.md), el sistema visual en [REDISEÑO-NATIVO.md](REDISEÑO-NATIVO.md) y la API del esquema 2 en [DATOS-V2.md](DATOS-V2.md); aquí van el estado, las decisiones del usuario, lo pendiente y cómo se trabaja. Al usuario se le habla siempre en español.
+Resumen del chat de coordinación de Chirogra al **5 de noviembre de 2026**. Léelo entero antes de seguir. El diseño técnico está en [DISEÑO.md](DISEÑO.md), el sistema visual en [REDISEÑO-NATIVO.md](REDISEÑO-NATIVO.md) y la API del esquema 2 en [DATOS-V2.md](DATOS-V2.md); aquí van el estado, las decisiones del usuario, lo pendiente y cómo se trabaja. Al usuario se le habla siempre en español.
 
 ## Dónde nos quedamos (empieza aquí)
 
-**La 1.0 está casi lista para la App Store.** MVP cerrado, suscripción hecha, iCloud funcionando, web y guía publicadas. Subidas a App Store Connect (iOS y macOS) el 4-nov: 1.0.0 (1), (2) y **(3)**. **Para enviar a revisión hay que elegir el build 3**: lleva todo lo del build 2 («Empezar con mi empresa», el 1099 a $2,000, la «Guía de uso», el arreglo de Impuestos) y el **ícono nuevo**. El usuario aún no ha enviado nada a revisión.
+**Al 5-nov: la 1.0 está lista salvo la revisión del usuario del build 4 y sus tareas en App Store Connect.** Subidas a App Store Connect (iOS y macOS): 1.0.0 (1), (2), (3) y **(4)**. **Para enviar a revisión hay que elegir el build 4** (o el que lo sustituya). El usuario **aún no ha enviado nada a revisión** y decidió que lo de abajo entre **antes** de enviar.
+
+**El build 4 NO está en `main`.** Está en la rama `integracion-build4` (worktree `~/Documents/GitHub/Chirogra-integracion`, último `7780c1b`), subido desde ese commit para que el usuario lo pruebe en **TestFlight**. `main` está en el build 3 (`330a0fd`) más este resumen.
+
+**Qué lleva el build 4 («la app se explica sola»; agentes C y D, 175 pruebas):**
+- **Agente C (`04b5e3d`): alta y primeros pasos.**
+  - Fila «Idioma de la app»: en iOS abre los Ajustes de la app; en el Mac, «Idioma y región».
+  - Tasa estatal base creada al elegir el estado (tabla `ChirograData/StateSalesTax.swift`, Tax Foundation a mediados de 2026), predeterminada si no había otra. DE, MT, NH y OR no tienen sales tax estatal; AK solo local.
+  - Paso 3 del alta «saldo inicial» del banco y, opcional, la tarjeta: un asiento de apertura contra 3900 (`Bookkeeper+Onboarding.swift`). Se puede saltar.
+  - «Primeros pasos» de Inicio con 7 pasos, cada uno con su «para qué» y su atajo.
+  - QA: `-qa.alta N`, `-qa.altaEstado TX`, `-qa.altaBanco`, `-qa.altaTarjeta`, `-qa.altaCrear 1`, `-qa.altaGasto 1`, `-qa.saldo 1`.
+- **Agente D (`bde01b5`): cada pantalla se explica sola.**
+  - Estados vacíos que explican qué es la sección y ofrecen empezar (`EmptyGuide`).
+  - Pistas TipKit (`DesignSystem/Pistas.swift`; en el Mac no hay): «¿Ya te pagaron?», «¿Pagas algo cada mes?», «¿Cobras sales tax?» en Más, y el «+» del iPad.
+  - Asientos con plantilla (`Accounting/JournalTemplates.swift`): aportación (banco / 3000), retiro (3100 / banco), traspaso entre cuentas y «Asiento a mano, para tu contador».
+  - Ayuda ⓘ (`TermHelp`) en débito, crédito, gravable, capital, tasa combinada y saldo en libros.
+  - «Añadir tasa…» en la factura si no hay tasas, y la nota «Esta factura no lleva impuesto».
+  - Pie explicativo de Impuestos en «Más» del iPhone.
+  - QA: `-qa.pistas reset|todas|ocultas`, `-qa.vacia 1`, `-qa.asiento aportacion|retiro|traspaso|manual`, `-qa.ayuda <palabra>` (documentados en REDISEÑO-NATIVO §5 de la rama).
+- **Integración (coordinador):** `App/Localizable.xcstrings` fusionado con `scripts/merge-xcstrings.py`, sin claves en conflicto. Visto en el simulador del iPhone (alta → Inicio → Ventas vacía → Más con la pista) y en la copia del Mac (Inicio con los pasos, plantilla de asiento).
 
 **Lo siguiente, en orden (marcado quién):**
-1. **Usuario · TestFlight:** la build 1 de iOS ya está procesada (correo del 4-nov); en TestFlight no salía porque falta crear un grupo de Internal Testing, añadirse e instalar desde la app TestFlight en iPhone, iPad y Mac. TestFlight usa el iCloud de **producción** (esquema ya desplegado).
-2. **Usuario · suscripción en App Store Connect:** grupo «Chirogra», `com.chirogra.app.mensual`, 1 mes, **$24.99**, oferta de introducción **gratis 2 semanas**, sin Family Sharing (textos en [APP-STORE.md](APP-STORE.md)). Sin el producto, la pantalla de suscripción dice «Subscription Unavailable» y la app no bloquea nada (`notConfigured`).
-3. **Claude · captura de la pantalla de suscripción** para la revisión de la compra, cuando exista el producto (desde Xcode con `App/Chirogra.storekit` o desde TestFlight).
-4. **Usuario · ficha:** textos, categoría, URLs, «Data Not Collected», edad 4+ y notas para la revisión en [APP-STORE.md](APP-STORE.md); capturas en el escritorio del usuario («Chirogra – capturas App Store», `es/` y `en/`). Enviar a revisión.
-5. **Probar iCloud de verdad:** activar «Sincronizar con iCloud» **primero en un aparato**, esperar a que suba y luego en los demás (si se activa en los tres a la vez, cada uno sube sus datos de ejemplo y se duplican). Nunca se ha probado la sincronización real: hasta la 1.0 la app no tenía el permiso.
-6. **Después de publicar: fase 2.** El usuario no ha fijado la lista ni el orden (ver «Fase 2» abajo). Lo primero técnico: esquema 3 con la conciliación (DISEÑO §4.6) e importar el banco.
+1. **Usuario · probar el build 4 en TestFlight desde cero**, con el guion que se le dio: «Empezar con mi empresa» → crear empresa → sales tax → factura → cobro parcial y total → gasto con recibo → asiento → reportes. Debe decir si ahora se entiende sin ayuda.
+   - Para verlo en TestFlight hace falta un grupo de **Internal Testing** con su cuenta y el build añadido (si el grupo no tiene distribución automática).
+   - Si sale algo, se arregla en un **build 5**.
+2. **Claude · cuando el usuario apruebe el build 4:**
+   - fusionar `integracion-build4` en `main` (merge; `main` tiene este resumen encima) y empujar;
+   - borrar las worktrees y ramas: `integracion-build4`, `worktree-agent-a91d68afe0f98b267` (C) y `worktree-agent-a454ba872d8877287` (D);
+   - actualizar la **guía web** (`sitio/guia`, `sitio/guide`) con el alta nueva (idioma, saldo inicial, tasa estatal), las plantillas de asiento y las pistas, rehaciendo las capturas afectadas (cómo, en «Guía de uso» abajo);
+   - poner este resumen al día.
+3. **Usuario · suscripción en App Store Connect:** grupo «Chirogra», `com.chirogra.app.mensual`, 1 mes, **$24.99**, oferta de introducción **gratis 2 semanas**, sin Family Sharing (textos en [APP-STORE.md](APP-STORE.md)). Sin el producto, la pantalla de suscripción dice «Subscription Unavailable» y la app no bloquea nada (`notConfigured`).
+4. **Claude · captura de la pantalla de suscripción** para la revisión de la compra, cuando exista el producto.
+5. **Usuario · ficha y envío a revisión** con el último build: textos, categoría, URLs, «Data Not Collected», edad 4+ y notas para la revisión en [APP-STORE.md](APP-STORE.md); capturas en su escritorio («Chirogra – capturas App Store»).
+   - **Rehacer las capturas de la App Store** si el usuario quiere mostrar el ícono nuevo o las pantallas nuevas; con datos de ejemplo no cambian.
+6. **Usuario · correo `soporte@chirogra.com`** (reenvío en Cloudflare): lo citan la web y la app; sigue sin confirmar.
+7. **Probar iCloud de verdad:** activar «Sincronizar con iCloud» **primero en un aparato**, esperar a que suba y luego en los demás. Nunca se ha probado la sincronización real.
+8. **Después de publicar:** la 1.1 (plan para contadores) y la fase 2 (ver abajo).
 
-**Estado del repositorio:** `main` con el build 3 (ícono nuevo) y este resumen, empujado. Instalado en iPhone, iPad y Mac: el build 3 (Debug en iOS, Release en el Mac).
+**Hallazgos de la prueba del usuario (5-nov), ya atendidos en el build 4:** no encontró dónde poner el sales tax (empresa nueva sin tasas; Impuestos al fondo de «Más»); su iPhone está en inglés y la app salió en inglés (se cambia en Ajustes › Apps › Chirogra › Idioma); «la app no explica a simple vista qué hacer».
 
-**Próxima subida:** `CURRENT_PROJECT_VERSION` a **4** en `project.yml` y en el `project.pbxproj` (comprobar con xcodegen en una copia que coinciden); cómo se sube, en «TestFlight». Si el usuario prefiere subir él con Transporter: `xcodebuild -exportArchive` con `destination` `export` deja el `.ipa` y el `.pkg`.
+**Pendientes y dudas del build 4 (sin hacer):**
+- **Propuesta de D, sin decidir:** subir el grupo Impuestos por encima de Contabilidad en «Más» del iPhone. No se cambió porque el orden lo fija el canvas: preguntar al usuario.
+- **Tasa de Puerto Rico** en la tabla: 10.5 % de memoria, sin comprobar.
+- Si el usuario cambia el estado después en Ajustes, no se crea la tasa nueva.
+- Un error al crear la tasa o el asiento de apertura después de crear la empresa no se le muestra.
+- **Sin probar en un aparato real:**
+  - si el botón de idioma abre la página de Chirogra en Ajustes o la raíz;
+  - guardar una tasa desde la factura;
+  - «Añadir tasa…» en el iPad y el Mac;
+  - el globo ⓘ en el Mac;
+  - VoiceOver y letra grande.
+- La prueba de humo de `BankingView` con `ImageRenderer` se quitó porque se cae en ese renderizador (en pantalla funciona).
+- Del build 2: el aviso de la tabla de proveedores del Mac cuenta los marcados como 1099 aunque no lleguen al mínimo.
 
-**Pendiente menor sin hacer:** en el Mac no se probó en pantalla registrar y revertir un asiento ni el estado vacío.
+**Próxima subida:** `CURRENT_PROJECT_VERSION` a **5** en `project.yml` y en el `project.pbxproj` (comprobar con xcodegen en una copia que coinciden). Se archiva desde un clon limpio del commit y se sube con `xcodebuild -exportArchive` (ver «TestFlight»). El usuario prefiere que se suba directamente. Si quisiera Transporter: `destination` `export`.
 
-**Hecho el 4-nov (`8278ac5`):** caja «Facturas nuevas» de Impuestos (`TaxDefaultsRows`): si la etiqueta y el menú no caben en una línea, la etiqueta va arriba y el menú debajo, alineado con ella (antes «predetermi-nado» se partía en el iPad); «Precios con impuesto incluido» con el interruptor a la derecha del texto (en el iPad caía debajo; en el Mac era una casilla). Visto en el simulador del iPad de 13″ y en la copia de prueba del Mac; el iPhone no se vio en pantalla.
+**Pendiente menor sin hacer:** en el Mac no se probó en pantalla registrar y revertir un asiento ni el estado vacío (D vio estados vacíos y el editor en el Mac con QA).
 
 ## Estado actual
 
-- **App en `main`:** rediseño nativo (2-nov) + Mac con tabla e inspector (2-nov) + esquema 2 con lo que dibujaba el canvas (3-nov) + ícono (`541169a`) + pendientes menores y `DesignSystem` (`e9db54e`) + copia de seguridad (`de6ef43`) + suscripción y solo lectura (`d4de7a9`) + QA de capturas (`82348a9`) + web (`36f3276`, `30ee87d`, `623c564`) + versión 1.0.0 con iCloud (`0f554ff`).
-- **Datos:** los tres aparatos ya migraron a `SchemaV2`. **Una versión anterior de la app ya no abre esos datos.** La empresa del usuario es «Ríos Diseño & Obra», «Solo en este dispositivo», con datos de ejemplo.
+- **App en `main`:** rediseño nativo (2-nov) + Mac con tabla e inspector (2-nov) + esquema 2 con lo que dibujaba el canvas (3-nov) + ícono (`541169a`) + pendientes menores y `DesignSystem` (`e9db54e`) + copia de seguridad (`de6ef43`) + suscripción y solo lectura (`d4de7a9`) + QA de capturas (`82348a9`) + web (`36f3276`, `30ee87d`, `623c564`) + versión 1.0.0 con iCloud (`0f554ff`) + guía de uso web y arreglo de Impuestos (`8278ac5`, `b6dab31`) + build 2 («Empezar con mi empresa», 1099, «Guía de uso»; `d2eb0b0`) + ícono nuevo y build 3 (`330a0fd`). El build 4 está en la rama `integracion-build4` (arriba).
+- **Datos:** los tres aparatos ya migraron a `SchemaV2`. **Una versión anterior de la app ya no abre esos datos.** Instalado el build 3 en iPhone, iPad y Mac (con datos de ejemplo «Ríos Diseño & Obra», salvo que el usuario haya usado «Empezar con mi empresa» en su prueba del iPhone), «Solo en este dispositivo».
 - **iCloud:** contenedor `iCloud.com.chirogra.app` asignado al App ID `com.chirogra.app` (iCloud + Push) y esquema 2 desplegado a producción (4-nov).
-- **App Store Connect:** app «Chirogra» creada (iOS + macOS, English (U.S.), bundle `com.chirogra.app`). 1.0.0 (1) subida para las dos plataformas.
+- **App Store Connect:** app «Chirogra» creada (iOS + macOS, English (U.S.), bundle `com.chirogra.app`, Apple ID 6830687358, SKU CHIROGRA-001). Subidas 1.0.0 (1) a (4) para las dos plataformas; sin enviar a revisión.
 - **Web:** https://chirogra.com (GitHub Pages desde `sitio/`, dominio del usuario en Cloudflare). Privacidad `/privacidad/` · `/privacy/`, soporte `/soporte/` · `/support/`.
 - **Precio decidido:** mensual con 14 días gratis; $24.99 los 3 primeros meses de lanzamiento y luego $29.99 para los nuevos (los suscritos conservan su precio); con la conexión al banco, plan «Chirogra + Banco» a $39.99.
 
@@ -66,6 +106,14 @@ Barra lateral, estados de iCloud, aviso «¿Descartar los cambios?» en los edit
 - Web chirogra.com con portada, privacidad y soporte (`36f3276`, `30ee87d`, `623c564`).
 - Versión 1.0.0, iCloud activado de verdad, esquema de CloudKit en producción y textos de la App Store (`0f554ff`); subida a App Store Connect (iOS y macOS).
 - Revisado por el usuario y bien: marco de foco de Gastos en el iPad (arreglado), hoja de factura ancha, borradores con impuesto, plan de cuentas y «Crear copia ahora» en el iPad.
+
+### 4 y 5-nov: build 2, 3 y 4 (este chat)
+- Arreglo de la caja «Facturas nuevas» de Impuestos (`8278ac5`); guía de uso web es/en con 18 capturas del Mac (`b6dab31`).
+- Prueba técnica de iCloud: dos almacenes en el mismo contenedor se mezclan (más abajo, «Plan para contadores»).
+- Build 2 (`d2eb0b0`, agentes A y B): «Empezar con mi empresa», 1099 por año, «Guía de uso» en la app.
+- Build 3 (`330a0fd`): ícono nuevo del usuario en la app y en la web.
+- Build 4 (rama `integracion-build4`, agentes C y D): la app se explica sola (arriba).
+- Investigado y decidido para la fase 2: escaneo de recibos y sales tax automático (más abajo).
 
 ## Decisiones del usuario (no deshacer sin preguntar)
 
