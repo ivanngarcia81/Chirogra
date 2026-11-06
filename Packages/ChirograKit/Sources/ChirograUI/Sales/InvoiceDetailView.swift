@@ -287,7 +287,8 @@ struct InvoiceDetailView: View {
 
     private func tileLabel(_ title: String, _ image: String, tint: Color) -> some View {
         VStack(spacing: 4) {
-            Image(systemName: image).font(.title3).accessibilityHidden(true)
+            // Alto fijo del ícono: el lápiz de «Editar» es más bajo que los otros y subía su texto.
+            Image(systemName: image).font(.title3).frame(height: 28).accessibilityHidden(true)
             Text(title).font(.footnote.weight(.semibold)).lineLimit(1).minimumScaleFactor(0.8)
         }
         .foregroundStyle(tint)
