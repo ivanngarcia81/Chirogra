@@ -4,9 +4,17 @@ Resumen del chat de coordinación de Chirogra al **5 de noviembre de 2026**. Lé
 
 ## Dónde nos quedamos (empieza aquí)
 
-**Al 5-nov: la 1.0 está lista salvo la revisión del usuario del build 4 y sus tareas en App Store Connect.** Subidas a App Store Connect (iOS y macOS): 1.0.0 (1), (2), (3) y **(4)**. **Para enviar a revisión hay que elegir el build 4** (o el que lo sustituya). El usuario **aún no ha enviado nada a revisión** y decidió que lo de abajo entre **antes** de enviar.
+**6-nov: BUILD 5 SUBIDO** (iOS y macOS, «Upload succeeded») desde `18aea38` y **fusionado en `main`** (`5c2e9d3`, con el build 4) y **empujado**; worktrees y ramas de los builds 4 y 5 borradas. **Para enviar a revisión hay que elegir el build 5.** Nació de un recorrido «cliente nuevo» en el simulador (empresa Pintura Martínez LLC en Austin, TX; factura, gasto, cobro parcial, correcciones). Lleva, en tres agentes:
+- **Ventas** (`c4f8dd2`, `eb1ef84`): `keyboardDoneButton()` (pieza común `4dc1784`) en el cobro y editores; precio de la línea en caja «Precio»; **editar una factura emitida sin cobros** (`Bookkeeper.updateIssuedInvoice`: reversión + asiento nuevo, mismo número, «Editada» en Actividad); estado «Emitida» hasta que se envía («Enviada» después); aviso «Factura F-… emitida» que ofrece enviarla. QA: `-qa.editar 1`, `-qa.emitir 1`.
+- **Gastos** (`96e1dea`): «Listo» en todos los teclados de importe; `MoneyRow` (tocar la fila enfoca el campo); `VendorPicker` con «Nuevo proveedor…» («Pagado a» se esconde con proveedor elegido); `ExpenseCategories` (primero «Gastos y costos», aparte equipo/prepagos; sin cuentas por cobrar, contra-cuentas ni gasto de depreciación).
+- **Alta, Impuestos, Inicio** (`4e7a4ce`): «Nueva tasa» con «Sumar a Texas (6.25%)…» que crea el grupo y lo deja predeterminado (`Bookkeeper.addTaxRate`), agencia ya elegida, porcentaje vacío; panel del alta oculto con el teclado; aviso de la tasa bajo «Estado»; **«Tipo de empresa»** en el alta (LLC por el nombre); Inicio dice qué cuenta forma el efectivo. QA: `-qa.tasa nueva|grupo`.
+- **Glosario** de menús y palabras de contabilidad en la guía web (`sitio/guia#glosario`, `sitio/guide#glossary`, `997894d`), publicado con el empuje de `main`. Al cambiar un menú de la app, ponerlo al día en los dos idiomas.
+- 188 pruebas. Recorrido completo repetido sobre el build 5: mismos totales ($317.63 de sales tax sobre $3,850).
+- **Guion para el usuario:** https://claude.ai/artifact/32kiNBUgqBpqTrZ4MTfgc7 (35 pasos con capturas; sus calificaciones y notas por parte quedan en la base del artículo, colección `notas`; leerlas con ArtifactData cuando diga «ya terminé»).
+- **Pendiente:** que el usuario lo pruebe con el guion y lea Claude sus notas; lo que salga va a un **build 6** (`CURRENT_PROJECT_VERSION` a 6). La guía web aún tiene las capturas del build 3 en las secciones de alta, tasas y factura: rehacerlas cuando el usuario apruebe el build 5.
+- **Sin aclarar:** en el primer recorrido, XCTest no vio la app «quieta» (esperaba 60 s por acción) desde el editor de la primera factura, sin uso de CPU; tras relanzar no se repitió. No afecta al usuario, pero si vuelve a pasar, buscar una animación que no termina.
 
-**El build 4 NO está en `main`.** Está en la rama `integracion-build4` (worktree `~/Documents/GitHub/Chirogra-integracion`, último `7780c1b`), subido desde ese commit para que el usuario lo pruebe en **TestFlight**. `main` está en el build 3 (`330a0fd`) más este resumen.
+**Al 5-nov (antes del build 5): la 1.0 estaba lista salvo la revisión del usuario y sus tareas en App Store Connect.** Subidas a App Store Connect (iOS y macOS): 1.0.0 (1) a **(5)**. El usuario **aún no ha enviado nada a revisión**.
 
 **Qué lleva el build 4 («la app se explica sola»; agentes C y D, 175 pruebas):**
 - **Agente C (`04b5e3d`): alta y primeros pasos.**
@@ -26,14 +34,8 @@ Resumen del chat de coordinación de Chirogra al **5 de noviembre de 2026**. Lé
 - **Integración (coordinador):** `App/Localizable.xcstrings` fusionado con `scripts/merge-xcstrings.py`, sin claves en conflicto. Visto en el simulador del iPhone (alta → Inicio → Ventas vacía → Más con la pista) y en la copia del Mac (Inicio con los pasos, plantilla de asiento).
 
 **Lo siguiente, en orden (marcado quién):**
-1. **Usuario · probar el build 4 en TestFlight desde cero**, con el guion que se le dio: «Empezar con mi empresa» → crear empresa → sales tax → factura → cobro parcial y total → gasto con recibo → asiento → reportes. Debe decir si ahora se entiende sin ayuda.
-   - Para verlo en TestFlight hace falta un grupo de **Internal Testing** con su cuenta y el build añadido (si el grupo no tiene distribución automática).
-   - Si sale algo, se arregla en un **build 5**.
-2. **Claude · cuando el usuario apruebe el build 4:**
-   - fusionar `integracion-build4` en `main` (merge; `main` tiene este resumen encima) y empujar;
-   - borrar las worktrees y ramas: `integracion-build4`, `worktree-agent-a91d68afe0f98b267` (C) y `worktree-agent-a454ba872d8877287` (D);
-   - actualizar la **guía web** (`sitio/guia`, `sitio/guide`) con el alta nueva (idioma, saldo inicial, tasa estatal), las plantillas de asiento y las pistas, rehaciendo las capturas afectadas (cómo, en «Guía de uso» abajo);
-   - poner este resumen al día.
+1. **Usuario · probar el build 5 en TestFlight desde cero** con el guion del artículo (arriba). Para verlo en TestFlight hace falta un grupo de **Internal Testing** con su cuenta y el build añadido (si el grupo no tiene distribución automática).
+2. **Claude · después:** leer sus notas, arreglar en un build 6 si hace falta y actualizar la **guía web** (`sitio/guia`, `sitio/guide`) con el alta nueva (idioma, saldo inicial, tasa estatal y local, tipo de empresa), editar factura, plantillas de asiento y pistas, rehaciendo las capturas afectadas (cómo, en «Guía de uso» abajo).
 3. **Usuario · suscripción en App Store Connect:** grupo «Chirogra», `com.chirogra.app.mensual`, 1 mes, **$24.99**, oferta de introducción **gratis 2 semanas**, sin Family Sharing (textos en [APP-STORE.md](APP-STORE.md)). Sin el producto, la pantalla de suscripción dice «Subscription Unavailable» y la app no bloquea nada (`notConfigured`).
 4. **Claude · captura de la pantalla de suscripción** para la revisión de la compra, cuando exista el producto.
 5. **Usuario · ficha y envío a revisión** con el último build: textos, categoría, URLs, «Data Not Collected», edad 4+ y notas para la revisión en [APP-STORE.md](APP-STORE.md); capturas en su escritorio («Chirogra – capturas App Store»).
@@ -64,10 +66,10 @@ Resumen del chat de coordinación de Chirogra al **5 de noviembre de 2026**. Lé
 
 ## Estado actual
 
-- **App en `main`:** rediseño nativo (2-nov) + Mac con tabla e inspector (2-nov) + esquema 2 con lo que dibujaba el canvas (3-nov) + ícono (`541169a`) + pendientes menores y `DesignSystem` (`e9db54e`) + copia de seguridad (`de6ef43`) + suscripción y solo lectura (`d4de7a9`) + QA de capturas (`82348a9`) + web (`36f3276`, `30ee87d`, `623c564`) + versión 1.0.0 con iCloud (`0f554ff`) + guía de uso web y arreglo de Impuestos (`8278ac5`, `b6dab31`) + build 2 («Empezar con mi empresa», 1099, «Guía de uso»; `d2eb0b0`) + ícono nuevo y build 3 (`330a0fd`). El build 4 está en la rama `integracion-build4` (arriba).
+- **App en `main`:** rediseño nativo (2-nov) + Mac con tabla e inspector (2-nov) + esquema 2 con lo que dibujaba el canvas (3-nov) + ícono (`541169a`) + pendientes menores y `DesignSystem` (`e9db54e`) + copia de seguridad (`de6ef43`) + suscripción y solo lectura (`d4de7a9`) + QA de capturas (`82348a9`) + web (`36f3276`, `30ee87d`, `623c564`) + versión 1.0.0 con iCloud (`0f554ff`) + guía de uso web y arreglo de Impuestos (`8278ac5`, `b6dab31`) + build 2 («Empezar con mi empresa», 1099, «Guía de uso»; `d2eb0b0`) + ícono nuevo y build 3 (`330a0fd`) + builds 4 y 5 con el glosario web (`5c2e9d3`).
 - **Datos:** los tres aparatos ya migraron a `SchemaV2`. **Una versión anterior de la app ya no abre esos datos.** Instalado el build 3 en iPhone, iPad y Mac (con datos de ejemplo «Ríos Diseño & Obra», salvo que el usuario haya usado «Empezar con mi empresa» en su prueba del iPhone), «Solo en este dispositivo».
 - **iCloud:** contenedor `iCloud.com.chirogra.app` asignado al App ID `com.chirogra.app` (iCloud + Push) y esquema 2 desplegado a producción (4-nov).
-- **App Store Connect:** app «Chirogra» creada (iOS + macOS, English (U.S.), bundle `com.chirogra.app`, Apple ID 6830687358, SKU CHIROGRA-001). Subidas 1.0.0 (1) a (4) para las dos plataformas; sin enviar a revisión.
+- **App Store Connect:** app «Chirogra» creada (iOS + macOS, English (U.S.), bundle `com.chirogra.app`, Apple ID 6830687358, SKU CHIROGRA-001). Subidas 1.0.0 (1) a (5) para las dos plataformas; sin enviar a revisión.
 - **Web:** https://chirogra.com (GitHub Pages desde `sitio/`, dominio del usuario en Cloudflare). Privacidad `/privacidad/` · `/privacy/`, soporte `/soporte/` · `/support/`.
 - **Precio decidido:** mensual con 14 días gratis; $24.99 los 3 primeros meses de lanzamiento y luego $29.99 para los nuevos (los suscritos conservan su precio); con la conexión al banco, plan «Chirogra + Banco» a $39.99.
 
@@ -186,6 +188,8 @@ Barra lateral, estados de iCloud, aviso «¿Descartar los cambios?» en los edit
 **Cobro en línea (decidido el 3-nov para la fase 2):**
 1. **Sin servidor:** enlace de pago propio del usuario en Ajustes (Stripe Payment Link, Square, PayPal.me, datos de Zelle o transferencia) → botón «Pagar ahora» y QR en el PDF y el correo de la factura. El cobro se registra a mano.
 2. **Con servidor, junto con Plaid:** Stripe Connect (la cuenta de Stripe de cada usuario; el dinero no pasa por Chirogra), un enlace por factura con su importe, aviso de Stripe al servidor y la app registra el cobro al abrir (el servidor no escribe en el iCloud del usuario). Comisión de Stripe como gasto, cuenta puente «Fondos no depositados» hasta el depósito, que se concilia con la importación del banco. Posible comisión de Chirogra por pago (p. ej. 0.5 %). Entraría en el plan «Chirogra + Banco» ($39.99/mes; el plan sin banco sigue a $29.99), en el mismo grupo de suscripción.
+
+**Nómina (payroll): idea pendiente, sin decidir (6-nov).** El usuario preguntó si la app tendrá nómina. Hoy no: DISEÑO.md la deja para «más adelante». Lo que sí se puede: registrar la nómina pagada con otro servicio (Gusto, ADP, QuickBooks Payroll) como gasto o asiento; el plan de cuentas ya trae «6850 · Sueldos y salarios» y «2300 · Nómina por pagar». Si se hace, la recomendación es **no construirla desde cero** (retenciones federales y estatales, depósitos, 941/940, W-2/W-4, cambian cada año) sino integrar un proveedor de nómina embebida (Gusto Embedded, Check) a través del servidor de la fase 2 (el de Plaid), como plan más alto. Falta que el usuario decida si la quiere y cuándo.
 
 ## Reglas de trabajo
 
