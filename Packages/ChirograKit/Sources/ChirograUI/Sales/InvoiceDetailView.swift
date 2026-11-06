@@ -31,6 +31,10 @@ struct InvoiceDetailView: View {
     @State private var confirmingVoid = false
     @State private var confirmingDelete = false
     @State private var errorMessage: String?
+    /// Borrador recién emitido desde aquí: se ofrece enviarlo (`offerToSendIssued`).
+    @State private var justIssued: Invoice?
+    /// El campo «Monto» de «Parcial» tiene el foco: se desplaza hasta «Registrar $…» para que el teclado no lo tape.
+    @FocusState private var amountFocused: Bool
 
     // Registrar pago
     enum PaymentMode: String, CaseIterable, Identifiable {
@@ -60,38 +64,52 @@ struct InvoiceDetailView: View {
     }
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 0) {
-                if let errorMessage { ErrorBanner(message: errorMessage).padding(.bottom, 12) }
-                summary
-                if isDraft {
-                    draftActions.padding(.top, 16)
-                } else {
-                    if needsSending {
-                        Button("Enviar factura", systemImage: "paperplane") { sending = true }
-                            .buttonStyle(.primary)
-                            .padding(.top, 14)
-                    }
-                    if !isWide { actionTiles.padding(.top, 14) }
-                }
-                if !isDraft {
-                    if isWide {
-                        activity
-                        if invoice.isOpen { paymentSection }
+        ScrollViewReader { proxy in
+            ScrollView {
+                VStack(alignment: .leading, spacing: 0) {
+                    if let errorMessage { ErrorBanner(message: errorMessage).padding(.bottom, 12) }
+                    summary
+                    if isDraft {
+                        draftActions.padding(.top, 16)
                     } else {
-                        if invoice.isOpen { paymentSection }
-                        activity
+                        if needsSending {
+                            Button("Enviar factura", systemImage: "paperplane") { sending = true }
+                                .buttonStyle(.primary)
+                                .padding(.top, 14)
+                        }
+                        if !isWide { actionTiles.padding(.top, 14) }
                     }
+                    if !isDraft {
+                        if isWide {
+                            activity
+                            if invoice.isOpen { paymentSection }
+                        } else {
+                            if invoice.isOpen { paymentSection }
+                            activity
+                        }
+                    }
+                    linesSection
+                    totalsSection
+                    creditNotesSection
                 }
-                linesSection
-                totalsSection
-                creditNotesSection
+                .padding(.horizontal, Metrics.gutter)
+                .padding(.top, 8)
+                .padding(.bottom, 32)
+                .frame(maxWidth: 720, alignment: .leading)
+                .frame(maxWidth: .infinity, alignment: isWide ? .leading : .center)
             }
-            .padding(.horizontal, Metrics.gutter)
-            .padding(.top, 8)
-            .padding(.bottom, 32)
-            .frame(maxWidth: 720, alignment: .leading)
-            .frame(maxWidth: .infinity, alignment: isWide ? .leading : .center)
+            // «Registrar pago › Parcial»: el teclado decimal no tiene tecla para cerrarse y tapaba «Registrar $…»
+            // (recorrido «cliente nuevo», 5-nov). Ahora lleva «Listo», se cierra al desplazar y, al escribir el monto,
+            // la pantalla sube hasta el botón.
+            .keyboardDoneButton()
+            .onChange(of: amountFocused) { _, focused in
+                guard focused else { return }
+                Task {
+                    try? await Task.sleep(for: .milliseconds(350))
+                    // En el centro y no abajo: abajo quedaba bajo el «Listo» flotante del teclado.
+                    withAnimation { proxy.scrollTo(Self.recordButtonID, anchor: .center) }
+                }
+            }
         }
         .background(Palette.background)
         .modifier(DetailTitle(title: invoice.number.isEmpty ? String(localized: "Borrador") : invoice.number, shown: !embedded))
@@ -129,6 +147,7 @@ struct InvoiceDetailView: View {
         .sheet(isPresented: $showingCreditNote) {
             NavigationStack { CreditNoteEditorView(invoice: invoice) }.editorSheetSizing()
         }
+        .offerToSendIssued($justIssued)
         .confirmationDialog("¿Anular la factura?", isPresented: $confirmingVoid, titleVisibility: .visible) {
             Button("Anular", role: .destructive, action: void)
         } message: {
@@ -277,6 +296,10 @@ struct InvoiceDetailView: View {
                 if invoice.isOpen, let credit = invoice.customer?.creditBalance, credit > 0 {
                     Button("Aplicar saldo a favor (\(min(credit, invoice.balanceDue).money))", systemImage: "arrow.uturn.left", action: applyCredit)
                 }
+                if books.canEditIssued(invoice) {
+                    // Corrige la emitida: revierte su asiento y registra uno nuevo, con el mismo número.
+                    Button("Editar factura", systemImage: "pencil") { editingDraft = true }
+                }
                 if invoice.status != .void {
                     Button(invoice.status == .paid ? "Nota de crédito o devolución" : "Nota de crédito", systemImage: "minus.circle") {
                         showingCreditNote = true
@@ -284,6 +307,12 @@ struct InvoiceDetailView: View {
                 }
                 if invoice.isOpen && invoice.amountPaid == 0 && invoice.creditsApplied == 0 {
                     Button("Anular factura", systemImage: "xmark.circle", role: .destructive) { confirmingVoid = true }
+                }
+                if invoice.status != .void && !books.canEditIssued(invoice) {
+                    // Por qué no hay «Editar»: con cobros o créditos el asiento ya tiene otros que dependen de él.
+                    Section {
+                        Text("Con cobros o créditos no se edita: usa una nota de crédito.")
+                    }
                 }
             }
         } label: {
@@ -294,21 +323,28 @@ struct InvoiceDetailView: View {
 
     // MARK: Actividad
 
-    /// Creada → Enviada (cada envío y recordatorio anotado, con su destinatario) → Pago → Pagada (o Anulada), con círculos
-    /// rellenos de Tinta en los pasos cumplidos. Sin envío anotado, «Emitida» y «Enviada · Sin enviar».
+    /// Creada → Emitida → envíos, recordatorios y ediciones por fecha (con su destinatario) → Pago → Pagada (o Anulada),
+    /// con círculos rellenos de Tinta en los pasos cumplidos. Sin envío anotado y pendiente de cobro, el paso por hacer
+    /// es «Enviar al cliente» (antes «Enviada · Sin enviar», que se leía como si ya se hubiera mandado).
     private var activity: some View {
         let payments = (invoice.paymentApplications ?? []).compactMap(\.payment?.date).sorted()
         var steps: [(title: String, detail: String, value: String, done: Bool)] = [
             (String(localized: "Creada"), "", min(invoice.createdAt, invoice.issueDate).dayMonth, true),
+            (String(localized: "Emitida"), "", invoice.issueDate.dayMonth, true),
         ]
         let events = invoice.sortedEvents.reversed()
-        if !events.contains(where: { $0.kind == .sent }) {
-            steps.append((String(localized: "Emitida"), "", invoice.issueDate.dayMonth, true))
-            if invoice.status != .void { steps.append((String(localized: "Enviada"), "", String(localized: "Sin enviar"), false)) }
-        }
-        for event in events {
-            steps.append((event.kind == .sent ? String(localized: "Enviada") : String(localized: "Recordatorio enviado"),
+        var dated: [(date: Date, step: (title: String, detail: String, value: String, done: Bool))] = events.map { event in
+            (event.date, (event.kind == .sent ? String(localized: "Enviada") : String(localized: "Recordatorio enviado"),
                           event.recipient, event.date.dayMonth, true))
+        }
+        for edit in (try? books.edits(of: invoice)) ?? [] {
+            dated.append((edit.date, (String(localized: "Editada"),
+                                      edit.action == "edit" ? String(localized: "Asiento revertido y registrado de nuevo") : "",
+                                      edit.date.dayMonth, true)))
+        }
+        steps += dated.sorted { $0.date < $1.date }.map(\.step)
+        if invoice.isOpen && !events.contains(where: { $0.kind == .sent }) {
+            steps.append((String(localized: "Enviar al cliente"), "", String(localized: "Pendiente"), false))
         }
         if invoice.status == .void {
             steps.append((String(localized: "Anulada"), "", "", true))
@@ -364,6 +400,7 @@ struct InvoiceDetailView: View {
                     if paymentMode == .partial {
                         MoneyField(title: String(localized: "Monto"), minorUnits: $paymentAmount)
                             .multilineTextAlignment(.trailing)
+                            .focused($amountFocused)
                     } else {
                         Text(invoice.balanceDue.money).monospacedDigit().foregroundStyle(Palette.ink)
                             .accessibilityLabel("Monto")
@@ -418,10 +455,13 @@ struct InvoiceDetailView: View {
         }
     }
 
+    private static let recordButtonID = "registrarPago"
+
     private var recordButton: some View {
         Button("Registrar \(amountToRecord.money)", action: recordPayment)
             .buttonStyle(.primary)
             .disabled(amountToRecord <= 0 || amountToRecord > invoice.balanceDue || depositAccountID == nil)
+            .id(Self.recordButtonID)
     }
 
     /// Valor de un menú del formulario: en gris con el símbolo de menú, y en varias líneas si no cabe.
@@ -590,7 +630,13 @@ struct InvoiceDetailView: View {
     // MARK: Operaciones
 
     private func issue() {
-        do { try books.issue(invoice); errorMessage = nil } catch { errorMessage = error.localizedDescription }
+        do {
+            try books.issue(invoice)
+            errorMessage = nil
+            justIssued = invoice
+        } catch {
+            errorMessage = error.localizedDescription
+        }
     }
 
     private func recordPayment() {
@@ -760,6 +806,7 @@ struct CreditNoteEditorView: View {
         }
         .formStyle(.grouped)
         .screenBackground()
+        .keyboardDoneButton()
         .navigationTitle("Nota de crédito")
         .inlineTitle()
         .discardableEditor(tracking: "\(amount)|\(isTaxable)|\(reason)|\(date)", token: editorToken)

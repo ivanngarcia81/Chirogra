@@ -2638,6 +2638,16 @@
         }
       }
     },
+    "Ahora no" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not now"
+          }
+        }
+      }
+    },
     "Ajustes" : {
       "localizations" : {
         "en" : {
@@ -3254,6 +3264,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Manual entry"
+          }
+        }
+      }
+    },
+    "Asiento revertido y registrado de nuevo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entry reversed and recorded again"
           }
         }
       }
@@ -4987,6 +5007,16 @@
         }
       }
     },
+    "Con cobros o créditos no se edita: usa una nota de crédito." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "With payments or credits it can't be edited: use a credit note."
+          }
+        }
+      }
+    },
     "Con débitos y créditos, cuenta por cuenta" : {
       "localizations" : {
         "en" : {
@@ -6669,6 +6699,16 @@
         }
       }
     },
+    "Editada" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edited"
+          }
+        }
+      }
+    },
     "Editado" : {
       "localizations" : {
         "en" : {
@@ -6755,6 +6795,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Edit Estimate"
+          }
+        }
+      }
+    },
+    "Editar factura" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit invoice"
+          }
+        }
+      }
+    },
+    "Editar factura…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit Invoice…"
           }
         }
       }
@@ -6885,6 +6945,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "The entry balances: debits = credits"
+          }
+        }
+      }
+    },
+    "El asiento de la factura ya fue revertido." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The invoice's entry was already reversed."
           }
         }
       }
@@ -7760,6 +7830,26 @@
         }
       }
     },
+    "Enviar a %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send to %@"
+          }
+        }
+      }
+    },
+    "Enviar al cliente" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send to customer"
+          }
+        }
+      }
+    },
     "Enviar estimado" : {
       "localizations" : {
         "en" : {
@@ -7926,6 +8016,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "This invoice has no tax. If you collect sales tax, choose “Add Tax Rate…” under Tax."
+          }
+        }
+      }
+    },
+    "Esta factura ya está en tus libros. Al guardar, Chirogra revierte su asiento y registra uno nuevo con los cambios; conserva el número %@ y la edición queda en su actividad." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This invoice is already in your books. When you save, Chirogra reverses its entry and records a new one with the changes; it keeps number %@ and the edit shows in its activity."
           }
         }
       }
@@ -8373,6 +8473,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Invoice %@"
+          }
+        }
+      }
+    },
+    "Factura %@ editada (sin cambios contables)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invoice %@ edited (no accounting changes)"
+          }
+        }
+      }
+    },
+    "Factura %@ editada: %@ → %@ (asiento %lld revertido, nuevo %lld)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invoice %@ edited: %@ → %@ (entry %lld reversed, new %lld)"
+          }
+        }
+      }
+    },
+    "Factura %@ emitida" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invoice %@ issued"
           }
         }
       }
@@ -10406,12 +10536,32 @@
         }
       }
     },
+    "La factura necesita un cliente." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The invoice needs a customer."
+          }
+        }
+      }
+    },
     "La factura no está pendiente de cobro." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "The invoice has no balance due."
+          }
+        }
+      }
+    },
+    "La factura tiene cobros o créditos: corrígela con una nota de crédito." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The invoice has payments or credits: correct it with a credit note."
           }
         }
       }
@@ -16479,6 +16629,16 @@
         }
       }
     },
+    "Si solo cambias el vencimiento, el mensaje o las descripciones, no se registra ningún asiento." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "If you only change the due date, the message or the descriptions, no entry is recorded."
+          }
+        }
+      }
+    },
     "Siguiente cierre" : {
       "localizations" : {
         "en" : {
@@ -17177,6 +17337,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Customer credit can only be applied to a customer's open invoices."
+          }
+        }
+      }
+    },
+    "Solo se editan facturas emitidas sin cobros ni créditos." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Only issued invoices without payments or credits can be edited."
           }
         }
       }
@@ -19326,6 +19496,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "W-9 received: %@"
+          }
+        }
+      }
+    },
+    "Ya está en tus libros. ¿Se la mandas ahora por correo con el PDF?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "It's in your books now. Send it by email with the PDF?"
           }
         }
       }

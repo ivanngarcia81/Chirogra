@@ -141,7 +141,8 @@ extension View {
 
 struct InvoiceListView: View {
     enum Filter: String, CaseIterable, Identifiable {
-        case all = "Todas", draft = "Borrador", sent = "Enviada", partial = "Pago parcial", overdue = "Vencida", paid = "Pagada"
+        // «Emitida» (y no «Enviada»): reúne las emitidas pendientes, se hayan mandado o no al cliente.
+        case all = "Todas", draft = "Borrador", sent = "Emitida", partial = "Pago parcial", overdue = "Vencida", paid = "Pagada"
         var id: String { rawValue }
 
         func matches(_ invoice: Invoice) -> Bool {
