@@ -65,6 +65,126 @@ extension Bookkeeper {
     }
 }
 
+// MARK: - Facturas: corregir una emitida (como los gastos contabilizados, `updateExpense`)
+
+extension Bookkeeper {
+
+    /// Se puede editar una factura emitida mientras no tenga cobros ni notas de crédito: con ellos el asiento ya
+    /// tiene otros que dependen de él, y se corrige con una nota de crédito (o se anula, si no tiene cobros).
+    public func canEditIssued(_ invoice: Invoice) -> Bool {
+        invoice.status == .sent && invoice.amountPaid == 0 && invoice.creditsApplied == 0
+            && (invoice.creditNotes ?? []).isEmpty && (invoice.paymentApplications ?? []).isEmpty
+    }
+
+    /// Corrige una factura emitida sin cobros ni créditos y **conserva su número**.
+    ///
+    /// - Si cambia el asiento (cliente, fecha, líneas, impuesto, descuento): el asiento de emisión **no se toca**
+    ///   (es inmutable); se revierte con un asiento espejo en su misma fecha y se contabiliza uno nuevo con los datos
+    ///   corregidos. Quedan enlazados (`replacesEntryID` / `replacedByEntryID`) y la factura apunta al nuevo.
+    /// - Si solo cambia el texto (vencimiento, mensaje, descripciones con el mismo importe): se guarda sin asientos.
+    ///
+    /// Si se mantiene el impuesto, se usan las tasas con que se emitió (como las notas de crédito), aunque después se
+    /// haya editado alguna; si se elige otro, las vigentes. En los dos casos queda un `AuditEvent` de la factura
+    /// («edit» con asientos, «editText» sin ellos) que la actividad muestra como «Editada». Si la fecha original o la
+    /// nueva caen en un periodo cerrado falla; usa `unlockedForClosedPeriod(password:)`. Devuelve el asiento nuevo, o
+    /// `nil` si no hizo falta.
+    @discardableResult
+    public func updateIssuedInvoice(_ invoice: Invoice, with input: InvoiceDraftInput) throws -> JournalEntry? {
+        guard canEditIssued(invoice) else {
+            throw BookkeepingError.invalidState(invoice.status == .sent || invoice.status == .partiallyPaid || invoice.status == .paid
+                ? String(localized: "La factura tiene cobros o créditos: corrígela con una nota de crédito.")
+                : String(localized: "Solo se editan facturas emitidas sin cobros ni créditos."))
+        }
+        guard input.customer != nil else { throw BookkeepingError.invalidState(String(localized: "La factura necesita un cliente.")) }
+        guard let original = try entry(id: invoice.journalEntryID), original.status == .posted, !original.isReversed else {
+            throw BookkeepingError.invalidState(String(localized: "El asiento de la factura ya fue revertido."))
+        }
+        let keptTax = input.taxGroupID == invoice.taxGroupID && !(invoice.taxLines ?? []).isEmpty
+        let components = keptTax ? try issuedTaxComponents(of: invoice) : try taxComponents(groupID: input.taxGroupID, on: input.issueDate)
+        let pricesIncludeTax = input.pricesIncludeTax ?? invoice.pricesIncludeTax
+        // Todo se valida antes de tocar la factura: con sus líneas cambiadas, `rollback()` deja la relación en un estado
+        // que SwiftData no sabe leer, y un segundo intento (p. ej. tras desbloquear el periodo) se caía.
+        let posting = try invoicePosting(number: invoice.number, customer: input.customer, date: input.issueDate,
+                                         lines: input.lines.map { ($0.incomeAccountID, $0.amount, $0.isTaxable, $0.details) },
+                                         discount: input.discount, pricesIncludeTax: pricesIncludeTax, taxComponents: components)
+        let accountingChanged = !Calendar.current.isDate(original.date, inSameDayAs: posting.entry.date)
+            || invoice.customer?.id != input.customer?.id
+            || Self.netByAccount(original.draft.lines) != Self.netByAccount(posting.entry.lines)
+        // Solo texto: como en los gastos, se guarda aunque la factura esté en un periodo cerrado.
+        if accountingChanged {
+            try validate(posting.entry)
+            try validate(original.draft.reversal(on: original.date))
+        }
+        try ensureWritable()
+        // Guardar sin haber cambiado nada no deja rastro.
+        guard accountingChanged || Self.snapshot(of: invoice) != Self.snapshot(of: input, pricesIncludeTax: pricesIncludeTax) else { return nil }
+
+        let previousTotal = invoice.total
+        do {
+            apply(input, to: invoice)
+            store(posting, in: invoice)
+            guard accountingChanged else {
+                audit("Invoice", invoice.id, "editText", String(localized: "Factura \(invoice.number) editada (sin cambios contables)"))
+                try context.save()
+                return nil
+            }
+            try reverse(original, on: original.date, memo: String(localized: "Reversión por edición: \(original.memo)"), save: false)
+            let replacement = try post(posting.entry, sourceDocumentID: invoice.id, save: false)
+            replacement.lines?.forEach { $0.customerID = invoice.customer?.id }
+            replacement.replacesEntryID = original.id
+            original.replacedByEntryID = replacement.id
+            invoice.journalEntryID = replacement.id
+            audit("Invoice", invoice.id, "edit", String(localized: "Factura \(invoice.number) editada: \(Money(minorUnits: previousTotal).formatted()) → \(Money(minorUnits: posting.total).formatted()) (asiento \(original.number) revertido, nuevo \(replacement.number))"))
+            try context.save()
+            return replacement
+        } catch {
+            context.rollback()
+            throw error
+        }
+    }
+
+    /// Ediciones de la factura (con o sin asientos), de la más antigua a la más reciente.
+    public func edits(of invoice: Invoice) throws -> [AuditEvent] {
+        let id: UUID? = invoice.id
+        let entity = "Invoice"
+        return try context.fetch(FetchDescriptor<AuditEvent>(predicate: #Predicate { $0.entityID == id && $0.entityName == entity },
+                                                             sortBy: [SortDescriptor(\.date)]))
+            .filter { $0.action == "edit" || $0.action == "editText" }
+    }
+
+    /// Historial de asientos de una factura (emisión, reversiones y vigente), del más antiguo al más nuevo.
+    public func entries(ofInvoice invoice: Invoice) throws -> [JournalEntry] {
+        let id: UUID? = invoice.id
+        return try context.fetch(FetchDescriptor<JournalEntry>(predicate: #Predicate { $0.sourceDocumentID == id },
+                                                               sortBy: [SortDescriptor(\.number)]))
+    }
+
+    /// Lo que el editor puede cambiar de una factura, para saber si hubo cambios.
+    private static func snapshot(of invoice: Invoice) -> String {
+        let lines = invoice.sortedLines.map { "\($0.details)|\($0.quantity)|\($0.unitPrice)|\($0.isTaxable)|\($0.incomeAccountID?.uuidString ?? "")" }
+        return snapshot(customer: invoice.customer?.id, issue: invoice.issueDate, due: invoice.dueDate, tax: invoice.taxGroupID,
+                        discount: invoice.discount, message: invoice.customerMessage, included: invoice.pricesIncludeTax, lines: lines)
+    }
+
+    private static func snapshot(of input: InvoiceDraftInput, pricesIncludeTax: Bool) -> String {
+        let lines = input.lines.map { "\($0.details)|\($0.quantity)|\($0.unitPrice)|\($0.isTaxable)|\($0.incomeAccountID?.uuidString ?? "")" }
+        return snapshot(customer: input.customer?.id, issue: input.issueDate, due: input.dueDate, tax: input.taxGroupID,
+                        discount: input.discount, message: input.customerMessage, included: pricesIncludeTax, lines: lines)
+    }
+
+    private static func snapshot(customer: UUID?, issue: Date, due: Date, tax: UUID?, discount: Int64, message: String,
+                                 included: Bool, lines: [String]) -> String {
+        let day = { (date: Date) in Calendar.current.startOfDay(for: date).timeIntervalSinceReferenceDate }
+        return "\(customer?.uuidString ?? "")#\(day(issue))#\(day(due))#\(tax?.uuidString ?? "")#\(discount)#\(message)#\(included)#"
+            + lines.joined(separator: ";")
+    }
+
+    /// Debe − Haber por cuenta, sin las cuentas que quedan en cero: dos asientos con el mismo neto son el mismo efecto.
+    private static func netByAccount(_ lines: [JournalLineDraft]) -> [UUID: Int64] {
+        lines.reduce(into: [UUID: Int64]()) { $0[$1.accountID, default: 0] += $1.debit - $1.credit }.filter { $0.value != 0 }
+    }
+}
+
 // MARK: - Estimados (canvas `Estimado`)
 
 /// Totales de un estimado o de un borrador, calculados igual que al emitir la factura.
