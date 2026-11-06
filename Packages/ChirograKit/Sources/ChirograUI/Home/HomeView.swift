@@ -24,6 +24,9 @@ struct HomeView: View {
     @Query private var expenses: [Expense]
     @Query private var customers: [Customer]
     @Query private var payments: [PaymentReceived]
+    /// Para decir en «Configura tu sales tax» qué impuesto cobran las facturas.
+    @Query private var taxRates: [TaxRate]
+    @Query private var taxGroups: [TaxGroup]
     /// La tarjeta de primeros pasos del tablero se ocultó en este aparato.
     @AppStorage("homeSetupStepsHidden") private var setupStepsHidden = false
 
@@ -92,6 +95,14 @@ struct HomeView: View {
     /// Cuentas de Inicio: bancos y tarjetas siempre; caja y fondos no depositados si tienen saldo.
     private var shownAccounts: [Account] {
         ledger.moneyAccounts.filter { $0.subtype == .bank || $0.subtype == .creditCard || ledger.balance(of: $0) != 0 }
+    }
+
+    /// Cuentas que forman «Efectivo disponible» y ya tienen saldo o movimientos (banco, caja y tarjetas; sin los fondos
+    /// no depositados). Con solo el banco del alta es 1: antes la tarjeta decía «3 cuentas» contando también el ahorro
+    /// y la tarjeta vacíos de la plantilla (recorrido «cliente nuevo», 5-nov).
+    private var cashAccounts: [Account] {
+        let used = Set(journalLines.compactMap { $0.entry?.status == .posted ? $0.account?.id : nil })
+        return ledger.moneyAccounts.filter { $0.subtype != .undepositedFunds && (used.contains($0.id) || ledger.balance(of: $0) != 0) }
     }
 
     /// Primera vez (`EstadoVacio`): todavía no hay documentos ni más movimientos que los saldos de apertura del alta.
@@ -290,8 +301,17 @@ struct HomeView: View {
         thisMonth.totalIncome > 0 ? String(localized: "Margen \(thisMonth.netIncome * 100 / thisMonth.totalIncome)%") : nil
     }
 
-    private var accountsDetail: String {
-        String(localized: "\(shownAccounts.count) cuentas · según libros")
+    /// «Cuenta corriente · según libros» con una sola cuenta; «2 cuentas · según libros»; sin movimientos, dicho.
+    private var accountsDetail: String { accountsSummary(short: false) }
+
+    /// `short`: sin «· según libros» (fila de la columna del iPad).
+    private func accountsSummary(short: Bool) -> String {
+        let used = cashAccounts
+        if used.isEmpty { return String(localized: "Sin movimientos todavía") }
+        if used.count == 1, let only = used.first {
+            return short ? only.maskedName : String(localized: "\(only.maskedName) · según libros")
+        }
+        return short ? String(localized: "\(used.count) cuentas") : String(localized: "\(used.count) cuentas · según libros")
     }
 
     /// Ingresos · Gastos · Ganancia en tres columnas (`Home`: dentro de la tarjeta de efectivo; `iPadInicio`: en su
@@ -771,7 +791,7 @@ struct HomeView: View {
         let soonTotal = soonBills.reduce(0) { $0 + $1.balanceDue }
         let (icon, color, subtitle, subtitleColor, value): (String, Color, String, Color, Int64) = switch section {
         case .cash:
-            ("building.columns", Palette.blue, String(localized: "\(shownAccounts.count) cuentas"), Palette.ink2, ledger.availableCash)
+            ("building.columns", Palette.blue, accountsSummary(short: true), Palette.ink2, ledger.availableCash)
         case .results:
             ("chart.bar.xaxis", Palette.indigo, margin.map { String(localized: "Ganancia · \($0.lowercased())") } ?? String(localized: "Ganancia del mes"),
              Palette.ink2, thisMonth.netIncome)
@@ -1145,7 +1165,13 @@ struct HomeView: View {
         let stateTax = StateSalesTax.forState(company?.state ?? "")
         let noStateTax = stateTax.map { $0.rateMillionths == nil && !$0.hasLocalTaxOnly } ?? false
         let hasTax = company?.defaultTaxGroupID != nil
-        let taxDetail: String = if hasTax {
+        let defaultGroup = taxGroups.first { $0.id == company?.defaultTaxGroupID }
+        let defaultRate = taxRates.first { $0.id == company?.defaultTaxGroupID }
+        let taxDetail: String = if let defaultGroup {
+            String(localized: "Tus facturas cobran \(defaultGroup.name) (\(StateTaxNote.percent(defaultGroup.combinedRateMillionths))). Si no es la tasa de tu dirección, cámbiala en Impuestos.")
+        } else if let defaultRate {
+            String(localized: "Tus facturas cobran \(defaultRate.name) (\(StateTaxNote.percent(defaultRate.rateMillionths))). Si tu ciudad o condado cobra más, abre Impuestos y elige «Nueva tasa»: la sumamos a esta.")
+        } else if hasTax {
             String(localized: "Tus facturas ya cobran el impuesto predeterminado. Añade la tasa de tu ciudad o condado si la hay.")
         } else if noStateTax, let stateTax {
             String(localized: "\(stateTax.name) no tiene sales tax estatal. Si vendes en otro estado, añade su tasa.")

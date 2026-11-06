@@ -78,7 +78,7 @@ enum StateTaxNote {
     static func text(for code: String) -> String? {
         guard let info = StateSalesTax.forState(code) else { return nil }
         if let millionths = info.rateMillionths {
-            return String(localized: "Creamos la tasa estatal de \(info.name) (\(percent(millionths))) como impuesto de tus facturas. Añade la de tu ciudad o condado en Impuestos. Revisa que las tasas sean las correctas para tu negocio.")
+            return String(localized: "Tus facturas cobrarán la tasa estatal de \(info.name) (\(percent(millionths))). Si tu ciudad o condado cobra más, añade su parte en Impuestos › Nueva tasa y la sumamos. Revisa que las tasas sean las de tu negocio.")
         }
         if info.hasLocalTaxOnly {
             return String(localized: "\(info.name) no tiene sales tax estatal, pero muchas ciudades y boroughs sí: añade la tasa local en Impuestos.")

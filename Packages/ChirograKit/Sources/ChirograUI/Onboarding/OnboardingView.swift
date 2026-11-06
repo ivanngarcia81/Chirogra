@@ -68,6 +68,8 @@ struct OnboardingView: View {
     @State private var fiscalStartMonth = 1
     @State private var ein = ""
     @State private var entityType: EntityType = .soleProprietorship
+    /// El usuario eligió el tipo de empresa a mano: el nombre ya no lo cambia.
+    @State private var entityTypeChosen = false
     @State private var kind: Kind = .construction
     @State private var openingBank: Int64 = 0
     @State private var openingCard: Int64 = 0
@@ -94,10 +96,15 @@ struct OnboardingView: View {
         .background(Palette.background)
         // Cada paso empieza arriba: el paso 2 heredaba el desplazamiento del 1.
         .id(step)
+        // «Listo» sobre el teclado decimal de los saldos (paso 3), que no tiene tecla para cerrarse.
+        .keyboardDoneButton()
+        .onChange(of: displayName) { suggestEntityType() }
+        .onChange(of: legalName) { suggestEntityType() }
         #if os(iOS)
-        .scrollDismissesKeyboard(.interactively)
         .safeAreaBar(edge: .top, spacing: 0) { if step > 1 { backBar } }
-        .safeAreaBar(edge: .bottom, spacing: 0) { bottomBar }
+        // Mientras se escribe, la barra se esconde: subía con el teclado y tapaba los campos (en el paso 3, «Fecha del
+        // saldo» y la tarjeta).
+        .bottomBarHiddenWithKeyboard { bottomBar }
         #else
         .safeAreaInset(edge: .bottom, spacing: 0) { macFooter }
         #endif
@@ -142,6 +149,12 @@ struct OnboardingView: View {
     /// El estado es obligatorio: decide qué sales tax se cobra.
     private var canContinue: Bool {
         !displayName.trimmingCharacters(in: .whitespaces).isEmpty && !state.isEmpty
+    }
+
+    /// Tipo de empresa según el final del nombre comercial o de la razón social, mientras no se elija a mano.
+    private func suggestEntityType() {
+        guard !entityTypeChosen else { return }
+        entityType = EntityType.suggested(forName: displayName) ?? EntityType.suggested(forName: legalName) ?? .soleProprietorship
     }
 
     private func advance() {
@@ -209,23 +222,29 @@ struct OnboardingView: View {
                 Text("Elige tu estado").tag("")
                 ForEach(StateSalesTax.all, id: \.code) { Text(verbatim: $0.name).tag($0.code) }
             }
+            // Lo que se hará con su sales tax, justo debajo del estado (al pie quedaba detrás de la barra de abajo).
+            if let note = StateTaxNote.text(for: state) {
+                Label { Text(note) } icon: { Image(systemName: "percent").foregroundStyle(Palette.brand) }
+                    .font(.subheadline)
+                    .foregroundStyle(Palette.ink)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
             Picker("Inicio del año fiscal", selection: $fiscalStartMonth) {
                 ForEach(1...12, id: \.self) { month in
                     Text(Calendar.current.standaloneMonthSymbols[month - 1].sentenceCased).tag(month)
                 }
+            }
+            // Preelegido por el nombre («… LLC» → LLC); antes el alta no lo preguntaba y toda empresa quedaba como
+            // negocio propio.
+            Picker("Tipo de empresa", selection: Binding(get: { entityType }, set: { entityType = $0; entityTypeChosen = true })) {
+                ForEach(EntityType.allCases, id: \.self) { Text($0.title).tag($0) }
             }
             optionalField("Razón social", text: $legalName)
             optionalField("ID fiscal (EIN)", text: $ein)
         } header: {
             SectionLabel(text: String(localized: "Detalles"))
         } footer: {
-            VStack(alignment: .leading, spacing: 6) {
-                Text("Tus libros se llevan en dólares (USD). El estado decide el sales tax que cobras; es obligatorio.")
-                if let note = StateTaxNote.text(for: state) {
-                    Label { Text(note) } icon: { Image(systemName: "percent").foregroundStyle(Palette.brand) }
-                        .foregroundStyle(Palette.ink)
-                }
-            }
+            Text("Tus libros se llevan en dólares (USD). El estado decide el sales tax que cobras; es obligatorio.")
         }
     }
 
@@ -275,12 +294,6 @@ struct OnboardingView: View {
             }
         } footer: {
             Text("Podrás añadir, renombrar o archivar cuentas en Contabilidad.")
-        }
-
-        Section {
-            Picker("Tipo de entidad", selection: $entityType) {
-                ForEach(EntityType.allCases, id: \.self) { Text($0.title).tag($0) }
-            }
         }
     }
 

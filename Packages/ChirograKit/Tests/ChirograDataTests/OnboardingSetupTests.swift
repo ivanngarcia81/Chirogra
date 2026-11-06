@@ -107,6 +107,72 @@ struct OnboardingSetupTests {
         #expect(try books.company()?.defaultTaxGroupID == local.id)
     }
 
+    @Test("Tasa local sumada a la estatal: grupo «Austin, TX» 8.25 % como predeterminado de las facturas nuevas")
+    func localRateAddedToState() throws {
+        let (context, books) = try newBooks(state: "TX")
+        let texas = try #require(try books.setUpStateSalesTax())
+        #expect(try books.defaultTaxCode()?.rateMillionths == 62_500)
+
+        let (rate, group) = try books.addTaxRate(name: " Austin ", rateMillionths: 20_000, agency: texas.agency, use: .addToDefault)
+        let combined = try #require(group)
+        #expect(rate.name == "Austin")
+        #expect(rate.agency?.id == texas.agency?.id)
+        #expect(combined.name == "Austin, TX")
+        #expect(combined.combinedRateMillionths == 82_500)
+        #expect(Set((combined.rates ?? []).map(\.id)) == [texas.id, rate.id])
+        #expect(try books.company()?.defaultTaxGroupID == combined.id)
+        #expect(try context.fetchCount(FetchDescriptor<TaxAgency>()) == 1)
+
+        // Una factura nueva cobra las dos tasas.
+        let defaults = try books.newInvoiceDefaults(for: nil)
+        #expect(defaults.taxGroupID == combined.id)
+        let components = try books.taxComponents(groupID: defaults.taxGroupID, on: .now)
+        #expect(components.map(\.rateMillionths).sorted() == [20_000, 62_500])
+
+        // Otra tasa más se suma al grupo predeterminado en uno nuevo.
+        let (_, next) = try books.addTaxRate(name: "Distrito", rateMillionths: 5_000, agency: texas.agency, use: .addToDefault)
+        #expect(next?.name == "Austin, TX + Distrito")
+        #expect(next?.combinedRateMillionths == 87_500)
+        #expect(try books.company()?.defaultTaxGroupID == next?.id)
+    }
+
+    @Test("Tasa nueva sin sumar, como predeterminado sin haberlo, agencia nueva y datos malos")
+    func addTaxRateVariants() throws {
+        let (context, books) = try newBooks(state: "TX")
+        let texas = try #require(try books.setUpStateSalesTax())
+        let (kept, none) = try books.addTaxRate(name: "Dallas", rateMillionths: 20_000, agency: texas.agency, use: .keep)
+        #expect(none == nil)
+        #expect(try books.company()?.defaultTaxGroupID == texas.id)
+        #expect(kept.agency?.id == texas.agency?.id)
+
+        // Oregon: sin predeterminado, «sumar» deja la tasa sola como predeterminado; con agencia nueva.
+        let (_, oregon) = try newBooks(state: "OR")
+        let (local, group) = try oregon.addTaxRate(name: "Portland", rateMillionths: 10_000, agency: nil,
+                                                   newAgencyName: "City of Portland", use: .addToDefault)
+        #expect(group == nil)
+        #expect(local.agency?.name == "City of Portland")
+        #expect(local.agency?.liabilityAccountID == (try oregon.systemAccount(.salesTaxPayable)).id)
+        #expect(try oregon.company()?.defaultTaxGroupID == local.id)
+
+        #expect(throws: BookkeepingError.self) { try books.addTaxRate(name: " ", rateMillionths: 10_000, agency: texas.agency) }
+        #expect(throws: BookkeepingError.self) { try books.addTaxRate(name: "Cero", rateMillionths: 0, agency: texas.agency) }
+        #expect(throws: BookkeepingError.self) { try books.addTaxRate(name: "Sin agencia", rateMillionths: 10_000, agency: nil) }
+        #expect(try context.fetchCount(FetchDescriptor<TaxRate>()) == 2)
+    }
+
+    @Test("Tipo de empresa sugerido por el nombre")
+    func entityTypeFromName() {
+        #expect(EntityType.suggested(forName: "Pintura Martínez LLC") == .llc)
+        #expect(EntityType.suggested(forName: "Pintura Martínez, L.L.C.") == .llc)
+        #expect(EntityType.suggested(forName: "acme llc.") == .llc)
+        #expect(EntityType.suggested(forName: "Ríos Diseño Inc.") == .cCorp)
+        #expect(EntityType.suggested(forName: "Taller Corp") == .cCorp)
+        #expect(EntityType.suggested(forName: "Gómez & Ruiz LLP") == .partnership)
+        #expect(EntityType.suggested(forName: "Pintura Martínez") == nil)
+        #expect(EntityType.suggested(forName: "Llcanto") == nil)
+        #expect(EntityType.suggested(forName: "") == nil)
+    }
+
     @Test("Saldo del banco: el asiento cuadra contra 3900 y el banco queda con ese saldo")
     func bankOpeningBalance() throws {
         let (_, books) = try newBooks(state: "TX")
