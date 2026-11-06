@@ -120,3 +120,14 @@ kbd {
 }
 .guia header.sitio, .guia footer { max-width: 880px; }
 .guia figure a { display: block; }
+
+/* Glosario de la guía: término en negrita y su definición debajo, en una tarjeta por menú. */
+dl.glosario {
+  background: var(--superficie); border: 1px solid var(--borde); border-radius: 18px;
+  padding: 6px 22px; margin: 12px 0 24px;
+}
+dl.glosario dt { font-weight: 650; margin-top: 14px; }
+dl.glosario dd { margin: 2px 0 14px; color: var(--tinta); }
+dl.glosario dd + dt { border-top: 1px solid var(--borde); padding-top: 14px; }
+dl.glosario dd ul { margin: 6px 0 0; padding-left: 20px; }
+h3[id^="glosario-"], h3[id^="glossary-"] { margin-top: 24px; }
