@@ -117,7 +117,11 @@ struct InvoiceDetailView: View {
             // `iPadVentas`: Duplicar · Compartir PDF · Recordatorio en un grupo de vidrio de la barra.
             if isWide && !isDraft {
                 ToolbarItemGroup(placement: .primaryAction) {
-                    Button("Duplicar", systemImage: "plus.square.on.square", action: duplicateInvoice).headerButton()
+                    if books.canEditIssued(invoice) {
+                        Button("Editar factura", systemImage: "pencil") { editingDraft = true }.headerButton()
+                    } else {
+                        Button("Duplicar", systemImage: "plus.square.on.square", action: duplicateInvoice).headerButton()
+                    }
                     Button("PDF", systemImage: "doc.richtext") { sending = true }.headerButton()
                     if invoice.isOpen {
                         Button(remindedToday ? "Recordatorio enviado hoy" : "Recordatorio",
@@ -248,10 +252,17 @@ struct InvoiceDetailView: View {
         }
     }
 
-    /// Canvas `FacturaDetalle`: Duplicar · PDF · Recordatorio en baldosas `surface` de radio 16.
+    /// Canvas `FacturaDetalle`: Duplicar · PDF · Recordatorio en baldosas `surface` de radio 16. Mientras la emitida se
+    /// puede corregir, la primera baldosa es «Editar» (Duplicar sigue en «⋯»): escondido en el menú no se encontraba
+    /// (recorrido «cliente nuevo», 6-nov).
     private var actionTiles: some View {
         tileRow {
-            actionTile(String(localized: "Duplicar"), "plus.square.on.square", action: duplicateInvoice)
+            if books.canEditIssued(invoice) {
+                actionTile(String(localized: "Editar"), "pencil") { editingDraft = true }
+                    .accessibilityLabel("Editar factura")
+            } else {
+                actionTile(String(localized: "Duplicar"), "plus.square.on.square", action: duplicateInvoice)
+            }
             actionTile(String(localized: "PDF"), "doc.richtext") { sending = true }
             if invoice.isOpen {
                 if remindedToday {

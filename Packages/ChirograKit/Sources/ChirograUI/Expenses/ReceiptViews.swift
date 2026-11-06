@@ -242,7 +242,8 @@ struct ExpenseDetailView: View {
                 }
             }
             LabeledContent("Cuenta de pago", value: accounts.account(expense.paymentAccountID)?.paymentLabel ?? "—")
-            LabeledContent("Método", value: ExpenseEditorView.title(for: PaymentMethod(rawValue: expense.methodRaw) ?? .other))
+            LabeledContent("Método", value: PaymentMethodPicker.title(for: PaymentMethod(rawValue: expense.methodRaw) ?? .other,
+                                                       paidFrom: accounts.account(expense.paymentAccountID)?.subtype))
             if expense.salesTaxIncluded > 0 {
                 LabeledContent("Subtotal", value: expense.subtotalBeforeTax.money)
                 LabeledContent("Impuesto incluido", value: expense.salesTaxIncluded.money)

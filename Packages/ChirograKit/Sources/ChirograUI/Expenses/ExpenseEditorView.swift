@@ -219,9 +219,7 @@ struct ExpenseEditorView: View {
                 ExpenseCategoryPicker(title: String(localized: "Categoría"), accounts: accounts, selection: $lines[0].accountID)
             }
             PaymentAccountPicker(title: String(localized: "Cuenta de pago"), accounts: paymentAccounts, selection: $paymentAccountID)
-            Picker("Método de pago", selection: $method) {
-                ForEach(Self.methods, id: \.self) { Text(Self.title(for: $0)).tag($0) }
-            }
+            PaymentMethodPicker(account: paymentAccounts.first { $0.id == paymentAccountID }, selection: $method)
             Picker(selection: $customerID) {
                 Text("Ninguno").tag(UUID?.none)
                 ForEach(customers.filter { !$0.isArchived || $0.id == customerID }) { Text($0.name).tag(Optional($0.id)) }
@@ -376,7 +374,6 @@ struct ExpenseEditorView: View {
         #endif
     }
 
-    private static let methods: [PaymentMethod] = [.card, .bankTransfer, .cash, .check]
 
     static func title(for method: PaymentMethod) -> String {
         switch method {

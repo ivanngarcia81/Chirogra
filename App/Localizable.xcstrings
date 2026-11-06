@@ -17701,6 +17701,16 @@
         }
       }
     },
+    "Tarjeta de débito" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Debit card"
+          }
+        }
+      }
+    },
     "Tarjeta de crédito (opcional)" : {
       "localizations" : {
         "en" : {

@@ -108,3 +108,50 @@ struct VendorPicker: View {
         }
     }
 }
+
+/// «Método de pago» que concuerda con la cuenta de pago: de una tarjeta de crédito se paga con esa tarjeta, de la caja
+/// en efectivo y de un banco con tarjeta de débito, transferencia o cheque. Antes un gasto de la «Cuenta corriente»
+/// salía como «Tarjeta» sin decir cuál y parecía contradecirse (recorrido «cliente nuevo», 6-nov).
+struct PaymentMethodPicker: View {
+    let account: Account?
+    @Binding var selection: PaymentMethod
+
+    static func choices(for subtype: AccountSubtype?) -> [PaymentMethod] {
+        switch subtype {
+        case .creditCard: [.card]
+        case .cash: [.cash]
+        case .bank: [.card, .bankTransfer, .check]
+        default: [.card, .bankTransfer, .cash, .check]
+        }
+    }
+
+    static func title(for method: PaymentMethod, paidFrom subtype: AccountSubtype?) -> String {
+        switch (method, subtype) {
+        case (.card, .bank): String(localized: "Tarjeta de débito")
+        case (.card, .creditCard): String(localized: "Tarjeta de crédito")
+        default: method.title
+        }
+    }
+
+    /// Las opciones de la cuenta y, si un gasto antiguo trae otra, también esa (si no, el menú quedaría en blanco).
+    private var options: [PaymentMethod] {
+        let choices = Self.choices(for: account?.subtype)
+        return choices.contains(selection) ? choices : choices + [selection]
+    }
+
+    var body: some View {
+        Group {
+            if options.count == 1 {
+                LabeledContent("Método de pago", value: Self.title(for: selection, paidFrom: account?.subtype))
+            } else {
+                Picker("Método de pago", selection: $selection) {
+                    ForEach(options, id: \.self) { Text(Self.title(for: $0, paidFrom: account?.subtype)).tag($0) }
+                }
+            }
+        }
+        .onChange(of: account?.id) { _, _ in
+            let choices = Self.choices(for: account?.subtype)
+            if !choices.contains(selection), let first = choices.first { selection = first }
+        }
+    }
+}

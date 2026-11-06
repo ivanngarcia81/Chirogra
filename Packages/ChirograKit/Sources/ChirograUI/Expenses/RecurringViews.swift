@@ -322,9 +322,7 @@ struct RecurringTemplateEditorView: View {
                 }
                 PaymentAccountPicker(title: kind == .expense ? String(localized: "Cuenta de pago") : String(localized: "Pagar desde"),
                                      accounts: paymentAccounts, selection: $paymentAccountID)
-                Picker("Método de pago", selection: $method) {
-                    ForEach([PaymentMethod.card, .bankTransfer, .cash, .check], id: \.self) { Text($0.title).tag($0) }
-                }
+                PaymentMethodPicker(account: paymentAccounts.first { $0.id == paymentAccountID }, selection: $method)
                 TextField("Nota (opcional)", text: $memo)
             } header: {
                 SectionLabel(text: String(localized: "Detalles"))

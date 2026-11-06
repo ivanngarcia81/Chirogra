@@ -562,7 +562,7 @@ struct MoreView: View {
 
     var body: some View {
         List {
-            // Pista de una sola vez: Impuestos queda abajo, después de Reportes y Contabilidad.
+            // Pista de una sola vez: Impuestos queda abajo, después de Reportes.
             Section {
                 InlineTip(tip: TaxesTip()) { _ in
                     TaxesTip().invalidate(reason: .actionPerformed)
@@ -582,17 +582,8 @@ struct MoreView: View {
                 }
             }
 
-            Section(title: "Contabilidad") {
-                MoreRow(title: String(localized: "Plan de cuentas"), value: String(localized: "\(accounts.filter { !$0.isArchived }.count) cuentas"),
-                        systemImage: "list.bullet.indent", color: Palette.indigo) { ChartOfAccountsView() }
-                MoreRow(title: String(localized: "Asientos de diario"), value: String(localized: "\(entriesThisMonth) este mes"),
-                        systemImage: "doc.plaintext", color: Palette.blue) { JournalListView() }
-                MoreRow(title: String(localized: "Libro mayor"), value: String(localized: "Por cuenta"),
-                        systemImage: "book.closed", color: Palette.teal) { LedgerAccountPickerView() }
-                MoreRow(title: String(localized: "Cierre de periodo"), value: closeSubtitle,
-                        systemImage: "lock", color: Palette.gray) { PeriodCloseView() }
-            }
-
+            // Impuestos antes que Contabilidad (decisión del usuario, 6-nov): el sales tax es de todos los meses y al
+            // fondo de «Más» no se encontraba.
             Section {
                 MoreRow(title: String(localized: "Resumen"), value: taxSubtitle, valueColor: taxOwed > 0 ? Palette.warning : Palette.ink2,
                         systemImage: "percent", color: Palette.red) { TaxesView() }
@@ -602,6 +593,17 @@ struct MoreView: View {
                 SectionLabel(text: String(localized: "Impuestos"))
             } footer: {
                 Text("Tasas y declaración del sales tax: lo que cobras a tus clientes y le pagas al estado.")
+            }
+
+            Section(title: "Contabilidad") {
+                MoreRow(title: String(localized: "Plan de cuentas"), value: String(localized: "\(accounts.filter { !$0.isArchived }.count) cuentas"),
+                        systemImage: "list.bullet.indent", color: Palette.indigo) { ChartOfAccountsView() }
+                MoreRow(title: String(localized: "Asientos de diario"), value: String(localized: "\(entriesThisMonth) este mes"),
+                        systemImage: "doc.plaintext", color: Palette.blue) { JournalListView() }
+                MoreRow(title: String(localized: "Libro mayor"), value: String(localized: "Por cuenta"),
+                        systemImage: "book.closed", color: Palette.teal) { LedgerAccountPickerView() }
+                MoreRow(title: String(localized: "Cierre de periodo"), value: closeSubtitle,
+                        systemImage: "lock", color: Palette.gray) { PeriodCloseView() }
             }
 
             Section(title: "Ajustes") {

@@ -700,7 +700,8 @@ private struct ExpenseInspector: View {
             }
             MacInspectorRow(String(localized: "Cuenta de pago"), value: accounts.account(expense.paymentAccountID)?.paymentLabel ?? "—")
             MacInspectorRow(String(localized: "Método"),
-                            value: ExpenseEditorView.title(for: PaymentMethod(rawValue: expense.methodRaw) ?? .other))
+                            value: PaymentMethodPicker.title(for: PaymentMethod(rawValue: expense.methodRaw) ?? .other,
+                                                       paidFrom: accounts.account(expense.paymentAccountID)?.subtype))
             if expense.salesTaxIncluded > 0 {
                 MacInspectorRow(String(localized: "Subtotal"), value: expense.subtotalBeforeTax.money)
                 MacInspectorRow(String(localized: "Impuesto incluido"), value: expense.salesTaxIncluded.money)
