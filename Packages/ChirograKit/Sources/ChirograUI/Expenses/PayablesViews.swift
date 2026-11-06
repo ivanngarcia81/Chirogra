@@ -116,6 +116,7 @@ struct SchedulePaymentView: View {
             }
         }
         .formStyle(.grouped)
+        .keyboardDoneButton()
         .screenBackground()
         .navigationTitle(bill.isScheduled ? "Cambiar pago programado" : "Programar pago")
         .inlineTitle()
@@ -216,6 +217,7 @@ struct BatchPayView: View {
             }
         }
         .formStyle(.grouped)
+        .keyboardDoneButton()
         .screenBackground()
         .navigationTitle("Pago en lote")
         .inlineTitle()

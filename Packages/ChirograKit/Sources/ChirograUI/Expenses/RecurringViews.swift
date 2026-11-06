@@ -268,7 +268,6 @@ struct RecurringTemplateEditorView: View {
     @State private var loaded = false
 
     private var isMultiLine: Bool { !extraLines.isEmpty }
-    private var costAccounts: [Account] { accounts.filtered { $0.accountType == .expense || $0 == .fixedAsset || $0 == .otherCurrentAsset } }
     private var paymentAccounts: [Account] { accounts.paymentAccounts }
 
     private var canSave: Bool {
@@ -306,17 +305,16 @@ struct RecurringTemplateEditorView: View {
                     LabeledContent("Importe", value: (extraLines.reduce(0) { $0 + $1.amount }).money)
                     LabeledContent("Categoría", value: String(localized: "Varias categorías"))
                 } else {
-                    LabeledContent("Importe") {
-                        MoneyField(title: String(localized: "Importe"), minorUnits: $amount).multilineTextAlignment(.trailing).labelsHidden()
-                    }
-                    AccountPicker(title: String(localized: "Categoría"), accounts: costAccounts, selection: $categoryID)
+                    MoneyRow(String(localized: "Importe"), minorUnits: $amount)
+                    ExpenseCategoryPicker(title: String(localized: "Categoría"), accounts: accounts, selection: $categoryID)
                 }
-                Picker("Proveedor", selection: $vendorID) {
-                    Text(kind == .bill ? "Elegir…" : "Ninguno").tag(UUID?.none)
-                    ForEach(vendors.filter { !$0.isArchived || $0.id == vendorID }) { Text($0.name).tag(Optional($0.id)) }
-                }
+                VendorPicker(vendors: vendors, selection: $vendorID, noneTitle: kind == .bill ? "Elegir…" : "Ninguno",
+                             proposedName: payee.isEmpty ? name : payee) { use($0) }
                 if kind == .expense {
-                    TextField("Pagado a (comercio o persona)", text: $payee)
+                    // Con un proveedor elegido, cada gasto lleva su nombre: basta con uno de los dos.
+                    if vendorID == nil {
+                        TextField("Pagado a (comercio o persona)", text: $payee)
+                    }
                 } else {
                     Picker("Vence a los", selection: $billTermsDays) {
                         Text("Al recibir").tag(0); Text("15 días").tag(15); Text("30 días").tag(30); Text("60 días").tag(60)
@@ -330,6 +328,10 @@ struct RecurringTemplateEditorView: View {
                 TextField("Nota (opcional)", text: $memo)
             } header: {
                 SectionLabel(text: String(localized: "Detalles"))
+            } footer: {
+                if kind == .expense && vendorID == nil {
+                    Text("Elige un proveedor si le compras a menudo o le pagas facturas; si no, basta con escribir en «Pagado a» a quién le pagas.")
+                }
             }
 
             Section {
@@ -370,6 +372,7 @@ struct RecurringTemplateEditorView: View {
             }
         }
         .formStyle(.grouped)
+        .keyboardDoneButton()
         .screenBackground()
         .navigationTitle(template == nil ? "Nueva recurrente" : "Editar recurrente")
         .inlineTitle()
@@ -379,13 +382,10 @@ struct RecurringTemplateEditorView: View {
                 Button("Guardar", action: save).disabled(!canSave).headerButton()
             }
         }
-        .onChange(of: vendorID) {
-            guard loaded, let vendor = vendors.first(where: { $0.id == vendorID }) else { return }
-            if name.isEmpty { name = vendor.name }
-            if !isMultiLine, categoryID == nil { categoryID = vendor.defaultExpenseAccountID }
-            if kind == .bill { billTermsDays = vendor.paymentTermsDays }
-            if let preferred = vendor.preferredPaymentAccountID { paymentAccountID = preferred }
-            if let preferred = vendor.preferredPaymentMethod { method = preferred }
+        .onChange(of: vendorID) { old, new in
+            // «Nuevo proveedor…» pasa un instante por su etiqueta y vuelve a la de antes: eso no es elegir.
+            guard loaded, old != VendorPicker.newVendorTag, new != VendorPicker.newVendorTag else { return }
+            if let vendor = vendors.first(where: { $0.id == new }) { use(vendor) }
         }
         .onAppear(perform: load)
         .confirmationDialog("¿Borrar esta recurrente?", isPresented: $confirmingDelete, titleVisibility: .visible) {
@@ -393,6 +393,17 @@ struct RecurringTemplateEditorView: View {
         } message: {
             Text("Lo que ya generó se queda en tus libros; solo deja de repetirse.")
         }
+    }
+
+    /// Lo que se toma del proveedor elegido (o recién creado desde el menú). Su nombre sustituye a «Pagado a»,
+    /// que se esconde: cada gasto generado lleva el nombre del proveedor.
+    private func use(_ vendor: Vendor) {
+        payee = ""
+        if name.isEmpty { name = vendor.name }
+        if !isMultiLine, categoryID == nil { categoryID = vendor.defaultExpenseAccountID }
+        if kind == .bill { billTermsDays = vendor.paymentTermsDays }
+        if let preferred = vendor.preferredPaymentAccountID { paymentAccountID = preferred }
+        if let preferred = vendor.preferredPaymentMethod { method = preferred }
     }
 
     private var autoChargeFooter: String {

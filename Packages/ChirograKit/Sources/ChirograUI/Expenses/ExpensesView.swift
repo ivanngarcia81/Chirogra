@@ -648,16 +648,11 @@ struct BillEditorView: View {
     @State private var errorMessage: String?
     @FocusState private var editingDetails: Bool
 
-    private var costAccounts: [Account] { accounts.filtered { $0.accountType == .expense || $0 == .fixedAsset || $0 == .inventory } }
-
     var body: some View {
         Form {
             if let errorMessage { ErrorBanner(message: errorMessage) }
             Section {
-                Picker("Proveedor", selection: $vendorID) {
-                    Text("Elegir…").tag(UUID?.none)
-                    ForEach(vendors.filter { !$0.isArchived || $0.id == vendorID }) { Text($0.name).tag(Optional($0.id)) }
-                }
+                VendorPicker(vendors: vendors, selection: $vendorID, noneTitle: "Elegir…") { use($0) }
                 TextField("Número de la factura del proveedor", text: $number)
                 DatePicker("Fecha", selection: $billDate, displayedComponents: .date)
                 DatePicker("Vence", selection: $dueDate, in: billDate..., displayedComponents: .date)
@@ -665,11 +660,8 @@ struct BillEditorView: View {
                 SectionLabel(text: String(localized: "Factura"))
             }
             Section {
-                LabeledContent("Importe total") {
-                    // Sin su propia etiqueta: en el Mac salía «Importe total Importe total».
-                    MoneyField(title: String(localized: "Importe total"), minorUnits: $amount).multilineTextAlignment(.trailing).labelsHidden()
-                }
-                AccountPicker(title: String(localized: "Categoría"), accounts: costAccounts, selection: $accountID)
+                MoneyRow(String(localized: "Importe total"), minorUnits: $amount)
+                ExpenseCategoryPicker(title: String(localized: "Categoría"), accounts: accounts, selection: $accountID)
                 // Toda la fila da el foco al campo: en el iPad en horizontal, tocar la descripción a veces no lo hacía.
                 TextField("Descripción", text: $details)
                     .focused($editingDetails)
@@ -682,6 +674,7 @@ struct BillEditorView: View {
         }
         // Agrupado también en el Mac: con el estilo por defecto los campos llegaban a los bordes de la hoja.
         .formStyle(.grouped)
+        .keyboardDoneButton()
         .screenBackground()
         .navigationTitle("Factura por pagar")
         .inlineTitle()
@@ -691,11 +684,17 @@ struct BillEditorView: View {
                 Button("Guardar", action: save).disabled(vendorID == nil || amount <= 0 || accountID == nil).headerButton()
             }
         }
-        .onChange(of: vendorID) {
-            guard let vendor = vendors.first(where: { $0.id == vendorID }) else { return }
-            accountID = vendor.defaultExpenseAccountID ?? accountID
-            dueDate = Calendar.current.date(byAdding: .day, value: vendor.paymentTermsDays, to: billDate) ?? dueDate
+        .onChange(of: vendorID) { old, new in
+            // «Nuevo proveedor…» pasa un instante por su etiqueta y vuelve a la de antes: eso no es elegir.
+            guard old != VendorPicker.newVendorTag, let vendor = vendors.first(where: { $0.id == new }) else { return }
+            use(vendor)
         }
+    }
+
+    /// La categoría por defecto y las condiciones del proveedor elegido (o recién creado desde el menú).
+    private func use(_ vendor: Vendor) {
+        accountID = vendor.defaultExpenseAccountID ?? accountID
+        dueDate = Calendar.current.date(byAdding: .day, value: vendor.paymentTermsDays, to: billDate) ?? dueDate
     }
 
     private func save() {
@@ -748,9 +747,7 @@ struct PayBillView: View {
                 SectionLabel(text: String(localized: "Factura"))
             }
             Section {
-                LabeledContent("Monto") {
-                    MoneyField(title: String(localized: "Monto"), minorUnits: $amount).multilineTextAlignment(.trailing).labelsHidden()
-                }
+                MoneyRow(String(localized: "Monto"), minorUnits: $amount)
                 DatePicker("Fecha de pago", selection: $date, displayedComponents: .date)
                 PaymentAccountPicker(title: String(localized: "Pagar desde"), accounts: paymentAccounts, selection: $accountID)
                 Picker("Método", selection: $method) {
@@ -767,6 +764,7 @@ struct PayBillView: View {
             }
         }
         .formStyle(.grouped)
+        .keyboardDoneButton()
         .screenBackground()
         .navigationTitle("Pagar factura")
         .inlineTitle()
@@ -852,6 +850,8 @@ struct VendorRow: View {
 /// (método y cuenta), que es el que se propone al pagarle (canvas `MacProveedorFicha`, docs/DATOS-V2.md §6).
 struct VendorEditorView: View {
     var vendor: Vendor?
+    /// Al crear un proveedor desde el menú «Proveedor» de un gasto o una factura: se llama al guardarlo.
+    var onCreate: ((Vendor) -> Void)?
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     @Environment(\.unsavedChanges) private var unsavedChanges
@@ -874,6 +874,13 @@ struct VendorEditorView: View {
     @State private var preferredAccountID: UUID?
     @State private var errorMessage: String?
 
+    /// `initialName`: nombre propuesto para un proveedor nuevo (lo escrito en «Pagado a»).
+    init(vendor: Vendor? = nil, initialName: String = "", onCreate: ((Vendor) -> Void)? = nil) {
+        self.vendor = vendor
+        self.onCreate = onCreate
+        _name = State(initialValue: vendor == nil ? initialName : "")
+    }
+
     var body: some View {
         Form {
             if let errorMessage { ErrorBanner(message: errorMessage) }
@@ -894,7 +901,7 @@ struct VendorEditorView: View {
                 Picker("Condiciones de pago", selection: $terms) {
                     Text("Al recibir").tag(0); Text("Neto 15").tag(15); Text("Neto 30").tag(30); Text("Neto 60").tag(60)
                 }
-                AccountPicker(title: String(localized: "Categoría por defecto"), accounts: accounts.filtered { $0.accountType == .expense }, selection: $defaultAccountID)
+                ExpenseCategoryPicker(title: String(localized: "Categoría por defecto"), accounts: accounts, selection: $defaultAccountID)
                 Picker("Método preferido", selection: $preferredMethod) {
                     Text("Sin preferencia").tag(PaymentMethod?.none)
                     ForEach(PaymentMethod.billMethods, id: \.self) { Text($0.title).tag(Optional($0)) }
@@ -937,6 +944,7 @@ struct VendorEditorView: View {
             }
         }
         .formStyle(.grouped)
+        .keyboardDoneButton()
         .screenBackground()
         .navigationTitle(vendor == nil ? String(localized: "Nuevo proveedor") : vendor!.name)
         .inlineTitle()
@@ -971,6 +979,7 @@ struct VendorEditorView: View {
             if let w9File {
                 try books.attachW9(w9File.data, filename: w9File.name, contentType: w9File.type, to: target, receivedOn: w9Date)
             }
+            if vendor == nil { onCreate?(target) }
             unsavedChanges?.remove(editorToken); dismiss()
         } catch {
             errorMessage = error.localizedDescription

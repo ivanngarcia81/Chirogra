@@ -4967,6 +4967,26 @@
         }
       }
     },
+    "Compras de equipo y pagos por adelantado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Equipment & prepaid purchases"
+          }
+        }
+      }
+    },
+    "Compras de equipo, inventario y pagos por adelantado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Equipment, inventory & prepaid purchases"
+          }
+        }
+      }
+    },
     "Con borrador" : {
       "localizations" : {
         "en" : {
@@ -7439,6 +7459,26 @@
         }
       }
     },
+    "Elige un proveedor si le compras a menudo o le pagas facturas; si no, basta con escribir en «Pagado a» a quién le pagas." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose a vendor if you buy from them often or pay their bills. Otherwise, just enter who you pay in “Paid to”."
+          }
+        }
+      }
+    },
+    "Elige un proveedor si le compras a menudo o le pagas facturas; si no, basta con escribir en «Pagado a» a quién le pagaste." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose a vendor if you buy from them often or pay their bills. Otherwise, just enter who you paid in “Paid to”."
+          }
+        }
+      }
+    },
     "Elige una cuenta" : {
       "localizations" : {
         "en" : {
@@ -9300,6 +9340,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Operating expenses"
+          }
+        }
+      }
+    },
+    "Gastos y costos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Expenses & costs"
           }
         }
       }
@@ -12536,6 +12586,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "New vendor"
+          }
+        }
+      }
+    },
+    "Nuevo proveedor…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New vendor…"
           }
         }
       }
