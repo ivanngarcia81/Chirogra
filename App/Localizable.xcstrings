@@ -179,6 +179,16 @@
         }
       }
     },
+    "%@ es la tasa predeterminada en facturas nuevas. Si tu ciudad o condado cobra más, elige «Nueva tasa» y escribe solo su parte: la sumamos a esta." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ is the default rate on new invoices. If your city or county charges more, choose “New rate” and enter just its part: we’ll add it to this one."
+          }
+        }
+      }
+    },
     "%@ esta semana" : {
       "localizations" : {
         "en" : {
@@ -543,6 +553,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ · balances as of %@"
+          }
+        }
+      }
+    },
+    "%@ · según libros" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · per books"
           }
         }
       }
@@ -2074,6 +2094,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "60 days"
+          }
+        }
+      }
+    },
+    "A quién le declaras y pagas esta tasa. En muchos estados, como Texas, la agencia del estado cobra también las tasas locales." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Who you file and pay this rate to. In many states, such as Texas, the state agency also collects the local rates."
           }
         }
       }
@@ -4635,6 +4665,16 @@
         }
       }
     },
+    "Ciudad o condado (p. ej. Austin)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "City or county (e.g. Austin)"
+          }
+        }
+      }
+    },
     "Cliente" : {
       "localizations" : {
         "en" : {
@@ -5645,16 +5685,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Created on %@"
-          }
-        }
-      }
-    },
-    "Creamos la tasa estatal de %@ (%@) como impuesto de tus facturas. Añade la de tu ciudad o condado en Impuestos. Revisa que las tasas sean las correctas para tu negocio." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "We'll create the %@ state rate (%@) as your invoices' tax. Add your city or county rate in Taxes. Check that the rates are right for your business."
           }
         }
       }
@@ -7249,16 +7279,6 @@
         }
       }
     },
-    "El porcentaje lo publica tu estado; si cobras también el del condado o la ciudad, súmalos o añade cada uno." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Your state publishes the percentage; if you also collect county or city tax, add them up or add each one."
-          }
-        }
-      }
-    },
     "El reporte no tiene movimientos todavía." : {
       "localizations" : {
         "en" : {
@@ -8010,6 +8030,16 @@
         }
       }
     },
+    "Escribe el porcentaje que cobras. Si cobras varias tasas (estado, condado, ciudad), puedes poner el total o crear una por cada una y juntarlas en un grupo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter the percentage you charge. If you charge several rates (state, county, city), you can enter the total or create one for each and combine them in a group."
+          }
+        }
+      }
+    },
     "Escribe las tasas de tu estado, condado y ciudad. Chirogra no determina qué es gravable: consúltalo con tu agencia o tu contador." : {
       "localizations" : {
         "en" : {
@@ -8036,6 +8066,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Enter debit and credit amounts"
+          }
+        }
+      }
+    },
+    "Escribe solo la parte de tu ciudad, condado o distrito (en Austin, 2%). Si no la sabes, búscala con tu dirección en la web de impuestos de tu estado." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter only your city, county or district part (in Austin, 2%). If you don’t know it, look it up with your address on your state’s tax website."
           }
         }
       }
@@ -9554,6 +9594,16 @@
         }
       }
     },
+    "Grupo creado: %@ %@%%" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Group created: %@ %@%%"
+          }
+        }
+      }
+    },
     "Grupos (lo que se aplica en la factura)" : {
       "localizations" : {
         "en" : {
@@ -10792,6 +10842,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "The rate needs a name."
+          }
+        }
+      }
+    },
+    "La tasa necesita una agencia." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The rate needs an agency."
           }
         }
       }
@@ -13938,16 +13998,6 @@
         }
       }
     },
-    "Podrás cambiarla en Impuestos." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "You can change it in Taxes."
-          }
-        }
-      }
-    },
     "Podrás empezar con tu empresa desde Ajustes › iCloud, copias y seguridad." : {
       "localizations" : {
         "en" : {
@@ -14226,6 +14276,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Percentage"
+          }
+        }
+      }
+    },
+    "Porcentaje (p. ej. 2)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Percentage (e.g. 2)"
           }
         }
       }
@@ -17090,6 +17150,16 @@
         }
       }
     },
+    "Sin movimientos todavía" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No activity yet"
+          }
+        }
+      }
+    },
     "Sin notas todavía" : {
       "localizations" : {
         "en" : {
@@ -17501,6 +17571,16 @@
         }
       }
     },
+    "Sumar a %@ (%@) y usarla en las facturas nuevas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add to %@ (%@) and use it on new invoices"
+          }
+        }
+      }
+    },
     "Suscribirme" : {
       "localizations" : {
         "en" : {
@@ -17667,6 +17747,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Combined rate · %@"
+          }
+        }
+      }
+    },
+    "Tasa creada: %@ %@%%" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rate created: %@ %@%%"
           }
         }
       }
@@ -17862,12 +17952,12 @@
         }
       }
     },
-    "Tipo de entidad" : {
+    "Tipo de empresa" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Entity type"
+            "value" : "Business type"
           }
         }
       }
@@ -18401,6 +18491,96 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Your details appear on your invoices; change them in Settings."
+          }
+        }
+      }
+    },
+    "Tus facturas cobran %@ (%@). Si no es la tasa de tu dirección, cámbiala en Impuestos." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your invoices charge %@ (%@). If that’s not the rate for your address, change it in Taxes."
+          }
+        }
+      }
+    },
+    "Tus facturas cobran %@ (%@). Si tu ciudad o condado cobra más, abre Impuestos y elige «Nueva tasa»: la sumamos a esta." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your invoices charge %@ (%@). If your city or county charges more, open Taxes and choose “New rate”: we’ll add it to this one."
+          }
+        }
+      }
+    },
+    "Tus facturas cobrarán la tasa estatal de %@ (%@). Si tu ciudad o condado cobra más, añade su parte en Impuestos › Nueva tasa y la sumamos. Revisa que las tasas sean las de tu negocio." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your invoices will charge the %@ state rate (%@). If your city or county charges more, add its part in Taxes › New Rate and we’ll add it up. Check that the rates are right for your business."
+          }
+        }
+      }
+    },
+    "Tus facturas nuevas cobrarán %@ (%@ %@ + %@ %@). Las juntamos en el grupo «%@», que verás en Impuestos." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your new invoices will charge %@ (%@ %@ + %@ %@). We combine them in the group “%@”, which you’ll see in Taxes."
+          }
+        }
+      }
+    },
+    "Tus facturas nuevas cobrarán %@ más esta tasa." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your new invoices will charge %@ plus this rate."
+          }
+        }
+      }
+    },
+    "Tus facturas nuevas cobrarán %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your new invoices will charge %@."
+          }
+        }
+      }
+    },
+    "Tus facturas nuevas cobrarán esta tasa." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your new invoices will charge this rate."
+          }
+        }
+      }
+    },
+    "Tus facturas nuevas seguirán cobrando %@ (%@). Podrás elegir esta tasa en cada factura." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your new invoices will keep charging %@ (%@). You can choose this rate on each invoice."
+          }
+        }
+      }
+    },
+    "Tus facturas nuevas seguirán sin impuesto. Podrás elegir esta tasa en cada factura." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your new invoices will stay without tax. You can choose this rate on each invoice."
           }
         }
       }

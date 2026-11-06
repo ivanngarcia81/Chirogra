@@ -254,7 +254,7 @@ struct CompanyProfileView: View {
             Section {
                 SettingsField(title: "Nombre comercial", text: $company.displayName, prompt: "Obligatorio")
                 SettingsField(title: "Razón social", text: $company.legalName, prompt: "Obligatorio")
-                Picker("Tipo de entidad", selection: $company.entityTypeRaw) {
+                Picker("Tipo de empresa", selection: $company.entityTypeRaw) {
                     ForEach(EntityType.allCases, id: \.self) { Text($0.title).tag($0.rawValue) }
                 }
                 SettingsField(title: "ID fiscal (EIN)", text: $company.ein)
