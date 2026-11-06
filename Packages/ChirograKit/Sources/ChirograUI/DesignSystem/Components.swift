@@ -507,7 +507,7 @@ extension Invoice {
         if daysOverdue() != nil { return String(localized: "Vencida") }
         return switch status {
         case .draft: String(localized: "Borrador")
-        case .sent: String(localized: "Enviada")
+        case .sent: sentStatusTitle
         case .partiallyPaid: String(localized: "Pago parcial")
         case .paid: String(localized: "Pagada")
         case .void: String(localized: "Anulada")
@@ -515,8 +515,16 @@ extension Invoice {
     }
 }
 
+extension Invoice {
+    /// Estado `.sent`: «Enviada» solo si se mandó desde la app (hay un envío anotado); si no, «Emitida». Antes salía
+    /// «Enviada» nada más emitirla, aunque nunca se hubiera mandado (recorrido «cliente nuevo», 5-nov).
+    var sentStatusTitle: String {
+        lastSentDate == nil ? String(localized: "Emitida") : String(localized: "Enviada")
+    }
+}
+
 extension StatusChip {
-    /// Estados de factura del canvas (`Ventas`): Borrador (gris), Enviada (azul), Pago parcial (naranja),
+    /// Estados de factura del canvas (`Ventas`): Borrador (gris), Emitida o Enviada (azul), Pago parcial (naranja),
     /// Vencida · N días (rojo), Pagada (verde) y Anulada (gris).
     init(invoice: Invoice, compact: Bool = true) {
         if let days = invoice.daysOverdue() {
@@ -526,7 +534,7 @@ extension StatusChip {
         }
         switch invoice.status {
         case .draft: self.init(text: String(localized: "Borrador"), foreground: Palette.ink2, background: Palette.surface2, compact: compact, dot: Palette.gray)
-        case .sent: self.init(text: String(localized: "Enviada"), foreground: Palette.ink2, background: Palette.surface2, compact: compact, dot: Palette.blue)
+        case .sent: self.init(text: invoice.sentStatusTitle, foreground: Palette.ink2, background: Palette.surface2, compact: compact, dot: Palette.blue)
         case .partiallyPaid: self.init(text: String(localized: "Pago parcial"), foreground: Palette.warning, background: Palette.warningWash, compact: compact, dot: Palette.orange)
         case .paid: self.init(text: String(localized: "Pagada"), foreground: Palette.positive, background: Palette.positiveWash, compact: compact, dot: Palette.green)
         case .void: self.init(text: String(localized: "Anulada"), foreground: Palette.ink2, background: Palette.surface2, compact: compact, dot: Palette.gray)
@@ -1274,6 +1282,201 @@ struct EmptyStateView: View {
                 Button(actionTitle, action: action).buttonStyle(.primaryCompact)
             }
         }
+        // En el detalle ancho del iPad, el texto en una columna que se lee de un vistazo.
+        .frame(maxWidth: 560)
+    }
+}
+
+extension EmptyStateView {
+    /// La primera vez que una sección está vacía: qué es, para qué te sirve y el botón para empezar (`EmptyGuide`).
+    /// Sin `action`, sin botón (p. ej. si el «+» abre algo que esta vista no puede abrir).
+    init(guide: EmptyGuide, action: (() -> Void)? = nil) {
+        var guarded: (() -> Void)?
+        if let action { guarded = { SubscriptionStore.shared.whenWritable(action) } }
+        self.init(systemImage: guide.systemImage, title: guide.title, message: guide.message,
+                  actionTitle: action == nil ? nil : guide.actionTitle, action: guarded)
+    }
+}
+
+/// Textos de las secciones vacías (build 4: «la app no te explica a simple vista lo que tienes que hacer»). Los usan
+/// el iPhone (`EmptyStateView(guide:)`), la columna de detalle del iPad (`MasterPlaceholder`) y las tablas del Mac
+/// (`MacTableEmpty(guide:)`), para que digan lo mismo en los tres. De tú, sin jerga: qué es la sección en una frase y
+/// para qué te sirve en otra.
+enum EmptyGuide: CaseIterable {
+    case invoices, customers, estimates, expenses, recurring, vendors, bills, banking, journal
+
+    var systemImage: String {
+        switch self {
+        case .invoices: "doc.text"
+        case .customers: "person.2"
+        case .estimates: "list.clipboard"
+        case .expenses: "wallet.bifold"
+        case .recurring: "arrow.trianglehead.2.clockwise"
+        case .vendors: "shippingbox"
+        case .bills: "doc.text"
+        case .banking: "building.columns"
+        case .journal: "doc.plaintext"
+        }
+    }
+
+    var title: String {
+        switch self {
+        case .invoices: String(localized: "Aún no tienes facturas")
+        case .customers: String(localized: "Aún no tienes clientes")
+        case .estimates: String(localized: "Aún no tienes estimados")
+        case .expenses: String(localized: "Aún no tienes gastos")
+        case .recurring: String(localized: "Aún no tienes recurrentes")
+        case .vendors: String(localized: "Aún no tienes proveedores")
+        case .bills: String(localized: "Aún no tienes facturas por pagar")
+        case .banking: String(localized: "Aún no tienes cuentas de banco")
+        case .journal: String(localized: "Aún no hay asientos")
+        }
+    }
+
+    /// Qué es la sección.
+    var what: String {
+        switch self {
+        case .invoices: String(localized: "Una factura es lo que le mandas a tu cliente para cobrarle un trabajo o una venta.")
+        case .customers: String(localized: "Aquí guardas a las personas y empresas a las que les vendes.")
+        case .estimates: String(localized: "Un estimado es un presupuesto: le dices al cliente cuánto costará antes de empezar.")
+        case .expenses: String(localized: "Aquí anotas lo que pagas para el negocio: materiales, renta, gasolina, software…")
+        case .recurring: String(localized: "Una recurrente es un gasto que se repite: la renta, el seguro, una suscripción.")
+        case .vendors: String(localized: "Tus proveedores son quienes te venden a ti: la tienda de materiales, el casero, tu contador.")
+        case .bills: String(localized: "Aquí van las facturas que te mandan tus proveedores y que pagarás más adelante.")
+        case .banking: String(localized: "Aquí ves el dinero de cada cuenta del negocio: el banco, el ahorro y la tarjeta.")
+        case .journal: String(localized: "Un asiento es el registro contable de un movimiento. Chirogra los hace solo cuando facturas, cobras o anotas un gasto.")
+        }
+    }
+
+    /// Para qué te sirve.
+    var why: String {
+        switch self {
+        case .invoices: String(localized: "Chirogra te avisa cuando vence y anota el cobro cuando te pagan.")
+        case .customers: String(localized: "Con sus datos guardados, facturar es elegir un nombre, y ves de un vistazo quién te debe.")
+        case .estimates: String(localized: "Cuando lo acepte, lo conviertes en factura sin volver a escribir nada.")
+        case .expenses: String(localized: "Así sabes cuánto ganas de verdad y tienes los recibos a mano para los impuestos.")
+        case .recurring: String(localized: "Chirogra la registra por ti cada vez que toca; tú solo la revisas.")
+        case .vendors: String(localized: "Con ellos guardados, anotar un gasto es más rápido y sabes cuánto le pagas a cada uno (también para el 1099).")
+        case .bills: String(localized: "Chirogra te dice qué vence y cuándo, para que no se te pase ninguna.")
+        case .banking: String(localized: "El saldo sale de lo que registras: cobros, gastos y pagos.")
+        case .journal: String(localized: "Solo necesitas uno a mano para cosas como poner dinero de tu bolsillo en el negocio.")
+        }
+    }
+
+    var message: String { "\(what) \(why)" }
+
+    /// El botón para empezar.
+    var actionTitle: String {
+        switch self {
+        case .invoices: String(localized: "Crear mi primera factura")
+        case .customers: String(localized: "Añadir mi primer cliente")
+        case .estimates: String(localized: "Crear mi primer estimado")
+        case .expenses: String(localized: "Anotar mi primer gasto")
+        case .recurring: String(localized: "Crear una recurrente")
+        case .vendors: String(localized: "Añadir mi primer proveedor")
+        case .bills: String(localized: "Anotar una factura por pagar")
+        case .banking: String(localized: "Añadir una cuenta")
+        case .journal: String(localized: "Registrar un movimiento")
+        }
+    }
+}
+
+// MARK: - Ayuda de palabras
+
+/// Palabras de contabilidad que no todo el mundo conoce, con su explicación en una o dos frases llanas (`TermHelp`).
+enum Jargon: CaseIterable {
+    case debitCredit, taxable, ownersEquity, combinedRate, bookBalance
+
+    var term: String {
+        switch self {
+        case .debitCredit: String(localized: "Débito y crédito")
+        case .taxable: String(localized: "Gravable")
+        case .ownersEquity: String(localized: "Capital del dueño")
+        case .combinedRate: String(localized: "Tasa combinada")
+        case .bookBalance: String(localized: "Saldo en libros")
+        }
+    }
+
+    #if DEBUG
+    var qaKey: String {
+        switch self {
+        case .debitCredit: "debitoCredito"
+        case .taxable: "gravable"
+        case .ownersEquity: "capital"
+        case .combinedRate: "combinada"
+        case .bookBalance: "saldo"
+        }
+    }
+    #endif
+
+    var explanation: String {
+        switch self {
+        case .debitCredit:
+            String(localized: "Cada movimiento se anota dos veces: el débito es a dónde va el dinero y el crédito, de dónde sale. Por eso los dos totales tienen que ser iguales.")
+        case .taxable:
+            String(localized: "Gravable quiere decir que esa línea paga sales tax. Márcala «sin impuesto» si lo que vendes está exento, como algunos servicios.")
+        case .ownersEquity:
+            String(localized: "Es el dinero que tú has puesto en el negocio. No es un ingreso: es tuyo, y por eso no paga impuestos como una venta.")
+        case .combinedRate:
+            String(localized: "La suma de las tasas que cobras juntas en una venta: la del estado, la del condado y la de la ciudad.")
+        case .bookBalance:
+            String(localized: "Lo que hay en la cuenta según lo que has registrado en Chirogra. Puede no ser igual al banco si falta algún movimiento por anotar.")
+        }
+    }
+}
+
+/// Botón ⓘ junto a una palabra difícil: al tocarlo, un globo con la explicación (`Jargon`). En el iPhone también es
+/// un globo, no una hoja. VoiceOver lo lee como «Qué es <palabra>», botón.
+struct TermHelp: View {
+    let jargon: Jargon
+    /// Con la palabra junto al ⓘ («ⓘ Tasa combinada»), para ponerlo donde la palabra no está escrita.
+    var showsTerm = false
+    @State private var showing = false
+    @ScaledMetric(relativeTo: .body) private var width: CGFloat = 300
+
+    init(_ jargon: Jargon, showsTerm: Bool = false) {
+        self.jargon = jargon
+        self.showsTerm = showsTerm
+    }
+
+    var body: some View {
+        Button { showing = true } label: {
+            HStack(spacing: 4) {
+                Image(systemName: "info.circle")
+                if showsTerm { Text(jargon.term).font(.footnote) }
+            }
+            .foregroundStyle(Palette.brand)
+            #if os(iOS)
+            .frame(minWidth: Metrics.target, minHeight: Metrics.target)
+            #else
+            .frame(minWidth: 18, minHeight: 18)
+            #endif
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(Text("Qué es «\(jargon.term)»"))
+        .help(jargon.explanation)
+        #if DEBUG
+        // `-qa.ayuda debitoCredito|gravable|capital|combinada|saldo` (solo Debug): abre ese ⓘ al aparecer (capturas).
+        .task {
+            if UserDefaults.standard.string(forKey: "qa.ayuda") == jargon.qaKey {
+                try? await Task.sleep(for: .seconds(1))
+                showing = true
+            }
+        }
+        #endif
+        .popover(isPresented: $showing) {
+            VStack(alignment: .leading, spacing: 6) {
+                Text(jargon.term).font(.headline).foregroundStyle(Palette.ink).accessibilityAddTraits(.isHeader)
+                Text(jargon.explanation).font(.subheadline).foregroundStyle(Palette.ink2)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(16)
+            .frame(width: width, alignment: .leading)
+            #if os(iOS)
+            .presentationCompactAdaptation(.popover)
+            #endif
+        }
     }
 }
 
@@ -1304,11 +1507,13 @@ struct LogoMark: View {
 struct MoneyField: View {
     let title: String
     @Binding var minorUnits: Int64
+    /// Guía del campo vacío; por defecto «$0.00». La línea de la factura pone «Precio» para no confundirlo con el importe.
+    var prompt: String? = nil
 
     var body: some View {
         // Con cero, el campo va vacío y «$0.00» es solo la guía: si el texto era «$0.00», lo escrito se pegaba detrás
         // («$0.00500» → $0.01, 2-nov).
-        TextField(title, value: decimal, format: .currency(code: "USD"), prompt: Text(Int64(0).money))
+        TextField(title, value: decimal, format: .currency(code: "USD"), prompt: Text(prompt ?? Int64(0).money))
             .monospacedDigit()
             #if os(iOS)
             .keyboardType(.decimalPad)
@@ -1349,5 +1554,34 @@ struct ErrorBanner: View {
             .padding(12)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(Palette.negativeWash, in: RoundedRectangle(cornerRadius: Metrics.fieldRadius, style: .continuous))
+    }
+}
+
+// MARK: - Teclado
+
+public extension View {
+    /// «Listo» sobre el teclado y cerrar el teclado al desplazar (iOS). El teclado numérico y el decimal no tienen
+    /// tecla para cerrarse: sin esto tapan los campos y botones de debajo (recorrido «cliente nuevo», 5-nov).
+    /// Ponerlo en el `Form`/`ScrollView` de cada pantalla con campos de importe o porcentaje. En el Mac no hace nada.
+    func keyboardDoneButton() -> some View {
+        modifier(KeyboardDoneButton())
+    }
+}
+
+private struct KeyboardDoneButton: ViewModifier {
+    func body(content: Content) -> some View {
+        #if os(iOS)
+        content
+            .scrollDismissesKeyboard(.interactively)
+            .toolbar {
+                ToolbarItem(placement: .keyboard) {
+                    Button("Listo") {
+                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                    }
+                }
+            }
+        #else
+        content
+        #endif
     }
 }

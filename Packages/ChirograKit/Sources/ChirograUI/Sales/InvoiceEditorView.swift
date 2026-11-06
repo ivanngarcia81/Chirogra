@@ -46,7 +46,10 @@ struct InvoiceEditorView: View {
     @Query(sort: \Customer.name) private var customers: [Customer]
     @Query(sort: \Account.code) private var accounts: [Account]
     @Query(sort: \TaxGroup.name) private var taxGroups: [TaxGroup]
+    @Query(sort: \TaxRate.name) private var taxRates: [TaxRate]
     @Query private var companies: [Company]
+    /// «Añadir tasa…» del menú de impuesto (sin ninguna tasa todavía): abre el editor de tasa de Impuestos.
+    @State private var addingTaxRate = false
 
     @State private var customerID: UUID?
     @State private var issueDate = Date()
@@ -82,6 +85,10 @@ struct InvoiceEditorView: View {
     @State private var skipCustomerDefaults = false
     /// Teclado a la vista (iPhone): la barra de abajo se oculta para no tapar la línea que se edita.
     @State private var keyboardShown = false
+    /// Factura recién emitida: se ofrece enviarla antes de cerrar (`offerToSendIssued`).
+    @State private var justIssued: Invoice?
+    /// Corregir una emitida con fecha en un periodo cerrado: se repite con los libros desbloqueados.
+    @State private var closedPeriodRetry: ClosedPeriodRetry?
     /// Ancho del editor (iOS). En la hoja del iPad la clase de tamaño ya es compacta aunque mida 760–980 pt, así que el
     /// diseño ancho se elige por el ancho; `nil` hasta medirlo.
     @State private var width: CGFloat?
@@ -89,6 +96,8 @@ struct InvoiceEditorView: View {
     private var books: Bookkeeper { Bookkeeper(context: context) }
     private var customer: Customer? { customers.first { $0.id == customerID } }
     private var isEstimate: Bool { if case .estimate = mode { true } else { false } }
+    /// Se corrige una factura ya emitida (sin cobros ni créditos): guardar revierte su asiento y registra uno nuevo.
+    private var isEditingIssued: Bool { !isEstimate && (editing.map { $0.status != .draft } ?? false) }
     private var editingEstimate: Estimate? { if case .estimate(let estimate) = mode { estimate } else { nil } }
     private var includesTax: Bool { pricesIncludeTax ?? companies.first?.pricesIncludeTax ?? false }
     private var incomeAccounts: [Account] { accounts.filtered { $0.accountType == .income } }
@@ -118,16 +127,39 @@ struct InvoiceEditorView: View {
 
     private var editorTitle: String {
         if isEstimate { return editingEstimate == nil ? String(localized: "Nuevo estimado") : String(localized: "Editar estimado") }
+        if isEditingIssued { return String(localized: "Editar factura") }
         return editing == nil ? String(localized: "Nueva factura") : String(localized: "Editar borrador")
     }
 
     /// «Emitir factura» o «Guardar estimado».
-    private var primaryTitle: String { isEstimate ? String(localized: "Guardar estimado") : String(localized: "Emitir factura") }
+    private var primaryTitle: String {
+        if isEditingIssued { return String(localized: "Guardar cambios") }
+        return isEstimate ? String(localized: "Guardar estimado") : String(localized: "Emitir factura")
+    }
 
     private var ledgerNote: String {
-        isEstimate
+        if isEditingIssued {
+            return String(localized: "Si solo cambias el vencimiento, el mensaje o las descripciones, no se registra ningún asiento.")
+        }
+        return isEstimate
             ? String(localized: "Un estimado no registra nada en la contabilidad. Al convertirlo en factura se crea un borrador.")
             : String(localized: "Al emitirla se registra el asiento contable: débito a cuentas por cobrar, crédito a ingresos y sales tax.")
+    }
+
+    /// Aviso de arriba al corregir una emitida (como el de los gastos contabilizados).
+    private var issuedNoticeText: String {
+        String(localized: "Esta factura ya está en tus libros. Al guardar, Chirogra revierte su asiento y registra uno nuevo con los cambios; conserva el número \(editing?.number ?? "") y la edición queda en su actividad.")
+    }
+
+    private var issuedNotice: some View {
+        Label {
+            Text(issuedNoticeText)
+                .font(.subheadline)
+                .fixedSize(horizontal: false, vertical: true)
+        } icon: {
+            Image(systemName: "arrow.uturn.backward.circle").foregroundStyle(Palette.info)
+        }
+        .foregroundStyle(Palette.ink)
     }
 
     private var hasChanges: Bool { hasNewDraft || (baseline.map { $0 != signature } ?? false) }
@@ -186,8 +218,8 @@ struct InvoiceEditorView: View {
                 if isWide {
                     Button(primaryTitle, action: primaryAction).disabled(!canIssue)
                 } else {
-                    Button("Guardar", action: saveDraft).disabled(customerID == nil)
-                        .accessibilityLabel(isEstimate ? "Guardar estimado" : "Guardar borrador")
+                    Button("Guardar", action: saveDraft).disabled(isEditingIssued ? !canIssue : customerID == nil)
+                        .accessibilityLabel(isEditingIssued ? "Guardar cambios" : isEstimate ? "Guardar estimado" : "Guardar borrador")
                 }
             }
             #else
@@ -196,19 +228,22 @@ struct InvoiceEditorView: View {
             if !isWide {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(action: saveDraft) {
-                        Label(isEstimate ? "Guardar estimado" : "Guardar borrador", systemImage: "checkmark").labelStyle(.iconOnly)
+                        Label(isEditingIssued ? "Guardar cambios" : isEstimate ? "Guardar estimado" : "Guardar borrador",
+                              systemImage: "checkmark").labelStyle(.iconOnly)
                     }
-                    .disabled(customerID == nil)
+                    .disabled(isEditingIssued ? !canIssue : customerID == nil)
                     .headerButton()
                 }
             } else {
                 // En la hoja ancha, «Guardar borrador» va en el contenido, como en el Mac: con cuatro botones en la
                 // barra, «×» se iba al menú de desbordamiento.
                 // `MacFacturaNueva`: «Vista previa» y la acción principal arriba, junto al título.
-                ToolbarItem(placement: .primaryAction) {
-                    Button("Vista previa", action: showPreview).disabled(!canIssue).headerButton()
+                if !isEditingIssued {
+                    ToolbarItem(placement: .primaryAction) {
+                        Button("Vista previa", action: showPreview).disabled(!canIssue).headerButton()
+                    }
+                    ToolbarSpacer(.fixed, placement: .primaryAction)
                 }
-                ToolbarSpacer(.fixed, placement: .primaryAction)
                 ToolbarItem(placement: .primaryAction) {
                     Button(primaryTitle, action: primaryAction).disabled(!canIssue).headerButton()
                 }
@@ -231,6 +266,13 @@ struct InvoiceEditorView: View {
         // que guardó la vista previa).
         .reportsUnsavedChanges(hasChanges, token: editorToken, onDiscard: deleteSavedDraft)
         #if DEBUG
+        // `-qa.tasaNueva 1`: sin ninguna tasa, abre «Añadir tasa…» del menú de impuesto (en el Mac el menú no se captura).
+        .task {
+            if UserDefaults.standard.bool(forKey: "qa.tasaNueva"), hasNoTaxRates {
+                try? await Task.sleep(for: .seconds(1))
+                addingTaxRate = true
+            }
+        }
         // `-qa.impuestoIncluido 1`: activa «Precios con impuesto incluido» en la empresa (su interruptor está en Impuestos).
         .task {
             if UserDefaults.standard.bool(forKey: "qa.impuestoIncluido"), let company = companies.first, !company.pricesIncludeTax {
@@ -264,6 +306,9 @@ struct InvoiceEditorView: View {
         .sheet(isPresented: $showingNewCustomer) {
             NavigationStack { CustomerEditorView { customerID = $0.id } }.editorSheetSizing()
         }
+        // Tras «Emitir factura», «Factura F-1001 emitida · Enviar a…»; al terminar se cierra el editor.
+        .offerToSendIssued($justIssued) { dismiss() }
+        .closedPeriodUnlock($closedPeriodRetry) { errorMessage = $0 }
     }
 
     // MARK: Términos
@@ -322,15 +367,56 @@ struct InvoiceEditorView: View {
             ?? (try? books.peekDocumentNumber(.invoice)) ?? "—"
     }
 
+    /// Tasas que no van en ningún grupo: también se pueden elegir solas (p. ej. la que se crea desde aquí).
+    private var looseTaxRates: [TaxRate] {
+        let grouped = Set(taxGroups.filter { !$0.isArchived }.flatMap { ($0.rates ?? []).map(\.id) })
+        return taxRates.filter { !$0.isArchived && !grouped.contains($0.id) }
+    }
+
+    /// La empresa no tiene ninguna tasa: el menú ofrece «Añadir tasa…».
+    private var hasNoTaxRates: Bool { taxGroups.allSatisfy(\.isArchived) && taxRates.allSatisfy(\.isArchived) }
+
+    /// Etiqueta de «Añadir tasa…» en el menú (no es una tasa: al elegirla se abre el editor y el menú no cambia).
+    private static let addTaxRateTag = UUID(uuidString: "00000000-0000-0000-0000-00000000A0DD")!
+
+    private var taxSelection: Binding<UUID?> {
+        Binding(get: { taxGroupID }, set: { id in
+            if id == Self.addTaxRateTag { addingTaxRate = true } else { taxGroupID = id }
+        })
+    }
+
     private var taxPicker: some View {
         // «Impuesto» y no «Impuesto sobre ventas»: así etiqueta y grupo caben en una línea, como en el canvas.
-        Picker("Impuesto", selection: $taxGroupID) {
+        Picker("Impuesto", selection: taxSelection) {
             Text("Sin impuesto").tag(UUID?.none)
             ForEach(taxGroups.filter { !$0.isArchived }) { group in
                 Text("\(group.name) · \(group.percent.formatted())%").tag(Optional(group.id))
             }
+            ForEach(looseTaxRates) { rate in
+                Text("\(rate.name) · \(rate.percent.formatted())%").tag(Optional(rate.id))
+            }
+            if hasNoTaxRates {
+                Divider()
+                Text("Añadir tasa…").tag(Optional(Self.addTaxRateTag))
+            }
         }
         .accessibilityLabel("Impuesto sobre ventas")
+        .sheet(isPresented: $addingTaxRate) {
+            NavigationStack { TaxRateEditorView { taxGroupID = $0.id } }.editorSheetSizing()
+        }
+    }
+
+    /// La factura sale sin sales tax (sin tasa elegida, cliente exento o ninguna línea gravable): se dice bajo los totales.
+    private var carriesNoTax: Bool {
+        taxGroupID == nil || (customer?.isTaxExempt ?? false) || (!validLines.isEmpty && (preview?.totalTax ?? 0) == 0)
+    }
+
+    private var noTaxNote: String {
+        if customer?.isTaxExempt ?? false { return String(localized: "El cliente está exento: esta factura no lleva impuesto.") }
+        if taxGroupID == nil && hasNoTaxRates {
+            return String(localized: "Esta factura no lleva impuesto. Si cobras sales tax, elige «Añadir tasa…» en Impuesto.")
+        }
+        return String(localized: "Esta factura no lleva impuesto.")
     }
 
     private func incomeAccountName(_ id: UUID?) -> String {
@@ -344,6 +430,7 @@ struct InvoiceEditorView: View {
             if let errorMessage {
                 Section { ErrorBanner(message: errorMessage) }.listRowBackground(Color.clear).listRowInsets(EdgeInsets())
             }
+            if isEditingIssued { Section { issuedNotice } }
 
             // Tarjeta del cliente con monograma y correo; al tocarla se elige otro o se crea uno.
             Section {
@@ -424,7 +511,9 @@ struct InvoiceEditorView: View {
                     Text("Total").fontWeight(.semibold)
                 }
             } footer: {
-                if includesTax {
+                if carriesNoTax {
+                    Text(noTaxNote)
+                } else if includesTax {
                     Text("Los precios ya incluyen el sales tax: el total es el subtotal menos el descuento.")
                 }
             }
@@ -443,19 +532,13 @@ struct InvoiceEditorView: View {
         }
         .formStyle(.grouped)
         .screenBackground()
-        .scrollDismissesKeyboard(.interactively)
+        // El teclado lleva «Listo» y se cierra al desplazar.
+        .keyboardDoneButton()
         #if os(iOS)
         // Con el teclado a la vista la barra de abajo tapaba la línea que se edita (el precio, con el teclado numérico,
-        // que no tiene tecla para cerrarse): se oculta y el teclado lleva «Listo».
+        // que no tiene tecla para cerrarse): se oculta mientras se escribe.
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in keyboardShown = true }
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in keyboardShown = false }
-        .toolbar {
-            ToolbarItem(placement: .keyboard) {
-                Button("Listo") {
-                    UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-                }
-            }
-        }
         #endif
         .modifier(HiddenWhile(hidden: keyboardShown) { bottomBar })
     }
@@ -473,11 +556,16 @@ struct InvoiceEditorView: View {
             .padding(.leading, 14)
             .accessibilityElement(children: .combine)
             if dynamicTypeSize.isAccessibilitySize {
-                Button("Vista previa", action: showPreview).buttonStyle(.secondary).disabled(!canIssue)
+                if !isEditingIssued {
+                    Button("Vista previa", action: showPreview).buttonStyle(.secondary).disabled(!canIssue)
+                }
                 Button(primaryTitle, action: primaryAction).buttonStyle(.primary).disabled(!canIssue)
             } else {
-                Button("Vista previa", action: showPreview).buttonStyle(FillCapsuleButtonStyle(fullWidth: false)).disabled(!canIssue)
-                Button(action: primaryAction) { Text(isEstimate ? "Guardar" : "Emitir") }
+                // La vista previa sale del PDF guardado: al corregir una emitida mostraría la versión de antes.
+                if !isEditingIssued {
+                    Button("Vista previa", action: showPreview).buttonStyle(FillCapsuleButtonStyle(fullWidth: false)).disabled(!canIssue)
+                }
+                Button(action: primaryAction) { Text(isEstimate || isEditingIssued ? "Guardar" : "Emitir") }
                     .buttonStyle(.primaryCompact)
                     .accessibilityLabel(primaryTitle)
                     .disabled(!canIssue)
@@ -546,11 +634,16 @@ struct InvoiceEditorView: View {
 
     private func priceAndTax(_ line: Binding<LineDraft>) -> some View {
         HStack(spacing: 6) {
-            // Con área de toque de 44 pt: el importe en `.footnote` medía 36 × 17 pt.
-            MoneyField(title: String(localized: "Precio"), minorUnits: line.unitPrice)
-                .foregroundStyle(Palette.ink2)
+            // El precio en su caja, con «Precio» de guía mientras está vacío: con solo «$0.00» en gris no se distinguía
+            // del importe de la línea (a la derecha) ni se veía que se podía escribir (recorrido «cliente nuevo», 5-nov).
+            // Con una etiqueta delante ya no cabía la cantidad en la misma fila. Área de toque de 44 pt.
+            MoneyField(title: String(localized: "Precio"), minorUnits: line.unitPrice, prompt: String(localized: "Precio"))
+                .foregroundStyle(Palette.ink)
                 .fixedSize()
-                .frame(minWidth: 56, minHeight: Metrics.target, alignment: .leading)
+                .padding(.horizontal, 8)
+                .frame(minWidth: 64, minHeight: 30)
+                .background(Palette.surface2, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                .frame(minHeight: Metrics.target)
                 .contentShape(Rectangle())
             Text(verbatim: "·").foregroundStyle(Palette.ink2).accessibilityHidden(true)
             Button(line.wrappedValue.isTaxable ? String(localized: "Gravable") : String(localized: "Sin impuesto")) {
@@ -560,6 +653,7 @@ struct InvoiceEditorView: View {
             .foregroundStyle(Palette.brand)
             .accessibilityLabel("Gravable")
             .accessibilityValue(line.wrappedValue.isTaxable ? Text("Sí") : Text("No"))
+            TermHelp(.taxable)
         }
         .font(.footnote)
     }
@@ -593,6 +687,12 @@ struct InvoiceEditorView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 if let errorMessage { ErrorBanner(message: errorMessage) }
+                if isEditingIssued {
+                    issuedNotice
+                        .padding(12)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .card(padding: 0)
+                }
                 ViewThatFits(in: .horizontal) {
                     HStack(alignment: .top, spacing: 16) {
                         customerBox.frame(minWidth: 320, maxWidth: .infinity)
@@ -610,21 +710,23 @@ struct InvoiceEditorView: View {
                 }
                 Text(ledgerNote)
                     .font(.footnote).foregroundStyle(Palette.ink2)
-                HStack(spacing: 10) {
-                    #if os(macOS)
-                    Button("Vista previa", action: showPreview).disabled(!canIssue)
-                    #endif
-                    if !isEstimate {
-                        Button("Guardar borrador", action: saveDraft).disabled(customerID == nil)
+                if !isEditingIssued {
+                    HStack(spacing: 10) {
+                        #if os(macOS)
+                        Button("Vista previa", action: showPreview).disabled(!canIssue)
+                        #endif
+                        if !isEstimate {
+                            Button("Guardar borrador", action: saveDraft).disabled(customerID == nil)
+                        }
                     }
+                    .buttonStyle(.secondary).fixedSize()
                 }
-                .buttonStyle(.secondary).fixedSize()
             }
             .padding(.horizontal, Metrics.gutter)
             .padding(.vertical, 12)
             .frame(maxWidth: 980, alignment: .leading)
         }
-        .scrollDismissesKeyboard(.interactively)
+        .keyboardDoneButton()
         .background(Palette.background)
     }
 
@@ -739,7 +841,11 @@ struct InvoiceEditorView: View {
                 Text("Producto o servicio").frame(minWidth: 140, maxWidth: .infinity, alignment: .leading)
                 Text("Cant.").frame(width: Self.quantityColumn, alignment: .trailing)
                 Text("Precio").frame(width: amountColumn, alignment: .trailing)
-                Text("Impuesto").frame(width: Self.taxColumn, alignment: .leading)
+                HStack(spacing: 0) {
+                    Text("Impuesto")
+                    TermHelp(.taxable).font(.footnote)
+                }
+                .frame(width: Self.taxColumn, alignment: .leading)
                 Text("Importe").frame(width: amountColumn, alignment: .trailing)
                 Color.clear.frame(width: 24, height: 1)
             } rows: {
@@ -838,6 +944,12 @@ struct InvoiceEditorView: View {
                 .padding(.horizontal, 12)
                 .padding(.vertical, 10)
                 .accessibilityElement(children: .combine)
+                if carriesNoTax {
+                    Text(noTaxNote).font(.footnote).foregroundStyle(Palette.ink2)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 12).padding(.bottom, 10)
+                }
             }
         }
     }
@@ -918,7 +1030,7 @@ struct InvoiceEditorView: View {
 
     /// «Emitir factura» o «Guardar estimado».
     private func primaryAction() {
-        if isEstimate { saveDraft() } else { issue() }
+        if isEditingIssued { saveIssuedChanges() } else if isEstimate { saveDraft() } else { issue() }
     }
 
     /// Guarda (o reescribe) el borrador con lo que hay ahora en pantalla.
@@ -961,6 +1073,7 @@ struct InvoiceEditorView: View {
     }
 
     private func saveDraft() {
+        if isEditingIssued { saveIssuedChanges(); return }
         do {
             if isEstimate { try persistEstimate() } else { try persistDraft() }
             close()
@@ -971,6 +1084,7 @@ struct InvoiceEditorView: View {
 
     /// La vista previa sale del PDF real, así que primero se guarda el borrador (o el estimado).
     private func showPreview() {
+        guard !isEditingIssued else { return }
         do {
             if isEstimate { previewingEstimate = try persistEstimate() } else { previewing = try persistDraft() }
         } catch {
@@ -981,10 +1095,33 @@ struct InvoiceEditorView: View {
     private func issue() {
         do {
             // Si un intento anterior falló, el borrador se reescribe con las correcciones antes de emitir.
-            try books.issue(try persistDraft())
-            close()
+            let invoice = try persistDraft()
+            try books.issue(invoice)
+            errorMessage = nil
+            // Ya no hay nada sin guardar; el editor se cierra al responder «Factura … emitida».
+            unsavedChanges?.remove(editorToken)
+            justIssued = invoice
         } catch {
             errorMessage = error.localizedDescription
+        }
+    }
+
+    /// Corrige la factura emitida (`Bookkeeper.updateIssuedInvoice`); en un periodo cerrado pide desbloquear.
+    private func saveIssuedChanges() {
+        guard let invoice = editing else { return }
+        let input = self.input
+        do {
+            try books.updateIssuedInvoice(invoice, with: input)
+            close()
+        } catch {
+            if let lockDate = PeriodClosing.lockDate(of: error) {
+                closedPeriodRetry = ClosedPeriodRetry(lockDate: lockDate) { unlocked in
+                    try unlocked.updateIssuedInvoice(invoice, with: input)
+                    close()
+                }
+            } else {
+                errorMessage = error.localizedDescription
+            }
         }
     }
 }

@@ -115,13 +115,7 @@ struct CustomerListView: View {
     @ViewBuilder
     private var emptyState: some View {
         if active.isEmpty {
-            ContentUnavailableView {
-                Label("Sin clientes todavía", systemImage: "person.2")
-            } description: {
-                Text("Añade tu primer cliente con el botón +.")
-            } actions: {
-                Button("Nuevo cliente", action: onCreate).buttonStyle(.primaryCompact)
-            }
+            EmptyStateView(guide: .customers, action: onCreate)
         } else if !trimmedQuery.isEmpty {
             // Canvas `Clientes`: «Ningún cliente coincide · ¿Quieres crear «…» como cliente nuevo?».
             ContentUnavailableView {
@@ -1089,6 +1083,7 @@ struct CustomerRefundView: View {
         }
         .formStyle(.grouped)
         .screenBackground()
+        .keyboardDoneButton()
         .navigationTitle("Reembolso")
         .inlineTitle()
         .discardableEditor(tracking: "\(amount)|\(date)|\(accountID?.uuidString ?? "")", token: editorToken)

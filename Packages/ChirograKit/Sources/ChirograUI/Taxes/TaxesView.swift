@@ -112,10 +112,16 @@ struct TaxesView: View {
         .sheet(isPresented: $showingGroup) { NavigationStack { TaxGroupEditorView() }.editorSheetSizing() }
         .sheet(item: $editingRate) { rate in NavigationStack { TaxRateEditorView(rate: rate) }.editorSheetSizing() }
         #if DEBUG
-        // `-qa.tasa N` abre «Editar tasa» de la tasa N (orden de la tabla, sin los grupos); solo Debug.
+        // `-qa.tasa N` abre «Editar tasa» de la tasa N (orden de la tabla, sin los grupos); `-qa.tasa nueva` y
+        // `-qa.tasa grupo`, «Nueva tasa» y «Nuevo grupo». Solo Debug.
         .task {
             guard UserDefaults.standard.object(forKey: "qa.tasa") != nil else { return }
             try? await Task.sleep(for: .seconds(1))
+            switch UserDefaults.standard.string(forKey: "qa.tasa") {
+            case "nueva": showingRate = true; return
+            case "grupo": showingGroup = true; return
+            default: break
+            }
             let rates = agencies.flatMap { ($0.rates ?? []).filter { !$0.isArchived } }
             let index = UserDefaults.standard.integer(forKey: "qa.tasa")
             if rates.indices.contains(index) { editingRate = rates[index] }
@@ -320,7 +326,11 @@ struct TaxesView: View {
     @ViewBuilder
     private var ratesTab: some View {
         if let errorMessage { ErrorBanner(message: errorMessage).padding(.top, 12) }
-        groupLabel(String(localized: "Tasas de impuesto"))
+        HStack(alignment: .lastTextBaseline) {
+            groupLabel(String(localized: "Tasas de impuesto"))
+            Spacer(minLength: 8)
+            TermHelp(.combinedRate, showsTerm: true).padding(.trailing, Metrics.gutter - 12)
+        }
         RowGroup {
             ForEach(groups.filter { !$0.isArchived }) { group in
                 let kind = String(localized: "Combinada · \((group.rates ?? []).count) tasas")
@@ -347,8 +357,12 @@ struct TaxesView: View {
             linkRow(String(localized: "Nuevo grupo"), "square.stack") { showingGroup = true }
                 .disabled(agencies.flatMap { $0.rates ?? [] }.isEmpty)
         }
-        footer(defaultTaxName.map { String(localized: "\($0) es la tasa predeterminada en facturas nuevas.") }
-               ?? String(localized: "Escribe las tasas de tu estado, condado y ciudad. Chirogra no determina qué es gravable: consúltalo con tu agencia o tu contador."))
+        footer(defaultTaxName.map { name in
+            groups.contains { $0.id == defaultTaxID }
+                ? String(localized: "\(name) es la tasa predeterminada en facturas nuevas.")
+                // Solo la tasa estatal del alta: cómo sumar la local en un paso.
+                : String(localized: "\(name) es la tasa predeterminada en facturas nuevas. Si tu ciudad o condado cobra más, elige «Nueva tasa» y escribe solo su parte: la sumamos a esta.")
+        } ?? String(localized: "Escribe las tasas de tu estado, condado y ciudad. Chirogra no determina qué es gravable: consúltalo con tu agencia o tu contador."))
 
         if let company {
             groupLabel(String(localized: "Facturas nuevas"))
@@ -477,6 +491,7 @@ struct TaxesView: View {
         return VStack(alignment: .leading, spacing: 6) {
             HStack(alignment: .firstTextBaseline) {
                 Text("Tasas por jurisdicción").font(.cardTitle).accessibilityAddTraits(.isHeader)
+                TermHelp(.combinedRate, showsTerm: true)
                 Spacer(minLength: 8)
                 Text("\(activeGroups.count + rates.count) tasas").font(.subheadline).foregroundStyle(Palette.ink2)
             }
@@ -827,45 +842,59 @@ extension SalesTaxPosition {
     }
 }
 
-/// Alta o edición de una tasa (canvas `MacImpuestos`, «Editar tasa…»): agencia, nombre y porcentaje. Al editar pasa por
+/// Alta o edición de una tasa (canvas `MacImpuestos`, «Editar tasa…»): nombre, porcentaje y agencia. Al editar pasa por
 /// `Bookkeeper.updateTaxRate`: las facturas ya emitidas guardan su impuesto y no cambian; los borradores toman la tasa
 /// nueva al emitirse.
+///
+/// Una tasa nueva pasa por `Bookkeeper.addTaxRate` y, en un paso, decide qué cobran las facturas nuevas (recorrido
+/// «cliente nuevo», 5-nov: antes hacían falta tres pantallas para cobrar el 8.25 % de Austin): si ya hay un impuesto
+/// predeterminado (la tasa estatal del alta), «Sumar a Texas (6.25 %)…» viene encendido y al guardar crea el grupo
+/// combinado («Austin, TX» 8.25 %) y lo deja como predeterminado; sin predeterminado, «Usarla en las facturas nuevas».
+/// El pie dice lo que cobrarán las facturas. La agencia viene elegida (la del predeterminado o la del estado).
+/// Se usa también desde la factura («Añadir tasa…», `onSaved`), que solo la ofrece cuando no hay ninguna tasa.
 struct TaxRateEditorView: View {
     /// Tasa que se edita; `nil` para una nueva.
     let rate: TaxRate?
+    /// Tras guardar una tasa nueva (la factura la deja elegida, build 4).
+    var onSaved: ((TaxRate) -> Void)? = nil
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     @Environment(\.unsavedChanges) private var unsavedChanges
     /// Testigo del editor en `UnsavedChanges`: se retira al guardar, antes de cerrar.
     @State private var editorToken = EditorToken()
     @Query(sort: \TaxAgency.name) private var agencies: [TaxAgency]
+    @Query private var companies: [Company]
+    /// Para que el predeterminado (`defaultCode`) se recalcule si cambian las tasas o los grupos.
+    @Query private var allRates: [TaxRate]
+    @Query private var allGroups: [TaxGroup]
 
     @State private var agencyID: UUID?
+    /// La agencia ya se preeligió al abrir (una vez).
+    @State private var agencyPreset = false
+    /// Sumarla al predeterminado (o, sin él, usarla sola) en las facturas nuevas.
+    @State private var useOnNewInvoices = true
     @State private var newAgencyName = ""
     @State private var name: String
-    @State private var percent: Decimal
+    /// Vacío al crear: el campo muestra su marcador en vez de un «0».
+    @State private var percent: Decimal?
     @State private var errorMessage: String?
 
-    init(rate: TaxRate? = nil) {
+    init(rate: TaxRate? = nil, onSaved: ((TaxRate) -> Void)? = nil) {
         self.rate = rate
+        self.onSaved = onSaved
         _agencyID = State(initialValue: rate?.agency?.id)
         _name = State(initialValue: rate?.name ?? "")
-        _percent = State(initialValue: rate?.percent ?? 0)
+        _percent = State(initialValue: rate?.percent)
     }
 
     var body: some View {
         Form {
             if let errorMessage { ErrorBanner(message: errorMessage) }
-            Section(title: "Agencia") {
-                Picker("Agencia", selection: $agencyID) {
-                    Text("Nueva agencia…").tag(UUID?.none)
-                    ForEach(agencies) { Text($0.name).tag(Optional($0.id)) }
-                }
-                if agencyID == nil { TextField("Nombre (p. ej. Texas Comptroller)", text: $newAgencyName) }
-            }
             Section {
-                TextField("Nombre (p. ej. Travis County)", text: $name)
-                TextField("Porcentaje", value: $percent, format: .number.precision(.fractionLength(0...4)))
+                TextField("Nombre", text: $name, prompt: Text(rate == nil && defaultCode != nil ? "Ciudad o condado (p. ej. Austin)" : "Nombre (p. ej. Travis County)"))
+                    .accessibilityLabel(Text("Nombre"))
+                TextField("Porcentaje", value: $percent, format: .number.precision(.fractionLength(0...4)), prompt: Text("Porcentaje (p. ej. 2)"))
+                    .accessibilityLabel(Text("Porcentaje"))
                     #if os(iOS)
                     .keyboardType(.decimalPad)
                     #endif
@@ -875,41 +904,145 @@ struct TaxRateEditorView: View {
                 if rate != nil {
                     Label("Las facturas ya emitidas conservan su impuesto y no cambian. Los borradores y las facturas nuevas usarán la tasa nueva.",
                           systemImage: "info.circle")
+                } else if defaultCode != nil {
+                    Text("Escribe solo la parte de tu ciudad, condado o distrito (en Austin, 2%). Si no la sabes, búscala con tu dirección en la web de impuestos de tu estado.")
+                } else {
+                    Text("Escribe el porcentaje que cobras. Si cobras varias tasas (estado, condado, ciudad), puedes poner el total o crear una por cada una y juntarlas en un grupo.")
+                }
+            }
+            if rate == nil { useSection }
+            Section {
+                Picker("Agencia", selection: $agencyID) {
+                    ForEach(agencies) { Text($0.name).tag(Optional($0.id)) }
+                    Text("Nueva agencia…").tag(UUID?.none)
+                }
+                if agencyID == nil {
+                    TextField("Nombre de la agencia", text: $newAgencyName, prompt: Text("Nombre (p. ej. Texas Comptroller)"))
+                        .accessibilityLabel(Text("Nombre de la agencia"))
+                }
+            } header: {
+                SectionLabel(text: String(localized: "Agencia"))
+            } footer: {
+                if rate == nil {
+                    Text("A quién le declaras y pagas esta tasa. En muchos estados, como Texas, la agencia del estado cobra también las tasas locales.")
                 }
             }
         }
         .formStyle(.grouped)
+        .keyboardDoneButton()
         .screenBackground()
         .navigationTitle(rate == nil ? "Nueva tasa" : "Editar tasa")
         .inlineTitle()
-        .discardableEditor(tracking: "\(agencyID?.uuidString ?? "")|\(newAgencyName)|\(name)|\(percent)", token: editorToken)
+        .onAppear(perform: presetAgency)
+        .discardableEditor(tracking: "\(agencyID?.uuidString ?? "")|\(newAgencyName)|\(name)|\(percent.map { "\($0)" } ?? "")|\(useOnNewInvoices)",
+                           token: editorToken)
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
                 Button("Guardar", action: save)
-                    .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty || percent <= 0 || percent > 100
-                              || (agencyID == nil && newAgencyName.trimmingCharacters(in: .whitespaces).isEmpty))
+                    .disabled(!canSave)
                     .headerButton()
             }
         }
     }
 
+    // MARK: Qué cobran las facturas nuevas
+
+    /// Impuesto predeterminado de la empresa (la tasa estatal del alta, o un grupo).
+    private var defaultCode: TaxCodeSummary? {
+        _ = (allRates.count, allGroups.count, companies.first?.defaultTaxGroupID)
+        return try? Bookkeeper(context: context).defaultTaxCode()
+    }
+
+    /// Porcentaje escrito en millonésimas, si es válido (más de 0 y hasta 100).
+    private var millionths: Int64? {
+        guard let percent, percent > 0, percent <= 100 else { return nil }
+        return TaxComponent.millionths(fromPercent: percent)
+    }
+
+    private var canSave: Bool {
+        !name.trimmingCharacters(in: .whitespaces).isEmpty && millionths != nil
+            && !(agencyID == nil && newAgencyName.trimmingCharacters(in: .whitespaces).isEmpty)
+    }
+
+    @ViewBuilder
+    private var useSection: some View {
+        let base = defaultCode
+        let title = base.map {
+            String(localized: "Sumar a \($0.name) (\(StateTaxNote.percent($0.rateMillionths))) y usarla en las facturas nuevas")
+        } ?? String(localized: "Usarla en las facturas nuevas")
+        Section {
+            // El texto a la izquierda y el interruptor a su derecha (con la etiqueta larga, el `Toggle` bajaba el
+            // interruptor a otra línea); tocar el texto también lo cambia.
+            HStack(spacing: 12) {
+                Text(title).foregroundStyle(Palette.ink)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .contentShape(Rectangle())
+                    .onTapGesture { useOnNewInvoices.toggle() }
+                    .accessibilityHidden(true)
+                Toggle(title, isOn: $useOnNewInvoices)
+                    .labelsHidden()
+                    .toggleStyle(.switch)
+                    .tint(Palette.green)
+            }
+            .frame(minHeight: Metrics.target)
+        } footer: {
+            Text(useFooter(base))
+        }
+    }
+
+    /// «Tus facturas nuevas cobrarán 8.25 %…»: lo que cobrarán según el interruptor y el porcentaje escrito.
+    private func useFooter(_ base: TaxCodeSummary?) -> String {
+        let local = name.trimmingCharacters(in: .whitespaces)
+        guard useOnNewInvoices else {
+            if let base {
+                return String(localized: "Tus facturas nuevas seguirán cobrando \(StateTaxNote.percent(base.rateMillionths)) (\(base.name)). Podrás elegir esta tasa en cada factura.")
+            }
+            return String(localized: "Tus facturas nuevas seguirán sin impuesto. Podrás elegir esta tasa en cada factura.")
+        }
+        guard let base else {
+            guard let millionths else { return String(localized: "Tus facturas nuevas cobrarán esta tasa.") }
+            return String(localized: "Tus facturas nuevas cobrarán \(StateTaxNote.percent(millionths)).")
+        }
+        guard let millionths else {
+            return String(localized: "Tus facturas nuevas cobrarán \(StateTaxNote.percent(base.rateMillionths)) más esta tasa.")
+        }
+        let total = StateTaxNote.percent(base.rateMillionths + millionths)
+        guard !local.isEmpty else { return String(localized: "Tus facturas nuevas cobrarán \(total).") }
+        let group = Bookkeeper(context: context).combinedTaxName(base: base, adding: local, state: companies.first?.state ?? "")
+        return String(localized: "Tus facturas nuevas cobrarán \(total) (\(base.name) \(StateTaxNote.percent(base.rateMillionths)) + \(local) \(StateTaxNote.percent(millionths))). Las juntamos en el grupo «\(group)», que verás en Impuestos.")
+    }
+
+    /// Una tasa nueva viene con la agencia ya elegida: la del impuesto predeterminado, la del estado o la primera.
+    private func presetAgency() {
+        guard rate == nil, !agencyPreset else { return }
+        agencyPreset = true
+        let stateAgency = StateSalesTax.forState(companies.first?.state ?? "")?.agency
+        agencyID = defaultCode?.rates.first?.agency?.id
+            ?? agencies.first { $0.name == stateAgency && !$0.isArchived }?.id
+            ?? agencies.first { !$0.isArchived }?.id
+    }
+
     private func save() {
         do {
+            guard let millionths else { return }
             let books = Bookkeeper(context: context)
-            let agency: TaxAgency
-            if let existing = agencies.first(where: { $0.id == agencyID }) {
-                agency = existing
-            } else {
-                let liability = try books.systemAccount(.salesTaxPayable)
-                agency = TaxAgency(name: newAgencyName.trimmingCharacters(in: .whitespaces), liabilityAccountID: liability.id)
-                context.insert(agency)
-            }
-            let millionths = TaxComponent.millionths(fromPercent: percent)
+            let agency = agencies.first { $0.id == agencyID }
             if let rate {
-                try books.updateTaxRate(rate, name: name, agency: agency, rateMillionths: millionths)
+                let owner: TaxAgency
+                if let agency {
+                    owner = agency
+                } else {
+                    let liability = try books.systemAccount(.salesTaxPayable)
+                    owner = TaxAgency(name: newAgencyName.trimmingCharacters(in: .whitespaces), liabilityAccountID: liability.id)
+                    context.insert(owner)
+                }
+                try books.updateTaxRate(rate, name: name, agency: owner, rateMillionths: millionths)
             } else {
-                context.insert(TaxRate(name: name.trimmingCharacters(in: .whitespaces), rateMillionths: millionths, agency: agency))
-                try context.save()
+                let use: NewTaxRateUse = useOnNewInvoices ? .addToDefault : .keep
+                let created = try books.addTaxRate(name: name, rateMillionths: millionths, agency: agency,
+                                                   newAgencyName: newAgencyName, use: use)
+                onSaved?(created.rate)
             }
             unsavedChanges?.remove(editorToken); dismiss()
         } catch {
@@ -918,6 +1051,7 @@ struct TaxRateEditorView: View {
     }
 }
 
+/// Grupo de tasas (tasa combinada): nombre y las tasas que suma. Tocar la fila entera enciende o apaga la tasa.
 struct TaxGroupEditorView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
@@ -933,16 +1067,33 @@ struct TaxGroupEditorView: View {
             TextField("Nombre (p. ej. Austin, TX)", text: $name)
             Section(title: "Tasas incluidas") {
                 ForEach(rates.filter { !$0.isArchived }) { rate in
-                    Toggle(isOn: Binding(get: { selected.contains(rate.id) },
-                                         set: { if $0 { selected.insert(rate.id) } else { selected.remove(rate.id) } })) {
-                        LabeledContent(rate.name, value: "\(rate.percent.formatted())%")
+                    // Tocar la fila entera enciende o apaga la tasa (antes solo respondía el interruptor).
+                    HStack(spacing: 12) {
+                        HStack(spacing: 8) {
+                            Text(rate.name).foregroundStyle(Palette.ink)
+                            Text("\(rate.percent.formatted())%").foregroundStyle(Palette.ink2).monospacedDigit()
+                        }
+                        .frame(maxWidth: .infinity, minHeight: Metrics.target, alignment: .leading)
+                        .contentShape(Rectangle())
+                        .onTapGesture { toggle(rate.id) }
+                        .accessibilityHidden(true)
+                        Toggle(isOn: binding(for: rate.id)) { Text(verbatim: "\(rate.name), \(rate.percent.formatted())%") }
+                            .labelsHidden()
+                            .toggleStyle(.switch)
                     }
                 }
             }
-            LabeledContent("Tasa combinada",
-                           value: String(localized: "\((Decimal(rates.filter { selected.contains($0.id) }.reduce(0) { $0 + $1.rateMillionths }) / 10_000).formatted())%"))
+            LabeledContent {
+                Text("\((Decimal(rates.filter { selected.contains($0.id) }.reduce(0) { $0 + $1.rateMillionths }) / 10_000).formatted())%")
+            } label: {
+                HStack(spacing: 0) {
+                    Text("Tasa combinada")
+                    TermHelp(.combinedRate)
+                }
+            }
         }
         .formStyle(.grouped)
+        .keyboardDoneButton()
         .screenBackground()
         .navigationTitle("Nuevo grupo")
         .inlineTitle()
@@ -958,6 +1109,14 @@ struct TaxGroupEditorView: View {
                 .headerButton()
             }
         }
+    }
+
+    private func binding(for id: UUID) -> Binding<Bool> {
+        Binding(get: { selected.contains(id) }, set: { if $0 { selected.insert(id) } else { selected.remove(id) } })
+    }
+
+    private func toggle(_ id: UUID) {
+        if selected.contains(id) { selected.remove(id) } else { selected.insert(id) }
     }
 }
 

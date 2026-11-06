@@ -57,6 +57,17 @@ struct MacTableEmpty {
     let message: String
     var actionTitle: String? = nil
     var action: (() -> Void)? = nil
+    /// La guía de una sección vacía: el botón para empezar va como botón principal.
+    var isGuide = false
+}
+
+extension MacTableEmpty {
+    /// Sección vacía (empresa nueva): qué es, para qué sirve y el botón para empezar (`EmptyGuide`), igual que en el
+    /// iPhone y el iPad.
+    init(guide: EmptyGuide, action: (() -> Void)?) {
+        self.init(systemImage: guide.systemImage, title: guide.title, message: guide.message,
+                  actionTitle: action == nil ? nil : guide.actionTitle, action: action, isGuide: true)
+    }
 }
 
 /// Página de tabla del Mac (canvas `MacVentas` y siguientes): título y subtítulo de la ventana, búsqueda y «+» en la
@@ -236,9 +247,14 @@ where Value: Identifiable, Value.ID == UUID,
             Text(empty.message)
         } actions: {
             if let title = empty.actionTitle, let action = empty.action {
-                Button(title, action: action).buttonStyle(.bordered).buttonBorderShape(.capsule)
+                if empty.isGuide {
+                    Button(title) { SubscriptionStore.shared.whenWritable(action) }.buttonStyle(.primaryCompact)
+                } else {
+                    Button(title, action: action).buttonStyle(.bordered).buttonBorderShape(.capsule)
+                }
             }
         }
+        .frame(maxWidth: 520)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Palette.background)
     }

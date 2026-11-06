@@ -18,6 +18,9 @@ public struct InvoiceDraftInput {
             self.isTaxable = isTaxable
             self.incomeAccountID = incomeAccountID
         }
+
+        /// Cantidad × precio, redondeado a centavos (como `InvoiceLine.amount`).
+        public var amount: Int64 { Money(decimal: quantity * Money(minorUnits: unitPrice).decimalValue).minorUnits }
     }
 
     public var customer: Customer?

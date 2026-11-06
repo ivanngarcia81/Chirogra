@@ -2,6 +2,7 @@ import ChirograCore
 import ChirograData
 import SwiftData
 import SwiftUI
+import TipKit
 import UniformTypeIdentifiers
 
 /// Gastos (canvas `Gastos`): gastos pagados, facturas por pagar y recurrentes con el segmentado, y los proveedores
@@ -50,10 +51,10 @@ struct ExpensesView: View {
     var body: some View {
         Group {
             switch segment {
-            case .expenses: ExpenseListView(section: picker) { selectedSegment = .bills }
-            case .bills: BillListView(section: picker)
+            case .expenses: ExpenseListView(section: picker, showBills: { selectedSegment = .bills }) { showingEditor = true }
+            case .bills: BillListView(section: picker) { showingEditor = true }
             case .recurring: RecurringListView(section: picker)
-            case .vendors: VendorListView()
+            case .vendors: VendorListView { showingEditor = true }
             }
         }
         .navigationTitle(title)
@@ -156,6 +157,8 @@ struct ExpenseListView: View {
     var section: Binding<ExpensesView.Segment>? = nil
     /// Abre «Por pagar» desde la fila de esta semana.
     var showBills: () -> Void = {}
+    /// «Anotar mi primer gasto» del estado vacío (el «+» de `ExpensesView`).
+    var onCreate: (() -> Void)? = nil
     @Query(sort: \Expense.date, order: .reverse) private var expenses: [Expense]
     @Query(sort: \Account.code) private var accounts: [Account]
     @Query(sort: \Bill.dueDate) private var bills: [Bill]
@@ -179,7 +182,20 @@ struct ExpenseListView: View {
         let shown = posted.filter(filter.includes)
         List {
             if let errorMessage { ErrorBanner(message: errorMessage).listRowBackground(Color.clear).listRowInsets(EdgeInsets()) }
-            if let section { ExpensesSegmentRow(selection: section) }
+            if let section {
+                ExpensesSegmentRow(selection: section)
+                #if os(iOS)
+                // Recurrentes: cuando ya hay algún gasto, una vez (abre la sección).
+                Section {
+                    InlineTip(tip: RecurringTip()) { _ in
+                        RecurringTip().invalidate(reason: .actionPerformed)
+                        section.wrappedValue = .recurring
+                    }
+                }
+                .listRowBackground(Color.clear)
+                .listRowInsets(EdgeInsets())
+                #endif
+            }
 
             Section {
                 monthCard
@@ -213,8 +229,7 @@ struct ExpenseListView: View {
 
             Section {
                 if expenses.isEmpty {
-                    EmptyStateView(systemImage: "wallet.bifold", title: String(localized: "Sin gastos todavía"),
-                                   message: String(localized: "Registra un gasto con el botón + y adjunta el recibo."))
+                    EmptyStateView(guide: .expenses, action: onCreate)
                 } else if shown.isEmpty {
                     EmptyStateView(systemImage: "line.3.horizontal.decrease.circle", title: String(localized: "Sin resultados"),
                                    message: String(localized: "Ningún gasto coincide con el filtro."),
@@ -232,6 +247,7 @@ struct ExpenseListView: View {
         }
         .groupedList()
         .screenBackground()
+        .task(id: expenses.isEmpty) { RecurringTip.hasExpenses = !expenses.isEmpty }
     }
 
     private func record(_ expense: Expense) {
@@ -453,6 +469,8 @@ extension Date {
 /// al modo de selección para pagar varias en lote (canvas `MacPorPagar`), con la barra «Pagar $X» al pie.
 struct BillListView: View {
     var section: Binding<ExpensesView.Segment>? = nil
+    /// «Anotar una factura por pagar» del estado vacío (el «+» de `ExpensesView`).
+    var onCreate: (() -> Void)? = nil
     @Query(sort: \Bill.dueDate) private var bills: [Bill]
     @Query(sort: \Account.code) private var accounts: [Account]
     @State private var paying: Bill?
@@ -494,8 +512,7 @@ struct BillListView: View {
             if let section, !isSelecting { ExpensesSegmentRow(selection: section) }
             if bills.isEmpty {
                 Section {
-                    EmptyStateView(systemImage: "doc.text", title: String(localized: "Sin facturas por pagar"),
-                                   message: String(localized: "Registra las facturas de tus proveedores para saber qué vence y cuándo."))
+                    EmptyStateView(guide: .bills, action: onCreate)
                 }
             }
             ForEach(groups) { group in
@@ -631,16 +648,11 @@ struct BillEditorView: View {
     @State private var errorMessage: String?
     @FocusState private var editingDetails: Bool
 
-    private var costAccounts: [Account] { accounts.filtered { $0.accountType == .expense || $0 == .fixedAsset || $0 == .inventory } }
-
     var body: some View {
         Form {
             if let errorMessage { ErrorBanner(message: errorMessage) }
             Section {
-                Picker("Proveedor", selection: $vendorID) {
-                    Text("Elegir…").tag(UUID?.none)
-                    ForEach(vendors.filter { !$0.isArchived || $0.id == vendorID }) { Text($0.name).tag(Optional($0.id)) }
-                }
+                VendorPicker(vendors: vendors, selection: $vendorID, noneTitle: "Elegir…") { use($0) }
                 TextField("Número de la factura del proveedor", text: $number)
                 DatePicker("Fecha", selection: $billDate, displayedComponents: .date)
                 DatePicker("Vence", selection: $dueDate, in: billDate..., displayedComponents: .date)
@@ -648,11 +660,8 @@ struct BillEditorView: View {
                 SectionLabel(text: String(localized: "Factura"))
             }
             Section {
-                LabeledContent("Importe total") {
-                    // Sin su propia etiqueta: en el Mac salía «Importe total Importe total».
-                    MoneyField(title: String(localized: "Importe total"), minorUnits: $amount).multilineTextAlignment(.trailing).labelsHidden()
-                }
-                AccountPicker(title: String(localized: "Categoría"), accounts: costAccounts, selection: $accountID)
+                MoneyRow(String(localized: "Importe total"), minorUnits: $amount)
+                ExpenseCategoryPicker(title: String(localized: "Categoría"), accounts: accounts, selection: $accountID)
                 // Toda la fila da el foco al campo: en el iPad en horizontal, tocar la descripción a veces no lo hacía.
                 TextField("Descripción", text: $details)
                     .focused($editingDetails)
@@ -665,6 +674,7 @@ struct BillEditorView: View {
         }
         // Agrupado también en el Mac: con el estilo por defecto los campos llegaban a los bordes de la hoja.
         .formStyle(.grouped)
+        .keyboardDoneButton()
         .screenBackground()
         .navigationTitle("Factura por pagar")
         .inlineTitle()
@@ -674,11 +684,17 @@ struct BillEditorView: View {
                 Button("Guardar", action: save).disabled(vendorID == nil || amount <= 0 || accountID == nil).headerButton()
             }
         }
-        .onChange(of: vendorID) {
-            guard let vendor = vendors.first(where: { $0.id == vendorID }) else { return }
-            accountID = vendor.defaultExpenseAccountID ?? accountID
-            dueDate = Calendar.current.date(byAdding: .day, value: vendor.paymentTermsDays, to: billDate) ?? dueDate
+        .onChange(of: vendorID) { old, new in
+            // «Nuevo proveedor…» pasa un instante por su etiqueta y vuelve a la de antes: eso no es elegir.
+            guard old != VendorPicker.newVendorTag, let vendor = vendors.first(where: { $0.id == new }) else { return }
+            use(vendor)
         }
+    }
+
+    /// La categoría por defecto y las condiciones del proveedor elegido (o recién creado desde el menú).
+    private func use(_ vendor: Vendor) {
+        accountID = vendor.defaultExpenseAccountID ?? accountID
+        dueDate = Calendar.current.date(byAdding: .day, value: vendor.paymentTermsDays, to: billDate) ?? dueDate
     }
 
     private func save() {
@@ -731,9 +747,7 @@ struct PayBillView: View {
                 SectionLabel(text: String(localized: "Factura"))
             }
             Section {
-                LabeledContent("Monto") {
-                    MoneyField(title: String(localized: "Monto"), minorUnits: $amount).multilineTextAlignment(.trailing).labelsHidden()
-                }
+                MoneyRow(String(localized: "Monto"), minorUnits: $amount)
                 DatePicker("Fecha de pago", selection: $date, displayedComponents: .date)
                 PaymentAccountPicker(title: String(localized: "Pagar desde"), accounts: paymentAccounts, selection: $accountID)
                 Picker("Método", selection: $method) {
@@ -750,6 +764,7 @@ struct PayBillView: View {
             }
         }
         .formStyle(.grouped)
+        .keyboardDoneButton()
         .screenBackground()
         .navigationTitle("Pagar factura")
         .inlineTitle()
@@ -783,6 +798,8 @@ struct PayBillView: View {
 
 /// Proveedores del iPhone (canvas `MacProveedores` en lista): monograma, 1099 o correo, y lo que se le debe.
 struct VendorListView: View {
+    /// «Añadir mi primer proveedor» del estado vacío (el «+» de `ExpensesView`).
+    var onCreate: (() -> Void)? = nil
     @Query(sort: \Vendor.name) private var vendors: [Vendor]
     @State private var query = ""
 
@@ -794,7 +811,7 @@ struct VendorListView: View {
     var body: some View {
         List {
             if vendors.isEmpty {
-                EmptyStateView(systemImage: "truck.box", title: String(localized: "Sin proveedores"), message: String(localized: "Añade a quienes te venden bienes o servicios."))
+                EmptyStateView(guide: .vendors, action: onCreate)
             } else if shown.isEmpty {
                 EmptyStateView(systemImage: "magnifyingglass", title: String(localized: "Sin resultados"), message: String(localized: "Ningún proveedor coincide"))
             }
@@ -833,6 +850,8 @@ struct VendorRow: View {
 /// (método y cuenta), que es el que se propone al pagarle (canvas `MacProveedorFicha`, docs/DATOS-V2.md §6).
 struct VendorEditorView: View {
     var vendor: Vendor?
+    /// Al crear un proveedor desde el menú «Proveedor» de un gasto o una factura: se llama al guardarlo.
+    var onCreate: ((Vendor) -> Void)?
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     @Environment(\.unsavedChanges) private var unsavedChanges
@@ -855,6 +874,13 @@ struct VendorEditorView: View {
     @State private var preferredAccountID: UUID?
     @State private var errorMessage: String?
 
+    /// `initialName`: nombre propuesto para un proveedor nuevo (lo escrito en «Pagado a»).
+    init(vendor: Vendor? = nil, initialName: String = "", onCreate: ((Vendor) -> Void)? = nil) {
+        self.vendor = vendor
+        self.onCreate = onCreate
+        _name = State(initialValue: vendor == nil ? initialName : "")
+    }
+
     var body: some View {
         Form {
             if let errorMessage { ErrorBanner(message: errorMessage) }
@@ -875,7 +901,7 @@ struct VendorEditorView: View {
                 Picker("Condiciones de pago", selection: $terms) {
                     Text("Al recibir").tag(0); Text("Neto 15").tag(15); Text("Neto 30").tag(30); Text("Neto 60").tag(60)
                 }
-                AccountPicker(title: String(localized: "Categoría por defecto"), accounts: accounts.filtered { $0.accountType == .expense }, selection: $defaultAccountID)
+                ExpenseCategoryPicker(title: String(localized: "Categoría por defecto"), accounts: accounts, selection: $defaultAccountID)
                 Picker("Método preferido", selection: $preferredMethod) {
                     Text("Sin preferencia").tag(PaymentMethod?.none)
                     ForEach(PaymentMethod.billMethods, id: \.self) { Text($0.title).tag(Optional($0)) }
@@ -918,6 +944,7 @@ struct VendorEditorView: View {
             }
         }
         .formStyle(.grouped)
+        .keyboardDoneButton()
         .screenBackground()
         .navigationTitle(vendor == nil ? String(localized: "Nuevo proveedor") : vendor!.name)
         .inlineTitle()
@@ -952,6 +979,7 @@ struct VendorEditorView: View {
             if let w9File {
                 try books.attachW9(w9File.data, filename: w9File.name, contentType: w9File.type, to: target, receivedOn: w9Date)
             }
+            if vendor == nil { onCreate?(target) }
             unsavedChanges?.remove(editorToken); dismiss()
         } catch {
             errorMessage = error.localizedDescription

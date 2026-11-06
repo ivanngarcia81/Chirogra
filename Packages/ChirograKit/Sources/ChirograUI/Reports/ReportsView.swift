@@ -84,6 +84,8 @@ struct ReportsView: View {
     @Query(sort: \Vendor.name) private var vendors: [Vendor]
     @Query(sort: \TaxRate.name) private var taxRates: [TaxRate]
     @Query private var entries: [JournalEntry]
+    /// «Crear mi primera factura» del aviso de libros vacíos.
+    @State private var creatingInvoice = false
 
     #if DEBUG
     /// `-qa.periodo mes|trimestre|año` (solo Debug).
@@ -162,6 +164,7 @@ struct ReportsView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
+                if entries.isEmpty { ReportsIntro { creatingInvoice = true }.padding(.top, isPhone ? 4 : 0).padding(.bottom, 16) }
                 if isPhone { phoneContent } else { wideContent }
             }
             .padding(.horizontal, margin)
@@ -182,6 +185,7 @@ struct ReportsView: View {
         #endif
         .toolbar { toolbar }
         .sheet(isPresented: $editingRange) { rangeEditor }
+        .sheet(isPresented: $creatingInvoice) { NavigationStack { InvoiceEditorView() }.editorSheetSizing() }
         #if os(macOS)
         .macReportInspector(title: macInspectorTitle, hasSelection: macSelectedKey != nil, placeholder: macPlaceholder,
                             selectionKey: macPick, qaSelectRow: { index in
@@ -2051,4 +2055,26 @@ private struct MacBalanceMix: View {
 
 #Preview {
     NavigationStack { ReportsView() }.modelContainer(SampleData.makeContainer())
+}
+
+/// Reportes con los libros vacíos (empresa nueva): qué son y que se arman solos, con el botón para empezar. Los
+/// reportes siguen debajo, en cero.
+private struct ReportsIntro: View {
+    let onCreate: () -> Void
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 14) {
+            Image(systemName: "chart.bar.xaxis").font(.title2).foregroundStyle(Palette.brand).accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Tus reportes se arman solos").font(.headline).foregroundStyle(Palette.ink).accessibilityAddTraits(.isHeader)
+                Text("Aquí ves si el negocio gana dinero, cuánto tiene y quién te debe. Salen de tus facturas y tus gastos: no tienes que escribir nada.")
+                    .font(.subheadline).foregroundStyle(Palette.ink2).fixedSize(horizontal: false, vertical: true)
+                Button("Crear mi primera factura") { SubscriptionStore.shared.whenWritable(onCreate) }
+                    .buttonStyle(.primaryCompact)
+                    .padding(.top, 4)
+            }
+            Spacer(minLength: 0)
+        }
+        .card(padding: 16)
+    }
 }

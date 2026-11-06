@@ -74,6 +74,12 @@ struct BankingTablePage: View {
             .alignment(.trailing)
         } filter: {
             if !shown.isEmpty {
+                HStack(spacing: 4) {
+                    Text("Saldo en libros de cada cuenta").font(.subheadline).foregroundStyle(Palette.ink2)
+                    TermHelp(.bookBalance)
+                }
+                .padding(.horizontal, 2)
+                .padding(.bottom, -4)
                 BankAccountCards(accounts: shown, balance: { ledger.cashBalance(of: $0) }, selection: account?.id) { picked in
                     accountID = picked
                     selection = nil
@@ -108,7 +114,10 @@ struct BankingTablePage: View {
         .onChange(of: accountID) { showLatestMonthIfEmpty() }
         .confirmationDialog("Nuevo movimiento", isPresented: $choosingMovement) {
             Button("Gasto") { adding = .expense }
-            Button("Asiento manual") { adding = .entry }
+            ForEach(JournalTemplate.allCases) { template in
+                Button(template.title) { adding = .template(template) }
+            }
+            Button("Asiento a mano") { adding = .entry }
         } message: {
             Text("Los cobros de facturas se registran desde la factura.")
         }
@@ -117,6 +126,7 @@ struct BankingTablePage: View {
                 switch kind {
                 case .expense: ExpenseEditorView()
                 case .entry: JournalEntryEditorView()
+                case .template(let template): JournalEntryEditorView(template: template)
                 }
             }
             .editorSheetSizing()
@@ -157,8 +167,14 @@ struct BankingTablePage: View {
 
     private func empty(shown: [Account], rows: [BankMovement], month: DateInterval) -> MacTableEmpty {
         if shown.isEmpty {
-            return MacTableEmpty(systemImage: "building.columns", title: String(localized: "Sin cuentas de banco"),
-                                 message: String(localized: "Añade tus cuentas de banco y tarjetas en el plan de cuentas."))
+            return MacTableEmpty(guide: .banking, action: nil)
+        }
+        if journalLines.isEmpty {
+            // Libros nuevos: qué se verá aquí y, para empezar, el dinero que pone el dueño (plantilla de asiento).
+            return MacTableEmpty(systemImage: "building.columns", title: String(localized: "Aún no hay movimientos"),
+                                 message: String(localized: "Aquí verás cada cobro, gasto y pago de esta cuenta, con su saldo. Si pusiste dinero de tu bolsillo para empezar, regístralo aquí."),
+                                 actionTitle: JournalTemplate.ownerContribution.title,
+                                 action: { adding = .template(.ownerContribution) }, isGuide: true)
         }
         if rows.isEmpty {
             return MacTableEmpty(systemImage: "calendar", title: String(localized: "Sin movimientos en \(month.start.monthYear)"),

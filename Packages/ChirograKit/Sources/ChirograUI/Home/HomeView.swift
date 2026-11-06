@@ -12,7 +12,9 @@ import SwiftUI
 ///   Por cobrar y Por pagar (la elegida rellena de Tinta) y, al lado, su detalle.
 /// - Mac: `MacInicio`: cajas de cifras, gráfica de 12 meses con las cuentas al lado y las tablas de por cobrar y por
 ///   pagar; a la derecha, el inspector con la factura por cobrar elegida en la tabla (la primera si no hay otra).
-/// - Primera vez: `EstadoVacio` (en todas, centrado y con ancho de lectura en iPad y Mac).
+/// - Primera vez: `EstadoVacio` (en todas, centrado y con ancho de lectura en iPad y Mac), con los primeros pasos.
+///   Cuando ya hay movimientos y quedan pasos por hacer, una tarjeta «Primeros pasos» con los pendientes (se puede
+///   ocultar en cada aparato).
 struct HomeView: View {
     @Query private var companies: [Company]
     @Query(sort: \Account.code) private var accounts: [Account]
@@ -21,6 +23,12 @@ struct HomeView: View {
     @Query(sort: \Bill.dueDate) private var bills: [Bill]
     @Query private var expenses: [Expense]
     @Query private var customers: [Customer]
+    @Query private var payments: [PaymentReceived]
+    /// Para decir en «Configura tu sales tax» qué impuesto cobran las facturas.
+    @Query private var taxRates: [TaxRate]
+    @Query private var taxGroups: [TaxGroup]
+    /// La tarjeta de primeros pasos del tablero se ocultó en este aparato.
+    @AppStorage("homeSetupStepsHidden") private var setupStepsHidden = false
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     #if os(iOS)
@@ -52,7 +60,7 @@ struct HomeView: View {
     #endif
 
     enum NewItem: String, Identifiable {
-        case invoice, expense, customer
+        case invoice, expense, customer, openingBalance
         var id: String { rawValue }
     }
 
@@ -89,8 +97,18 @@ struct HomeView: View {
         ledger.moneyAccounts.filter { $0.subtype == .bank || $0.subtype == .creditCard || ledger.balance(of: $0) != 0 }
     }
 
-    /// Primera vez (`EstadoVacio`): todavía no hay movimientos ni documentos.
-    private var isFirstUse: Bool { journalLines.isEmpty && invoices.isEmpty && expenses.isEmpty }
+    /// Cuentas que forman «Efectivo disponible» y ya tienen saldo o movimientos (banco, caja y tarjetas; sin los fondos
+    /// no depositados). Con solo el banco del alta es 1: antes la tarjeta decía «3 cuentas» contando también el ahorro
+    /// y la tarjeta vacíos de la plantilla (recorrido «cliente nuevo», 5-nov).
+    private var cashAccounts: [Account] {
+        let used = Set(journalLines.compactMap { $0.entry?.status == .posted ? $0.account?.id : nil })
+        return ledger.moneyAccounts.filter { $0.subtype != .undepositedFunds && (used.contains($0.id) || ledger.balance(of: $0) != 0) }
+    }
+
+    /// Primera vez (`EstadoVacio`): todavía no hay documentos ni más movimientos que los saldos de apertura del alta.
+    private var isFirstUse: Bool {
+        invoices.isEmpty && expenses.isEmpty && journalLines.allSatisfy { $0.entry?.source == .opening }
+    }
 
     // MARK: Diseño
 
@@ -134,11 +152,20 @@ struct HomeView: View {
                 case .invoice: InvoiceEditorView()
                 case .expense: ExpenseEditorView()
                 case .customer: CustomerEditorView()
+                case .openingBalance: OpeningBalanceSheet()
                 }
             }
             .editorSheetSizing()
         }
         .navigationDestination(item: $openedNotice) { NoticeDestination(notice: $0) }
+        #if DEBUG
+        // `-qa.saldo 1` (solo Debug): abre «Pon el saldo de tu banco» de los primeros pasos.
+        .task {
+            guard UserDefaults.standard.bool(forKey: "qa.saldo") else { return }
+            try? await Task.sleep(for: .seconds(1))
+            sheet = .openingBalance
+        }
+        #endif
         #if os(macOS)
         .macReportInspector(title: macInvoice.map(invoiceTitle) ?? String(localized: "Por cobrar"), hasSelection: macInvoice != nil,
                             placeholder: String(localized: "No tienes facturas pendientes de cobro."),
@@ -274,8 +301,17 @@ struct HomeView: View {
         thisMonth.totalIncome > 0 ? String(localized: "Margen \(thisMonth.netIncome * 100 / thisMonth.totalIncome)%") : nil
     }
 
-    private var accountsDetail: String {
-        String(localized: "\(shownAccounts.count) cuentas · según libros")
+    /// «Cuenta corriente · según libros» con una sola cuenta; «2 cuentas · según libros»; sin movimientos, dicho.
+    private var accountsDetail: String { accountsSummary(short: false) }
+
+    /// `short`: sin «· según libros» (fila de la columna del iPad).
+    private func accountsSummary(short: Bool) -> String {
+        let used = cashAccounts
+        if used.isEmpty { return String(localized: "Sin movimientos todavía") }
+        if used.count == 1, let only = used.first {
+            return short ? only.maskedName : String(localized: "\(only.maskedName) · según libros")
+        }
+        return short ? String(localized: "\(used.count) cuentas") : String(localized: "\(used.count) cuentas · según libros")
     }
 
     /// Ingresos · Gastos · Ganancia en tres columnas (`Home`: dentro de la tarjeta de efectivo; `iPadInicio`: en su
@@ -355,6 +391,12 @@ struct HomeView: View {
             .padding(.top, 8)
             .accessibilityElement(children: .contain)
             .accessibilityLabel("Resumen del mes")
+
+            if showsSetupCard {
+                setupCard
+                    .padding(.horizontal, Metrics.gutter)
+                    .padding(.top, 20)
+            }
 
             quickActions
                 .padding(.horizontal, Metrics.gutter)
@@ -731,6 +773,9 @@ struct HomeView: View {
                     .padding(.horizontal, 12)
                     .padding(.bottom, 10)
                 ForEach(PadSection.allCases) { section in padItem(section) }
+                if showsSetupCard {
+                    setupCard.padding(.top, 14)
+                }
             }
             .padding(8)
         }
@@ -746,7 +791,7 @@ struct HomeView: View {
         let soonTotal = soonBills.reduce(0) { $0 + $1.balanceDue }
         let (icon, color, subtitle, subtitleColor, value): (String, Color, String, Color, Int64) = switch section {
         case .cash:
-            ("building.columns", Palette.blue, String(localized: "\(shownAccounts.count) cuentas"), Palette.ink2, ledger.availableCash)
+            ("building.columns", Palette.blue, accountsSummary(short: true), Palette.ink2, ledger.availableCash)
         case .results:
             ("chart.bar.xaxis", Palette.indigo, margin.map { String(localized: "Ganancia · \($0.lowercased())") } ?? String(localized: "Ganancia del mes"),
              Palette.ink2, thisMonth.netIncome)
@@ -852,6 +897,7 @@ struct HomeView: View {
             Text(companyName).font(.subheadline).foregroundStyle(Palette.ink2)
             // Mientras los libros son los de ejemplo: «Empezar con mi empresa».
             SampleBooksBanner()
+            if showsSetupCard { setupCard.frame(maxWidth: 760, alignment: .leading) }
             KPIGrid(items: macKPIs, large: true)
             macPair(firstShare: 2) {
                 chartCard(height: 190, barWidth: 12, pickerOnTop: false, months: 12,
@@ -1093,16 +1139,79 @@ struct HomeView: View {
 
     // MARK: - Primera vez (`EstadoVacio`)
 
-    /// Pasos del MVP (el canvas incluye importar el banco y escanear recibos, que son de la fase 2).
-    private var steps: [(title: String, done: Bool, action: NewItem?)] {
-        [(String(localized: "Crear tu empresa"), true, nil),
-         (String(localized: "Añadir tu primer cliente"), !customers.isEmpty, .customer),
-         (String(localized: "Crear tu primera factura"), !invoices.isEmpty, .invoice),
-         (String(localized: "Registrar un gasto"), !expenses.isEmpty, .expense)]
+    /// Un paso de «Primeros pasos»: qué hacer, para qué sirve y adónde lleva.
+    struct SetupStep: Identifiable {
+        enum Action {
+            /// Abre un editor en una hoja.
+            case sheet(NewItem)
+            /// Impuestos › Tasas (en el iPad y el Mac, la página Impuestos de la barra lateral).
+            case taxes
+            /// La factura, para registrar su cobro.
+            case invoice(Invoice)
+        }
+        let id: String
+        let title: String
+        let detail: String
+        let done: Bool
+        let action: Action?
+        /// Se puede abrir aunque esté hecho (el sales tax: añadir la tasa de la ciudad).
+        var opensWhenDone = false
     }
+
+    /// Pasos del MVP, en el orden en que se hacen (el canvas incluye importar el banco y escanear recibos, que son de
+    /// la fase 2). Cada uno dice para qué sirve y abre directamente su sitio.
+    private var steps: [SetupStep] {
+        let company = companies.first
+        let stateTax = StateSalesTax.forState(company?.state ?? "")
+        let noStateTax = stateTax.map { $0.rateMillionths == nil && !$0.hasLocalTaxOnly } ?? false
+        let hasTax = company?.defaultTaxGroupID != nil
+        let defaultGroup = taxGroups.first { $0.id == company?.defaultTaxGroupID }
+        let defaultRate = taxRates.first { $0.id == company?.defaultTaxGroupID }
+        let taxDetail: String = if let defaultGroup {
+            String(localized: "Tus facturas cobran \(defaultGroup.name) (\(StateTaxNote.percent(defaultGroup.combinedRateMillionths))). Si no es la tasa de tu dirección, cámbiala en Impuestos.")
+        } else if let defaultRate {
+            String(localized: "Tus facturas cobran \(defaultRate.name) (\(StateTaxNote.percent(defaultRate.rateMillionths))). Si tu ciudad o condado cobra más, abre Impuestos y elige «Nueva tasa»: la sumamos a esta.")
+        } else if hasTax {
+            String(localized: "Tus facturas ya cobran el impuesto predeterminado. Añade la tasa de tu ciudad o condado si la hay.")
+        } else if noStateTax, let stateTax {
+            String(localized: "\(stateTax.name) no tiene sales tax estatal. Si vendes en otro estado, añade su tasa.")
+        } else {
+            String(localized: "Para que tus facturas cobren el impuesto de tu estado y tu ciudad. Sin tasa, salen sin impuesto.")
+        }
+        let hasOpening = journalLines.contains { $0.entry?.source == .opening && $0.entry?.status == .posted }
+        let openInvoice = receivableRows.first
+        return [
+            SetupStep(id: "company", title: String(localized: "Crea tu empresa"),
+                      detail: String(localized: "Tus datos salen en tus facturas; los cambias en Ajustes."), done: true, action: nil),
+            SetupStep(id: "tax", title: String(localized: "Configura tu sales tax"), detail: taxDetail,
+                      done: hasTax || noStateTax, action: .taxes, opensWhenDone: true),
+            SetupStep(id: "bank", title: String(localized: "Pon el saldo de tu banco"),
+                      detail: String(localized: "Así «Efectivo disponible» empieza con el dinero que tienes hoy."),
+                      done: hasOpening, action: .sheet(.openingBalance)),
+            SetupStep(id: "customer", title: String(localized: "Añade tu primer cliente"),
+                      detail: String(localized: "Lo necesitas para facturarle; guarda su correo y sus condiciones de pago."),
+                      done: !customers.isEmpty, action: .sheet(.customer)),
+            SetupStep(id: "invoice", title: String(localized: "Crea tu primera factura"),
+                      detail: String(localized: "Sale con su número y el sales tax, y queda por cobrar hasta que te paguen."),
+                      done: !invoices.isEmpty, action: .sheet(.invoice)),
+            SetupStep(id: "payment", title: String(localized: "Registra tu primer cobro"),
+                      detail: openInvoice == nil && invoices.isEmpty
+                        ? String(localized: "Primero crea una factura. Cuando te la paguen, el cobro la salda y el dinero entra al banco.")
+                        : String(localized: "Cuando te paguen, la factura queda cobrada y el dinero entra al banco."),
+                      done: !payments.isEmpty,
+                      action: openInvoice.map { .invoice($0) } ?? (invoices.isEmpty ? .sheet(.invoice) : nil)),
+            SetupStep(id: "expense", title: String(localized: "Registra un gasto"),
+                      detail: String(localized: "Para saber cuánto ganas de verdad y tener el recibo guardado."),
+                      done: !expenses.isEmpty, action: .sheet(.expense)),
+        ]
+    }
+
+    /// La tarjeta del tablero: mientras queden pasos y no se haya ocultado (los libros de ejemplo los tienen todos).
+    private var showsSetupCard: Bool { !setupStepsHidden && steps.contains { !$0.done } }
 
     private var firstUse: some View {
         let done = steps.filter(\.done).count
+        let hasCash = journalLines.contains { $0.entry?.source == .opening }
         return VStack(alignment: .leading, spacing: 0) {
             Text(companyName).font(.subheadline).foregroundStyle(Palette.ink2)
                 .padding(.horizontal, Metrics.gutter)
@@ -1127,6 +1236,15 @@ struct HomeView: View {
             .frame(maxWidth: .infinity)
             .padding(.horizontal, 32).padding(.top, 30).padding(.bottom, 6)
 
+            // Con el saldo del alta, el efectivo ya se ve (el usuario lo echaba en falta: salía $0).
+            if hasCash {
+                cashHeader(amountSize: 30)
+                    .padding(18)
+                    .background(Palette.surface, in: RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous))
+                    .padding(.horizontal, Metrics.gutter)
+                    .padding(.top, 20)
+            }
+
             SectionHeader(title: String(localized: "Primeros pasos")) {
                 Text("\(done) de \(steps.count)").font(.subheadline).foregroundStyle(Palette.ink2)
             }
@@ -1137,10 +1255,11 @@ struct HomeView: View {
                 ProgressView(value: Double(done), total: Double(steps.count))
                     .tint(Palette.brand)
                     .accessibilityLabel("Progreso de configuración")
+                    .accessibilityValue(Text("\(done) de \(steps.count)"))
                     .padding(.horizontal, 16).padding(.top, 16).padding(.bottom, 14)
-                ForEach(steps.indices, id: \.self) { index in
+                ForEach(steps) { step in
                     Divider().padding(.leading, 16 + 22 + 12)
-                    stepRow(steps[index])
+                    stepRow(step)
                 }
             }
             .background(Palette.surface, in: RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous))
@@ -1151,33 +1270,101 @@ struct HomeView: View {
         .frame(maxWidth: .infinity)
     }
 
-    private func stepRow(_ step: (title: String, done: Bool, action: NewItem?)) -> some View {
-        Button { if let action = step.action, !step.done { sheet = action } } label: {
-            HStack(spacing: 12) {
-                Group {
-                    if step.done {
-                        Image(systemName: "checkmark").font(.caption.weight(.heavy)).foregroundStyle(.white)
-                            .frame(width: 22, height: 22).background(Palette.green, in: Circle())
-                    } else {
-                        Circle().strokeBorder(Palette.chevron, lineWidth: 1.5).frame(width: 22, height: 22)
-                    }
+    /// «Primeros pasos» en el tablero: solo los pendientes, con «Ocultar».
+    private var setupCard: some View {
+        let pending = steps.filter { !$0.done }
+        let done = steps.count - pending.count
+        return VStack(spacing: 0) {
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Primeros pasos").font(.headline).foregroundStyle(Palette.ink).accessibilityAddTraits(.isHeader)
+                    Text("\(done) de \(steps.count)").font(.subheadline).foregroundStyle(Palette.ink2)
                 }
+                Spacer(minLength: 8)
+                Button("Ocultar") { setupStepsHidden = true }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(Palette.brand)
+                    .frame(minHeight: Metrics.target)
+                    .accessibilityLabel("Ocultar primeros pasos")
+            }
+            .padding(.horizontal, 16).padding(.top, 8)
+            ProgressView(value: Double(done), total: Double(steps.count))
+                .tint(Palette.brand)
                 .accessibilityHidden(true)
-                Text(step.title).foregroundStyle(step.done ? Palette.ink2 : Palette.ink)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                if !step.done {
-                    Image(systemName: "chevron.right").font(.footnote.weight(.semibold)).foregroundStyle(Palette.chevron)
-                        .accessibilityHidden(true)
+                .padding(.horizontal, 16).padding(.bottom, 10)
+            ForEach(pending) { step in
+                Divider().padding(.leading, 16 + 22 + 12)
+                stepRow(step)
+            }
+        }
+        .background(Palette.surface, in: RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous))
+        #if os(macOS)
+        .overlay(RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous).strokeBorder(Palette.separator, lineWidth: 0.5))
+        #endif
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Primeros pasos")
+    }
+
+    @ViewBuilder
+    private func stepRow(_ step: SetupStep) -> some View {
+        let enabled = step.action != nil && (!step.done || step.opensWhenDone)
+        switch step.action {
+        case .taxes where enabled:
+            SectionLink(item: .section(.taxes)) { TaxesView(tab: .rates) } label: { stepLabel(step, enabled: true) }
+                .buttonStyle(.plain)
+                .modifier(StepAccessibility(done: step.done))
+        case .invoice(let invoice) where enabled:
+            NavigationLink { InvoiceDetailView(invoice: invoice) } label: { stepLabel(step, enabled: true) }
+                .buttonStyle(.plain)
+                .modifier(StepAccessibility(done: step.done))
+        case .sheet(let item) where enabled:
+            Button { sheet = item } label: { stepLabel(step, enabled: true) }
+                .buttonStyle(.plain)
+                .modifier(StepAccessibility(done: step.done))
+        default:
+            // Sin `.disabled`: el paso hecho se ve con su círculo verde a pleno color, como en el canvas.
+            stepLabel(step, enabled: false)
+                .accessibilityElement(children: .combine)
+                .modifier(StepAccessibility(done: step.done))
+        }
+    }
+
+    /// Círculo (verde con ✓ si está hecho), título y para qué sirve, y el chevron si se puede abrir.
+    private func stepLabel(_ step: SetupStep, enabled: Bool) -> some View {
+        HStack(alignment: .top, spacing: 12) {
+            Group {
+                if step.done {
+                    Image(systemName: "checkmark").font(.caption.weight(.heavy)).foregroundStyle(.white)
+                        .frame(width: 22, height: 22).background(Palette.green, in: Circle())
+                } else {
+                    Circle().strokeBorder(Palette.chevron, lineWidth: 1.5).frame(width: 22, height: 22)
                 }
             }
-            .padding(.horizontal, 16).padding(.vertical, 10)
-            .frame(minHeight: Metrics.target)
-            .contentShape(Rectangle())
+            .padding(.top, 1)
+            .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(step.title).foregroundStyle(step.done ? Palette.ink2 : Palette.ink)
+                Text(step.detail).font(.footnote).foregroundStyle(Palette.ink2)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            if enabled {
+                Image(systemName: "chevron.right").font(.footnote.weight(.semibold)).foregroundStyle(Palette.chevron)
+                    .frame(maxHeight: .infinity)
+                    .accessibilityHidden(true)
+            }
         }
-        .buttonStyle(.plain)
-        // Sin `.disabled`: el paso hecho se ve con su círculo verde a pleno color, como en el canvas.
-        .allowsHitTesting(!step.done)
-        .accessibilityValue(step.done ? Text("Completado") : Text("Pendiente"))
+        .padding(.horizontal, 16).padding(.vertical, 10)
+        .frame(minHeight: Metrics.target)
+        .contentShape(Rectangle())
+    }
+}
+
+/// «Completado» / «Pendiente» de un paso para VoiceOver.
+private struct StepAccessibility: ViewModifier {
+    let done: Bool
+    func body(content: Content) -> some View {
+        content.accessibilityValue(done ? Text("Completado") : Text("Pendiente"))
     }
 }
 

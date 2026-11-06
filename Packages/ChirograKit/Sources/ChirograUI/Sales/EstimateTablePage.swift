@@ -69,9 +69,7 @@ struct EstimateTablePage: View {
             addTitle: String(localized: "Nuevo estimado"), onAdd: { creating = true },
             onOpen: { opened = $0 },
             empty: estimates.isEmpty
-                ? MacTableEmpty(systemImage: "list.clipboard", title: String(localized: "Todavía no hay estimados"),
-                                message: String(localized: "Haz un estimado para tu cliente y, cuando lo acepte, conviértelo en factura."),
-                                actionTitle: String(localized: "Nuevo estimado"), action: { creating = true })
+                ? MacTableEmpty(guide: .estimates, action: { creating = true })
                 : MacTableEmpty(title: String(localized: "Sin resultados"),
                                 message: String(localized: "Ningún estimado coincide con la búsqueda o el filtro."),
                                 actionTitle: String(localized: "Quitar filtros"), action: { query = ""; filter = .all }),

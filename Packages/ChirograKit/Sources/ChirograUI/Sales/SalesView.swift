@@ -141,7 +141,8 @@ extension View {
 
 struct InvoiceListView: View {
     enum Filter: String, CaseIterable, Identifiable {
-        case all = "Todas", draft = "Borrador", sent = "Enviada", partial = "Pago parcial", overdue = "Vencida", paid = "Pagada"
+        // «Emitida» (y no «Enviada»): reúne las emitidas pendientes, se hayan mandado o no al cliente.
+        case all = "Todas", draft = "Borrador", sent = "Emitida", partial = "Pago parcial", overdue = "Vencida", paid = "Pagada"
         var id: String { rawValue }
 
         func matches(_ invoice: Invoice) -> Bool {
@@ -238,13 +239,7 @@ struct InvoiceListView: View {
     @ViewBuilder
     private var emptyState: some View {
         if invoices.isEmpty {
-            ContentUnavailableView {
-                Label("Todavía no hay facturas", systemImage: "doc.text")
-            } description: {
-                Text("Crea tu primera factura con el botón +.")
-            } actions: {
-                Button("Nueva factura", action: onCreate).buttonStyle(.primaryCompact)
-            }
+            EmptyStateView(guide: .invoices, action: onCreate)
         } else {
             // Canvas `Ventas`: «Sin resultados» con «Quitar filtros» en la cápsula gris.
             ContentUnavailableView {

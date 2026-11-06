@@ -179,6 +179,16 @@
         }
       }
     },
+    "%@ es la tasa predeterminada en facturas nuevas. Si tu ciudad o condado cobra más, elige «Nueva tasa» y escribe solo su parte: la sumamos a esta." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ is the default rate on new invoices. If your city or county charges more, choose “New rate” and enter just its part: we’ll add it to this one."
+          }
+        }
+      }
+    },
     "%@ esta semana" : {
       "localizations" : {
         "en" : {
@@ -225,6 +235,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ more than in %@"
+          }
+        }
+      }
+    },
+    "%@ no tiene sales tax estatal, así que no creamos ninguna tasa. Si vendes en otro estado, añade su tasa en Impuestos." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ has no state sales tax, so we didn't create a rate. If you sell in another state, add its rate in Taxes."
+          }
+        }
+      }
+    },
+    "%@ no tiene sales tax estatal, pero muchas ciudades y boroughs sí: añade la tasa local en Impuestos." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ has no state sales tax, but many cities and boroughs do: add your local rate in Taxes."
+          }
+        }
+      }
+    },
+    "%@ no tiene sales tax estatal. Si vendes en otro estado, añade su tasa." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ has no state sales tax. If you sell in another state, add its rate."
           }
         }
       }
@@ -513,6 +553,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ · balances as of %@"
+          }
+        }
+      }
+    },
+    "%@ · según libros" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · per books"
           }
         }
       }
@@ -2048,6 +2098,16 @@
         }
       }
     },
+    "A quién le declaras y pagas esta tasa. En muchos estados, como Texas, la agencia del estado cobra también las tasas locales." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Who you file and pay this rate to. In many states, such as Texas, the state agency also collects the local rates."
+          }
+        }
+      }
+    },
     "A quién te diriges en los correos y quién suele aceptar los estimados." : {
       "localizations" : {
         "en" : {
@@ -2141,6 +2201,16 @@
         }
       }
     },
+    "Abre Ajustes para cambiarlo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens Settings to change it"
+          }
+        }
+      }
+    },
     "Abre el documento" : {
       "localizations" : {
         "en" : {
@@ -2187,6 +2257,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Open"
+          }
+        }
+      }
+    },
+    "Abrir Impuestos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Taxes"
+          }
+        }
+      }
+    },
+    "Abrir Recurrentes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Recurring"
           }
         }
       }
@@ -2578,6 +2668,16 @@
         }
       }
     },
+    "Ahora no" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not now"
+          }
+        }
+      }
+    },
     "Ajustes" : {
       "localizations" : {
         "en" : {
@@ -2724,6 +2824,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Set up %@"
+          }
+        }
+      }
+    },
+    "Anota lo que pagas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Write down what you pay"
+          }
+        }
+      }
+    },
+    "Anotar mi primer gasto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add my first expense"
+          }
+        }
+      }
+    },
+    "Anotar una factura por pagar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add a bill"
           }
         }
       }
@@ -2958,6 +3088,56 @@
         }
       }
     },
+    "Aportación del dueño" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Owner contribution"
+          }
+        }
+      }
+    },
+    "Aquí anotas lo que pagas para el negocio: materiales, renta, gasolina, software…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This is where you write down what you pay for the business: materials, rent, gas, software…"
+          }
+        }
+      }
+    },
+    "Aquí guardas a las personas y empresas a las que les vendes." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This is where you keep the people and companies you sell to."
+          }
+        }
+      }
+    },
+    "Aquí van las facturas que te mandan tus proveedores y que pagarás más adelante." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "These are the bills your vendors send you that you'll pay later."
+          }
+        }
+      }
+    },
+    "Aquí verás cada cobro, gasto y pago de esta cuenta, con su saldo. Si pusiste dinero de tu bolsillo para empezar, regístralo aquí." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Here you'll see every payment received, expense and payment made in this account, with its balance. If you put in your own money to get started, record it here."
+          }
+        }
+      }
+    },
     "Aquí verás cómo va tu negocio" : {
       "localizations" : {
         "en" : {
@@ -2974,6 +3154,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Scheduled payments, overdue invoices and sales tax to file will show up here."
+          }
+        }
+      }
+    },
+    "Aquí ves el dinero de cada cuenta del negocio: el banco, el ahorro y la tarjeta." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Here you see the money in each business account: checking, savings and your card."
+          }
+        }
+      }
+    },
+    "Aquí ves si el negocio gana dinero, cuánto tiene y quién te debe. Salen de tus facturas y tus gastos: no tienes que escribir nada." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "See whether the business makes money, what it has and who owes you. They come from your invoices and expenses: there's nothing to type."
           }
         }
       }
@@ -3068,12 +3268,42 @@
         }
       }
     },
+    "Asiento a mano" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manual entry"
+          }
+        }
+      }
+    },
+    "Asiento a mano, para tu contador" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manual entry, for your accountant"
+          }
+        }
+      }
+    },
     "Asiento manual" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Manual entry"
+          }
+        }
+      }
+    },
+    "Asiento revertido y registrado de nuevo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entry reversed and recorded again"
           }
         }
       }
@@ -3094,6 +3324,56 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Subject"
+          }
+        }
+      }
+    },
+    "Así queda en tus libros" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How it goes in your books"
+          }
+        }
+      }
+    },
+    "Así sabes cuánto ganas de verdad y tienes los recibos a mano para los impuestos." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "That way you know what you really earn, and your receipts are handy at tax time."
+          }
+        }
+      }
+    },
+    "Así «Efectivo disponible» empieza con el dinero que de verdad tienes, y Banca y los reportes cuadran con tu banco." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "So “Cash available” starts with the money you really have, and Banking and your reports match your bank."
+          }
+        }
+      }
+    },
+    "Así «Efectivo disponible» empieza con el dinero que de verdad tienes. Si ahora no lo sabes, salta este paso: podrás ponerlo desde Inicio." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "So “Cash available” starts with the money you really have. If you don't know it now, skip this step: you can add it later from Home."
+          }
+        }
+      }
+    },
+    "Así «Efectivo disponible» empieza con el dinero que tienes hoy." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“Cash available” then starts with the money you have today."
           }
         }
       }
@@ -3164,6 +3444,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Add the people and businesses that sell you goods or services."
+          }
+        }
+      }
+    },
+    "Añade tu primer cliente" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add your first customer"
           }
         }
       }
@@ -3248,6 +3538,26 @@
         }
       }
     },
+    "Añadir mi primer cliente" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add my first customer"
+          }
+        }
+      }
+    },
+    "Añadir mi primer proveedor" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add my first vendor"
+          }
+        }
+      }
+    },
     "Añadir producto o servicio" : {
       "localizations" : {
         "en" : {
@@ -3268,12 +3578,12 @@
         }
       }
     },
-    "Añadir tu primer cliente" : {
+    "Añadir tasa…" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Add your first customer"
+            "value" : "Add Tax Rate…"
           }
         }
       }
@@ -3284,6 +3594,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Add your accounts"
+          }
+        }
+      }
+    },
+    "Añadir una cuenta" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add an account"
           }
         }
       }
@@ -3319,6 +3639,16 @@
         }
       }
     },
+    "Aún no hay asientos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No journal entries yet"
+          }
+        }
+      }
+    },
     "Aún no hay facturas" : {
       "localizations" : {
         "en" : {
@@ -3339,6 +3669,16 @@
         }
       }
     },
+    "Aún no hay movimientos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No transactions yet"
+          }
+        }
+      }
+    },
     "Aún no hay tasas de impuesto. Añade una con «+» bajo la tabla." : {
       "localizations" : {
         "en" : {
@@ -3349,12 +3689,92 @@
         }
       }
     },
+    "Aún no tienes clientes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No customers yet"
+          }
+        }
+      }
+    },
+    "Aún no tienes cuentas de banco" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No bank accounts yet"
+          }
+        }
+      }
+    },
     "Aún no tienes cuentas de banco ni tarjetas." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "You don't have any bank accounts or cards yet."
+          }
+        }
+      }
+    },
+    "Aún no tienes estimados" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No estimates yet"
+          }
+        }
+      }
+    },
+    "Aún no tienes facturas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No invoices yet"
+          }
+        }
+      }
+    },
+    "Aún no tienes facturas por pagar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No bills yet"
+          }
+        }
+      }
+    },
+    "Aún no tienes gastos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No expenses yet"
+          }
+        }
+      }
+    },
+    "Aún no tienes proveedores" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No vendors yet"
+          }
+        }
+      }
+    },
+    "Aún no tienes recurrentes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No recurring expenses yet"
           }
         }
       }
@@ -3705,6 +4125,16 @@
         }
       }
     },
+    "Cada movimiento se anota dos veces: el débito es a dónde va el dinero y el crédito, de dónde sale. Por eso los dos totales tienen que ser iguales." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Every transaction is recorded twice: the debit is where the money goes and the credit is where it comes from. That's why both totals must match."
+          }
+        }
+      }
+    },
     "Cada repetición es un gasto pagado de la cuenta elegida." : {
       "localizations" : {
         "en" : {
@@ -3906,6 +4336,16 @@
       }
     },
     "Capital" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Owner's equity"
+          }
+        }
+      }
+    },
+    "Capital del dueño" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4135,6 +4575,16 @@
         }
       }
     },
+    "Chirogra la registra por ti cada vez que toca; tú solo la revisas." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chirogra records it for you every time it's due; you just review it."
+          }
+        }
+      }
+    },
     "Chirogra se bloquea cada vez que pasa a segundo plano." : {
       "localizations" : {
         "en" : {
@@ -4165,6 +4615,26 @@
         }
       }
     },
+    "Chirogra te avisa cuando vence y anota el cobro cuando te pagan." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chirogra reminds you when it's due and records the payment when you get paid."
+          }
+        }
+      }
+    },
+    "Chirogra te dice qué vence y cuándo, para que no se te pase ninguna." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chirogra tells you what's due and when, so you never miss one."
+          }
+        }
+      }
+    },
     "Chirogra te recuerda el pago; el dinero se mueve desde tu banco." : {
       "localizations" : {
         "en" : {
@@ -4191,6 +4661,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Period close"
+          }
+        }
+      }
+    },
+    "Ciudad o condado (p. ej. Austin)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "City or county (e.g. Austin)"
           }
         }
       }
@@ -4547,6 +5027,26 @@
         }
       }
     },
+    "Compras de equipo y pagos por adelantado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Equipment & prepaid purchases"
+          }
+        }
+      }
+    },
+    "Compras de equipo, inventario y pagos por adelantado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Equipment, inventory & prepaid purchases"
+          }
+        }
+      }
+    },
     "Con borrador" : {
       "localizations" : {
         "en" : {
@@ -4563,6 +5063,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "With autopay they’re recorded automatically; without it, they wait for you to confirm."
+          }
+        }
+      }
+    },
+    "Con cobros o créditos no se edita: usa una nota de crédito." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "With payments or credits it can't be edited: use a credit note."
+          }
+        }
+      }
+    },
+    "Con débitos y créditos, cuenta por cuenta" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "With debits and credits, account by account"
+          }
+        }
+      }
+    },
+    "Con ellos guardados, anotar un gasto es más rápido y sabes cuánto le pagas a cada uno (también para el 1099)." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "With them saved, adding an expense is faster and you know how much you pay each one (also for the 1099)."
           }
         }
       }
@@ -4614,6 +5144,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "With open balance"
+          }
+        }
+      }
+    },
+    "Con sus datos guardados, facturar es elegir un nombre, y ves de un vistazo quién te debe." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "With their details saved, invoicing is just picking a name, and you see at a glance who owes you."
           }
         }
       }
@@ -4694,6 +5234,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Payment terms"
+          }
+        }
+      }
+    },
+    "Configura tu sales tax" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set up your sales tax"
           }
         }
       }
@@ -5078,6 +5628,16 @@
         }
       }
     },
+    "Crea tu primera factura" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create your first invoice"
+          }
+        }
+      }
+    },
     "Crea tu primera factura con el botón +." : {
       "localizations" : {
         "en" : {
@@ -5169,12 +5729,22 @@
         }
       }
     },
-    "Crear tu empresa" : {
+    "Crear mi primer estimado" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Create your company"
+            "value" : "Create my first estimate"
+          }
+        }
+      }
+    },
+    "Crear mi primera factura" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create my first invoice"
           }
         }
       }
@@ -5199,6 +5769,16 @@
         }
       }
     },
+    "Crear una recurrente" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create a recurring expense"
+          }
+        }
+      }
+    },
     "Creemos tu empresa" : {
       "localizations" : {
         "en" : {
@@ -5215,6 +5795,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Credit"
+          }
+        }
+      }
+    },
+    "Crédito %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Credit %@"
           }
         }
       }
@@ -5249,12 +5839,42 @@
         }
       }
     },
+    "Cuando el cliente te pague, regístralo aquí: la factura queda pagada y el dinero entra en tu cuenta." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "When the customer pays you, record it here: the invoice is marked paid and the money goes into your account."
+          }
+        }
+      }
+    },
+    "Cuando lo acepte, lo conviertes en factura sin volver a escribir nada." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "When they accept it, you turn it into an invoice without typing anything again."
+          }
+        }
+      }
+    },
     "Cuando registres ventas y gastos, aparecerán tu efectivo, tus ingresos del mes y lo que te deben." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Once you record sales and expenses, you’ll see your cash, this month’s income, and what you’re owed."
+          }
+        }
+      }
+    },
+    "Cuando te paguen, la factura queda cobrada y el dinero entra al banco." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "When you get paid, the invoice is marked paid and the money goes into your bank account."
           }
         }
       }
@@ -5325,6 +5945,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Payment account"
+          }
+        }
+      }
+    },
+    "Cuenta del banco" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bank account"
           }
         }
       }
@@ -5445,6 +6075,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Accounts and balances"
+          }
+        }
+      }
+    },
+    "Cuentas · saldo en libros" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accounts · book balance"
+          }
+        }
+      }
+    },
+    "Cuánto dinero tiene cada cuenta según lo que registras. Toca una para ver sus movimientos." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How much money each account has based on what you record. Tap one to see its transactions."
           }
         }
       }
@@ -6009,6 +6659,26 @@
         }
       }
     },
+    "Débito %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Debit %@"
+          }
+        }
+      }
+    },
+    "Débito y crédito" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Debit and credit"
+          }
+        }
+      }
+    },
     "Débitos" : {
       "localizations" : {
         "en" : {
@@ -6039,6 +6709,16 @@
         }
       }
     },
+    "Déjalo vacío si no usas tarjeta. Los saldos se registran como asiento de apertura contra «Saldos de apertura» (3900); lo verás en Contabilidad." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leave it empty if you don't use a card. Balances are recorded as an opening entry against “Opening Balance Equity” (3900); you'll see it in Accounting."
+          }
+        }
+      }
+    },
     "EIN %@" : {
       "localizations" : {
         "en" : {
@@ -6065,6 +6745,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ESTIMATE"
+          }
+        }
+      }
+    },
+    "Editada" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edited"
           }
         }
       }
@@ -6155,6 +6845,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Edit Estimate"
+          }
+        }
+      }
+    },
+    "Editar factura" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit invoice"
+          }
+        }
+      }
+    },
+    "Editar factura…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit Invoice…"
           }
         }
       }
@@ -6289,6 +6999,16 @@
         }
       }
     },
+    "El asiento de la factura ya fue revertido." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The invoice's entry was already reversed."
+          }
+        }
+      }
+    },
     "El asiento del gasto ya fue revertido." : {
       "localizations" : {
         "en" : {
@@ -6315,6 +7035,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "The balance sheet doesn't balance"
+          }
+        }
+      }
+    },
+    "El cliente está exento: esta factura no lleva impuesto." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The customer is exempt: this invoice has no tax."
           }
         }
       }
@@ -6589,6 +7319,16 @@
         }
       }
     },
+    "El saldo sale de lo que registras: cobros, gastos y pagos." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The balance comes from what you record: payments received, expenses and payments made."
+          }
+        }
+      }
+    },
     "El tipo decide dónde aparece la cuenta en los reportes." : {
       "localizations" : {
         "en" : {
@@ -6709,6 +7449,16 @@
         }
       }
     },
+    "Elige dos cuentas distintas." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose two different accounts."
+          }
+        }
+      }
+    },
     "Elige la cuenta al confirmar" : {
       "localizations" : {
         "en" : {
@@ -6799,6 +7549,26 @@
         }
       }
     },
+    "Elige un proveedor si le compras a menudo o le pagas facturas; si no, basta con escribir en «Pagado a» a quién le pagas." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose a vendor if you buy from them often or pay their bills. Otherwise, just enter who you pay in “Paid to”."
+          }
+        }
+      }
+    },
+    "Elige un proveedor si le compras a menudo o le pagas facturas; si no, basta con escribir en «Pagado a» a quién le pagaste." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose a vendor if you buy from them often or pay their bills. Otherwise, just enter who you paid in “Paid to”."
+          }
+        }
+      }
+    },
     "Elige una cuenta" : {
       "localizations" : {
         "en" : {
@@ -6835,6 +7605,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Choose a bill"
+          }
+        }
+      }
+    },
+    "Elige una opción y Chirogra hace las cuentas por ti. Las facturas, los cobros y los gastos se registran solos: para ellos no hace falta un asiento." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pick an option and Chirogra does the bookkeeping for you. Invoices, payments and expenses are recorded on their own: they don't need a journal entry."
           }
         }
       }
@@ -6979,6 +7759,26 @@
         }
       }
     },
+    "En Ajustes del Sistema › General › Idioma y región, en «Aplicaciones» pulsa «+», elige Chirogra y el idioma, y vuelve a abrir Chirogra." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In System Settings › General › Language & Region, under “Applications” click “+”, choose Chirogra and the language, then reopen Chirogra."
+          }
+        }
+      }
+    },
+    "En Ajustes › Apps › Chirogra, toca «Idioma» y elige Español o English; la app vuelve a abrirse en ese idioma." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In Settings › Apps › Chirogra, tap Language and choose Español or English; the app reopens in that language."
+          }
+        }
+      }
+    },
     "En EE. UU. el sales tax de tus compras forma parte del gasto." : {
       "localizations" : {
         "en" : {
@@ -6995,6 +7795,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "In the US, sales tax on your purchases is part of the expense. If the receipt shows it, enter it in “Tax included.”"
+          }
+        }
+      }
+    },
+    "En Impuestos, más abajo, configuras tus tasas y ves cuánto le debes al estado." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In Taxes, further down, you set up your rates and see how much you owe the state."
           }
         }
       }
@@ -7076,6 +7886,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Send"
+          }
+        }
+      }
+    },
+    "Enviar a %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send to %@"
+          }
+        }
+      }
+    },
+    "Enviar al cliente" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send to customer"
           }
         }
       }
@@ -7180,12 +8010,32 @@
         }
       }
     },
+    "Es el dinero que tú has puesto en el negocio. No es un ingreso: es tuyo, y por eso no paga impuestos como una venta." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "It's the money you've put into the business. It isn't income: it's yours, so it isn't taxed like a sale."
+          }
+        }
+      }
+    },
     "Esa tasa de impuesto no existe." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "That tax rate doesn't exist."
+          }
+        }
+      }
+    },
+    "Escribe el porcentaje que cobras. Si cobras varias tasas (estado, condado, ciudad), puedes poner el total o crear una por cada una y juntarlas en un grupo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter the percentage you charge. If you charge several rates (state, county, city), you can enter the total or create one for each and combine them in a group."
           }
         }
       }
@@ -7216,6 +8066,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Enter debit and credit amounts"
+          }
+        }
+      }
+    },
+    "Escribe solo la parte de tu ciudad, condado o distrito (en Austin, 2%). Si no la sabes, búscala con tu dirección en la web de impuestos de tu estado." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter only your city, county or district part (in Austin, 2%). If you don’t know it, look it up with your address on your state’s tax website."
+          }
+        }
+      }
+    },
+    "Esta factura no lleva impuesto." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This invoice has no tax."
+          }
+        }
+      }
+    },
+    "Esta factura no lleva impuesto. Si cobras sales tax, elige «Añadir tasa…» en Impuesto." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This invoice has no tax. If you collect sales tax, choose “Add Tax Rate…” under Tax."
+          }
+        }
+      }
+    },
+    "Esta factura ya está en tus libros. Al guardar, Chirogra revierte su asiento y registra uno nuevo con los cambios; conserva el número %@ y la edición queda en su actividad." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This invoice is already in your books. When you save, Chirogra reverses its entry and records a new one with the changes; it keeps number %@ and the edit shows in its activity."
           }
         }
       }
@@ -7667,6 +8557,36 @@
         }
       }
     },
+    "Factura %@ editada (sin cambios contables)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invoice %@ edited (no accounting changes)"
+          }
+        }
+      }
+    },
+    "Factura %@ editada: %@ → %@ (asiento %lld revertido, nuevo %lld)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invoice %@ edited: %@ → %@ (entry %lld reversed, new %lld)"
+          }
+        }
+      }
+    },
+    "Factura %@ emitida" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invoice %@ issued"
+          }
+        }
+      }
+    },
     "Factura %@ enviada a %@" : {
       "localizations" : {
         "en" : {
@@ -8102,6 +9022,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Payment date"
+          }
+        }
+      }
+    },
+    "Fecha del saldo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Balance date"
           }
         }
       }
@@ -8584,6 +9514,16 @@
         }
       }
     },
+    "Gastos y costos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Expenses & costs"
+          }
+        }
+      }
+    },
     "Gastos y facturas que se repiten" : {
       "localizations" : {
         "en" : {
@@ -8624,6 +9564,16 @@
         }
       }
     },
+    "Gravable quiere decir que esa línea paga sales tax. Márcala «sin impuesto» si lo que vendes está exento, como algunos servicios." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Taxable means sales tax applies to that line. Mark it “no tax” if what you sell is exempt, like some services."
+          }
+        }
+      }
+    },
     "Gravables" : {
       "localizations" : {
         "en" : {
@@ -8640,6 +9590,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Group"
+          }
+        }
+      }
+    },
+    "Grupo creado: %@ %@%%" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Group created: %@ %@%%"
           }
         }
       }
@@ -9042,6 +10002,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Language"
+          }
+        }
+      }
+    },
+    "Idioma de la app" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App language"
           }
         }
       }
@@ -9666,12 +10636,32 @@
         }
       }
     },
+    "La factura necesita un cliente." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The invoice needs a customer."
+          }
+        }
+      }
+    },
     "La factura no está pendiente de cobro." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "The invoice has no balance due."
+          }
+        }
+      }
+    },
+    "La factura tiene cobros o créditos: corrígela con una nota de crédito." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The invoice has payments or credits: correct it with a credit note."
           }
         }
       }
@@ -9816,6 +10806,26 @@
         }
       }
     },
+    "La renta, el seguro, una suscripción: créala una vez en Recurrentes y Chirogra la registra por ti." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rent, insurance, a subscription: set it up once in Recurring and Chirogra records it for you."
+          }
+        }
+      }
+    },
+    "La suma de las tasas que cobras juntas en una venta: la del estado, la del condado y la de la ciudad." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The sum of the rates you collect together on a sale: state, county and city."
+          }
+        }
+      }
+    },
     "La tasa debe estar entre 0 % y 100 %." : {
       "localizations" : {
         "en" : {
@@ -9832,6 +10842,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "The rate needs a name."
+          }
+        }
+      }
+    },
+    "La tasa necesita una agencia." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The rate needs an agency."
           }
         }
       }
@@ -10026,12 +11046,42 @@
         }
       }
     },
+    "Lo necesitas para facturarle; guarda su correo y sus condiciones de pago." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You need one to invoice; it keeps their email and payment terms."
+          }
+        }
+      }
+    },
+    "Lo que debes hoy" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What you owe today"
+          }
+        }
+      }
+    },
     "Lo que elijas en la lista se abre aquí." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "What you choose in the list opens here."
+          }
+        }
+      }
+    },
+    "Lo que hay en la cuenta según lo que has registrado en Chirogra. Puede no ser igual al banco si falta algún movimiento por anotar." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What's in the account according to what you've recorded in Chirogra. It may differ from your bank if a transaction hasn't been recorded yet."
           }
         }
       }
@@ -10242,6 +11292,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Debit balances go under Debit and credit balances under Credit."
+          }
+        }
+      }
+    },
+    "Los saldos iniciales no pueden ser negativos." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opening balances can't be negative."
           }
         }
       }
@@ -10473,6 +11533,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Next month"
+          }
+        }
+      }
+    },
+    "Mira tu app del banco y copia el saldo actual de la cuenta que usas para el negocio." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check your bank app and copy the current balance of the account you use for the business."
           }
         }
       }
@@ -11258,12 +12328,32 @@
         }
       }
     },
+    "No tienes cuentas de dinero: añade tu banco en el plan de cuentas." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You have no money accounts: add your bank in the chart of accounts."
+          }
+        }
+      }
+    },
     "No tienes facturas pendientes de cobro." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "You have no open invoices."
+          }
+        }
+      }
+    },
+    "No tienes que hacer nada más: Chirogra ya puso cada importe en su lado." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing else to do: Chirogra already put each amount on its side."
           }
         }
       }
@@ -11324,6 +12414,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Business name"
+          }
+        }
+      }
+    },
+    "Nombre de la agencia" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agency name"
           }
         }
       }
@@ -11700,6 +12800,16 @@
         }
       }
     },
+    "Nuevo proveedor…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New vendor…"
+          }
+        }
+      }
+    },
     "Nº" : {
       "localizations" : {
         "en" : {
@@ -11751,6 +12861,16 @@
         }
       }
     },
+    "Ocultar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hide"
+          }
+        }
+      }
+    },
     "Ocultar aviso" : {
       "localizations" : {
         "en" : {
@@ -11777,6 +12897,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Hide Inspector (⌥⌘I)"
+          }
+        }
+      }
+    },
+    "Ocultar primeros pasos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hide getting started"
           }
         }
       }
@@ -12496,6 +13626,16 @@
         }
       }
     },
+    "Para que tus facturas cobren el impuesto de tu estado y tu ciudad. Sin tasa, salen sin impuesto." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "So your invoices charge your state and city tax. Without a rate, they go out with no tax."
+          }
+        }
+      }
+    },
     "Para reabrir, la nueva fecha de cierre debe ser anterior a la actual." : {
       "localizations" : {
         "en" : {
@@ -12512,6 +13652,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "To get a copy, add the company email in Settings › Company Profile."
+          }
+        }
+      }
+    },
+    "Para saber cuánto ganas de verdad y tener el recibo guardado." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To know what you really earn and keep the receipt on file."
           }
         }
       }
@@ -12597,12 +13747,22 @@
         }
       }
     },
-    "Paso %lld de 2" : {
+    "Paso %lld de %lld" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Step %lld of 2"
+            "value" : "Step %lld of %lld"
+          }
+        }
+      }
+    },
+    "Pasé dinero entre mis cuentas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I moved money between my accounts"
           }
         }
       }
@@ -12854,6 +14014,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "You'll be able to bring in your transactions as CSV or OFX, categorize them from an inbox, and reconcile with your bank statement."
+          }
+        }
+      }
+    },
+    "Pon el saldo de tu banco" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add your bank balance"
           }
         }
       }
@@ -13110,6 +14280,16 @@
         }
       }
     },
+    "Porcentaje (p. ej. 2)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Percentage (e.g. 2)"
+          }
+        }
+      }
+    },
     "Porcentaje: %lld %%" : {
       "localizations" : {
         "en" : {
@@ -13166,6 +14346,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "First date"
+          }
+        }
+      }
+    },
+    "Primero crea una factura. Cuando te la paguen, el cobro la salda y el dinero entra al banco." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create an invoice first. When you get paid, the payment settles it and the money goes into your bank account."
           }
         }
       }
@@ -13573,6 +14763,16 @@
         }
       }
     },
+    "Puse dinero de mi bolsillo en el negocio" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I put my own money into the business"
+          }
+        }
+      }
+    },
     "Página %lld de %lld" : {
       "localizations" : {
         "en" : {
@@ -13779,6 +14979,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "What each occurrence creates"
+          }
+        }
+      }
+    },
+    "Qué es «%@»" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What is “%@”"
           }
         }
       }
@@ -14173,6 +15383,26 @@
         }
       }
     },
+    "Registra tu primer cobro" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Record your first payment"
+          }
+        }
+      }
+    },
+    "Registra un gasto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Record an expense"
+          }
+        }
+      }
+    },
     "Registra un gasto con el botón + y adjunta el recibo." : {
       "localizations" : {
         "en" : {
@@ -14273,12 +15503,12 @@
         }
       }
     },
-    "Registrar un gasto" : {
+    "Registrar un movimiento" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Record an expense"
+            "value" : "Record a transaction"
           }
         }
       }
@@ -14521,6 +15751,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Withdrawal"
+          }
+        }
+      }
+    },
+    "Retiro del dueño" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Owner's draw"
           }
         }
       }
@@ -14768,12 +16008,32 @@
         }
       }
     },
+    "Saldo de hoy" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today's balance"
+          }
+        }
+      }
+    },
     "Saldo de la cuenta según libros" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Account balance per books"
+          }
+        }
+      }
+    },
+    "Saldo del banco" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bank balance"
           }
         }
       }
@@ -14794,6 +16054,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Debit balance as of %@"
+          }
+        }
+      }
+    },
+    "Saldo en libros" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Book balance"
+          }
+        }
+      }
+    },
+    "Saldo en libros de cada cuenta" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Book balance of each account"
           }
         }
       }
@@ -14968,6 +16248,16 @@
         }
       }
     },
+    "Sale con su número y el sales tax, y queda por cobrar hasta que te paguen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "It gets its number and sales tax, and stays open until you get paid."
+          }
+        }
+      }
+    },
     "Salen en el encabezado de tus facturas y estimados. Se editan en Perfil de la empresa." : {
       "localizations" : {
         "en" : {
@@ -15059,12 +16349,32 @@
         }
       }
     },
+    "Saltar por ahora" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skip for now"
+          }
+        }
+      }
+    },
     "Salud y bienestar" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Health and wellness"
+          }
+        }
+      }
+    },
+    "Saqué dinero del negocio para mí" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I took money out of the business for myself"
           }
         }
       }
@@ -15435,6 +16745,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "If you pay them %@ or more in the year, send them a 1099-NEC by January 31."
+          }
+        }
+      }
+    },
+    "Si solo cambias el vencimiento, el mensaje o las descripciones, no se registra ningún asiento." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "If you only change the due date, the message or the descriptions, no entry is recorded."
           }
         }
       }
@@ -15830,6 +17150,16 @@
         }
       }
     },
+    "Sin movimientos todavía" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No activity yet"
+          }
+        }
+      }
+    },
     "Sin notas todavía" : {
       "localizations" : {
         "en" : {
@@ -16081,6 +17411,16 @@
         }
       }
     },
+    "Solo necesitas uno a mano para cosas como poner dinero de tu bolsillo en el negocio." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You only need one by hand for things like putting your own money into the business."
+          }
+        }
+      }
+    },
     "Solo periodo" : {
       "localizations" : {
         "en" : {
@@ -16127,6 +17467,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Customer credit can only be applied to a customer's open invoices."
+          }
+        }
+      }
+    },
+    "Solo se editan facturas emitidas sin cobros ni créditos." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Only issued invoices without payments or credits can be edited."
           }
         }
       }
@@ -16217,6 +17567,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Subject to 1099"
+          }
+        }
+      }
+    },
+    "Sumar a %@ (%@) y usarla en las facturas nuevas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add to %@ (%@) and use it on new invoices"
           }
         }
       }
@@ -16341,6 +17701,16 @@
         }
       }
     },
+    "Tarjeta de crédito (opcional)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Credit card (optional)"
+          }
+        }
+      }
+    },
     "Tasa" : {
       "localizations" : {
         "en" : {
@@ -16381,6 +17751,16 @@
         }
       }
     },
+    "Tasa creada: %@ %@%%" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rate created: %@ %@%%"
+          }
+        }
+      }
+    },
     "Tasa de impuesto sobre ventas" : {
       "localizations" : {
         "en" : {
@@ -16407,6 +17787,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Selected rate"
+          }
+        }
+      }
+    },
+    "Tasa estatal creada en el alta: %@ %@%%" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "State rate created at setup: %@ %@%%"
           }
         }
       }
@@ -16448,6 +17838,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Rates by jurisdiction"
+          }
+        }
+      }
+    },
+    "Tasas y declaración del sales tax: lo que cobras a tus clientes y le pagas al estado." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sales tax rates and filing: what you collect from customers and pay to the state."
           }
         }
       }
@@ -16552,12 +17952,12 @@
         }
       }
     },
-    "Tipo de entidad" : {
+    "Tipo de empresa" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Entity type"
+            "value" : "Business type"
           }
         }
       }
@@ -16578,6 +17978,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Payment type"
+          }
+        }
+      }
+    },
+    "Toca + cada vez que pagues algo del negocio y adjunta la foto del recibo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap + every time you pay for something for the business, and attach a photo of the receipt."
+          }
+        }
+      }
+    },
+    "Toca + para cobrarle a un cliente. Chirogra te avisa cuando vence y anota el pago cuando llegue." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap + to bill a customer. Chirogra reminds you when it's due and records the payment when it arrives."
           }
         }
       }
@@ -16984,6 +18404,16 @@
         }
       }
     },
+    "Traspaso entre cuentas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transfer between accounts"
+          }
+        }
+      }
+    },
     "Trimestral" : {
       "localizations" : {
         "en" : {
@@ -17055,6 +18485,116 @@
         }
       }
     },
+    "Tus datos salen en tus facturas; los cambias en Ajustes." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your details appear on your invoices; change them in Settings."
+          }
+        }
+      }
+    },
+    "Tus facturas cobran %@ (%@). Si no es la tasa de tu dirección, cámbiala en Impuestos." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your invoices charge %@ (%@). If that’s not the rate for your address, change it in Taxes."
+          }
+        }
+      }
+    },
+    "Tus facturas cobran %@ (%@). Si tu ciudad o condado cobra más, abre Impuestos y elige «Nueva tasa»: la sumamos a esta." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your invoices charge %@ (%@). If your city or county charges more, open Taxes and choose “New rate”: we’ll add it to this one."
+          }
+        }
+      }
+    },
+    "Tus facturas cobrarán la tasa estatal de %@ (%@). Si tu ciudad o condado cobra más, añade su parte en Impuestos › Nueva tasa y la sumamos. Revisa que las tasas sean las de tu negocio." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your invoices will charge the %@ state rate (%@). If your city or county charges more, add its part in Taxes › New Rate and we’ll add it up. Check that the rates are right for your business."
+          }
+        }
+      }
+    },
+    "Tus facturas nuevas cobrarán %@ (%@ %@ + %@ %@). Las juntamos en el grupo «%@», que verás en Impuestos." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your new invoices will charge %@ (%@ %@ + %@ %@). We combine them in the group “%@”, which you’ll see in Taxes."
+          }
+        }
+      }
+    },
+    "Tus facturas nuevas cobrarán %@ más esta tasa." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your new invoices will charge %@ plus this rate."
+          }
+        }
+      }
+    },
+    "Tus facturas nuevas cobrarán %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your new invoices will charge %@."
+          }
+        }
+      }
+    },
+    "Tus facturas nuevas cobrarán esta tasa." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your new invoices will charge this rate."
+          }
+        }
+      }
+    },
+    "Tus facturas nuevas seguirán cobrando %@ (%@). Podrás elegir esta tasa en cada factura." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your new invoices will keep charging %@ (%@). You can choose this rate on each invoice."
+          }
+        }
+      }
+    },
+    "Tus facturas nuevas seguirán sin impuesto. Podrás elegir esta tasa en cada factura." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your new invoices will stay without tax. You can choose this rate on each invoice."
+          }
+        }
+      }
+    },
+    "Tus facturas ya cobran el impuesto predeterminado. Añade la tasa de tu ciudad o condado si la hay." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your invoices already charge the default tax. Add your city or county rate if there is one."
+          }
+        }
+      }
+    },
     "Tus libros completos en tu iPhone, iPad y Mac: facturas, gastos, sales tax y reportes, privados en tu cuenta." : {
       "localizations" : {
         "en" : {
@@ -17105,6 +18645,26 @@
         }
       }
     },
+    "Tus proveedores son quienes te venden a ti: la tienda de materiales, el casero, tu contador." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your vendors are the ones who sell to you: the supply store, your landlord, your accountant."
+          }
+        }
+      }
+    },
+    "Tus reportes se arman solos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your reports build themselves"
+          }
+        }
+      }
+    },
     "Términos" : {
       "localizations" : {
         "en" : {
@@ -17135,12 +18695,32 @@
         }
       }
     },
+    "Un asiento es el registro contable de un movimiento. Chirogra los hace solo cuando facturas, cobras o anotas un gasto." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A journal entry is the accounting record of a transaction. Chirogra makes them on its own when you invoice, get paid or add an expense."
+          }
+        }
+      }
+    },
     "Un asiento necesita al menos dos líneas." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "A journal entry needs at least two lines."
+          }
+        }
+      }
+    },
+    "Un estimado es un presupuesto: le dices al cliente cuánto costará antes de empezar." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "An estimate is a quote: you tell the customer what it will cost before you start."
           }
         }
       }
@@ -17195,12 +18775,32 @@
         }
       }
     },
+    "Una factura es lo que le mandas a tu cliente para cobrarle un trabajo o una venta." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "An invoice is what you send your customer to get paid for a job or a sale."
+          }
+        }
+      }
+    },
     "Una factura por pagar recurrente necesita proveedor." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "A recurring bill needs a vendor."
+          }
+        }
+      }
+    },
+    "Una recurrente es un gasto que se repite: la renta, el seguro, una suscripción." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A recurring expense is one that repeats: rent, insurance, a subscription."
           }
         }
       }
@@ -17231,6 +18831,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Use this plan"
+          }
+        }
+      }
+    },
+    "Usarla en las facturas nuevas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use it on new invoices"
           }
         }
       }
@@ -18130,6 +19740,16 @@
         }
       }
     },
+    "Ya está en tus libros. ¿Se la mandas ahora por correo con el PDF?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "It's in your books now. Send it by email with the PDF?"
+          }
+        }
+      }
+    },
     "Ya existe una cuenta con ese código." : {
       "localizations" : {
         "en" : {
@@ -18459,6 +20079,16 @@
         }
       }
     },
+    "¿A qué cuenta entró?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Which account did it go into?"
+          }
+        }
+      }
+    },
     "¿A qué se dedica tu negocio?" : {
       "localizations" : {
         "en" : {
@@ -18509,6 +20139,16 @@
         }
       }
     },
+    "¿Cobras sales tax?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Do you collect sales tax?"
+          }
+        }
+      }
+    },
     "¿Conservar el borrador?" : {
       "localizations" : {
         "en" : {
@@ -18525,6 +20165,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Keep the estimate?"
+          }
+        }
+      }
+    },
+    "¿Cuánto dinero tiene hoy tu cuenta del negocio?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How much money is in your business account today?"
+          }
+        }
+      }
+    },
+    "¿De qué cuenta salió?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Which account did it come out of?"
           }
         }
       }
@@ -18569,6 +20229,16 @@
         }
       }
     },
+    "¿Pagas algo cada mes?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Do you pay something every month?"
+          }
+        }
+      }
+    },
     "¿Quieres crear «%@» como cliente nuevo?" : {
       "localizations" : {
         "en" : {
@@ -18585,6 +20255,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Remove this receipt?"
+          }
+        }
+      }
+    },
+    "¿Qué quieres registrar?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What do you want to record?"
           }
         }
       }
@@ -18615,6 +20295,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Reverse this entry?"
+          }
+        }
+      }
+    },
+    "¿Ya te pagaron?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Did you get paid?"
           }
         }
       }

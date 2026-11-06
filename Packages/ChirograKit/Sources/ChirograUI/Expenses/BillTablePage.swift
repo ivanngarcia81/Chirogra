@@ -84,9 +84,7 @@ struct BillTablePage: View {
 
     private var empty: MacTableEmpty {
         if bills.isEmpty {
-            return MacTableEmpty(systemImage: "doc.text", title: String(localized: "Sin facturas por pagar"),
-                                 message: String(localized: "Registra las facturas de tus proveedores para saber qué vence y cuándo."),
-                                 actionTitle: String(localized: "Nueva factura de proveedor"), action: { creating = true })
+            return MacTableEmpty(guide: .bills, action: { creating = true })
         }
         if query.trimmingCharacters(in: .whitespaces).isEmpty && filter == .open {
             return MacTableEmpty(systemImage: "checkmark.circle", title: String(localized: "Nada por pagar"),

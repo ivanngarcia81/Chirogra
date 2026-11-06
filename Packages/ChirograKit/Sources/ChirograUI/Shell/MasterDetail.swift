@@ -2,6 +2,7 @@ import ChirograCore
 import ChirograData
 import SwiftData
 import SwiftUI
+import TipKit
 
 /// Páginas de lista y detalle que en iPad y Mac van en una vista dividida de tres columnas: barra lateral, lista
 /// (columna maestro, de altura completa, con su título, búsqueda, filtro y botones en la barra) y detalle (§7.4,
@@ -67,10 +68,11 @@ enum BillFilter: String, CaseIterable, Identifiable {
     var id: String { rawValue }
 }
 
-/// Lo que crea «+ Movimiento» en Banca.
-enum NewMovement: String, Identifiable {
+/// Lo que crea «+ Movimiento» en Banca: un gasto, un asiento con plantilla (build 4) o a mano.
+enum NewMovement: Hashable, Identifiable {
     case expense, entry
-    var id: String { rawValue }
+    case template(JournalTemplate)
+    var id: Self { self }
 }
 
 // MARK: - Columnas
@@ -143,14 +145,56 @@ private struct BankAccountDetail: View {
     }
 }
 
+/// Detalle sin nada elegido. Si la sección aún está vacía (empresa nueva), en lugar de «Elige una factura» explica qué
+/// es la sección y ofrece el botón para empezar (`EmptyGuide`), como el estado vacío del iPhone y la tabla del Mac.
 private struct MasterPlaceholder: View {
+    let page: MasterPage
+
+    var body: some View {
+        Group {
+            switch page {
+            case .invoices: GuideOrPick<Invoice, InvoiceEditorView>(page: page, guide: .invoices) { InvoiceEditorView() }
+            case .customers: GuideOrPick<Customer, CustomerEditorView>(page: page, guide: .customers) { CustomerEditorView() }
+            case .expenses: GuideOrPick<Expense, ExpenseEditorView>(page: page, guide: .expenses) { ExpenseEditorView() }
+            case .vendors: GuideOrPick<Vendor, VendorEditorView>(page: page, guide: .vendors) { VendorEditorView() }
+            case .bills: GuideOrPick<Bill, BillEditorView>(page: page, guide: .bills) { BillEditorView() }
+            case .journal: GuideOrPick<JournalEntry, JournalEntryEditorView>(page: page, guide: .journal) { JournalEntryEditorView() }
+            #if os(iOS)
+            case .estimates: GuideOrPick<Estimate, InvoiceEditorView>(page: page, guide: .estimates) { InvoiceEditorView(mode: .estimate(nil)) }
+            #endif
+            case .banking, .chart: MasterPick(page: page)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Palette.background)
+    }
+}
+
+/// «Elige una factura»: lo que elijas en la lista se abre aquí.
+private struct MasterPick: View {
     let page: MasterPage
 
     var body: some View {
         EmptyStateView(systemImage: page.placeholder.image, title: page.placeholder.title,
                        message: String(localized: "Lo que elijas en la lista se abre aquí."))
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Palette.background)
+    }
+}
+
+/// La guía de la sección mientras no tiene nada; si ya tiene, «Elige…».
+private struct GuideOrPick<Model: PersistentModel, Editor: View>: View {
+    let page: MasterPage
+    let guide: EmptyGuide
+    @ViewBuilder let editor: () -> Editor
+    @Query private var models: [Model]
+    @State private var creating = false
+
+    var body: some View {
+        if models.isEmpty {
+            EmptyStateView(guide: guide) { creating = true }
+                .sheet(isPresented: $creating) { NavigationStack { editor() }.editorSheetSizing() }
+        } else {
+            MasterPick(page: page)
+        }
     }
 }
 
@@ -260,14 +304,18 @@ private extension View {
     /// de accesibilidad: en el iPad el título de la columna comparte la fila con el botón, y un texto largo («+ Factura
     /// de proveedor») ocupaba la fila y el sistema ocultaba el título. El canvas lo rellena de Tinta («+ Factura»); se
     /// queda en vidrio sin relleno, como el botón principal (decisión del usuario del 2-nov).
-    func masterAddButton(_ title: String?, label: String, action: @escaping () -> Void) -> some View {
+    func masterAddButton(_ title: String?, label: String, tip: (any Tip)? = nil, action: @escaping () -> Void) -> some View {
         toolbar {
             ToolbarItem(placement: .primaryAction) {
-                Button { SubscriptionStore.shared.whenWritable(action) } label: {
+                Button {
+                    tip?.invalidate(reason: .actionPerformed)
+                    SubscriptionStore.shared.whenWritable(action)
+                } label: {
                     HStack(spacing: 4) {
                         Image(systemName: "plus")
                         if let title { Text(title) }
                     }
+                    .onboardingTip(tip)
                 }
                 .accessibilityLabel(label)
                 .help(label)
@@ -322,7 +370,8 @@ private struct InvoiceMasterList: View {
                 .masterRow(invoice.id, selection: selection)
             }
             if filtered.isEmpty {
-                Text("Ninguna factura coincide").font(.subheadline).foregroundStyle(Palette.ink2)
+                Text(invoices.isEmpty ? EmptyGuide.invoices.title : String(localized: "Ninguna factura coincide"))
+                    .font(.subheadline).foregroundStyle(Palette.ink2)
                     .frame(maxWidth: .infinity).listRowSeparator(.hidden).listRowBackground(Palette.surface)
             }
         }
@@ -332,7 +381,8 @@ private struct InvoiceMasterList: View {
                 invoices.filter { inScope($0, option) }.count
             }
         }
-        .masterAddButton(String(localized: "Factura"), label: String(localized: "Nueva factura")) { creating = true }
+        .masterAddButton(String(localized: "Factura"), label: String(localized: "Nueva factura"), tip: NewInvoiceTip()) { creating = true }
+        .task(id: invoices.isEmpty) { NewInvoiceTip.hasInvoices = !invoices.isEmpty }
         .sheet(isPresented: $creating) { NavigationStack { InvoiceEditorView() }.editorSheetSizing() }
         #if DEBUG
         // `-qa.fila N` (solo Debug): elige la fila N de la columna maestro al abrir (capturas de la App Store).
@@ -377,7 +427,7 @@ private struct CustomerMasterList: View {
                 .masterRow(customer.id, selection: selection)
             }
             if filtered.isEmpty {
-                Text(customers.isEmpty ? String(localized: "Sin clientes todavía") : String(localized: "Ningún cliente coincide con «\(query)»."))
+                Text(customers.isEmpty ? EmptyGuide.customers.title : String(localized: "Ningún cliente coincide con «\(query)»."))
                     .font(.subheadline).foregroundStyle(Palette.ink2).frame(maxWidth: .infinity).listRowSeparator(.hidden).listRowBackground(Palette.surface)
             }
         }
@@ -416,6 +466,11 @@ private struct ExpenseMasterList: View {
 
     var body: some View {
         List(selection: $selection) {
+            #if os(iOS)
+            Section { InlineTip(tip: RecurringTip()) { _ in RecurringTip().invalidate(reason: .actionPerformed); showingRecurring = true } }
+                .listRowBackground(Color.clear)
+                .listRowInsets(EdgeInsets(top: 4, leading: 12, bottom: 4, trailing: 12))
+            #endif
             ForEach(filtered) { expense in
                 // Sin «−»: en la lista de Gastos todo es gasto (como en el iPhone y en el detalle).
                 MasterRow(title: expense.payee, amount: expense.total.money,
@@ -429,7 +484,7 @@ private struct ExpenseMasterList: View {
                 .masterRow(expense.id, selection: selection)
             }
             if filtered.isEmpty {
-                Text(expenses.isEmpty ? String(localized: "Sin gastos todavía") : String(localized: "Ningún gasto coincide"))
+                Text(expenses.isEmpty ? EmptyGuide.expenses.title : String(localized: "Ningún gasto coincide"))
                     .font(.subheadline).foregroundStyle(Palette.ink2).frame(maxWidth: .infinity).listRowSeparator(.hidden).listRowBackground(Palette.surface)
             }
         }
@@ -440,11 +495,18 @@ private struct ExpenseMasterList: View {
                     .headerButton()
             }
             ToolbarItem(placement: .secondaryAction) {
-                Button("Recurrentes", systemImage: "arrow.trianglehead.2.clockwise") { showingRecurring = true }
-                    .headerButton()
+                Button("Recurrentes", systemImage: "arrow.trianglehead.2.clockwise") {
+                    RecurringTip().invalidate(reason: .actionPerformed)
+                    showingRecurring = true
+                }
+                .headerButton()
             }
         }
-        .masterAddButton(String(localized: "Gasto"), label: String(localized: "Nuevo gasto")) { creating = true }
+        .masterAddButton(String(localized: "Gasto"), label: String(localized: "Nuevo gasto"), tip: NewExpenseTip()) { creating = true }
+        .task(id: expenses.isEmpty) {
+            NewExpenseTip.hasExpenses = !expenses.isEmpty
+            RecurringTip.hasExpenses = !expenses.isEmpty
+        }
         .sheet(isPresented: $creating) { NavigationStack { ExpenseEditorView() }.editorSheetSizing() }
         #if DEBUG
         // `-qa.fila N` (solo Debug): elige la fila N de la columna maestro al abrir (capturas de la App Store).
@@ -491,7 +553,7 @@ private struct VendorMasterList: View {
                 .masterRow(vendor.id, selection: selection)
             }
             if filtered.isEmpty {
-                Text(vendors.isEmpty ? String(localized: "Sin proveedores") : String(localized: "Ningún proveedor coincide"))
+                Text(vendors.isEmpty ? EmptyGuide.vendors.title : String(localized: "Ningún proveedor coincide"))
                     .font(.subheadline).foregroundStyle(Palette.ink2).frame(maxWidth: .infinity).listRowSeparator(.hidden).listRowBackground(Palette.surface)
             }
         }
@@ -559,7 +621,7 @@ private struct BillMasterList: View {
                 }
             }
             if filtered.isEmpty {
-                Text(bills.isEmpty ? String(localized: "Sin facturas por pagar") : String(localized: "Ninguna factura coincide"))
+                Text(bills.isEmpty ? EmptyGuide.bills.title : String(localized: "Ninguna factura coincide"))
                     .font(.subheadline).foregroundStyle(Palette.ink2).frame(maxWidth: .infinity).listRowSeparator(.hidden).listRowBackground(Palette.surface)
             }
         }
@@ -615,6 +677,15 @@ private struct BankingMasterList: View {
         let ledger = Ledger(accounts: accounts, lines: journalLines)
         let shown = ledger.moneyAccounts.filter { $0.subtype == .bank || $0.subtype == .creditCard || ledger.balance(of: $0) != 0 }
         List(selection: $selection) {
+            if !shown.isEmpty {
+                HStack(spacing: 0) {
+                    Text("Saldo en libros de cada cuenta").font(.footnote).foregroundStyle(Palette.ink2)
+                    TermHelp(.bookBalance)
+                }
+                .selectionDisabled()
+                .listRowSeparator(.hidden)
+                .listRowBackground(Palette.surface)
+            }
             ForEach(shown) { account in
                 MasterRow(title: account.maskedName, amount: ledger.cashBalance(of: account).money,
                           subtitle: String(localized: "Saldo en libros · \(account.code)")) {
@@ -643,7 +714,12 @@ private struct BankingMasterList: View {
             ToolbarItem(placement: .primaryAction) {
                 Menu {
                     Button("Gasto", systemImage: "wallet.bifold") { adding = .expense }
-                    Button("Asiento manual", systemImage: "list.bullet.rectangle") { adding = .entry }
+                    Section {
+                        ForEach(JournalTemplate.allCases) { template in
+                            Button(template.title, systemImage: template.systemImage) { adding = .template(template) }
+                        }
+                    }
+                    Button("Asiento a mano", systemImage: "list.bullet.rectangle") { adding = .entry }
                 } label: {
                     HStack(spacing: 4) { Image(systemName: "plus"); Text("Movimiento") }
                 }
@@ -656,6 +732,7 @@ private struct BankingMasterList: View {
                 switch kind {
                 case .expense: ExpenseEditorView()
                 case .entry: JournalEntryEditorView()
+                case .template(let template): JournalEntryEditorView(template: template)
                 }
             }
             .editorSheetSizing()
@@ -690,7 +767,7 @@ private struct JournalMasterList: View {
                 .masterRow(entry.id, selection: selection)
             }
             if filtered.isEmpty {
-                Text(entries.isEmpty ? String(localized: "Sin asientos") : String(localized: "Ningún asiento coincide"))
+                Text(entries.isEmpty ? EmptyGuide.journal.title : String(localized: "Ningún asiento coincide"))
                     .font(.subheadline).foregroundStyle(Palette.ink2).frame(maxWidth: .infinity).listRowSeparator(.hidden).listRowBackground(Palette.surface)
             }
         }

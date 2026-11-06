@@ -79,7 +79,6 @@ struct ExpenseEditorView: View {
             && salesTaxIncluded >= 0 && salesTaxIncluded < total
     }
 
-    private var expenseAccounts: [Account] { accounts.filtered { $0.accountType == .expense || $0 == .fixedAsset || $0 == .otherCurrentAsset } }
     private var paymentAccounts: [Account] { accounts.paymentAccounts }
     private var hasClosingPassword: Bool { companies.first?.hasClosingPassword ?? false }
 
@@ -119,10 +118,10 @@ struct ExpenseEditorView: View {
             }
             #endif
         }
-        .onChange(of: vendorID) {
-            guard loaded, let vendor = vendors.first(where: { $0.id == vendorID }) else { return }
-            if payee.isEmpty { payee = vendor.name }
-            if lines.count == 1, let defaultAccount = vendor.defaultExpenseAccountID { lines[0].accountID = defaultAccount }
+        .onChange(of: vendorID) { old, new in
+            // «Nuevo proveedor…» pasa un instante por su etiqueta y vuelve a la de antes: eso no es elegir.
+            guard loaded, old != VendorPicker.newVendorTag, new != VendorPicker.newVendorTag else { return }
+            if let vendor = vendors.first(where: { $0.id == new }) { use(vendor) }
         }
         .onAppear(perform: load)
         .alert(hasClosingPassword ? "Periodo cerrado" : "¿Registrar en un periodo cerrado?", isPresented: $askingUnlock) {
@@ -136,6 +135,13 @@ struct ExpenseEditorView: View {
                  ? "La fecha cae en un periodo cerrado. Escribe la contraseña de cierre para registrar el cambio; quedará en el historial."
                  : "La fecha cae en un periodo cerrado. El cambio quedará en el historial.")
         }
+    }
+
+    /// Proveedor recién elegido (o creado desde el menú): su nombre pasa a «Pagado a», que se esconde, y su
+    /// categoría por defecto a la línea si solo hay una.
+    private func use(_ vendor: Vendor) {
+        payee = vendor.name
+        if lines.count == 1, let defaultAccount = vendor.defaultExpenseAccountID { lines[0].accountID = defaultAccount }
     }
 
     private func load() {
@@ -184,19 +190,10 @@ struct ExpenseEditorView: View {
     private var amountSection: some View {
         Section {
             if lines.count == 1 {
-                LabeledContent("Monto") {
-                    MoneyField(title: String(localized: "Monto"), minorUnits: $lines[0].amount)
-                        .font(.amount(isWide ? 17 : 24))
-                        .multilineTextAlignment(.trailing)
-                        .labelsHidden()
-                }
+                MoneyRow(String(localized: "Monto"), minorUnits: $lines[0].amount, font: .amount(isWide ? 17 : 24))
             }
             DatePicker("Fecha", selection: $date, displayedComponents: .date)
-            LabeledContent("Impuesto incluido") {
-                MoneyField(title: String(localized: "Impuesto incluido"), minorUnits: $salesTaxIncluded)
-                    .multilineTextAlignment(.trailing)
-                    .labelsHidden()
-            }
+            MoneyRow(String(localized: "Impuesto incluido"), minorUnits: $salesTaxIncluded)
         } header: {
             SectionLabel(text: String(localized: "Importe"))
         } footer: {
@@ -213,13 +210,13 @@ struct ExpenseEditorView: View {
     @ViewBuilder
     private var detailsSection: some View {
         Section {
-            Picker("Proveedor", selection: $vendorID) {
-                Text("Ninguno").tag(UUID?.none)
-                ForEach(vendors.filter { !$0.isArchived || $0.id == vendorID }) { Text($0.name).tag(Optional($0.id)) }
+            VendorPicker(vendors: vendors, selection: $vendorID, proposedName: payee) { use($0) }
+            // Con un proveedor elegido, su nombre es el «Pagado a»: basta con uno de los dos.
+            if vendorID == nil {
+                TextField("Pagado a (comercio o persona)", text: $payee)
             }
-            TextField("Pagado a (comercio o persona)", text: $payee)
             if lines.count == 1 {
-                AccountPicker(title: String(localized: "Categoría"), accounts: expenseAccounts, selection: $lines[0].accountID)
+                ExpenseCategoryPicker(title: String(localized: "Categoría"), accounts: accounts, selection: $lines[0].accountID)
             }
             PaymentAccountPicker(title: String(localized: "Cuenta de pago"), accounts: paymentAccounts, selection: $paymentAccountID)
             Picker("Método de pago", selection: $method) {
@@ -238,6 +235,10 @@ struct ExpenseEditorView: View {
             }
         } header: {
             SectionLabel(text: String(localized: "Detalles"))
+        } footer: {
+            if vendorID == nil {
+                Text("Elige un proveedor si le compras a menudo o le pagas facturas; si no, basta con escribir en «Pagado a» a quién le pagaste.")
+            }
         }
     }
 
@@ -247,12 +248,8 @@ struct ExpenseEditorView: View {
             Section {
                 ForEach($lines) { $line in
                     VStack(alignment: .leading, spacing: 6) {
-                        AccountPicker(title: String(localized: "Categoría"), accounts: expenseAccounts, selection: $line.accountID)
-                        LabeledContent("Importe") {
-                            MoneyField(title: String(localized: "Importe"), minorUnits: $line.amount)
-                                .multilineTextAlignment(.trailing)
-                                .labelsHidden()
-                        }
+                        ExpenseCategoryPicker(title: String(localized: "Categoría"), accounts: accounts, selection: $line.accountID)
+                        MoneyRow(String(localized: "Importe"), minorUnits: $line.amount)
                     }
                     .padding(.vertical, 2)
                     .swipeActions {
@@ -339,6 +336,7 @@ struct ExpenseEditorView: View {
             }
         }
         .formStyle(.grouped)
+        .keyboardDoneButton()
         .screenBackground()
     }
 
@@ -369,6 +367,7 @@ struct ExpenseEditorView: View {
             }
             .formStyle(.grouped)
             .scrollContentBackground(.hidden)
+            .keyboardDoneButton()
         }
         .background(Palette.background)
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { editorWidth = $0 }
