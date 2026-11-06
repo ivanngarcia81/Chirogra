@@ -10,6 +10,9 @@ import SwiftUI
 /// «Enviar recordatorio», «Abrir factura» y «Ver cliente». Doble clic abre la factura completa (`InvoiceDetailView`).
 struct InvoiceTablePage: View {
     static let isReady = true
+    #if DEBUG
+    @MainActor private static var qaIssued = false
+    #endif
     @Binding var selection: UUID?
     @Environment(\.modelContext) private var context
     @Query(sort: \Invoice.createdAt, order: .reverse) private var invoices: [Invoice]
@@ -24,6 +27,8 @@ struct InvoiceTablePage: View {
     @State private var openedInvoice: Invoice?
     @State private var openedCustomer: Customer?
     @State private var errorMessage: String?
+    /// Recién emitida desde el inspector: «Factura F-1001 emitida · Enviar a…».
+    @State private var justIssued: Invoice?
 
     private var filtered: [Invoice] {
         let text = query.trimmingCharacters(in: .whitespaces)
@@ -120,6 +125,7 @@ struct InvoiceTablePage: View {
             NavigationStack { SendDocumentView(source: .invoice(invoice), purpose: .reminder) }.editorSheetSizing()
         }
         .sheet(item: $editing) { invoice in NavigationStack { InvoiceEditorView(editing: invoice) }.editorSheetSizing() }
+        .offerToSendIssued($justIssued)
         .navigationDestination(item: $openedInvoice) { InvoiceDetailView(invoice: $0) }
         .navigationDestination(item: $openedCustomer) { CustomerDetailView(customer: $0) }
         #if DEBUG
@@ -133,6 +139,21 @@ struct InvoiceTablePage: View {
             // `-qa.enviar 1` abre «Enviar factura…» y `-qa.recordar 1` «Enviar recordatorio» de la fila elegida.
             if UserDefaults.standard.bool(forKey: "qa.enviar"), invoice.status != .draft { sending = invoice }
             if UserDefaults.standard.bool(forKey: "qa.recordar"), invoice.isOpen { reminding = invoice }
+            // `-qa.editar 1` abre el editor de la fila elegida (borrador o emitida sin cobros) y `-qa.emitir 1` emite una
+            // copia en borrador de la fila elegida, para ver «Factura … emitida · Enviar a…» sin el ratón.
+            if UserDefaults.standard.bool(forKey: "qa.editar"),
+               invoice.status == .draft || Bookkeeper(context: context).canEditIssued(invoice) { editing = invoice }
+            if UserDefaults.standard.bool(forKey: "qa.emitir"), !Self.qaIssued {
+                Self.qaIssued = true   // la tarea puede correr dos veces al montar la tabla
+                let books = Bookkeeper(context: context)
+                let copy = try? books.saveDraft(InvoiceDraftInput(
+                    customer: invoice.customer, issueDate: .now, dueDate: invoice.dueDate, taxGroupID: invoice.taxGroupID,
+                    lines: invoice.sortedLines.map {
+                        .init(details: $0.details, quantity: $0.quantity, unitPrice: $0.unitPrice, isTaxable: $0.isTaxable,
+                              incomeAccountID: $0.incomeAccountID)
+                    }))
+                if let copy { issue(copy) }
+            }
         }
         #endif
     }
@@ -152,6 +173,10 @@ struct InvoiceTablePage: View {
             Button(invoice.lastReminderDate.map(Calendar.current.isDateInToday) == true
                    ? String(localized: "Recordatorio enviado hoy") : String(localized: "Enviar recordatorio…")) { reminding = invoice }
                 .buttonStyle(.secondary)
+            // Sin cobros ni créditos se corrige (reversión + asiento nuevo, mismo número); con ellos, nota de crédito.
+            if Bookkeeper(context: context).canEditIssued(invoice) {
+                Button("Editar factura…") { editing = invoice }.buttonStyle(.secondary)
+            }
         } else if invoice.status != .void {
             Button("Enviar factura…") { sending = invoice }.buttonStyle(.secondary)
         }
@@ -164,7 +189,13 @@ struct InvoiceTablePage: View {
     }
 
     private func issue(_ invoice: Invoice) {
-        do { try Bookkeeper(context: context).issue(invoice); errorMessage = nil } catch { errorMessage = error.localizedDescription }
+        do {
+            try Bookkeeper(context: context).issue(invoice)
+            errorMessage = nil
+            justIssued = invoice
+        } catch {
+            errorMessage = error.localizedDescription
+        }
     }
 }
 

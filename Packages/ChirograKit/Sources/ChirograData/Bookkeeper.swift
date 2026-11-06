@@ -244,8 +244,15 @@ public struct Bookkeeper {
             context.insert(invoice)
             invoice.pricesIncludeTax = try company()?.pricesIncludeTax ?? false
         }
-        if let pricesIncludeTax = input.pricesIncludeTax { invoice.pricesIncludeTax = pricesIncludeTax }
+        apply(input, to: invoice)
+        try storeDraftTotals(of: invoice)
+        try saveOrRollback()
+        return invoice
+    }
 
+    /// Copia en la factura los datos del editor y reemplaza sus líneas (borrador o, al editar, factura emitida).
+    func apply(_ input: InvoiceDraftInput, to invoice: Invoice) {
+        if let pricesIncludeTax = input.pricesIncludeTax { invoice.pricesIncludeTax = pricesIncludeTax }
         invoice.customer = input.customer
         invoice.issueDate = input.issueDate
         invoice.dueDate = input.dueDate
@@ -260,9 +267,6 @@ public struct Bookkeeper {
             model.invoice = invoice
             context.insert(model)
         }
-        try storeDraftTotals(of: invoice)
-        try saveOrRollback()
-        return invoice
     }
 
     /// Guarda en el borrador los totales con las reglas de emisión (impuesto, descuento, impuesto incluido), para que
@@ -333,48 +337,63 @@ public struct Bookkeeper {
     @discardableResult
     public func issue(_ invoice: Invoice) throws -> JournalEntry {
         guard invoice.status == .draft else { throw BookkeepingError.invalidState(String(localized: "La factura ya fue emitida.")) }
-        let receivable = try systemAccount(.accountsReceivable)
-        let defaultIncome = try systemAccount(.sales).id
-        let lines = invoice.sortedLines.map {
-            SalesLine(incomeAccountID: $0.incomeAccountID ?? defaultIncome, amount: $0.amount, isTaxable: $0.isTaxable, memo: $0.details)
-        }
         // Nada se modifica hasta que el asiento es válido: el número se reserva después.
         let number = invoice.number.isEmpty ? try peekDocumentNumber(.invoice) : invoice.number
-
         let components = try taxComponents(groupID: invoice.taxGroupID, on: invoice.issueDate)
-        let discountAccountID = invoice.discount > 0 ? try systemAccount(.salesDiscount).id : nil
-        let posting: InvoicePosting
-        do {
-            posting = try PostingRules.invoice(
-                date: invoice.issueDate,
-                memo: String(localized: "Factura \(number) · \(invoice.customer?.name ?? "")"),
-                receivableAccountID: receivable.id,
-                lines: lines,
-                taxComponents: components,
-                customerIsTaxExempt: invoice.customer?.isTaxExempt ?? false,
-                discount: invoice.discount,
-                discountAccountID: discountAccountID,
-                pricesIncludeTax: invoice.pricesIncludeTax
-            )
-        } catch {
-            throw BookkeepingError.invalidDocument(error)
-        }
+        let posting = try invoicePosting(for: invoice, number: number, taxComponents: components)
 
         try validate(posting.entry)
         if invoice.number.isEmpty { invoice.number = try nextDocumentNumber(.invoice) }
         let entry = try post(posting.entry, sourceDocumentID: invoice.id, save: false)
         entry.lines?.forEach { $0.customerID = invoice.customer?.id }
         invoice.journalEntryID = entry.id
+        store(posting, in: invoice)
+        invoice.status = .sent
+        try saveOrRollback()
+        return entry
+    }
+
+    /// Asiento de emisión de la factura con sus datos actuales: Debe CxC / Haber Ingresos (+ Sales Tax Payable, − descuento).
+    func invoicePosting(for invoice: Invoice, number: String, taxComponents components: [TaxComponent]) throws -> InvoicePosting {
+        try invoicePosting(number: number, customer: invoice.customer, date: invoice.issueDate,
+                           lines: invoice.sortedLines.map { ($0.incomeAccountID, $0.amount, $0.isTaxable, $0.details) },
+                           discount: invoice.discount, pricesIncludeTax: invoice.pricesIncludeTax, taxComponents: components)
+    }
+
+    /// El mismo asiento a partir de los datos sueltos (p. ej. los del editor, antes de tocar la factura).
+    func invoicePosting(number: String, customer: Customer?, date: Date, lines raw: [(UUID?, Int64, Bool, String)],
+                        discount: Int64, pricesIncludeTax: Bool, taxComponents components: [TaxComponent]) throws -> InvoicePosting {
+        let receivable = try systemAccount(.accountsReceivable)
+        let defaultIncome = try systemAccount(.sales).id
+        let lines = raw.map { SalesLine(incomeAccountID: $0.0 ?? defaultIncome, amount: $0.1, isTaxable: $0.2, memo: $0.3) }
+        let discountAccountID = discount > 0 ? try systemAccount(.salesDiscount).id : nil
+        do {
+            return try PostingRules.invoice(
+                date: date,
+                memo: String(localized: "Factura \(number) · \(customer?.name ?? "")"),
+                receivableAccountID: receivable.id,
+                lines: lines,
+                taxComponents: components,
+                customerIsTaxExempt: customer?.isTaxExempt ?? false,
+                discount: discount,
+                discountAccountID: discountAccountID,
+                pricesIncludeTax: pricesIncludeTax
+            )
+        } catch {
+            throw BookkeepingError.invalidDocument(error)
+        }
+    }
+
+    /// Guarda en la factura los totales y el desglose de impuesto (`InvoiceTaxLine`) de su asiento de emisión.
+    func store(_ posting: InvoicePosting, in invoice: Invoice) {
         invoice.subtotal = posting.subtotal
         invoice.taxTotal = posting.totalTax
         invoice.total = posting.total
+        for line in invoice.taxLines ?? [] { context.delete(line) }
         invoice.taxLines = posting.taxes.map {
             InvoiceTaxLine(taxRateID: $0.component.id, name: $0.component.name, rateMillionths: $0.component.rateMillionths,
                            taxableBase: $0.taxableBase, amount: $0.amount)
         }
-        invoice.status = .sent
-        try saveOrRollback()
-        return entry
     }
 
     /// Registra un cobro aplicado a una factura: Debe Banco / Haber CxC.

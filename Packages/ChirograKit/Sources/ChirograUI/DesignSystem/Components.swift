@@ -507,7 +507,7 @@ extension Invoice {
         if daysOverdue() != nil { return String(localized: "Vencida") }
         return switch status {
         case .draft: String(localized: "Borrador")
-        case .sent: String(localized: "Enviada")
+        case .sent: sentStatusTitle
         case .partiallyPaid: String(localized: "Pago parcial")
         case .paid: String(localized: "Pagada")
         case .void: String(localized: "Anulada")
@@ -515,8 +515,16 @@ extension Invoice {
     }
 }
 
+extension Invoice {
+    /// Estado `.sent`: «Enviada» solo si se mandó desde la app (hay un envío anotado); si no, «Emitida». Antes salía
+    /// «Enviada» nada más emitirla, aunque nunca se hubiera mandado (recorrido «cliente nuevo», 5-nov).
+    var sentStatusTitle: String {
+        lastSentDate == nil ? String(localized: "Emitida") : String(localized: "Enviada")
+    }
+}
+
 extension StatusChip {
-    /// Estados de factura del canvas (`Ventas`): Borrador (gris), Enviada (azul), Pago parcial (naranja),
+    /// Estados de factura del canvas (`Ventas`): Borrador (gris), Emitida o Enviada (azul), Pago parcial (naranja),
     /// Vencida · N días (rojo), Pagada (verde) y Anulada (gris).
     init(invoice: Invoice, compact: Bool = true) {
         if let days = invoice.daysOverdue() {
@@ -526,7 +534,7 @@ extension StatusChip {
         }
         switch invoice.status {
         case .draft: self.init(text: String(localized: "Borrador"), foreground: Palette.ink2, background: Palette.surface2, compact: compact, dot: Palette.gray)
-        case .sent: self.init(text: String(localized: "Enviada"), foreground: Palette.ink2, background: Palette.surface2, compact: compact, dot: Palette.blue)
+        case .sent: self.init(text: invoice.sentStatusTitle, foreground: Palette.ink2, background: Palette.surface2, compact: compact, dot: Palette.blue)
         case .partiallyPaid: self.init(text: String(localized: "Pago parcial"), foreground: Palette.warning, background: Palette.warningWash, compact: compact, dot: Palette.orange)
         case .paid: self.init(text: String(localized: "Pagada"), foreground: Palette.positive, background: Palette.positiveWash, compact: compact, dot: Palette.green)
         case .void: self.init(text: String(localized: "Anulada"), foreground: Palette.ink2, background: Palette.surface2, compact: compact, dot: Palette.gray)
@@ -1499,11 +1507,13 @@ struct LogoMark: View {
 struct MoneyField: View {
     let title: String
     @Binding var minorUnits: Int64
+    /// Guía del campo vacío; por defecto «$0.00». La línea de la factura pone «Precio» para no confundirlo con el importe.
+    var prompt: String? = nil
 
     var body: some View {
         // Con cero, el campo va vacío y «$0.00» es solo la guía: si el texto era «$0.00», lo escrito se pegaba detrás
         // («$0.00500» → $0.01, 2-nov).
-        TextField(title, value: decimal, format: .currency(code: "USD"), prompt: Text(Int64(0).money))
+        TextField(title, value: decimal, format: .currency(code: "USD"), prompt: Text(prompt ?? Int64(0).money))
             .monospacedDigit()
             #if os(iOS)
             .keyboardType(.decimalPad)

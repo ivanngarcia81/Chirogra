@@ -1083,6 +1083,7 @@ struct CustomerRefundView: View {
         }
         .formStyle(.grouped)
         .screenBackground()
+        .keyboardDoneButton()
         .navigationTitle("Reembolso")
         .inlineTitle()
         .discardableEditor(tracking: "\(amount)|\(date)|\(accountID?.uuidString ?? "")", token: editorToken)
