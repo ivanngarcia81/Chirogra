@@ -4,6 +4,19 @@ Resumen del chat de coordinación de Chirogra al **7 de noviembre de 2026**. Lé
 
 ## Dónde nos quedamos (empieza aquí)
 
+**CIERRE DEL 7-NOV (léelo primero).** Todo está en `main` y empujado (`d661702` y este commit); no quedan ramas (`build6` y `build7` borradas) ni trabajo sin subir. La 1.0.0 lleva subidos a App Store Connect los builds **1 a 10** (iOS y macOS); **el bueno es el 10** y **aún no se ha enviado nada a revisión**. El usuario probó la app como cliente nuevo con el guion del artículo https://claude.ai/artifact/32kiNBUgqBpqTrZ4MTfgc7 en varias rondas y el 7-nov dijo **«ya todo está bien»**: el guion está **terminado**, no pedir otra ronda salvo que él lo pida. El build 10 lleva, sobre el 5: «Editar» a la vista en la factura emitida; Impuestos antes que Contabilidad en «Más»; método de pago según la cuenta; sales tax completo en la apertura (Tasa de Texas fija → ciudad → tasa de la ciudad → total sumado); «Sales tax por pagar · Vence el …» en Inicio; impuesto incluido del gasto calculado solo con la tasa de la empresa; línea de la factura del iPhone con el total abajo; ícono nuevo (carpeta con la «C»), también en chirogra.com.
+
+**Lo siguiente (lo que queda para publicar la 1.0):**
+1. **Usuario · suscripción en App Store Connect:** grupo «Chirogra», `com.chirogra.app.mensual`, 1 mes, $24.99, 2 semanas gratis (textos en [APP-STORE.md](APP-STORE.md)).
+2. **Claude · captura de la pantalla de suscripción** para la revisión de la compra, cuando exista el producto.
+3. **Claude · guía web** (`sitio/guia`, `sitio/guide`): todavía tiene capturas y pasos del build 3 en alta, tasas y factura; ponerla al día con el build 10 (apertura nueva, Inicio con el sales tax, gasto, factura). Y el glosario si cambió algún menú.
+4. **Usuario · ficha y envío a revisión con el build 10** (textos, categoría, URLs, «Data Not Collected», 4+, notas en APP-STORE.md). Rehacer las capturas de la App Store si quiere mostrar el ícono nuevo.
+5. **Usuario · correo `soporte@chirogra.com`** (reenvío en Cloudflare), sin confirmar.
+6. **Probar iCloud de verdad** (primero un aparato, luego los demás): nunca se ha probado.
+7. **Después de publicar:** la 1.1 (plan para contadores) y la fase 2; la nómina es una idea sin decidir.
+
+Próxima subida a TestFlight: **build 11** (`CURRENT_PROJECT_VERSION` en `project.yml` y en el pbxproj). Cómo subir: «TestFlight» en «Estado actual», desde un `git archive HEAD` limpio.
+
 **7-nov (tarde): BUILD 10 SUBIDO** (iOS y macOS) desde `42cfa61`, hecho ya sobre `main` y **empujado**. El usuario dio el guion de prueba por terminado («ya todo está bien»): no hace falta otra ronda. **Para revisión, elegir el build 10.** Viene de las notas del guion del build 8 (colección `notas8`): todo fácil salvo alta e impuestos, regulares. El usuario pidió otra vez el orden del sales tax en la apertura, porque escribir el total no explicaba de dónde salía el 2 %: ahora «Tasa de Texas 6.25%» fija; «Ciudad o condado»; al escribirla, «Tasa de Austin» editable (en %); y «Tasa total que cobras 8.25%» sumada (estado + ciudad, máx. 20 %). `setUpSalesTax(totalMillionths:localName:)` no cambia. Guion v6; notas nuevas en **`notas10`**.
 
 **7-nov (tarde): BUILD 9 SUBIDO** (iOS y macOS) desde `40bb205` de la rama `build7`. **Todo (builds 6, 7, 8 y 9 y el ícono nuevo, también el de la web `sitio/img/icono.png`) fusionado en `main` y empujado el 7-nov**; la web se publica con ese empuje. **Para revisión, elegir el build 9.** Solo cambia la línea de la factura en el formulario estrecho (iPhone), como la dibujó el usuario: descripción (varias líneas) con precio · «Gravable»; debajo «1 × − +» y la cuenta de ingreso; al final «Total de la línea» (antes el total iba junto a la descripción y se confundía con el precio). El guion v5 solo cambia el encabezado; las notas siguen en `notas8`.
