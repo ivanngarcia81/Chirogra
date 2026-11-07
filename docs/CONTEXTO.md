@@ -4,6 +4,8 @@ Resumen del chat de coordinación de Chirogra al **7 de noviembre de 2026**. Lé
 
 ## Dónde nos quedamos (empieza aquí)
 
+**7-nov (tarde): BUILD 9 SUBIDO** (iOS y macOS) desde `40bb205` de la misma rama `build7`, sin fusionar ni empujar. **Para revisión, elegir el build 9.** Solo cambia la línea de la factura en el formulario estrecho (iPhone), como la dibujó el usuario: descripción (varias líneas) con precio · «Gravable»; debajo «1 × − +» y la cuenta de ingreso; al final «Total de la línea» (antes el total iba junto a la descripción y se confundía con el precio). El guion v5 solo cambia el encabezado; las notas siguen en `notas8`.
+
 **7-nov (tarde): BUILD 8 SUBIDO** (iOS y macOS, «Upload succeeded») desde `0291565` de la rama local **`build7`** (lleva el build 7 y el ícono nuevo `d5ca398`), **sin fusionar ni empujar**. **Para revisión, elegir el build 8.** Viene de las notas del guion del build 7 (colección `notas7`: todo fácil menos alta y correcciones, regulares). Lleva:
 - **Ícono nuevo** (`App/AppIcon.icon`, del `Chirogra 1.icon` del usuario: carpeta con la «C», sin el sello). El ícono de la web (`sitio/img/icono.png`) sigue siendo el viejo.
 - **Apertura:** tras «Ciudad o condado», la fila de solo lectura «Tasa de Austin 2%» (total − estado): el usuario pidió el orden total → ciudad → % de la ciudad.
