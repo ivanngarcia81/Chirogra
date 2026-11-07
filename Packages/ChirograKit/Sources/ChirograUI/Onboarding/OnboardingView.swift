@@ -126,7 +126,8 @@ struct OnboardingView: View {
     #if DEBUG
     /// Argumentos de QA (solo Debug), para capturas del alta sin tocar la pantalla: `-qa.alta N` abre el paso N con el
     /// nombre «Taller Uno»; `-qa.altaEstado TX` elige el estado; `-qa.altaBanco 1250000` y `-qa.altaTarjeta 30000`
-    /// ponen los saldos (en centavos); `-qa.altaCrear 1` crea la empresa al momento.
+    /// ponen los saldos (en centavos); `-qa.altaCiudad` y `-qa.altaCiudadTasa` la ciudad y su tasa; `-qa.altaCrear 1`
+    /// crea la empresa al momento.
     private func applyQALaunch() {
         let defaults = UserDefaults.standard
         guard defaults.object(forKey: "qa.alta") != nil, displayName.isEmpty else { return }
@@ -135,6 +136,11 @@ struct OnboardingView: View {
         openingBank = Int64(defaults.integer(forKey: "qa.altaBanco"))
         openingCard = Int64(defaults.integer(forKey: "qa.altaTarjeta"))
         step = min(max(defaults.integer(forKey: "qa.alta"), 1), Self.stepCount)
+        // `-qa.altaCiudad Austin -qa.altaCiudadTasa 2`: la ciudad y su tasa (después del cambio de estado, que las borra).
+        if let city = defaults.string(forKey: "qa.altaCiudad") {
+            let rate = defaults.string(forKey: "qa.altaCiudadTasa").flatMap { Decimal(string: $0) }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { localTaxName = city; localRate = rate }
+        }
         guard defaults.bool(forKey: "qa.altaCrear") else { return }
         createCompany()
         // `-qa.altaGasto 1`: además, un gasto de $45 pagado con el banco (Inicio pasa al tablero con los pasos pendientes).
@@ -309,6 +315,8 @@ struct OnboardingView: View {
                 TextField("Tasa de \(name)", value: $localRate, format: .number.precision(.fractionLength(0...4)),
                           prompt: Text(verbatim: "0"))
                     .multilineTextAlignment(.trailing)
+                    // En el Mac, el campo de un formulario dibuja su título: salía «Tasa de Austin» dos veces.
+                    .labelsHidden()
                     .accessibilityLabel(Text("Tasa de \(name)"))
                     #if os(iOS)
                     .keyboardType(.decimalPad)

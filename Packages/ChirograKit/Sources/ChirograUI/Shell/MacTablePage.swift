@@ -444,13 +444,14 @@ struct MacCellStatus: View {
 enum QALaunch {
     private static var defaults: UserDefaults { .standard }
 
-    /// Sección inicial (`home`, `invoices`, `customers`, `expenses`, `vendors`, `bills`, `banking`, `journal`, `chart`,
+    /// Sección inicial (`home`, `invoices`, `estimates`, `customers`, `expenses`, `vendors`, `bills`, `banking`, `journal`, `chart`,
     /// `reports`, `ledger`, `close`, `taxes`, `settings`).
     static var sidebarItem: SidebarItem? {
         switch defaults.string(forKey: "qa.seccion") {
         case "home": .section(.home)
         case "invoices", "sales": .sales(.invoices)
         case "customers": .sales(.customers)
+        case "estimates": .sales(.estimates)
         case "expenses": .expenses(.expenses)
         case "vendors": .expenses(.vendors)
         case "bills": .expenses(.bills)

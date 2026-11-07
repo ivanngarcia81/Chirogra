@@ -44,7 +44,7 @@
     Reports) and the <em>Books</em> group (Accounting, Taxes, Settings). On the Mac, the list fills the center and the
     <strong>inspector</strong> on the right shows the details of what you select (show or hide it with
     <kbd>⌥⌘I</kbd>).</li>
-    <li><strong>iPhone:</strong> the tabs <em>Home · Sales · Expenses · Banking · More</em>. Reports, Accounting, Taxes
+    <li><strong>iPhone:</strong> the tabs <em>Home · Sales · Expenses · Banking · More</em>. Reports, Taxes, Accounting
     and Settings are under <em>More</em>.</li>
     <li>To add something, use the <strong>+</strong> button (iPhone and iPad) or the button in the Mac toolbar
     (<em>New invoice</em>, <em>New expense</em>…).</li>
@@ -60,24 +60,42 @@
   <h2 id="company">2. Set up your company</h2>
   <p>The first time you open Chirogra, it asks for your company details. They appear on your invoices, and you can change
   them anytime in Settings › Company profile.</p>
-  <figure class="hoja"><a href="../img/guia/bienvenida-en.jpg"><img src="../img/guia/bienvenida-en.jpg" alt="“Let’s set up your company” screen with the company name, state, start of fiscal year, legal name and tax ID" width="600" height="600" loading="lazy"></a></figure>
+  <figure class="hoja"><a href="../img/guia/bienvenida-en.jpg"><img src="../img/guia/bienvenida-en.jpg" alt="“Let’s set up your company” screen: company name, app language, the state of Texas with its 6.25% rate, the city of Austin with its 2% rate, a total rate of 8.25%, start of fiscal year, business type, legal name and tax ID" width="600" height="940" loading="lazy"></a></figure>
   <ol>
-    <li><strong>Company name</strong>, your <strong>state</strong> (it determines the sales tax you collect and is
-    required) and the <strong>start of your fiscal year</strong>. Legal name and tax ID (EIN) are optional. Books are kept
-    in US dollars.</li>
+    <li><strong>Company name</strong>. Below it, <strong>App language</strong> shows the language you’re using and, with
+    <strong>Change…</strong>, where to change it.</li>
+    <li>Your <strong>state</strong>, which is required because it determines the sales tax you collect. When you choose
+    it, Chirogra shows the <strong>state rate</strong> (for example, <em>Texas rate 6.25%</em>).</li>
+    <li>If your city or county also charges its share, enter it in <strong>City or county</strong> and add its rate
+    (<em>Austin rate 2%</em>). Chirogra adds both up in <strong>Total rate you charge</strong> (8.25%) and uses it as the
+    tax on your new invoices. If you don’t know your city’s rate, look it up with your address on your state’s tax
+    website; you can also add it later in <a href="#taxes">Taxes</a>.</li>
+    <li>The <strong>start of your fiscal year</strong> and your <strong>business type</strong> (sole proprietorship,
+    LLC, corporation…; if the name ends in “LLC”, it’s already chosen). Legal name and tax ID (EIN) are optional. Books
+    are kept in US dollars.</li>
     <li>Tap <strong>Continue</strong> and choose your <strong>type of business</strong>: Professional services, Retail or
     store, Construction and trades, Restaurant and food, Health and wellness, or Freelancer. Chirogra uses it to set up a
     <strong>chart of accounts</strong> that fits your business, which you can adjust later.</li>
-    <li>When you finish, you can start the <strong>14-day free trial</strong>.</li>
+    <li>In the last step, enter <strong>today’s balance</strong> of the bank account you use for the business and, if you
+    have a credit card, <strong>what you owe today</strong>. That way <em>Cash on hand</em> starts with the money you
+    really have. If you don’t know it now, tap <strong>Skip for now</strong>: you can add it later from Home.</li>
+    <li>Tap <strong>Create company</strong>. When you finish, you can start the <strong>14-day free trial</strong>.</li>
   </ol>
+  <figure class="hoja"><a href="../img/guia/saldo-inicial-en.jpg"><img src="../img/guia/saldo-inicial-en.jpg" alt="“How much money is in your business account today?” step with today’s bank balance, the date and what you owe on the credit card" width="600" height="480" loading="lazy"></a></figure>
+  <p class="nota">The balances are recorded as an opening entry against “Opening balance equity” (3900); you’ll see it in
+  Accounting.</p>
 
   <h2 id="home">3. Home</h2>
   <p>Home summarizes your business for the selected month: <strong>cash on hand</strong>, <strong>income</strong>,
   <strong>expenses</strong> and <strong>net income</strong>, compared with the previous month; a chart of income and
   expenses over the last 12 months; your accounts and the invoices you’re owed.</p>
-  <figure><a href="../img/guia/inicio-en.jpg"><img src="../img/guia/inicio-en.jpg" alt="Home on the Mac: cash, income, expenses and net income cards; 12-month chart; accounts and open invoices" width="1280" height="820" loading="lazy"></a></figure>
+  <figure><a href="../img/guia/inicio-en.jpg"><img src="../img/guia/inicio-en.jpg" alt="Home on the Mac: sample data notice; cash, income, expenses and net income cards; “Sales tax payable, due Jan 20” row; 12-month chart and accounts" width="1280" height="820" loading="lazy"></a></figure>
   <ul>
     <li>Switch months with the picker at the top.</li>
+    <li><strong>Sales tax payable</strong> tells you how much sales tax you’ve collected and still owe your state, and by
+    when (“Due Jan 20”). Tap it to open <a href="#taxes">Taxes</a>. If you owe nothing, it says you’re up to date.</li>
+    <li>With a new company, <strong>Getting started</strong> walks you through what’s left to get the app ready: sales
+    tax, bank balance, first customer, invoice, payment and expense.</li>
     <li>The <strong>+ Expense</strong> and <strong>+ Invoice</strong> buttons are shortcuts for the most common tasks.</li>
     <li>The <strong>bell</strong> collects your alerts: overdue invoices, bills due soon, scheduled payments, generated
     recurring expenses and sales tax due.</li>
@@ -96,8 +114,8 @@
   </ul>
 
   <h2 id="invoices">5. Invoices and payments</h2>
-  <p><strong>Sales › Invoices</strong> lists all your invoices with their status (draft, sent, partially paid, overdue,
-  paid) and what you’re owed.</p>
+  <p><strong>Sales › Invoices</strong> lists all your invoices with their status (draft, issued, sent, partially paid,
+  overdue, paid) and what you’re owed.</p>
   <figure><a href="../img/guia/facturas-en.jpg"><img src="../img/guia/facturas-en.jpg" alt="Invoice list with status filters, receivables and overdue totals, and the details of the selected invoice" width="1280" height="820" loading="lazy"></a></figure>
 
   <h3>Create an invoice</h3>
@@ -114,6 +132,14 @@
   <figure><a href="../img/guia/nueva-factura-en.jpg"><img src="../img/guia/nueva-factura-en.jpg" alt="“New invoice” sheet: customer, terms, items, message and totals with sales tax" width="860" height="732" loading="lazy"></a></figure>
   <p class="nota">When you issue it, Chirogra records the journal entry for you: accounts receivable against income and
   sales tax. A draft doesn’t affect your books.</p>
+  <p>If the invoice has no tax, check that a rate is chosen under <strong>Tax</strong>; if you don’t have one yet,
+  <strong>Add Tax Rate…</strong> creates it right there.</p>
+
+  <h3>Fix an issued invoice</h3>
+  <p>As long as the customer hasn’t paid anything, an issued invoice can be fixed: open it and tap <strong>Edit</strong>
+  (on iPad, <strong>Edit invoice</strong> in the toolbar; on the Mac, <strong>Edit Invoice…</strong> in the inspector).
+  It keeps its number; Chirogra reverses the old entry, records the new one and notes it as <em>Edited</em> in its
+  activity.</p>
 
   <h3>Send the invoice</h3>
   <p>From the invoice, <strong>Send Invoice…</strong> prepares an email to the customer with the PDF attached. If they’re
@@ -148,10 +174,14 @@
   <ol>
     <li><strong>Receipt:</strong> drag in a photo or a PDF, or use <strong>Choose photo</strong> / <strong>Choose
     File…</strong>. It’s stored with the expense; the IRS asks you to keep it.</li>
-    <li><strong>Amount</strong> and <strong>date</strong>. If the receipt itemizes sales tax, enter it in <strong>Tax
-    included</strong>.</li>
-    <li><strong>Vendor</strong> (or who you paid), <strong>category</strong> (the expense account), the <strong>payment
-    account</strong> (where the money came from) and the method.</li>
+    <li><strong>Amount</strong> and <strong>date</strong>. When you finish typing the amount, Chirogra works out the
+    <strong>Tax included</strong> with your company’s rate; if the receipt shows a different figure, enter it
+    yourself.</li>
+    <li><strong>Vendor</strong>: pick one from the list or create one with <strong>New vendor…</strong>. For a one-off
+    purchase, leave it at <em>None</em> and type who you paid in <strong>Paid to</strong>.</li>
+    <li><strong>Category</strong> (the expense account), the <strong>payment account</strong> (where the money came
+    from) and the <strong>payment method</strong>, which depends on the account: from the bank, debit card, transfer or
+    check; from the credit card, credit card; from cash, cash.</li>
     <li>Optional: a <strong>customer or project</strong> if you’ll bill it back, and <strong>Split across
     categories</strong> when one purchase mixes things.</li>
     <li><strong>Save expense</strong>, or <strong>Save and new</strong> to keep going.</li>
@@ -184,7 +214,7 @@
   <h2 id="banking">9. Banking</h2>
   <p><strong>Banking</strong> shows your accounts (checking, savings, credit card) with their book balance and each
   month’s transactions: customer payments, bill payments, expenses and transfers.</p>
-  <figure><a href="../img/guia/banca-en.jpg"><img src="../img/guia/banca-en.jpg" alt="Banking: account cards with their balances and the month’s transactions with deposits, withdrawals and balance" width="1280" height="820" loading="lazy"></a></figure>
+  <figure><a href="../img/guia/banca-en.jpg"><img src="../img/guia/banca-en.jpg" alt="Banking: account cards with their balances, October’s transactions with deposits, withdrawals and balance, and an expense’s details in the inspector" width="1280" height="820" loading="lazy"></a></figure>
   <ul>
     <li>Transactions are created automatically when you get paid, pay bills and record expenses.</li>
     <li><strong>New transaction</strong> lets you record an <strong>expense</strong> or a <strong>manual entry</strong>
@@ -198,15 +228,20 @@
   and the date to pay your agency.</p>
   <figure><a href="../img/guia/impuestos-en.jpg"><img src="../img/guia/impuestos-en.jpg" alt="Taxes: collected, paid, balance due and due date; rates by jurisdiction; new invoices and payments to the agency" width="1280" height="820" loading="lazy"></a></figure>
   <ul>
-    <li><strong>Rates by jurisdiction:</strong> add your state, county and city rates with <strong>+</strong>. A
-    <em>combined</em> rate adds several together (for example, Austin, TX = 6.25% + 1% + 1%). You enter the rates
-    yourself: confirm them with your state’s agency.</li>
+    <li><strong>Rates by jurisdiction:</strong> your state’s rate is there from the moment you set up the company. A
+    <em>combined</em> rate adds several together (in the sample, Austin, TX = 6.25% state + 1% city + 1% transit). You
+    enter local rates yourself: confirm them with your state’s agency.</li>
+    <li><strong>Add your city or county rate</strong> (if you didn’t when you set up the company): tap
+    <strong>+</strong>, enter the name and only the local part (in Austin, 2%). With <strong>Add to Texas (6.25%) and
+    use it on new invoices</strong>, Chirogra creates the combined rate and makes it the default. The agency is already
+    chosen: in many states, such as Texas, the state agency also collects the local rates.</li>
     <li><strong>New invoices:</strong> the <strong>default tax</strong> each invoice gets, whether your <strong>prices
     include tax</strong>, and <strong>sales sourcing</strong>.</li>
     <li><strong>Record tax payment</strong> when you pay the agency; it’s listed under <em>Payments to the
     agency</em>.</li>
     <li><strong>View report</strong> opens the sales tax report, handy for your return.</li>
   </ul>
+  <figure class="hoja"><a href="../img/guia/nueva-tasa-en.jpg"><img src="../img/guia/nueva-tasa-en.jpg" alt="“New rate” sheet with the city or county name, the percentage, the “Add to Texas (6.25%) and use it on new invoices” option and the Texas Comptroller agency" width="470" height="519" loading="lazy"></a></figure>
 
   <h2 id="reports">11. Reports</h2>
   <p><strong>Reports</strong> has what your accountant or tax preparer asks for:</p>
@@ -228,11 +263,14 @@
   <ul>
     <li><strong>Chart of accounts:</strong> all your accounts, grouped (assets, liabilities, equity, income and expenses).
     You can add accounts and sub-accounts, rename them or archive the ones you don’t use.</li>
-    <li><strong>Journal entries:</strong> every entry, automatic and manual. With <strong>New journal entry</strong> you
-    record adjustments, depreciation or owner contributions; debits must equal credits.</li>
+    <li><strong>Journal entries:</strong> every entry, automatic and manual. <strong>New journal entry</strong> asks
+    what you want to record: <em>I put my own money into the business</em>, <em>I took money out of the business for
+    myself</em>, <em>I moved money between my accounts</em> or <em>Manual entry, for your accountant</em>. For the first
+    three you only choose the account and the amount, and Chirogra puts each amount on its side (<em>How it goes in
+    your books</em>). In a manual entry, debits must equal credits.</li>
     <li><strong>General ledger:</strong> each account’s transactions with its running balance.</li>
   </ul>
-  <figure class="hoja"><a href="../img/guia/nuevo-asiento-en.jpg"><img src="../img/guia/nuevo-asiento-en.jpg" alt="“New journal entry” sheet with date, description and debit and credit lines" width="470" height="452" loading="lazy"></a></figure>
+  <figure class="hoja"><a href="../img/guia/nuevo-asiento-en.jpg"><img src="../img/guia/nuevo-asiento-en.jpg" alt="“New journal entry” sheet with “I put my own money into the business” chosen: $500 into checking and how it’s recorded, a debit to checking and a credit to owner’s equity" width="560" height="712" loading="lazy"></a></figure>
   <p class="nota">Recorded entries are never deleted or changed: to fix one, it’s reversed and the correct one is
   recorded. That way your books always balance and every change leaves a trail.</p>
 
@@ -274,7 +312,7 @@
 
   <h2 id="glossary">14. Glossary</h2>
   <p>What each Chirogra menu is and what it's for, in a few words. At the end are the accounting words you'll see in
-  the app. On iPhone, Reports, Accounting, Taxes and Settings are under <em>More</em>.</p>
+  the app. On iPhone, Reports, Taxes, Accounting and Settings are under <em>More</em>.</p>
 
   <h3 id="glossary-home">Home</h3>
   <dl class="glosario">
@@ -284,6 +322,8 @@
     <dt>Getting started</dt>
     <dd>A checklist to get the app ready (company, sales tax, bank, first customer, invoice, payment and expense). Each
     step takes you where it's done. Hide it when you're finished.</dd>
+    <dt>Sales tax payable</dt>
+    <dd>How much sales tax you collected and still owe your state, and the deadline. It takes you to Taxes.</dd>
     <dt>Notifications (the bell)</dt>
     <dd>What needs your attention: overdue invoices, scheduled payments, recurring expenses to confirm.</dd>
     <dt>Quick actions</dt>
@@ -304,8 +344,8 @@
         <li><strong>Paid:</strong> fully collected; the money is in your bank.</li>
         <li><strong>Void:</strong> canceled; it no longer counts but stays in the history.</li>
       </ul>
-      If you made a mistake on an issued invoice that hasn't been paid yet, open it and choose
-      <strong>⋯ › Edit invoice</strong>: it's corrected and keeps its number.
+      If you made a mistake on an issued invoice that hasn't been paid yet, open it and tap <strong>Edit</strong>
+      (<strong>Edit invoice</strong> on iPad and Mac): it's corrected and keeps its number.
     </dd>
     <dt>Estimates</dt>
     <dd>A quote for a customer. It isn't in your books. When the customer accepts, turn it into an invoice (in full, a
@@ -343,7 +383,8 @@
     <dt>Split across categories</dt>
     <dd>Divides one receipt among several kinds of expense, such as materials and tools in the same purchase.</dd>
     <dt>Tax included</dt>
-    <dd>The sales tax you paid on a purchase. It's for your information: in the U.S. it's part of the expense.</dd>
+    <dd>The sales tax you paid on a purchase. Chirogra works it out with your company's rate and you can change it.
+    It's for your information: in the U.S. it's part of the expense.</dd>
     <dt>Customer or project</dt>
     <dd>Links an expense to a customer or a job, for example to bill it to them later.</dd>
   </dl>
