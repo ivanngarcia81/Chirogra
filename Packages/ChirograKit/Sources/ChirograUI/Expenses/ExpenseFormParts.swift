@@ -12,12 +12,15 @@ struct MoneyRow: View {
     let title: String
     @Binding var minorUnits: Int64
     var font: Font? = nil
+    /// Al salir del campo (no en cada tecla: cambiar otro estado mientras se escribe reformateaba el campo a medias).
+    var onEndEditing: (() -> Void)? = nil
     @FocusState private var focused: Bool
 
-    init(_ title: String, minorUnits: Binding<Int64>, font: Font? = nil) {
+    init(_ title: String, minorUnits: Binding<Int64>, font: Font? = nil, onEndEditing: (() -> Void)? = nil) {
         self.title = title
         self._minorUnits = minorUnits
         self.font = font
+        self.onEndEditing = onEndEditing
     }
 
     var body: some View {
@@ -31,6 +34,9 @@ struct MoneyRow: View {
                 .focused($focused)
         } label: {
             Text(title)
+        }
+        .onChange(of: focused) { _, isFocused in
+            if !isFocused { onEndEditing?() }
         }
         #if os(iOS)
         .frame(minHeight: Metrics.target)

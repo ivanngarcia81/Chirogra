@@ -260,6 +260,13 @@ struct OnboardingView: View {
                 totalRateRow(stateRate: stateRate)
                 if localMillionths > 0 {
                     optionalField("Ciudad o condado", text: $localTaxName, prompt: "p. ej. Austin")
+                    // Lo que cobra la ciudad sale solo: total − estado (Iván, build 7: total, ciudad y su porcentaje).
+                    LabeledContent {
+                        Text(verbatim: StateTaxNote.percent(localMillionths))
+                    } label: {
+                        let name = localTaxName.trimmingCharacters(in: .whitespacesAndNewlines)
+                        if name.isEmpty { Text("Tasa de la ciudad o condado") } else { Text("Tasa de \(name)") }
+                    }
                 }
             }
             if let problem = totalRateProblem {

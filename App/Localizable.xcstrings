@@ -17541,6 +17541,16 @@
         }
       }
     },
+    "Subtotal %@ + impuesto %@, calculado con %@. Si el recibo dice otra cifra, escríbela; si no lleva impuesto, pon 0." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Subtotal %@ + tax %@, calculated with %@. If the receipt shows a different amount, type it; if it has no tax, enter 0."
+          }
+        }
+      }
+    },
     "Subtotal %@ + impuesto %@. Es informativo: en EE. UU. el sales tax de tus compras forma parte del gasto." : {
       "localizations" : {
         "en" : {
@@ -17771,12 +17781,32 @@
         }
       }
     },
+    "Tasa de %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ rate"
+          }
+        }
+      }
+    },
     "Tasa de impuesto sobre ventas" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sales tax rate"
+          }
+        }
+      }
+    },
+    "Tasa de la ciudad o condado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "City or county rate"
           }
         }
       }

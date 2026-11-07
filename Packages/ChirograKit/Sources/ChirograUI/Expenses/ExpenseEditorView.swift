@@ -38,6 +38,8 @@ struct ExpenseEditorView: View {
     @State private var date = Date()
     @State private var lines: [LineDraft] = [LineDraft()]
     @State private var salesTaxIncluded: Int64 = 0
+    /// «Impuesto incluido» sigue al monto con la tasa predeterminada de la empresa hasta que el usuario lo escribe.
+    @State private var taxFollowsRate = true
     @State private var paymentAccountID: UUID?
     @State private var memo = ""
     @State private var receipts: [ReceiptFile] = []
@@ -73,10 +75,41 @@ struct ExpenseEditorView: View {
 
     private var total: Int64 { lines.reduce(0) { $0 + $1.amount } }
 
+    // MARK: Impuesto incluido automático
+
+    /// La tasa predeterminada de la empresa (la que cobran sus facturas): en una compra local es la misma del recibo.
+    private var defaultTaxComponents: [TaxComponent] {
+        (try? Bookkeeper(context: context).taxComponents(groupID: companies.first?.defaultTaxGroupID, on: date)) ?? []
+    }
+
+    /// El impuesto que ya va dentro de `gross` con la tasa predeterminada (0 sin tasa).
+    private func estimatedTax(in gross: Int64) -> Int64 {
+        let components = defaultTaxComponents
+        guard gross > 0, !components.isEmpty else { return 0 }
+        return gross - SalesTaxCalculator.taxesIncluded(inGross: gross, components: components).base
+    }
+
+    /// El impuesto que se guarda: el calculado mientras sigue al monto (aunque el campo aún no se haya refrescado).
+    private var effectiveTax: Int64 { taxFollowsRate ? estimatedTax(in: total) : salesTaxIncluded }
+
+    /// Pone en «Impuesto incluido» el calculado, al terminar de escribir el monto (no en cada tecla).
+    private func refreshAutoTax() {
+        if taxFollowsRate { salesTaxIncluded = estimatedTax(in: total) }
+    }
+
+    /// «Austin, TX (8.25%)»: con qué se calculó el impuesto incluido.
+    private var defaultTaxLabel: String? {
+        let components = defaultTaxComponents
+        guard !components.isEmpty else { return nil }
+        let rate = components.reduce(0) { $0 + $1.rateMillionths }
+        let name = (try? Bookkeeper(context: context).defaultTaxCode())??.name ?? components[0].name
+        return "\(name) (\(StateTaxNote.percent(rate)))"
+    }
+
     private var canSave: Bool {
         total > 0 && lines.allSatisfy { $0.amount > 0 && $0.accountID != nil } && paymentAccountID != nil
             && !(payee.trimmingCharacters(in: .whitespaces).isEmpty && vendorID == nil)
-            && salesTaxIncluded >= 0 && salesTaxIncluded < total
+            && effectiveTax >= 0 && effectiveTax < total
     }
 
     private var paymentAccounts: [Account] { accounts.paymentAccounts }
@@ -124,6 +157,11 @@ struct ExpenseEditorView: View {
             if let vendor = vendors.first(where: { $0.id == new }) { use(vendor) }
         }
         .onAppear(perform: load)
+        .onChange(of: lines.count) { refreshAutoTax() }
+        .onChange(of: salesTaxIncluded) { _, new in
+            // Escrito a mano (o puesto en 0): deja de seguir al monto.
+            if loaded, new != estimatedTax(in: total) { taxFollowsRate = false }
+        }
         .alert(hasClosingPassword ? "Periodo cerrado" : "¿Registrar en un periodo cerrado?", isPresented: $askingUnlock) {
             if hasClosingPassword {
                 SecureField("Contraseña de cierre", text: $closingPassword)
@@ -157,6 +195,8 @@ struct ExpenseEditorView: View {
             method = input.method
             memo = input.memo
             salesTaxIncluded = input.salesTaxIncluded
+            // Si lo guardado es justo lo calculado, al corregir el monto el impuesto se recalcula.
+            taxFollowsRate = input.salesTaxIncluded == estimatedTax(in: input.lines.reduce(0) { $0 + $1.amount })
             lines = input.lines.isEmpty ? [LineDraft()] : input.lines.map { LineDraft(details: $0.details, amount: $0.amount, accountID: $0.accountID) }
         } else {
             paymentAccountID = paymentAccounts.first { $0.subtype == .bank }?.id
@@ -190,7 +230,8 @@ struct ExpenseEditorView: View {
     private var amountSection: some View {
         Section {
             if lines.count == 1 {
-                MoneyRow(String(localized: "Monto"), minorUnits: $lines[0].amount, font: .amount(isWide ? 17 : 24))
+                MoneyRow(String(localized: "Monto"), minorUnits: $lines[0].amount, font: .amount(isWide ? 17 : 24),
+                         onEndEditing: refreshAutoTax)
             }
             DatePicker("Fecha", selection: $date, displayedComponents: .date)
             MoneyRow(String(localized: "Impuesto incluido"), minorUnits: $salesTaxIncluded)
@@ -199,6 +240,8 @@ struct ExpenseEditorView: View {
         } footer: {
             if salesTaxIncluded > 0 && salesTaxIncluded >= total {
                 Text("El impuesto incluido debe ser menor que el monto.").foregroundStyle(Palette.negative)
+            } else if salesTaxIncluded > 0, taxFollowsRate, let label = defaultTaxLabel {
+                Text("Subtotal \((total - salesTaxIncluded).money) + impuesto \(salesTaxIncluded.money), calculado con \(label). Si el recibo dice otra cifra, escríbela; si no lleva impuesto, pon 0.")
             } else if salesTaxIncluded > 0 {
                 Text("Subtotal \((total - salesTaxIncluded).money) + impuesto \(salesTaxIncluded.money). Es informativo: en EE. UU. el sales tax de tus compras forma parte del gasto.")
             } else {
@@ -247,7 +290,7 @@ struct ExpenseEditorView: View {
                 ForEach($lines) { $line in
                     VStack(alignment: .leading, spacing: 6) {
                         ExpenseCategoryPicker(title: String(localized: "Categoría"), accounts: accounts, selection: $line.accountID)
-                        MoneyRow(String(localized: "Importe"), minorUnits: $line.amount)
+                        MoneyRow(String(localized: "Importe"), minorUnits: $line.amount, onEndEditing: refreshAutoTax)
                     }
                     .padding(.vertical, 2)
                     .swipeActions {
@@ -407,7 +450,7 @@ struct ExpenseEditorView: View {
         return ExpenseInput(
             date: date, payee: name, vendor: vendor, customer: customers.first { $0.id == customerID },
             paymentAccountID: paymentAccountID, method: method, reference: expense?.reference ?? "", memo: memo,
-            salesTaxIncluded: salesTaxIncluded,
+            salesTaxIncluded: effectiveTax,
             lines: lines.map { ExpenseInput.Line(details: $0.details.isEmpty ? (memo.isEmpty ? name : memo) : $0.details,
                                                  amount: $0.amount, accountID: $0.accountID) }
         )
@@ -472,7 +515,7 @@ struct ExpenseEditorView: View {
             errorMessage = problems.joined(separator: " ")
         } else if another {
             lines = [LineDraft()]; payee = ""; vendorID = nil; customerID = nil; memo = ""; receipts = []
-            salesTaxIncluded = 0; repeats = false; errorMessage = nil
+            salesTaxIncluded = 0; taxFollowsRate = true; repeats = false; errorMessage = nil
         } else {
             unsavedChanges?.remove(editorToken); dismiss()
         }
