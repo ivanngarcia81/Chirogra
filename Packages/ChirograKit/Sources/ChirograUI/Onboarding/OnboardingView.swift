@@ -77,10 +77,11 @@ struct OnboardingView: View {
     @State private var openingBank: Int64 = 0
     @State private var openingCard: Int64 = 0
     @State private var openingDate = Date()
-    /// Tasa total que cobra el negocio (estado + ciudad o condado), en %; vacía = la del estado (build 7).
-    @State private var totalRate: Decimal?
-    /// Nombre de la parte local («Austin»), cuando el total es mayor que la tasa del estado.
+    /// Ciudad o condado que cobra su parte del sales tax («Austin»); vacío = solo la del estado.
     @State private var localTaxName = ""
+    /// Lo que cobra esa ciudad o condado, en % («2»). El usuario (build 9) pidió este orden: el estado con su tasa fija,
+    /// la ciudad y su porcentaje, y el total sumado; antes se escribía el total y se deducía la parte local.
+    @State private var localRate: Decimal?
     @State private var errorMessage: String?
 
     private static let stepCount = 3
@@ -108,7 +109,7 @@ struct OnboardingView: View {
         .onChange(of: displayName) { suggestEntityType() }
         .onChange(of: legalName) { suggestEntityType() }
         // Otro estado, otra tasa: el total escrito era del anterior.
-        .onChange(of: state) { totalRate = nil; localTaxName = "" }
+        .onChange(of: state) { localRate = nil; localTaxName = "" }
         #if os(iOS)
         .safeAreaBar(edge: .top, spacing: 0) { if step > 1 { backBar } }
         // Mientras se escribe, la barra se esconde: subía con el teclado y tapaba los campos (en el paso 3, «Fecha del
@@ -155,8 +156,7 @@ struct OnboardingView: View {
     private static let columnWidth: CGFloat = 600
     #endif
 
-    /// El estado es obligatorio: decide qué sales tax se cobra. La tasa total, si se escribe, no puede ser menor que la
-    /// del estado ni pasar del 20 %.
+    /// El estado es obligatorio: decide qué sales tax se cobra. Estado + ciudad no puede pasar del 20 %.
     private var canContinue: Bool {
         !displayName.trimmingCharacters(in: .whitespaces).isEmpty && !state.isEmpty && totalRateProblem == nil
     }
@@ -164,23 +164,21 @@ struct OnboardingView: View {
     /// Tasa estatal base del estado elegido, si la tiene.
     private var stateRateMillionths: Int64? { StateSalesTax.forState(state)?.rateMillionths }
 
-    /// Total escrito en millonésimas, si se escribió.
-    private var totalMillionths: Int64? { totalRate.map { TaxComponent.millionths(fromPercent: $0) } }
+    private var trimmedLocalName: String { localTaxName.trimmingCharacters(in: .whitespacesAndNewlines) }
 
-    /// Parte local: lo que pasa del total sobre la tasa del estado (0 si no se escribió o es igual).
+    /// Parte de la ciudad o condado en millonésimas (0 sin ciudad o sin tasa).
     private var localMillionths: Int64 {
-        guard let state = stateRateMillionths, let total = totalMillionths else { return 0 }
-        return max(total - state, 0)
+        guard !trimmedLocalName.isEmpty, let localRate else { return 0 }
+        return max(TaxComponent.millionths(fromPercent: localRate), 0)
     }
 
-    /// Por qué no vale la tasa total escrita, o `nil` si vale.
+    /// Estado + ciudad.
+    private var totalMillionths: Int64? { stateRateMillionths.map { $0 + localMillionths } }
+
+    /// Por qué no vale la suma, o `nil` si vale.
     private var totalRateProblem: String? {
-        guard let state = stateRateMillionths, let total = totalMillionths else { return nil }
-        if total < state {
-            return String(localized: "La tasa total no puede ser menor que la del estado (\(StateTaxNote.percent(state))).")
-        }
-        if total > 200_000 { return String(localized: "Revisa la tasa: ningún lugar de EE. UU. cobra más del \(StateTaxNote.percent(200_000)).") }
-        return nil
+        guard let total = totalMillionths, total > 200_000 else { return nil }
+        return String(localized: "Revisa la tasa: ningún lugar de EE. UU. cobra más del \(StateTaxNote.percent(200_000)).")
     }
 
     /// Tipo de empresa según el final del nombre comercial o de la razón social, mientras no se elija a mano.
@@ -254,18 +252,23 @@ struct OnboardingView: View {
                 Text("Elige tu estado").tag("")
                 ForEach(StateSalesTax.all, id: \.code) { Text(verbatim: $0.name).tag($0.code) }
             }
-            // Lo que se hará con su sales tax, justo debajo del estado (al pie quedaba detrás de la barra de abajo).
-            // La tasa total que se cobra, aquí mismo (build 7): antes la parte de la ciudad se añadía luego en Impuestos.
-            if let stateRate = stateRateMillionths {
-                totalRateRow(stateRate: stateRate)
-                if localMillionths > 0 {
-                    optionalField("Ciudad o condado", text: $localTaxName, prompt: "p. ej. Austin")
-                    // Lo que cobra la ciudad sale solo: total − estado (Iván, build 7: total, ciudad y su porcentaje).
-                    LabeledContent {
-                        Text(verbatim: StateTaxNote.percent(localMillionths))
-                    } label: {
-                        let name = localTaxName.trimmingCharacters(in: .whitespacesAndNewlines)
-                        if name.isEmpty { Text("Tasa de la ciudad o condado") } else { Text("Tasa de \(name)") }
+            // El sales tax en el orden que pidió el usuario (build 9): la tasa del estado, fija; la ciudad o condado y
+            // lo que cobra; y el total, sumado, para que se vea de dónde sale cada parte.
+            if let stateRate = stateRateMillionths, let info = StateSalesTax.forState(state) {
+                LabeledContent {
+                    Text(verbatim: StateTaxNote.percent(stateRate))
+                } label: {
+                    Text("Tasa de \(info.name)")
+                }
+                optionalField("Ciudad o condado", text: $localTaxName, prompt: "p. ej. Austin")
+                if !trimmedLocalName.isEmpty {
+                    localRateRow(name: trimmedLocalName)
+                    if localMillionths > 0, let total = totalMillionths {
+                        LabeledContent {
+                            Text(verbatim: StateTaxNote.percent(total)).fontWeight(.semibold).foregroundStyle(Palette.ink)
+                        } label: {
+                            Text("Tasa total que cobras")
+                        }
                     }
                 }
             }
@@ -299,21 +302,21 @@ struct OnboardingView: View {
         }
     }
 
-    /// «Tasa total que cobras»: el porcentaje a la derecha, con la tasa del estado como marcador (vacío = esa).
-    private func totalRateRow(stateRate: Int64) -> some View {
+    /// «Tasa de Austin»: lo que cobra la ciudad, en % a la derecha.
+    private func localRateRow(name: String) -> some View {
         LabeledContent {
             HStack(spacing: 4) {
-                TextField("Tasa total", value: $totalRate, format: .number.precision(.fractionLength(0...4)),
-                          prompt: Text(verbatim: (Decimal(stateRate) / 10_000).formatted(.number.precision(.fractionLength(0...4)))))
+                TextField("Tasa de \(name)", value: $localRate, format: .number.precision(.fractionLength(0...4)),
+                          prompt: Text(verbatim: "0"))
                     .multilineTextAlignment(.trailing)
-                    .accessibilityLabel(Text("Tasa total que cobras"))
+                    .accessibilityLabel(Text("Tasa de \(name)"))
                     #if os(iOS)
                     .keyboardType(.decimalPad)
                     #endif
                 Text(verbatim: "%").foregroundStyle(Palette.ink2).accessibilityHidden(true)
             }
         } label: {
-            Text("Tasa total que cobras")
+            Text("Tasa de \(name)")
         }
         #if os(iOS)
         .labeledContentStyle(.automatic)
@@ -547,7 +550,7 @@ struct OnboardingView: View {
             let books = Bookkeeper(context: context)
             // La tasa estatal base como impuesto predeterminado (nada en los estados sin sales tax estatal).
             try books.setUpSalesTax(totalMillionths: localMillionths > 0 ? totalMillionths : nil,
-                                    localName: localTaxName)
+                                    localName: trimmedLocalName)
             if hasOpeningBalances {
                 try books.recordOpeningBalances(bank: openingBank, creditCard: openingCard,
                                                 on: Calendar.current.startOfDay(for: openingDate))

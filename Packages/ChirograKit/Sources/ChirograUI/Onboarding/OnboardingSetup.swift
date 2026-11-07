@@ -86,14 +86,17 @@ enum StateTaxNote {
         return String(localized: "\(info.name) no tiene sales tax estatal, así que no creamos ninguna tasa. Si vendes en otro estado, añade su tasa en Impuestos.")
     }
 
-    /// En el alta, con la tasa total escrita (build 7): si pasa de la del estado, lo que cobrarán las facturas y de qué
-    /// se compone («8.25%: Texas 6.25% + Austin 2%»); si no, cómo poner la de la ciudad aquí mismo.
+    /// En el alta: con la tasa de la ciudad escrita, lo que cobrarán las facturas y de qué se compone («8.25%: Texas
+    /// 6.25% + Austin 2%»); si no, de dónde sale la de la ciudad (lo que pasa de la del estado en un recibo de ahí).
     static func text(for code: String, localMillionths: Int64, localName: String) -> String? {
         guard let info = StateSalesTax.forState(code), let state = info.rateMillionths else { return text(for: code) }
-        guard localMillionths > 0 else {
-            return String(localized: "Tus facturas cobrarán la tasa de \(info.name) (\(percent(state))). Si tu ciudad o condado cobra más, escribe la tasa total: es el % que ves en el recibo de cualquier tienda de tu ciudad.")
-        }
         let trimmed = localName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard localMillionths > 0 else {
+            if !trimmed.isEmpty {
+                return String(localized: "Escribe cuánto cobra \(trimmed): en el recibo de cualquier tienda de ahí, lo que pase del \(percent(state)) de \(info.name).")
+            }
+            return String(localized: "Tus facturas cobrarán la tasa de \(info.name) (\(percent(state))). Si tu ciudad o condado cobra su parte, escribe su nombre y te pedimos su tasa.")
+        }
         let local = trimmed.isEmpty ? String(localized: "tu ciudad") : trimmed
         var note = String(localized: "Tus facturas cobrarán \(percent(state + localMillionths)): \(info.name) \(percent(state)) + \(local) \(percent(localMillionths)). Lo cambias cuando quieras en Impuestos.")
         if separateLocalAgencyStates.contains(info.code) {

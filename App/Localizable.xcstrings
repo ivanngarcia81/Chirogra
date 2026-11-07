@@ -8030,6 +8030,16 @@
         }
       }
     },
+    "Escribe cuánto cobra %@: en el recibo de cualquier tienda de ahí, lo que pase del %@ de %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter what %@ charges: on a receipt from any store there, whatever is above the %@ for %@."
+          }
+        }
+      }
+    },
     "Escribe el porcentaje que cobras. Si cobras varias tasas (estado, condado, ciudad), puedes poner el total o crear una por cada una y juntarlas en un grupo." : {
       "localizations" : {
         "en" : {
@@ -17801,16 +17811,6 @@
         }
       }
     },
-    "Tasa de la ciudad o condado" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "City or county rate"
-          }
-        }
-      }
-    },
     "Tasa editada: %@ → %@" : {
       "localizations" : {
         "en" : {
@@ -18561,6 +18561,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Your invoices charge %@ (%@). If your city or county charges more, open Taxes and choose “New rate”: we’ll add it to this one."
+          }
+        }
+      }
+    },
+    "Tus facturas cobrarán la tasa de %@ (%@). Si tu ciudad o condado cobra su parte, escribe su nombre y te pedimos su tasa." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your invoices will charge the %@ rate (%@). If your city or county charges its own share, enter its name and we’ll ask for its rate."
           }
         }
       }
@@ -20506,16 +20516,6 @@
         }
       }
     },
-    "Tasa total" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Total rate"
-          }
-        }
-      }
-    },
     "Tasa total que cobras" : {
       "localizations" : {
         "en" : {
@@ -20542,16 +20542,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "e.g. Austin"
-          }
-        }
-      }
-    },
-    "Tus facturas cobrarán la tasa de %@ (%@). Si tu ciudad o condado cobra más, escribe la tasa total: es el %% que ves en el recibo de cualquier tienda de tu ciudad." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Your invoices will charge the %@ rate (%@). If your city or county charges more, enter the total rate: it’s the %% on a receipt from any store in your city."
           }
         }
       }
