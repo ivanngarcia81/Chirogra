@@ -4,6 +4,12 @@ Resumen del chat de coordinación de Chirogra al **7 de noviembre de 2026**. Lé
 
 ## Dónde nos quedamos (empieza aquí)
 
+**7-nov (tarde): BUILD 8 SUBIDO** (iOS y macOS, «Upload succeeded») desde `0291565` de la rama local **`build7`** (lleva el build 7 y el ícono nuevo `d5ca398`), **sin fusionar ni empujar**. **Para revisión, elegir el build 8.** Viene de las notas del guion del build 7 (colección `notas7`: todo fácil menos alta y correcciones, regulares). Lleva:
+- **Ícono nuevo** (`App/AppIcon.icon`, del `Chirogra 1.icon` del usuario: carpeta con la «C», sin el sello). El ícono de la web (`sitio/img/icono.png`) sigue siendo el viejo.
+- **Apertura:** tras «Ciudad o condado», la fila de solo lectura «Tasa de Austin 2%» (total − estado): el usuario pidió el orden total → ciudad → % de la ciudad.
+- **Gasto:** «Impuesto incluido» se calcula solo con la tasa predeterminada de la empresa (`SalesTaxCalculator.taxesIncluded`) **al salir del campo del monto** (`MoneyRow(onEndEditing:)`): calcularlo en cada tecla reformateaba el monto a medias («$3.0046.88»). Escrito a mano deja de seguir al monto; al editar, sigue si lo guardado era lo calculado. 346.88 → $26.44; 364.88 → $27.81.
+- Guion v4 en el mismo artículo; notas nuevas en **`notas8`**.
+
 **7-nov: BUILD 7** desde `266ba42` de la rama local **`build7`** (sale de `build6`), **sin fusionar ni empujar**. Viene de la prueba del usuario con el guion del build 6 (notas en la colección `notas` del artículo: alta fácil, factura fácil, impuestos **difícil** —tuvo que ir a Más para la tasa de Austin—, gasto y correcciones regulares; pidió el resumen del sales tax en Inicio). Lleva:
 - **Tasa total en la página de apertura:** bajo «Estado», «Tasa total que cobras» (vacía = la del estado) y, si es mayor, «Ciudad o condado». `Bookkeeper.setUpSalesTax(totalMillionths:localName:)` crea la estatal y suma la diferencia como tasa local en la agencia del estado (Texas 6.25 % + Austin 2 % = grupo «Austin, TX» 8.25 % predeterminado). Total menor que el estatal o > 20 %: no deja continuar. En AL, AZ, CO y LA la nota avisa que algunas ciudades cobran aparte.
 - **Sales tax en Inicio:** fila «Sales tax por pagar · Vence el 20 ene» (o «al día» con el impuesto de las facturas) que abre Impuestos; en el iPhone bajo las acciones rápidas, en el iPad en la columna bajo las cuatro secciones, en el Mac bajo las cifras.
