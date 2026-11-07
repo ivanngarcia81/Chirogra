@@ -13,6 +13,17 @@
       "hidden" : false,
       "layers" : [
         {
+          "image-name" : "06-logo 2.svg",
+          "name" : "06-logo 2",
+          "position" : {
+            "scale" : 1.28,
+            "translation-in-points" : [
+              -231.2093061647484,
+              -117.84891080831949
+            ]
+          }
+        },
+        {
           "fill-specializations" : [
             {
               "value" : "automatic"
@@ -38,26 +49,12 @@
               "appearance" : "dark",
               "value" : 0.98
             }
-          ]
-        },
-        {
-          "fill" : "automatic",
-          "glass-specializations" : [
-            {
-              "value" : false
-            },
-            {
-              "appearance" : "dark",
-              "value" : false
-            }
           ],
-          "image-name" : "05-sello 3.svg",
-          "name" : "05-sello 3",
           "position" : {
-            "scale" : 1.22,
+            "scale" : 1,
             "translation-in-points" : [
-              -49,
-              39
+              0,
+              8
             ]
           }
         },
@@ -73,19 +70,40 @@
           ],
           "hidden" : false,
           "image-name" : "04-hoja 3.svg",
-          "name" : "04-hoja 3"
+          "name" : "04-hoja 3",
+          "position" : {
+            "scale" : 1.22,
+            "translation-in-points" : [
+              16,
+              56.22627717704631
+            ]
+          }
         },
         {
           "fill" : "automatic",
           "hidden" : false,
           "image-name" : "03-hoja-atras-1 3.svg",
-          "name" : "03-hoja-atras-1 3"
+          "name" : "03-hoja-atras-1 3",
+          "position" : {
+            "scale" : 1.22,
+            "translation-in-points" : [
+              10.995164574019554,
+              28.618565483576617
+            ]
+          }
         },
         {
           "fill" : "automatic",
           "hidden" : false,
           "image-name" : "02-hoja-atras-2 3.svg",
-          "name" : "02-hoja-atras-2 3"
+          "name" : "02-hoja-atras-2 3",
+          "position" : {
+            "scale" : 1.22,
+            "translation-in-points" : [
+              3.172864251539977,
+              0.9375507792175313
+            ]
+          }
         },
         {
           "fill-specializations" : [
@@ -104,9 +122,17 @@
           ],
           "hidden" : false,
           "image-name" : "01-fondo 3.svg",
-          "name" : "01-fondo 3"
+          "name" : "01-fondo 3",
+          "position" : {
+            "scale" : 1,
+            "translation-in-points" : [
+              0,
+              -4.904673276212634
+            ]
+          }
         }
       ],
+      "name" : "Group",
       "shadow" : {
         "kind" : "neutral",
         "opacity" : 0.5
