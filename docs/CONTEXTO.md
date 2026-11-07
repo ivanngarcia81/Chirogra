@@ -1,8 +1,16 @@
 # Chirogra: contexto para retomar en otro chat
 
-Resumen del chat de coordinación de Chirogra al **5 de noviembre de 2026**. Léelo entero antes de seguir. El diseño técnico está en [DISEÑO.md](DISEÑO.md), el sistema visual en [REDISEÑO-NATIVO.md](REDISEÑO-NATIVO.md) y la API del esquema 2 en [DATOS-V2.md](DATOS-V2.md); aquí van el estado, las decisiones del usuario, lo pendiente y cómo se trabaja. Al usuario se le habla siempre en español.
+Resumen del chat de coordinación de Chirogra al **7 de noviembre de 2026**. Léelo entero antes de seguir. El diseño técnico está en [DISEÑO.md](DISEÑO.md), el sistema visual en [REDISEÑO-NATIVO.md](REDISEÑO-NATIVO.md) y la API del esquema 2 en [DATOS-V2.md](DATOS-V2.md); aquí van el estado, las decisiones del usuario, lo pendiente y cómo se trabaja. Al usuario se le habla siempre en español.
 
 ## Dónde nos quedamos (empieza aquí)
+
+**7-nov: BUILD 7** desde `266ba42` de la rama local **`build7`** (sale de `build6`), **sin fusionar ni empujar**. Viene de la prueba del usuario con el guion del build 6 (notas en la colección `notas` del artículo: alta fácil, factura fácil, impuestos **difícil** —tuvo que ir a Más para la tasa de Austin—, gasto y correcciones regulares; pidió el resumen del sales tax en Inicio). Lleva:
+- **Tasa total en la página de apertura:** bajo «Estado», «Tasa total que cobras» (vacía = la del estado) y, si es mayor, «Ciudad o condado». `Bookkeeper.setUpSalesTax(totalMillionths:localName:)` crea la estatal y suma la diferencia como tasa local en la agencia del estado (Texas 6.25 % + Austin 2 % = grupo «Austin, TX» 8.25 % predeterminado). Total menor que el estatal o > 20 %: no deja continuar. En AL, AZ, CO y LA la nota avisa que algunas ciudades cobran aparte.
+- **Sales tax en Inicio:** fila «Sales tax por pagar · Vence el 20 ene» (o «al día» con el impuesto de las facturas) que abre Impuestos; en el iPhone bajo las acciones rápidas, en el iPad en la columna bajo las cuatro secciones, en el Mac bajo las cifras.
+- La nota del cobro («primero se envía el invoice…») era del **guion**, no de la app: el guion v3 envía la factura antes de cobrarla (correo del cliente = el del usuario).
+- 189 pruebas. Visto en el simulador: alta con 8.25 + Austin → factura de $1,800 con $148.50 → fila en Inicio → resumen Texas $112.50 + Austin $36.00; iPad con datos de ejemplo.
+- **Guion v3** en el mismo artículo; las notas nuevas van a la colección **`notas7`** (las del build 6 quedan en `notas`).
+- Al aprobarlo: fusionar `build7` (que incluye `build6`) en `main` y empujar. **Para revisión, elegir el build 7.**
 
 **6-nov (tarde): BUILD 6 SUBIDO** (iOS y macOS) desde `c377af5` de la rama local **`build6`** (sale de `main` `ba4b716`), **sin fusionar ni empujar**. Lleva los tres puntos que eligió el usuario tras el recorrido del build 5: baldosa **«Editar»** a la vista en la factura emitida sin cobros (en el iPad, botón «Editar factura» en la barra; «Duplicar» pasa al «⋯»); **Impuestos antes que Contabilidad** en «Más» del iPhone (la barra lateral no cambia); **método de pago que concuerda con la cuenta** (`PaymentMethodPicker` en `Expenses/ExpenseFormParts.swift`: banco → tarjeta de débito, transferencia o cheque; tarjeta de crédito → solo tarjeta de crédito; caja → efectivo), también en recurrentes y en el detalle del gasto. Visto en el simulador con datos de ejemplo. El guion del artículo ya habla del build 6. **Para enviar a revisión hay que elegir el build 6.** Al aprobarlo: fusionar `build6` en `main` y empujar. Próxima subida: build 7.
 
