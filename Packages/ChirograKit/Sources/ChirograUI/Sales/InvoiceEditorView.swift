@@ -608,26 +608,39 @@ struct InvoiceEditorView: View {
         return dynamicTypeSize < .accessibility4
     }
 
-    /// Línea del canvas: descripción y total; precio · impuesto, «N ×» y la cápsula «− | +»; la cuenta de ingreso debajo.
+    /// Línea del formulario estrecho, en el orden que pidió el usuario (7-nov): descripción con precio y «Gravable»;
+    /// debajo, cantidad y cuenta de ingreso; y al final el total de la línea (antes iba arriba, junto a la descripción,
+    /// y se confundía con el precio).
     private func lineRow(_ line: Binding<LineDraft>) -> some View {
         VStack(alignment: .leading, spacing: 6) {
-            HStack(alignment: .firstTextBaseline) {
-                TextField("Descripción", text: line.details)
-                Text(line.wrappedValue.amount.money).monospacedDigit().foregroundStyle(Palette.ink)
+            ViewThatFits(in: .horizontal) {
+                HStack(alignment: .center, spacing: 8) {
+                    TextField("Descripción", text: line.details, axis: .vertical)
+                        .frame(minWidth: 96, maxWidth: .infinity, alignment: .leading)
+                    priceAndTax(line)
+                }
+                VStack(alignment: .leading, spacing: 6) {
+                    TextField("Descripción", text: line.details, axis: .vertical)
+                    priceAndTax(line)
+                }
             }
             ViewThatFits(in: .horizontal) {
                 HStack(spacing: 8) {
-                    priceAndTax(line)
-                    Spacer(minLength: 4)
                     QuantityStepper(quantity: line.quantity)
+                    Spacer(minLength: 4)
+                    incomeAccountMenu(line.incomeAccountID).font(.footnote)
                 }
                 VStack(alignment: .leading, spacing: 6) {
-                    priceAndTax(line)
                     QuantityStepper(quantity: line.quantity)
+                    incomeAccountMenu(line.incomeAccountID).font(.footnote)
                 }
             }
-            incomeAccountMenu(line.incomeAccountID)
-                .font(.footnote)
+            HStack(alignment: .firstTextBaseline) {
+                Text("Total de la línea").font(.footnote).foregroundStyle(Palette.ink2)
+                Spacer()
+                Text(line.wrappedValue.amount.money).monospacedDigit().fontWeight(.semibold).foregroundStyle(Palette.ink)
+            }
+            .accessibilityElement(children: .combine)
         }
         .padding(.vertical, 4)
     }
@@ -651,6 +664,8 @@ struct InvoiceEditorView: View {
             }
             .buttonStyle(.plain)
             .foregroundStyle(Palette.brand)
+            .lineLimit(1)
+            .fixedSize()
             .accessibilityLabel("Gravable")
             .accessibilityValue(line.wrappedValue.isTaxable ? Text("Sí") : Text("No"))
             TermHelp(.taxable)

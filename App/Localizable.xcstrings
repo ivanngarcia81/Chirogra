@@ -18264,6 +18264,16 @@
         }
       }
     },
+    "Total de la línea" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Line total"
+          }
+        }
+      }
+    },
     "Total de la nota" : {
       "localizations" : {
         "en" : {
