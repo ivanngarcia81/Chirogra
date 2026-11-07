@@ -86,6 +86,25 @@ enum StateTaxNote {
         return String(localized: "\(info.name) no tiene sales tax estatal, así que no creamos ninguna tasa. Si vendes en otro estado, añade su tasa en Impuestos.")
     }
 
+    /// En el alta, con la tasa total escrita (build 7): si pasa de la del estado, lo que cobrarán las facturas y de qué
+    /// se compone («8.25%: Texas 6.25% + Austin 2%»); si no, cómo poner la de la ciudad aquí mismo.
+    static func text(for code: String, localMillionths: Int64, localName: String) -> String? {
+        guard let info = StateSalesTax.forState(code), let state = info.rateMillionths else { return text(for: code) }
+        guard localMillionths > 0 else {
+            return String(localized: "Tus facturas cobrarán la tasa de \(info.name) (\(percent(state))). Si tu ciudad o condado cobra más, escribe la tasa total: es el % que ves en el recibo de cualquier tienda de tu ciudad.")
+        }
+        let trimmed = localName.trimmingCharacters(in: .whitespacesAndNewlines)
+        let local = trimmed.isEmpty ? String(localized: "tu ciudad") : trimmed
+        var note = String(localized: "Tus facturas cobrarán \(percent(state + localMillionths)): \(info.name) \(percent(state)) + \(local) \(percent(localMillionths)). Lo cambias cuando quieras en Impuestos.")
+        if separateLocalAgencyStates.contains(info.code) {
+            note += " " + String(localized: "En \(info.name) algunas ciudades cobran su parte por separado: si es tu caso, cambia su agencia en Impuestos.")
+        }
+        return note
+    }
+
+    /// Estados donde algunas ciudades o parroquias recaudan su sales tax ellas mismas, no la agencia del estado.
+    static let separateLocalAgencyStates: Set<String> = ["AL", "AZ", "CO", "LA"]
+
     /// «6.25 %» / «6.25%».
     static func percent(_ millionths: Int64) -> String {
         (Decimal(millionths) / 1_000_000).formatted(.percent.precision(.fractionLength(0...4)))

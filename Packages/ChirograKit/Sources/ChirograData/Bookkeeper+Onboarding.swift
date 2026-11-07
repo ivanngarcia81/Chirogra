@@ -39,6 +39,28 @@ extension Bookkeeper {
         return rate
     }
 
+    /// El sales tax del alta en un paso (build 7: Iván pidió poner la tasa en la página de apertura en vez de ir luego
+    /// a Impuestos): la tasa estatal base (`setUpStateSalesTax`) y, si `totalMillionths` es mayor, la diferencia como
+    /// tasa local («Austin» 2 %) en la misma agencia del estado, sumada en un grupo que queda como predeterminado
+    /// («Austin, TX» 8.25 %). Sin total, o igual al del estado, es lo mismo que `setUpStateSalesTax`. Un total menor que
+    /// la tasa estatal es un error. Sin nombre, la parte local se llama «Local».
+    @discardableResult
+    public func setUpSalesTax(totalMillionths: Int64?, localName: String = "") throws -> TaxCodeSummary? {
+        let stateRate = try setUpStateSalesTax()
+        if let stateRate, let total = totalMillionths {
+            guard total >= stateRate.rateMillionths else {
+                throw BookkeepingError.invalidState(String(localized: "La tasa total no puede ser menor que la del estado (\(stateRate.percent)%)."))
+            }
+            let local = total - stateRate.rateMillionths
+            if local > 0 {
+                let trimmed = localName.trimmingCharacters(in: .whitespacesAndNewlines)
+                try addTaxRate(name: trimmed.isEmpty ? String(localized: "Local") : trimmed, rateMillionths: local,
+                               agency: stateRate.agency, use: .addToDefault)
+            }
+        }
+        return try defaultTaxCode()
+    }
+
     // MARK: Tasas locales
 
     /// Impuesto predeterminado de la empresa (`Company.defaultTaxGroupID`) con sus tasas: la tasa sola o las de su

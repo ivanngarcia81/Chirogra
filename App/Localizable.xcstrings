@@ -20415,6 +20415,156 @@
           }
         }
       }
+    },
+    "La tasa total no puede ser menor que la del estado (%@%%)." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The total rate can’t be lower than the state rate (%@%%)."
+          }
+        }
+      }
+    },
+    "La tasa total no puede ser menor que la del estado (%@)." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The total rate can’t be lower than the state rate (%@)."
+          }
+        }
+      }
+    },
+    "Revisa la tasa: ningún lugar de EE. UU. cobra más del %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check the rate: no place in the US charges more than %@."
+          }
+        }
+      }
+    },
+    "Local" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Local"
+          }
+        }
+      }
+    },
+    "tu ciudad" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "your city"
+          }
+        }
+      }
+    },
+    "Tasa total" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total rate"
+          }
+        }
+      }
+    },
+    "Tasa total que cobras" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total rate you charge"
+          }
+        }
+      }
+    },
+    "Ciudad o condado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "City or county"
+          }
+        }
+      }
+    },
+    "p. ej. Austin" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "e.g. Austin"
+          }
+        }
+      }
+    },
+    "Tus facturas cobrarán la tasa de %@ (%@). Si tu ciudad o condado cobra más, escribe la tasa total: es el %% que ves en el recibo de cualquier tienda de tu ciudad." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your invoices will charge the %@ rate (%@). If your city or county charges more, enter the total rate: it’s the %% on a receipt from any store in your city."
+          }
+        }
+      }
+    },
+    "Tus facturas cobrarán %@: %@ %@ + %@ %@. Lo cambias cuando quieras en Impuestos." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your invoices will charge %@: %@ %@ + %@ %@. You can change it anytime in Taxes."
+          }
+        }
+      }
+    },
+    "En %@ algunas ciudades cobran su parte por separado: si es tu caso, cambia su agencia en Impuestos." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In %@ some cities collect their share separately: if that’s your case, change its agency in Taxes."
+          }
+        }
+      }
+    },
+    "No debes nada" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You owe nothing"
+          }
+        }
+      }
+    },
+    "Se descuenta de la próxima declaración" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "It comes off your next return"
+          }
+        }
+      }
+    },
+    "Abre Impuestos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens Taxes"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

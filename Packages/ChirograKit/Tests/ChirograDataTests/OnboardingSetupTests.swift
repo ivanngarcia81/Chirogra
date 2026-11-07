@@ -136,6 +136,33 @@ struct OnboardingSetupTests {
         #expect(try books.company()?.defaultTaxGroupID == next?.id)
     }
 
+    @Test("Alta con la tasa total: Texas 6.25 % + «Austin» 2 % en un grupo «Austin, TX» 8.25 % predeterminado")
+    func onboardingTotalRate() throws {
+        let (_, books) = try newBooks(state: "TX")
+        let code = try #require(try books.setUpSalesTax(totalMillionths: 82_500, localName: " Austin "))
+        #expect(code.name == "Austin, TX")
+        #expect(code.rateMillionths == 82_500)
+        #expect(Set(code.rates.map(\.name)) == ["Texas", "Austin"])
+        #expect(code.rates.allSatisfy { $0.agency?.name == "Texas Comptroller" })
+        #expect(try books.company()?.defaultTaxGroupID == code.id)
+
+        // Igual a la estatal o sin total: solo la tasa del estado.
+        let (_, same) = try newBooks(state: "TX")
+        #expect(try same.setUpSalesTax(totalMillionths: 62_500)?.name == "Texas")
+        let (_, none) = try newBooks(state: "TX")
+        #expect(try none.setUpSalesTax(totalMillionths: nil)?.rateMillionths == 62_500)
+
+        // Sin nombre, la parte local se llama «Local»; menor que la estatal, error.
+        let (_, unnamed) = try newBooks(state: "TX")
+        #expect(try unnamed.setUpSalesTax(totalMillionths: 72_500)?.rates.contains { $0.name == "Local" } == true)
+        let (_, low) = try newBooks(state: "TX")
+        #expect(throws: BookkeepingError.self) { try low.setUpSalesTax(totalMillionths: 50_000) }
+
+        // Oregon (sin sales tax estatal): no crea nada aunque se escriba un total.
+        let (_, oregon) = try newBooks(state: "OR")
+        #expect(try oregon.setUpSalesTax(totalMillionths: 20_000) == nil)
+    }
+
     @Test("Tasa nueva sin sumar, como predeterminado sin haberlo, agencia nueva y datos malos")
     func addTaxRateVariants() throws {
         let (context, books) = try newBooks(state: "TX")

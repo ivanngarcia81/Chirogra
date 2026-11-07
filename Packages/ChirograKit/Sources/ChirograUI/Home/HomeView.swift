@@ -402,6 +402,12 @@ struct HomeView: View {
                 .padding(.horizontal, Metrics.gutter)
                 .padding(.top, 20)
 
+            if showsSalesTax {
+                groupTitle(String(localized: "Impuestos"))
+                salesTaxCard
+                    .padding(.horizontal, Metrics.gutter)
+            }
+
             groupTitle(String(localized: "Ingresos y gastos"))
             chartCard(height: dynamicTypeSize.isAccessibilitySize ? 220 : 150, barWidth: chartMonths == 6 ? 15 : 8,
                       pickerOnTop: true)
@@ -681,6 +687,66 @@ struct HomeView: View {
             .padding(.horizontal, 16).padding(.vertical, 8)
     }
 
+    // MARK: Sales tax
+
+    /// Saldo de «Sales tax por pagar» según libros (el mismo que en Impuestos › Resumen).
+    private var salesTaxPayable: Int64 {
+        let ledger = self.ledger
+        return accounts.filter { $0.subtype == .salesTaxPayable }.reduce(0) { $0 + ledger.balance(of: $1) }
+    }
+
+    /// El sales tax a la vista en Inicio (build 7: Iván, «el resumen del sales tax debería salir en la página de inicio,
+    /// no escondido en Más»), salvo en una empresa que no cobra ninguno ni debe nada (estados sin sales tax).
+    private var showsSalesTax: Bool { companies.first?.defaultTaxGroupID != nil || salesTaxPayable != 0 }
+
+    /// Fecha habitual de la declaración del trimestre: el día 20 del mes siguiente (la de Impuestos).
+    private var salesTaxDueDate: Date {
+        let calendar = Calendar.current
+        let quarter = calendar.dateInterval(of: .quarter, for: .now) ?? DateInterval(start: .now, duration: 0)
+        return calendar.date(byAdding: .day, value: 19, to: quarter.end) ?? quarter.end
+    }
+
+    /// «Austin, TX · 8.25%»: lo que cobran las facturas nuevas.
+    private var defaultTaxLabel: String? {
+        guard let id = companies.first?.defaultTaxGroupID else { return nil }
+        if let group = taxGroups.first(where: { $0.id == id }) {
+            return "\(group.name) · \(StateTaxNote.percent(group.combinedRateMillionths))"
+        }
+        if let rate = taxRates.first(where: { $0.id == id }) { return "\(rate.name) · \(StateTaxNote.percent(rate.rateMillionths))" }
+        return nil
+    }
+
+    /// Una fila: cuánto se debe (o «al día»), cuándo se declara y, al tocarla, Impuestos › Resumen.
+    private var salesTaxRow: some View {
+        let position = SalesTaxPosition(liabilityBalance: salesTaxPayable)
+        let subtitle: String = switch position {
+        // Cortos: la fila es de una línea (con «Declarar y pagar antes del…» se cortaba en el iPhone).
+        case .owed: String(localized: "Vence el \(salesTaxDueDate.dayMonth)")
+        case .settled: defaultTaxLabel ?? String(localized: "No debes nada")
+        case .credit: String(localized: "Se descuenta de la próxima declaración")
+        }
+        return SectionLink(item: .section(.taxes)) { TaxesView() } label: {
+            HomeRow(title: position.title, subtitle: subtitle) {
+                IconTile(systemImage: "percent", foreground: Palette.red)
+            } trailing: {
+                Text(position.amount.money).fontWeight(.semibold).monospacedDigit().foregroundStyle(Palette.ink)
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityElement(children: .combine)
+        .accessibilityHint(Text("Abre Impuestos"))
+    }
+
+    /// La fila del sales tax como tarjeta (iPhone y Mac).
+    private var salesTaxCard: some View {
+        salesTaxRow
+            .background(Palette.surface, in: RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous))
+            #if os(macOS)
+            .overlay(RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous).strokeBorder(Palette.separator, lineWidth: 0.5))
+            #endif
+    }
+
     // MARK: Por pagar
 
     private func billRow(_ bill: Bill) -> some View {
@@ -773,6 +839,11 @@ struct HomeView: View {
                     .padding(.horizontal, 12)
                     .padding(.bottom, 10)
                 ForEach(PadSection.allCases) { section in padItem(section) }
+                if showsSalesTax {
+                    Divider().padding(.horizontal, 12).padding(.vertical, 4)
+                    // El icono alineado con el de las secciones (`padItem` tiene 12 de margen; `HomeRow`, 16).
+                    salesTaxRow.padding(.leading, -4)
+                }
                 if showsSetupCard {
                     setupCard.padding(.top, 14)
                 }
@@ -899,6 +970,7 @@ struct HomeView: View {
             SampleBooksBanner()
             if showsSetupCard { setupCard.frame(maxWidth: 760, alignment: .leading) }
             KPIGrid(items: macKPIs, large: true)
+            if showsSalesTax { salesTaxCard.frame(maxWidth: 760, alignment: .leading) }
             macPair(firstShare: 2) {
                 chartCard(height: 190, barWidth: 12, pickerOnTop: false, months: 12,
                           title: String(localized: "Ingresos y gastos · 12 meses"))
