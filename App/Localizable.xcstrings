@@ -403,6 +403,16 @@
         }
       }
     },
+    "%@ · aproximada" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · approximate"
+          }
+        }
+      }
+    },
     "%@ · base devengado" : {
       "localizations" : {
         "en" : {
@@ -1269,6 +1279,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld of 2"
+          }
+        }
+      }
+    },
+    "%lld de 4 campos encontrados" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld of 4 fields found"
           }
         }
       }
@@ -3723,6 +3743,16 @@
         }
       }
     },
+    "Añade un enlace o unas instrucciones para ver cómo quedan." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add a link or instructions to see how they look."
+          }
+        }
+      }
+    },
     "Añadir" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -4886,6 +4916,16 @@
         }
       }
     },
+    "Chirogra lee el recibo en este aparato y rellena el formulario: revisa los datos antes de guardar. El archivo se guarda junto al gasto tal como lo subes." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chirogra reads the receipt on this device and fills in the form: review the details before saving. The file is kept with the expense exactly as you upload it."
+          }
+        }
+      }
+    },
     "Chirogra para contadores" : {
       "localizations" : {
         "en" : {
@@ -5147,6 +5187,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Payment of %@"
+          }
+        }
+      }
+    },
+    "Cobro en línea" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Online Payments"
           }
         }
       }
@@ -6127,6 +6177,22 @@
         }
       }
     },
+    "Crear la tasa «%@» de %@…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create the “%@” rate of %@…"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Crear la tasa «%1$@» de %2$@…"
+          }
+        }
+      }
+    },
     "Crear mi primer estimado" : {
       "localizations" : {
         "en" : {
@@ -6143,6 +6209,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Create my first invoice"
+          }
+        }
+      }
+    },
+    "Crear proveedor «%@»" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create vendor “%@”"
+          }
+        }
+      }
+    },
+    "Crear tasa" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create Rate"
           }
         }
       }
@@ -6521,6 +6607,16 @@
         }
       }
     },
+    "CÓMO PAGAR" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HOW TO PAY"
+          }
+        }
+      }
+    },
     "Código" : {
       "localizations" : {
         "en" : {
@@ -6531,12 +6627,52 @@
         }
       }
     },
+    "Código QR para pagar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "QR code to pay"
+          }
+        }
+      }
+    },
     "Código o nombre" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Code or name"
+          }
+        }
+      }
+    },
+    "Código postal" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ZIP Code"
+          }
+        }
+      }
+    },
+    "Código postal de entrega" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delivery ZIP Code"
+          }
+        }
+      }
+    },
+    "Cómo pagar: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How to pay: %@"
           }
         }
       }
@@ -7476,6 +7612,16 @@
         }
       }
     },
+    "Ej.: Zelle a pagos@tuempresa.com · Transferencia a la cuenta 1234 del banco…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "E.g. Zelle to payments@yourcompany.com · Bank transfer to account 1234…"
+          }
+        }
+      }
+    },
     "Ejemplo" : {
       "localizations" : {
         "en" : {
@@ -7588,6 +7734,22 @@
         }
       }
     },
+    "El código postal %@ es de %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ZIP code %@ is in %@."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "El código postal %1$@ es de %2$@."
+          }
+        }
+      }
+    },
     "El debe (%@) y el haber (%@) no cuadran." : {
       "localizations" : {
         "en" : {
@@ -7614,6 +7776,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "The discount can't be negative or more than the subtotal."
+          }
+        }
+      }
+    },
+    "El dinero va directo a tu cuenta de ese servicio; Chirogra no lo toca. Cuando te paguen, registra el cobro en la factura con «Registrar pago»." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The money goes straight to your account with that service; Chirogra never touches it. When you get paid, record it on the invoice with “Record Payment”."
           }
         }
       }
@@ -8519,6 +8691,16 @@
         }
       }
     },
+    "Enlace de pago" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Payment Link"
+          }
+        }
+      }
+    },
     "Enlace de pago cambiado" : {
       "localizations" : {
         "en" : {
@@ -8725,6 +8907,22 @@
         }
       }
     },
+    "Es una tasa aproximada para el código postal %@: %@. Un código postal puede tener varias tasas; compruébala con tu estado antes de cobrarla." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This is an approximate rate for ZIP code %@: %@. A ZIP code can have several rates; check it with your state before you charge it."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Es una tasa aproximada para el código postal %1$@: %2$@. Un código postal puede tener varias tasas; compruébala con tu estado antes de cobrarla."
+          }
+        }
+      }
+    },
     "Esa línea del formulario no existe." : {
       "localizations" : {
         "en" : {
@@ -8751,6 +8949,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "That tax rate doesn't exist."
+          }
+        }
+      }
+    },
+    "Escanea el código con la cámara del teléfono o pulsa «Pagar ahora»." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scan the code with your phone’s camera or tap “Pay Now”."
+          }
+        }
+      }
+    },
+    "Escanear" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scan"
+          }
+        }
+      }
+    },
+    "Escanear recibo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scan Receipt"
           }
         }
       }
@@ -8791,6 +9019,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Enter the 4 digits or leave the field empty."
+          }
+        }
+      }
+    },
+    "Escribe los datos a mano; el recibo queda adjunto." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter the details by hand; the receipt stays attached."
           }
         }
       }
@@ -8861,6 +9099,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Status"
+          }
+        }
+      }
+    },
+    "Estado %@ + local %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "State %@ + local %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Estado %1$@ + local %2$@"
           }
         }
       }
@@ -10075,6 +10329,16 @@
         }
       }
     },
+    "Fuente: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Source: %@"
+          }
+        }
+      }
+    },
     "GASTOS" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -11031,6 +11295,16 @@
         }
       }
     },
+    "Impuesto creado: %@. Elígelo en tus facturas o como predeterminado en Impuestos." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tax created: %@. Choose it on your invoices or make it the default in Taxes."
+          }
+        }
+      }
+    },
     "Impuesto incluido" : {
       "localizations" : {
         "en" : {
@@ -11249,6 +11523,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Shelf installation (h)"
+          }
+        }
+      }
+    },
+    "Instrucciones" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Instructions"
+          }
+        }
+      }
+    },
+    "Instrucciones de pago" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Payment Instructions"
           }
         }
       }
@@ -11705,6 +11999,16 @@
         }
       }
     },
+    "La primera vez tarda un poco más: este aparato prepara la lectura. Puedes ir rellenando el resto." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The first time takes a little longer: this device is getting ready to read. You can fill in the rest meanwhile."
+          }
+        }
+      }
+    },
     "La recurrente se guardó, pero no se pudo generar la del %@: %@" : {
       "localizations" : {
         "en" : {
@@ -11816,6 +12120,16 @@
         }
       }
     },
+    "Las facturas no llevarán el recuadro de pago." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invoices won’t include the payment box."
+          }
+        }
+      }
+    },
     "Las facturas ya emitidas conservan su impuesto y no cambian. Los borradores y las facturas nuevas usarán la tasa nueva." : {
       "localizations" : {
         "en" : {
@@ -11867,12 +12181,42 @@
         }
       }
     },
+    "Leyendo el recibo…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reading the receipt…"
+          }
+        }
+      }
+    },
     "Leído" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Read"
+          }
+        }
+      }
+    },
+    "Leído con Apple Intelligence en este aparato. Revisa los datos marcados antes de guardar: nada se registra hasta que pulses «Guardar»." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Read with Apple Intelligence on this device. Review the marked details before saving: nothing is recorded until you tap “Save”."
+          }
+        }
+      }
+    },
+    "Leído del recibo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Read from receipt"
           }
         }
       }
@@ -12703,6 +13047,16 @@
         }
       }
     },
+    "Mostrar «Pagar ahora» en las facturas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show “Pay Now” on Invoices"
+          }
+        }
+      }
+    },
     "Motivo (devolución, ajuste de precio…)" : {
       "localizations" : {
         "en" : {
@@ -13318,6 +13672,16 @@
         }
       }
     },
+    "No hay una tasa para %@ en la tabla de Chirogra. Escribe la de tu estado a mano." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "There’s no rate for %@ in Chirogra’s table. Enter your state’s rate by hand."
+          }
+        }
+      }
+    },
     "No pudimos sincronizar" : {
       "localizations" : {
         "en" : {
@@ -13416,6 +13780,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "The file couldn't be attached: use a photo or a PDF."
+          }
+        }
+      }
+    },
+    "No se pudo leer el recibo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn’t read the receipt"
           }
         }
       }
@@ -13976,6 +14350,16 @@
         }
       }
     },
+    "OTRAS FORMAS DE PAGO" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OTHER WAYS TO PAY"
+          }
+        }
+      }
+    },
     "Obligatorio" : {
       "localizations" : {
         "en" : {
@@ -14466,6 +14850,16 @@
         }
       }
     },
+    "Pagar ahora" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pay Now"
+          }
+        }
+      }
+    },
     "Pagar desde" : {
       "localizations" : {
         "en" : {
@@ -14951,6 +15345,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Country or region"
+          }
+        }
+      }
+    },
+    "Pega el enlace de tu Stripe Payment Link, Square, PayPal.me u otro. Si tu servicio lo admite, escribe {amount}, {number} o {customer} y cada factura pondrá su saldo, su número y el cliente. Sin «Pagar ahora», la factura no lleva ni el enlace ni las instrucciones." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paste your Stripe Payment Link, Square, PayPal.me or other link. If your service supports it, type {amount}, {number} or {customer} and each invoice fills in its balance, number and customer. Without “Pay Now”, the invoice shows neither the link nor the instructions."
           }
         }
       }
@@ -16012,6 +16416,16 @@
         }
       }
     },
+    "Puedes pagar en línea aquí: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You can pay online here: %@"
+          }
+        }
+      }
+    },
     "Puse dinero de mi bolsillo en el negocio" : {
       "localizations" : {
         "en" : {
@@ -16419,6 +16833,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "PDF receipt"
+          }
+        }
+      }
+    },
+    "Recibo escaneado.jpg" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scanned receipt.jpg"
+          }
+        }
+      }
+    },
+    "Recibo escaneado.pdf" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scanned receipt.pdf"
           }
         }
       }
@@ -17219,6 +17653,16 @@
         }
       }
     },
+    "Revisa los datos marcados antes de guardar: nada se registra hasta que pulses «Guardar»." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Review the marked details before saving: nothing is recorded until you tap “Save”."
+          }
+        }
+      }
+    },
     "Revisar" : {
       "localizations" : {
         "en" : {
@@ -17583,6 +18027,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "It gets its number and sales tax, and stays open until you get paid."
+          }
+        }
+      }
+    },
+    "Salen como texto en el PDF de la factura y en el correo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "They appear as text in the invoice PDF and in the email."
           }
         }
       }
@@ -18807,6 +19261,16 @@
         }
       }
     },
+    "Solo la tasa del estado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "State rate only"
+          }
+        }
+      }
+    },
     "Solo lectura" : {
       "localizations" : {
         "en" : {
@@ -19014,6 +19478,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Subtotal %@ + tax %@. For reference only: in the US, sales tax on your purchases is part of the expense."
+          }
+        }
+      }
+    },
+    "Sugerida" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suggested"
           }
         }
       }
@@ -19310,6 +19784,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "State rate created at setup: %@ %@%%"
+          }
+        }
+      }
+    },
+    "Tasa sugerida para %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suggested rate for %@"
+          }
+        }
+      }
+    },
+    "Tasa sugerida para tu negocio (%@)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suggested rate for your business (%@)"
           }
         }
       }
@@ -19620,6 +20114,16 @@
         }
       }
     },
+    "Todo se lee en este aparato." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Everything is read on this device."
+          }
+        }
+      }
+    },
     "Todos" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -19678,6 +20182,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Total %@"
+          }
+        }
+      }
+    },
+    "Total %@ · aproximada: compruébala con tu estado." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total %@ · approximate: check it with your state."
           }
         }
       }
@@ -20522,6 +21036,32 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Use this plan"
+          }
+        }
+      }
+    },
+    "Usar la tasa de %@: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use the %@ rate: %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Usar la tasa de %1$@: %2$@"
+          }
+        }
+      }
+    },
+    "Usar para este cliente" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use for This Customer"
           }
         }
       }
@@ -21372,12 +21912,32 @@
         }
       }
     },
+    "Vista previa en la factura" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preview on the Invoice"
+          }
+        }
+      }
+    },
     "Vista previa · Factura %@" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Preview · Invoice %@"
+          }
+        }
+      }
+    },
+    "Volver a escanear" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scan Again"
           }
         }
       }
@@ -21509,6 +22069,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "There's already an active account with number %@."
+          }
+        }
+      }
+    },
+    "Ya tienes este impuesto: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You already have this tax: %@"
           }
         }
       }
@@ -21932,6 +22502,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Keep the estimate?"
+          }
+        }
+      }
+    },
+    "¿Crear la tasa «%@» de %@?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create the “%@” rate of %@?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "¿Crear la tasa «%1$@» de %2$@?"
           }
         }
       }

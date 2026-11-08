@@ -309,6 +309,22 @@ open -g -j -n .dd/Build/Products/Debug/Chirogra.app --args -AppleLanguages '(es)
 - Solo Facturas: `-qa.pago 1` abre «Registrar pago…», `-qa.registrar 1` además lo registra; `-qa.abrir 1` abre la factura completa.
 - Build 4 (la app se explica sola): `-qa.vacia 1` crea una empresa nueva y vacía («Taller Luna») sin pasar por el alta (estados vacíos); `-qa.pistas reset|todas|ocultas` (TipKit; con otros `-qa.*` y sin este, las pistas no salen); `-qa.asiento aportacion|retiro|traspaso|manual` abre el editor de asientos con esa plantilla y $500 (con `-qa.nuevo 1` en Asientos del Mac); `-qa.ayuda debitoCredito|gravable|capital|combinada|saldo` abre ese ⓘ (en el Mac, con la ventana oculta de `open -j`, el globo no sale); `-qa.tasaNueva 1` abre «Añadir tasa…» en una factura nueva si no hay tasas.
 - Alta (para las capturas de la guía web): `-qa.alta 1|2|3`, `-qa.altaEstado TX`, `-qa.altaCiudad Austin -qa.altaCiudadTasa 2`, `-qa.altaBanco 1250000 -qa.altaTarjeta 30000` (centavos), `-qa.altaCrear 1`. Para una ventana de otro tamaño: `-"NSWindow Frame SwiftUI.WindowGroup<ChirograUI.ChirograRootView>-1-AppWindow-1" "x y ancho alto 0 0 <pantalla>"`.
+- Recibos y cobro (1.1, `Expenses/Receipts/`, `Sales/PayNow/`, `Sales/PostalTax/`):
+  - Escanear recibos: `-qa.escanear prueba` abre «Nuevo gasto» con un recibo de prueba hecho en la app (The Home Depot,
+    $284.17, 29-oct) y lo lee; `-qa.escanear <ruta>` con una foto o un PDF (en el Mac, ruta dentro del contenedor). Se
+    abre solo en Gastos: en el Mac con `-qa.seccion expenses -qa.nuevo 1`, en el iPhone con `-qa.pestana expenses` y en el
+    iPad al abrir Gastos. `-qa.reciboIA no` lee solo con las reglas (sin Apple Intelligence); `-qa.guardarGasto 1`
+    pulsa «Guardar» al terminar de leer. El resultado de cada lectura (renglones, segundos, total, impuesto, comercio y
+    si se usó el modelo) queda en `qa.recibo.resultado` de los ajustes de la app (`defaults read …/Preferences/<id>.plist
+    qa.recibo.resultado`). Ojo: la primera lectura en un contenedor nuevo tarda ~1–1.5 min (el sistema compila el modelo
+    de texto para el Neural Engine); después, segundos.
+  - Cobro en línea: `-qa.ajustes payments` abre Ajustes › Cobro en línea (iPad y Mac); `-qa.enlacePago <url>` y
+    `-qa.instruccionesPago <texto>` los escriben y guardan. Con eso guardado, `-qa.seccion invoices -qa.fila N -qa.enviar 1`
+    (Mac) abre «Enviar factura» con «Pagar ahora» y el QR en la vista previa.
+  - Sales tax por código postal: `-qa.tablaZip muestra` carga la tabla de muestra **inventada** (o `-qa.tablaZip <ruta>`
+    un JSON con el formato de `PostalTaxTable`); `-qa.zipEmpresa 77002` pone el código postal en Ajustes › Perfil
+    (`-qa.ajustes profile`); `-qa.crearTasa 1` abre la confirmación de «Crear la tasa…» y `-qa.crearTasa confirmar` la
+    crea; en el alta, `-qa.altaZip 78702` (con `-qa.alta 1 -qa.altaEstado TX`).
 - Varias empresas (1.1): `-qa.segundaEmpresa <nombre>` da de alta otra empresa vacía con ese nombre (TX, si no existe y
   cabe en el plan) y la deja activa; `-qa.empresa N` deja activa la N.ª del selector (desde 1); `-qa.empresas lista|alta`
   abre la lista de empresas o «Añadir empresa…» (con el plan normal y el límite lleno, la pantalla del plan para

@@ -29,6 +29,8 @@
 	<false/>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.finance</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Chirogra usa la cámara para escanear tus recibos y rellenar el gasto.</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>Chirogra usa Face ID para proteger tus libros.</string>
 	<key>UIApplicationSceneManifest</key>

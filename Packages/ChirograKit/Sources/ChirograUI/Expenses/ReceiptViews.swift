@@ -30,16 +30,30 @@ nonisolated struct ReceiptFile: Identifiable, Transferable {
     }
 }
 
-/// Botones para adjuntar un recibo: foto de la fototeca o archivo (imagen o PDF).
-/// La lectura automática del recibo (OCR) es de la fase 2.
+/// Botones para adjuntar un recibo: escanearlo con la cámara (iPhone y iPad, `DocumentScannerView`), foto de la
+/// fototeca o archivo (imagen o PDF). En «Nuevo gasto», el recibo elegido se lee y rellena el formulario
+/// (`Receipts/ReceiptReader.swift`).
 struct ReceiptPickerButtons: View {
     /// Textos cortos para la zona del recibo de pantallas anchas (`MacGastoNuevo`).
     var short = false
     let onPick: (ReceiptFile) -> Void
     @State private var photo: PhotosPickerItem?
     @State private var importing = false
+    @State private var scanning = false
 
     var body: some View {
+        #if os(iOS)
+        if DocumentScanner.isAvailable {
+            Button(short ? String(localized: "Escanear") : String(localized: "Escanear recibo"), systemImage: "doc.viewfinder") { scanning = true }
+                .fullScreenCover(isPresented: $scanning) {
+                    DocumentScannerView { file in
+                        scanning = false
+                        if let file { onPick(file) }
+                    }
+                    .ignoresSafeArea()
+                }
+        }
+        #endif
         PhotosPicker(selection: $photo, matching: .images) {
             Label(short ? String(localized: "Elegir foto") : String(localized: "Adjuntar foto del recibo"), systemImage: "photo.on.rectangle")
         }
@@ -106,7 +120,7 @@ struct ReceiptDropPanel: View {
                         .accessibilityLabel("Quitar \(receipt.name)")
                 }
             }
-            Text("El archivo se guarda junto al gasto tal como lo subes. Los datos del formulario se escriben a mano.")
+            Text("Chirogra lee el recibo en este aparato y rellena el formulario: revisa los datos antes de guardar. El archivo se guarda junto al gasto tal como lo subes.")
                 .font(.footnote).foregroundStyle(Palette.ink2)
                 .fixedSize(horizontal: false, vertical: true)
         }

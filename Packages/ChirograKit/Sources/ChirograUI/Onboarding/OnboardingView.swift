@@ -92,6 +92,8 @@ struct OnboardingView: View {
     /// Lo que cobra esa ciudad o condado, en % («2»). El usuario (build 9) pidió este orden: el estado con su tasa fija,
     /// la ciudad y su porcentaje, y el total sumado; antes se escribía el total y se deducía la parte local.
     @State private var localRate: Decimal?
+    /// Código postal del negocio (sales tax por código postal, `Sales/PostalTax/`): con la tabla, propone la ciudad y su tasa.
+    @State private var postalCode = ""
     @State private var errorMessage: String?
 
     private static let stepCount = 3
@@ -120,6 +122,7 @@ struct OnboardingView: View {
         .onChange(of: legalName) { suggestEntityType() }
         // Otro estado, otra tasa: el total escrito era del anterior.
         .onChange(of: state) { localRate = nil; localTaxName = "" }
+
         #if os(iOS)
         .safeAreaBar(edge: .top, spacing: 0) { if step > 1 { backBar } }
         // Mientras se escribe, la barra se esconde: subía con el teclado y tapaba los campos (en el paso 3, «Fecha del
@@ -143,6 +146,8 @@ struct OnboardingView: View {
         guard defaults.object(forKey: "qa.alta") != nil, displayName.isEmpty else { return }
         displayName = "Taller Uno"
         state = defaults.string(forKey: "qa.altaEstado") ?? state
+        // `-qa.altaZip 78702` (con `-qa.tablaZip muestra`): el código postal, para ver la tasa sugerida.
+        postalCode = defaults.string(forKey: "qa.altaZip") ?? postalCode
         openingBank = Int64(defaults.integer(forKey: "qa.altaBanco"))
         openingCard = Int64(defaults.integer(forKey: "qa.altaTarjeta"))
         step = min(max(defaults.integer(forKey: "qa.alta"), 1), Self.stepCount)
@@ -274,6 +279,8 @@ struct OnboardingView: View {
                 Text("Elige tu estado").tag("")
                 ForEach(StateSalesTax.all, id: \.code) { Text(verbatim: $0.name).tag($0.code) }
             }
+            PostalCodeField(text: $postalCode)
+            postalSuggestion
             // El sales tax en el orden que pidió el usuario (build 9): la tasa del estado, fija; la ciudad o condado y
             // lo que cobra; y el total, sumado, para que se vea de dónde sale cada parte.
             if let stateRate = stateRateMillionths, let info = StateSalesTax.forState(state) {
@@ -321,6 +328,37 @@ struct OnboardingView: View {
             SectionLabel(text: String(localized: "Detalles"))
         } footer: {
             Text("Tus libros se llevan en dólares (USD). El estado decide el sales tax que cobras; es obligatorio.")
+        }
+    }
+
+    /// Con la tabla de tasas por código postal: «Usar la tasa de Austin (2 %)», que rellena la ciudad y su tasa (el
+    /// usuario las ve y las puede cambiar antes de crear la empresa). Si el código es de otro estado, lo dice.
+    @ViewBuilder
+    private var postalSuggestion: some View {
+        if PostalTaxTableLoader.status.hasTable, let zip = PostalTaxTable.normalized(postalCode), let rate = PostalTaxTables.current?.rate(for: zip) {
+            if !state.isEmpty, rate.state != state {
+                Text("El código postal \(zip) es de \(StateSalesTax.forState(rate.state)?.name ?? rate.state).")
+                    .font(.footnote).foregroundStyle(Palette.warning)
+            } else if rate.localRateMillionths > 0,
+                      !(trimmedLocalName == rate.region && localMillionths == rate.localRateMillionths) {
+                Button {
+                    if state.isEmpty { state = rate.state }
+                    // Después del cambio de estado, que borra la ciudad y su tasa.
+                    DispatchQueue.main.async {
+                        localTaxName = rate.region
+                        localRate = Decimal(rate.localRateMillionths) / 10_000
+                    }
+                } label: {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Label("Usar la tasa de \(rate.region): \(StateTaxNote.percent(rate.localRateMillionths))", systemImage: "sparkles")
+                        Text("Total \(StateTaxNote.percent(rate.combinedRateMillionths)) · aproximada: compruébala con tu estado.")
+                            .font(.footnote).foregroundStyle(Palette.ink2)
+                    }
+                    .frame(maxWidth: .infinity, minHeight: Metrics.target, alignment: .leading)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.borderless)
+            }
         }
     }
 
@@ -573,6 +611,7 @@ struct OnboardingView: View {
             )
             company.fiscalYearStartMonth = fiscalStartMonth
             company.ein = ein.trimmingCharacters(in: .whitespaces)
+            company.postalCode = postalCode.trimmingCharacters(in: .whitespaces)
             try context.save()
             let books = Bookkeeper(context: context)
             // La tasa estatal base como impuesto predeterminado (nada en los estados sin sales tax estatal).

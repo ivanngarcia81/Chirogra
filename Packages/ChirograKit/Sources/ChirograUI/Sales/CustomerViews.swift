@@ -955,6 +955,7 @@ struct CustomerEditorView: View {
     @State private var email = ""
     @State private var phone = ""
     @State private var billingAddress = ""
+    @State private var postalCode = ""
     @State private var taxID = ""
     @State private var terms = 30
     @State private var taxGroupID: UUID?
@@ -983,6 +984,7 @@ struct CustomerEditorView: View {
                     .keyboardType(.phonePad)
                     #endif
                 TextField("Dirección de facturación", text: $billingAddress, axis: .vertical)
+                PostalCodeField(text: $postalCode, title: "Código postal de entrega")
             }
             // Canvas `ClienteFicha` · Contacto: «Laura Méndez · Gerente».
             Section {
@@ -1009,13 +1011,19 @@ struct CustomerEditorView: View {
                 }
                 Toggle("Exento de sales tax", isOn: $isTaxExempt)
                 if isTaxExempt { TextField("Motivo (reventa, sin fines de lucro…)", text: $exemptionReason) }
+                // Sales tax por código postal (`Sales/PostalTax/`): la tasa de una venta a este cliente.
+                if !isTaxExempt, PostalTaxTable.normalized(postalCode) != nil {
+                    PostalTaxSuggestionView(postalCode: postalCode, customer: draftForTax) { id in
+                        if taxGroups.contains(where: { $0.id == id }) { taxGroupID = id }
+                    }
+                }
             }
         }
         .formStyle(.grouped)
         .screenBackground()
         .navigationTitle(customer == nil ? "Nuevo cliente" : "Editar cliente")
         .inlineTitle()
-        .discardableEditor(tracking: "\(name)|\(contactName)|\(contactTitle)|\(email)|\(phone)|\(billingAddress)|\(taxID)|\(terms)|\(taxGroupID?.uuidString ?? "")|\(isTaxExempt)|\(exemptionReason)", token: editorToken)
+        .discardableEditor(tracking: "\(name)|\(postalCode)|\(contactName)|\(contactTitle)|\(email)|\(phone)|\(billingAddress)|\(taxID)|\(terms)|\(taxGroupID?.uuidString ?? "")|\(isTaxExempt)|\(exemptionReason)", token: editorToken)
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
                 Button("Guardar", action: save).disabled(name.trimmingCharacters(in: .whitespaces).isEmpty).headerButton()
@@ -1029,9 +1037,17 @@ struct CustomerEditorView: View {
             name = customer.name; email = customer.email; phone = customer.phone
             contactName = customer.contactName; contactTitle = customer.contactTitle; taxID = customer.taxID
             billingAddress = customer.billingAddress; terms = customer.paymentTermsDays
+            postalCode = customer.postalCode
             taxGroupID = customer.defaultTaxGroupID; isTaxExempt = customer.isTaxExempt
             exemptionReason = customer.exemptionReason
         }
+    }
+
+    /// Un cliente sin guardar con el código postal escrito, para la sugerencia de sales tax.
+    private var draftForTax: Customer {
+        let draft = Customer(name: name)
+        draft.postalCode = postalCode
+        return draft
     }
 
     private func save() {
@@ -1039,6 +1055,7 @@ struct CustomerEditorView: View {
         if customer == nil { Bookkeeper(context: context).insert(target) }
         target.name = name.trimmingCharacters(in: .whitespaces)
         target.email = email; target.phone = phone; target.billingAddress = billingAddress
+        target.postalCode = postalCode.trimmingCharacters(in: .whitespaces)
         target.contactName = contactName.trimmingCharacters(in: .whitespaces)
         target.contactTitle = contactTitle.trimmingCharacters(in: .whitespaces)
         target.taxID = taxID.trimmingCharacters(in: .whitespaces)

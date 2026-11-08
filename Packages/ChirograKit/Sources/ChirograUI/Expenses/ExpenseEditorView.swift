@@ -14,6 +14,8 @@ struct ExpenseEditorView: View {
     var expense: Expense? = nil
     /// Desde la ficha de un proveedor («+ Gasto», «Recibo»).
     var preselectedVendor: Vendor? = nil
+    /// Recibo recién escaneado (Gastos › «Escanear recibo»): se adjunta y se lee al abrir.
+    var initialReceipt: ReceiptFile? = nil
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     @Environment(\.unsavedChanges) private var unsavedChanges
@@ -54,6 +56,13 @@ struct ExpenseEditorView: View {
     @State private var askingUnlock = false
     @State private var closingPassword = ""
     @State private var pendingAnother = false
+    // Recibo leído (`Receipts/`): qué se leyó, de qué archivo y qué campos rellenó (para marcarlos y no pisar lo que
+    // el usuario escribió).
+    @State private var readingState: ReceiptReadingState = .idle
+    @State private var readReceiptID: UUID?
+    @State private var scanFilled: Set<ScanField> = []
+    @State private var initialDate = Date()
+    @State private var creatingScannedVendor = false
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     #if os(iOS)
     @LayoutSizeClass private var sizeClass
@@ -157,6 +166,16 @@ struct ExpenseEditorView: View {
             if let vendor = vendors.first(where: { $0.id == new }) { use(vendor) }
         }
         .onAppear(perform: load)
+        .onChange(of: receipts.map(\.id)) { _, _ in readNewReceiptIfNeeded() }
+        .sheet(isPresented: $creatingScannedVendor) {
+            NavigationStack {
+                VendorEditorView(initialName: scannedReading?.merchant ?? payee) { vendor in
+                    vendorID = vendor.id
+                    use(vendor)
+                }
+            }
+            .editorSheetSizing()
+        }
         .onChange(of: lines.count) { refreshAutoTax() }
         .onChange(of: salesTaxIncluded) { _, new in
             // Escrito a mano (o puesto en 0): deja de seguir al monto.
@@ -200,6 +219,12 @@ struct ExpenseEditorView: View {
             lines = input.lines.isEmpty ? [LineDraft()] : input.lines.map { LineDraft(details: $0.details, amount: $0.amount, accountID: $0.accountID) }
         } else {
             paymentAccountID = paymentAccounts.first { $0.subtype == .bank }?.id
+            initialDate = date
+            ReceiptTextRecognizer.warmUp()
+            if let initialReceipt, receipts.isEmpty { receipts.append(initialReceipt) }
+            #if DEBUG
+            if initialReceipt == nil, receipts.isEmpty, let file = ReceiptQA.launchReceipt() { receipts.append(file) }
+            #endif
             if let preselectedVendor {
                 vendorID = preselectedVendor.id
                 payee = preselectedVendor.name
@@ -231,10 +256,12 @@ struct ExpenseEditorView: View {
         Section {
             if lines.count == 1 {
                 MoneyRow(String(localized: "Monto"), minorUnits: $lines[0].amount, font: .amount(isWide ? 17 : 24),
-                         onEndEditing: refreshAutoTax)
+                         marked: isMarked(.amount), onEndEditing: refreshAutoTax)
             }
-            DatePicker("Fecha", selection: $date, displayedComponents: .date)
-            MoneyRow(String(localized: "Impuesto incluido"), minorUnits: $salesTaxIncluded)
+            DatePicker(selection: $date, displayedComponents: .date) {
+                ScannedLabel(title: String(localized: "Fecha"), marked: isMarked(.date))
+            }
+            MoneyRow(String(localized: "Impuesto incluido"), minorUnits: $salesTaxIncluded, marked: isMarked(.tax))
         } header: {
             SectionLabel(text: String(localized: "Importe"))
         } footer: {
@@ -256,10 +283,22 @@ struct ExpenseEditorView: View {
             VendorPicker(vendors: vendors, selection: $vendorID, proposedName: payee) { use($0) }
             // Con un proveedor elegido, su nombre es el «Pagado a»: basta con uno de los dos.
             if vendorID == nil {
-                TextField("Pagado a (comercio o persona)", text: $payee)
+                if isMarked(.merchant) {
+                    LabeledContent {
+                        TextField("Pagado a (comercio o persona)", text: $payee).labelsHidden()
+                            #if os(iOS)
+                            .multilineTextAlignment(.trailing)
+                            #endif
+                    } label: {
+                        ScannedLabel(title: String(localized: "Comercio"), marked: true)
+                    }
+                } else {
+                    TextField("Pagado a (comercio o persona)", text: $payee)
+                }
             }
             if lines.count == 1 {
-                ExpenseCategoryPicker(title: String(localized: "Categoría"), accounts: accounts, selection: $lines[0].accountID)
+                ExpenseCategoryPicker(title: String(localized: "Categoría"), accounts: accounts, selection: $lines[0].accountID,
+                                      suggested: isMarked(.category))
             }
             PaymentAccountPicker(title: String(localized: "Cuenta de pago"), accounts: paymentAccounts, selection: $paymentAccountID)
             PaymentMethodPicker(account: paymentAccounts.first { $0.id == paymentAccountID }, selection: $method)
@@ -355,6 +394,9 @@ struct ExpenseEditorView: View {
     private var compactForm: some View {
         Form {
             if let errorMessage { ErrorBanner(message: errorMessage) }
+            if readingState != .idle {
+                Section { scanCard } footer: { scanFooter }
+            }
             postedNotice
             amountSection
             detailsSection
@@ -389,6 +431,13 @@ struct ExpenseEditorView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
                     if let errorMessage { ErrorBanner(message: errorMessage) }
+                    if readingState != .idle {
+                        VStack(alignment: .leading, spacing: 6) {
+                            scanCard.padding(.horizontal, 14).padding(.vertical, 6)
+                                .background(Palette.surface, in: RoundedRectangle(cornerRadius: Metrics.fieldRadius, style: .continuous))
+                            scanFooter.font(.footnote).foregroundStyle(Palette.ink2).fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
                     ReceiptDropPanel(receipts: $receipts)
                     #if os(macOS)
                     Button("Guardar y nuevo") { save(another: true) }
@@ -426,6 +475,118 @@ struct ExpenseEditorView: View {
         case .check: String(localized: "Cheque")
         case .other: String(localized: "Otro")
         }
+    }
+
+    // MARK: Recibo leído (`Receipts/`)
+
+    enum ScanField: Hashable { case amount, merchant, date, category, tax }
+
+    private var scannedReading: ReceiptReading? {
+        if case .done(let reading) = readingState { return reading }
+        return nil
+    }
+
+    private var readReceipt: ReceiptFile? { receipts.first { $0.id == readReceiptID } }
+
+    /// El campo se rellenó con el recibo y sigue con ese valor (si el usuario lo cambia, la marca se va).
+    private func isMarked(_ field: ScanField) -> Bool {
+        guard scanFilled.contains(field), let reading = scannedReading else { return false }
+        switch field {
+        case .amount: return lines.count == 1 && lines[0].amount == reading.total
+        case .merchant: return vendorID == nil ? payee == reading.merchant : vendorID == reading.vendorID
+        case .date: return reading.date.map { Calendar.current.isDate($0, inSameDayAs: date) } ?? false
+        case .category: return lines.count == 1 && lines[0].accountID == reading.categoryAccountID
+        case .tax: return salesTaxIncluded == reading.salesTax
+        }
+    }
+
+    /// «Crear proveedor»: el comercio leído no es ninguno de los proveedores y no se ha elegido otro.
+    private var unmatchedMerchant: String? {
+        guard let reading = scannedReading, reading.vendorID == nil, vendorID == nil,
+              let merchant = reading.merchant, payee == merchant else { return nil }
+        return merchant
+    }
+
+    private var scanCard: some View {
+        ReceiptScanCard(state: readingState, receipt: readReceipt, unmatchedMerchant: unmatchedMerchant,
+                        onRescan: { file in
+                            receipts.removeAll { $0.id == readReceiptID }
+                            readReceiptID = nil
+                            receipts.append(file)
+                        },
+                        onCreateVendor: { creatingScannedVendor = true })
+    }
+
+    @ViewBuilder
+    private var scanFooter: some View {
+        if case .done(let reading) = readingState, !reading.isEmpty {
+            Text(reading.usedModel
+                 ? "Leído con Apple Intelligence en este aparato. Revisa los datos marcados antes de guardar: nada se registra hasta que pulses «Guardar»."
+                 : "Revisa los datos marcados antes de guardar: nada se registra hasta que pulses «Guardar».")
+        }
+    }
+
+    /// Lee el recibo recién adjuntado de un gasto nuevo, si aún no se leyó ninguno (o se quitó el que se leyó).
+    private func readNewReceiptIfNeeded() {
+        guard !isEditing else { return }
+        if let readReceiptID, receipts.contains(where: { $0.id == readReceiptID }) { return }
+        guard let file = receipts.last else {
+            readReceiptID = nil
+            readingState = .idle
+            return
+        }
+        readReceiptID = file.id
+        readingState = .reading
+        Task {
+            let reading = await ReceiptReader.read(file, accounts: accounts, vendors: vendors)
+            guard readReceiptID == file.id else { return }
+            apply(reading)
+            readingState = .done(reading)
+            #if DEBUG
+            // `-qa.guardarGasto 1` (con `-qa.escanear`): pulsa «Guardar» al terminar de leer (pruebas sin teclado).
+            if UserDefaults.standard.bool(forKey: "qa.guardarGasto"), canSave {
+                try? await Task.sleep(for: .seconds(2))
+                save()
+            }
+            #endif
+        }
+    }
+
+    /// Rellena lo que el usuario no ha escrito (o lo que rellenó el recibo anterior y sigue igual).
+    private func apply(_ reading: ReceiptReading) {
+        var filled: Set<ScanField> = []
+        let previous = scanFilled.filter(isMarked)
+        if let total = reading.total, lines.count == 1, lines[0].amount == 0 || previous.contains(.amount) {
+            lines[0].amount = total
+            filled.insert(.amount)
+        }
+        if let id = reading.vendorID, let vendor = vendors.first(where: { $0.id == id }),
+           (vendorID == nil && payee.isEmpty) || previous.contains(.merchant) {
+            vendorID = id
+            use(vendor)
+            filled.insert(.merchant)
+        } else if let merchant = reading.merchant, (vendorID == nil && payee.isEmpty) || previous.contains(.merchant) {
+            vendorID = nil
+            payee = merchant
+            filled.insert(.merchant)
+        }
+        if let scanned = reading.date, Calendar.current.isDate(date, inSameDayAs: initialDate) || previous.contains(.date) {
+            date = scanned
+            filled.insert(.date)
+        }
+        if let category = reading.categoryAccountID, lines.count == 1,
+           lines[0].accountID == nil || previous.contains(.category) || filled.contains(.merchant) {
+            lines[0].accountID = category
+            filled.insert(.category)
+        }
+        if let tax = reading.salesTax, taxFollowsRate || previous.contains(.tax) {
+            taxFollowsRate = false
+            salesTaxIncluded = tax
+            filled.insert(.tax)
+        } else {
+            refreshAutoTax()
+        }
+        scanFilled = filled
     }
 
     // MARK: Líneas
@@ -516,6 +677,7 @@ struct ExpenseEditorView: View {
         } else if another {
             lines = [LineDraft()]; payee = ""; vendorID = nil; customerID = nil; memo = ""; receipts = []
             salesTaxIncluded = 0; taxFollowsRate = true; repeats = false; errorMessage = nil
+            readingState = .idle; readReceiptID = nil; scanFilled = []; initialDate = date
         } else {
             unsavedChanges?.remove(editorToken); dismiss()
         }

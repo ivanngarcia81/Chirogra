@@ -33,13 +33,15 @@ struct SettingsView: View {
 
 /// Páginas de Ajustes, con su icono de color como en Ajustes del sistema (canvas `MacAjustes`).
 enum SettingsPage: String, CaseIterable, Identifiable {
-    case profile, template, formats, companies, data
+    // `payments` (Cobro en línea, `Sales/PayNow/PaymentSettingsView.swift`): agente de recibos y cobro, 1.1.
+    case profile, template, payments, formats, companies, data
     var id: String { rawValue }
 
     var title: String {
         switch self {
         case .profile: String(localized: "Perfil de la empresa")
         case .template: String(localized: "Plantilla de factura")
+        case .payments: String(localized: "Cobro en línea")
         case .formats: String(localized: "Moneda y formatos")
         case .companies: String(localized: "Empresas")
         case .data: String(localized: "iCloud, copias y seguridad")
@@ -50,6 +52,7 @@ enum SettingsPage: String, CaseIterable, Identifiable {
         switch self {
         case .profile: "building.2.fill"
         case .template: "doc.richtext.fill"
+        case .payments: "creditcard.fill"
         case .formats: "dollarsign"
         case .companies: "building.2.fill"
         case .data: "icloud.fill"
@@ -60,6 +63,7 @@ enum SettingsPage: String, CaseIterable, Identifiable {
         switch self {
         case .profile: Palette.blue
         case .template: Palette.indigo
+        case .payments: Palette.pink
         case .formats: Palette.green
         case .companies: Palette.orange
         case .data: Palette.teal
@@ -99,6 +103,7 @@ struct SettingsWideView: View {
                     switch page {
                     case .profile: CompanyProfileView(company: company, embedded: true)
                     case .template: InvoiceTemplateView(company: company, embedded: true)
+                    case .payments: PaymentSettingsView(company: company, embedded: true)
                     case .formats: FormatsView(company: company, embedded: true)
                     case .companies: CompaniesView(embedded: true)
                     case .data: DataAndSecurityView(embedded: true)
@@ -201,6 +206,7 @@ struct SettingsLinks: View {
                 link(.profile) { CompanyProfileView(company: company) }
             }
             link(.template) { InvoiceTemplateView(company: company) }
+            link(.payments) { PaymentSettingsView(company: company) }
             link(.formats) { FormatsView(company: company) }
             link(.companies) { CompaniesView() }
         }
@@ -279,6 +285,9 @@ struct CompanyProfileView: View {
                     Text("—").tag("")
                     ForEach(USState.all, id: \.self) { Text($0).tag($0) }
                 }
+                // Sales tax por código postal (`Sales/PostalTax/`): la tasa aproximada del ZIP del negocio.
+                PostalCodeField(text: $company.postalCode)
+                PostalTaxSuggestionView(postalCode: company.postalCode)
             } header: {
                 SectionLabel(text: String(localized: "Dirección"))
             } footer: {
@@ -296,6 +305,10 @@ struct CompanyProfileView: View {
         .screenBackground()
         .modifier(TitleUnlessEmbedded(title: "Perfil de la empresa", embedded: embedded))
         .onDisappear { try? context.save() }
+        #if DEBUG
+        // `-qa.zipEmpresa 78702` (con `-qa.tablaZip muestra`): el código postal del negocio, para la tasa sugerida.
+        .onAppear { if let zip = UserDefaults.standard.string(forKey: "qa.zipEmpresa") { company.postalCode = zip } }
+        #endif
     }
 }
 
