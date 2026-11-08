@@ -241,6 +241,8 @@ struct Sidebar: View {
                     .lineLimit(1)
                     .minimumScaleFactor(0.6)
                     .frame(maxWidth: .infinity, alignment: .leading)
+                // Banca cerrada: cuántos movimientos esperan en «Por revisar» (abierta, el número va en la subsección).
+                if section == .banking && !isOpen { BankPendingBadge(isActive: false) }
                 if hasSubsections {
                     Image(systemName: isOpen ? "chevron.down" : "chevron.right")
                         .font(.caption.weight(.semibold))
@@ -268,10 +270,14 @@ struct Sidebar: View {
             selection = item
         } label: {
             // Hasta dos líneas en vez de encogerse: «Balanza de comprobación» quedaba más pequeña que las demás.
-            Text(title)
+            HStack(spacing: 6) {
+                Text(title)
+                    .lineLimit(2)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                if item == .banking(.inbox) { BankPendingBadge(isActive: isActive && Self.fillsSelection) }
+            }
                 .font(.body)
-                .lineLimit(2)
-                .fixedSize(horizontal: false, vertical: true)
                 .foregroundStyle(foreground(isActive))
                 .padding(.leading, Self.subIndent)
                 .padding(.trailing, Self.rowPadding)
@@ -492,5 +498,22 @@ struct SearchResultsView: View {
         .navigationLinkIndicatorVisibility(.hidden)
         .navigationTitle("Resultados de búsqueda")
         .headerTitle()
+    }
+}
+
+/// Número de movimientos del banco por revisar en la barra lateral (decisión del usuario, 8-nov). Vista aparte para
+/// que la consulta no haga redibujar toda la barra; sin pendientes no enseña nada.
+private struct BankPendingBadge: View {
+    let isActive: Bool
+    @CompanyQuery(filter: #Predicate<BankTransaction> { $0.statusRaw == "toReview" }) private var pending: [BankTransaction]
+
+    var body: some View {
+        if !pending.isEmpty {
+            Text(verbatim: "\(pending.count)")
+                .font(.footnote.weight(.semibold))
+                .monospacedDigit()
+                .foregroundStyle(isActive ? Palette.onBrandFill : Palette.ink2)
+                .accessibilityLabel(Text("\(pending.count) por revisar"))
+        }
     }
 }

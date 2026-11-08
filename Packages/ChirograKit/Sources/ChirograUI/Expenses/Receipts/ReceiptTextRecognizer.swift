@@ -16,8 +16,8 @@ nonisolated enum ReceiptTextRecognizer {
     static let maxPages = 3
 
     /// La primera lectura tras instalar la app tarda (el sistema prepara el modelo de texto para el aparato, casi un
-    /// minuto en el Mac de pruebas); después, unos segundos. Al abrir «Nuevo gasto» se lee una imagen pequeña para
-    /// adelantar ese trabajo mientras el usuario elige el recibo. Una vez por sesión.
+    /// minuto en el Mac de pruebas); después, unos segundos. Poco después de abrir la app (`ChirograRootView`) y al abrir
+    /// «Nuevo gasto» se lee una imagen pequeña para adelantar ese trabajo. Una vez por sesión.
     static func warmUp() {
         guard !warmedUp.withLock({ let was = $0; $0 = true; return was }) else { return }
         Task.detached(priority: .utility) {

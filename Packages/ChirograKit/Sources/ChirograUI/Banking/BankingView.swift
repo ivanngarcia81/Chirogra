@@ -32,6 +32,8 @@ struct BankingView: View {
         // En la fila del iPhone, la cuenta corta («••4821»): el nombre completo no cabía junto a la propuesta.
         let names = Dictionary(accounts.map { ($0.id, $0.last4.isEmpty ? $0.name : "••\($0.last4)") }, uniquingKeysWith: { first, _ in first })
         List {
+            // Con movimientos por revisar, la bandeja va arriba, antes que las cuentas (decisión del usuario, 8-nov).
+            if !pending.isEmpty { inboxSection(context: context, names: names) }
             Section {
                 if shown.isEmpty {
                     EmptyStateView(guide: .banking) { addingAccount = true }
@@ -68,9 +70,8 @@ struct BankingView: View {
                 .buttonStyle(.plain)
             }
 
-            BankInboxSection(transactions: pending, context: context, accountNames: names,
-                             review: { reviewing = $0 }, importStatement: { importing = BankImportRequest(file: nil) },
-                             report: { errorMessage = $0 })
+            // Sin pendientes, la bandeja (vacía) va al final.
+            if pending.isEmpty { inboxSection(context: context, names: names) }
         }
         .groupedList()
         .screenBackground()
@@ -108,6 +109,12 @@ struct BankingView: View {
             }
         }
         #endif
+    }
+
+    private func inboxSection(context: BankInboxContext, names: [UUID: String]) -> some View {
+        BankInboxSection(transactions: pending, context: context, accountNames: names,
+                         review: { reviewing = $0 }, importStatement: { importing = BankImportRequest(file: nil) },
+                         report: { errorMessage = $0 })
     }
 
     /// Fila de una cuenta (canvas `Banca`): icono de color, nombre y, debajo, «N por revisar» (naranja), «Conciliada al…»

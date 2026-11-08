@@ -185,6 +185,12 @@ public struct ChirograRootView: View {
             #endif
         }
         .task { subscription.start() }
+        // La primera lectura de un recibo tras instalar tarda (el sistema prepara su modelo de texto): se adelanta en segundo
+        // plano poco después de abrir, para que al escanear ya esté listo (decisión del usuario, 8-nov).
+        .task {
+            try? await Task.sleep(for: .seconds(6))
+            ReceiptTextRecognizer.warmUp()
+        }
         #if DEBUG
         .task(id: companies.count) {
             // Después de `-qa.muestra` y de que la suscripción de QA fije el límite.

@@ -5533,6 +5533,16 @@
         }
       }
     },
+    "Canjear código" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Redeem Code"
+          }
+        }
+      }
+    },
     "Cant." : {
       "localizations" : {
         "en" : {

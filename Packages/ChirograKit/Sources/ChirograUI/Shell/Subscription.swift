@@ -230,6 +230,8 @@ struct PaywallView: View {
             }
             .subscriptionStoreButtonLabel(.multiline)
             .storeButton(.visible, for: .restorePurchases)
+            // «Canjear código»: los códigos de oferta de App Store Connect (regalar la suscripción, decisión del 8-nov).
+            .storeButton(.visible, for: .redeemCode)
             .subscriptionStorePolicyDestination(url: ChirograLinks.termsOfUse, for: .termsOfService)
             .modifier(PrivacyPolicyLink())
             .onInAppPurchaseCompletion { _, _ in
@@ -314,6 +316,7 @@ struct SubscriptionSection: View {
     #if os(iOS)
     @State private var managing = false
     #endif
+    @State private var redeeming = false
 
     var body: some View {
         if store.status != .notConfigured && store.status != .unknown {
@@ -341,12 +344,19 @@ struct SubscriptionSection: View {
                     .buttonStyle(.borderless)
                     .foregroundStyle(Palette.brand)
                 }
+                // Un código de regalo (código de oferta de App Store Connect) se canjea sin salir de la app.
+                Button("Canjear código") { redeeming = true }
+                    .buttonStyle(.borderless)
+                    .foregroundStyle(Palette.brand)
             } header: {
                 SectionLabel(text: String(localized: "Suscripción"))
             }
             #if os(iOS)
             .manageSubscriptionsSheet(isPresented: $managing)
             #endif
+            .offerCodeRedemption(isPresented: $redeeming) { _ in
+                Task { await store.refresh() }
+            }
         }
     }
 
