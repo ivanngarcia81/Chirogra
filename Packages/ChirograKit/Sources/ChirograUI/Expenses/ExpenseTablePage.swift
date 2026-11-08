@@ -375,7 +375,7 @@ private struct ExpensePageDestinations: ViewModifier {
             .navigationDestination(item: $openedExpense) { expense in ExpenseDetailView(expense: expense) }
             .navigationDestination(item: $openedVendor) { vendor in VendorDetailView(vendor: vendor) }
             .navigationDestination(item: $openedEntry) { entry in JournalEntryDetailView(entry: entry) }
-            .navigationDestination(isPresented: $showingRecurring) {
+            .stableDestination(isPresented: $showingRecurring) {
                 RecurringListView(showsAddButton: true)
                     .navigationTitle("Recurrentes")
                     .navigationSubtitle(String(localized: "Gastos"))

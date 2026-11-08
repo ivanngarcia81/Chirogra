@@ -80,6 +80,9 @@ struct CompanyScopeTests {
         #expect(SubscriptionStore.companyLimit(status: .subscribed(isTrial: true, expires: nil), plan: .accountant) == CompanyLimits.accountant)
         #expect(SubscriptionStore.companyLimit(status: .lapsed, plan: .standard) == CompanyLimits.standard)
         #expect(SubscriptionStore.companyLimit(status: .unknown, plan: .standard) == CompanyLimits.standard)
+        // TestFlight (compras de prueba): hasta 5 sin el plan para contadores.
+        #expect(SubscriptionStore.companyLimit(status: .subscribed(isTrial: false, expires: nil), plan: .standard, isTestFlight: true) == CompanyLimits.accountant)
+        #expect(SubscriptionStore.companyLimit(status: .lapsed, plan: .standard, isTestFlight: true) == CompanyLimits.accountant)
     }
 
     @Test("Cambiar de empresa con un editor sin guardar pregunta antes; si se cancela, no cambia")

@@ -70,14 +70,18 @@ final class SubscriptionStore {
         accountantProduct != nil || UserDefaults.standard.bool(forKey: Self.accountantConfiguredKey)
     }
 
+    /// Copia de TestFlight (compras de prueba, `AppStore.Environment.sandbox`): permite hasta 5 empresas sin el plan
+    /// para contadores, que aún no existe en App Store Connect (decisión del usuario, 8-nov). En la App Store, `false`.
+    private(set) var isTestFlight = false
+
     /// Empresas que permite el plan (archivadas incluidas).
-    var companyLimit: Int { Self.companyLimit(status: status, plan: plan) }
+    var companyLimit: Int { Self.companyLimit(status: status, plan: plan, isTestFlight: isTestFlight) }
 
     /// Sin ningún producto en App Store Connect (`notConfigured`, antes de publicar) no se limita (hasta 5); con el plan
-    /// para contadores, 5; en todo lo demás, 1 (también si el plan para contadores aún no está a la venta: decisión del
-    /// usuario del 8-nov; entonces, al pasar el límite, se avisa en vez de ofrecer el plan).
-    static func companyLimit(status: Status, plan: Plan) -> Int {
-        if status == .notConfigured || plan == .accountant { return CompanyLimits.accountant }
+    /// para contadores, 5; en TestFlight, 5; en todo lo demás, 1 (también si el plan para contadores aún no está a la
+    /// venta: decisión del usuario del 8-nov; entonces, al pasar el límite, se avisa en vez de ofrecer el plan).
+    static func companyLimit(status: Status, plan: Plan, isTestFlight: Bool = false) -> Int {
+        if status == .notConfigured || plan == .accountant || isTestFlight { return CompanyLimits.accountant }
         return CompanyLimits.standard
     }
 
@@ -122,6 +126,9 @@ final class SubscriptionStore {
 
     func refresh() async {
         defer { applyLimit() }
+        if case .verified(let app)? = try? await AppTransaction.shared, app.environment == .sandbox {
+            isTestFlight = true
+        }
         if let found = try? await Product.products(for: Self.productIDs) {
             if let monthly = found.first(where: { $0.id == Self.productID }) {
                 product = monthly

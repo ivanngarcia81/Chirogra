@@ -430,7 +430,7 @@ struct AppShell: View {
                     MoreView().safeAreaInset(edge: .top, spacing: 0) { SyncErrorBanner() }
                         #if DEBUG
                         // Con `-qa.reporte <kind>`, ese reporte (fase 2: flujo de efectivo, presupuesto…).
-                        .navigationDestination(isPresented: $qaOpensReports) { ReportsView(fixedKind: ReportsView.qaKind ?? .income) }
+                        .stableDestination(isPresented: $qaOpensReports) { ReportsView(fixedKind: ReportsView.qaKind ?? .income) }
                         #endif
                 }
             }
@@ -735,7 +735,7 @@ struct MoreView: View {
         .screenBackground()
         .navigationTitle("Más")
         .headerTitle()
-        .navigationDestination(isPresented: $showingTaxes) { TaxesView() }
+        .stableDestination(isPresented: $showingTaxes) { TaxesView() }
     }
 
     private var entriesThisMonth: Int {

@@ -88,8 +88,8 @@ struct BankingView: View {
         .sheet(item: $importing) { request in NavigationStack { BankImportView(initialFile: request.file) }.editorSheetSizing() }
         .sheet(item: $reviewing) { BankReviewSheet(start: $0).editorSheetSizing() }
         .navigationDestination(item: $qaReconcile) { ReconciliationView(account: $0) }
-        .navigationDestination(isPresented: $qaInbox) { BankInboxScreen() }
-        .navigationDestination(isPresented: $qaRules) { BankRulesView() }
+        .stableDestination(isPresented: $qaInbox) { BankInboxScreen() }
+        .stableDestination(isPresented: $qaRules) { BankRulesView() }
         .alert("No se pudo completar", isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
             Button("Aceptar", role: .cancel) {}
         } message: { Text(errorMessage ?? "") }

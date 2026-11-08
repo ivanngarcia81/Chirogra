@@ -114,3 +114,32 @@ enum CompanyStamp {
 
     private static func set<T: CompanyOwned>(_ model: T, _ id: UUID) { model.companyID = id }
 }
+
+// MARK: - Páginas abiertas por código
+
+/// Una página que se abre con `navigationDestination(isPresented:)` no debe crearse de nuevo cada vez que la pila se
+/// actualiza. Cada vez que se crea, sus `@CompanyQuery` crean una consulta nueva (el filtro de la empresa es un
+/// predicado nuevo), la consulta vuelve a leer, la página cambia, la pila se actualiza y vuelve a crearla: la app
+/// quedaba colgada al 100 % de CPU (8-nov: «Abrir Impuestos» de la pista de Más, y `-qa.pestana reports`). Con
+/// `StablePage` la página se crea una vez y la pila la reutiliza mientras `key` no cambie.
+struct StablePage<Content: View>: View, Equatable {
+    let key: AnyHashable
+    let content: () -> Content
+
+    init(key: AnyHashable = 0, @ViewBuilder content: @escaping () -> Content) {
+        self.key = key
+        self.content = content
+    }
+
+    static func == (lhs: Self, rhs: Self) -> Bool { lhs.key == rhs.key }
+
+    var body: some View { content() }
+}
+
+extension View {
+    /// `navigationDestination(isPresented:)` con la página creada una sola vez (`StablePage`).
+    func stableDestination<Destination: View>(isPresented: Binding<Bool>,
+                                              @ViewBuilder destination: @escaping () -> Destination) -> some View {
+        navigationDestination(isPresented: isPresented) { StablePage(content: destination).equatable() }
+    }
+}
