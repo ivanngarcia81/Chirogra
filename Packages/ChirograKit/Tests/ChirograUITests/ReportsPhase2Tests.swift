@@ -131,15 +131,17 @@ struct ReportsPhase2Tests {
         let zipData = try Data(contentsOf: zip)
         #expect(zipData.starts(with: Data([0x50, 0x4B])))   // «PK»
         // El CSV del flujo va en la base elegida, como el PDF.
-        let flow = try String(contentsOf: prepared.folder.appending(path: String(localized: "Flujo de efectivo") + ".csv"), encoding: .utf8)
+        let flow = try String(contentsOf: prepared.folder.appending(path: AccountantPackageWriter.safeName(String(localized: "Flujo de efectivo") + ".csv")), encoding: .utf8)
         #expect(flow == CSVExport.cashFlow(cashFlow))
     }
 
     @Test("Los nombres de la carpeta y los archivos no llevan barras ni dos puntos")
     func safeNames() {
-        #expect(AccountantPackageWriter.safeName("Ríos/Obra: 2026") == "Ríos-Obra- 2026")
-        let name = AccountantPackageWriter.folderName(company: "A/B", from: .now, to: .now)
-        #expect(!name.contains("/") && !name.contains(":"))
+        #expect(AccountantPackageWriter.safeName("Ríos/Obra: 2026") == "Rios-Obra- 2026")
+        #expect(AccountantPackageWriter.safeName("Balanza de comprobación.csv") == "Balanza de comprobacion.csv")
+        let name = AccountantPackageWriter.folderName(company: "Ríos Diseño & Obra", from: .now, to: .now)
+        #expect(!name.contains("/") && !name.contains(":") && name.unicodeScalars.allSatisfy(\.isASCII))
+        #expect(name.hasPrefix("Contador - Rios Diseno & Obra - "))
     }
 
     // MARK: Deducibles

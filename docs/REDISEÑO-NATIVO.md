@@ -321,7 +321,7 @@ open -g -j -n .dd/Build/Products/Debug/Chirogra.app --args -AppleLanguages '(es)
   arrancan los reportes si la empresa aún no tiene una elegida (se recuerda por empresa en el aparato,
   `reportBasisByCompany`). Presupuestos: `-qa.presupuesto nuevo|editar|cuenta` abre «Nuevo presupuesto», «Editar
   importes» o los 12 meses de la primera cuenta con importe; `-qa.agrupar trimestre|año`. Impuestos: `-qa.seccion taxes
-  -qa.impuestos deducibles` (pestaña en el iPhone, página en iPad y Mac); `-qa.deduciblesPeriodo
+  -qa.impuestos deducibles` (pestaña en el iPhone, página encima en iPad y Mac) o `pagina` (la página de deducibles en lugar de Impuestos, para las capturas del Mac); `-qa.deduciblesPeriodo
   añoPasado|trimestre|trimestreAnterior`; `-qa.lineaFiscal N` abre el cambio de línea de la cuenta N. Paquete:
   `-qa.contador 1` abre «Exportar para mi contador» en Reportes; `-qa.contadorPeriodo año|añoPasado|trimestre`;
   `-qa.contadorCarpeta <ruta>` lo prepara al abrir la hoja y copia la carpeta y el ZIP a esa ruta (sin ruta absoluta, a

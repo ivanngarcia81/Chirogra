@@ -211,7 +211,7 @@ private struct ReportPDFPage: View {
                         .foregroundStyle(row.valueColors.flatMap { $0.indices.contains(index) ? $0[index] : nil } ?? .black)
                         .frame(width: amountWidth, alignment: .trailing)
                         .overlay(alignment: .top) {
-                            if row.style == .total || row.style == .grand {
+                            if (row.style == .total || row.style == .grand) && !value.isEmpty {
                                 Rectangle().fill(Color.black.opacity(0.4)).frame(height: 0.5).padding(.leading, 12)
                             }
                         }
@@ -314,7 +314,8 @@ extension ReportDocument {
             guard !lines.isEmpty else { continue }
             list.append(Row(label: kind == .income ? String(localized: "Ingresos") : String(localized: "Deducciones"), style: .heading))
             for row in lines {
-                list.append(Row(label: row.line.label(for: locale), values: [row.amount.money, row.deductibleAmount.money], style: .total))
+                list.append(Row(label: row.line.label(for: locale),
+                                values: [row.amount.money, kind == .income ? "" : row.deductibleAmount.money], style: .total))
                 list += row.accounts.map { Row(label: "\($0.account.code) · \($0.account.name)", values: [$0.amount.money, ""], indent: 1) }
             }
             list.append(Row(label: "", style: .spacer))

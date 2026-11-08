@@ -79,8 +79,18 @@ struct TaxesView: View {
     }
 
     var body: some View {
+        #if DEBUG
+        // `-qa.impuestos pagina`: la página de deducibles en lugar de Impuestos (capturas del Mac: la ventana oculta de
+        // `open -j` no redibuja lo que se abre encima). Solo Debug.
+        if UserDefaults.standard.string(forKey: "qa.impuestos") == "pagina" { DeductionsView() } else { taxesBody }
+        #else
+        taxesBody
+        #endif
+    }
+
+    private var taxesBody: some View {
         let _ = taxLines.count   // se observa para recalcular el resumen al emitir facturas
-        ScrollView {
+        return ScrollView {
             if isWide { wideBody } else { compactBody }
         }
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
@@ -118,12 +128,14 @@ struct TaxesView: View {
         .sheet(isPresented: $showingGroup) { NavigationStack { TaxGroupEditorView() }.editorSheetSizing() }
         .sheet(item: $editingRate) { rate in NavigationStack { TaxRateEditorView(rate: rate) }.editorSheetSizing() }
         .sheet(isPresented: $exportingPackage) { NavigationStack { AccountantExportView() }.editorSheetSizing() }
-        .navigationDestination(isPresented: $showingDeductions) { DeductionsView() }
         #if DEBUG
         // `-qa.impuestos deducibles` abre los deducibles: la pestaña en el iPhone, la página en iPad y Mac (solo Debug).
         .task {
             guard UserDefaults.standard.string(forKey: "qa.impuestos") == "deducibles" else { return }
-            if isWide { try? await Task.sleep(for: .seconds(1)); showingDeductions = true } else { tab = .deductions }
+            tab = .deductions
+            // Después de medir el ancho: al aparecer, la página aún no sabe si es ancha.
+            try? await Task.sleep(for: .seconds(1))
+            if isWide { showingDeductions = true }
         }
         #endif
         #if DEBUG
@@ -163,6 +175,8 @@ struct TaxesView: View {
             }
         }
         #endif
+        // Después del inspector del Mac: dentro de él, la pila de la columna no veía el destino.
+        .navigationDestination(isPresented: $showingDeductions) { DeductionsView() }
     }
 
     // MARK: Trimestre
@@ -451,7 +465,7 @@ struct TaxesView: View {
     // MARK: - iPad y Mac (`MacImpuestos`)
 
     /// Cuatro cifras (cobrado, pagado, saldo y fecha límite), las tasas con lo cobrado en el trimestre y los pagos a la
-    /// agencia (en el lugar de «Gastos deducibles», que es de la fase 2).
+    /// agencia; a la derecha, «Gastos deducibles» del año (fase 2) encima de «Facturas nuevas» y los pagos.
     private var wideBody: some View {
         let interval = quarter(quarterOffset)
         let summary = summary(interval)
@@ -1289,3 +1303,4 @@ extension SalesTaxPosition {
         }
     }
 }
+

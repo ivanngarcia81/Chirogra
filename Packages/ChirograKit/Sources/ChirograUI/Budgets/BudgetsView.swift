@@ -297,6 +297,17 @@ struct BudgetsView: View {
         }
     }
 
+    /// «Oct 2026», «T4», «2026»: para la lista por periodo del inspector del Mac.
+    private func shortPeriodTitle(_ report: BudgetReport, _ index: Int) -> String {
+        guard report.periods.indices.contains(index) else { return "" }
+        let start = report.periods[index].start
+        switch grouping {
+        case .month: return "\(start.shortMonth.sentenceCased) \(start.formatted(.appDateTime.year()))"
+        case .quarter: return String(localized: "T\(index + 1)")
+        case .year: return budget.map(fiscalYearLabel) ?? ""
+        }
+    }
+
     /// «‹ Octubre de 2026 ›»: el periodo dentro del año del presupuesto.
     private func periodStepper(_ report: BudgetReport) -> some View {
         HStack(spacing: 4) {
@@ -601,11 +612,13 @@ struct BudgetsView: View {
             MacInspectorSection(title: String(localized: "Por periodo")) {
                 ForEach(report.periods.indices, id: \.self) { index in
                     let item = self.figures(row, at: index)
-                    MacInspectorRow(label: periodTitle(report, index).sentenceCased) {
+                    MacInspectorRow(label: shortPeriodTitle(report, index)) {
                         HStack(spacing: 6) {
                             Text(item.actual.money)
                             Text(signed(item.variance)).foregroundStyle(varianceColor(item)).font(.subheadline)
                         }
+                        .lineLimit(1)
+                        .fixedSize()
                     }
                 }
             }

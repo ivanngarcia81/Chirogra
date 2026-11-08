@@ -56,17 +56,22 @@ struct PreparedPackage {
 
 /// Escribe el paquete (PDF + CSV) en una carpeta temporal y la comprime. Sin pantalla: lo usan la hoja y las pruebas.
 enum AccountantPackageWriter {
-    /// Nombre de archivo sin barras ni dos puntos (el nombre de la empresa puede llevarlos).
+    /// Nombre de archivo en ASCII, sin acentos, barras ni dos puntos: el ZIP del sistema no marca los nombres como
+    /// UTF-8 y en Windows los acentos salían rotos («RiÌos»).
     static func safeName(_ text: String) -> String {
-        let cleaned = text.map { "/:\\?%*|\"<>".contains($0) ? "-" : $0 }
+        let folded = text.folding(options: [.diacriticInsensitive, .widthInsensitive], locale: Locale(identifier: "en_US_POSIX"))
+        let cleaned = folded.unicodeScalars.map { scalar -> Character in
+            if "/:\\?%*|\"<>".unicodeScalars.contains(scalar) || !scalar.isASCII { return "-" }
+            return Character(scalar)
+        }
         return String(cleaned).trimmingCharacters(in: .whitespaces)
     }
 
-    /// Carpeta «Contador · Empresa · 2026-01-01 a 2026-12-31».
+    /// Carpeta «Contador - Empresa - 2026-01-01_2026-12-31».
     static func folderName(company: String, from: Date, to: Date) -> String {
         let format = Date.ISO8601FormatStyle(timeZone: .current).year().month().day()
         let base = String(localized: "Contador")
-        return safeName([base, company, "\(from.formatted(format)) – \(to.formatted(format))"].filter { !$0.isEmpty }.joined(separator: " · "))
+        return safeName([base, company, "\(from.formatted(format))_\(to.formatted(format))"].filter { !$0.isEmpty }.joined(separator: " - "))
     }
 
     /// Los reportes del paquete como documentos para el PDF (con el flujo en la base elegida, `cashFlow`).
@@ -97,10 +102,10 @@ enum AccountantPackageWriter {
                                 contents: documents.map(\.title) + [String(localized: "CSV: los mismos reportes y el libro diario")],
                                 note: DeductionsText.disclaimer)
         let pdf = ReportPDF.render(documents, companyName: package.companyName, cover: cover)
-        var names = [String(localized: "Reportes") + ".pdf"]
+        var names = [safeName(String(localized: "Reportes") + ".pdf")]
         try pdf.write(to: folder.appending(path: names[0]))
         // El flujo del paquete de datos va siempre en devengo: aquí se pone el de la base elegida, igual que en el PDF.
-        let flowName = String(localized: "Flujo de efectivo") + ".csv"
+        let flowName = safeName(String(localized: "Flujo de efectivo") + ".csv")
         for file in package.files {
             let name = safeName(file.name)
             let contents = name == flowName ? CSVExport.cashFlow(cashFlow) : file.contents
