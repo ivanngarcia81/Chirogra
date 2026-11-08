@@ -14,8 +14,8 @@ import SwiftUI
 /// Sin suscripción (la prueba terminó o nunca empezó; `canStartTrial` distingue los avisos) los libros quedan en
 /// **solo lectura** (`Bookkeeper.isReadOnly`):
 /// se ven, se exportan y se sacan copias de seguridad, pero no se registra nada nuevo. Mientras el producto no exista en
-/// App Store Connect (`notConfigured`: antes de publicar, en las copias de prueba) no se bloquea nada; y mientras no exista
-/// el plan para contadores, tampoco el número de empresas (hasta 5: no se puede ofrecer un plan que no está a la venta).
+/// App Store Connect (`notConfigured`: antes de publicar, en las copias de prueba) no se bloquea nada, tampoco el número de
+/// empresas. Con el plan normal a la venta y el de contadores todavía no, el límite es 1 (decisión del usuario, 8-nov).
 @MainActor
 @Observable
 final class SubscriptionStore {
@@ -70,14 +70,14 @@ final class SubscriptionStore {
         accountantProduct != nil || UserDefaults.standard.bool(forKey: Self.accountantConfiguredKey)
     }
 
-    /// Empresas que permite el plan (archivadas incluidas). Sin la suscripción o sin el plan para contadores en App Store
-    /// Connect no se bloquea nada (hasta 5); con el plan normal, 1; con el de contadores, 5.
-    var companyLimit: Int {
-        switch status {
-        case .notConfigured: return CompanyLimits.accountant
-        case .unknown, .lapsed, .subscribed: break
-        }
-        if plan == .accountant || !sellsAccountantPlan { return CompanyLimits.accountant }
+    /// Empresas que permite el plan (archivadas incluidas).
+    var companyLimit: Int { Self.companyLimit(status: status, plan: plan) }
+
+    /// Sin ningún producto en App Store Connect (`notConfigured`, antes de publicar) no se limita (hasta 5); con el plan
+    /// para contadores, 5; en todo lo demás, 1 (también si el plan para contadores aún no está a la venta: decisión del
+    /// usuario del 8-nov; entonces, al pasar el límite, se avisa en vez de ofrecer el plan).
+    static func companyLimit(status: Status, plan: Plan) -> Int {
+        if status == .notConfigured || plan == .accountant { return CompanyLimits.accountant }
         return CompanyLimits.standard
     }
 

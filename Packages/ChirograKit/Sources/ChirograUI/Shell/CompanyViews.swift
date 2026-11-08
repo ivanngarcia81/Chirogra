@@ -45,10 +45,37 @@ final class CompanyHub {
 
     var sheet: Sheet?
     var limitNotice: LimitNotice?
+    /// Empresa elegida con un editor sin guardar a la vista: `AppShell` pregunta «¿Descartar los cambios?» antes de
+    /// cambiar (como al cambiar de pantalla). Si se cancela, no se cambia.
+    var pendingCompanyID: UUID?
+    /// Cambios sin guardar de la ventana (`AppShell` registra los suyos al aparecer).
+    @ObservationIgnored weak var unsavedChanges: UnsavedChanges?
 
-    /// Deja activa otra empresa: la raíz rehace la app con ella.
+    /// Deja activa otra empresa (la raíz rehace la app con ella). Con un editor sin guardar, primero se pregunta
+    /// (`pendingCompanyID`); si hay un aviso de «Cancelar» cerrándose, se espera a que termine, como la barra lateral.
     func select(_ id: UUID) {
-        ActiveCompany.id = id
+        guard id != CompanySession.scope?.id else { return }
+        if let unsaved = unsavedChanges, unsaved.hasChanges, unsaved.isSettling() {
+            Task { @MainActor in
+                while let unsaved = unsavedChanges, unsaved.hasChanges, unsaved.isSettling() {
+                    try? await Task.sleep(for: .milliseconds(50))
+                }
+                decide(id)
+            }
+        } else {
+            decide(id)
+        }
+    }
+
+    private func decide(_ id: UUID) {
+        if unsavedChanges?.hasChanges == true { pendingCompanyID = id } else { ActiveCompany.id = id }
+    }
+
+    /// «Descartar» del aviso: se pierden los cambios y se cambia de empresa.
+    func discardAndSwitch() {
+        unsavedChanges?.discardAll()
+        if let id = pendingCompanyID { ActiveCompany.id = id }
+        pendingCompanyID = nil
     }
 
     /// «Añadir empresa…»: el alta si cabe en el plan; si no, el plan para contadores (o por qué no se puede). En solo
@@ -373,8 +400,17 @@ struct CompaniesView: View {
 
     private func choose(_ company: Company) {
         guard !company.isArchived else { return }
-        CompanyHub.shared.select(company.id)
-        if inSheet { dismiss() }
+        if inSheet {
+            // Primero se cierra la hoja: si hay cambios sin guardar, el aviso sale en la ventana.
+            dismiss()
+            let id = company.id
+            Task { @MainActor in
+                try? await Task.sleep(for: .milliseconds(450))
+                CompanyHub.shared.select(id)
+            }
+        } else {
+            CompanyHub.shared.select(company.id)
+        }
     }
 
     private func move(from source: IndexSet, to destination: Int) {

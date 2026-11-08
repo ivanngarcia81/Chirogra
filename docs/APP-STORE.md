@@ -157,8 +157,9 @@ Segundo producto del **mismo grupo «Chirogra»**, de **nivel superior**: en App
 «Edit Subscription Levels», ponerlo **por encima** de «Chirogra mensual» (nivel 1 = el más alto). Así, quien tiene el plan
 normal ve «Mejorar» y Apple prorratea el cambio; bajar de plan se aplica al renovar. La app lee el plan de la suscripción
 vigente y fija el límite de empresas: plan normal **1**, contadores **hasta 5** (las archivadas cuentan). Mientras el
-producto no exista en App Store Connect, la app no limita las empresas (hasta 5): **crearlo y mandarlo a revisión con la
-1.1**, o todos los usuarios tendrán 5 empresas.
+producto no exista en App Store Connect (pero sí el plan normal), el límite es 1 y al pasarlo solo se avisa: **crearlo y
+mandarlo a revisión con la 1.1**, o nadie podrá tener más de una empresa. Sin ningún producto (antes de publicar, copias
+de prueba) no se limita.
 
 | Campo | Valor |
 |---|---|

@@ -73,6 +73,46 @@ struct CompanyScopeTests {
         #expect(try Bookkeeper(context: context, companyID: secondID).fetch(Customer.self).contains { $0.id == customer.id })
     }
 
+    @Test("Límite por plan: sin productos no se limita; con el plan normal, 1, aunque el de contadores no esté a la venta")
+    func planLimit() {
+        #expect(SubscriptionStore.companyLimit(status: .notConfigured, plan: .standard) == CompanyLimits.accountant)
+        #expect(SubscriptionStore.companyLimit(status: .subscribed(isTrial: false, expires: nil), plan: .standard) == CompanyLimits.standard)
+        #expect(SubscriptionStore.companyLimit(status: .subscribed(isTrial: true, expires: nil), plan: .accountant) == CompanyLimits.accountant)
+        #expect(SubscriptionStore.companyLimit(status: .lapsed, plan: .standard) == CompanyLimits.standard)
+        #expect(SubscriptionStore.companyLimit(status: .unknown, plan: .standard) == CompanyLimits.standard)
+    }
+
+    @Test("Cambiar de empresa con un editor sin guardar pregunta antes; si se cancela, no cambia")
+    func unsavedChangesOnSwitch() {
+        let hub = CompanyHub()
+        let unsaved = UnsavedChanges()
+        hub.unsavedChanges = unsaved
+        CompanySession.scope = CompanyScope(id: firstID, includeOrphans: true)
+        defer { CompanySession.scope = nil }
+        let saved = ActiveCompany.id
+        defer { ActiveCompany.id = saved }
+        ActiveCompany.id = firstID
+
+        let token = EditorToken()
+        var discarded = false
+        unsaved.report(token, hasChanges: true) { discarded = true }
+        hub.select(secondID)
+        #expect(hub.pendingCompanyID == secondID)
+        #expect(ActiveCompany.id == firstID)
+        // «Seguir editando»: no se cambia.
+        hub.pendingCompanyID = nil
+        #expect(ActiveCompany.id == firstID && !discarded)
+        // «Descartar»: se pierden los cambios y se cambia.
+        hub.select(secondID)
+        hub.discardAndSwitch()
+        #expect(discarded && ActiveCompany.id == secondID && hub.pendingCompanyID == nil)
+        // Sin cambios, al momento.
+        CompanySession.scope = CompanyScope(id: secondID, includeOrphans: false)
+        hub.select(firstID)
+        #expect(ActiveCompany.id == firstID && hub.pendingCompanyID == nil)
+        withExtendedLifetime(token) {}
+    }
+
     @Test("Las archivadas cuentan para el límite del plan")
     func archivedCount() throws {
         let books = Bookkeeper(context: context, companyID: firstID)

@@ -18109,6 +18109,16 @@
         }
       }
     },
+    "Si cambias de empresa se pierde lo que escribiste." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "If you switch businesses, what you typed is lost."
+          }
+        }
+      }
+    },
     "Si cambias de pantalla se pierde lo que escribiste." : {
       "localizations" : {
         "en" : {
@@ -20049,9 +20059,39 @@
     "Tu plan permite %lld empresas, contando las archivadas. Para añadir otra, borra una que ya no uses en Ajustes › Empresas." : {
       "localizations" : {
         "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Your plan allows %lld businesses, including archived ones. To add another, delete one you no longer use in Settings › Businesses."
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Your plan allows %lld business, including archived ones. To add another, delete the one you no longer use in Settings › Businesses."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Your plan allows %lld businesses, including archived ones. To add another, delete one you no longer use in Settings › Businesses."
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Tu plan permite %lld empresa, contando las archivadas. Para añadir otra, borra la que ya no uses en Ajustes › Empresas."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Tu plan permite %lld empresas, contando las archivadas. Para añadir otra, borra una que ya no uses en Ajustes › Empresas."
+                }
+              }
+            }
           }
         }
       }

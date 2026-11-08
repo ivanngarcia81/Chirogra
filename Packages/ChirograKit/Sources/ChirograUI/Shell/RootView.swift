@@ -353,6 +353,7 @@ struct AppShell: View {
     /// La columna maestro oculta (solo el detalle a la vista).
     @State private var masterHidden = false
     @State private var monitor = SyncMonitor.shared
+    @State private var companyHub = CompanyHub.shared
     #if os(macOS)
     @ScaledMetric(relativeTo: .body) private var masterWidth: CGFloat = 280
     #else
@@ -370,11 +371,22 @@ struct AppShell: View {
     #endif
 
     var body: some View {
-        #if os(iOS)
-        if sizeClass == .compact { tabs } else { split }
-        #else
-        split
-        #endif
+        Group {
+            #if os(iOS)
+            if sizeClass == .compact { tabs } else { split }
+            #else
+            split
+            #endif
+        }
+        // Cambiar de empresa con un editor sin guardar pregunta antes, como cambiar de pantalla (`CompanyHub.select`).
+        .onAppear { companyHub.unsavedChanges = unsavedChanges }
+        .alert("¿Descartar los cambios?", isPresented: Binding(get: { companyHub.pendingCompanyID != nil },
+                                                               set: { if !$0 { companyHub.pendingCompanyID = nil } })) {
+            Button("Descartar", role: .destructive) { companyHub.discardAndSwitch() }
+            Button("Seguir editando", role: .cancel) { companyHub.pendingCompanyID = nil }
+        } message: {
+            Text("Si cambias de empresa se pierde lo que escribiste.")
+        }
     }
 
     #if os(iOS)
