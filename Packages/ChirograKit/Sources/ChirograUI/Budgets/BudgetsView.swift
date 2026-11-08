@@ -199,11 +199,13 @@ struct BudgetsView: View {
     }
 
     /// «2026» o, con otro inicio del año fiscal, «jul 2026 – jun 2027».
+    /// Sin leer los libros (solo el mes de inicio de la empresa): el cuerpo se evalúa muchas veces.
     private func fiscalYearLabel(_ budget: Budget) -> String {
-        guard let months = try? Bookkeeper(context: context).months(ofFiscalYear: budget.fiscalYear),
-              let first = months.first, let last = months.last else { return String(budget.fiscalYear) }
-        if first.month == 1 { return String(budget.fiscalYear) }
-        return (first.start..<last.end).formatted(.interval.month(.abbreviated).year().locale(.appText))
+        let startMonth = companies.first?.fiscalYearStartMonth ?? 1
+        let calendar = Calendar.current
+        guard startMonth != 1, let first = calendar.date(from: DateComponents(year: budget.fiscalYear, month: startMonth, day: 1)),
+              let last = calendar.date(byAdding: DateComponents(month: 12, second: -1), to: first) else { return String(budget.fiscalYear) }
+        return (first..<last).formatted(.interval.month(.abbreviated).year().locale(.appText))
     }
 
     // MARK: Barra

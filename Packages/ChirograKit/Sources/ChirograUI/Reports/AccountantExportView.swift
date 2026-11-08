@@ -200,6 +200,8 @@ struct AccountantExportView: View {
             } footer: {
                 Text(DeductionsText.disclaimer)
             }
+            // Las acciones antes de la lista de archivos: en el iPhone, «Compartir ZIP…» quedaba fuera de la pantalla.
+            Section { actions }
             if let prepared {
                 Section {
                     ForEach(prepared.files, id: \.self) { name in
@@ -212,7 +214,6 @@ struct AccountantExportView: View {
                     SectionLabel(text: String(localized: "Listo · \(prepared.folder.lastPathComponent)"))
                 }
             }
-            Section { actions }
         }
         .formStyle(.grouped)
         .screenBackground()

@@ -99,6 +99,9 @@ struct DeductionsView: View {
     @State private var exportingPackage = false
     @State private var errorMessage: String?
     @State private var width: CGFloat = 0
+    /// Líneas abiertas (iPhone): sus cuentas se despliegan debajo, en la misma lista. Abrir la línea en otra pantalla
+    /// (con `NavigationLink` o `navigationDestination`) dejaba la pila de «Más» redibujándose sin parar en iOS 26.
+    @State private var expandedLines: Set<String> = []
     #if os(macOS)
     /// Fila elegida para el inspector: «account:<id>» o «line:<id>».
     @State private var macPick: String?
@@ -354,10 +357,12 @@ struct DeductionsView: View {
         .background(Palette.surface, in: RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous))
     }
 
-    /// Línea del formulario con su importe y su barra (canvas: barra de 6 pt en Tinta); abre sus cuentas.
+    /// Línea del formulario con su importe y su barra (canvas: barra de 6 pt en Tinta); al tocarla, sus cuentas.
+    @ViewBuilder
     private func compactLineRow(_ row: TaxFormSummary.Row, top: Int64) -> some View {
-        NavigationLink {
-            DeductionLineDetail(lineID: row.id, period: period, onEdit: { editingAccount = account($0) })
+        let expanded = expandedLines.contains(row.id)
+        Button {
+            withAnimation(.snappy) { if expanded { expandedLines.remove(row.id) } else { expandedLines.insert(row.id) } }
         } label: {
             VStack(alignment: .leading, spacing: 7) {
                 AdaptiveRow {
@@ -371,6 +376,7 @@ struct DeductionsView: View {
                             }
                         }
                         Image(systemName: "chevron.right").font(.footnote.weight(.semibold)).foregroundStyle(Palette.chevron)
+                            .rotationEffect(.degrees(expanded ? 90 : 0))
                             .accessibilityHidden(true)
                     }
                 }
@@ -386,11 +392,15 @@ struct DeductionsView: View {
         }
         .buttonStyle(.plain)
         .accessibilityElement(children: .combine)
+        .accessibilityValue(expanded ? String(localized: "Abierta") : String(localized: "Cerrada"))
         .accessibilityHint("Muestra las cuentas de la línea")
+        if expanded {
+            ForEach(row.accounts) { accountRow($0, line: row.line, indented: true) }
+        }
     }
 
     /// Cuenta dentro de una línea (o excluida): su importe y, al tocarla, el cambio de línea.
-    private func accountRow(_ row: ReportRow, line: TaxFormLine?) -> some View {
+    private func accountRow(_ row: ReportRow, line: TaxFormLine?, indented: Bool = false) -> some View {
         Button { editingAccount = account(row.account.id) } label: {
             AdaptiveRow {
                 VStack(alignment: .leading, spacing: 1) {
@@ -401,7 +411,7 @@ struct DeductionsView: View {
             } trailing: {
                 Text(row.amount.money).monospacedDigit().foregroundStyle(Palette.ink)
             }
-            .padding(.horizontal, 16).padding(.vertical, 8)
+            .padding(.leading, indented ? 32 : 16).padding(.trailing, 16).padding(.vertical, 8)
             .frame(maxWidth: .infinity, minHeight: Metrics.target, alignment: .leading)
             .contentShape(Rectangle())
         }
@@ -550,7 +560,7 @@ struct DeductionsView: View {
         if let id = selectedAccountID, let account = account(id), let form {
             let amount = (summary?.rows.flatMap(\.accounts) ?? []).first { $0.account.id == id }?.amount
                 ?? summary?.excluded.first { $0.account.id == id }?.amount ?? 0
-            let current = try? Bookkeeper(context: context).taxLine(for: account, form: form)
+            let current = TaxLinePickerView.current(for: account, form: form, sector: sector)
             MacReportFigure(caption: String(localized: "Cuenta \(account.code) · \(period.label())"), amount: amount.money) {
                 Text(current.map(lineName) ?? String(localized: "Excluida del formulario")).foregroundStyle(Palette.ink2)
             }
@@ -593,82 +603,10 @@ struct DeductionsView: View {
     }
     #endif
 
+    private var sector: BusinessSector { company.flatMap { BusinessSector(rawValue: $0.sectorRaw) } ?? .services }
+
     private func suggestedLine(_ account: Account, form: TaxForm) -> TaxFormLine? {
-        TaxLinePickerView.suggested(for: account, form: form, sector: company.flatMap { BusinessSector(rawValue: $0.sectorRaw) } ?? .services)
-    }
-}
-
-/// Las cuentas de una línea del formulario (iPhone e iPad), con el cambio de línea de cada una.
-struct DeductionLineDetail: View {
-    let lineID: String
-    let period: DeductionsPeriod
-    let onEdit: (UUID) -> Void
-    @Environment(\.modelContext) private var context
-    @CompanyQuery(sort: \Account.code) private var accounts: [Account]
-    @CompanyQuery private var journalLines: [JournalLine]
-    @ActiveCompanyQuery private var companies: [Company]
-    @ReportBasisSetting private var basis
-    @State private var editingAccount: Account?
-
-    private var row: TaxFormSummary.Row? {
-        let _ = journalLines.count
-        let range = period.range()
-        let form = companies.first.flatMap { TaxForm.forEntity($0.entityType) }
-        return (try? Bookkeeper(context: context).taxSummary(from: range.from, to: range.to, basis: basis, form: form))?
-            .rows.first { $0.id == lineID }
-    }
-
-    var body: some View {
-        let _ = accounts.map(\.taxFormLineRaw)
-        List {
-            if let row {
-                Section {
-                    LabeledContent("Importe", value: row.amount.money)
-                    if row.line.kind == .deduction {
-                        LabeledContent("Deducible", value: row.deductibleAmount.money)
-                    }
-                    LabeledContent("Periodo", value: period.label())
-                } header: {
-                    SectionLabel(text: row.line.label(for: .appText))
-                } footer: {
-                    Text(row.line.english)
-                }
-                Section {
-                    ForEach(row.accounts) { item in
-                        Button { editingAccount = accounts.first { $0.id == item.account.id } } label: {
-                            LabeledContent {
-                                Text(item.amount.money).monospacedDigit()
-                            } label: {
-                                VStack(alignment: .leading, spacing: 1) {
-                                    Text(item.account.name).foregroundStyle(Palette.ink)
-                                    Text(item.account.code).font(.footnote).foregroundStyle(Palette.ink2)
-                                }
-                            }
-                            .frame(minHeight: Metrics.target)
-                            .contentShape(Rectangle())
-                        }
-                        .buttonStyle(.plain)
-                        .accessibilityHint("Cambia la línea del formulario")
-                    }
-                } header: {
-                    SectionLabel(text: String(localized: "Cuentas"))
-                } footer: {
-                    Text("Toca una cuenta para llevarla a otra línea o excluirla.")
-                }
-            } else {
-                Text("Esta línea ya no tiene importes en el periodo.").foregroundStyle(Palette.ink2)
-            }
-        }
-        .listRowBackground(Palette.surface)
-        .screenBackground()
-        .navigationTitle(row.map { String(localized: "Línea \($0.line.number)") } ?? String(localized: "Línea"))
-        .inlineTitle()
-        .sheet(item: $editingAccount) { account in
-            NavigationStack {
-                TaxLinePickerView(account: account, form: companies.first.flatMap { TaxForm.forEntity($0.entityType) } ?? .scheduleC)
-            }
-            .editorSheetSizing()
-        }
+        TaxLinePickerView.suggested(for: account, form: form, sector: sector)
     }
 }
 
@@ -699,6 +637,15 @@ struct TaxLinePickerView: View {
     static func suggested(for account: Account, form: TaxForm, sector: BusinessSector) -> TaxFormLine? {
         TaxFormCatalog.defaultLineNumber(code: account.code, subtype: account.subtype, sector: sector, form: form)
             .flatMap { TaxFormCatalog.line($0, in: form) }
+    }
+
+    /// La línea que usa la cuenta, sin leer los libros (como `Bookkeeper.taxLine`): la elegida si es de este formulario,
+    /// ninguna si está excluida, o la sugerida.
+    static func current(for account: Account, form: TaxForm, sector: BusinessSector) -> TaxFormLine? {
+        let raw = account.taxFormLineRaw
+        if raw == TaxFormCatalog.none { return nil }
+        if let line = TaxFormCatalog.line(id: raw), line.form == form { return line }
+        return suggested(for: account, form: form, sector: sector)
     }
 
     private var suggested: TaxFormLine? {
