@@ -89,6 +89,8 @@ struct InvoiceEditorView: View {
     @State private var justIssued: Invoice?
     /// Corregir una emitida con fecha en un periodo cerrado: se repite con los libros desbloqueados.
     @State private var closedPeriodRetry: ClosedPeriodRetry?
+    /// Banca 1.2: corregir una factura cuyo asiento está conciliado pide confirmación (`ReconciledChange`).
+    @State private var reconciledRetry: ReconciledChangeRetry?
     /// Ancho del editor (iOS). En la hoja del iPad la clase de tamaño ya es compacta aunque mida 760–980 pt, así que el
     /// diseño ancho se elige por el ancho; `nil` hasta medirlo.
     @State private var width: CGFloat?
@@ -309,6 +311,7 @@ struct InvoiceEditorView: View {
         // Tras «Emitir factura», «Factura F-1001 emitida · Enviar a…»; al terminar se cierra el editor.
         .offerToSendIssued($justIssued) { dismiss() }
         .closedPeriodUnlock($closedPeriodRetry) { errorMessage = $0 }
+        .reconciledChangeConfirmation($reconciledRetry) { errorMessage = $0 }
     }
 
     // MARK: Términos
@@ -1134,6 +1137,8 @@ struct InvoiceEditorView: View {
                     try unlocked.updateIssuedInvoice(invoice, with: input)
                     close()
                 }
+            } else if let retry = ReconciledChange.retry(for: error, { try $0.updateIssuedInvoice(invoice, with: input); close() }) {
+                reconciledRetry = retry
             } else {
                 errorMessage = error.localizedDescription
             }

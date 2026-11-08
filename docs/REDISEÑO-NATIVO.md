@@ -315,4 +315,16 @@ open -g -j -n .dd/Build/Products/Debug/Chirogra.app --args -AppleLanguages '(es)
   contadores; con `-qa.alta 1 -qa.altaEstado TX -qa.altaCrear 1` además la crea). `-qa.suscripcion contador` = plan para
   contadores activo (5 empresas); `activa`/`prueba` = plan normal (1). `-qa.ajustes companies` abre Ajustes › Empresas.
   En una copia del Mac sin iCloud firmado, `-iCloudSyncEnabled NO` (si no, CloudKit la cierra al arrancar).
+- Banca 1.2 (conciliación): `-qa.seccion bankInbox|bankRules|reconcile` abre la bandeja «Por revisar», las reglas o la
+  conciliación (subsecciones de Banca en la barra lateral; `banking` sigue siendo Cuentas). `-qa.importar <ruta>` abre
+  «Importar movimientos» con ese CSV/OFX/QFX (en Banca del iPhone, la columna de la bandeja del iPad y la tabla del Mac) y
+  `-qa.importarAuto 1` además importa; `-qa.revisar N` abre «Revisar transacción» del N.º por revisar (iPhone y Mac),
+  `-qa.revisarModo emparejar|categorizar|regla` y `-qa.revisarCategoria 1` (elige la primera categoría);
+  `-qa.aceptarSugeridas 1` pulsa «Aceptar sugeridas»; `-qa.fila N` elige el N.º movimiento en la columna del iPad (y en
+  la tabla del Mac, como siempre); en el iPhone, `-qa.bandeja 1` y `-qa.reglas 1` abren la bandeja completa y las reglas;
+  `-qa.reglaNueva 1` abre «Nueva regla». Conciliación: `-qa.conciliar N` abre la de la N.ª cuenta de banco o tarjeta (desde
+  0; en el iPhone desde Banca, en iPad y Mac con `-qa.seccion reconcile`), `-qa.conciliarFecha AAAA-MM-DD` y
+  `-qa.conciliarSaldo <centavos>` rellenan el extracto, `-qa.conciliarEmpezar 1` la empieza, `-qa.conciliarMarcar todas`
+  marca todas las partidas, `-qa.conciliarCuadrar 1` pone el saldo del extracto igual al conciliado y
+  `-qa.conciliarTerminar 1` la termina.
 - Captura solo de esa ventana con `screencapture -l <id> -o -x`, sacando el id con `CGWindowListCopyWindowInfo` filtrado por su PID; al terminar, `kill <pid>`. La ventana queda inactiva (oculta y en segundo plano): la fila elegida sale en gris y los botones de vidrio atenuados; activa, la fila va en Tinta.

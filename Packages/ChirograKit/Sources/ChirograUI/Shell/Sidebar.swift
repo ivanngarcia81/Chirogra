@@ -35,6 +35,8 @@ enum SidebarItem: Hashable {
     case expenses(ExpensesView.Segment)
     case report(ReportsView.Kind)
     case accounting(AccountingPage)
+    /// Banca 1.2: Cuentas · Por revisar · Reglas · Conciliación (`BankingPage`, en `Banking/BankInboxViews.swift`).
+    case banking(BankingPage)
 
     /// Sección principal a la que pertenece (la que se marca en la barra).
     var section: AppSection {
@@ -44,6 +46,7 @@ enum SidebarItem: Hashable {
         case .expenses: .expenses
         case .report: .reports
         case .accounting: .accounting
+        case .banking: .banking
         }
     }
 
@@ -60,6 +63,7 @@ enum SidebarItem: Hashable {
         case .expenses(let segment): ExpensesView(fixedSegment: segment)
         case .report(let kind): ReportsView(fixedKind: kind)
         case .accounting(let page): page.destination
+        case .banking(let page): page.destination
         }
     }
 
@@ -74,6 +78,7 @@ enum SidebarItem: Hashable {
              (String(localized: "Facturas por pagar"), .expenses(.bills))]
         case .reports: ReportsView.Kind.allCases.map { ($0.fullTitle, .report($0)) }
         case .accounting: AccountingPage.allCases.map { ($0.title, .accounting($0)) }
+        case .banking: BankingPage.allCases.map { ($0.title, .banking($0)) }
         default: []
         }
     }

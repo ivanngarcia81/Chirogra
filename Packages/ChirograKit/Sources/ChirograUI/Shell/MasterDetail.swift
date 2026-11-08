@@ -12,6 +12,8 @@ import TipKit
 /// (`hasMacTable`, `macTable(selection:)` en `Shell/MacTablePage.swift`); hasta entonces sigue con estas columnas.
 enum MasterPage: Hashable {
     case invoices, customers, expenses, vendors, bills, banking, journal, chart
+    /// Banca 1.2: bandeja «Por revisar» (`BankInboxMasterList` en el iPad, `BankInboxTablePage` en el Mac).
+    case bankInbox
     #if os(iOS)
     /// Estimados: columna maestro en el iPad (`EstimateMasterList`). En el Mac van con su tabla (`EstimatesMacPage`).
     case estimates
@@ -27,7 +29,8 @@ enum MasterPage: Hashable {
         case .section(.expenses), .expenses(.expenses): self = .expenses
         case .expenses(.vendors): self = .vendors
         case .expenses(.bills): self = .bills
-        case .section(.banking): self = .banking
+        case .section(.banking), .banking(.accounts): self = .banking
+        case .banking(.inbox): self = .bankInbox
         case .accounting(.journal): self = .journal
         case .accounting(.chart): self = .chart
         default: return nil
@@ -43,6 +46,7 @@ enum MasterPage: Hashable {
         case .vendors: ("shippingbox", String(localized: "Elige un proveedor"))
         case .bills: ("doc.text", String(localized: "Elige una factura por pagar"))
         case .banking: ("building.columns", String(localized: "Elige una cuenta"))
+        case .bankInbox: ("tray", String(localized: "Elige un movimiento"))
         case .journal: ("doc.plaintext", String(localized: "Elige un asiento"))
         case .chart: ("list.bullet.indent", String(localized: "Elige una cuenta"))
         #if os(iOS)
@@ -90,6 +94,7 @@ struct MasterColumn: View {
         case .vendors: VendorMasterList(selection: $selection)
         case .bills: BillMasterList(selection: $selection)
         case .banking: BankingMasterList(selection: $selection)
+        case .bankInbox: BankInboxMasterList(selection: $selection)
         case .journal: JournalMasterList(selection: $selection)
         case .chart: ChartMasterList(selection: $selection)
         #if os(iOS)
@@ -113,6 +118,7 @@ struct MasterDetailColumn: View {
             case .vendors: ModelLookup(id: id, key: \Vendor.id, page: page) { VendorDetailView(vendor: $0) }
             case .bills: ModelLookup(id: id, key: \Bill.id, page: page) { BillDetailView(bill: $0) }
             case .banking: ModelLookup(id: id, key: \Account.id, page: page) { BankAccountDetail(account: $0) }
+            case .bankInbox: ModelLookup(id: id, key: \BankTransaction.id, page: page) { BankReviewDetail(transaction: $0) }
             case .journal: ModelLookup(id: id, key: \JournalEntry.id, page: page) { JournalEntryDetailView(entry: $0) }
             case .chart: ModelLookup(id: id, key: \Account.id, page: page) { LedgerView(account: $0, inDetailColumn: true) }
             #if os(iOS)
@@ -163,6 +169,7 @@ private struct MasterPlaceholder: View {
             case .estimates: GuideOrPick<Estimate, InvoiceEditorView>(page: page, guide: .estimates) { InvoiceEditorView(mode: .estimate(nil)) }
             #endif
             case .banking, .chart: MasterPick(page: page)
+            case .bankInbox: BankInboxPlaceholder()
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -278,7 +285,7 @@ private struct MasterListStyle: ViewModifier {
     }
 }
 
-private extension View {
+extension View {
     /// Título de la columna maestro: en el iPad, en la fila de la barra junto a «+», como en Mail con la lista
     /// estrecha. Grande (`.inlineLarge`) quedaba debajo de la barra: el filtro fijo lo tapaba (hueco vacío) o, con el
     /// filtro en la barra, el efecto de borde lo desenfocaba. En el Mac, el de la ventana.
@@ -693,14 +700,8 @@ private struct BankingMasterList: View {
                 }
                 .masterRow(account.id, selection: selection)
             }
-            Section {
-                Label("Importar y conciliar · Próximamente", systemImage: "square.and.arrow.down")
-                    .font(.footnote.weight(.semibold))
-                    .foregroundStyle(Palette.ink2)
-                    .accessibilityLabel("Importar y conciliar, disponible en una próxima versión")
-                    .selectionDisabled()
-                    .listRowBackground(Palette.surface)
-            }
+            // Banca 1.2 (canvas `iPadBancaCuentas`): «Bandeja» con Por revisar, Conciliar, Reglas e Importar.
+            BankingShortcutsSection()
         }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)

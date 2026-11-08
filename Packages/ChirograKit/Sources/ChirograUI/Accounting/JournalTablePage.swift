@@ -21,6 +21,8 @@ struct JournalTablePage: View {
     @State private var opened: JournalEntry?
     @State private var reversing: JournalEntry?
     @State private var errorMessage: String?
+    /// Banca 1.2: revertir un asiento conciliado pide confirmación (`ReconciledChange`).
+    @State private var reconciledRetry: ReconciledChangeRetry?
 
     private var filtered: [JournalEntry] {
         let text = query.trimmingCharacters(in: .whitespaces)
@@ -99,6 +101,7 @@ struct JournalTablePage: View {
             }
         }
         .onChange(of: selection) { errorMessage = nil }
+        .reconciledChangeConfirmation($reconciledRetry) { errorMessage = $0 }
         .confirmationDialog("¿Revertir este asiento?", isPresented: Binding(get: { reversing != nil }, set: { if !$0 { reversing = nil } }),
                             titleVisibility: .visible, presenting: reversing) { entry in
             Button("Revertir", role: .destructive) { reverse(entry) }
@@ -124,7 +127,12 @@ struct JournalTablePage: View {
             errorMessage = nil
             selection = reversal.id
         } catch {
-            errorMessage = error.localizedDescription
+            // Banca 1.2: revertir un asiento conciliado pide confirmación (`ReconciledChange`).
+            if let retry = ReconciledChange.retry(for: error, { selection = try $0.reverse(entry).id }) {
+                reconciledRetry = retry
+            } else {
+                errorMessage = error.localizedDescription
+            }
         }
     }
 }

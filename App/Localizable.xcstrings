@@ -263,6 +263,16 @@
         }
       }
     },
+    "%@ partidas marcadas · se guardan al momento" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ items checked · saved as you go"
+          }
+        }
+      }
+    },
     "%@ por pagar" : {
       "localizations" : {
         "en" : {
@@ -403,6 +413,16 @@
         }
       }
     },
+    "%@ · asiento %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · entry %lld"
+          }
+        }
+      }
+    },
     "%@ · base devengado" : {
       "localizations" : {
         "en" : {
@@ -481,6 +501,16 @@
         }
       }
     },
+    "%@ · extracto al %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · statement as of %@"
+          }
+        }
+      }
+    },
     "%@ · ingresos, gastos y ganancia" : {
       "localizations" : {
         "en" : {
@@ -533,6 +563,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ · %@ left to invoice"
+          }
+        }
+      }
+    },
+    "%@ · regla" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · rule"
           }
         }
       }
@@ -737,6 +777,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@: %@, %@: %@"
+          }
+        }
+      }
+    },
+    "%@: al confirmar pasarás al siguiente." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@: when you confirm, you move on to the next one."
           }
         }
       }
@@ -1251,6 +1301,16 @@
         }
       }
     },
+    "%lld de %lld por revisar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld of %lld to review"
+          }
+        }
+      }
+    },
     "%lld de %lld proveedores" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1258,6 +1318,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld of %lld vendors"
+          }
+        }
+      }
+    },
+    "%lld de %lld · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld of %lld · %@"
           }
         }
       }
@@ -1818,6 +1888,126 @@
         }
       }
     },
+    "%lld movimientos con categoría propuesta." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld transaction with a suggested category."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld transactions with a suggested category."
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld movimiento con categoría propuesta."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld movimientos con categoría propuesta."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld movimientos en el archivo · los ya importados se omiten" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld transaction in the file · ones already imported are skipped"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld transactions in the file · ones already imported are skipped"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld movimiento en el archivo · los ya importados se omiten"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld movimientos en el archivo · los ya importados se omiten"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld movimientos esperan: acepta lo que propone la app o elige otra categoría." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld transaction is waiting: accept what the app suggests or choose another category."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld transactions are waiting: accept what the app suggests or choose another category."
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld movimiento espera: acepta lo que propone la app o elige otra categoría."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld movimientos esperan: acepta lo que propone la app o elige otra categoría."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld periodos cerrados" : {
       "localizations" : {
         "en" : {
@@ -1995,6 +2185,126 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld records"
+          }
+        }
+      }
+    },
+    "%lld reglas" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld rule"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld rules"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld regla"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld reglas"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld se registraron solos con una regla automática." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld was recorded automatically by a rule."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld were recorded automatically by a rule."
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld se registró solo con una regla automática."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld se registraron solos con una regla automática."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld se registraron solos." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld was recorded automatically."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld were recorded automatically."
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld se registró solo."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld se registraron solos."
+                }
+              }
+            }
           }
         }
       }
@@ -2213,6 +2523,16 @@
         }
       }
     },
+    "A qué cuenta van" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Which account they go to"
+          }
+        }
+      }
+    },
     "ACTIVO" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2299,6 +2619,16 @@
         }
       }
     },
+    "Abonos (entradas)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Credits (money in)"
+          }
+        }
+      }
+    },
     "Abre Ajustes para cambiarlo" : {
       "localizations" : {
         "en" : {
@@ -2350,6 +2680,16 @@
         }
       }
     },
+    "Abre la bandeja «Por revisar»" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens the “To review” inbox"
+          }
+        }
+      }
+    },
     "Abre los ajustes" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2357,6 +2697,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Opens settings"
+          }
+        }
+      }
+    },
+    "Abre «Revisar transacción»" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens “Review transaction”"
           }
         }
       }
@@ -2559,6 +2909,26 @@
         }
       }
     },
+    "Aceptar sugeridas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accept suggestions"
+          }
+        }
+      }
+    },
+    "Aceptar: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accept: %@"
+          }
+        }
+      }
+    },
     "Acerca del cierre" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2628,6 +2998,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "On · iPhone, iPad, and Mac"
+          }
+        }
+      }
+    },
+    "Activar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turn on"
           }
         }
       }
@@ -3276,12 +3656,52 @@
         }
       }
     },
+    "Aplica las reglas activas a los movimientos por revisar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Applies the active rules to the transactions to review"
+          }
+        }
+      }
+    },
+    "Aplicar ahora" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apply now"
+          }
+        }
+      }
+    },
+    "Aplicar ahora a la bandeja" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apply to the inbox now"
+          }
+        }
+      }
+    },
     "Aplicar saldo a favor (%@)" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Apply customer credit (%@)"
+          }
+        }
+      }
+    },
+    "Aportaciones y préstamos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contributions and loans"
           }
         }
       }
@@ -3723,6 +4143,16 @@
         }
       }
     },
+    "Añade una cuenta de banco o tarjeta para conciliarla." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add a bank or card account to reconcile it."
+          }
+        }
+      }
+    },
     "Añadir" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -3876,6 +4306,16 @@
         }
       }
     },
+    "Aún no has importado movimientos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You haven’t imported any transactions yet"
+          }
+        }
+      }
+    },
     "Aún no hay asientos" : {
       "localizations" : {
         "en" : {
@@ -4020,12 +4460,42 @@
         }
       }
     },
+    "Aún no tienes reglas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You don’t have any rules yet"
+          }
+        }
+      }
+    },
+    "Aún no tienes reglas. Créalas aquí o desde un movimiento de la bandeja, con «Crear regla»." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You don’t have any rules yet. Create them here or from a transaction in the inbox with “Create rule”."
+          }
+        }
+      }
+    },
     "BORRADOR" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "DRAFT"
+          }
+        }
+      }
+    },
+    "Baja el extracto de tu banco en CSV u OFX y arrástralo aquí: verás cada movimiento con lo que la app propone para registrarlo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Download your bank statement as CSV or OFX and drag it here: you’ll see each transaction with what the app suggests to record it."
           }
         }
       }
@@ -4072,12 +4542,122 @@
         }
       }
     },
+    "Banca · %lld activas" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Banking · %lld active"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Banking · %lld active"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Banca · %lld activa"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Banca · %lld activas"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Banca · %lld cuentas" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Banking · %lld account"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Banking · %lld accounts"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Banca · %lld cuenta"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Banca · %lld cuentas"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Banca · %lld por revisar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Banking · %lld to review"
+          }
+        }
+      }
+    },
     "Banco" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bank"
+          }
+        }
+      }
+    },
+    "Bandeja" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inbox"
+          }
+        }
+      }
+    },
+    "Beneficiario" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Payee"
           }
         }
       }
@@ -4248,6 +4828,16 @@
         }
       }
     },
+    "Borrar regla" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete Rule"
+          }
+        }
+      }
+    },
     "Borrar y empezar" : {
       "localizations" : {
         "en" : {
@@ -4288,6 +4878,16 @@
         }
       }
     },
+    "Buscar categoría" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search categories"
+          }
+        }
+      }
+    },
     "Buscar ⌘K" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4295,6 +4895,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Search ⌘K"
+          }
+        }
+      }
+    },
+    "Bájalo de la web de tu banco («Descargar movimientos» o «Exportar») o arrástralo aquí. Los movimientos que ya importaste no se repiten." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Download it from your bank’s website (“Download transactions” or “Export”) or drag it here. Transactions you already imported aren’t repeated."
+          }
+        }
+      }
+    },
+    "Bájalo de la web de tu banco («Descargar movimientos» o «Exportar») y elígelo desde Archivos o iCloud Drive. Los movimientos que ya importaste no se repiten." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Download it from your bank’s website (“Download transactions” or “Export”) and choose it from Files or iCloud Drive. Transactions you already imported aren’t repeated."
           }
         }
       }
@@ -4522,6 +5142,16 @@
         }
       }
     },
+    "Cambiar de todos modos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Change Anyway"
+          }
+        }
+      }
+    },
     "Cambiar desde Fotos…" : {
       "localizations" : {
         "en" : {
@@ -4599,6 +5229,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cancel"
+          }
+        }
+      }
+    },
+    "Cancelar conciliación" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel Reconciliation"
           }
         }
       }
@@ -4683,6 +5323,16 @@
         }
       }
     },
+    "Cargos (salidas)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Debits (money out)"
+          }
+        }
+      }
+    },
     "Cargos recurrentes" : {
       "localizations" : {
         "en" : {
@@ -4693,12 +5343,52 @@
         }
       }
     },
+    "Cargos y abonos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Debits and credits"
+          }
+        }
+      }
+    },
+    "Categorizar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Categorize"
+          }
+        }
+      }
+    },
+    "Categorizar y siguiente" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Categorize and Next"
+          }
+        }
+      }
+    },
     "Categoría" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Category"
+          }
+        }
+      }
+    },
+    "Categoría elegida" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chosen category"
           }
         }
       }
@@ -5151,6 +5841,26 @@
         }
       }
     },
+    "Coincide con %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Matches %@"
+          }
+        }
+      }
+    },
+    "Coincide con el extracto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Matches the statement"
+          }
+        }
+      }
+    },
     "Color de la plantilla" : {
       "localizations" : {
         "en" : {
@@ -5161,12 +5871,42 @@
         }
       }
     },
+    "Columna %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Column %lld"
+          }
+        }
+      }
+    },
+    "Columnas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Columns"
+          }
+        }
+      }
+    },
     "Columnas en días después del vencimiento." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Columns in days past due."
+          }
+        }
+      }
+    },
+    "Coma" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comma"
           }
         }
       }
@@ -5237,6 +5977,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Compact"
+          }
+        }
+      }
+    },
+    "Compara tus libros con el extracto del banco: marca lo que aparece en él hasta que la diferencia sea $0.00." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compare your books with the bank statement: check what appears on it until the difference is $0.00."
           }
         }
       }
@@ -5495,6 +6245,16 @@
         }
       }
     },
+    "Con varias reglas que coinciden, gana la de mayor prioridad. Si registra sola y no puede (periodo cerrado…), el movimiento queda por revisar con su propuesta." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "When several rules match, the one with the highest priority wins. If it records automatically and can’t (closed period…), the transaction stays to review with its suggestion."
+          }
+        }
+      }
+    },
     "Concepto" : {
       "localizations" : {
         "en" : {
@@ -5546,6 +6306,26 @@
         }
       }
     },
+    "Conciliaciones" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reconciliations"
+          }
+        }
+      }
+    },
+    "Conciliaciones anteriores" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Previous reconciliations"
+          }
+        }
+      }
+    },
     "Conciliación" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -5577,12 +6357,72 @@
         }
       }
     },
+    "Conciliación terminada" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reconciliation Finished"
+          }
+        }
+      }
+    },
     "Conciliación terminada al %@" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Reconciliation completed as of %@"
+          }
+        }
+      }
+    },
+    "Conciliada al %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reconciled through %@"
+          }
+        }
+      }
+    },
+    "Conciliado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reconciled"
+          }
+        }
+      }
+    },
+    "Conciliar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reconcile"
+          }
+        }
+      }
+    },
+    "Conciliar con este extracto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reconcile with this statement"
+          }
+        }
+      }
+    },
+    "Conciliar…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reconcile…"
           }
         }
       }
@@ -5705,6 +6545,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Contact"
+          }
+        }
+      }
+    },
+    "Contiene" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contains"
           }
         }
       }
@@ -6147,6 +6997,26 @@
         }
       }
     },
+    "Crear regla automática" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create automatic rule"
+          }
+        }
+      }
+    },
+    "Crear regla…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create Rule…"
+          }
+        }
+      }
+    },
     "Crear tu primera factura" : {
       "localizations" : {
         "en" : {
@@ -6243,6 +7113,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Balanced"
+          }
+        }
+      }
+    },
+    "Cuadra · diferencia" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Balanced · difference"
           }
         }
       }
@@ -6511,6 +7391,16 @@
         }
       }
     },
+    "Cuándo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "When"
+          }
+        }
+      }
+    },
     "Cuánto dinero tiene cada cuenta según lo que registras. Toca una para ver sus movimientos." : {
       "localizations" : {
         "en" : {
@@ -6729,6 +7619,16 @@
         }
       }
     },
+    "Del banco" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "From the bank"
+          }
+        }
+      }
+    },
     "Del total abierto" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -6770,12 +7670,32 @@
         }
       }
     },
+    "Desactivada" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Off"
+          }
+        }
+      }
+    },
     "Desactivado" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Off"
+          }
+        }
+      }
+    },
+    "Desactivar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turn off"
           }
         }
       }
@@ -6856,6 +7776,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Description (optional)"
+          }
+        }
+      }
+    },
+    "Descripción o monto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Description or amount"
           }
         }
       }
@@ -6971,6 +7901,16 @@
         }
       }
     },
+    "Desmarcar todas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uncheck All"
+          }
+        }
+      }
+    },
     "Desprogramar" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -7029,6 +7969,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Debit"
+          }
+        }
+      }
+    },
+    "Devolución de un gasto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Expense refund"
+          }
+        }
+      }
+    },
+    "Devolver a la bandeja" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Return to Inbox"
+          }
+        }
+      }
+    },
+    "Devolver a la bandeja quita el emparejamiento o la exclusión. Lo que se registró desde el movimiento se queda: anúlalo aparte si sobra." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Returning to the inbox removes the match or the exclusion. Anything recorded from the transaction stays: void it separately if it’s not needed."
           }
         }
       }
@@ -7366,6 +8336,26 @@
         }
       }
     },
+    "Editar regla" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit Rule"
+          }
+        }
+      }
+    },
+    "Editar regla…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit Rule…"
+          }
+        }
+      }
+    },
     "Editar tasa" : {
       "localizations" : {
         "en" : {
@@ -7506,6 +8496,16 @@
         }
       }
     },
+    "El archivo no tiene movimientos que podamos leer. Revisa que sea el extracto que bajaste del banco." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The file has no transactions we can read. Check that it’s the statement you downloaded from your bank."
+          }
+        }
+      }
+    },
     "El archivo se guarda junto al gasto tal como lo subes." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -7598,6 +8598,16 @@
         }
       }
     },
+    "El del banco" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The bank’s"
+          }
+        }
+      }
+    },
     "El descuento no puede ser mayor que el subtotal." : {
       "localizations" : {
         "en" : {
@@ -7664,6 +8674,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "The estimate was already converted to an invoice."
+          }
+        }
+      }
+    },
+    "El extracto es de una tarjeta de crédito." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The statement is from a credit card."
           }
         }
       }
@@ -7892,6 +8912,16 @@
         }
       }
     },
+    "El saldo inicial es el final de la conciliación anterior." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The beginning balance is the ending balance of the previous reconciliation."
+          }
+        }
+      }
+    },
     "El saldo sale de lo que registras: cobros, gastos y pagos." : {
       "localizations" : {
         "en" : {
@@ -7930,6 +8960,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Choose file"
+          }
+        }
+      }
+    },
+    "Elegir archivo CSV, OFX o QFX…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose a CSV, OFX or QFX file…"
           }
         }
       }
@@ -8115,6 +9155,16 @@
         }
       }
     },
+    "Elige un movimiento" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose a transaction"
+          }
+        }
+      }
+    },
     "Elige un proveedor" : {
       "localizations" : {
         "en" : {
@@ -8141,6 +9191,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Choose a vendor if you buy from them often or pay their bills. Otherwise, just enter who you paid in “Paid to”."
+          }
+        }
+      }
+    },
+    "Elige una categoría o empareja con algo que ya registraste" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose a category or match it with something you already recorded"
           }
         }
       }
@@ -8275,6 +9335,56 @@
         }
       }
     },
+    "Emparejado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Matched"
+          }
+        }
+      }
+    },
+    "Emparejado con el banco" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Matched with the bank"
+          }
+        }
+      }
+    },
+    "Emparejar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Match"
+          }
+        }
+      }
+    },
+    "Emparejar enlaza este movimiento con algo que ya registraste, sin duplicarlo. Con una factura abierta se registra su cobro o su pago." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Matching links this transaction to something you already recorded, without duplicating it. With an open bill or invoice, its payment is recorded."
+          }
+        }
+      }
+    },
+    "Emparejar y siguiente" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Match and Next"
+          }
+        }
+      }
+    },
     "Empezar con mi empresa" : {
       "localizations" : {
         "en" : {
@@ -8291,6 +9401,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Start with my company…"
+          }
+        }
+      }
+    },
+    "Empezar conciliación" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start Reconciliation"
           }
         }
       }
@@ -8488,6 +9608,26 @@
         }
       }
     },
+    "En curso" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In progress"
+          }
+        }
+      }
+    },
+    "En curso · extracto al %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In progress · statement as of %@"
+          }
+        }
+      }
+    },
     "En pago en lote" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -8525,6 +9665,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Payment link changed"
+          }
+        }
+      }
+    },
+    "Entradas y salidas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Money in and out"
           }
         }
       }
@@ -8705,6 +9855,16 @@
         }
       }
     },
+    "Equipo e inventario" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Equipment and inventory"
+          }
+        }
+      }
+    },
     "Es el dinero que tú has puesto en el negocio. No es un ingreso: es tuyo, y por eso no paga impuestos como una venta." : {
       "localizations" : {
         "en" : {
@@ -8721,6 +9881,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "This is the current business"
+          }
+        }
+      }
+    },
+    "Es tu primera conciliación de esta cuenta: pon el saldo con que empieza el extracto (o $0.00 y marca también el asiento de saldos iniciales)." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This is your first reconciliation for this account: enter the balance the statement starts with (or $0.00 and also check the opening balances entry)."
           }
         }
       }
@@ -8963,6 +10133,16 @@
         }
       }
     },
+    "Este archivo no es un OFX ni un QFX. Si lo bajaste como CSV, elige el archivo .csv." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This file isn’t an OFX or QFX. If you downloaded it as CSV, choose the .csv file."
+          }
+        }
+      }
+    },
     "Este asiento ya fue revertido o es una reversión." : {
       "localizations" : {
         "en" : {
@@ -9019,6 +10199,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "This month"
+          }
+        }
+      }
+    },
+    "Este movimiento ya está conciliado con el extracto del banco. Si lo cambias, esa conciliación dejará de cuadrar: tendrás que reabrirla y revisarla. Quedará anotado." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This transaction is already reconciled with the bank statement. If you change it, that reconciliation will no longer balance: you’ll need to reopen and review it. It will be logged."
           }
         }
       }
@@ -9215,6 +10405,47 @@
         }
       }
     },
+    "Excluido" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Excluded"
+          }
+        }
+      }
+    },
+    "Excluidos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Excluded"
+          }
+        }
+      },
+      "extractionState" : "manual"
+    },
+    "Excluir" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exclude"
+          }
+        }
+      }
+    },
+    "Excluir transacción" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exclude Transaction"
+          }
+        }
+      }
+    },
     "Exentas %@" : {
       "localizations" : {
         "en" : {
@@ -9271,6 +10502,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Export CSV"
+          }
+        }
+      }
+    },
+    "Extracto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Statement"
+          }
+        }
+      }
+    },
+    "Extracto del banco" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bank statement"
           }
         }
       }
@@ -9395,6 +10646,16 @@
         }
       }
     },
+    "Factura abierta de %@ por el mismo importe" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open invoice for %@ with the same amount"
+          }
+        }
+      }
+    },
     "Factura anulada" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -9422,6 +10683,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Invoice created as a draft"
+          }
+        }
+      }
+    },
+    "Factura de %@ por pagar por el mismo importe" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unpaid bill from %@ with the same amount"
           }
         }
       }
@@ -9710,6 +10981,16 @@
         }
       }
     },
+    "Falta elegir la columna «%@»." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose the “%@” column."
+          }
+        }
+      }
+    },
     "Falta la cuenta de sistema «%@»." : {
       "localizations" : {
         "en" : {
@@ -9800,12 +11081,32 @@
         }
       }
     },
+    "Fecha del extracto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Statement date"
+          }
+        }
+      }
+    },
     "Fecha del saldo" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Balance date"
+          }
+        }
+      }
+    },
+    "Fecha escrita como" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dates written as"
           }
         }
       }
@@ -9897,6 +11198,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Set…"
+          }
+        }
+      }
+    },
+    "Filas omitidas por no leerse: %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rows skipped because they couldn’t be read: %@."
           }
         }
       }
@@ -10011,6 +11322,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Undeposited funds"
+          }
+        }
+      }
+    },
+    "Formato" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Format"
           }
         }
       }
@@ -10856,6 +12177,16 @@
         }
       }
     },
+    "Igual que el texto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Same as the text"
+          }
+        }
+      }
+    },
     "Igual que en %@" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -10878,6 +12209,26 @@
         }
       }
     },
+    "Importa el extracto de tu banco (CSV u OFX) y aquí verás cada movimiento para registrarlo con un toque." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Import your bank statement (CSV or OFX) and you’ll see each transaction here, ready to record with one tap."
+          }
+        }
+      }
+    },
+    "Importa un extracto CSV, OFX o QFX (también puedes arrastrarlo aquí)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Import a CSV, OFX or QFX statement (you can also drag it here)"
+          }
+        }
+      }
+    },
     "Importación bancaria" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -10885,6 +12236,106 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bank import"
+          }
+        }
+      }
+    },
+    "Importado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Imported"
+          }
+        }
+      }
+    },
+    "Importar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Import"
+          }
+        }
+      }
+    },
+    "Importar %lld movimientos" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Import %lld Transaction"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Import %lld Transactions"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Importar %lld movimiento"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Importar %lld movimientos"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Importar CSV u OFX" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Import CSV or OFX"
+          }
+        }
+      }
+    },
+    "Importar extracto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Import Statement"
+          }
+        }
+      }
+    },
+    "Importar extracto…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Import Statement…"
+          }
+        }
+      }
+    },
+    "Importar movimientos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Import Transactions"
           }
         }
       }
@@ -10956,6 +12407,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Amount to refund"
+          }
+        }
+      }
+    },
+    "Importe en" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Amount in"
           }
         }
       }
@@ -11239,6 +12700,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Start of fiscal year"
+          }
+        }
+      }
+    },
+    "Inspector" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inspector"
           }
         }
       }
@@ -11701,6 +13172,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "The template needs a name."
+          }
+        }
+      }
+    },
+    "La primera fila tiene los nombres" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "First row has the column names"
           }
         }
       }
@@ -12278,6 +13759,16 @@
         }
       }
     },
+    "Los movimientos que ya categorizó no cambian." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transactions it already categorized don’t change."
+          }
+        }
+      }
+    },
     "Los precios ya incluyen el sales tax: el total es el subtotal menos el descuento." : {
       "localizations" : {
         "en" : {
@@ -12409,6 +13900,76 @@
         }
       }
     },
+    "Marca las partidas que aparecen en el extracto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check the items that appear on the statement"
+          }
+        }
+      }
+    },
+    "Marca lo que sale en el extracto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check what’s on the statement"
+          }
+        }
+      }
+    },
+    "Marca partidas hasta llegar a $0.00" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check items until you reach $0.00"
+          }
+        }
+      }
+    },
+    "Marcada" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checked"
+          }
+        }
+      }
+    },
+    "Marcadas que restan" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checked decreases"
+          }
+        }
+      }
+    },
+    "Marcadas que suman" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checked increases"
+          }
+        }
+      }
+    },
+    "Marcado en la conciliación abierta" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checked in the open reconciliation"
+          }
+        }
+      }
+    },
     "Marcar como aceptado" : {
       "localizations" : {
         "en" : {
@@ -12455,6 +14016,66 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mark as Declined"
+          }
+        }
+      }
+    },
+    "Marcar emparejadas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check Matched"
+          }
+        }
+      }
+    },
+    "Marcar las %lld emparejadas con el banco" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Check the %lld matched with the bank"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Check the %lld matched with the bank"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Marcar la %lld emparejada con el banco"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Marcar las %lld emparejadas con el banco"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Marcar todas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check All"
           }
         }
       }
@@ -12566,6 +14187,56 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Check your bank app and copy the current balance of the account you use for the business."
+          }
+        }
+      }
+    },
+    "Mismo importe y mismo día, ya registrado en tus libros" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Same amount and same day, already recorded in your books"
+          }
+        }
+      }
+    },
+    "Mismo importe, registrado con %lld días de diferencia" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Same amount, recorded %lld day apart"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Same amount, recorded %lld days apart"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Mismo importe, registrado con %lld día de diferencia"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Mismo importe, registrado con %lld días de diferencia"
+                }
+              }
+            }
           }
         }
       }
@@ -12763,6 +14434,36 @@
         }
       }
     },
+    "Movimientos del banco" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bank Transactions"
+          }
+        }
+      }
+    },
+    "Movimientos hasta el %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transactions through %@"
+          }
+        }
+      }
+    },
+    "Movimientos importados" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transactions imported"
+          }
+        }
+      }
+    },
     "Movimientos importados en %@: %lld nuevos, %lld repetidos" : {
       "localizations" : {
         "en" : {
@@ -12789,6 +14490,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Activity by account with running balance"
+          }
+        }
+      }
+    },
+    "Movimientos revisados" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reviewed transactions"
           }
         }
       }
@@ -12845,12 +14556,32 @@
         }
       }
     },
+    "Más categorías…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "More categories…"
+          }
+        }
+      }
+    },
     "Más de 90" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Over 90"
+          }
+        }
+      }
+    },
+    "Más opciones" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "More Options"
           }
         }
       }
@@ -12885,12 +14616,42 @@
         }
       }
     },
+    "Nada nuevo que importar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing new to import"
+          }
+        }
+      }
+    },
     "Nada pendiente" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nothing due"
+          }
+        }
+      }
+    },
+    "Nada por aquí todavía" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing here yet"
+          }
+        }
+      }
+    },
+    "Nada por aquí todavía." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing here yet."
           }
         }
       }
@@ -13045,6 +14806,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No invoices match the search or filter."
+          }
+        }
+      }
+    },
+    "Ninguna regla coincide con la búsqueda." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No rules match your search."
           }
         }
       }
@@ -13307,6 +15078,36 @@
         }
       }
     },
+    "No hay movimientos de esta cuenta hasta la fecha del extracto." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "There are no transactions in this account up to the statement date."
+          }
+        }
+      }
+    },
+    "No hay movimientos por revisar." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "There are no transactions to review."
+          }
+        }
+      }
+    },
+    "No hay nada registrado por este importe cerca de esta fecha, ni facturas abiertas que lo cubran." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing is recorded for this amount near this date, and no open invoices or bills cover it."
+          }
+        }
+      }
+    },
     "No hay una app de correo configurada en este Mac. Usa «Compartir PDF…»." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -13314,6 +15115,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "There's no email app set up on this Mac. Use “Share PDF…”."
+          }
+        }
+      }
+    },
+    "No pudimos leer la fila %lld: revisa el formato de fecha y la columna del importe." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "We couldn’t read row %lld: check the date format and the amount column."
           }
         }
       }
@@ -13359,6 +15170,16 @@
         }
       }
     },
+    "No queda nada por revisar. Importa el próximo extracto cuando lo tengas." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing left to review. Import the next statement when you have it."
+          }
+        }
+      }
+    },
     "No quedará ningún periodo cerrado. Quedará en el historial." : {
       "localizations" : {
         "en" : {
@@ -13390,6 +15211,16 @@
         }
       }
     },
+    "No se incluirá en tus libros (un gasto personal, un duplicado, una transferencia que ya registraste). Puedes devolverlo a la bandeja desde «Movimientos del banco»." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "It won’t be included in your books (a personal expense, a duplicate, a transfer you already recorded). You can return it to the inbox from “Bank Transactions”."
+          }
+        }
+      }
+    },
     "No se podrá registrar nada con fecha igual o anterior al cierre. Así los reportes que ya entregaste no cambian." : {
       "localizations" : {
         "en" : {
@@ -13416,6 +15247,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "The file couldn't be attached: use a photo or a PDF."
+          }
+        }
+      }
+    },
+    "No se pudo completar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn’t Complete"
           }
         }
       }
@@ -13607,6 +15448,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Name or company"
+          }
+        }
+      }
+    },
+    "Nombre o texto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Name or text"
           }
         }
       }
@@ -13819,6 +15670,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "New recurring"
+          }
+        }
+      }
+    },
+    "Nueva regla" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New Rule"
           }
         }
       }
@@ -14038,6 +15899,16 @@
         }
       }
     },
+    "Omitir las filas que no se lean" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skip rows that can’t be read"
+          }
+        }
+      }
+    },
     "Opcional" : {
       "localizations" : {
         "en" : {
@@ -14064,6 +15935,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Optional: to bill it back"
+          }
+        }
+      }
+    },
+    "Opciones" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Options"
           }
         }
       }
@@ -14436,6 +16317,16 @@
         }
       }
     },
+    "Pagador" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Payer"
+          }
+        }
+      }
+    },
     "Pagar" : {
       "localizations" : {
         "en" : {
@@ -14522,6 +16413,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bill payment"
+          }
+        }
+      }
+    },
+    "Pago de %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Payment of %@"
           }
         }
       }
@@ -14827,6 +16728,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Partial · %@ due"
+          }
+        }
+      }
+    },
+    "Partidas marcadas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Items checked"
           }
         }
       }
@@ -15399,6 +17310,16 @@
         }
       }
     },
+    "Por prioridad" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "By priority"
+          }
+        }
+      }
+    },
     "Por responder" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -15406,6 +17327,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Awaiting reply"
+          }
+        }
+      }
+    },
+    "Por revisar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To Review"
           }
         }
       }
@@ -15487,6 +17418,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Percentage: %lld%%"
+          }
+        }
+      }
+    },
+    "Posibles coincidencias" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Possible matches"
+          }
+        }
+      }
+    },
+    "Positivo = entra dinero" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Positive = money in"
+          }
+        }
+      }
+    },
+    "Positivo = sale dinero" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Positive = money out"
           }
         }
       }
@@ -15588,6 +17549,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Getting started"
+          }
+        }
+      }
+    },
+    "Prioridad" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Priority"
+          }
+        }
+      }
+    },
+    "Prioridad %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Priority %lld"
           }
         }
       }
@@ -15745,6 +17726,16 @@
         }
       }
     },
+    "Propone" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suggests"
+          }
+        }
+      }
+    },
     "Proporción" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -15752,6 +17743,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Share"
+          }
+        }
+      }
+    },
+    "Propuesta" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suggestion"
+          }
+        }
+      }
+    },
+    "Propuesta por los últimos dígitos del extracto (••%@)." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suggested from the statement’s last digits (••%@)."
+          }
+        }
+      }
+    },
+    "Propuestas por los nombres de la cabecera; corrígelas si alguna no es. La referencia evita repetir un movimiento si lo vuelves a importar." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suggested from the header names; fix any that are wrong. The reference avoids repeating a transaction if you import it again."
           }
         }
       }
@@ -15877,6 +17898,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Free trial until %@"
+          }
+        }
+      }
+    },
+    "Préstamos y retiros del dueño" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loans and owner draws"
           }
         }
       }
@@ -16008,6 +18039,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Next 14 days · %@"
+          }
+        }
+      }
+    },
+    "Punto y coma" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Semicolon"
           }
         }
       }
@@ -16243,6 +18284,16 @@
         }
       }
     },
+    "Qué hace" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What it does"
+          }
+        }
+      }
+    },
     "Qué quieres recordar de %@" : {
       "localizations" : {
         "en" : {
@@ -16454,6 +18505,16 @@
         }
       }
     },
+    "Recordar estas columnas para esta cuenta" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remember these columns for this account"
+          }
+        }
+      }
+    },
     "Recordar pago" : {
       "localizations" : {
         "en" : {
@@ -16647,6 +18708,16 @@
         }
       }
     },
+    "Referencia del banco" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bank reference"
+          }
+        }
+      }
+    },
     "Registra las facturas de tus proveedores para saber qué vence y cuándo." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -16654,6 +18725,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Record your vendors' bills to know what's due and when."
+          }
+        }
+      }
+    },
+    "Registra sola" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Records automatically"
+          }
+        }
+      }
+    },
+    "Registra todos los movimientos que tienen una propuesta" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Records every transaction that has a suggestion"
           }
         }
       }
@@ -16685,6 +18776,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Record an expense with the + button and attach the receipt."
+          }
+        }
+      }
+    },
+    "Registrado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recorded"
           }
         }
       }
@@ -16730,6 +18831,26 @@
         }
       }
     },
+    "Registrar cobro" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Record Payment"
+          }
+        }
+      }
+    },
+    "Registrar cobro y siguiente" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Record Payment and Next"
+          }
+        }
+      }
+    },
     "Registrar de todos modos" : {
       "localizations" : {
         "en" : {
@@ -16770,12 +18891,32 @@
         }
       }
     },
+    "Registrar pago y siguiente" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Record Bill Payment and Next"
+          }
+        }
+      }
+    },
     "Registrar pago…" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Record Payment…"
+          }
+        }
+      }
+    },
+    "Registrar sola, sin pasar por la bandeja" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Record automatically, skipping the inbox"
           }
         }
       }
@@ -16800,6 +18941,16 @@
         }
       }
     },
+    "Regla" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rule"
+          }
+        }
+      }
+    },
     "Regla del banco borrada: %@" : {
       "localizations" : {
         "en" : {
@@ -16816,6 +18967,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bank rule: %@"
+          }
+        }
+      }
+    },
+    "Reglas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rules"
+          }
+        }
+      }
+    },
+    "Reglas aplicadas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rules Applied"
           }
         }
       }
@@ -17219,12 +19390,133 @@
         }
       }
     },
+    "Revisado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reviewed"
+          }
+        }
+      }
+    },
+    "Revisados" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reviewed"
+          }
+        }
+      },
+      "extractionState" : "manual"
+    },
     "Revisar" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Needs review"
+          }
+        }
+      }
+    },
+    "Revisar %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Review %lld"
+          }
+        }
+      }
+    },
+    "Revisar %lld movimientos" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Review %lld Transaction"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Review %lld Transactions"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Revisar %lld movimiento"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Revisar %lld movimientos"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Revisar %lld movimientos del banco" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Review %lld bank transaction"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Review %lld bank transactions"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Revisar %lld movimiento del banco"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Revisar %lld movimientos del banco"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Revisar transacción" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Review Transaction"
           }
         }
       }
@@ -17246,6 +19538,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Review and Send"
+          }
+        }
+      }
+    },
+    "Revisar…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Review…"
           }
         }
       }
@@ -17276,6 +19578,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Balance %@"
+          }
+        }
+      }
+    },
+    "Saldo %@ · terminada el %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Balance %@ · finished on %@"
+          }
+        }
+      }
+    },
+    "Saldo %@ · vence %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Balance %@ · due %@"
           }
         }
       }
@@ -17332,6 +19654,16 @@
         }
       }
     },
+    "Saldo conciliado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cleared balance"
+          }
+        }
+      }
+    },
     "Saldo de hoy" : {
       "localizations" : {
         "en" : {
@@ -17358,6 +19690,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bank balance"
+          }
+        }
+      }
+    },
+    "Saldo del banco %@ · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bank balance %@ · %@"
           }
         }
       }
@@ -17434,6 +19776,16 @@
         }
       }
     },
+    "Saldo final del extracto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Statement ending balance"
+          }
+        }
+      }
+    },
     "Saldo final del periodo" : {
       "localizations" : {
         "en" : {
@@ -17461,6 +19813,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Beginning balance %@"
+          }
+        }
+      }
+    },
+    "Saldo inicial del extracto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Statement beginning balance"
           }
         }
       }
@@ -17502,6 +19864,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Balance due · %@"
+          }
+        }
+      }
+    },
+    "Saldo que debes según el extracto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Balance owed per statement"
+          }
+        }
+      }
+    },
+    "Saldos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Balances"
           }
         }
       }
@@ -17801,12 +20183,62 @@
         }
       }
     },
+    "Se desmarcan sus partidas y se borra. Tus asientos no cambian." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Its items are unchecked and it’s deleted. Your entries don’t change."
+          }
+        }
+      }
+    },
     "Se muestran así: %@." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Shown as: %@."
+          }
+        }
+      }
+    },
+    "Se omitirán %lld filas que no se leen: %@" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld row that can’t be read will be skipped: %@"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld rows that can’t be read will be skipped: %@"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Se omitirá %lld fila que no se lee: %@"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Se omitirán %lld filas que no se leen: %@"
+                }
+              }
+            }
           }
         }
       }
@@ -17837,6 +20269,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Required to reopen a period and to record something with a closed date."
+          }
+        }
+      }
+    },
+    "Se prueban de mayor a menor prioridad; la primera que coincide propone la categoría. Las que «registran solas» guardan el movimiento sin pasar por la bandeja." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "They’re tried from highest to lowest priority; the first one that matches suggests the category. The ones that “record automatically” save the transaction without going through the inbox."
+          }
+        }
+      }
+    },
+    "Se registra como transferencia con %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recorded as a transfer with %@."
+          }
+        }
+      }
+    },
+    "Se registra como un depósito en %@ (ingreso sin factura, aportación o devolución)." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recorded as a deposit to %@ (income without an invoice, contribution or refund)."
+          }
+        }
+      }
+    },
+    "Se registra como un gasto pagado con %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recorded as an expense paid with %@."
           }
         }
       }
@@ -17921,6 +20393,16 @@
         }
       }
     },
+    "Seguir conciliando" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keep Reconciling"
+          }
+        }
+      }
+    },
     "Seguir editando" : {
       "localizations" : {
         "en" : {
@@ -17995,6 +20477,16 @@
         }
       }
     },
+    "Selecciona un movimiento para revisarlo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select a transaction to review it."
+          }
+        }
+      }
+    },
     "Selecciona un movimiento para ver sus detalles." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -18028,6 +20520,16 @@
         }
       }
     },
+    "Selecciona una cuenta para ver sus conciliaciones." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select an account to see its reconciliations."
+          }
+        }
+      }
+    },
     "Selecciona una factura para ver sus detalles." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -18035,6 +20537,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Select an invoice to see its details."
+          }
+        }
+      }
+    },
+    "Selecciona una regla para ver sus detalles." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select a rule to see its details."
           }
         }
       }
@@ -18065,6 +20577,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Weekly"
+          }
+        }
+      }
+    },
+    "Separador" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Separator"
           }
         }
       }
@@ -18129,6 +20651,26 @@
         }
       }
     },
+    "Si la descripción contiene" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "If the description contains"
+          }
+        }
+      }
+    },
+    "Si la descripción contiene «%@», se propondrá %@. Las próximas llegarán ya categorizadas: solo tendrás que aceptarlas." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "If the description contains “%@”, %@ will be suggested. Future ones will arrive already categorized: you’ll only have to accept them."
+          }
+        }
+      }
+    },
     "Si le pagas %@ o más en el año, envíale el 1099-NEC antes del 31 de enero." : {
       "localizations" : {
         "en" : {
@@ -18155,6 +20697,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "If you only change the due date, the message or the descriptions, no entry is recorded."
+          }
+        }
+      }
+    },
+    "Signo del importe" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Amount sign"
           }
         }
       }
@@ -18262,6 +20814,16 @@
         }
       }
     },
+    "Sin conciliar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not reconciled"
+          }
+        }
+      }
+    },
     "Sin conexión" : {
       "localizations" : {
         "en" : {
@@ -18350,6 +20912,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No description"
+          }
+        }
+      }
+    },
+    "Sin distinguir mayúsculas ni acentos, en la descripción del banco o el beneficiario." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ignoring case and accents, in the bank’s description or the payee."
           }
         }
       }
@@ -18807,6 +21379,16 @@
         }
       }
     },
+    "Solo entradas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Money in only"
+          }
+        }
+      }
+    },
     "Solo lectura" : {
       "localizations" : {
         "en" : {
@@ -18853,6 +21435,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Period only"
+          }
+        }
+      }
+    },
+    "Solo salidas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Money out only"
           }
         }
       }
@@ -18947,6 +21539,16 @@
         }
       }
     },
+    "Solo se reabre la última. Lo conciliado no se cambia sin aviso." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Only the latest can be reopened. Reconciled items aren’t changed without a warning."
+          }
+        }
+      }
+    },
     "Solo sin recibo" : {
       "localizations" : {
         "en" : {
@@ -19018,6 +21620,16 @@
         }
       }
     },
+    "Sugerencia" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suggestion"
+          }
+        }
+      }
+    },
     "Sugerido para %@" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -19045,6 +21657,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Add to %@ (%@) and use it on new invoices"
+          }
+        }
+      }
+    },
+    "Sus partidas siguen marcadas. Podrás corregirla y terminarla otra vez." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Its items stay checked. You can fix it and finish it again."
           }
         }
       }
@@ -19147,6 +21769,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "TOTAL"
+          }
+        }
+      }
+    },
+    "Tabulador" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tab"
           }
         }
       }
@@ -19447,6 +22079,16 @@
         }
       }
     },
+    "Terminar conciliación" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finish Reconciliation"
+          }
+        }
+      }
+    },
     "Tienda física o en línea que vende productos con inventario." : {
       "localizations" : {
         "en" : {
@@ -19537,6 +22179,26 @@
         }
       }
     },
+    "Toca para desmarcar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap to uncheck"
+          }
+        }
+      }
+    },
+    "Toca para marcar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap to check"
+          }
+        }
+      }
+    },
     "Todas" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -19544,6 +22206,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "All"
+          }
+        }
+      }
+    },
+    "Todas las cuentas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All accounts"
           }
         }
       }
@@ -19565,6 +22237,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "All lines (prorated)"
+          }
+        }
+      }
+    },
+    "Todavía no has conciliado esta cuenta." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You haven’t reconciled this account yet."
           }
         }
       }
@@ -19616,6 +22298,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "The whole estimate"
+          }
+        }
+      }
+    },
+    "Todo revisado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All reviewed"
           }
         }
       }
@@ -19955,6 +22647,26 @@
         }
       }
     },
+    "Transferencia a otra cuenta" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transfer to another account"
+          }
+        }
+      }
+    },
+    "Transferencia desde otra cuenta" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transfer from another account"
+          }
+        }
+      }
+    },
     "Transferencia · %@" : {
       "localizations" : {
         "en" : {
@@ -20276,6 +22988,16 @@
         }
       }
     },
+    "Tus libros cuadran con el extracto al %@. Lo conciliado queda marcado y la app avisará si algo lo cambia." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your books match the statement as of %@. Reconciled items stay marked and the app will warn you if anything changes them."
+          }
+        }
+      }
+    },
     "Tus libros están en solo lectura porque la suscripción terminó. Suscríbete para seguir registrando." : {
       "localizations" : {
         "en" : {
@@ -20312,6 +23034,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Your books travel encrypted in your private iCloud account between your iPhone, iPad, and Mac. The change takes effect the next time you open the app."
+          }
+        }
+      }
+    },
+    "Tus marcas se guardan al momento: puedes salir y seguir después." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your checks are saved as you go: you can leave and continue later."
           }
         }
       }
@@ -20416,6 +23148,16 @@
         }
       }
     },
+    "Una columna" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "One column"
+          }
+        }
+      }
+    },
     "Una copia por empresa para entregársela a tu cliente" : {
       "localizations" : {
         "en" : {
@@ -20482,6 +23224,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "A recurring expense is one that repeats: rent, insurance, a subscription."
+          }
+        }
+      }
+    },
+    "Una regla categoriza sola los movimientos que se parecen: «si la descripción contiene UBER → Transporte»." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A rule categorizes similar transactions on its own: “if the description contains UBER → Travel”."
+          }
+        }
+      }
+    },
+    "Una regla del banco coincide con la descripción" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A bank rule matches the description"
+          }
+        }
+      }
+    },
+    "Una regla no pudo registrar: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A rule couldn’t record: %@"
           }
         }
       }
@@ -21523,12 +24295,42 @@
         }
       }
     },
+    "año-mes-día" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "year-month-day"
+          }
+        }
+      }
+    },
     "baja" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "down"
+          }
+        }
+      }
+    },
+    "con propuesta" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "with a suggestion"
+          }
+        }
+      }
+    },
+    "contiene «%@» → %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "contains “%@” → %@"
           }
         }
       }
@@ -21560,6 +24362,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "since %@"
+          }
+        }
+      }
+    },
+    "día/mes/año" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "day/month/year"
+          }
+        }
+      }
+    },
+    "esta categoría" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "this category"
           }
         }
       }
@@ -21650,6 +24472,26 @@
         }
       }
     },
+    "mes/día/año" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "month/day/year"
+          }
+        }
+      }
+    },
+    "nuevos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "new"
+          }
+        }
+      }
+    },
     "p. ej. Austin" : {
       "localizations" : {
         "en" : {
@@ -21680,12 +24522,32 @@
         }
       }
     },
+    "proveedor" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "vendor"
+          }
+        }
+      }
+    },
     "recurrente" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "recurring"
+          }
+        }
+      }
+    },
+    "repetidos omitidos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "duplicates skipped"
           }
         }
       }
@@ -21749,6 +24611,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "up"
+          }
+        }
+      }
+    },
+    "todas las cuentas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "all accounts"
           }
         }
       }
@@ -21886,6 +24758,16 @@
         }
       }
     },
+    "¿Borrar la regla «%@»?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete the rule “%@”?"
+          }
+        }
+      }
+    },
     "¿Borrar los datos de ejemplo?" : {
       "localizations" : {
         "en" : {
@@ -21902,6 +24784,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Delete “%@” and all its books?"
+          }
+        }
+      }
+    },
+    "¿Cambiar algo conciliado?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Change Something Reconciled?"
+          }
+        }
+      }
+    },
+    "¿Cancelar la conciliación?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel the reconciliation?"
           }
         }
       }
@@ -21996,6 +24898,16 @@
         }
       }
     },
+    "¿Excluir este movimiento?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exclude this transaction?"
+          }
+        }
+      }
+    },
     "¿Pagas algo cada mes?" : {
       "localizations" : {
         "en" : {
@@ -22032,6 +24944,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "What do you want to record?"
+          }
+        }
+      }
+    },
+    "¿Reabrir la conciliación?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reopen the reconciliation?"
           }
         }
       }
@@ -22093,6 +25015,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Last purchase"
+          }
+        }
+      }
+    },
+    "Última conciliación" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last reconciliation"
           }
         }
       }
@@ -22175,6 +25107,9 @@
         }
       }
     },
+    "✓" : {
+      "shouldTranslate" : false
+    },
     "✓ Cuadra" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -22182,6 +25117,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "✓ Balanced"
+          }
+        }
+      }
+    },
+    "✓ acepta lo que propone la app. Toca un movimiento para elegir otra categoría, emparejarlo o excluirlo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "✓ accepts what the app suggests. Tap a transaction to choose another category, match it or exclude it."
           }
         }
       }
