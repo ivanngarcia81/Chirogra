@@ -64,10 +64,13 @@ public enum Palette {
     public static let sidebar = Color(uiColor: .secondarySystemGroupedBackground)
     public static let ink = Color(uiColor: .label)
     #else
-    /// Fondo de la ventana del Mac (canvas `--win`: #FFFFFF · #1E1E1E).
-    public static let background = Color(nsColor: .controlBackgroundColor)
-    /// Cajas del Mac (canvas `--row2`, con borde de `separator`): tarjetas de cifras, gráficas, fila alterna.
-    public static let surface = Color(light: 0xF5F5F7, dark: 0x262628)
+    /// Suelo del contenido del Mac, ENTRE las tarjetas (decisión del usuario del 8-nov, «como Tamio»: tres niveles,
+    /// barra lateral e inspector del sistema, suelo gris y tarjetas blancas encima). Antes era blanco y las cajas
+    /// gris claro: todo se veía plano y el inspector se fundía con el contenido. En macOS 27 los colores semánticos
+    /// (`controlBackgroundColor`, `windowBackgroundColor`) son los dos blancos en claro: por eso van valores fijos.
+    public static let background = Color(light: 0xF6F6F8, dark: 0x1E1E20)
+    /// Tarjetas del Mac ENCIMA del suelo (cifras, gráficas, tablas): blancas, con filo y sombra corta (`card()`).
+    public static let surface = Color(light: 0xFFFFFF, dark: 0x262629)
     public static let surface2 = Color(nsColor: .tertiarySystemFill)
     public static let fill2 = Color(nsColor: .systemFill)
     public static let separator = Color(nsColor: .separatorColor)

@@ -1143,7 +1143,7 @@ struct ReportsView: View {
         .monospacedDigit()
         .padding(24)
         .frame(maxWidth: 860)
-        .background(Palette.background, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .background(Palette.surface, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(Palette.separator, lineWidth: 0.5))
         .shadow(color: .black.opacity(0.06), radius: 2, y: 1)
         .frame(maxWidth: .infinity)
@@ -2131,7 +2131,7 @@ private struct MacReportInspector<Inspector: View, Actions: View>: ViewModifier 
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .background(Palette.background)
+        // Sin fondo propio: el gris del sistema, el de la barra lateral (como Tamio).
     }
 }
 

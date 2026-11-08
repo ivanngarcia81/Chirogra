@@ -239,7 +239,7 @@ where Value: Identifiable, Value.ID == UUID,
                 if sorted.isEmpty { emptyState }
             }
             .clipShape(shape)
-            .overlay(shape.strokeBorder(Palette.separator, lineWidth: 0.5))
+            .macElevation(cornerRadius: Metrics.tableRadius)
     }
 
     private var emptyState: some View {
@@ -258,7 +258,7 @@ where Value: Identifiable, Value.ID == UUID,
         }
         .frame(maxWidth: 520)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Palette.background)
+        .background(Palette.surface)
     }
 
     /// Inspector (canvas: título de 15 bold, secciones de filas «etiqueta · valor» y los botones al pie).
@@ -290,7 +290,7 @@ where Value: Identifiable, Value.ID == UUID,
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .background(Palette.background)
+        // Sin fondo propio: el inspector lleva el gris del sistema, el mismo de la barra lateral (como Tamio).
     }
 }
 

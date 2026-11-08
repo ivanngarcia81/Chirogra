@@ -316,10 +316,60 @@ struct CardModifier: ViewModifier {
             .frame(maxWidth: .infinity, maxHeight: fillsHeight ? .infinity : nil, alignment: .topLeading)
             .background(Palette.surface, in: shape)
             #if os(macOS)
-            .overlay(shape.strokeBorder(Palette.separator, lineWidth: 0.5))
+            .macElevation(cornerRadius: Metrics.cardRadius)
+            #else
+            .padElevation(cornerRadius: Metrics.cardRadius)
             #endif
     }
 }
+
+#if os(iOS)
+extension View {
+    /// En el iPad, las tarjetas se levantan del suelo gris como en el Mac (decisión del usuario del 8-nov, «como
+    /// Tamio»): filo de medio punto y sombra corta. En el iPhone no cambia nada.
+    func padElevation(cornerRadius: CGFloat) -> some View {
+        modifier(PadElevation(cornerRadius: cornerRadius))
+    }
+}
+
+private struct PadElevation: ViewModifier {
+    let cornerRadius: CGFloat
+    @Environment(\.colorScheme) private var scheme
+
+    func body(content: Content) -> some View {
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            let shape = RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+            content
+                .overlay(shape.strokeBorder(Color.primary.opacity(scheme == .dark ? 0.12 : 0.08), lineWidth: 0.5))
+                .shadow(color: .black.opacity(scheme == .dark ? 0 : 0.05), radius: 1.5, y: 1)
+        } else {
+            content
+        }
+    }
+}
+#endif
+
+#if os(macOS)
+extension View {
+    /// Lo que levanta una tarjeta del suelo en el Mac (como Tamio): filo de medio punto y sombra muy corta. En claro
+    /// la tarjeta es blanca como antes era el suelo; lo que dibuja su borde es el filo. En oscuro, sin sombra.
+    func macElevation(cornerRadius: CGFloat) -> some View {
+        modifier(MacElevation(cornerRadius: cornerRadius))
+    }
+}
+
+private struct MacElevation: ViewModifier {
+    let cornerRadius: CGFloat
+    @Environment(\.colorScheme) private var scheme
+
+    func body(content: Content) -> some View {
+        let shape = RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+        content
+            .overlay(shape.strokeBorder(Color.primary.opacity(scheme == .dark ? 0.12 : 0.10), lineWidth: 0.5))
+            .shadow(color: .black.opacity(scheme == .dark ? 0 : 0.05), radius: 1.5, y: 1)
+    }
+}
+#endif
 
 extension View {
     func card(padding: CGFloat = Metrics.cardPadding) -> some View { modifier(CardModifier(padding: padding)) }

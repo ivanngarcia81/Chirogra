@@ -719,7 +719,7 @@ private struct ReconciliationMacSession: View {
             .padding(16)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .background(Palette.background)
+        // Sin fondo propio: el gris del sistema, el de la barra lateral (como Tamio).
     }
 }
 #endif
