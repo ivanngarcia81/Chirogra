@@ -57,8 +57,9 @@ struct CompaniesTests {
         // Sin companyID, el alta de siempre sigue diciendo que ya hay empresa.
         #expect(throws: BookkeepingError.companyAlreadyExists) { try Bookkeeper(context: context).setUpCompany(legalName: "Otra") }
 
+        // Un límite de 5 (el plan para contadores ya no tiene; el mecanismo sigue sirviendo para el normal).
         let saved = Bookkeeper.companyLimit
-        Bookkeeper.companyLimit = CompanyLimits.accountant
+        Bookkeeper.companyLimit = 5
         defer { Bookkeeper.companyLimit = saved }
         for index in 2...5 {
             try first.forNewCompany().setUpCompany(legalName: "Empresa \(index)")

@@ -365,12 +365,13 @@ struct CompaniesView: View {
     private var limitText: String {
         let limit = Bookkeeper.companyLimit
         let used = companies.count
-        if store.plan == .accountant && !store.isReadOnly {
-            return String(localized: "Plan para contadores: \(used) de \(limit) empresas, contando las archivadas.")
+        if store.plan == .accountant && !store.isReadOnly && CompanyLimits.isUnlimited(limit) {
+            return String(localized: "Plan para contadores: \(used) empresas, sin límite.")
         }
         if limit <= CompanyLimits.standard {
-            return String(localized: "Tu plan es para una empresa. Con el plan para contadores llevas hasta \(CompanyLimits.accountant), contando las archivadas.")
+            return String(localized: "Tu plan es para una empresa. Con el plan para contadores llevas todas las que quieras.")
         }
+        if CompanyLimits.isUnlimited(limit) { return String(localized: "\(used) empresas, sin límite.") }
         return String(localized: "Hasta \(limit) empresas, contando las archivadas.")
     }
 
@@ -388,12 +389,12 @@ struct CompaniesView: View {
         let list = (try? books.companyOverviews(includeArchived: true)) ?? []
         overviews = Dictionary(list.map { ($0.id, $0) }, uniquingKeysWith: { a, _ in a })
         var taxes: [UUID: Int64] = [:]
+        // Solo las cuentas de sales tax por pagar, por sus propias líneas (con muchas empresas, leer todo el diario de
+        // cada una tardaba segundos).
         for company in companies {
             let scoped = books.forCompany(company.id)
-            guard let accounts = try? scoped.accounts(includeArchived: true),
-                  let lines = try? scoped.fetch(JournalLine.self) else { continue }
-            let ledger = Ledger(accounts: accounts, lines: lines)
-            taxes[company.id] = accounts.filter { $0.subtype == .salesTaxPayable }.reduce(0) { $0 + ledger.balance(of: $1) }
+            guard let accounts = try? scoped.accounts(includeArchived: true) else { continue }
+            taxes[company.id] = accounts.filter { $0.subtype == .salesTaxPayable }.reduce(0) { $0 + scoped.postedBalance(of: $1) }
         }
         salesTaxOwed = taxes
     }

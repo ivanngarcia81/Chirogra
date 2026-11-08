@@ -38,7 +38,7 @@ public enum BookkeepingError: Error, Equatable, LocalizedError {
         case .duplicateAccountCode(let code): String(localized: "Ya hay una cuenta activa con el número \(code).")
         case .readOnly: String(localized: "Tus libros están en solo lectura porque la suscripción terminó. Suscríbete para seguir registrando.")
         case .companyLimitReached(let limit):
-            limit == 1 ? String(localized: "Tu plan incluye una empresa. Con el plan para contadores puedes llevar varias.")
+            limit == 1 ? String(localized: "Tu plan incluye una empresa. Con el plan para contadores llevas todas las que quieras.")
                 : String(localized: "Tu plan incluye hasta \(limit) empresas. Archiva una para añadir otra.")
         case .reconciledLines:
             String(localized: "Este movimiento ya está conciliado con el extracto del banco. Si lo cambias, la conciliación dejará de cuadrar.")
@@ -166,6 +166,21 @@ public struct Bookkeeper {
                 return LedgerLine(accountID: accountID, date: entry.date, debit: line.debit, credit: line.credit, entryID: entry.id)
             }
         }
+    }
+
+    /// Las líneas contabilizadas de **una** cuenta (por su relación, sin recorrer todo el diario): para saldos sueltos,
+    /// como el sales tax de cada empresa en la lista de empresas o el aviso de sales tax, que con muchas empresas
+    /// (plan para contadores sin límite) no pueden leer todos los asientos de cada una.
+    public func postedLedgerLines(of account: Account) -> [LedgerLine] {
+        (account.lines ?? []).compactMap { line in
+            guard let entry = line.entry, entry.status == .posted else { return nil }
+            return LedgerLine(accountID: account.id, date: entry.date, debit: line.debit, credit: line.credit, entryID: entry.id)
+        }
+    }
+
+    /// Saldo contabilizado de una cuenta (sus propias líneas), hasta `asOf` si se da.
+    public func postedBalance(of account: Account, asOf: Date? = nil) -> Int64 {
+        ReportBuilder.balance(of: account.ledgerAccount, lines: postedLedgerLines(of: account), asOf: asOf)
     }
 
     public func ledgerAccounts() throws -> [LedgerAccount] {

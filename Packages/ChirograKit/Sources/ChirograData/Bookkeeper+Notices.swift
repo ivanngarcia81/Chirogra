@@ -98,13 +98,14 @@ extension Bookkeeper {
                                   documentID: bill.id))
         }
 
-        let lines = try ledgerLines()
+        // Solo las líneas de la cuenta de sales tax, y solo si toca avisar: con muchas empresas (lista de empresas), leer
+        // todo el diario de cada una para esto tardaba segundos.
         for agency in try fetch(TaxAgency.self) where !agency.isArchived {
             let period = try lastSalesTaxFilingPeriod(for: agency, asOf: date, calendar: calendar)
             let until = days(to: period.deadline)
             guard (0...Self.salesTaxNoticeDays).contains(until) else { continue }
             let liability = try account(id: agency.liabilityAccountID) ?? systemAccount(.salesTaxPayable)
-            let owed = ReportBuilder.balance(of: liability.ledgerAccount, lines: lines.filter { $0.date <= Self.endOfDay(period.end, calendar) })
+            let owed = postedBalance(of: liability, asOf: Self.endOfDay(period.end, calendar))
             guard owed > 0 else { continue }
             notices.append(Notice(id: "salesTax:\(agency.id.uuidString):\(Self.dayKey(period.end, calendar))", kind: .salesTaxDue,
                                   date: period.deadline, days: until, amount: owed, party: agency.name, reference: "", documentID: agency.id))

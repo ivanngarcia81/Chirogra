@@ -1464,6 +1464,46 @@
         }
       }
     },
+    "%lld empresas, sin límite." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld business, no limit."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld businesses, no limit."
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld empresa, sin límite."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld empresas, sin límite."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld este mes" : {
       "localizations" : {
         "en" : {
@@ -10207,6 +10247,16 @@
         }
       }
     },
+    "Empresas sin límite, cada una con sus libros" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unlimited businesses, each with its own books"
+          }
+        }
+      }
+    },
     "Empresas…" : {
       "localizations" : {
         "en" : {
@@ -12985,16 +13035,6 @@
         }
       }
     },
-    "Hasta 5 empresas, cada una con sus libros" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Up to 5 businesses, each with its own books"
-          }
-        }
-      }
-    },
     "Hay facturas repetidas en el lote." : {
       "localizations" : {
         "en" : {
@@ -14969,6 +15009,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "The books will be closed through %@ and you'll be able to record in the reopened period again. It will be kept in the history."
+          }
+        }
+      }
+    },
+    "Los libros y recibos de todas ocupan espacio en tu iCloud" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Books and receipts for all of them use your iCloud storage"
           }
         }
       }
@@ -18094,12 +18144,12 @@
         }
       }
     },
-    "Para contadores: hasta 5 empresas" : {
+    "Para contadores: empresas sin límite" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "For accountants: up to 5 businesses"
+            "value" : "For accountants: unlimited businesses"
           }
         }
       }
@@ -18532,28 +18582,52 @@
         }
       }
     },
-    "Plan para contadores: %lld de %lld empresas, contando las archivadas." : {
+    "Plan para contadores: %lld empresas, sin límite." : {
       "localizations" : {
         "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Accountants plan: %lld of %lld businesses, including archived ones."
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Accountants plan: %lld business, no limit."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Accountants plan: %lld businesses, no limit."
+                }
+              }
+            }
           }
         },
         "es" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Plan para contadores: %1$lld de %2$lld empresas, contando las archivadas."
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Plan para contadores: %lld empresa, sin límite."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Plan para contadores: %lld empresas, sin límite."
+                }
+              }
+            }
           }
         }
       }
     },
-    "Plan para contadores: hasta %lld empresas…" : {
+    "Plan para contadores: empresas sin límite…" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Accountants plan: up to %lld businesses…"
+            "value" : "Accountants plan: unlimited businesses…"
           }
         }
       }
@@ -24732,22 +24806,22 @@
         }
       }
     },
-    "Tu plan es para una empresa. Con el plan para contadores llevas hasta %lld, contando las archivadas." : {
+    "Tu plan es para una empresa. Con el plan para contadores llevas los libros de todas las empresas que quieras, cada una con sus clientes, facturas, impuestos y reportes." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Your plan is for one business. With the accountants plan you can keep up to %lld, including archived ones."
+            "value" : "Your plan is for one business. With the accountants plan you keep the books of as many businesses as you want, each with its own customers, invoices, taxes and reports."
           }
         }
       }
     },
-    "Tu plan es para una empresa. Con el plan para contadores llevas los libros de hasta 5 empresas, cada una con sus clientes, facturas, impuestos y reportes." : {
+    "Tu plan es para una empresa. Con el plan para contadores llevas todas las que quieras." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Your plan is for one business. With the accountants plan you keep the books of up to 5 businesses, each with its own customers, invoices, taxes and reports."
+            "value" : "Your plan is for one business. With the accountants plan you can keep as many as you want."
           }
         }
       }
@@ -24762,12 +24836,12 @@
         }
       }
     },
-    "Tu plan incluye una empresa. Con el plan para contadores puedes llevar varias." : {
+    "Tu plan incluye una empresa. Con el plan para contadores llevas todas las que quieras." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Your plan includes one company. With the accountant plan you can keep books for several."
+            "value" : "Your plan includes one business. With the accountants plan you can keep as many as you want."
           }
         }
       }

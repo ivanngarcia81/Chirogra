@@ -6,8 +6,8 @@ import SwiftUI
 /// gratis (oferta de introducción):
 /// - **Chirogra** (`com.chirogra.app.mensual`): una empresa. Lanzamiento a $24.99 los 3 primeros meses y luego $29.99
 ///   para los nuevos, conservando el precio a los ya suscritos.
-/// - **Chirogra para contadores** (`com.chirogra.app.contador.mensual`, nivel superior del grupo): hasta 5 empresas
-///   (`CompanyLimits.accountant`). Precio por decidir (en `App/Chirogra.storekit`, $99.99 solo para probar).
+/// - **Chirogra para contadores** (`com.chirogra.app.contador.mensual`, nivel superior del grupo): empresas sin límite
+///   (`CompanyLimits.accountant`; hasta el 8-nov eran 5). Precio por decidir (en `App/Chirogra.storekit`, $99.99 solo para probar).
 /// Los precios los pone App Store Connect, no el código. La misma suscripción vale en iPhone, iPad y Mac (mismo
 /// identificador de app). El plan fija `Bookkeeper.companyLimit` (las archivadas cuentan, decisión del 8-nov).
 ///
@@ -21,7 +21,7 @@ import SwiftUI
 final class SubscriptionStore {
     static let shared = SubscriptionStore()
     static let productID = "com.chirogra.app.mensual"
-    /// Plan para contadores: hasta 5 empresas. Nivel superior del mismo grupo de suscripciones.
+    /// Plan para contadores: empresas sin límite. Nivel superior del mismo grupo de suscripciones.
     static let accountantProductID = "com.chirogra.app.contador.mensual"
     static let productIDs = [productID, accountantProductID]
     /// Se encontró el producto alguna vez: desde entonces, sin conexión también se aplica la suscripción.
@@ -70,15 +70,15 @@ final class SubscriptionStore {
         accountantProduct != nil || UserDefaults.standard.bool(forKey: Self.accountantConfiguredKey)
     }
 
-    /// Copia de TestFlight (compras de prueba, `AppStore.Environment.sandbox`): permite hasta 5 empresas sin el plan
+    /// Copia de TestFlight (compras de prueba, `AppStore.Environment.sandbox`): permite empresas sin límite sin el plan
     /// para contadores, que aún no existe en App Store Connect (decisión del usuario, 8-nov). En la App Store, `false`.
     private(set) var isTestFlight = false
 
     /// Empresas que permite el plan (archivadas incluidas).
     var companyLimit: Int { Self.companyLimit(status: status, plan: plan, isTestFlight: isTestFlight) }
 
-    /// Sin ningún producto en App Store Connect (`notConfigured`, antes de publicar) no se limita (hasta 5); con el plan
-    /// para contadores, 5; en TestFlight, 5; en todo lo demás, 1 (también si el plan para contadores aún no está a la
+    /// Sin ningún producto en App Store Connect (`notConfigured`, antes de publicar) no se limita; con el plan
+    /// para contadores, tampoco; en TestFlight, tampoco; en todo lo demás, 1 (también si el plan para contadores aún no está a la
     /// venta: decisión del usuario del 8-nov; entonces, al pasar el límite, se avisa en vez de ofrecer el plan).
     static func companyLimit(status: Status, plan: Plan, isTestFlight: Bool = false) -> Int {
         if status == .notConfigured || plan == .accountant || isTestFlight { return CompanyLimits.accountant }
@@ -203,12 +203,13 @@ struct PaywallView: View {
                     if focus == .accountant {
                         Text("Chirogra para contadores").font(.largeTitle.bold()).foregroundStyle(Palette.ink)
                             .multilineTextAlignment(.center)
-                        Text("Tu plan es para una empresa. Con el plan para contadores llevas los libros de hasta 5 empresas, cada una con sus clientes, facturas, impuestos y reportes.")
+                        Text("Tu plan es para una empresa. Con el plan para contadores llevas los libros de todas las empresas que quieras, cada una con sus clientes, facturas, impuestos y reportes.")
                             .font(.body).multilineTextAlignment(.center).foregroundStyle(Palette.ink2)
                         VStack(alignment: .leading, spacing: 8) {
-                            feature("building.2", "Hasta 5 empresas, cada una con sus libros")
+                            feature("building.2", "Empresas sin límite, cada una con sus libros")
                             feature("arrow.left.arrow.right", "Cambia de empresa desde Inicio o la barra lateral")
                             feature("externaldrive", "Una copia por empresa para entregársela a tu cliente")
+                            feature("icloud", "Los libros y recibos de todas ocupan espacio en tu iCloud")
                         }
                         .padding(.top, 4)
                     } else {
@@ -220,7 +221,7 @@ struct PaywallView: View {
                             feature("doc.text", "Facturas, estimados y cobros")
                             feature("chart.bar.xaxis", "Estado de resultados, balance y sales tax")
                             feature("lock.shield", "Sin servidores: tus datos en tus aparatos e iCloud")
-                            feature("building.2", "Para contadores: hasta 5 empresas")
+                            feature("building.2", "Para contadores: empresas sin límite")
                         }
                         .padding(.top, 4)
                     }
@@ -336,9 +337,9 @@ struct SubscriptionSection: View {
                     }
                 }
                 .buttonStyle(.borderless)
-                // Con el plan normal: el de contadores (hasta 5 empresas), si está a la venta.
+                // Con el plan normal: el de contadores (empresas sin límite), si está a la venta.
                 if store.plan == .standard && store.sellsAccountantPlan && !store.isReadOnly {
-                    Button("Plan para contadores: hasta \(CompanyLimits.accountant) empresas…") {
+                    Button("Plan para contadores: empresas sin límite…") {
                         CompanyHub.shared.sheet = .accountantPlan
                     }
                     .buttonStyle(.borderless)

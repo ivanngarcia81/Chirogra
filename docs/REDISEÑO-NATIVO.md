@@ -329,7 +329,7 @@ open -g -j -n .dd/Build/Products/Debug/Chirogra.app --args -AppleLanguages '(es)
   cabe en el plan) y la deja activa; `-qa.empresa N` deja activa la N.ª del selector (desde 1); `-qa.empresas lista|alta`
   abre la lista de empresas o «Añadir empresa…» (con el plan normal y el límite lleno, la pantalla del plan para
   contadores; con `-qa.alta 1 -qa.altaEstado TX -qa.altaCrear 1` además la crea). `-qa.suscripcion contador` = plan para
-  contadores activo (5 empresas); `activa`/`prueba` = plan normal (1). `-qa.ajustes companies` abre Ajustes › Empresas.
+  contadores activo (empresas sin límite); `activa`/`prueba` = plan normal (1). `-qa.ajustes companies` abre Ajustes › Empresas.
   En una copia del Mac sin iCloud firmado, `-iCloudSyncEnabled NO` (si no, CloudKit la cierra al arrancar).
 - Banca 1.2 (conciliación): `-qa.seccion bankInbox|bankRules|reconcile` abre la bandeja «Por revisar», las reglas o la
   conciliación (subsecciones de Banca en la barra lateral; `banking` sigue siendo Cuentas). `-qa.importar <ruta>` abre

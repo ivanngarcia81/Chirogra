@@ -36,8 +36,12 @@ public enum ActiveCompany {
 public enum CompanyLimits {
     /// Plan normal: una empresa.
     public static let standard = 1
-    /// Plan para contadores (PLAN-FASE2: «hasta 5»).
-    public static let accountant = 5
+    /// Sin límite.
+    public static let unlimited = Int.max
+    /// Plan para contadores: **sin límite** (decisión del usuario, 8-nov: el contador lleva muchas empresas; antes 5).
+    public static let accountant = unlimited
+    /// El límite no limita (para los textos: «sin límite» en vez de un número).
+    public static func isUnlimited(_ limit: Int) -> Bool { limit == unlimited }
 }
 
 /// Utilidades de la empresa dueña que no necesitan un `Bookkeeper` (también las usa la migración V3 → V4).
@@ -55,8 +59,15 @@ public enum CompanyOwnership {
         companies.min { ($0.createdAt, $0.id.uuidString) < ($1.createdAt, $1.id.uuidString) }
     }
 
+    /// Sin leer todas las empresas: la más antigua y, si hay empate de fecha, las empatadas (lo llama cada búsqueda de
+    /// `Bookkeeper`; con muchas empresas, leerlas todas cada vez hacía lentas la lista de empresas y el registro).
     public static func primaryCompanyID(in context: ModelContext) throws -> UUID? {
-        primaryCompany(among: try context.fetch(FetchDescriptor<Company>()))?.id
+        var oldestFirst = FetchDescriptor<Company>(sortBy: [SortDescriptor(\.createdAt)])
+        oldestFirst.fetchLimit = 1
+        guard let oldest = try context.fetch(oldestFirst).first else { return nil }
+        let created = oldest.createdAt
+        let tied = try context.fetch(FetchDescriptor<Company>(predicate: #Predicate { $0.createdAt == created }))
+        return primaryCompany(among: tied.isEmpty ? [oldest] : tied)?.id
     }
 
     /// Da la empresa principal a todo lo que no tiene empresa. Sin empresa no hace nada. No guarda.
@@ -134,20 +145,22 @@ extension Bookkeeper {
         try scope()
     }
 
+    /// Se llama en cada búsqueda: no lee todas las empresas salvo si no hay activa (con muchas empresas, hacerlo cada
+    /// vez lo volvía lento todo).
     func scope() throws -> CompanyScope? {
-        let companies = try CompanyOwnership.companies(in: context)
         let id: UUID
         if let companyID {
             id = companyID
-        } else if let active = ActiveCompany.id, companies.contains(where: { $0.id == active }) {
+        } else if let active = ActiveCompany.id,
+                  try context.fetchCount(FetchDescriptor<Company>(predicate: #Predicate { $0.id == active })) > 0 {
             id = active
-        } else if let first = companies.first(where: { !$0.isArchived }) ?? companies.first {
-            id = first.id
         } else {
-            return nil
+            let companies = try CompanyOwnership.companies(in: context)
+            guard let first = companies.first(where: { !$0.isArchived }) ?? companies.first else { return nil }
+            id = first.id
         }
-        let primary = CompanyOwnership.primaryCompany(among: companies)
-        return CompanyScope(id: id, includeOrphans: primary == nil || primary?.id == id)
+        let primary = try CompanyOwnership.primaryCompanyID(in: context)
+        return CompanyScope(id: id, includeOrphans: primary == nil || primary == id)
     }
 
     /// `predicate` limitado a la empresa de este `Bookkeeper` (`&&`). Sin empresa, `predicate` tal cual. Sirve también
