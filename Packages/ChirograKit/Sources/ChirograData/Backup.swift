@@ -133,7 +133,6 @@ public enum BackupArchive {
         try file.payload.insert(into: trial.mainContext)
         try trial.mainContext.save()
         do {
-            try Bookkeeper(context: context).ensureWritable()
             if let replacedScope { try delete(replacedScope, in: context) }
             try file.payload.insert(into: context)
             let summary = String(localized: "Copia restaurada del \(file.info.createdAt.formatted(date: .abbreviated, time: .shortened))")

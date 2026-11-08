@@ -337,6 +337,7 @@ Usuario guarda factura ─► ChirograUI (InvoiceEditor)
 
 - `VersionedSchema` desde la v1 y `SchemaMigrationPlan`, aunque al principio solo haya una versión: evita dolores al primer cambio con usuarios reales.
 - **Esquema 2.0.0 (2-nov-2026):** migración ligera desde la v1, solo cambios aditivos (pagos programados, recurrentes, estimados, notas de cliente, envíos de factura, cierres, avisos…). La v1 queda congelada en `SchemaV1.swift`. Detalle y API en [DATOS-V2.md](DATOS-V2.md).
+- **Esquema 4.0.0 (8-nov-2026):** varias empresas (`companyID` en todo), banca y conciliación, presupuestos, deducibles, sales tax por código postal y enlace de pago; migración a medida que rellena `companyID`. Los esquemas 2 y 3 quedan congelados. Detalle y API en [DATOS-V4.md](DATOS-V4.md).
 - ✅ Copia de seguridad exportable/importable (archivo `.chirogra` = JSON comprimido + adjuntos) independiente de iCloud. Hecha el 3-nov-2026: `BackupArchive` (`ChirograData/Backup.swift`) y el código por modelo que genera `scripts/gen-backup.py` (`Backup+Generated.swift`). Restaurar reemplaza los libros en un solo guardado, después de probar la copia en un almacén en memoria; antes guarda una copia de lo actual («Deshacer la última restauración»).
 
 ### 6.5 Sincronización con iCloud / CloudKit (opcional)

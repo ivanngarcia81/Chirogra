@@ -109,6 +109,15 @@ struct CompaniesTests {
             try first.post(JournalEntryDraft(date: Date(), lines: [.debit(foreign.id, 100), .credit(try account(first, "3000").id, 100)]))
         }
 
+        // El filtro para las `@Query` de la UI.
+        let scope = try #require(try second.companyScope())
+        #expect(scope.id == secondID && !scope.includeOrphans)
+        #expect(try context.fetch(FetchDescriptor(predicate: scope.predicate(Invoice.self))).map(\.id) == [b.id])
+        #expect(try first.companyScope()?.includeOrphans == true)
+        let sentRaw = InvoiceStatus.sent.rawValue
+        let sent = try context.fetch(FetchDescriptor(predicate: try first.scoped(#Predicate<Invoice> { $0.statusRaw == sentRaw })))
+        #expect(sent.map(\.id) == [a.id])
+
         // Lista con lo pendiente de cada una.
         let overviews = try first.companyOverviews()
         #expect(overviews.map(\.name) == ["Primera LLC", "Segunda Inc"])

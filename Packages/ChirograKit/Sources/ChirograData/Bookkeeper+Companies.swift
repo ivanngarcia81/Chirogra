@@ -102,11 +102,21 @@ extension CompanyOwned {
 
 // MARK: - Ámbito de un Bookkeeper
 
-/// Empresa con la que trabaja un `Bookkeeper` en una operación.
-struct CompanyScope {
-    let id: UUID
+/// Empresa con la que trabaja un `Bookkeeper` (`Bookkeeper.companyScope()`), y con ella el filtro para las `@Query`.
+public struct CompanyScope: Sendable, Equatable {
+    public let id: UUID
     /// Es la principal: también ve los registros sin empresa.
-    let includeOrphans: Bool
+    public let includeOrphans: Bool
+
+    public init(id: UUID, includeOrphans: Bool) {
+        self.id = id
+        self.includeOrphans = includeOrphans
+    }
+
+    /// Los registros de esta empresa: `@Query(filter: scope.predicate(Invoice.self))`.
+    public func predicate<T: CompanyOwned>(_ type: T.Type) -> Predicate<T> {
+        T.ownedBy(id, includeOrphans: includeOrphans)
+    }
 }
 
 extension Bookkeeper {
@@ -115,6 +125,12 @@ extension Bookkeeper {
     /// la primera del selector que no esté archivada (o la primera). `nil` si no hay ninguna empresa.
     public func resolvedCompanyID() throws -> UUID? {
         try scope()?.id
+    }
+
+    /// La empresa de este `Bookkeeper` y si es la principal (ve los huérfanos), para filtrar las `@Query` de la UI.
+    /// `nil` si no hay ninguna empresa.
+    public func companyScope() throws -> CompanyScope? {
+        try scope()
     }
 
     func scope() throws -> CompanyScope? {
@@ -133,8 +149,9 @@ extension Bookkeeper {
         return CompanyScope(id: id, includeOrphans: primary == nil || primary?.id == id)
     }
 
-    /// `predicate` limitado a la empresa de este `Bookkeeper`. Sin empresa, `predicate` tal cual.
-    func scoped<T: CompanyOwned>(_ predicate: Predicate<T>?) throws -> Predicate<T>? {
+    /// `predicate` limitado a la empresa de este `Bookkeeper` (`&&`). Sin empresa, `predicate` tal cual. Sirve también
+    /// para un `FetchDescriptor` de la UI: `FetchDescriptor(predicate: try books.scoped(#Predicate<Bill> { $0.autoPay }))`.
+    public func scoped<T: CompanyOwned>(_ predicate: Predicate<T>?) throws -> Predicate<T>? {
         guard let scope = try scope() else { return predicate }
         let owned = T.ownedBy(scope.id, includeOrphans: scope.includeOrphans)
         guard let predicate else { return owned }
@@ -142,14 +159,14 @@ extension Bookkeeper {
     }
 
     /// Búsqueda limitada a la empresa de este `Bookkeeper`.
-    func fetch<T: CompanyOwned>(_ type: T.Type, _ predicate: Predicate<T>? = nil, sortBy: [SortDescriptor<T>] = [],
+    public func fetch<T: CompanyOwned>(_ type: T.Type, _ predicate: Predicate<T>? = nil, sortBy: [SortDescriptor<T>] = [],
                                 limit: Int? = nil) throws -> [T] {
         var descriptor = FetchDescriptor<T>(predicate: try scoped(predicate), sortBy: sortBy)
         descriptor.fetchLimit = limit
         return try context.fetch(descriptor)
     }
 
-    func count<T: CompanyOwned>(_ type: T.Type, _ predicate: Predicate<T>? = nil) throws -> Int {
+    public func count<T: CompanyOwned>(_ type: T.Type, _ predicate: Predicate<T>? = nil) throws -> Int {
         try context.fetchCount(FetchDescriptor<T>(predicate: try scoped(predicate)))
     }
 

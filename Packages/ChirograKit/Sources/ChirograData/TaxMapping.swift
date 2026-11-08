@@ -64,10 +64,17 @@ extension Bookkeeper {
     /// Línea del formulario de una cuenta: la elegida (`taxFormLineRaw`) si es de ese formulario; si no, la sugerida.
     /// `nil` si está excluida o no va en el formulario.
     public func taxLine(for account: Account, form: TaxForm, year: Int = 2025) throws -> TaxFormLine? {
+        Self.taxLine(for: account, form: form, year: year, sector: try companySector())
+    }
+
+    func companySector() throws -> BusinessSector {
+        try company().flatMap { BusinessSector(rawValue: $0.sectorRaw) } ?? .services
+    }
+
+    static func taxLine(for account: Account, form: TaxForm, year: Int, sector: BusinessSector) -> TaxFormLine? {
         let raw = account.taxFormLineRaw
         if raw == TaxFormCatalog.none { return nil }
         if !raw.isEmpty, let line = TaxFormCatalog.line(id: raw, year: year), line.form == form { return line }
-        let sector = try company().flatMap { BusinessSector(rawValue: $0.sectorRaw) } ?? .services
         return TaxFormCatalog.defaultLineNumber(code: account.code, subtype: account.subtype, sector: sector, form: form)
             .flatMap { TaxFormCatalog.line($0, in: form, year: year) }
     }
@@ -90,9 +97,10 @@ extension Bookkeeper {
         let form = try form ?? taxForm() ?? .scheduleC
         let year = year ?? calendar.component(.year, from: to)
         let accounts = try accounts(includeArchived: true)
+        let sector = try companySector()
         var lineByAccount: [UUID: TaxFormLine] = [:]
         for account in accounts {
-            if let line = try taxLine(for: account, form: form, year: year) { lineByAccount[account.id] = line }
+            if let line = Self.taxLine(for: account, form: form, year: year, sector: sector) { lineByAccount[account.id] = line }
         }
         return ReportBuilder.taxFormSummary(form: form, year: year, accounts: accounts.map(\.ledgerAccount),
                                             lines: try ledgerLines(basis: basis), from: from, to: to) { lineByAccount[$0.id] }
