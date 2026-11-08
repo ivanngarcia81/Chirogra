@@ -2118,6 +2118,36 @@
         }
       }
     },
+    "Actividades de financiamiento" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Financing activities"
+          }
+        }
+      }
+    },
+    "Actividades de inversión" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Investing activities"
+          }
+        }
+      }
+    },
+    "Actividades de operación" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Operating activities"
+          }
+        }
+      }
+    },
     "ACTIVO" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -3288,6 +3318,16 @@
         }
       }
     },
+    "Asiento conciliado cambiado: %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reconciled entry changed: %lld"
+          }
+        }
+      }
+    },
     "Asiento manual" : {
       "localizations" : {
         "en" : {
@@ -4060,6 +4100,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "CUSTOMER"
+          }
+        }
+      }
+    },
+    "Conciliación abierta: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reconciliation started: %@"
+          }
+        }
+      }
+    },
+    "Conciliación reabierta" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reconciliation reopened"
+          }
+        }
+      }
+    },
+    "Conciliación terminada al %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reconciliation completed as of %@"
           }
         }
       }
@@ -6039,6 +6109,16 @@
         }
       }
     },
+    "Cuentas excluidas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Excluded accounts"
+          }
+        }
+      }
+    },
     "Cuentas por cobrar" : {
       "localizations" : {
         "en" : {
@@ -6125,6 +6205,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "DEBIT"
+          }
+        }
+      }
+    },
+    "Deducible" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deductible"
+          }
+        }
+      }
+    },
+    "Depósito · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deposit · %@"
           }
         }
       }
@@ -6579,6 +6679,26 @@
         }
       }
     },
+    "Diario" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Journal"
+          }
+        }
+      }
+    },
+    "Diferencia" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Difference"
+          }
+        }
+      }
+    },
     "Diferencia %@" : {
       "localizations" : {
         "en" : {
@@ -6719,6 +6839,56 @@
         }
       }
     },
+    "Efectivo al final" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cash at end of period"
+          }
+        }
+      }
+    },
+    "Efectivo al inicio" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cash at beginning of period"
+          }
+        }
+      }
+    },
+    "Efectivo neto de financiamiento" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Net cash from financing activities"
+          }
+        }
+      }
+    },
+    "Efectivo neto de inversión" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Net cash from investing activities"
+          }
+        }
+      }
+    },
+    "Efectivo neto de operación" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Net cash from operating activities"
+          }
+        }
+      }
+    },
     "EIN %@" : {
       "localizations" : {
         "en" : {
@@ -6735,6 +6905,116 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "EIN (optional)"
+          }
+        }
+      }
+    },
+    "El enlace de pago debe ser una dirección web (https://…)." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The payment link must be a web address (https://…)."
+          }
+        }
+      }
+    },
+    "El mes debe estar entre 1 y 12." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The month must be between 1 and 12."
+          }
+        }
+      }
+    },
+    "El presupuesto necesita un nombre." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The budget needs a name."
+          }
+        }
+      }
+    },
+    "Elige una cuenta para registrar el movimiento." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose an account to record the transaction."
+          }
+        }
+      }
+    },
+    "Empresa archivada: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Company archived: %@"
+          }
+        }
+      }
+    },
+    "Empresa restaurada: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Company restored: %@"
+          }
+        }
+      }
+    },
+    "Enlace de pago cambiado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Payment link changed"
+          }
+        }
+      }
+    },
+    "Esa línea del formulario no existe." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "That form line doesn't exist."
+          }
+        }
+      }
+    },
+    "Esa línea ya está emparejada con otro movimiento." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "That line is already matched to another transaction."
+          }
+        }
+      }
+    },
+    "Este movimiento ya está conciliado con el extracto del banco. Si lo cambias, la conciliación dejará de cuadrar." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This transaction is already reconciled with the bank statement. If you change it, the reconciliation will no longer balance."
+          }
+        }
+      }
+    },
+    "Este movimiento ya está revisado." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This transaction has already been reviewed."
           }
         }
       }
@@ -9226,6 +9506,16 @@
         }
       }
     },
+    "Flujo de efectivo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cash flow"
+          }
+        }
+      }
+    },
     "Fondos no depositados" : {
       "localizations" : {
         "en" : {
@@ -9780,6 +10070,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Credit %@"
+          }
+        }
+      }
+    },
+    "Hacen falta los 12 meses." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All 12 months are required."
           }
         }
       }
@@ -10442,6 +10742,76 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Jurisdiction"
+          }
+        }
+      }
+    },
+    "La conciliación no cuadra: faltan %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The reconciliation doesn't balance: %@ off."
+          }
+        }
+      }
+    },
+    "La conciliación ya está terminada." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The reconciliation is already completed."
+          }
+        }
+      }
+    },
+    "La fecha del extracto debe ser posterior a la de la última conciliación." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The statement date must be after the last reconciliation."
+          }
+        }
+      }
+    },
+    "La línea no es de la cuenta que se concilia." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The line isn't from the account being reconciled."
+          }
+        }
+      }
+    },
+    "La línea no es de la misma cuenta o no tiene el mismo importe." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The line isn't from the same account or doesn't have the same amount."
+          }
+        }
+      }
+    },
+    "La línea ya está conciliada en otra conciliación." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The line is already cleared in another reconciliation."
+          }
+        }
+      }
+    },
+    "La regla necesita un texto que buscar." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The rule needs text to look for."
           }
         }
       }
@@ -11336,6 +11706,26 @@
         }
       }
     },
+    "Línea" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Line"
+          }
+        }
+      }
+    },
+    "Línea de impuestos de %@: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tax line for %@: %@"
+          }
+        }
+      }
+    },
     "Líneas" : {
       "localizations" : {
         "en" : {
@@ -11707,12 +12097,42 @@
         }
       }
     },
+    "Movimiento emparejado con el asiento %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transaction matched to entry %lld"
+          }
+        }
+      }
+    },
+    "Movimiento registrado: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transaction recorded: %@"
+          }
+        }
+      }
+    },
     "Movimientos" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Activity"
+          }
+        }
+      }
+    },
+    "Movimientos importados en %@: %lld nuevos, %lld repetidos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transactions imported into %@: %lld new, %lld duplicates"
           }
         }
       }
@@ -12324,6 +12744,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "The receipt couldn't be removed."
+          }
+        }
+      }
+    },
+    "No se pudo registrar el movimiento." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The transaction couldn't be recorded."
           }
         }
       }
@@ -13149,6 +13579,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "PRICE"
+          }
+        }
+      }
+    },
+    "Presupuesto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Budget"
+          }
+        }
+      }
+    },
+    "Presupuesto borrado: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Budget deleted: %@"
+          }
+        }
+      }
+    },
+    "Presupuesto creado: %@ %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Budget created: %@ %@"
           }
         }
       }
@@ -15023,6 +15483,26 @@
         }
       }
     },
+    "Real" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actual"
+          }
+        }
+      }
+    },
+    "Real contra presupuesto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Budget vs. actual"
+          }
+        }
+      }
+    },
     "RECHAZADO" : {
       "localizations" : {
         "en" : {
@@ -15529,6 +16009,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Posting in a closed period authorized"
+          }
+        }
+      }
+    },
+    "Regla del banco borrada: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bank rule deleted: %@"
+          }
+        }
+      }
+    },
+    "Regla del banco: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bank rule: %@"
           }
         }
       }
@@ -17521,12 +18021,42 @@
         }
       }
     },
+    "Solo se reabre la última conciliación de la cuenta, y si no hay otra abierta." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Only the account's last reconciliation can be reopened, and only if no other one is open."
+          }
+        }
+      }
+    },
     "Solo sin recibo" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Only without receipt"
+          }
+        }
+      }
+    },
+    "Solo una entrada de dinero puede ser un cobro." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Only money coming in can be a customer payment."
+          }
+        }
+      }
+    },
+    "Solo una salida de dinero puede ser un pago." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Only money going out can be a bill payment."
           }
         }
       }
@@ -18454,6 +18984,16 @@
         }
       }
     },
+    "Transferencia · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transfer · %@"
+          }
+        }
+      }
+    },
     "Traspaso entre cuentas" : {
       "localizations" : {
         "en" : {
@@ -18491,6 +19031,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Quarter settled"
+          }
+        }
+      }
+    },
+    "Tu plan incluye hasta %lld empresas. Archiva una para añadir otra." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your plan includes up to %lld companies. Archive one to add another."
+          }
+        }
+      }
+    },
+    "Tu plan incluye una empresa. Con el plan para contadores puedes llevar varias." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your plan includes one company. With the accountant plan you can keep books for several."
           }
         }
       }
@@ -18921,6 +19481,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "CHANGE"
+          }
+        }
+      }
+    },
+    "Variación neta del efectivo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Net change in cash"
           }
         }
       }
@@ -19826,6 +20396,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "An account with that number already exists."
+          }
+        }
+      }
+    },
+    "Ya hay una conciliación abierta para esta cuenta." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "There's already an open reconciliation for this account."
           }
         }
       }

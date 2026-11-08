@@ -185,6 +185,27 @@ public enum SampleData {
         ))
         try books.setStatus(.sent, of: estimate, date: day(-5))
         try books.setStatus(.accepted, of: estimate, acceptedBy: "Laura Méndez", date: day(-2))
+
+        // Esquema 4: banco (canvas de conciliación) y presupuesto. Movimientos del banco y de la tarjeta: el cobro de
+        // Café Aurora y la renta emparejados con lo registrado; Uber y Shell por revisar (Shell con una regla).
+        try books.saveBankRule(BankRuleInput(name: "Gasolina", matchText: "shell", amountSign: .outflow, targetAccountID: try account("6050").id))
+        let bankLines = [
+            BankStatementLine(date: day(-30), amount: 180_000, details: "DEPOSIT CAFE AURORA", externalID: "fitid:S-1"),
+            BankStatementLine(date: day(-28), amount: -120_000, details: "CHECK 1043 RENTA TALLER", checkNumber: "1043", externalID: "fitid:S-2"),
+        ]
+        try books.importStatementLines(bankLines, source: .ofx, into: checking)
+        try books.importStatementLines([
+            BankStatementLine(date: day(-2), amount: -1_840, details: "UBER *TRIP HELP.UBER.COM", externalID: "fitid:T-1"),
+            BankStatementLine(date: day(-1), amount: -4_310, details: "SHELL OIL 57444", externalID: "fitid:T-2"),
+        ], source: .ofx, into: card)
+        for transaction in try books.bankInbox(account: checking) {
+            if let candidate = try books.matchCandidates(for: transaction).first { try books.match(transaction, to: candidate.line) }
+        }
+        let fiscalYear = calendar.component(.year, from: try books.fiscalYearStart(containing: today, calendar: calendar))
+        let budget = try books.createBudget(name: "Presupuesto \(fiscalYear)", fiscalYear: fiscalYear)
+        try books.setAnnualBudget(9_000_000, account: services, in: budget, calendar: calendar)
+        try books.setAnnualBudget(1_440_000, account: try account("6400"), in: budget, calendar: calendar)
+        try books.setAnnualBudget(240_000, account: try account("6050"), in: budget, calendar: calendar)
     }
 
     // MARK: - Datos de ejemplo o libros propios

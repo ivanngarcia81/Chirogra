@@ -246,4 +246,18 @@ struct BankingTests {
         let suggested = try books.suggestedClearedLines(session)
         #expect(suggested.map { $0.entry?.id } == [expense.journalEntryID])
     }
+
+    @Test("Los datos de ejemplo traen banco por revisar, emparejados, una regla y un presupuesto")
+    func sampleBanking() throws {
+        let sample = try ChirograStore.makeContainer(inMemory: true)
+        try SampleData.populate(sample.mainContext)
+        let books = Bookkeeper(context: sample.mainContext)
+        #expect(try books.bankTransactions(status: .matched).count == 2)
+        let inbox = try books.bankInbox()
+        #expect(inbox.count == 2)
+        let shell = try #require(inbox.first { $0.details.hasPrefix("SHELL") })
+        #expect(try books.account(id: shell.categoryAccountID)?.code == "6050")
+        #expect(try books.matchCandidates(for: try #require(inbox.first { $0.details.hasPrefix("UBER") })).count == 1)
+        #expect(try books.budgets().first?.total == 9_000_000 + 1_440_000 + 240_000)
+    }
 }
