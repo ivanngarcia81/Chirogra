@@ -12,10 +12,11 @@ import SwiftUI
 ///   Mac, además, el inspector de la derecha con la tasa elegida en la tabla y la declaración del trimestre.
 /// En Tasas (iPhone) y en la caja «Facturas nuevas» (iPad y Mac): el impuesto predeterminado de la empresa, «Precios con
 /// impuesto incluido» y el origen de las ventas. Cada tasa se edita («Editar tasa…»; las facturas emitidas no cambian).
-/// «Deducibles» y «Exportar para mi contador» son de la fase 2.
+/// Fase 2 (1.3): «Deducibles» como tercera pestaña en el iPhone (`DeductionsView` dentro) y, en iPad y Mac, la tarjeta
+/// «Gastos deducibles» de `MacImpuestos` con «Ver por línea» (página `DeductionsView`) y «Exportar para mi contador…».
 struct TaxesView: View {
     enum Tab: String, CaseIterable, Identifiable {
-        case summary = "Resumen", rates = "Tasas"
+        case summary = "Resumen", rates = "Tasas", deductions = "Deducibles"
         var id: String { rawValue }
     }
 
@@ -36,6 +37,11 @@ struct TaxesView: View {
     @State private var showingGroup = false
     @State private var editingRate: TaxRate?
     @State private var errorMessage: String?
+    /// Fase 2: deducibles del año (tarjeta de iPad y Mac), su página y el paquete del contador.
+    @ReportBasisSetting private var basis
+    @State private var deductionsMemo = ReportMemo<TaxFormSummary?>()
+    @State private var showingDeductions = false
+    @State private var exportingPackage = false
     @State private var width: CGFloat = 0
     #if os(macOS)
     /// Tasa o grupo elegido en la tabla para el inspector (clave de `macRateItems`); sin elegir, el primero.
@@ -111,6 +117,15 @@ struct TaxesView: View {
         .sheet(isPresented: $showingPayment) { NavigationStack { SalesTaxPaymentView(owed: payable) }.editorSheetSizing() }
         .sheet(isPresented: $showingGroup) { NavigationStack { TaxGroupEditorView() }.editorSheetSizing() }
         .sheet(item: $editingRate) { rate in NavigationStack { TaxRateEditorView(rate: rate) }.editorSheetSizing() }
+        .sheet(isPresented: $exportingPackage) { NavigationStack { AccountantExportView() }.editorSheetSizing() }
+        .navigationDestination(isPresented: $showingDeductions) { DeductionsView() }
+        #if DEBUG
+        // `-qa.impuestos deducibles` abre los deducibles: la pestaña en el iPhone, la página en iPad y Mac (solo Debug).
+        .task {
+            guard UserDefaults.standard.string(forKey: "qa.impuestos") == "deducibles" else { return }
+            if isWide { try? await Task.sleep(for: .seconds(1)); showingDeductions = true } else { tab = .deductions }
+        }
+        #endif
         #if DEBUG
         // `-qa.tasa N` abre «Editar tasa» de la tasa N (orden de la tabla, sin los grupos); `-qa.tasa nueva` y
         // `-qa.tasa grupo`, «Nueva tasa» y «Nuevo grupo». Solo Debug.
@@ -218,12 +233,14 @@ struct TaxesView: View {
 
     private var compactBody: some View {
         VStack(alignment: .leading, spacing: 0) {
-            quarterMenu(compact: true)
+            // Los deducibles llevan su propio periodo (el año): el trimestre del sales tax no les aplica.
+            if tab != .deductions { quarterMenu(compact: true) }
             FilterPicker(title: String(localized: "Sección"), options: Tab.allCases, selection: $tab) { $0.localizedTitle }
                 .padding(.top, 8)
             switch tab {
             case .summary: summaryTab
             case .rates: ratesTab
+            case .deductions: DeductionsView(embedded: true)
             }
         }
         .padding(.horizontal, Metrics.gutter)
@@ -465,6 +482,7 @@ struct TaxesView: View {
             layout {
                 ratesTable(summary, interval: interval).frame(maxWidth: .infinity)
                 VStack(alignment: .leading, spacing: 16) {
+                    deductionsCard
                     defaultsCard
                     paymentsCard
                 }
@@ -666,6 +684,60 @@ struct TaxesView: View {
             }
             .card(padding: 14)
         }
+    }
+
+    /// Deducibles del año en curso (canvas `MacImpuestos` · «Gastos deducibles 2026»): el total, las líneas con más
+    /// importe con su barra, «Ver por línea» y «Exportar para mi contador…».
+    private var deductionsSummary: TaxFormSummary? {
+        guard let form = company.flatMap({ TaxForm.forEntity($0.entityType) }) else { return nil }
+        let range = DeductionsPeriod.yearToDate.range()
+        let key = "\(basis.rawValue)|\(journalLines.count)|\(accounts.map(\.taxFormLineRaw).joined().hashValue)"
+        return deductionsMemo.value(for: key) {
+            try? Bookkeeper(context: context).taxSummary(from: range.from, to: range.to, basis: basis, form: form)
+        }
+    }
+
+    private var deductionsCard: some View {
+        let summary = deductionsSummary
+        let rows = (summary?.rows ?? []).filter { $0.line.kind == .deduction }.sorted { $0.deductibleAmount > $1.deductibleAmount }
+        let top = max(1, rows.first?.deductibleAmount ?? 1)
+        return VStack(alignment: .leading, spacing: 0) {
+            HStack(alignment: .firstTextBaseline) {
+                Text("Gastos deducibles \(Date.now.formatted(.appDateTime.year()))").font(.cardTitle).accessibilityAddTraits(.isHeader)
+                Spacer(minLength: 8)
+                Text((summary?.totalDeductions ?? 0).money).font(.cardTitle).monospacedDigit()
+            }
+            .padding(.bottom, 6)
+            if summary == nil {
+                Text("Sin formulario para este tipo de empresa: exporta el paquete para tu contador.")
+                    .font(.subheadline).foregroundStyle(Palette.ink2).padding(.vertical, 6)
+            }
+            ForEach(rows.prefix(6)) { row in
+                Divider()
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack {
+                        Text(row.line.name(for: .appText)).lineLimit(1)
+                        Spacer(minLength: 8)
+                        Text(row.deductibleAmount.money).fontWeight(.semibold).monospacedDigit()
+                    }
+                    Capsule().fill(Palette.surface2).frame(height: 4)
+                        .overlay(alignment: .leading) {
+                            GeometryReader { proxy in
+                                Capsule().fill(Palette.brand).frame(width: proxy.size.width * CGFloat(max(0, row.deductibleAmount)) / CGFloat(top))
+                            }
+                        }
+                        .accessibilityHidden(true)
+                }
+                .padding(.vertical, 6)
+                .accessibilityElement(children: .combine)
+            }
+            HStack(spacing: 8) {
+                Button("Ver por línea") { showingDeductions = true }.buttonStyle(.secondary).disabled(summary == nil)
+                Button("Exportar para mi contador…") { exportingPackage = true }.buttonStyle(.secondary)
+            }
+            .padding(.top, 10)
+        }
+        .card(padding: 14)
     }
 
     private var paymentsCard: some View {

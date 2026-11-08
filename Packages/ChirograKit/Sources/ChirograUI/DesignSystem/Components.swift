@@ -1386,6 +1386,8 @@ enum EmptyGuide: CaseIterable {
 /// Palabras de contabilidad que no todo el mundo conoce, con su explicación en una o dos frases llanas (`TermHelp`).
 enum Jargon: CaseIterable {
     case debitCredit, taxable, ownersEquity, combinedRate, bookBalance
+    /// Base caja o devengado de los reportes (fase 2, `Reports/ReportBasis.swift`).
+    case accountingBasis
 
     var term: String {
         switch self {
@@ -1394,6 +1396,7 @@ enum Jargon: CaseIterable {
         case .ownersEquity: String(localized: "Capital del dueño")
         case .combinedRate: String(localized: "Tasa combinada")
         case .bookBalance: String(localized: "Saldo en libros")
+        case .accountingBasis: String(localized: "Base caja o devengado")
         }
     }
 
@@ -1405,6 +1408,7 @@ enum Jargon: CaseIterable {
         case .ownersEquity: "capital"
         case .combinedRate: "combinada"
         case .bookBalance: "saldo"
+        case .accountingBasis: "base"
         }
     }
     #endif
@@ -1421,6 +1425,8 @@ enum Jargon: CaseIterable {
             String(localized: "La suma de las tasas que cobras juntas en una venta: la del estado, la del condado y la de la ciudad.")
         case .bookBalance:
             String(localized: "Lo que hay en la cuenta según lo que has registrado en Chirogra. Puede no ser igual al banco si falta algún movimiento por anotar.")
+        case .accountingBasis:
+            String(localized: "Devengado: la venta cuenta al facturarla y el gasto al recibir la factura, aunque aún no se cobre ni se pague. Caja: solo cuenta lo que ya entró o salió del banco. Muchos negocios pequeños declaran en caja; pregúntale a tu contador cuál usas.")
         }
     }
 }

@@ -103,6 +103,16 @@
         }
       }
     },
+    "%@ (continuación)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ (continued)"
+          }
+        }
+      }
+    },
     "%@ a favor" : {
       "localizations" : {
         "en" : {
@@ -323,6 +333,16 @@
         }
       }
     },
+    "%@ vs. presupuesto %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ vs. budget %@"
+          }
+        }
+      }
+    },
     "%@ y %lld más." : {
       "localizations" : {
         "en" : {
@@ -343,6 +363,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ · %@ payable"
+          }
+        }
+      }
+    },
+    "%@ · %@ · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · %@ · %@"
           }
         }
       }
@@ -703,6 +733,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@, debit %@"
+          }
+        }
+      }
+    },
+    "%@, desfavorable" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@, unfavorable"
+          }
+        }
+      }
+    },
+    "%@, favorable" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@, favorable"
           }
         }
       }
@@ -2213,6 +2263,16 @@
         }
       }
     },
+    "A qué línea de la declaración va la cuenta en Impuestos › Deducibles. Es una ayuda para tu contador." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Which tax return line the account goes to in Taxes › Deductions. It's a help for your accountant."
+          }
+        }
+      }
+    },
     "ACTIVO" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2832,12 +2892,32 @@
         }
       }
     },
+    "Agrupar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Group by"
+          }
+        }
+      }
+    },
     "Ahora no" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Not now"
+          }
+        }
+      }
+    },
+    "Ajuste" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adjustment"
           }
         }
       }
@@ -2888,6 +2968,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "As of %@"
+          }
+        }
+      }
+    },
+    "Al %@ · %@ · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "As of %@ · %@ · %@"
           }
         }
       }
@@ -2949,6 +3039,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Saving it records the journal entry: a debit to the category and a credit to the payment account."
+          }
+        }
+      }
+    },
+    "Al inicio %@ · al final %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beginning %@ · ending %@"
           }
         }
       }
@@ -3296,6 +3396,16 @@
         }
       }
     },
+    "Aproximado, antes de ajustes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Approximate, before adjustments"
+          }
+        }
+      }
+    },
     "Aquí anotas lo que pagas para el negocio: materiales, renta, gasolina, software…" : {
       "localizations" : {
         "en" : {
@@ -3403,6 +3513,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Archive"
+          }
+        }
+      }
+    },
+    "Archivos CSV" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CSV files"
           }
         }
       }
@@ -3866,6 +3986,26 @@
         }
       }
     },
+    "Año fiscal" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fiscal year"
+          }
+        }
+      }
+    },
+    "Año pasado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last year"
+          }
+        }
+      }
+    },
     "Aún no has cerrado ningún periodo." : {
       "localizations" : {
         "en" : {
@@ -4082,6 +4222,46 @@
         }
       }
     },
+    "Base" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Basis"
+          }
+        }
+      }
+    },
+    "Base caja o devengado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cash or accrual basis"
+          }
+        }
+      }
+    },
+    "Base contable" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accounting basis"
+          }
+        }
+      }
+    },
+    "Base: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Basis: %@"
+          }
+        }
+      }
+    },
     "Beneficiario, categoría o monto" : {
       "localizations" : {
         "en" : {
@@ -4238,6 +4418,16 @@
         }
       }
     },
+    "Borrar presupuesto…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete Budget…"
+          }
+        }
+      }
+    },
     "Borrar recurrente" : {
       "localizations" : {
         "en" : {
@@ -4337,6 +4527,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "COST OF SALES"
+          }
+        }
+      }
+    },
+    "CSV (hoja de cálculo)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CSV (spreadsheet)"
+          }
+        }
+      }
+    },
+    "CSV: los mismos reportes y el libro diario" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CSV: the same reports and the journal"
           }
         }
       }
@@ -4452,6 +4662,16 @@
         }
       }
     },
+    "Caja" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cash"
+          }
+        }
+      }
+    },
     "Calle, ciudad y código postal" : {
       "localizations" : {
         "en" : {
@@ -4488,6 +4708,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Switch businesses, add one or open its settings"
+          }
+        }
+      }
+    },
+    "Cambia la línea del formulario" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Changes the form line"
           }
         }
       }
@@ -4538,6 +4768,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Change Image…"
+          }
+        }
+      }
+    },
+    "Cambiar nombre" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rename"
+          }
+        }
+      }
+    },
+    "Cambiar nombre…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rename…"
           }
         }
       }
@@ -4892,6 +5142,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Chirogra for Accountants"
+          }
+        }
+      }
+    },
+    "Chirogra prepara el Schedule C (dueño único y LLC) y el Form 1120-S (S corp). Para sociedades (1065) y C corp (1120), exporta el paquete para tu contador con los reportes y el diario." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chirogra prepares Schedule C (sole proprietor and LLC) and Form 1120-S (S corp). For partnerships (1065) and C corps (1120), export the package for your accountant with the reports and the journal."
           }
         }
       }
@@ -5354,6 +5614,16 @@
         }
       }
     },
+    "Compra o venta de equipo, vehículos y otros activos de largo plazo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Purchase or sale of equipment, vehicles and other long-term assets."
+          }
+        }
+      }
+    },
     "Compras" : {
       "localizations" : {
         "en" : {
@@ -5709,6 +5979,26 @@
         }
       }
     },
+    "Contador" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accountant"
+          }
+        }
+      }
+    },
+    "Contenido" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contents"
+          }
+        }
+      }
+    },
     "Continuar" : {
       "localizations" : {
         "en" : {
@@ -5881,6 +6171,16 @@
         }
       }
     },
+    "Copia los importes del otro presupuesto mes a mes, con el ajuste." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copies the other budget's amounts month by month, with the adjustment."
+          }
+        }
+      }
+    },
     "Copia restaurada" : {
       "localizations" : {
         "en" : {
@@ -5897,6 +6197,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Restored backup from %@"
+          }
+        }
+      }
+    },
+    "Copiar de" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copy from"
+          }
+        }
+      }
+    },
+    "Copiar otro" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copy another"
           }
         }
       }
@@ -6243,6 +6563,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Balanced"
+          }
+        }
+      }
+    },
+    "Cuadra con caja y bancos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Matches cash and bank accounts"
           }
         }
       }
@@ -6719,12 +7049,72 @@
         }
       }
     },
+    "Deducciones" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deductions"
+          }
+        }
+      }
+    },
+    "Deducciones · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deductions · %@"
+          }
+        }
+      }
+    },
     "Deducible" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Deductible"
+          }
+        }
+      }
+    },
+    "Deducible %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deductible %@"
+          }
+        }
+      }
+    },
+    "Deducible al %lld %%" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld%% deductible"
+          }
+        }
+      }
+    },
+    "Deducibles" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deductions"
+          }
+        }
+      }
+    },
+    "Deducibles · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deductions · %@"
           }
         }
       }
@@ -6921,6 +7311,16 @@
         }
       }
     },
+    "Desde lo real" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "From actuals"
+          }
+        }
+      }
+    },
     "Deseleccionar" : {
       "localizations" : {
         "en" : {
@@ -6982,6 +7382,16 @@
         }
       }
     },
+    "Después pones los importes de cada cuenta por mes o por año." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Then enter each account's amounts by month or for the year."
+          }
+        }
+      }
+    },
     "Destino (el cliente)" : {
       "localizations" : {
         "en" : {
@@ -7033,6 +7443,26 @@
         }
       }
     },
+    "Devengado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accrual"
+          }
+        }
+      }
+    },
+    "Devengado: la venta cuenta al facturarla y el gasto al recibir la factura, aunque aún no se cobre ni se pague. Caja: solo cuenta lo que ya entró o salió del banco. Muchos negocios pequeños declaran en caja; pregúntale a tu contador cuál usas." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accrual: a sale counts when you invoice it and an expense when you receive the bill, even if it isn't collected or paid yet. Cash: only what already came in or went out of the bank counts. Many small businesses file on a cash basis; ask your accountant which one you use."
+          }
+        }
+      }
+    },
     "Diario" : {
       "localizations" : {
         "en" : {
@@ -7059,6 +7489,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Difference %@"
+          }
+        }
+      }
+    },
+    "Diferencia = real − presupuesto." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Variance = actual − budget."
+          }
+        }
+      }
+    },
+    "Diferencia = real − presupuesto. En verde lo favorable (vender más o gastar menos de lo previsto) y en rojo lo desfavorable." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Variance = actual − budget. Favorable in green (selling more or spending less than planned) and unfavorable in red."
           }
         }
       }
@@ -7356,6 +7806,46 @@
         }
       }
     },
+    "Editar importes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit Amounts"
+          }
+        }
+      }
+    },
+    "Editar importes…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit Amounts…"
+          }
+        }
+      }
+    },
+    "Editar los 12 meses" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit the 12 months"
+          }
+        }
+      }
+    },
+    "Editar los importes de la cuenta" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit the account's amounts"
+          }
+        }
+      }
+    },
     "Editar recurrente" : {
       "localizations" : {
         "en" : {
@@ -7422,6 +7912,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cash at beginning of period"
+          }
+        }
+      }
+    },
+    "Efectivo al inicio + variación neta = efectivo al final, contando caja, bancos y fondos no depositados." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beginning cash + net change = ending cash, counting cash, bank accounts and undeposited funds."
           }
         }
       }
@@ -8175,6 +8675,16 @@
         }
       }
     },
+    "Elige una cuenta para ver todos sus periodos." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose an account to see all its periods."
+          }
+        }
+      }
+    },
     "Elige una factura" : {
       "localizations" : {
         "en" : {
@@ -8271,6 +8781,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Issue invoice"
+          }
+        }
+      }
+    },
+    "Empezar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start"
           }
         }
       }
@@ -8488,6 +9008,16 @@
         }
       }
     },
+    "En inglés" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In English"
+          }
+        }
+      }
+    },
     "En pago en lote" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -8525,6 +9055,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Payment link changed"
+          }
+        }
+      }
+    },
+    "Entra dinero" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Money comes in"
           }
         }
       }
@@ -8725,6 +9265,16 @@
         }
       }
     },
+    "Es una ayuda para quien prepara tu declaración, no una declaración de impuestos. Revisa las líneas con tu contador antes de presentar nada al IRS." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This is a help for whoever prepares your return, not a tax return. Review the lines with your accountant before filing anything with the IRS."
+          }
+        }
+      }
+    },
     "Esa línea del formulario no existe." : {
       "localizations" : {
         "en" : {
@@ -8841,6 +9391,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "This invoice is already in your books. When you save, Chirogra reverses its entry and records a new one with the changes; it keeps number %@ and the edit shows in its activity."
+          }
+        }
+      }
+    },
+    "Esta línea ya no tiene importes en el periodo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This line no longer has amounts in the period."
           }
         }
       }
@@ -9054,6 +9614,16 @@
         }
       }
     },
+    "Este trimestre" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This quarter"
+          }
+        }
+      }
+    },
     "Estilo" : {
       "localizations" : {
         "en" : {
@@ -9215,6 +9785,66 @@
         }
       }
     },
+    "Excluida" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Excluded"
+          }
+        }
+      }
+    },
+    "Excluida del formulario" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Excluded from the form"
+          }
+        }
+      }
+    },
+    "Excluida · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Excluded · %@"
+          }
+        }
+      }
+    },
+    "Excluidas del formulario" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Excluded from the form"
+          }
+        }
+      }
+    },
+    "Excluidas y comidas al 50 %" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Excluded and 50% meals"
+          }
+        }
+      }
+    },
+    "Excluir del formulario" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exclude from the form"
+          }
+        }
+      }
+    },
     "Exentas %@" : {
       "localizations" : {
         "en" : {
@@ -9271,6 +9901,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Export CSV"
+          }
+        }
+      }
+    },
+    "Exportar para mi contador" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Export for my accountant"
+          }
+        }
+      }
+    },
+    "Exportar para mi contador…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Export for My Accountant…"
           }
         }
       }
@@ -9995,6 +10645,16 @@
         }
       }
     },
+    "Financiamiento" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Financing"
+          }
+        }
+      }
+    },
     "Flujo de efectivo" : {
       "localizations" : {
         "en" : {
@@ -10021,6 +10681,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Date format"
+          }
+        }
+      }
+    },
+    "Formulario" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Form"
           }
         }
       }
@@ -10116,6 +10786,16 @@
         }
       }
     },
+    "Ganancia neta %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Net income %@"
+          }
+        }
+      }
+    },
     "Ganancia neta · %@" : {
       "localizations" : {
         "en" : {
@@ -10206,6 +10886,16 @@
         }
       }
     },
+    "Gasto que no sacó dinero del banco (como la depreciación): se vuelve a sumar." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "An expense that took no money out of the bank (like depreciation): it's added back."
+          }
+        }
+      }
+    },
     "Gasto recurrente" : {
       "localizations" : {
         "en" : {
@@ -10222,6 +10912,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Recurring expense created: %@"
+          }
+        }
+      }
+    },
+    "Gasto usado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spending used"
           }
         }
       }
@@ -10270,6 +10970,36 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Gastos de %1$@ registrados (%2$lld)"
+          }
+        }
+      }
+    },
+    "Gastos deducibles" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deductible expenses"
+          }
+        }
+      }
+    },
+    "Gastos deducibles %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deductible expenses %@"
+          }
+        }
+      }
+    },
+    "Gastos deducibles · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deductible expenses · %@"
           }
         }
       }
@@ -10449,6 +11179,16 @@
         }
       }
     },
+    "Guardado en %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saved to %@"
+          }
+        }
+      }
+    },
     "Guardado ✓" : {
       "localizations" : {
         "en" : {
@@ -10479,6 +11219,16 @@
         }
       }
     },
+    "Guardar ZIP…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save ZIP…"
+          }
+        }
+      }
+    },
     "Guardar borrador" : {
       "localizations" : {
         "en" : {
@@ -10495,6 +11245,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Save changes"
+          }
+        }
+      }
+    },
+    "Guardar carpeta…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save Folder…"
           }
         }
       }
@@ -10856,6 +11616,26 @@
         }
       }
     },
+    "Igual" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Same"
+          }
+        }
+      }
+    },
+    "Igual que el presupuesto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Same as budget"
+          }
+        }
+      }
+    },
     "Igual que en %@" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -11162,6 +11942,16 @@
         }
       }
     },
+    "Ingreso" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Income"
+          }
+        }
+      }
+    },
     "Ingresos" : {
       "localizations" : {
         "en" : {
@@ -11178,6 +11968,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Income this month"
+          }
+        }
+      }
+    },
+    "Ingresos menos deducciones" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Income minus deductions"
           }
         }
       }
@@ -11259,6 +12059,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Inventory"
+          }
+        }
+      }
+    },
+    "Inversión" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Investing"
           }
         }
       }
@@ -11604,6 +12414,16 @@
         }
       }
     },
+    "La ganancia del periodo en la base elegida. Es el punto de partida: después se quita lo que no movió dinero." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The period's net income on the chosen basis. It's the starting point: then what didn't move money is taken out."
+          }
+        }
+      }
+    },
     "La línea %lld no tiene importe." : {
       "localizations" : {
         "en" : {
@@ -11650,6 +12470,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "The line isn't from the same account or doesn't have the same amount."
+          }
+        }
+      }
+    },
+    "La línea sugerida sale del número de la cuenta en la plantilla. Cámbiala si tu contador la lleva a otra; el cambio se guarda en la cuenta y vale para todos los periodos." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The suggested line comes from the account's number in the template. Change it if your accountant puts it on another line; the change is saved on the account and applies to every period."
           }
         }
       }
@@ -11979,6 +12809,16 @@
         }
       }
     },
+    "Listo · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ready · %@"
+          }
+        }
+      }
+    },
     "Llamar" : {
       "localizations" : {
         "en" : {
@@ -12065,6 +12905,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "What it already created stays in your books; it just stops repeating."
+          }
+        }
+      }
+    },
+    "Lo real de" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actuals from"
           }
         }
       }
@@ -12278,6 +13128,16 @@
         }
       }
     },
+    "Los mismos reportes y el libro diario, para abrirlos en una hoja de cálculo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The same reports and the journal, to open in a spreadsheet"
+          }
+        }
+      }
+    },
     "Los precios ya incluyen el sales tax: el total es el subtotal menos el descuento." : {
       "localizations" : {
         "en" : {
@@ -12338,12 +13198,42 @@
         }
       }
     },
+    "Línea %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Line %@"
+          }
+        }
+      }
+    },
+    "Línea %@ · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Line %@ · %@"
+          }
+        }
+      }
+    },
     "Línea de impuestos de %@: %@" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tax line for %@: %@"
+          }
+        }
+      }
+    },
+    "Línea del %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ line"
           }
         }
       }
@@ -12541,6 +13431,16 @@
       }
     },
     "Mes anterior" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last month"
+          }
+        }
+      }
+    },
+    "Mes pasado" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -12804,6 +13704,16 @@
         }
       }
     },
+    "Muestra las cuentas de la línea" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shows the line's accounts"
+          }
+        }
+      }
+    },
     "Muestra sus movimientos" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -12871,6 +13781,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Payment method"
+          }
+        }
+      }
+    },
+    "Método indirecto · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Indirect method · %@"
+          }
+        }
+      }
+    },
+    "Método indirecto: parte de la ganancia neta y quita lo que no movió dinero." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Indirect method: starts from net income and takes out what didn't move money."
           }
         }
       }
@@ -13236,6 +14166,16 @@
         }
       }
     },
+    "No cuadra con caja y bancos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Doesn't match cash and bank accounts"
+          }
+        }
+      }
+    },
     "No cuadra: faltan créditos por %@" : {
       "localizations" : {
         "en" : {
@@ -13262,6 +14202,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "You owe nothing"
+          }
+        }
+      }
+    },
+    "No deducible" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not deductible"
+          }
+        }
+      }
+    },
+    "No es deducible o no va en la declaración del negocio" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not deductible or not part of the business return"
           }
         }
       }
@@ -13914,6 +14874,26 @@
         }
       }
     },
+    "Nuevo presupuesto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New Budget"
+          }
+        }
+      }
+    },
+    "Nuevo presupuesto…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New Budget…"
+          }
+        }
+      }
+    },
     "Nuevo proveedor" : {
       "localizations" : {
         "en" : {
@@ -14068,6 +15048,16 @@
         }
       }
     },
+    "Operación" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Operating"
+          }
+        }
+      }
+    },
     "Origen" : {
       "localizations" : {
         "en" : {
@@ -14114,6 +15104,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Other date"
+          }
+        }
+      }
+    },
+    "Otras cuentas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Other accounts"
+          }
+        }
+      }
+    },
+    "Otras fechas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Other dates"
           }
         }
       }
@@ -14719,6 +15729,16 @@
         }
       }
     },
+    "Paquete para el contador" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accountant package"
+          }
+        }
+      }
+    },
     "Para" : {
       "localizations" : {
         "en" : {
@@ -14827,6 +15847,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Partial · %@ due"
+          }
+        }
+      }
+    },
+    "Parte" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Part"
+          }
+        }
+      }
+    },
+    "Parte de la ganancia neta y quita lo que no movió dinero: lo que te deben, lo que debes, equipo y préstamos." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Starts from net income and takes out what didn't move money: what you're owed, what you owe, equipment and loans."
           }
         }
       }
@@ -15005,6 +16045,16 @@
         }
       }
     },
+    "Periodo anterior" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Previous period"
+          }
+        }
+      }
+    },
     "Periodo cerrado" : {
       "localizations" : {
         "en" : {
@@ -15052,6 +16102,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Selected period"
+          }
+        }
+      }
+    },
+    "Periodo siguiente" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next period"
+          }
+        }
+      }
+    },
+    "Periodo y base" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Period and basis"
           }
         }
       }
@@ -15193,12 +16263,42 @@
         }
       }
     },
+    "Pon cuánto esperas vender y gastar cada mes, y compáralo con lo real. Puedes empezar vacío, copiando otro o con lo real del año pasado." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set how much you expect to sell and spend each month, and compare it with actuals. Start empty, copy another budget or use last year's actuals."
+          }
+        }
+      }
+    },
     "Pon el saldo de tu banco" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Add your bank balance"
+          }
+        }
+      }
+    },
+    "Pon el total del año y repártelo a partes iguales, o escribe cada mes. Los centavos que sobran van a los primeros meses." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter the year's total and spread it evenly, or type each month. Leftover cents go to the first months."
+          }
+        }
+      }
+    },
+    "Pone en cada cuenta de ingresos y gastos lo que se registró ese año fiscal, mes a mes, con el ajuste." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fills each income and expense account with what was recorded that fiscal year, month by month, with the adjustment."
           }
         }
       }
@@ -15336,6 +16436,16 @@
         }
       }
     },
+    "Por mes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "By month"
+          }
+        }
+      }
+    },
     "Por pagar" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -15395,6 +16505,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Due · next 14 days"
+          }
+        }
+      }
+    },
+    "Por periodo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "By period"
           }
         }
       }
@@ -15491,6 +16611,16 @@
         }
       }
     },
+    "Portada, estado de resultados, balance general, balanza, flujo de efectivo y deducibles" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cover, profit and loss, balance sheet, trial balance, cash flow and deductions"
+          }
+        }
+      }
+    },
     "Precio" : {
       "localizations" : {
         "en" : {
@@ -15522,6 +16652,26 @@
         }
       }
     },
+    "Preparado con Chirogra · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prepared with Chirogra · %@"
+          }
+        }
+      }
+    },
+    "Preparar paquete" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prepare Package"
+          }
+        }
+      }
+    },
     "Presupuesto" : {
       "localizations" : {
         "en" : {
@@ -15532,12 +16682,32 @@
         }
       }
     },
+    "Presupuesto %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Budget %@"
+          }
+        }
+      }
+    },
     "Presupuesto borrado: %@" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Budget deleted: %@"
+          }
+        }
+      }
+    },
+    "Presupuesto contra real" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Budget vs. actual"
           }
         }
       }
@@ -15877,6 +17047,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Free trial until %@"
+          }
+        }
+      }
+    },
+    "Préstamos, lo que pones o retiras del negocio y los saldos de apertura." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loans, what you put into or take out of the business, and opening balances."
           }
         }
       }
@@ -16243,6 +17423,16 @@
         }
       }
     },
+    "Qué incluye" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What's included"
+          }
+        }
+      }
+    },
     "Qué quieres recordar de %@" : {
       "localizations" : {
         "en" : {
@@ -16313,12 +17503,42 @@
         }
       }
     },
+    "Real %@ de %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actual %@ of %@"
+          }
+        }
+      }
+    },
+    "Real %@ de %@. %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actual %@ of %@. %@"
+          }
+        }
+      }
+    },
     "Real contra presupuesto" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Budget vs. actual"
+          }
+        }
+      }
+    },
+    "Real · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actual · %@"
           }
         }
       }
@@ -16841,6 +18061,16 @@
         }
       }
     },
+    "Repartir en los 12 meses" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spread Over 12 Months"
+          }
+        }
+      }
+    },
     "Repartir en varias categorías" : {
       "localizations" : {
         "en" : {
@@ -16887,6 +18117,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Reports"
+          }
+        }
+      }
+    },
+    "Reportes.pdf" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reports.pdf"
           }
         }
       }
@@ -17557,6 +18797,16 @@
         }
       }
     },
+    "Saldos al %@ · %lld cuentas con movimiento · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Balances as of %@ · %lld accounts with activity · %@"
+          }
+        }
+      }
+    },
     "Saldos de apertura" : {
       "localizations" : {
         "en" : {
@@ -17583,6 +18833,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "It gets its number and sales tax, and stays open until you get paid."
+          }
+        }
+      }
+    },
+    "Sale dinero" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Money goes out"
           }
         }
       }
@@ -17756,6 +19016,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Its customers, vendors, invoices, expenses, entries, receipts and settings are deleted. This can’t be undone."
+          }
+        }
+      }
+    },
+    "Se borran sus importes. Tus libros no cambian." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Its amounts are deleted. Your books don't change."
           }
         }
       }
@@ -18159,6 +19429,16 @@
         }
       }
     },
+    "Si sube lo que te deben o el inventario, entra menos dinero del que dice la ganancia; si sube lo que debes, sale menos." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "If what you're owed or inventory goes up, less money comes in than income shows; if what you owe goes up, less goes out."
+          }
+        }
+      }
+    },
     "Siguiente cierre" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -18418,6 +19698,26 @@
         }
       }
     },
+    "Sin formulario para %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No form for %@"
+          }
+        }
+      }
+    },
+    "Sin formulario para este tipo de empresa: exporta el paquete para tu contador." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No form for this type of business: export the package for your accountant."
+          }
+        }
+      }
+    },
     "Sin gastos en %@" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -18435,6 +19735,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No expenses this month"
+          }
+        }
+      }
+    },
+    "Sin gastos ni ingresos en el periodo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No expenses or income in the period."
           }
         }
       }
@@ -18481,6 +19791,16 @@
         }
       }
     },
+    "Sin ingresos ni gastos en el periodo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No income or expenses in the period."
+          }
+        }
+      }
+    },
     "Sin leer" : {
       "localizations" : {
         "en" : {
@@ -18507,6 +19827,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Without a logo, the invoice shows your initials in the template color. The image is scaled down to 512 px."
+          }
+        }
+      }
+    },
+    "Sin línea sugerida" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No suggested line"
           }
         }
       }
@@ -18618,6 +19948,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No preference"
+          }
+        }
+      }
+    },
+    "Sin presupuesto ni movimientos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No budget or activity"
+          }
+        }
+      }
+    },
+    "Sin presupuestos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No budgets"
           }
         }
       }
@@ -19018,6 +20368,26 @@
         }
       }
     },
+    "Sugerida" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suggested"
+          }
+        }
+      }
+    },
+    "Sugerida: %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suggested: %@."
+          }
+        }
+      }
+    },
     "Sugerido para %@" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -19035,6 +20405,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Subject to 1099"
+          }
+        }
+      }
+    },
+    "Suma de los meses" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sum of the months"
           }
         }
       }
@@ -19126,6 +20506,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Q%lld collected"
+          }
+        }
+      }
+    },
+    "T%lld · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Q%lld · %@"
           }
         }
       }
@@ -19537,6 +20927,26 @@
         }
       }
     },
+    "Toca una cuenta para llevarla a otra línea o excluirla." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap an account to move it to another line or exclude it."
+          }
+        }
+      }
+    },
+    "Toca una línea para ver sus cuentas y cambiar a qué línea va cada una." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap a line to see its accounts and change which line each one goes to."
+          }
+        }
+      }
+    },
     "Todas" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -19712,6 +21122,16 @@
         }
       }
     },
+    "Total anual" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Annual total"
+          }
+        }
+      }
+    },
     "Total cobrado %@" : {
       "localizations" : {
         "en" : {
@@ -19762,6 +21182,16 @@
         }
       }
     },
+    "Total de ingresos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total income"
+          }
+        }
+      }
+    },
     "Total de la línea" : {
       "localizations" : {
         "en" : {
@@ -19782,6 +21212,16 @@
         }
       }
     },
+    "Total de la sección: el dinero que entró (o salió, si es negativo) por esas actividades." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Section total: the money that came in (or went out, if negative) from those activities."
+          }
+        }
+      }
+    },
     "Total de sección" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -19789,6 +21229,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Section total"
+          }
+        }
+      }
+    },
+    "Total deducible" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total deductible"
           }
         }
       }
@@ -19935,6 +21385,16 @@
         }
       }
     },
+    "Totales por línea del formulario, con sus cuentas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Totals by form line, with their accounts"
+          }
+        }
+      }
+    },
     "Totales: debe %@, haber %@" : {
       "localizations" : {
         "en" : {
@@ -19992,6 +21452,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Quarter"
+          }
+        }
+      }
+    },
+    "Trimestre anterior" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Previous quarter"
           }
         }
       }
@@ -20526,6 +21996,16 @@
         }
       }
     },
+    "Usar la sugerida" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use the suggested line"
+          }
+        }
+      }
+    },
     "Usarla en las facturas nuevas" : {
       "localizations" : {
         "en" : {
@@ -20542,6 +22022,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gross profit"
+          }
+        }
+      }
+    },
+    "Utilidad neta" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Net income"
+          }
+        }
+      }
+    },
+    "Utilidad neta · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Net income · %@"
           }
         }
       }
@@ -20568,12 +22068,42 @@
         }
       }
     },
+    "Vacío" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Empty"
+          }
+        }
+      }
+    },
     "Variación" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Change"
+          }
+        }
+      }
+    },
+    "Variación %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Change %@"
+          }
+        }
+      }
+    },
+    "Variación del efectivo · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Change in cash · %@"
           }
         }
       }
@@ -21197,6 +22727,16 @@
         }
       }
     },
+    "Ver por línea" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View by Line"
+          }
+        }
+      }
+    },
     "Ver proveedor" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -21382,6 +22922,16 @@
         }
       }
     },
+    "Volver a la sugerida" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Back to Suggested"
+          }
+        }
+      }
+    },
     "Vs. anterior" : {
       "localizations" : {
         "en" : {
@@ -21533,6 +23083,26 @@
         }
       }
     },
+    "base caja" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "cash basis"
+          }
+        }
+      }
+    },
+    "base devengado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "accrual basis"
+          }
+        }
+      }
+    },
     "correo@cliente.com" : {
       "localizations" : {
         "en" : {
@@ -21550,6 +23120,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "of %@"
+          }
+        }
+      }
+    },
+    "del presupuesto de gastos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "of the expense budget"
           }
         }
       }
@@ -21862,6 +23442,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Void the invoice?"
+          }
+        }
+      }
+    },
+    "¿Borrar el presupuesto?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete the budget?"
           }
         }
       }
