@@ -87,7 +87,7 @@ struct Sidebar: View {
     @Binding var selection: SidebarItem
     @Binding var query: String
     @Query private var companies: [Company]
-    @AppStorage("iCloudSyncEnabled") private var iCloudSyncEnabled = false
+    @AppStorage(ChirograStore.syncEnabledKey) private var iCloudSyncEnabled = true
     @State private var sync = SyncMonitor.shared
     @ScaledMetric(relativeTo: .body) private var iconWidth: CGFloat = Self.iconSide
 

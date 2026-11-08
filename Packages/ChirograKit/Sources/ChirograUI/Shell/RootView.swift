@@ -555,7 +555,7 @@ struct MoreView: View {
     @Query private var journalLines: [JournalLine]
     @Query private var entries: [JournalEntry]
     @Query private var rates: [TaxRate]
-    @AppStorage("iCloudSyncEnabled") private var iCloudSyncEnabled = false
+    @AppStorage(ChirograStore.syncEnabledKey) private var iCloudSyncEnabled = true
     @AppStorage("appLockEnabled") private var appLockEnabled = false
     /// «Abrir Impuestos» de la pista de arriba.
     @State private var showingTaxes = false

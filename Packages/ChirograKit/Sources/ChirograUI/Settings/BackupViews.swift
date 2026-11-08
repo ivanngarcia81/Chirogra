@@ -64,7 +64,7 @@ enum SafetyCopies {
 struct BackupSection: View {
     @Environment(\.modelContext) private var context
     @Query private var companies: [Company]
-    @AppStorage("iCloudSyncEnabled") private var iCloudSyncEnabled = false
+    @AppStorage(ChirograStore.syncEnabledKey) private var iCloudSyncEnabled = true
     @AppStorage("lastBackupAt") private var lastBackupAt: Double = 0
     @State private var document: BackupDocument?
     @State private var importing = false

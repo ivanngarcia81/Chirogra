@@ -6,6 +6,27 @@ public enum ChirograStore {
     /// Esquema actual. Los almacenes con un esquema anterior se migran con `ChirograMigrationPlan` al abrirlos.
     public static var schema: Schema { Schema(versionedSchema: SchemaV2.self) }
 
+    /// Clave de `UserDefaults` del interruptor «Sincronizar con iCloud» (por aparato; la leen la app y Ajustes).
+    public static let syncEnabledKey = "iCloudSyncEnabled"
+
+    /// Archivo del almacén de siempre (`Application Support/Chirogra.store`).
+    public static var defaultStoreURL: URL { ModelConfiguration("Chirogra", schema: schema).url }
+
+    /// Fija el valor inicial del interruptor de iCloud la primera vez, antes de abrir el almacén:
+    /// - aparato nuevo (sin almacén local): **encendido**, así un segundo aparato espera los libros del primero
+    ///   (`SyncLoadingView`) en vez de pedir el alta y mezclar dos libros al encender iCloud después;
+    /// - aparato con libros locales de antes que nunca tocó el interruptor: **apagado**, como estaba (encenderlo
+    ///   subiría esos libros y los mezclaría con los de iCloud).
+    /// Si el interruptor ya tiene valor (también uno pasado como argumento de arranque), no lo toca.
+    /// - Returns: si la sincronización queda encendida.
+    @discardableResult
+    public static func resolveSyncPreference(defaults: UserDefaults = .standard, storeURL: URL = defaultStoreURL) -> Bool {
+        if defaults.object(forKey: syncEnabledKey) == nil {
+            defaults.set(!FileManager.default.fileExists(atPath: storeURL.path(percentEncoded: false)), forKey: syncEnabledKey)
+        }
+        return defaults.bool(forKey: syncEnabledKey)
+    }
+
     /// - Parameters:
     ///   - inMemory: para pruebas y vistas previas.
     ///   - cloudKitContainer: identificador `iCloud.…` para sincronizar con la base privada del usuario;

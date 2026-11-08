@@ -183,7 +183,7 @@ private struct SampleBooksConfirmation: ViewModifier {
     let onDiscard: () -> Void
     @Environment(\.modelContext) private var context
     @State private var sampleBooks = SampleBooks.shared
-    @AppStorage("iCloudSyncEnabled") private var iCloudSyncEnabled = false
+    @AppStorage(ChirograStore.syncEnabledKey) private var iCloudSyncEnabled = true
     @AppStorage(SampleBooks.bannerHiddenKey) private var bannerHidden = false
     @Query private var companies: [Company]
     @Query(filter: SampleData.sampleCreationsPredicate) private var sampleCreations: [AuditEvent]

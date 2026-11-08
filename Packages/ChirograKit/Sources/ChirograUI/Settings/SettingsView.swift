@@ -355,7 +355,7 @@ struct FormatsView: View {
 struct DataAndSecurityView: View {
     /// Dentro de `SettingsWideView`: el título de la ventana sigue siendo «Ajustes».
     var embedded = false
-    @AppStorage("iCloudSyncEnabled") private var iCloudSyncEnabled = false
+    @AppStorage(ChirograStore.syncEnabledKey) private var iCloudSyncEnabled = true
     @AppStorage("appLockEnabled") private var appLockEnabled = false
     @State private var lockUnavailable = false
 

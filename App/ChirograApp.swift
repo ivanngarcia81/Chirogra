@@ -9,6 +9,9 @@ struct ChirograApp: App {
     static let cloudKitContainer = "iCloud.com.chirogra.app"
 
     let container: ModelContainer
+    #if os(macOS)
+    @NSApplicationDelegateAdaptor(ChirograAppDelegate.self) private var appDelegate
+    #endif
 
     init() {
         #if DEBUG
@@ -29,7 +32,8 @@ struct ChirograApp: App {
         #endif
         // Pistas de una sola vez (TipKit; en Debug, `-qa.pistas reset|todas|ocultas`).
         ChirograTips.configure()
-        let wantsSync = UserDefaults.standard.bool(forKey: "iCloudSyncEnabled")
+        // iCloud encendido en los aparatos nuevos; los que ya tenían libros locales siguen como estaban.
+        let wantsSync = ChirograStore.resolveSyncPreference()
         do {
             container = try ChirograStore.makeContainer(cloudKitContainer: wantsSync ? Self.cloudKitContainer : nil)
         } catch {
@@ -62,3 +66,17 @@ struct ChirograApp: App {
         #endif
     }
 }
+
+#if os(macOS)
+import AppKit
+
+/// En el Mac, iCloud avisa de los cambios de otros aparatos con un aviso push silencioso, y la app tiene que registrarse
+/// para recibirlo: sin esto, lo que se guarda en el iPhone o el iPad solo llega al volver a abrir la app del Mac.
+final class ChirograAppDelegate: NSObject, NSApplicationDelegate {
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        if UserDefaults.standard.bool(forKey: ChirograStore.syncEnabledKey) {
+            NSApplication.shared.registerForRemoteNotifications()
+        }
+    }
+}
+#endif
