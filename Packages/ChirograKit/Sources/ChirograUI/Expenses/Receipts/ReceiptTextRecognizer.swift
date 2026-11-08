@@ -48,7 +48,14 @@ nonisolated enum ReceiptTextRecognizer {
         request.recognitionLevel = .accurate
         request.usesLanguageCorrection = true
         request.recognitionLanguages = [Locale.Language(identifier: "en-US"), Locale.Language(identifier: "es-ES")]
-        let observations = try await request.perform(on: image, orientation: orientation)
+        let observations: [RecognizedTextObservation]
+        do {
+            observations = try await request.perform(on: image, orientation: orientation)
+        } catch {
+            // Si el sistema no pudo preparar el modelo preciso (p. ej. el Neural Engine ocupado), el rápido.
+            request.recognitionLevel = .fast
+            observations = try await request.perform(on: image, orientation: orientation)
+        }
         return rows(from: observations.compactMap { observation in
             observation.topCandidates(1).first.map { (text: $0.string, box: observation.boundingBox.cgRect) }
         })
