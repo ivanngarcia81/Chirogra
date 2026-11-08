@@ -236,6 +236,8 @@ extension EntrySource {
         case .customerRefund: String(localized: "Reembolso a cliente")
         case .reversal: String(localized: "Reversión")
         case .opening: String(localized: "Saldos iniciales")
+        case .bankDeposit: String(localized: "Depósito")
+        case .transfer: String(localized: "Transferencia")
         }
     }
 }

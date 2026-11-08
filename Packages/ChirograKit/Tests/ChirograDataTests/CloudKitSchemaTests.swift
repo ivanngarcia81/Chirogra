@@ -7,8 +7,8 @@ import Testing
 struct CloudKitSchemaTests {
     @Test("El modelo de Core Data del esquema actual cumple las reglas de CloudKit")
     func modelFollowsCloudKitRules() throws {
-        let model = try #require(NSManagedObjectModel.makeManagedObjectModel(for: SchemaV3.models))
-        #expect(model.entities.count == SchemaV3.models.count)
+        let model = try #require(NSManagedObjectModel.makeManagedObjectModel(for: SchemaV4.models))
+        #expect(model.entities.count == SchemaV4.models.count)
         for entity in model.entities {
             for relationship in entity.relationshipsByName.values {
                 #expect(relationship.inverseRelationship != nil, "\(entity.name ?? "").\(relationship.name) sin inversa")
@@ -29,7 +29,7 @@ struct CloudKitSchemaTests {
     @Test("Ninguna propiedad usa un nombre que Core Data reserva en CloudKit")
     func noReservedFieldNames() throws {
         let reserved: Set<String> = ["entityName", "moveReceipt", "recordName", "recordID", "recordType"]
-        let model = try #require(NSManagedObjectModel.makeManagedObjectModel(for: SchemaV3.models))
+        let model = try #require(NSManagedObjectModel.makeManagedObjectModel(for: SchemaV4.models))
         for entity in model.entities {
             for name in entity.propertiesByName.keys {
                 #expect(!reserved.contains(name), "\(entity.name ?? "").\(name) choca con un campo reservado de CloudKit")
@@ -41,7 +41,7 @@ struct CloudKitSchemaTests {
     /// used with CloudKit»): `subjectEntity` es una propiedad nueva y el valor lo copia la migración a medida.
     @Test("El historial guarda la entidad en subjectEntity, sin renombrar ninguna propiedad")
     func auditEventSubject() throws {
-        let model = try #require(NSManagedObjectModel.makeManagedObjectModel(for: SchemaV3.models))
+        let model = try #require(NSManagedObjectModel.makeManagedObjectModel(for: SchemaV4.models))
         let audit = try #require(model.entitiesByName["AuditEvent"])
         #expect(audit.attributesByName["subjectEntity"] != nil)
         #expect(audit.attributesByName["entityName"] == nil)

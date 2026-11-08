@@ -58,14 +58,14 @@ public enum SampleData {
         // Sales tax de Austin, TX: 6.25 % estatal + 1 % ciudad + 1 % transporte.
         let taxPayable = try books.systemAccount(.salesTaxPayable)
         let comptroller = TaxAgency(name: "Texas Comptroller", filingFrequency: .quarterly, liabilityAccountID: taxPayable.id)
-        context.insert(comptroller)
+        books.insert(comptroller)
         let rates = [("Texas", 62_500), ("Austin", 10_000), ("Austin MTA", 10_000)].map { name, rate in
             let taxRate = TaxRate(name: name, rateMillionths: Int64(rate), agency: comptroller)
-            context.insert(taxRate)
+            books.insert(taxRate)
             return taxRate
         }
         let austin = TaxGroup(name: "Austin, TX", rates: rates)
-        context.insert(austin)
+        books.insert(austin)
 
         if let company = try books.company() {
             company.defaultTaxGroupID = austin.id
@@ -82,7 +82,7 @@ public enum SampleData {
                          ("Clínica Del Valle", "admin@clinicadelvalle.com")].map { name, email in
             let customer = Customer(name: name, email: email, paymentTermsDays: 15)
             customer.defaultTaxGroupID = austin.id
-            context.insert(customer)
+            books.insert(customer)
             return customer
         }
         let mirador = customers[1]
@@ -91,18 +91,18 @@ public enum SampleData {
         mirador.notes = "Pagan los viernes. Enviar facturas a Laura con copia a contabilidad."
         customers[0].contactName = "Sofía Ríos"
         customers[0].contactTitle = "Dueña"
-        context.insert(CustomerNote(customer: mirador, date: day(-11), text: "Interesados en remodelar el lobby en enero.", author: "Ana R."))
-        context.insert(CustomerNote(customer: mirador, date: day(-60), text: "Piden factura con orden de compra a partir de octubre.", author: "Ana R."))
+        books.insert(CustomerNote(customer: mirador, date: day(-11), text: "Interesados en remodelar el lobby en enero.", author: "Ana R."))
+        books.insert(CustomerNote(customer: mirador, date: day(-60), text: "Piden factura con orden de compra a partir de octubre.", author: "Ana R."))
 
         func invoice(_ customer: Customer, issued: Int, lines: [(String, Decimal, Int64, Account, Bool)]) throws -> Invoice {
             let invoice = Invoice(customer: customer, issueDate: day(issued))
             invoice.taxGroupID = customer.defaultTaxGroupID
-            context.insert(invoice)
+            books.insert(invoice)
             for (index, line) in lines.enumerated() {
                 let model = InvoiceLine(details: line.0, quantity: line.1, unitPrice: line.2, isTaxable: line.4,
                                         incomeAccountID: line.3.id, order: index)
                 model.invoice = invoice
-                context.insert(model)
+                books.insert(model)
             }
             try books.issue(invoice)
             try books.recordInvoiceSent(invoice, to: customer.email, subject: "Factura \(invoice.number) · Ríos Diseño & Obra", date: day(issued))
@@ -124,12 +124,12 @@ public enum SampleData {
         lumber.defaultExpenseAccountID = try account("5000").id
         lumber.preferredPaymentMethod = .bankTransfer
         lumber.preferredPaymentAccountID = checking.id
-        context.insert(lumber)
+        books.insert(lumber)
         let bill = Bill(vendor: lumber, vendorNumber: "B-221", billDate: day(-12), dueDate: day(9))
-        context.insert(bill)
+        books.insert(bill)
         let billLine = BillLine(details: "Triplay y herrajes", amount: 84_230, accountID: try account("5000").id)
         billLine.bill = bill
-        context.insert(billLine)
+        books.insert(billLine)
         try books.record(bill)
         try books.schedulePayment(for: bill, on: day(7), from: checking, method: .bankTransfer)
 
@@ -140,11 +140,11 @@ public enum SampleData {
         contractor.w9ReceivedDate = day(-90)
         contractor.preferredPaymentMethod = .bankTransfer
         contractor.preferredPaymentAccountID = checking.id
-        context.insert(contractor)
+        books.insert(contractor)
 
         let adobe = Vendor(name: "Adobe", email: "")
         adobe.defaultExpenseAccountID = try account("6750").id
-        context.insert(adobe)
+        books.insert(adobe)
         // Suscripción mensual con cargo automático a la tarjeta: la primera repetición se genera aquí mismo.
         try books.saveRecurringTemplate(RecurringTemplateInput(
             name: "Adobe Creative Cloud", kind: .expense, vendor: adobe, payee: "Adobe Creative Cloud",
@@ -161,10 +161,10 @@ public enum SampleData {
         ]
         for (payee, offset, amount, code, paymentAccount) in expenses {
             let expense = Expense(date: day(offset), payee: payee, paymentAccountID: paymentAccount.id)
-            context.insert(expense)
+            books.insert(expense)
             let line = ExpenseLine(details: payee, amount: amount, accountID: try account(code).id)
             line.expense = expense
-            context.insert(line)
+            books.insert(line)
             if payee == "Home Depot" {
                 // Materiales para la terraza de Café Aurora: gasto facturable, con el sales tax del ticket.
                 expense.customer = customers[0]

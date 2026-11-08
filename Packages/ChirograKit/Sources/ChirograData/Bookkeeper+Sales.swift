@@ -12,7 +12,7 @@ extension Bookkeeper {
         let text = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { throw BookkeepingError.invalidState(String(localized: "La nota está vacía.")) }
         let note = CustomerNote(customer: customer, date: date, text: text, author: actor)
-        context.insert(note)
+        insert(note)
         try saveOrRollback()
         return note
     }
@@ -57,7 +57,7 @@ extension Bookkeeper {
             throw BookkeepingError.invalidState(String(localized: "Solo se envían facturas emitidas."))
         }
         let event = InvoiceEvent(invoice: invoice, kind: kind, date: date, recipient: recipient, subject: subject, message: message)
-        context.insert(event)
+        insert(event)
         audit("Invoice", invoice.id, kind.rawValue,
               kind == .sent ? String(localized: "Factura \(invoice.number) enviada a \(recipient)") : String(localized: "Recordatorio de \(invoice.number) a \(recipient)"))
         try saveOrRollback()
@@ -125,7 +125,7 @@ extension Bookkeeper {
             store(posting, in: invoice)
             guard accountingChanged else {
                 audit("Invoice", invoice.id, "editText", String(localized: "Factura \(invoice.number) editada (sin cambios contables)"))
-                try context.save()
+                try commit()
                 return nil
             }
             try reverse(original, on: original.date, memo: String(localized: "Reversión por edición: \(original.memo)"), save: false)
@@ -135,7 +135,7 @@ extension Bookkeeper {
             original.replacedByEntryID = replacement.id
             invoice.journalEntryID = replacement.id
             audit("Invoice", invoice.id, "edit", String(localized: "Factura \(invoice.number) editada: \(Money(minorUnits: previousTotal).formatted()) → \(Money(minorUnits: posting.total).formatted()) (asiento \(original.number) revertido, nuevo \(replacement.number))"))
-            try context.save()
+            try commit()
             return replacement
         } catch {
             context.rollback()
@@ -147,16 +147,14 @@ extension Bookkeeper {
     public func edits(of invoice: Invoice) throws -> [AuditEvent] {
         let id: UUID? = invoice.id
         let entity = "Invoice"
-        return try context.fetch(FetchDescriptor<AuditEvent>(predicate: #Predicate { $0.entityID == id && $0.subjectEntity == entity },
-                                                             sortBy: [SortDescriptor(\.date)]))
+        return try fetch(AuditEvent.self, #Predicate { $0.entityID == id && $0.subjectEntity == entity }, sortBy: [SortDescriptor(\.date)])
             .filter { $0.action == "edit" || $0.action == "editText" }
     }
 
     /// Historial de asientos de una factura (emisión, reversiones y vigente), del más antiguo al más nuevo.
     public func entries(ofInvoice invoice: Invoice) throws -> [JournalEntry] {
         let id: UUID? = invoice.id
-        return try context.fetch(FetchDescriptor<JournalEntry>(predicate: #Predicate { $0.sourceDocumentID == id },
-                                                               sortBy: [SortDescriptor(\.number)]))
+        return try fetch(JournalEntry.self, #Predicate { $0.sourceDocumentID == id }, sortBy: [SortDescriptor(\.number)])
     }
 
     /// Lo que el editor puede cambiar de una factura, para saber si hubo cambios.
@@ -201,14 +199,13 @@ public struct DocumentTotals: Sendable, Equatable {
 extension Bookkeeper {
 
     public func estimates() throws -> [Estimate] {
-        try context.fetch(FetchDescriptor<Estimate>(sortBy: [SortDescriptor(\.issueDate, order: .reverse)]))
+        try fetch(Estimate.self, sortBy: [SortDescriptor(\.issueDate, order: .reverse)])
     }
 
     /// Facturas creadas a partir del estimado.
     public func invoices(for estimate: Estimate) throws -> [Invoice] {
         let estimateID: UUID? = estimate.id
-        return try context.fetch(FetchDescriptor<Invoice>(predicate: #Predicate { $0.estimateID == estimateID },
-                                                          sortBy: [SortDescriptor(\.createdAt)]))
+        return try fetch(Invoice.self, #Predicate { $0.estimateID == estimateID }, sortBy: [SortDescriptor(\.createdAt)])
     }
 
     /// Crea o edita un estimado (no hace asiento). El número `E-` se asigna la primera vez. No se edita uno convertido
@@ -220,7 +217,7 @@ extension Bookkeeper {
         }
         let estimate = existing ?? Estimate(customer: input.customer, issueDate: input.issueDate, expirationDate: input.expirationDate)
         if existing == nil {
-            context.insert(estimate)
+            insert(estimate)
             estimate.number = try nextDocumentNumber(.estimate)
             estimate.pricesIncludeTax = try company()?.pricesIncludeTax ?? false
         }
@@ -239,7 +236,7 @@ extension Bookkeeper {
             let model = EstimateLine(details: line.details, quantity: line.quantity, unitPrice: line.unitPrice,
                                      isTaxable: line.isTaxable, incomeAccountID: line.incomeAccountID, order: index)
             model.estimate = estimate
-            context.insert(model)
+            insert(model)
         }
         let totals = try totals(for: estimate)
         estimate.subtotal = totals.subtotal
@@ -333,7 +330,7 @@ extension Bookkeeper {
         guard !chosen.isEmpty else { throw BookkeepingError.invalidState(String(localized: "No queda nada por facturar en lo elegido.")) }
 
         let invoice = Invoice(customer: estimate.customer, issueDate: issueDate)
-        context.insert(invoice)
+        insert(invoice)
         let defaults = try newInvoiceDefaults(for: estimate.customer, issueDate: issueDate, calendar: calendar)
         invoice.dueDate = defaults.dueDate
         invoice.taxGroupID = estimate.taxGroupID
@@ -346,7 +343,7 @@ extension Bookkeeper {
                                     incomeAccountID: line.incomeAccountID, order: index)
             model.itemID = line.itemID
             model.invoice = invoice
-            context.insert(model)
+            insert(model)
             line.invoicedQuantity += quantity
         }
         // Descuento: la parte proporcional a lo facturado; la última factura se lleva lo que quede.

@@ -1,4 +1,4 @@
-// Generado por scripts/gen-backup.py a partir del esquema actual (SchemaV2 + SchemaV3). No editar a mano: cambia el modelo y vuelve a
+// Generado por scripts/gen-backup.py a partir del esquema actual (SchemaV4). No editar a mano: cambia el modelo y vuelve a
 // ejecutar el script (BackupTests comprueba que cubre todas las propiedades del esquema).
 
 import ChirograCore
@@ -38,10 +38,18 @@ extension BackupPayload {
         var invoiceFooter: String?
         var logo: UUID?
         var closingPasswordHash: String?
+        var sortOrder: Int?
+        var isArchived: Bool?
+        var archivedAt: Date?
+        var postalCode: String?
+        var paymentLinkURL: String?
+        var paymentInstructions: String?
+        var showPayNowOnInvoice: Bool?
     }
 
     struct AccountRecord: Codable {
         var id: UUID?
+        var companyID: UUID?
         var code: String?
         var name: String?
         var subtypeRaw: String?
@@ -50,11 +58,13 @@ extension BackupPayload {
         var isArchived: Bool?
         var createdAt: Date?
         var last4: String?
+        var taxFormLineRaw: String?
         var parent: UUID?
     }
 
     struct JournalEntryRecord: Codable {
         var id: UUID?
+        var companyID: UUID?
         var number: Int?
         var date: Date?
         var memo: String?
@@ -70,18 +80,22 @@ extension BackupPayload {
 
     struct JournalLineRecord: Codable {
         var id: UUID?
+        var companyID: UUID?
         var debit: Int64?
         var credit: Int64?
         var memo: String?
         var order: Int?
         var customerID: UUID?
         var vendorID: UUID?
+        var reconciliationID: UUID?
+        var clearedAt: Date?
         var entry: UUID?
         var account: UUID?
     }
 
     struct CustomerRecord: Codable {
         var id: UUID?
+        var companyID: UUID?
         var name: String?
         var companyName: String?
         var email: String?
@@ -98,10 +112,12 @@ extension BackupPayload {
         var contactName: String?
         var contactTitle: String?
         var taxID: String?
+        var postalCode: String?
     }
 
     struct VendorRecord: Codable {
         var id: UUID?
+        var companyID: UUID?
         var name: String?
         var companyName: String?
         var email: String?
@@ -123,6 +139,7 @@ extension BackupPayload {
 
     struct ItemRecord: Codable {
         var id: UUID?
+        var companyID: UUID?
         var name: String?
         var details: String?
         var unitPrice: Int64?
@@ -133,6 +150,7 @@ extension BackupPayload {
 
     struct InvoiceRecord: Codable {
         var id: UUID?
+        var companyID: UUID?
         var number: String?
         var issueDate: Date?
         var dueDate: Date?
@@ -156,6 +174,7 @@ extension BackupPayload {
 
     struct InvoiceLineRecord: Codable {
         var id: UUID?
+        var companyID: UUID?
         var details: String?
         var quantity: String?
         var unitPrice: Int64?
@@ -168,6 +187,7 @@ extension BackupPayload {
 
     struct InvoiceTaxLineRecord: Codable {
         var id: UUID?
+        var companyID: UUID?
         var taxRateID: UUID?
         var name: String?
         var rateMillionths: Int64?
@@ -178,6 +198,7 @@ extension BackupPayload {
 
     struct CreditNoteRecord: Codable {
         var id: UUID?
+        var companyID: UUID?
         var number: String?
         var date: Date?
         var reason: String?
@@ -196,6 +217,7 @@ extension BackupPayload {
 
     struct CreditApplicationRecord: Codable {
         var id: UUID?
+        var companyID: UUID?
         var date: Date?
         var amount: Int64?
         var note: UUID?
@@ -204,6 +226,7 @@ extension BackupPayload {
 
     struct PaymentReceivedRecord: Codable {
         var id: UUID?
+        var companyID: UUID?
         var date: Date?
         var amount: Int64?
         var methodRaw: String?
@@ -215,6 +238,7 @@ extension BackupPayload {
 
     struct PaymentApplicationRecord: Codable {
         var id: UUID?
+        var companyID: UUID?
         var amount: Int64?
         var payment: UUID?
         var invoice: UUID?
@@ -222,6 +246,7 @@ extension BackupPayload {
 
     struct BillRecord: Codable {
         var id: UUID?
+        var companyID: UUID?
         var vendorNumber: String?
         var billDate: Date?
         var dueDate: Date?
@@ -243,6 +268,7 @@ extension BackupPayload {
 
     struct BillLineRecord: Codable {
         var id: UUID?
+        var companyID: UUID?
         var details: String?
         var amount: Int64?
         var accountID: UUID?
@@ -252,6 +278,7 @@ extension BackupPayload {
 
     struct BillPaymentRecord: Codable {
         var id: UUID?
+        var companyID: UUID?
         var date: Date?
         var amount: Int64?
         var methodRaw: String?
@@ -263,6 +290,7 @@ extension BackupPayload {
 
     struct ExpenseRecord: Codable {
         var id: UUID?
+        var companyID: UUID?
         var date: Date?
         var payee: String?
         var methodRaw: String?
@@ -283,6 +311,7 @@ extension BackupPayload {
 
     struct ExpenseLineRecord: Codable {
         var id: UUID?
+        var companyID: UUID?
         var details: String?
         var amount: Int64?
         var accountID: UUID?
@@ -292,6 +321,7 @@ extension BackupPayload {
 
     struct AttachmentRecord: Codable {
         var id: UUID?
+        var companyID: UUID?
         var filename: String?
         var contentType: String?
         var data: Data?
@@ -304,6 +334,7 @@ extension BackupPayload {
 
     struct TaxAgencyRecord: Codable {
         var id: UUID?
+        var companyID: UUID?
         var name: String?
         var filingFrequencyRaw: String?
         var liabilityAccountID: UUID?
@@ -312,6 +343,7 @@ extension BackupPayload {
 
     struct TaxRateRecord: Codable {
         var id: UUID?
+        var companyID: UUID?
         var name: String?
         var rateMillionths: Int64?
         var effectiveFrom: Date?
@@ -323,12 +355,14 @@ extension BackupPayload {
 
     struct TaxGroupRecord: Codable {
         var id: UUID?
+        var companyID: UUID?
         var name: String?
         var isArchived: Bool?
     }
 
     struct NumberSequenceRecord: Codable {
         var id: UUID?
+        var companyID: UUID?
         var kindRaw: String?
         var prefix: String?
         var nextNumber: Int?
@@ -337,6 +371,7 @@ extension BackupPayload {
 
     struct AuditEventRecord: Codable {
         var id: UUID?
+        var companyID: UUID?
         var date: Date?
         var actor: String?
         var entityName: String?
@@ -347,6 +382,7 @@ extension BackupPayload {
 
     struct RecurringTemplateRecord: Codable {
         var id: UUID?
+        var companyID: UUID?
         var name: String?
         var kindRaw: String?
         var payee: String?
@@ -368,6 +404,7 @@ extension BackupPayload {
 
     struct RecurringTemplateLineRecord: Codable {
         var id: UUID?
+        var companyID: UUID?
         var details: String?
         var amount: Int64?
         var accountID: UUID?
@@ -377,6 +414,7 @@ extension BackupPayload {
 
     struct CustomerNoteRecord: Codable {
         var id: UUID?
+        var companyID: UUID?
         var date: Date?
         var text: String?
         var author: String?
@@ -386,6 +424,7 @@ extension BackupPayload {
 
     struct InvoiceEventRecord: Codable {
         var id: UUID?
+        var companyID: UUID?
         var kindRaw: String?
         var date: Date?
         var recipient: String?
@@ -397,6 +436,7 @@ extension BackupPayload {
 
     struct EstimateRecord: Codable {
         var id: UUID?
+        var companyID: UUID?
         var number: String?
         var title: String?
         var issueDate: Date?
@@ -421,6 +461,7 @@ extension BackupPayload {
 
     struct EstimateLineRecord: Codable {
         var id: UUID?
+        var companyID: UUID?
         var details: String?
         var quantity: String?
         var unitPrice: Int64?
@@ -434,6 +475,7 @@ extension BackupPayload {
 
     struct PeriodCloseRecord: Codable {
         var id: UUID?
+        var companyID: UUID?
         var actionRaw: String?
         var lockDate: Date?
         var previousLockDate: Date?
@@ -445,10 +487,95 @@ extension BackupPayload {
 
     struct NoticeStateRecord: Codable {
         var id: UUID?
+        var companyID: UUID?
         var key: String?
         var isRead: Bool?
         var isDismissed: Bool?
         var updatedAt: Date?
+    }
+
+    struct BankTransactionRecord: Codable {
+        var id: UUID?
+        var companyID: UUID?
+        var accountID: UUID?
+        var date: Date?
+        var amount: Int64?
+        var details: String?
+        var payee: String?
+        var memo: String?
+        var checkNumber: String?
+        var externalID: String?
+        var sourceRaw: String?
+        var statusRaw: String?
+        var categoryAccountID: UUID?
+        var vendorID: UUID?
+        var customerID: UUID?
+        var ruleID: UUID?
+        var matchedEntryID: UUID?
+        var matchedLineID: UUID?
+        var createdDocumentID: UUID?
+        var importBatchID: UUID?
+        var importedAt: Date?
+        var reviewedAt: Date?
+    }
+
+    struct BankRuleRecord: Codable {
+        var id: UUID?
+        var companyID: UUID?
+        var name: String?
+        var matchText: String?
+        var amountSignRaw: String?
+        var bankAccountID: UUID?
+        var targetAccountID: UUID?
+        var vendorID: UUID?
+        var payee: String?
+        var autoApply: Bool?
+        var priority: Int?
+        var isActive: Bool?
+        var createdAt: Date?
+    }
+
+    struct BankImportProfileRecord: Codable {
+        var id: UUID?
+        var companyID: UUID?
+        var accountID: UUID?
+        var name: String?
+        var columnsJSON: String?
+        var dateFormat: String?
+        var amountSignRaw: String?
+        var delimiter: String?
+        var hasHeaderRow: Bool?
+        var createdAt: Date?
+        var lastUsedAt: Date?
+    }
+
+    struct ReconciliationRecord: Codable {
+        var id: UUID?
+        var companyID: UUID?
+        var accountID: UUID?
+        var statementDate: Date?
+        var statementEndingBalance: Int64?
+        var beginningBalance: Int64?
+        var statusRaw: String?
+        var closedAt: Date?
+        var createdAt: Date?
+    }
+
+    struct BudgetRecord: Codable {
+        var id: UUID?
+        var companyID: UUID?
+        var name: String?
+        var fiscalYear: Int?
+        var createdAt: Date?
+    }
+
+    struct BudgetLineRecord: Codable {
+        var id: UUID?
+        var companyID: UUID?
+        var accountID: UUID?
+        var month: Int?
+        var amount: Int64?
+        var budget: UUID?
     }
 }
 
@@ -486,6 +613,12 @@ struct BackupPayload: Codable {
     var estimateLine: [EstimateLineRecord]?
     var periodClose: [PeriodCloseRecord]?
     var noticeState: [NoticeStateRecord]?
+    var bankTransaction: [BankTransactionRecord]?
+    var bankRule: [BankRuleRecord]?
+    var bankImportProfile: [BankImportProfileRecord]?
+    var reconciliation: [ReconciliationRecord]?
+    var budget: [BudgetRecord]?
+    var budgetLine: [BudgetLineRecord]?
 }
 
 // MARK: - Propiedades cubiertas (para BackupTests)
@@ -493,50 +626,57 @@ struct BackupPayload: Codable {
 extension BackupArchive {
     /// Por entidad, las propiedades del esquema que la copia guarda o rehace por su inversa.
     static let coveredProperties: [String: Set<String>] = [
-        "Company": ["id", "legalName", "displayName", "ein", "entityTypeRaw", "state", "sectorRaw", "address", "email", "phone", "currencyCode", "fiscalYearStartMonth", "lockDate", "createdAt", "website", "defaultPaymentTermsDays", "defaultTaxGroupID", "pricesIncludeTax", "salesTaxSourcingRaw", "invoiceAccentHex", "invoiceStyleRaw", "invoiceShowLogo", "invoiceShowEIN", "invoiceShowAddress", "invoiceShowPhone", "defaultInvoiceMessage", "invoiceFooter", "logo", "closingPasswordHash"],
-        "Account": ["id", "code", "name", "subtypeRaw", "details", "isSystem", "isArchived", "createdAt", "last4", "parent", "children", "lines"],
-        "JournalEntry": ["id", "number", "date", "memo", "statusRaw", "sourceRaw", "sourceDocumentID", "reversesEntryID", "reversedByEntryID", "createdAt", "replacesEntryID", "replacedByEntryID", "lines"],
-        "JournalLine": ["id", "debit", "credit", "memo", "order", "customerID", "vendorID", "entry", "account"],
-        "Customer": ["id", "name", "companyName", "email", "phone", "billingAddress", "shippingAddress", "paymentTermsDays", "isTaxExempt", "exemptionReason", "defaultTaxGroupID", "notes", "isArchived", "createdAt", "contactName", "contactTitle", "taxID", "invoices", "payments", "creditNotes", "datedNotes", "estimates", "billableExpenses"],
-        "Vendor": ["id", "name", "companyName", "email", "phone", "address", "paymentTermsDays", "defaultExpenseAccountID", "is1099", "tinLast4", "notes", "isArchived", "createdAt", "w9Received", "w9ReceivedDate", "w9Attachment", "preferredPaymentMethodRaw", "preferredPaymentAccountID", "bills", "expenses", "recurringTemplates"],
-        "Item": ["id", "name", "details", "unitPrice", "isTaxable", "incomeAccountID", "isArchived"],
-        "Invoice": ["id", "number", "issueDate", "dueDate", "statusRaw", "memo", "customerMessage", "shippingAddress", "taxGroupID", "journalEntryID", "subtotal", "discount", "taxTotal", "total", "amountPaid", "creditsApplied", "createdAt", "pricesIncludeTax", "estimateID", "customer", "creditNotes", "creditApplications", "lines", "taxLines", "paymentApplications", "events"],
-        "InvoiceLine": ["id", "details", "quantity", "unitPrice", "isTaxable", "incomeAccountID", "itemID", "order", "invoice"],
-        "InvoiceTaxLine": ["id", "taxRateID", "name", "rateMillionths", "taxableBase", "amount", "invoice"],
-        "CreditNote": ["id", "number", "date", "reason", "amount", "isTaxable", "incomeAccountID", "taxTotal", "total", "unappliedAmount", "refundedAmount", "journalEntryID", "createdAt", "customer", "invoice", "applications"],
-        "CreditApplication": ["id", "date", "amount", "note", "invoice"],
-        "PaymentReceived": ["id", "date", "amount", "methodRaw", "reference", "depositAccountID", "journalEntryID", "customer", "applications"],
-        "PaymentApplication": ["id", "amount", "payment", "invoice"],
-        "Bill": ["id", "vendorNumber", "billDate", "dueDate", "statusRaw", "memo", "payableAccountID", "journalEntryID", "total", "amountPaid", "createdAt", "scheduledPaymentDate", "scheduledPaymentAccountID", "scheduledPaymentMethodRaw", "autoPay", "recurringTemplateID", "recurrenceDate", "vendor", "lines", "payments", "attachments"],
-        "BillLine": ["id", "details", "amount", "accountID", "order", "bill"],
-        "BillPayment": ["id", "date", "amount", "methodRaw", "reference", "paymentAccountID", "journalEntryID", "bill"],
-        "Expense": ["id", "date", "payee", "methodRaw", "reference", "memo", "paymentAccountID", "journalEntryID", "total", "createdAt", "salesTaxIncluded", "customer", "recurringTemplateID", "recurrenceDate", "revision", "voidedAt", "vendor", "lines", "attachments"],
-        "ExpenseLine": ["id", "details", "amount", "accountID", "order", "expense"],
-        "Attachment": ["id", "filename", "contentType", "data", "createdAt", "expense", "bill", "w9OfVendor", "logoOfCompany"],
-        "TaxAgency": ["id", "name", "filingFrequencyRaw", "liabilityAccountID", "isArchived", "rates"],
-        "TaxRate": ["id", "name", "rateMillionths", "effectiveFrom", "effectiveTo", "isArchived", "agency", "groups"],
-        "TaxGroup": ["id", "name", "isArchived", "rates"],
-        "NumberSequence": ["id", "kindRaw", "prefix", "nextNumber", "minimumDigits"],
-        "AuditEvent": ["id", "date", "actor", "subjectEntity", "entityID", "action", "summary"],
-        "RecurringTemplate": ["id", "name", "kindRaw", "payee", "memo", "frequencyRaw", "startDate", "nextDate", "endDate", "isActive", "autoCharge", "paymentAccountID", "methodRaw", "billTermsDays", "lastGeneratedDate", "lastRunAt", "createdAt", "vendor", "lines"],
-        "RecurringTemplateLine": ["id", "details", "amount", "accountID", "order", "template"],
-        "CustomerNote": ["id", "date", "text", "author", "createdAt", "customer"],
-        "InvoiceEvent": ["id", "kindRaw", "date", "recipient", "subject", "message", "createdAt", "invoice"],
-        "Estimate": ["id", "number", "title", "issueDate", "expirationDate", "statusRaw", "customerMessage", "memo", "taxGroupID", "discount", "discountInvoiced", "pricesIncludeTax", "subtotal", "taxTotal", "total", "sentDate", "acceptedDate", "acceptedBy", "convertedDate", "createdAt", "customer", "lines"],
-        "EstimateLine": ["id", "details", "quantity", "unitPrice", "isTaxable", "incomeAccountID", "itemID", "order", "invoicedQuantity", "estimate"],
-        "PeriodClose": ["id", "actionRaw", "lockDate", "previousLockDate", "date", "actor", "device", "note"],
-        "NoticeState": ["id", "key", "isRead", "isDismissed", "updatedAt"],
+        "Company": ["id", "legalName", "displayName", "ein", "entityTypeRaw", "state", "sectorRaw", "address", "email", "phone", "currencyCode", "fiscalYearStartMonth", "lockDate", "createdAt", "website", "defaultPaymentTermsDays", "defaultTaxGroupID", "pricesIncludeTax", "salesTaxSourcingRaw", "invoiceAccentHex", "invoiceStyleRaw", "invoiceShowLogo", "invoiceShowEIN", "invoiceShowAddress", "invoiceShowPhone", "defaultInvoiceMessage", "invoiceFooter", "logo", "closingPasswordHash", "sortOrder", "isArchived", "archivedAt", "postalCode", "paymentLinkURL", "paymentInstructions", "showPayNowOnInvoice"],
+        "Account": ["id", "companyID", "code", "name", "subtypeRaw", "details", "isSystem", "isArchived", "createdAt", "last4", "taxFormLineRaw", "parent", "children", "lines"],
+        "JournalEntry": ["id", "companyID", "number", "date", "memo", "statusRaw", "sourceRaw", "sourceDocumentID", "reversesEntryID", "reversedByEntryID", "createdAt", "replacesEntryID", "replacedByEntryID", "lines"],
+        "JournalLine": ["id", "companyID", "debit", "credit", "memo", "order", "customerID", "vendorID", "reconciliationID", "clearedAt", "entry", "account"],
+        "Customer": ["id", "companyID", "name", "companyName", "email", "phone", "billingAddress", "shippingAddress", "paymentTermsDays", "isTaxExempt", "exemptionReason", "defaultTaxGroupID", "notes", "isArchived", "createdAt", "contactName", "contactTitle", "taxID", "postalCode", "invoices", "payments", "creditNotes", "datedNotes", "estimates", "billableExpenses"],
+        "Vendor": ["id", "companyID", "name", "companyName", "email", "phone", "address", "paymentTermsDays", "defaultExpenseAccountID", "is1099", "tinLast4", "notes", "isArchived", "createdAt", "w9Received", "w9ReceivedDate", "w9Attachment", "preferredPaymentMethodRaw", "preferredPaymentAccountID", "bills", "expenses", "recurringTemplates"],
+        "Item": ["id", "companyID", "name", "details", "unitPrice", "isTaxable", "incomeAccountID", "isArchived"],
+        "Invoice": ["id", "companyID", "number", "issueDate", "dueDate", "statusRaw", "memo", "customerMessage", "shippingAddress", "taxGroupID", "journalEntryID", "subtotal", "discount", "taxTotal", "total", "amountPaid", "creditsApplied", "createdAt", "pricesIncludeTax", "estimateID", "customer", "creditNotes", "creditApplications", "lines", "taxLines", "paymentApplications", "events"],
+        "InvoiceLine": ["id", "companyID", "details", "quantity", "unitPrice", "isTaxable", "incomeAccountID", "itemID", "order", "invoice"],
+        "InvoiceTaxLine": ["id", "companyID", "taxRateID", "name", "rateMillionths", "taxableBase", "amount", "invoice"],
+        "CreditNote": ["id", "companyID", "number", "date", "reason", "amount", "isTaxable", "incomeAccountID", "taxTotal", "total", "unappliedAmount", "refundedAmount", "journalEntryID", "createdAt", "customer", "invoice", "applications"],
+        "CreditApplication": ["id", "companyID", "date", "amount", "note", "invoice"],
+        "PaymentReceived": ["id", "companyID", "date", "amount", "methodRaw", "reference", "depositAccountID", "journalEntryID", "customer", "applications"],
+        "PaymentApplication": ["id", "companyID", "amount", "payment", "invoice"],
+        "Bill": ["id", "companyID", "vendorNumber", "billDate", "dueDate", "statusRaw", "memo", "payableAccountID", "journalEntryID", "total", "amountPaid", "createdAt", "scheduledPaymentDate", "scheduledPaymentAccountID", "scheduledPaymentMethodRaw", "autoPay", "recurringTemplateID", "recurrenceDate", "vendor", "lines", "payments", "attachments"],
+        "BillLine": ["id", "companyID", "details", "amount", "accountID", "order", "bill"],
+        "BillPayment": ["id", "companyID", "date", "amount", "methodRaw", "reference", "paymentAccountID", "journalEntryID", "bill"],
+        "Expense": ["id", "companyID", "date", "payee", "methodRaw", "reference", "memo", "paymentAccountID", "journalEntryID", "total", "createdAt", "salesTaxIncluded", "customer", "recurringTemplateID", "recurrenceDate", "revision", "voidedAt", "vendor", "lines", "attachments"],
+        "ExpenseLine": ["id", "companyID", "details", "amount", "accountID", "order", "expense"],
+        "Attachment": ["id", "companyID", "filename", "contentType", "data", "createdAt", "expense", "bill", "w9OfVendor", "logoOfCompany"],
+        "TaxAgency": ["id", "companyID", "name", "filingFrequencyRaw", "liabilityAccountID", "isArchived", "rates"],
+        "TaxRate": ["id", "companyID", "name", "rateMillionths", "effectiveFrom", "effectiveTo", "isArchived", "agency", "groups"],
+        "TaxGroup": ["id", "companyID", "name", "isArchived", "rates"],
+        "NumberSequence": ["id", "companyID", "kindRaw", "prefix", "nextNumber", "minimumDigits"],
+        "AuditEvent": ["id", "companyID", "date", "actor", "subjectEntity", "entityID", "action", "summary"],
+        "RecurringTemplate": ["id", "companyID", "name", "kindRaw", "payee", "memo", "frequencyRaw", "startDate", "nextDate", "endDate", "isActive", "autoCharge", "paymentAccountID", "methodRaw", "billTermsDays", "lastGeneratedDate", "lastRunAt", "createdAt", "vendor", "lines"],
+        "RecurringTemplateLine": ["id", "companyID", "details", "amount", "accountID", "order", "template"],
+        "CustomerNote": ["id", "companyID", "date", "text", "author", "createdAt", "customer"],
+        "InvoiceEvent": ["id", "companyID", "kindRaw", "date", "recipient", "subject", "message", "createdAt", "invoice"],
+        "Estimate": ["id", "companyID", "number", "title", "issueDate", "expirationDate", "statusRaw", "customerMessage", "memo", "taxGroupID", "discount", "discountInvoiced", "pricesIncludeTax", "subtotal", "taxTotal", "total", "sentDate", "acceptedDate", "acceptedBy", "convertedDate", "createdAt", "customer", "lines"],
+        "EstimateLine": ["id", "companyID", "details", "quantity", "unitPrice", "isTaxable", "incomeAccountID", "itemID", "order", "invoicedQuantity", "estimate"],
+        "PeriodClose": ["id", "companyID", "actionRaw", "lockDate", "previousLockDate", "date", "actor", "device", "note"],
+        "NoticeState": ["id", "companyID", "key", "isRead", "isDismissed", "updatedAt"],
+        "BankTransaction": ["id", "companyID", "accountID", "date", "amount", "details", "payee", "memo", "checkNumber", "externalID", "sourceRaw", "statusRaw", "categoryAccountID", "vendorID", "customerID", "ruleID", "matchedEntryID", "matchedLineID", "createdDocumentID", "importBatchID", "importedAt", "reviewedAt"],
+        "BankRule": ["id", "companyID", "name", "matchText", "amountSignRaw", "bankAccountID", "targetAccountID", "vendorID", "payee", "autoApply", "priority", "isActive", "createdAt"],
+        "BankImportProfile": ["id", "companyID", "accountID", "name", "columnsJSON", "dateFormat", "amountSignRaw", "delimiter", "hasHeaderRow", "createdAt", "lastUsedAt"],
+        "Reconciliation": ["id", "companyID", "accountID", "statementDate", "statementEndingBalance", "beginningBalance", "statusRaw", "closedAt", "createdAt"],
+        "Budget": ["id", "companyID", "name", "fiscalYear", "createdAt", "lines"],
+        "BudgetLine": ["id", "companyID", "accountID", "month", "amount", "budget"],
     ]
 
-    static let modelCount = 33
+    static let modelCount = 39
 }
 
 // MARK: - Exportar
 
 extension BackupPayload {
     @MainActor
-    init(context: ModelContext) throws {
-        company = try context.fetch(FetchDescriptor<Company>()).map { model in
+    /// Los registros de la empresa de `scope` (o de todo, sin empresa).
+    init(context: ModelContext, scope: BackupScope) throws {
+        company = try context.fetch(scope.companies()).map { model in
             CompanyRecord(
                 id: model.id,
                 legalName: model.legalName,
@@ -566,12 +706,20 @@ extension BackupPayload {
                 defaultInvoiceMessage: model.defaultInvoiceMessage,
                 invoiceFooter: model.invoiceFooter,
                 logo: model.logo?.id,
-                closingPasswordHash: model.closingPasswordHash
+                closingPasswordHash: model.closingPasswordHash,
+                sortOrder: model.sortOrder,
+                isArchived: model.isArchived,
+                archivedAt: model.archivedAt,
+                postalCode: model.postalCode,
+                paymentLinkURL: model.paymentLinkURL,
+                paymentInstructions: model.paymentInstructions,
+                showPayNowOnInvoice: model.showPayNowOnInvoice
             )
         }.sorted { ($0.id?.uuidString ?? "") < ($1.id?.uuidString ?? "") }
-        account = try context.fetch(FetchDescriptor<Account>()).map { model in
+        account = try context.fetch(scope.descriptor(Account.self)).map { model in
             AccountRecord(
                 id: model.id,
+                companyID: model.companyID,
                 code: model.code,
                 name: model.name,
                 subtypeRaw: model.subtypeRaw,
@@ -580,12 +728,14 @@ extension BackupPayload {
                 isArchived: model.isArchived,
                 createdAt: model.createdAt,
                 last4: model.last4,
+                taxFormLineRaw: model.taxFormLineRaw,
                 parent: model.parent?.id
             )
         }.sorted { ($0.id?.uuidString ?? "") < ($1.id?.uuidString ?? "") }
-        journalEntry = try context.fetch(FetchDescriptor<JournalEntry>()).map { model in
+        journalEntry = try context.fetch(scope.descriptor(JournalEntry.self)).map { model in
             JournalEntryRecord(
                 id: model.id,
+                companyID: model.companyID,
                 number: model.number,
                 date: model.date,
                 memo: model.memo,
@@ -599,22 +749,26 @@ extension BackupPayload {
                 replacedByEntryID: model.replacedByEntryID
             )
         }.sorted { ($0.id?.uuidString ?? "") < ($1.id?.uuidString ?? "") }
-        journalLine = try context.fetch(FetchDescriptor<JournalLine>()).map { model in
+        journalLine = try context.fetch(scope.descriptor(JournalLine.self)).map { model in
             JournalLineRecord(
                 id: model.id,
+                companyID: model.companyID,
                 debit: model.debit,
                 credit: model.credit,
                 memo: model.memo,
                 order: model.order,
                 customerID: model.customerID,
                 vendorID: model.vendorID,
+                reconciliationID: model.reconciliationID,
+                clearedAt: model.clearedAt,
                 entry: model.entry?.id,
                 account: model.account?.id
             )
         }.sorted { ($0.id?.uuidString ?? "") < ($1.id?.uuidString ?? "") }
-        customer = try context.fetch(FetchDescriptor<Customer>()).map { model in
+        customer = try context.fetch(scope.descriptor(Customer.self)).map { model in
             CustomerRecord(
                 id: model.id,
+                companyID: model.companyID,
                 name: model.name,
                 companyName: model.companyName,
                 email: model.email,
@@ -630,12 +784,14 @@ extension BackupPayload {
                 createdAt: model.createdAt,
                 contactName: model.contactName,
                 contactTitle: model.contactTitle,
-                taxID: model.taxID
+                taxID: model.taxID,
+                postalCode: model.postalCode
             )
         }.sorted { ($0.id?.uuidString ?? "") < ($1.id?.uuidString ?? "") }
-        vendor = try context.fetch(FetchDescriptor<Vendor>()).map { model in
+        vendor = try context.fetch(scope.descriptor(Vendor.self)).map { model in
             VendorRecord(
                 id: model.id,
+                companyID: model.companyID,
                 name: model.name,
                 companyName: model.companyName,
                 email: model.email,
@@ -655,9 +811,10 @@ extension BackupPayload {
                 preferredPaymentAccountID: model.preferredPaymentAccountID
             )
         }.sorted { ($0.id?.uuidString ?? "") < ($1.id?.uuidString ?? "") }
-        item = try context.fetch(FetchDescriptor<Item>()).map { model in
+        item = try context.fetch(scope.descriptor(Item.self)).map { model in
             ItemRecord(
                 id: model.id,
+                companyID: model.companyID,
                 name: model.name,
                 details: model.details,
                 unitPrice: model.unitPrice,
@@ -666,9 +823,10 @@ extension BackupPayload {
                 isArchived: model.isArchived
             )
         }.sorted { ($0.id?.uuidString ?? "") < ($1.id?.uuidString ?? "") }
-        invoice = try context.fetch(FetchDescriptor<Invoice>()).map { model in
+        invoice = try context.fetch(scope.descriptor(Invoice.self)).map { model in
             InvoiceRecord(
                 id: model.id,
+                companyID: model.companyID,
                 number: model.number,
                 issueDate: model.issueDate,
                 dueDate: model.dueDate,
@@ -690,9 +848,10 @@ extension BackupPayload {
                 customer: model.customer?.id
             )
         }.sorted { ($0.id?.uuidString ?? "") < ($1.id?.uuidString ?? "") }
-        invoiceLine = try context.fetch(FetchDescriptor<InvoiceLine>()).map { model in
+        invoiceLine = try context.fetch(scope.descriptor(InvoiceLine.self)).map { model in
             InvoiceLineRecord(
                 id: model.id,
+                companyID: model.companyID,
                 details: model.details,
                 quantity: model.quantity.backupString,
                 unitPrice: model.unitPrice,
@@ -703,9 +862,10 @@ extension BackupPayload {
                 invoice: model.invoice?.id
             )
         }.sorted { ($0.id?.uuidString ?? "") < ($1.id?.uuidString ?? "") }
-        invoiceTaxLine = try context.fetch(FetchDescriptor<InvoiceTaxLine>()).map { model in
+        invoiceTaxLine = try context.fetch(scope.descriptor(InvoiceTaxLine.self)).map { model in
             InvoiceTaxLineRecord(
                 id: model.id,
+                companyID: model.companyID,
                 taxRateID: model.taxRateID,
                 name: model.name,
                 rateMillionths: model.rateMillionths,
@@ -714,9 +874,10 @@ extension BackupPayload {
                 invoice: model.invoice?.id
             )
         }.sorted { ($0.id?.uuidString ?? "") < ($1.id?.uuidString ?? "") }
-        creditNote = try context.fetch(FetchDescriptor<CreditNote>()).map { model in
+        creditNote = try context.fetch(scope.descriptor(CreditNote.self)).map { model in
             CreditNoteRecord(
                 id: model.id,
+                companyID: model.companyID,
                 number: model.number,
                 date: model.date,
                 reason: model.reason,
@@ -733,18 +894,20 @@ extension BackupPayload {
                 invoice: model.invoice?.id
             )
         }.sorted { ($0.id?.uuidString ?? "") < ($1.id?.uuidString ?? "") }
-        creditApplication = try context.fetch(FetchDescriptor<CreditApplication>()).map { model in
+        creditApplication = try context.fetch(scope.descriptor(CreditApplication.self)).map { model in
             CreditApplicationRecord(
                 id: model.id,
+                companyID: model.companyID,
                 date: model.date,
                 amount: model.amount,
                 note: model.note?.id,
                 invoice: model.invoice?.id
             )
         }.sorted { ($0.id?.uuidString ?? "") < ($1.id?.uuidString ?? "") }
-        paymentReceived = try context.fetch(FetchDescriptor<PaymentReceived>()).map { model in
+        paymentReceived = try context.fetch(scope.descriptor(PaymentReceived.self)).map { model in
             PaymentReceivedRecord(
                 id: model.id,
+                companyID: model.companyID,
                 date: model.date,
                 amount: model.amount,
                 methodRaw: model.methodRaw,
@@ -754,17 +917,19 @@ extension BackupPayload {
                 customer: model.customer?.id
             )
         }.sorted { ($0.id?.uuidString ?? "") < ($1.id?.uuidString ?? "") }
-        paymentApplication = try context.fetch(FetchDescriptor<PaymentApplication>()).map { model in
+        paymentApplication = try context.fetch(scope.descriptor(PaymentApplication.self)).map { model in
             PaymentApplicationRecord(
                 id: model.id,
+                companyID: model.companyID,
                 amount: model.amount,
                 payment: model.payment?.id,
                 invoice: model.invoice?.id
             )
         }.sorted { ($0.id?.uuidString ?? "") < ($1.id?.uuidString ?? "") }
-        bill = try context.fetch(FetchDescriptor<Bill>()).map { model in
+        bill = try context.fetch(scope.descriptor(Bill.self)).map { model in
             BillRecord(
                 id: model.id,
+                companyID: model.companyID,
                 vendorNumber: model.vendorNumber,
                 billDate: model.billDate,
                 dueDate: model.dueDate,
@@ -784,9 +949,10 @@ extension BackupPayload {
                 vendor: model.vendor?.id
             )
         }.sorted { ($0.id?.uuidString ?? "") < ($1.id?.uuidString ?? "") }
-        billLine = try context.fetch(FetchDescriptor<BillLine>()).map { model in
+        billLine = try context.fetch(scope.descriptor(BillLine.self)).map { model in
             BillLineRecord(
                 id: model.id,
+                companyID: model.companyID,
                 details: model.details,
                 amount: model.amount,
                 accountID: model.accountID,
@@ -794,9 +960,10 @@ extension BackupPayload {
                 bill: model.bill?.id
             )
         }.sorted { ($0.id?.uuidString ?? "") < ($1.id?.uuidString ?? "") }
-        billPayment = try context.fetch(FetchDescriptor<BillPayment>()).map { model in
+        billPayment = try context.fetch(scope.descriptor(BillPayment.self)).map { model in
             BillPaymentRecord(
                 id: model.id,
+                companyID: model.companyID,
                 date: model.date,
                 amount: model.amount,
                 methodRaw: model.methodRaw,
@@ -806,9 +973,10 @@ extension BackupPayload {
                 bill: model.bill?.id
             )
         }.sorted { ($0.id?.uuidString ?? "") < ($1.id?.uuidString ?? "") }
-        expense = try context.fetch(FetchDescriptor<Expense>()).map { model in
+        expense = try context.fetch(scope.descriptor(Expense.self)).map { model in
             ExpenseRecord(
                 id: model.id,
+                companyID: model.companyID,
                 date: model.date,
                 payee: model.payee,
                 methodRaw: model.methodRaw,
@@ -827,9 +995,10 @@ extension BackupPayload {
                 vendor: model.vendor?.id
             )
         }.sorted { ($0.id?.uuidString ?? "") < ($1.id?.uuidString ?? "") }
-        expenseLine = try context.fetch(FetchDescriptor<ExpenseLine>()).map { model in
+        expenseLine = try context.fetch(scope.descriptor(ExpenseLine.self)).map { model in
             ExpenseLineRecord(
                 id: model.id,
+                companyID: model.companyID,
                 details: model.details,
                 amount: model.amount,
                 accountID: model.accountID,
@@ -837,9 +1006,10 @@ extension BackupPayload {
                 expense: model.expense?.id
             )
         }.sorted { ($0.id?.uuidString ?? "") < ($1.id?.uuidString ?? "") }
-        attachment = try context.fetch(FetchDescriptor<Attachment>()).map { model in
+        attachment = try context.fetch(scope.descriptor(Attachment.self)).map { model in
             AttachmentRecord(
                 id: model.id,
+                companyID: model.companyID,
                 filename: model.filename,
                 contentType: model.contentType,
                 data: model.data,
@@ -850,18 +1020,20 @@ extension BackupPayload {
                 logoOfCompany: model.logoOfCompany?.id
             )
         }.sorted { ($0.id?.uuidString ?? "") < ($1.id?.uuidString ?? "") }
-        taxAgency = try context.fetch(FetchDescriptor<TaxAgency>()).map { model in
+        taxAgency = try context.fetch(scope.descriptor(TaxAgency.self)).map { model in
             TaxAgencyRecord(
                 id: model.id,
+                companyID: model.companyID,
                 name: model.name,
                 filingFrequencyRaw: model.filingFrequencyRaw,
                 liabilityAccountID: model.liabilityAccountID,
                 isArchived: model.isArchived
             )
         }.sorted { ($0.id?.uuidString ?? "") < ($1.id?.uuidString ?? "") }
-        taxRate = try context.fetch(FetchDescriptor<TaxRate>()).map { model in
+        taxRate = try context.fetch(scope.descriptor(TaxRate.self)).map { model in
             TaxRateRecord(
                 id: model.id,
+                companyID: model.companyID,
                 name: model.name,
                 rateMillionths: model.rateMillionths,
                 effectiveFrom: model.effectiveFrom,
@@ -871,25 +1043,28 @@ extension BackupPayload {
                 groups: model.groups?.map(\.id).sorted { $0.uuidString < $1.uuidString }
             )
         }.sorted { ($0.id?.uuidString ?? "") < ($1.id?.uuidString ?? "") }
-        taxGroup = try context.fetch(FetchDescriptor<TaxGroup>()).map { model in
+        taxGroup = try context.fetch(scope.descriptor(TaxGroup.self)).map { model in
             TaxGroupRecord(
                 id: model.id,
+                companyID: model.companyID,
                 name: model.name,
                 isArchived: model.isArchived
             )
         }.sorted { ($0.id?.uuidString ?? "") < ($1.id?.uuidString ?? "") }
-        numberSequence = try context.fetch(FetchDescriptor<NumberSequence>()).map { model in
+        numberSequence = try context.fetch(scope.descriptor(NumberSequence.self)).map { model in
             NumberSequenceRecord(
                 id: model.id,
+                companyID: model.companyID,
                 kindRaw: model.kindRaw,
                 prefix: model.prefix,
                 nextNumber: model.nextNumber,
                 minimumDigits: model.minimumDigits
             )
         }.sorted { ($0.id?.uuidString ?? "") < ($1.id?.uuidString ?? "") }
-        auditEvent = try context.fetch(FetchDescriptor<AuditEvent>()).map { model in
+        auditEvent = try context.fetch(scope.descriptor(AuditEvent.self)).map { model in
             AuditEventRecord(
                 id: model.id,
+                companyID: model.companyID,
                 date: model.date,
                 actor: model.actor,
                 entityName: model.subjectEntity,
@@ -898,9 +1073,10 @@ extension BackupPayload {
                 summary: model.summary
             )
         }.sorted { ($0.id?.uuidString ?? "") < ($1.id?.uuidString ?? "") }
-        recurringTemplate = try context.fetch(FetchDescriptor<RecurringTemplate>()).map { model in
+        recurringTemplate = try context.fetch(scope.descriptor(RecurringTemplate.self)).map { model in
             RecurringTemplateRecord(
                 id: model.id,
+                companyID: model.companyID,
                 name: model.name,
                 kindRaw: model.kindRaw,
                 payee: model.payee,
@@ -920,9 +1096,10 @@ extension BackupPayload {
                 vendor: model.vendor?.id
             )
         }.sorted { ($0.id?.uuidString ?? "") < ($1.id?.uuidString ?? "") }
-        recurringTemplateLine = try context.fetch(FetchDescriptor<RecurringTemplateLine>()).map { model in
+        recurringTemplateLine = try context.fetch(scope.descriptor(RecurringTemplateLine.self)).map { model in
             RecurringTemplateLineRecord(
                 id: model.id,
+                companyID: model.companyID,
                 details: model.details,
                 amount: model.amount,
                 accountID: model.accountID,
@@ -930,9 +1107,10 @@ extension BackupPayload {
                 template: model.template?.id
             )
         }.sorted { ($0.id?.uuidString ?? "") < ($1.id?.uuidString ?? "") }
-        customerNote = try context.fetch(FetchDescriptor<CustomerNote>()).map { model in
+        customerNote = try context.fetch(scope.descriptor(CustomerNote.self)).map { model in
             CustomerNoteRecord(
                 id: model.id,
+                companyID: model.companyID,
                 date: model.date,
                 text: model.text,
                 author: model.author,
@@ -940,9 +1118,10 @@ extension BackupPayload {
                 customer: model.customer?.id
             )
         }.sorted { ($0.id?.uuidString ?? "") < ($1.id?.uuidString ?? "") }
-        invoiceEvent = try context.fetch(FetchDescriptor<InvoiceEvent>()).map { model in
+        invoiceEvent = try context.fetch(scope.descriptor(InvoiceEvent.self)).map { model in
             InvoiceEventRecord(
                 id: model.id,
+                companyID: model.companyID,
                 kindRaw: model.kindRaw,
                 date: model.date,
                 recipient: model.recipient,
@@ -952,9 +1131,10 @@ extension BackupPayload {
                 invoice: model.invoice?.id
             )
         }.sorted { ($0.id?.uuidString ?? "") < ($1.id?.uuidString ?? "") }
-        estimate = try context.fetch(FetchDescriptor<Estimate>()).map { model in
+        estimate = try context.fetch(scope.descriptor(Estimate.self)).map { model in
             EstimateRecord(
                 id: model.id,
+                companyID: model.companyID,
                 number: model.number,
                 title: model.title,
                 issueDate: model.issueDate,
@@ -977,9 +1157,10 @@ extension BackupPayload {
                 customer: model.customer?.id
             )
         }.sorted { ($0.id?.uuidString ?? "") < ($1.id?.uuidString ?? "") }
-        estimateLine = try context.fetch(FetchDescriptor<EstimateLine>()).map { model in
+        estimateLine = try context.fetch(scope.descriptor(EstimateLine.self)).map { model in
             EstimateLineRecord(
                 id: model.id,
+                companyID: model.companyID,
                 details: model.details,
                 quantity: model.quantity.backupString,
                 unitPrice: model.unitPrice,
@@ -991,9 +1172,10 @@ extension BackupPayload {
                 estimate: model.estimate?.id
             )
         }.sorted { ($0.id?.uuidString ?? "") < ($1.id?.uuidString ?? "") }
-        periodClose = try context.fetch(FetchDescriptor<PeriodClose>()).map { model in
+        periodClose = try context.fetch(scope.descriptor(PeriodClose.self)).map { model in
             PeriodCloseRecord(
                 id: model.id,
+                companyID: model.companyID,
                 actionRaw: model.actionRaw,
                 lockDate: model.lockDate,
                 previousLockDate: model.previousLockDate,
@@ -1003,13 +1185,104 @@ extension BackupPayload {
                 note: model.note
             )
         }.sorted { ($0.id?.uuidString ?? "") < ($1.id?.uuidString ?? "") }
-        noticeState = try context.fetch(FetchDescriptor<NoticeState>()).map { model in
+        noticeState = try context.fetch(scope.descriptor(NoticeState.self)).map { model in
             NoticeStateRecord(
                 id: model.id,
+                companyID: model.companyID,
                 key: model.key,
                 isRead: model.isRead,
                 isDismissed: model.isDismissed,
                 updatedAt: model.updatedAt
+            )
+        }.sorted { ($0.id?.uuidString ?? "") < ($1.id?.uuidString ?? "") }
+        bankTransaction = try context.fetch(scope.descriptor(BankTransaction.self)).map { model in
+            BankTransactionRecord(
+                id: model.id,
+                companyID: model.companyID,
+                accountID: model.accountID,
+                date: model.date,
+                amount: model.amount,
+                details: model.details,
+                payee: model.payee,
+                memo: model.memo,
+                checkNumber: model.checkNumber,
+                externalID: model.externalID,
+                sourceRaw: model.sourceRaw,
+                statusRaw: model.statusRaw,
+                categoryAccountID: model.categoryAccountID,
+                vendorID: model.vendorID,
+                customerID: model.customerID,
+                ruleID: model.ruleID,
+                matchedEntryID: model.matchedEntryID,
+                matchedLineID: model.matchedLineID,
+                createdDocumentID: model.createdDocumentID,
+                importBatchID: model.importBatchID,
+                importedAt: model.importedAt,
+                reviewedAt: model.reviewedAt
+            )
+        }.sorted { ($0.id?.uuidString ?? "") < ($1.id?.uuidString ?? "") }
+        bankRule = try context.fetch(scope.descriptor(BankRule.self)).map { model in
+            BankRuleRecord(
+                id: model.id,
+                companyID: model.companyID,
+                name: model.name,
+                matchText: model.matchText,
+                amountSignRaw: model.amountSignRaw,
+                bankAccountID: model.bankAccountID,
+                targetAccountID: model.targetAccountID,
+                vendorID: model.vendorID,
+                payee: model.payee,
+                autoApply: model.autoApply,
+                priority: model.priority,
+                isActive: model.isActive,
+                createdAt: model.createdAt
+            )
+        }.sorted { ($0.id?.uuidString ?? "") < ($1.id?.uuidString ?? "") }
+        bankImportProfile = try context.fetch(scope.descriptor(BankImportProfile.self)).map { model in
+            BankImportProfileRecord(
+                id: model.id,
+                companyID: model.companyID,
+                accountID: model.accountID,
+                name: model.name,
+                columnsJSON: model.columnsJSON,
+                dateFormat: model.dateFormat,
+                amountSignRaw: model.amountSignRaw,
+                delimiter: model.delimiter,
+                hasHeaderRow: model.hasHeaderRow,
+                createdAt: model.createdAt,
+                lastUsedAt: model.lastUsedAt
+            )
+        }.sorted { ($0.id?.uuidString ?? "") < ($1.id?.uuidString ?? "") }
+        reconciliation = try context.fetch(scope.descriptor(Reconciliation.self)).map { model in
+            ReconciliationRecord(
+                id: model.id,
+                companyID: model.companyID,
+                accountID: model.accountID,
+                statementDate: model.statementDate,
+                statementEndingBalance: model.statementEndingBalance,
+                beginningBalance: model.beginningBalance,
+                statusRaw: model.statusRaw,
+                closedAt: model.closedAt,
+                createdAt: model.createdAt
+            )
+        }.sorted { ($0.id?.uuidString ?? "") < ($1.id?.uuidString ?? "") }
+        budget = try context.fetch(scope.descriptor(Budget.self)).map { model in
+            BudgetRecord(
+                id: model.id,
+                companyID: model.companyID,
+                name: model.name,
+                fiscalYear: model.fiscalYear,
+                createdAt: model.createdAt
+            )
+        }.sorted { ($0.id?.uuidString ?? "") < ($1.id?.uuidString ?? "") }
+        budgetLine = try context.fetch(scope.descriptor(BudgetLine.self)).map { model in
+            BudgetLineRecord(
+                id: model.id,
+                companyID: model.companyID,
+                accountID: model.accountID,
+                month: model.month,
+                amount: model.amount,
+                budget: model.budget?.id
             )
         }.sorted { ($0.id?.uuidString ?? "") < ($1.id?.uuidString ?? "") }
     }
@@ -1050,6 +1323,12 @@ extension BackupPayload {
             "EstimateLine": estimateLine?.count ?? 0,
             "PeriodClose": periodClose?.count ?? 0,
             "NoticeState": noticeState?.count ?? 0,
+            "BankTransaction": bankTransaction?.count ?? 0,
+            "BankRule": bankRule?.count ?? 0,
+            "BankImportProfile": bankImportProfile?.count ?? 0,
+            "Reconciliation": reconciliation?.count ?? 0,
+            "Budget": budget?.count ?? 0,
+            "BudgetLine": budgetLine?.count ?? 0,
         ]
     }
 }
@@ -1091,6 +1370,12 @@ struct BackupRegistry {
     var estimateLine: [UUID: EstimateLine] = [:]
     var periodClose: [UUID: PeriodClose] = [:]
     var noticeState: [UUID: NoticeState] = [:]
+    var bankTransaction: [UUID: BankTransaction] = [:]
+    var bankRule: [UUID: BankRule] = [:]
+    var bankImportProfile: [UUID: BankImportProfile] = [:]
+    var reconciliation: [UUID: Reconciliation] = [:]
+    var budget: [UUID: Budget] = [:]
+    var budgetLine: [UUID: BudgetLine] = [:]
 
     func require<M>(_ table: [UUID: M], _ id: UUID?, _ field: String) throws -> M {
         guard let id, let model = table[id] else { throw BackupError.brokenReference(field) }
@@ -1140,6 +1425,12 @@ extension BackupPayload {
         EstimateLine.self,
         PeriodClose.self,
         NoticeState.self,
+        BankTransaction.self,
+        BankRule.self,
+        BankImportProfile.self,
+        Reconciliation.self,
+        Budget.self,
+        BudgetLine.self,
     ]
 
     /// Crea los modelos en `context` (primero los que otros piden en su inicializador) y después sus relaciones.
@@ -1176,12 +1467,20 @@ extension BackupPayload {
             model.defaultInvoiceMessage = record.defaultInvoiceMessage ?? ""
             model.invoiceFooter = record.invoiceFooter ?? ""
             model.closingPasswordHash = record.closingPasswordHash ?? ""
+            model.sortOrder = record.sortOrder ?? 0
+            model.isArchived = record.isArchived ?? false
+            model.archivedAt = record.archivedAt
+            model.postalCode = record.postalCode ?? ""
+            model.paymentLinkURL = record.paymentLinkURL ?? ""
+            model.paymentInstructions = record.paymentInstructions ?? ""
+            model.showPayNowOnInvoice = record.showPayNowOnInvoice ?? true
             context.insert(model)
             registry.company[model.id] = model
         }
         for record in account ?? [] {
             let model = Account(code: "", name: "", subtype: .cash)
             model.id = record.id ?? UUID()
+            model.companyID = record.companyID
             model.code = record.code ?? ""
             model.name = record.name ?? ""
             model.subtypeRaw = record.subtypeRaw ?? AccountSubtype.otherAsset.rawValue
@@ -1190,12 +1489,14 @@ extension BackupPayload {
             model.isArchived = record.isArchived ?? false
             model.createdAt = record.createdAt ?? Date()
             model.last4 = record.last4 ?? ""
+            model.taxFormLineRaw = record.taxFormLineRaw ?? ""
             context.insert(model)
             registry.account[model.id] = model
         }
         for record in journalEntry ?? [] {
             let model = JournalEntry(number: 0, date: Date(), memo: "", source: .manual)
             model.id = record.id ?? UUID()
+            model.companyID = record.companyID
             model.number = record.number ?? 0
             model.date = record.date ?? Date()
             model.memo = record.memo ?? ""
@@ -1213,18 +1514,22 @@ extension BackupPayload {
         for record in journalLine ?? [] {
             let model = JournalLine(account: try registry.require(registry.account, record.account, "JournalLine.account"), debit: 0, credit: 0, order: 0)
             model.id = record.id ?? UUID()
+            model.companyID = record.companyID
             model.debit = record.debit ?? 0
             model.credit = record.credit ?? 0
             model.memo = record.memo ?? ""
             model.order = record.order ?? 0
             model.customerID = record.customerID
             model.vendorID = record.vendorID
+            model.reconciliationID = record.reconciliationID
+            model.clearedAt = record.clearedAt
             context.insert(model)
             registry.journalLine[model.id] = model
         }
         for record in customer ?? [] {
             let model = Customer(name: "")
             model.id = record.id ?? UUID()
+            model.companyID = record.companyID
             model.name = record.name ?? ""
             model.companyName = record.companyName ?? ""
             model.email = record.email ?? ""
@@ -1241,12 +1546,14 @@ extension BackupPayload {
             model.contactName = record.contactName ?? ""
             model.contactTitle = record.contactTitle ?? ""
             model.taxID = record.taxID ?? ""
+            model.postalCode = record.postalCode ?? ""
             context.insert(model)
             registry.customer[model.id] = model
         }
         for record in vendor ?? [] {
             let model = Vendor(name: "")
             model.id = record.id ?? UUID()
+            model.companyID = record.companyID
             model.name = record.name ?? ""
             model.companyName = record.companyName ?? ""
             model.email = record.email ?? ""
@@ -1269,6 +1576,7 @@ extension BackupPayload {
         for record in item ?? [] {
             let model = Item(name: "", unitPrice: 0)
             model.id = record.id ?? UUID()
+            model.companyID = record.companyID
             model.name = record.name ?? ""
             model.details = record.details ?? ""
             model.unitPrice = record.unitPrice ?? 0
@@ -1281,6 +1589,7 @@ extension BackupPayload {
         for record in invoice ?? [] {
             let model = Invoice(customer: nil)
             model.id = record.id ?? UUID()
+            model.companyID = record.companyID
             model.number = record.number ?? ""
             model.issueDate = record.issueDate ?? Date()
             model.dueDate = record.dueDate ?? Date()
@@ -1305,6 +1614,7 @@ extension BackupPayload {
         for record in invoiceLine ?? [] {
             let model = InvoiceLine(details: "", unitPrice: 0, incomeAccountID: nil)
             model.id = record.id ?? UUID()
+            model.companyID = record.companyID
             model.details = record.details ?? ""
             model.quantity = record.quantity.flatMap(Decimal.init(backupString:)) ?? 1
             model.unitPrice = record.unitPrice ?? 0
@@ -1318,6 +1628,7 @@ extension BackupPayload {
         for record in invoiceTaxLine ?? [] {
             let model = InvoiceTaxLine(taxRateID: nil, name: "", rateMillionths: 0, taxableBase: 0, amount: 0)
             model.id = record.id ?? UUID()
+            model.companyID = record.companyID
             model.taxRateID = record.taxRateID
             model.name = record.name ?? ""
             model.rateMillionths = record.rateMillionths ?? 0
@@ -1329,6 +1640,7 @@ extension BackupPayload {
         for record in creditNote ?? [] {
             let model = CreditNote(invoice: try registry.require(registry.invoice, record.invoice, "CreditNote.invoice"), date: Date(), amount: 0, isTaxable: false, reason: "")
             model.id = record.id ?? UUID()
+            model.companyID = record.companyID
             model.number = record.number ?? ""
             model.date = record.date ?? Date()
             model.reason = record.reason ?? ""
@@ -1347,6 +1659,7 @@ extension BackupPayload {
         for record in creditApplication ?? [] {
             let model = CreditApplication(note: try registry.require(registry.creditNote, record.note, "CreditApplication.note"), invoice: try registry.require(registry.invoice, record.invoice, "CreditApplication.invoice"), amount: 0, date: Date())
             model.id = record.id ?? UUID()
+            model.companyID = record.companyID
             model.date = record.date ?? Date()
             model.amount = record.amount ?? 0
             context.insert(model)
@@ -1355,6 +1668,7 @@ extension BackupPayload {
         for record in paymentReceived ?? [] {
             let model = PaymentReceived(customer: nil, date: Date(), amount: 0, method: .cash, depositAccountID: nil)
             model.id = record.id ?? UUID()
+            model.companyID = record.companyID
             model.date = record.date ?? Date()
             model.amount = record.amount ?? 0
             model.methodRaw = record.methodRaw ?? PaymentMethod.bankTransfer.rawValue
@@ -1367,6 +1681,7 @@ extension BackupPayload {
         for record in paymentApplication ?? [] {
             let model = PaymentApplication(amount: 0, invoice: try registry.require(registry.invoice, record.invoice, "PaymentApplication.invoice"))
             model.id = record.id ?? UUID()
+            model.companyID = record.companyID
             model.amount = record.amount ?? 0
             context.insert(model)
             registry.paymentApplication[model.id] = model
@@ -1374,6 +1689,7 @@ extension BackupPayload {
         for record in bill ?? [] {
             let model = Bill(vendor: nil, vendorNumber: "")
             model.id = record.id ?? UUID()
+            model.companyID = record.companyID
             model.vendorNumber = record.vendorNumber ?? ""
             model.billDate = record.billDate ?? Date()
             model.dueDate = record.dueDate ?? Date()
@@ -1396,6 +1712,7 @@ extension BackupPayload {
         for record in billLine ?? [] {
             let model = BillLine(details: "", amount: 0, accountID: nil)
             model.id = record.id ?? UUID()
+            model.companyID = record.companyID
             model.details = record.details ?? ""
             model.amount = record.amount ?? 0
             model.accountID = record.accountID
@@ -1406,6 +1723,7 @@ extension BackupPayload {
         for record in billPayment ?? [] {
             let model = BillPayment(bill: try registry.require(registry.bill, record.bill, "BillPayment.bill"), date: Date(), amount: 0, method: .cash, paymentAccountID: nil)
             model.id = record.id ?? UUID()
+            model.companyID = record.companyID
             model.date = record.date ?? Date()
             model.amount = record.amount ?? 0
             model.methodRaw = record.methodRaw ?? PaymentMethod.bankTransfer.rawValue
@@ -1418,6 +1736,7 @@ extension BackupPayload {
         for record in expense ?? [] {
             let model = Expense(payee: "", paymentAccountID: nil)
             model.id = record.id ?? UUID()
+            model.companyID = record.companyID
             model.date = record.date ?? Date()
             model.payee = record.payee ?? ""
             model.methodRaw = record.methodRaw ?? PaymentMethod.card.rawValue
@@ -1438,6 +1757,7 @@ extension BackupPayload {
         for record in expenseLine ?? [] {
             let model = ExpenseLine(details: "", amount: 0, accountID: nil)
             model.id = record.id ?? UUID()
+            model.companyID = record.companyID
             model.details = record.details ?? ""
             model.amount = record.amount ?? 0
             model.accountID = record.accountID
@@ -1448,6 +1768,7 @@ extension BackupPayload {
         for record in attachment ?? [] {
             let model = Attachment(filename: "", contentType: "", data: nil)
             model.id = record.id ?? UUID()
+            model.companyID = record.companyID
             model.filename = record.filename ?? ""
             model.contentType = record.contentType ?? ""
             model.data = record.data
@@ -1458,6 +1779,7 @@ extension BackupPayload {
         for record in taxAgency ?? [] {
             let model = TaxAgency(name: "", liabilityAccountID: nil)
             model.id = record.id ?? UUID()
+            model.companyID = record.companyID
             model.name = record.name ?? ""
             model.filingFrequencyRaw = record.filingFrequencyRaw ?? FilingFrequency.quarterly.rawValue
             model.liabilityAccountID = record.liabilityAccountID
@@ -1468,6 +1790,7 @@ extension BackupPayload {
         for record in taxRate ?? [] {
             let model = TaxRate(name: "", rateMillionths: 0, agency: nil)
             model.id = record.id ?? UUID()
+            model.companyID = record.companyID
             model.name = record.name ?? ""
             model.rateMillionths = record.rateMillionths ?? 0
             model.effectiveFrom = record.effectiveFrom
@@ -1479,6 +1802,7 @@ extension BackupPayload {
         for record in taxGroup ?? [] {
             let model = TaxGroup(name: "", rates: [])
             model.id = record.id ?? UUID()
+            model.companyID = record.companyID
             model.name = record.name ?? ""
             model.isArchived = record.isArchived ?? false
             context.insert(model)
@@ -1487,6 +1811,7 @@ extension BackupPayload {
         for record in numberSequence ?? [] {
             let model = NumberSequence(kind: .journalEntry, prefix: "")
             model.id = record.id ?? UUID()
+            model.companyID = record.companyID
             model.kindRaw = record.kindRaw ?? DocumentKind.invoice.rawValue
             model.prefix = record.prefix ?? ""
             model.nextNumber = record.nextNumber ?? 1
@@ -1497,6 +1822,7 @@ extension BackupPayload {
         for record in auditEvent ?? [] {
             let model = AuditEvent(actor: "", entityName: "", entityID: nil, action: "", summary: "")
             model.id = record.id ?? UUID()
+            model.companyID = record.companyID
             model.date = record.date ?? Date()
             model.actor = record.actor ?? ""
             model.subjectEntity = record.entityName ?? ""
@@ -1509,6 +1835,7 @@ extension BackupPayload {
         for record in recurringTemplate ?? [] {
             let model = RecurringTemplate(name: "", kind: .expense, frequency: .weekly, startDate: Date())
             model.id = record.id ?? UUID()
+            model.companyID = record.companyID
             model.name = record.name ?? ""
             model.kindRaw = record.kindRaw ?? RecurringKind.expense.rawValue
             model.payee = record.payee ?? ""
@@ -1531,6 +1858,7 @@ extension BackupPayload {
         for record in recurringTemplateLine ?? [] {
             let model = RecurringTemplateLine(details: "", amount: 0, accountID: nil)
             model.id = record.id ?? UUID()
+            model.companyID = record.companyID
             model.details = record.details ?? ""
             model.amount = record.amount ?? 0
             model.accountID = record.accountID
@@ -1541,6 +1869,7 @@ extension BackupPayload {
         for record in customerNote ?? [] {
             let model = CustomerNote(customer: nil, date: Date(), text: "")
             model.id = record.id ?? UUID()
+            model.companyID = record.companyID
             model.date = record.date ?? Date()
             model.text = record.text ?? ""
             model.author = record.author ?? ""
@@ -1551,6 +1880,7 @@ extension BackupPayload {
         for record in invoiceEvent ?? [] {
             let model = InvoiceEvent(invoice: nil, kind: .sent, date: Date(), recipient: "", subject: "")
             model.id = record.id ?? UUID()
+            model.companyID = record.companyID
             model.kindRaw = record.kindRaw ?? InvoiceEventKind.sent.rawValue
             model.date = record.date ?? Date()
             model.recipient = record.recipient ?? ""
@@ -1563,6 +1893,7 @@ extension BackupPayload {
         for record in estimate ?? [] {
             let model = Estimate(customer: nil)
             model.id = record.id ?? UUID()
+            model.companyID = record.companyID
             model.number = record.number ?? ""
             model.title = record.title ?? ""
             model.issueDate = record.issueDate ?? Date()
@@ -1588,6 +1919,7 @@ extension BackupPayload {
         for record in estimateLine ?? [] {
             let model = EstimateLine(details: "", unitPrice: 0, incomeAccountID: nil)
             model.id = record.id ?? UUID()
+            model.companyID = record.companyID
             model.details = record.details ?? ""
             model.quantity = record.quantity.flatMap(Decimal.init(backupString:)) ?? 1
             model.unitPrice = record.unitPrice ?? 0
@@ -1602,6 +1934,7 @@ extension BackupPayload {
         for record in periodClose ?? [] {
             let model = PeriodClose(isReopen: false, lockDate: nil, previousLockDate: nil, actor: "", device: "", note: "")
             model.id = record.id ?? UUID()
+            model.companyID = record.companyID
             model.actionRaw = record.actionRaw ?? "close"
             model.lockDate = record.lockDate
             model.previousLockDate = record.previousLockDate
@@ -1615,12 +1948,108 @@ extension BackupPayload {
         for record in noticeState ?? [] {
             let model = NoticeState(key: "")
             model.id = record.id ?? UUID()
+            model.companyID = record.companyID
             model.key = record.key ?? ""
             model.isRead = record.isRead ?? false
             model.isDismissed = record.isDismissed ?? false
             model.updatedAt = record.updatedAt ?? Date()
             context.insert(model)
             registry.noticeState[model.id] = model
+        }
+        for record in bankTransaction ?? [] {
+            let model = BankTransaction(accountID: nil, date: Date(), amount: 0, details: "", externalID: "", source: .csv)
+            model.id = record.id ?? UUID()
+            model.companyID = record.companyID
+            model.accountID = record.accountID
+            model.date = record.date ?? Date()
+            model.amount = record.amount ?? 0
+            model.details = record.details ?? ""
+            model.payee = record.payee ?? ""
+            model.memo = record.memo ?? ""
+            model.checkNumber = record.checkNumber ?? ""
+            model.externalID = record.externalID ?? ""
+            model.sourceRaw = record.sourceRaw ?? BankSourceKind.csv.rawValue
+            model.statusRaw = record.statusRaw ?? BankTransactionStatus.toReview.rawValue
+            model.categoryAccountID = record.categoryAccountID
+            model.vendorID = record.vendorID
+            model.customerID = record.customerID
+            model.ruleID = record.ruleID
+            model.matchedEntryID = record.matchedEntryID
+            model.matchedLineID = record.matchedLineID
+            model.createdDocumentID = record.createdDocumentID
+            model.importBatchID = record.importBatchID
+            model.importedAt = record.importedAt ?? Date()
+            model.reviewedAt = record.reviewedAt
+            context.insert(model)
+            registry.bankTransaction[model.id] = model
+        }
+        for record in bankRule ?? [] {
+            let model = BankRule(name: "", matchText: "", targetAccountID: nil)
+            model.id = record.id ?? UUID()
+            model.companyID = record.companyID
+            model.name = record.name ?? ""
+            model.matchText = record.matchText ?? ""
+            model.amountSignRaw = record.amountSignRaw ?? BankAmountSign.any.rawValue
+            model.bankAccountID = record.bankAccountID
+            model.targetAccountID = record.targetAccountID
+            model.vendorID = record.vendorID
+            model.payee = record.payee ?? ""
+            model.autoApply = record.autoApply ?? false
+            model.priority = record.priority ?? 0
+            model.isActive = record.isActive ?? true
+            model.createdAt = record.createdAt ?? Date()
+            context.insert(model)
+            registry.bankRule[model.id] = model
+        }
+        for record in bankImportProfile ?? [] {
+            let model = BankImportProfile(accountID: nil, name: "")
+            model.id = record.id ?? UUID()
+            model.companyID = record.companyID
+            model.accountID = record.accountID
+            model.name = record.name ?? ""
+            model.columnsJSON = record.columnsJSON ?? ""
+            model.dateFormat = record.dateFormat ?? "MM/dd/yyyy"
+            model.amountSignRaw = record.amountSignRaw ?? CSVAmountSign.signed.rawValue
+            model.delimiter = record.delimiter ?? ","
+            model.hasHeaderRow = record.hasHeaderRow ?? true
+            model.createdAt = record.createdAt ?? Date()
+            model.lastUsedAt = record.lastUsedAt
+            context.insert(model)
+            registry.bankImportProfile[model.id] = model
+        }
+        for record in reconciliation ?? [] {
+            let model = Reconciliation(accountID: nil, statementDate: Date(), statementEndingBalance: 0, beginningBalance: 0)
+            model.id = record.id ?? UUID()
+            model.companyID = record.companyID
+            model.accountID = record.accountID
+            model.statementDate = record.statementDate ?? Date()
+            model.statementEndingBalance = record.statementEndingBalance ?? 0
+            model.beginningBalance = record.beginningBalance ?? 0
+            model.statusRaw = record.statusRaw ?? ReconciliationStatus.inProgress.rawValue
+            model.closedAt = record.closedAt
+            model.createdAt = record.createdAt ?? Date()
+            context.insert(model)
+            registry.reconciliation[model.id] = model
+        }
+        for record in budget ?? [] {
+            let model = Budget(name: "", fiscalYear: 0)
+            model.id = record.id ?? UUID()
+            model.companyID = record.companyID
+            model.name = record.name ?? ""
+            model.fiscalYear = record.fiscalYear ?? 0
+            model.createdAt = record.createdAt ?? Date()
+            context.insert(model)
+            registry.budget[model.id] = model
+        }
+        for record in budgetLine ?? [] {
+            let model = BudgetLine(accountID: nil, month: 0, amount: 0)
+            model.id = record.id ?? UUID()
+            model.companyID = record.companyID
+            model.accountID = record.accountID
+            model.month = record.month ?? 1
+            model.amount = record.amount ?? 0
+            context.insert(model)
+            registry.budgetLine[model.id] = model
         }
         for record in company ?? [] {
             guard let id = record.id, let model = registry.company[id] else { continue }
@@ -1726,6 +2155,10 @@ extension BackupPayload {
         for record in estimateLine ?? [] {
             guard let id = record.id, let model = registry.estimateLine[id] else { continue }
             model.estimate = try registry.optional(registry.estimate, record.estimate, "EstimateLine.estimate")
+        }
+        for record in budgetLine ?? [] {
+            guard let id = record.id, let model = registry.budgetLine[id] else { continue }
+            model.budget = try registry.optional(registry.budget, record.budget, "BudgetLine.budget")
         }
     }
 }

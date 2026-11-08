@@ -2,10 +2,11 @@ import ChirograCore
 import Foundation
 import SwiftData
 
-// Modelos nuevos del esquema 2 (docs/DATOS-V2.md). Mismas reglas que el resto (ver `SchemaV2.swift`):
+// Modelos que añadió el esquema 2 (docs/DATOS-V2.md), en su forma del esquema 4. Mismas reglas que el resto (ver
+// `SchemaV4Models.swift`):
 // valores por defecto en todo, relaciones opcionales con inversa, sin `.unique`, dinero en centavos.
 
-extension SchemaV2 {
+extension SchemaV4 {
 
     /// Plantilla de gasto o factura por pagar que se repite (canvas `MacGastoNuevo`, `MacPorPagar`).
     /// `Bookkeeper.generateRecurring(through:)` crea lo que toque; cada documento generado guarda
@@ -13,6 +14,9 @@ extension SchemaV2 {
     @Model
     public final class RecurringTemplate {
         public var id: UUID = UUID()
+        /// Esquema 4: empresa a la que pertenece (`Company.id`). `nil` = registro huérfano (de antes de la migración o de
+        /// un aparato con una versión anterior): cuenta como de la empresa principal (`Bookkeeper+Companies.swift`).
+        public var companyID: UUID?
         /// Nombre para listas («Renta del taller»).
         public var name: String = ""
         public var kindRaw: String = RecurringKind.expense.rawValue
@@ -97,6 +101,9 @@ extension SchemaV2 {
     @Model
     public final class RecurringTemplateLine {
         public var id: UUID = UUID()
+        /// Esquema 4: empresa a la que pertenece (`Company.id`). `nil` = registro huérfano (de antes de la migración o de
+        /// un aparato con una versión anterior): cuenta como de la empresa principal (`Bookkeeper+Companies.swift`).
+        public var companyID: UUID?
         public var details: String = ""
         public var amount: Int64 = 0
         public var accountID: UUID?
@@ -116,6 +123,9 @@ extension SchemaV2 {
     @Model
     public final class CustomerNote {
         public var id: UUID = UUID()
+        /// Esquema 4: empresa a la que pertenece (`Company.id`). `nil` = registro huérfano (de antes de la migración o de
+        /// un aparato con una versión anterior): cuenta como de la empresa principal (`Bookkeeper+Companies.swift`).
+        public var companyID: UUID?
         public var date: Date = Date()
         public var text: String = ""
         /// Quién la escribió (el `actor` del `Bookkeeper`).
@@ -136,6 +146,9 @@ extension SchemaV2 {
     @Model
     public final class InvoiceEvent {
         public var id: UUID = UUID()
+        /// Esquema 4: empresa a la que pertenece (`Company.id`). `nil` = registro huérfano (de antes de la migración o de
+        /// un aparato con una versión anterior): cuenta como de la empresa principal (`Bookkeeper+Companies.swift`).
+        public var companyID: UUID?
         public var kindRaw: String = InvoiceEventKind.sent.rawValue
         public var date: Date = Date()
         /// Correo o correos de destino, tal como se escribieron en «Para».
@@ -163,6 +176,9 @@ extension SchemaV2 {
     @Model
     public final class Estimate {
         public var id: UUID = UUID()
+        /// Esquema 4: empresa a la que pertenece (`Company.id`). `nil` = registro huérfano (de antes de la migración o de
+        /// un aparato con una versión anterior): cuenta como de la empresa principal (`Bookkeeper+Companies.swift`).
+        public var companyID: UUID?
         /// Número de la serie `E-` (se asigna al guardar por primera vez).
         public var number: String = ""
         /// Concepto corto («Remodelación del lobby»).
@@ -221,6 +237,9 @@ extension SchemaV2 {
     @Model
     public final class EstimateLine {
         public var id: UUID = UUID()
+        /// Esquema 4: empresa a la que pertenece (`Company.id`). `nil` = registro huérfano (de antes de la migración o de
+        /// un aparato con una versión anterior): cuenta como de la empresa principal (`Bookkeeper+Companies.swift`).
+        public var companyID: UUID?
         public var details: String = ""
         public var quantity: Decimal = 1
         public var unitPrice: Int64 = 0
@@ -255,6 +274,9 @@ extension SchemaV2 {
     @Model
     public final class PeriodClose {
         public var id: UUID = UUID()
+        /// Esquema 4: empresa a la que pertenece (`Company.id`). `nil` = registro huérfano (de antes de la migración o de
+        /// un aparato con una versión anterior): cuenta como de la empresa principal (`Bookkeeper+Companies.swift`).
+        public var companyID: UUID?
         /// `close` o `reopen`.
         public var actionRaw: String = "close"
         /// Fecha de cierre que quedó vigente (`nil` = libros abiertos).
@@ -285,6 +307,9 @@ extension SchemaV2 {
     @Model
     public final class NoticeState {
         public var id: UUID = UUID()
+        /// Esquema 4: empresa a la que pertenece (`Company.id`). `nil` = registro huérfano (de antes de la migración o de
+        /// un aparato con una versión anterior): cuenta como de la empresa principal (`Bookkeeper+Companies.swift`).
+        public var companyID: UUID?
         public var key: String = ""
         public var isRead: Bool = false
         public var isDismissed: Bool = false

@@ -15,6 +15,9 @@ import SwiftData
 //
 // Los demás modelos son los de `SchemaV2`, sin cambios: este esquema los reutiliza. Las copias de seguridad siguen
 // guardando el campo con la clave `entityName` (`scripts/gen-backup.py`), así que el formato no cambia.
+//
+// CONGELADO desde el esquema 4 (7-nov-2026): `AuditEvent` solo lleva sus propiedades guardadas; la app usa el de
+// `SchemaV4`. No cambiar nada aquí (`FrozenSchemaTests`).
 
 public enum SchemaV3: VersionedSchema {
     public static let versionIdentifier = Schema.Version(3, 0, 0)
@@ -34,13 +37,7 @@ public enum SchemaV3: VersionedSchema {
         public var action: String = ""
         public var summary: String = ""
 
-        public init(actor: String, entityName: String, entityID: UUID?, action: String, summary: String) {
-            self.actor = actor
-            self.subjectEntity = entityName
-            self.entityID = entityID
-            self.action = action
-            self.summary = summary
-        }
+        public init() {}
     }
 }
 
