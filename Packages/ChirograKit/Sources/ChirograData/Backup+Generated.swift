@@ -1,4 +1,4 @@
-// Generado por scripts/gen-backup.py a partir de SchemaV2. No editar a mano: cambia el modelo y vuelve a
+// Generado por scripts/gen-backup.py a partir del esquema actual (SchemaV2 + SchemaV3). No editar a mano: cambia el modelo y vuelve a
 // ejecutar el script (BackupTests comprueba que cubre todas las propiedades del esquema).
 
 import ChirograCore
@@ -517,7 +517,7 @@ extension BackupArchive {
         "TaxRate": ["id", "name", "rateMillionths", "effectiveFrom", "effectiveTo", "isArchived", "agency", "groups"],
         "TaxGroup": ["id", "name", "isArchived", "rates"],
         "NumberSequence": ["id", "kindRaw", "prefix", "nextNumber", "minimumDigits"],
-        "AuditEvent": ["id", "date", "actor", "entityName", "entityID", "action", "summary"],
+        "AuditEvent": ["id", "date", "actor", "subjectEntity", "entityID", "action", "summary"],
         "RecurringTemplate": ["id", "name", "kindRaw", "payee", "memo", "frequencyRaw", "startDate", "nextDate", "endDate", "isActive", "autoCharge", "paymentAccountID", "methodRaw", "billTermsDays", "lastGeneratedDate", "lastRunAt", "createdAt", "vendor", "lines"],
         "RecurringTemplateLine": ["id", "details", "amount", "accountID", "order", "template"],
         "CustomerNote": ["id", "date", "text", "author", "createdAt", "customer"],
@@ -892,7 +892,7 @@ extension BackupPayload {
                 id: model.id,
                 date: model.date,
                 actor: model.actor,
-                entityName: model.entityName,
+                entityName: model.subjectEntity,
                 entityID: model.entityID,
                 action: model.action,
                 summary: model.summary
@@ -1499,7 +1499,7 @@ extension BackupPayload {
             model.id = record.id ?? UUID()
             model.date = record.date ?? Date()
             model.actor = record.actor ?? ""
-            model.entityName = record.entityName ?? ""
+            model.subjectEntity = record.entityName ?? ""
             model.entityID = record.entityID
             model.action = record.action ?? ""
             model.summary = record.summary ?? ""

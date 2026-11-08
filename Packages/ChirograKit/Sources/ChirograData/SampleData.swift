@@ -192,7 +192,7 @@ public enum SampleData {
     /// Altas de empresa hechas por los datos de ejemplo, para una `@Query` (`isSample(companies:sampleCreations:)`).
     public static var sampleCreationsPredicate: Predicate<AuditEvent> {
         let actor = actor
-        return #Predicate<AuditEvent> { $0.actor == actor && $0.entityName == "Company" && $0.action == "create" }
+        return #Predicate<AuditEvent> { $0.actor == actor && $0.subjectEntity == "Company" && $0.action == "create" }
     }
 
     /// `true` si hay empresa y todas son de ejemplo (con iCloud podrían llegar dos copias de la de ejemplo, una por
@@ -200,7 +200,7 @@ public enum SampleData {
     public static func isSample(companies: [Company], sampleCreations: [AuditEvent]) -> Bool {
         guard !companies.isEmpty else { return false }
         let sampleIDs = Set(sampleCreations.compactMap { event -> UUID? in
-            event.actor == actor && event.entityName == "Company" && event.action == "create" ? event.entityID : nil
+            event.actor == actor && event.subjectEntity == "Company" && event.action == "create" ? event.entityID : nil
         })
         return companies.allSatisfy { sampleIDs.contains($0.id) }
     }

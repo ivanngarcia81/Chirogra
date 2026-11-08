@@ -10,7 +10,7 @@ extension ChirograStore {
     ///
     /// Necesita una versión firmada con la capacidad de iCloud y una sesión de iCloud en el aparato.
     public static func initializeCloudKitSchema(containerIdentifier: String) throws {
-        guard let model = NSManagedObjectModel.makeManagedObjectModel(for: SchemaV2.models) else {
+        guard let model = NSManagedObjectModel.makeManagedObjectModel(for: SchemaV3.models) else {
             throw CocoaError(.featureUnsupported)
         }
         let url = URL.temporaryDirectory.appending(path: "chirogra-esquema-cloudkit.store")

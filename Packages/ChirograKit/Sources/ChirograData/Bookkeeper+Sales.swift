@@ -147,7 +147,7 @@ extension Bookkeeper {
     public func edits(of invoice: Invoice) throws -> [AuditEvent] {
         let id: UUID? = invoice.id
         let entity = "Invoice"
-        return try context.fetch(FetchDescriptor<AuditEvent>(predicate: #Predicate { $0.entityID == id && $0.entityName == entity },
+        return try context.fetch(FetchDescriptor<AuditEvent>(predicate: #Predicate { $0.entityID == id && $0.subjectEntity == entity },
                                                              sortBy: [SortDescriptor(\.date)]))
             .filter { $0.action == "edit" || $0.action == "editText" }
     }

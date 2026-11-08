@@ -4,7 +4,7 @@ import SwiftData
 /// Crea el `ModelContainer` de Chirogra (DISEÑO §6.4 y §6.5).
 public enum ChirograStore {
     /// Esquema actual. Los almacenes con un esquema anterior se migran con `ChirograMigrationPlan` al abrirlos.
-    public static var schema: Schema { Schema(versionedSchema: SchemaV2.self) }
+    public static var schema: Schema { Schema(versionedSchema: SchemaV3.self) }
 
     /// Clave de `UserDefaults` del interruptor «Sincronizar con iCloud» (por aparato; la leen la app y Ajustes).
     public static let syncEnabledKey = "iCloudSyncEnabled"

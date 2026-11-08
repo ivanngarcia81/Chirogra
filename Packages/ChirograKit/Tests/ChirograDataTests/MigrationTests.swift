@@ -254,11 +254,36 @@ struct MigrationTests {
         _ = try books.notices()
     }
 
-    @Test("El plan de migración va de la versión 1 a la 2 y la app usa la 2")
+    @Test("El plan de migración va de la versión 1 a la 3 y la app usa la 3")
     func plan() {
-        #expect(ChirograMigrationPlan.schemas.map { $0.versionIdentifier } == [Schema.Version(1, 0, 0), Schema.Version(2, 0, 0)])
-        #expect(ChirograMigrationPlan.stages.count == 1)
+        #expect(ChirograMigrationPlan.schemas.map { $0.versionIdentifier }
+                == [Schema.Version(1, 0, 0), Schema.Version(2, 0, 0), Schema.Version(3, 0, 0)])
+        #expect(ChirograMigrationPlan.stages.count == 2)
         #expect(SchemaV2.models.count == SchemaV1.models.count + 8)
-        #expect(ChirograStore.schema.entities.count == SchemaV2.models.count)
+        #expect(SchemaV3.models.count == SchemaV2.models.count)
+        #expect(ChirograStore.schema.entities.count == SchemaV3.models.count)
+    }
+
+    /// Esquema 2 → 3: `AuditEvent.entityName` pasa a `subjectEntity` y conserva el valor (lo usan la detección de los
+    /// datos de ejemplo y la actividad de las facturas).
+    @MainActor
+    @Test("Un almacén del esquema 2 se migra al 3 y el historial conserva su entidad")
+    func migratesV2Store() throws {
+        let url = try Self.temporaryStore()
+        defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
+        let companyID = UUID()
+        do {
+            let schema = Schema(versionedSchema: SchemaV2.self)
+            let container = try ModelContainer(for: schema, configurations: ModelConfiguration("Chirogra", schema: schema, url: url, cloudKitDatabase: .none))
+            let context = ModelContext(container)
+            context.insert(SchemaV2.AuditEvent(actor: "Ejemplo", entityName: "Company", entityID: companyID, action: "create", summary: "Alta"))
+            context.insert(SchemaV2.AuditEvent(actor: "Ana", entityName: "Invoice", entityID: UUID(), action: "sent", summary: "F-1001"))
+            try context.save()
+        }
+        let container = try ChirograStore.makeContainer(url: url)
+        let events = try ModelContext(container).fetch(FetchDescriptor<AuditEvent>(sortBy: [SortDescriptor(\.actor)]))
+        #expect(events.map(\.subjectEntity) == ["Invoice", "Company"])
+        #expect(events.last?.entityID == companyID)
+        #expect(events.map(\.action) == ["sent", "create"])
     }
 }

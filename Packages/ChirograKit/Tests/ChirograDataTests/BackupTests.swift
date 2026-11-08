@@ -110,7 +110,7 @@ struct BackupTests {
         #expect(throws: BackupError.damaged) { try BackupArchive.restore(BackupArchive.signature + Data([1, 2, 3]), into: context) }
 
         let json = try (backup.dropFirst(BackupArchive.signature.count) as NSData).decompressed(using: .zlib) as Data
-        let newer = String(decoding: json, as: UTF8.self).replacingOccurrences(of: "\"schemaVersion\":\"2.0.0\"", with: "\"schemaVersion\":\"9.0.0\"")
+        let newer = String(decoding: json, as: UTF8.self).replacingOccurrences(of: "\"schemaVersion\":\"\(BackupArchive.schemaVersion)\"", with: "\"schemaVersion\":\"9.0.0\"")
         let newerFile = BackupArchive.signature + (try (Data(newer.utf8) as NSData).compressed(using: .zlib) as Data)
         #expect(throws: BackupError.newerVersion) { try BackupArchive.restore(newerFile, into: context) }
 

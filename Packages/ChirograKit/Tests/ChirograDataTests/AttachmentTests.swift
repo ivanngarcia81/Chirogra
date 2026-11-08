@@ -66,6 +66,6 @@ struct AttachmentTests {
         #expect(try container.mainContext.fetchCount(FetchDescriptor<ChirograData.Attachment>()) == 0)
         #expect(try container.mainContext.fetchCount(FetchDescriptor<JournalEntry>()) == entries)
         let audit = try container.mainContext.fetch(FetchDescriptor<AuditEvent>())
-        #expect(audit.contains { $0.entityName == "Attachment" && $0.action == "delete" })
+        #expect(audit.contains { $0.subjectEntity == "Attachment" && $0.action == "delete" })
     }
 }

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Genera Packages/ChirograKit/Sources/ChirograData/Backup+Generated.swift a partir de los modelos de SchemaV2.
+"""Genera Packages/ChirograKit/Sources/ChirograData/Backup+Generated.swift a partir de los modelos del esquema actual
+(los de SchemaV2 y, encima, los que SchemaV3 redefine).
 
 La copia de seguridad (`BackupArchive`, DISEÑO §6.5) guarda cada modelo como un registro `Codable` con todas sus
 propiedades guardadas y sus relaciones a uno (por `id`); las relaciones a muchos se rehacen solas por su inversa,
@@ -13,7 +14,12 @@ import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 SOURCES = ROOT / "Packages/ChirograKit/Sources"
-MODEL_FILES = [SOURCES / "ChirograData/SchemaV2.swift", SOURCES / "ChirograData/SchemaV2Models.swift"]
+# En orden: un modelo definido en un archivo posterior sustituye al del anterior (SchemaV3 solo redefine AuditEvent).
+MODEL_FILES = [SOURCES / "ChirograData/SchemaV2.swift", SOURCES / "ChirograData/SchemaV2Models.swift",
+               SOURCES / "ChirograData/SchemaV3.swift"]
+# Clave en la copia de una propiedad que cambió de nombre en el esquema: así el formato de la copia no cambia y las
+# copias de antes se siguen restaurando (y las nuevas, en una versión anterior de la app).
+BACKUP_KEYS = {("AuditEvent", "subjectEntity"): "entityName"}
 OUT = SOURCES / "ChirograData/Backup+Generated.swift"
 
 ATTRIBUTE_TYPES = {"String", "Int", "Int64", "Bool", "Date", "UUID", "Decimal", "Data", "Double"}
@@ -62,8 +68,9 @@ for path in MODEL_FILES:
             if not match:
                 fail(f"no entiendo la clase tras @Model en {path.name}:{i + 2}")
             model = Model(match.group(1))
+            if model.name not in models:
+                order.append(model.name)
             models[model.name] = model
-            order.append(model.name)
             depth = 1
             j = i + 2
             pending_inverse = None
@@ -83,6 +90,7 @@ for path in MODEL_FILES:
                             found = re.search(r"inverse: \\(\w+)\.(\w+)", inline)
                             inverse = (found.group(1), found.group(2)) if found else None
                         model.props.append(Prop(prop.group(2), prop.group(3).strip(), prop.group(4), inverse))
+                        model.props[-1].key = BACKUP_KEYS.get((model.name, prop.group(2)), prop.group(2))
                         pending_inverse = None
                     elif not rel and stripped and not stripped.startswith("//"):
                         pending_inverse = None
@@ -187,7 +195,7 @@ def record_type(prop):
 
 out = []
 w = out.append
-w("// Generado por scripts/gen-backup.py a partir de SchemaV2. No editar a mano: cambia el modelo y vuelve a")
+w("// Generado por scripts/gen-backup.py a partir del esquema actual (SchemaV2 + SchemaV3). No editar a mano: cambia el modelo y vuelve a")
 w("// ejecutar el script (BackupTests comprueba que cubre todas las propiedades del esquema).")
 w("")
 w("import ChirograCore")
@@ -203,7 +211,7 @@ for name in order:
     for prop in model.props:
         if prop.kind == "toMany" and not prop.stored:
             continue
-        w(f"        var {prop.name}: {record_type(prop)}?")
+        w(f"        var {prop.key}: {record_type(prop)}?")
     w("    }")
     w("")
 out[-1:] = []
@@ -249,7 +257,7 @@ for name in order:
             value = f"model.{prop.name}?.map(\\.id).sorted {{ $0.uuidString < $1.uuidString }}"
         else:
             continue
-        fields.append(f"                {prop.name}: {value}")
+        fields.append(f"                {prop.key}: {value}")
     w(",\n".join(fields))
     w("            )")
     w("        }.sorted { ($0.id?.uuidString ?? \"\") < ($1.id?.uuidString ?? \"\") }")
@@ -305,9 +313,9 @@ for name in creation_order:
         if prop.kind != "attribute":
             continue
         if prop.base == "Decimal":
-            source = f"record.{prop.name}.flatMap(Decimal.init(backupString:))"
+            source = f"record.{prop.key}.flatMap(Decimal.init(backupString:))"
         else:
-            source = f"record.{prop.name}"
+            source = f"record.{prop.key}"
         if prop.optional:
             w(f"            model.{prop.name} = {source}")
         else:

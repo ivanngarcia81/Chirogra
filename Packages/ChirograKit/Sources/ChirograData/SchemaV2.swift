@@ -34,11 +34,13 @@ public enum SchemaV2: VersionedSchema {
 }
 
 public enum ChirograMigrationPlan: SchemaMigrationPlan {
-    public static var schemas: [any VersionedSchema.Type] { [SchemaV1.self, SchemaV2.self] }
-    public static var stages: [MigrationStage] { [migrateV1toV2] }
+    public static var schemas: [any VersionedSchema.Type] { [SchemaV1.self, SchemaV2.self, SchemaV3.self] }
+    public static var stages: [MigrationStage] { [migrateV1toV2, migrateV2toV3] }
 
     /// Ligera: SwiftData/Core Data añade las columnas y tablas nuevas con sus valores por defecto.
     public static var migrateV1toV2: MigrationStage { .lightweight(fromVersion: SchemaV1.self, toVersion: SchemaV2.self) }
+
+    // `migrateV2toV3` (a medida) está en `SchemaV3.swift`.
 }
 
 public typealias Company = SchemaV2.Company
@@ -65,7 +67,7 @@ public typealias TaxAgency = SchemaV2.TaxAgency
 public typealias TaxRate = SchemaV2.TaxRate
 public typealias TaxGroup = SchemaV2.TaxGroup
 public typealias NumberSequence = SchemaV2.NumberSequence
-public typealias AuditEvent = SchemaV2.AuditEvent
+public typealias AuditEvent = SchemaV3.AuditEvent
 public typealias RecurringTemplate = SchemaV2.RecurringTemplate
 public typealias RecurringTemplateLine = SchemaV2.RecurringTemplateLine
 public typealias CustomerNote = SchemaV2.CustomerNote
