@@ -34,7 +34,7 @@ Lo que se despliega a Producción en CloudKit es para siempre (CONTEXTO, 7-nov).
 |---|---|---|
 | Todos salvo `Company` (38) | `companyID: UUID?` | Empresa dueña. `nil` = huérfano (ver §1) |
 | `Company` | `sortOrder: Int = 0` | Orden del selector |
-| `Company` | `isArchived: Bool = false`, `archivedAt: Date?` | Empresa archivada (no cuenta para el límite) |
+| `Company` | `isArchived: Bool = false`, `archivedAt: Date?` | Empresa archivada (sale del selector; **sí cuenta** para el límite, decisión del 8-nov) |
 | `Company` | `postalCode: String = ""` | ZIP del negocio (sales tax con origen) |
 | `Company` | `paymentLinkURL`, `paymentInstructions: String = ""`, `showPayNowOnInvoice: Bool = true` | Enlace de pago propio |
 | `Customer` | `postalCode: String = ""` | ZIP de entrega (sales tax con destino) |
@@ -84,12 +84,12 @@ conocen las versiones anteriores. Además, al guardar, `Bookkeeper` pone su empr
 | `ActiveCompany.id`, `ActiveCompany.select(_:)` | Empresa activa del aparato |
 | `Bookkeeper.companyLimit` (estático) | Límite de empresas activas: `CompanyLimits.standard` (1) o `.accountant` (5). Lo pone la app según la suscripción |
 | `companies(includeArchived:)` | En el orden del selector (`sortOrder`, después la más antigua) |
-| `canAddCompany()` | Cabe otra sin pasar el límite |
+| `canAddCompany()` | Cabe otra sin pasar el límite (cuentan todas, también las archivadas) |
 | `forNewCompany() -> Bookkeeper` | Un `Bookkeeper` con un id nuevo para dar de alta otra empresa; falla con `companyLimitReached` |
 | `setUpCompany(...)` | El alta de siempre. Con un `Bookkeeper` de `forNewCompany()` crea **otra** empresa con ese id; con uno sin `companyID`, solo la primera (si no, `companyAlreadyExists`). **Deja activa la empresa creada**, así el resto del alta (`setUpSalesTax`, `recordOpeningBalances`, `SampleData`…) con `Bookkeeper(context:)` va a la nueva |
 | `forCompany(_ id:) -> Bookkeeper` | El mismo `Bookkeeper` para otra empresa |
 | `select(_:)`, `reorderCompanies(_:)` | Activa y orden del selector |
-| `archiveCompany(_:)`, `unarchiveCompany(_:)` | Archivar (deja sitio en el límite; si era la activa, pasa a la primera) y volver a mostrar (si cabe) |
+| `archiveCompany(_:)`, `unarchiveCompany(_:)` | Archivar (no deja sitio en el límite; si era la activa, pasa a la primera) y volver a mostrar (siempre) |
 | `deleteCompany(_:)` | Borra la empresa **y todos sus registros** (y los huérfanos si es la principal) en un guardado. Irreversible: confirmar y ofrecer antes una copia |
 | `companyOverviews(includeArchived:asOf:) -> [CompanyOverview]` | Lista con lo pendiente de cada una: por cobrar, vencidas, por pagar, avisos sin leer, movimientos por revisar |
 | `adoptOrphanRecords() -> Int` | Ver arriba |
@@ -131,6 +131,13 @@ let books = Bookkeeper(context: context)
 let drafts = try books.fetch(Invoice.self, #Predicate { $0.statusRaw == "draft" })
 let descriptor = FetchDescriptor(predicate: try books.scoped(#Predicate<Expense> { $0.voidedAt == nil }))
 ```
+
+**Hecho en la UI (agente de pantallas, 8-nov):** `@CompanyQuery` (`Shell/CompanyScope.swift`) es un `@Query` con el
+filtro de la empresa activa, que la raíz deja en `CompanySession.scope` antes de dibujar; `@ActiveCompanyQuery` da la
+empresa activa (`companies.first`). `AppShell` se rehace (`.id`) al cambiar de empresa. `CompanyStamp` pone la empresa
+activa a lo que se inserta sin empresa justo antes de cada guardado del hilo principal (`ModelContext.willSave`). Sin
+filtro de empresa, a propósito: las `@Query` de `Company` del selector y la lista, y las altas de ejemplo
+(`SampleData.sampleCreationsPredicate`), que son de todos los libros.
 
 Para que las listas cambien al cambiar de empresa, el ámbito debe ser parte de la identidad de la vista (p. ej.
 `.id(scope.id)` en la raíz, o leer `@AppStorage(ActiveCompany.defaultsKey)` y recalcular `Bookkeeper(context:).companyScope()`).
@@ -276,7 +283,7 @@ si el usuario confirma, repite con `books.allowingReconciledChanges()` (queda en
   principal (la más antigua por fecha de alta y después id: determinista, así dos aparatos que migran a la vez escriben
   lo mismo) y numera `sortOrder`.
 - **Libros mezclados** (dos altas que se juntaron por iCloud antes del arreglo del 7-nov): no se pueden separar, así que
-  todo pasa a la más antigua y las demás —sin nada propio— quedan **archivadas** (no cuentan para el límite y se pueden
+  todo pasa a la más antigua y las demás —sin nada propio— quedan **archivadas** (cuentan para el límite; se pueden
   borrar).
 - Toda la migración toca cada registro (`companyID`), así que con iCloud se vuelve a subir todo una vez.
 - Pruebas: `MigrationTests` (V1→V4, V2→V4 con `subjectEntity`, V3→V4 con dos empresas, plan); `FrozenSchemaTests`
@@ -299,8 +306,8 @@ si el usuario confirma, repite con `books.allowingReconciledChanges()` (queda en
 - **Tabla de sales tax por ZIP**: fuente y licencia por decidir; luego cargarla en `PostalTaxTables.current`.
 - **Schedule C / 1120-S 2026**: revisar el catálogo cuando el IRS publique los formularios definitivos.
 - **Sociedades (1065) y C corp (1120)**: sin formulario en Chirogra (`TaxForm.forEntity` → `nil`).
-- **Archivar cuenta para el límite**: las archivadas no cuentan; con el plan normal se puede archivar una y crear otra
-  (los libros archivados siguen en iCloud). Decidir si se quiere así.
+- ~~Archivar y el límite~~ **Decidido (8-nov):** las archivadas **sí cuentan** para el límite (`canAddCompany()` cuenta
+  `companies(includeArchived: true)`); para hacer sitio hay que borrar una. Volver a mostrar una archivada siempre se puede.
 - **Base caja**: aproximación con notas de crédito aplicadas a otra factura (§4).
 - **Plaid** (fase 3): implementar `BankTransactionSource` con `kind = .plaid`.
 - Antes de publicar: desplegar el esquema 4 a Producción y probarlo allí (CONTEXTO).

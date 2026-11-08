@@ -309,4 +309,10 @@ open -g -j -n .dd/Build/Products/Debug/Chirogra.app --args -AppleLanguages '(es)
 - Solo Facturas: `-qa.pago 1` abre «Registrar pago…», `-qa.registrar 1` además lo registra; `-qa.abrir 1` abre la factura completa.
 - Build 4 (la app se explica sola): `-qa.vacia 1` crea una empresa nueva y vacía («Taller Luna») sin pasar por el alta (estados vacíos); `-qa.pistas reset|todas|ocultas` (TipKit; con otros `-qa.*` y sin este, las pistas no salen); `-qa.asiento aportacion|retiro|traspaso|manual` abre el editor de asientos con esa plantilla y $500 (con `-qa.nuevo 1` en Asientos del Mac); `-qa.ayuda debitoCredito|gravable|capital|combinada|saldo` abre ese ⓘ (en el Mac, con la ventana oculta de `open -j`, el globo no sale); `-qa.tasaNueva 1` abre «Añadir tasa…» en una factura nueva si no hay tasas.
 - Alta (para las capturas de la guía web): `-qa.alta 1|2|3`, `-qa.altaEstado TX`, `-qa.altaCiudad Austin -qa.altaCiudadTasa 2`, `-qa.altaBanco 1250000 -qa.altaTarjeta 30000` (centavos), `-qa.altaCrear 1`. Para una ventana de otro tamaño: `-"NSWindow Frame SwiftUI.WindowGroup<ChirograUI.ChirograRootView>-1-AppWindow-1" "x y ancho alto 0 0 <pantalla>"`.
+- Varias empresas (1.1): `-qa.segundaEmpresa <nombre>` da de alta otra empresa vacía con ese nombre (TX, si no existe y
+  cabe en el plan) y la deja activa; `-qa.empresa N` deja activa la N.ª del selector (desde 1); `-qa.empresas lista|alta`
+  abre la lista de empresas o «Añadir empresa…» (con el plan normal y el límite lleno, la pantalla del plan para
+  contadores; con `-qa.alta 1 -qa.altaEstado TX -qa.altaCrear 1` además la crea). `-qa.suscripcion contador` = plan para
+  contadores activo (5 empresas); `activa`/`prueba` = plan normal (1). `-qa.ajustes companies` abre Ajustes › Empresas.
+  En una copia del Mac sin iCloud firmado, `-iCloudSyncEnabled NO` (si no, CloudKit la cierra al arrancar).
 - Captura solo de esa ventana con `screencapture -l <id> -o -x`, sacando el id con `CGWindowListCopyWindowInfo` filtrado por su PID; al terminar, `kill <pid>`. La ventana queda inactiva (oculta y en segundo plano): la fila elegida sale en gris y los botones de vidrio atenuados; activa, la fila va en Tinta.

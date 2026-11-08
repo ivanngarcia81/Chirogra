@@ -12194,16 +12194,16 @@
     },
     "Los libros de «%@» son ahora los de la copia del %@" : {
       "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Los libros de «%1$@» son ahora los de la copia del %2$@"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "The books of “%@” are now the ones from the %@ backup"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Los libros de «%1$@» son ahora los de la copia del %2$@"
           }
         }
       }
@@ -15119,16 +15119,26 @@
     },
     "Plan para contadores: %lld de %lld empresas, contando las archivadas." : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accountants plan: %lld of %lld businesses, including archived ones."
+          }
+        },
         "es" : {
           "stringUnit" : {
             "state" : "new",
             "value" : "Plan para contadores: %1$lld de %2$lld empresas, contando las archivadas."
           }
-        },
+        }
+      }
+    },
+    "Plan para contadores: hasta %lld empresas…" : {
+      "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Accountants plan: %lld of %lld businesses, including archived ones."
+            "value" : "Accountants plan: up to %lld businesses…"
           }
         }
       }

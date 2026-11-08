@@ -285,6 +285,28 @@ struct HomeView: View {
         .accessibilityValue([prefix, month.start.monthYear].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: ", "))
     }
 
+    /// «Taller Uno ▾» de la primera vez (sin cifras no hay mes que elegir): solo el selector de empresa. Así una empresa
+    /// recién creada también deja volver a las demás desde Inicio.
+    private var companyMenu: some View {
+        Menu {
+            CompanyMenuItems(companies: selectorCompanies)
+        } label: {
+            HStack(spacing: 4) {
+                Text(companyName).multilineTextAlignment(.leading)
+                Image(systemName: "chevron.down").font(.caption.weight(.semibold)).accessibilityHidden(true)
+            }
+            .font(.subheadline)
+            .foregroundStyle(Palette.ink2)
+            .frame(minHeight: Metrics.target)
+            .contentShape(Rectangle())
+        }
+        .menuIndicator(.hidden)
+        .buttonStyle(.plain)
+        .fixedSize(horizontal: false, vertical: true)
+        .accessibilityLabel(Text("Empresa"))
+        .accessibilityValue(companyName)
+    }
+
     // MARK: Cifras
 
     /// «▲ 12%» (verde si es favorable); `suffix` añade « vs. sep». `nil` si el mes anterior es cero.
@@ -1294,7 +1316,7 @@ struct HomeView: View {
         let done = steps.filter(\.done).count
         let hasCash = journalLines.contains { $0.entry?.source == .opening }
         return VStack(alignment: .leading, spacing: 0) {
-            Text(companyName).font(.subheadline).foregroundStyle(Palette.ink2)
+            companyMenu
                 .padding(.horizontal, Metrics.gutter)
 
             VStack(spacing: 8) {

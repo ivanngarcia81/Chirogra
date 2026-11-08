@@ -326,6 +326,14 @@ struct SubscriptionSection: View {
                     }
                 }
                 .buttonStyle(.borderless)
+                // Con el plan normal: el de contadores (hasta 5 empresas), si está a la venta.
+                if store.plan == .standard && store.sellsAccountantPlan && !store.isReadOnly {
+                    Button("Plan para contadores: hasta \(CompanyLimits.accountant) empresas…") {
+                        CompanyHub.shared.sheet = .accountantPlan
+                    }
+                    .buttonStyle(.borderless)
+                    .foregroundStyle(Palette.brand)
+                }
             } header: {
                 SectionLabel(text: String(localized: "Suscripción"))
             }
