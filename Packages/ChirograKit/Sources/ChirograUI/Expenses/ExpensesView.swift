@@ -22,6 +22,9 @@ struct ExpensesView: View {
 
     @State private var selectedSegment: Segment = .expenses
     @State private var showingEditor = false
+    /// «Escanear recibo» (iPhone y iPad con cámara): la cámara de documentos y después «Nuevo gasto» con el recibo.
+    @State private var scanningReceipt = false
+    @State private var scannedReceipt: ReceiptFile?
 
     private var segment: Segment { fixedSegment ?? selectedSegment }
 
@@ -60,14 +63,37 @@ struct ExpensesView: View {
         .navigationTitle(title)
         .headerTitle()
         .toolbar {
+            #if os(iOS)
+            if segment == .expenses, DocumentScanner.isAvailable {
+                ToolbarItem(placement: .primaryAction) {
+                    Button("Escanear recibo", systemImage: "doc.viewfinder") { scanningReceipt = true }
+                        .headerButton()
+                }
+            }
+            #endif
             ToolbarItem(placement: .primaryAction) {
                 AddButton(title: addTitle) { showingEditor = true }
             }
         }
-        .sheet(isPresented: $showingEditor) {
+        #if os(iOS)
+        .fullScreenCover(isPresented: $scanningReceipt) {
+            DocumentScannerView { file in
+                scanningReceipt = false
+                guard let file else { return }
+                scannedReceipt = file
+                showingEditor = true
+            }
+            .ignoresSafeArea()
+        }
+        #endif
+        #if DEBUG
+        // `-qa.escanear prueba|<ruta>` (con `-qa.pestana expenses`): abre «Nuevo gasto» con ese recibo, ya leído.
+        .task { if segment == .expenses, ReceiptQA.argument != nil { showingEditor = true } }
+        #endif
+        .sheet(isPresented: $showingEditor, onDismiss: { scannedReceipt = nil }) {
             NavigationStack {
                 switch segment {
-                case .expenses: ExpenseEditorView()
+                case .expenses: ExpenseEditorView(initialReceipt: scannedReceipt)
                 case .bills: BillEditorView()
                 case .recurring: RecurringTemplateEditorView()
                 case .vendors: VendorEditorView()

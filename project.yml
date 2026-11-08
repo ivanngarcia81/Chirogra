@@ -41,6 +41,8 @@ targets:
         CFBundleLocalizations: [es, en]
         LSApplicationCategoryType: public.app-category.finance
         NSFaceIDUsageDescription: Chirogra usa Face ID para proteger tus libros.
+        # Escanear recibos con la cámara de documentos (VisionKit, solo iPhone y iPad).
+        NSCameraUsageDescription: Chirogra usa la cámara para escanear tus recibos y rellenar el gasto.
         UILaunchScreen: {}
         UIApplicationSceneManifest:
           UIApplicationSupportsMultipleScenes: true

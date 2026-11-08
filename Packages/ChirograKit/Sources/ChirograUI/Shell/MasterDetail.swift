@@ -511,6 +511,8 @@ private struct ExpenseMasterList: View {
         #if DEBUG
         // `-qa.fila N` (solo Debug): elige la fila N de la columna maestro al abrir (capturas de la App Store).
         .task { if selection == nil, let index = QAMasterRow.index, filtered.indices.contains(index) { selection = filtered[index].id } }
+        // `-qa.escanear prueba|<ruta>` (recibos, `Expenses/Receipts/ReceiptQA.swift`): «Nuevo gasto» con ese recibo, ya leído.
+        .task { if ReceiptQA.argument != nil { creating = true } }
         #endif
         .sheet(isPresented: $showingRecurring) {
             NavigationStack {
