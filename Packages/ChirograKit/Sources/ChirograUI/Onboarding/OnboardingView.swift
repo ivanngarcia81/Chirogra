@@ -250,6 +250,7 @@ struct OnboardingView: View {
         }
 
         AppLanguageSection()
+        OtherDeviceSection()
 
         Section {
             LabeledContent("País o región") { Text("Estados Unidos") }
@@ -604,4 +605,29 @@ struct FlowLayout: Layout {
 
 #Preview {
     OnboardingView().modelContainer(try! ChirograStore.makeContainer(inMemory: true))
+}
+
+/// Paso 1 del alta con iCloud encendido: quien ya lleva sus libros en otro aparato no tiene que crear la empresa otra
+/// vez. Si llegó aquí es que iCloud no trajo libros (el otro aparato no los ha subido, p. ej. con iCloud apagado desde
+/// la 1.0): al encenderlo allí, llegan solos y la raíz deja el alta (`companies` deja de estar vacío).
+private struct OtherDeviceSection: View {
+    @AppStorage(ChirograStore.syncEnabledKey) private var iCloudSyncEnabled = true
+
+    var body: some View {
+        if iCloudSyncEnabled {
+            Section {
+                HStack(alignment: .top, spacing: 12) {
+                    IconTile(systemImage: "icloud.fill", foreground: Palette.blue)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("¿Ya usas Chirogra en otro aparato?")
+                            .font(.body.weight(.semibold)).foregroundStyle(Palette.ink)
+                        Text("No crees la empresa otra vez: en ese aparato, enciende «Sincronizar con iCloud» en Ajustes (en el iPhone, en Más) y tus libros llegarán aquí solos.")
+                            .font(.subheadline).foregroundStyle(Palette.ink2)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                .accessibilityElement(children: .combine)
+            }
+        }
+    }
 }

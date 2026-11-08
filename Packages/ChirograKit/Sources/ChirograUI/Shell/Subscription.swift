@@ -7,7 +7,8 @@ import SwiftUI
 /// $29.99 para los nuevos, conservando el precio a los ya suscritos. La misma suscripción vale en iPhone, iPad y Mac
 /// (mismo identificador de app).
 ///
-/// Sin suscripción (la prueba terminó o nunca empezó) los libros quedan en **solo lectura** (`Bookkeeper.isReadOnly`):
+/// Sin suscripción (la prueba terminó o nunca empezó; `canStartTrial` distingue los avisos) los libros quedan en
+/// **solo lectura** (`Bookkeeper.isReadOnly`):
 /// se ven, se exportan y se sacan copias de seguridad, pero no se registra nada nuevo. Mientras el producto no exista en
 /// App Store Connect (`notConfigured`: antes de publicar, en las copias de prueba) no se bloquea nada.
 @MainActor
@@ -29,6 +30,9 @@ final class SubscriptionStore {
     }
 
     private(set) var status: Status = .unknown
+    /// Sin suscripción pero con la prueba gratis aún sin usar (nunca se suscribió en esta cuenta de Apple): los avisos
+    /// invitan a empezar la prueba en vez de decir que la suscripción terminó.
+    private(set) var canStartTrial = false
     private(set) var product: Product?
     /// Pantalla de suscripción a la vista (la abre la raíz).
     var showsPaywall = false
@@ -45,6 +49,7 @@ final class SubscriptionStore {
         case "prueba": status = .subscribed(isTrial: true, expires: Calendar.current.date(byAdding: .day, value: 14, to: .now)); return
         case "activa": status = .subscribed(isTrial: false, expires: Calendar.current.date(byAdding: .month, value: 1, to: .now)); return
         case "vencida": status = .lapsed; return
+        case "nueva": status = .lapsed; canStartTrial = true; return
         default: break
         }
         #endif
@@ -76,6 +81,7 @@ final class SubscriptionStore {
             status = .subscribed(isTrial: current.offer?.type == .introductory && current.offer?.paymentMode == .freeTrial,
                                  expires: current.expirationDate)
         } else {
+            canStartTrial = await product?.subscription?.isEligibleForIntroOffer ?? false
             status = .lapsed
         }
     }
@@ -162,10 +168,12 @@ struct ReadOnlyBanner: View {
     var body: some View {
         HStack(spacing: 10) {
             Image(systemName: "lock.fill").foregroundStyle(Palette.warning).accessibilityHidden(true)
-            Text("Solo lectura: tu suscripción terminó. Puedes ver tus libros y sacar copias.")
+            Text(store.canStartTrial
+                 ? "Solo lectura: empieza tu prueba gratis de 14 días para registrar. Puedes ver tus libros y sacar copias."
+                 : "Solo lectura: tu suscripción terminó. Puedes ver tus libros y sacar copias.")
                 .font(.subheadline).foregroundStyle(Palette.ink)
                 .frame(maxWidth: .infinity, alignment: .leading)
-            Button("Suscribirme") { store.showsPaywall = true }
+            Button(store.canStartTrial ? "Probar gratis" : "Suscribirme") { store.showsPaywall = true }
                 .buttonStyle(.borderedProminent)
                 .tint(Palette.brandFill)
                 .controlSize(.small)
@@ -186,10 +194,12 @@ struct ReadOnlySidebarNote: View {
         VStack(alignment: .leading, spacing: 6) {
             Label("Solo lectura", systemImage: "lock.fill")
                 .font(.subheadline.weight(.semibold)).foregroundStyle(Palette.ink)
-            Text("Tu suscripción terminó. Puedes ver tus libros y sacar copias.")
+            Text(store.canStartTrial
+                 ? "Empieza tu prueba gratis de 14 días para registrar. Puedes ver tus libros y sacar copias."
+                 : "Tu suscripción terminó. Puedes ver tus libros y sacar copias.")
                 .font(.subheadline).foregroundStyle(Palette.ink2)
                 .fixedSize(horizontal: false, vertical: true)
-            Button("Suscribirme") { store.showsPaywall = true }
+            Button(store.canStartTrial ? "Probar gratis" : "Suscribirme") { store.showsPaywall = true }
                 .buttonStyle(.borderedProminent).tint(Palette.brandFill).controlSize(.small)
         }
         .padding(10)
@@ -218,7 +228,7 @@ struct SubscriptionSection: View {
                     }
                     Spacer(minLength: 8)
                     if store.isReadOnly {
-                        Button("Ver planes") { store.showsPaywall = true }
+                        Button(store.canStartTrial ? "Probar gratis" : "Ver planes") { store.showsPaywall = true }
                     } else {
                         Button("Administrar") { manage() }
                     }
@@ -238,7 +248,9 @@ struct SubscriptionSection: View {
         case .subscribed(let isTrial, let expires):
             let day = expires?.formatted(date: .abbreviated, time: .omitted) ?? ""
             return isTrial ? String(localized: "Prueba gratis hasta el \(day)") : String(localized: "Activa · se renueva el \(day)")
-        case .lapsed: return String(localized: "Sin suscripción · solo lectura")
+        case .lapsed:
+            return store.canStartTrial ? String(localized: "Prueba gratis de 14 días sin empezar · solo lectura")
+                                       : String(localized: "Sin suscripción · solo lectura")
         case .unknown, .notConfigured: return ""
         }
     }

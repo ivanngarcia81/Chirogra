@@ -20595,6 +20595,66 @@
           }
         }
       }
+    },
+    "Solo lectura: empieza tu prueba gratis de 14 días para registrar. Puedes ver tus libros y sacar copias." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Read-only: start your 14-day free trial to record. You can still view your books and make backups."
+          }
+        }
+      }
+    },
+    "Empieza tu prueba gratis de 14 días para registrar. Puedes ver tus libros y sacar copias." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start your 14-day free trial to record. You can still view your books and make backups."
+          }
+        }
+      }
+    },
+    "Probar gratis" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Try free"
+          }
+        }
+      }
+    },
+    "Prueba gratis de 14 días sin empezar · solo lectura" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "14-day free trial not started · read-only"
+          }
+        }
+      }
+    },
+    "¿Ya usas Chirogra en otro aparato?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Already using Chirogra on another device?"
+          }
+        }
+      }
+    },
+    "No crees la empresa otra vez: en ese aparato, enciende «Sincronizar con iCloud» en Ajustes (en el iPhone, en Más) y tus libros llegarán aquí solos." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Don't set up your company again: on that device, turn on “Sync with iCloud” in Settings (on iPhone, in More) and your books will arrive here on their own."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"
