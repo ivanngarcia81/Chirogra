@@ -429,7 +429,8 @@ struct AppShell: View {
                 NavigationStack {
                     MoreView().safeAreaInset(edge: .top, spacing: 0) { SyncErrorBanner() }
                         #if DEBUG
-                        .navigationDestination(isPresented: $qaOpensReports) { ReportsView(fixedKind: .income) }
+                        // Con `-qa.reporte <kind>`, ese reporte (fase 2: flujo de efectivo, presupuesto…).
+                        .navigationDestination(isPresented: $qaOpensReports) { ReportsView(fixedKind: ReportsView.qaKind ?? .income) }
                         #endif
                 }
             }
@@ -643,7 +644,7 @@ struct LayoutSizeClass: DynamicProperty {
 
 /// Pestaña «Más» del iPhone (canvas `Mas`), como la app Ajustes: la empresa arriba con su monograma y, en grupos,
 /// Reportes, Contabilidad, Impuestos y Ajustes en filas con icono de color. Banca tiene su pestaña; Plantilla de
-/// factura, Usuarios y permisos y Deducibles son de fase 2 y no salen.
+/// factura y Usuarios y permisos son de fase 2 y no salen; Deducibles va en Impuestos (1.3).
 struct MoreView: View {
     @ActiveCompanyQuery private var companies: [Company]
     @Query private var allCompanies: [Company]
@@ -690,6 +691,8 @@ struct MoreView: View {
                         systemImage: "percent", color: Palette.red) { TaxesView() }
                 MoreRow(title: String(localized: "Tasas"), value: String(localized: "\(rates.count) activas"),
                         systemImage: "list.number", color: Palette.pink) { TaxesView(tab: .rates) }
+                // Fase 2 (canvas `Mas`): deducibles por línea del Schedule C / 1120-S (`Taxes/DeductionsView.swift`).
+                MoreRow(title: String(localized: "Deducibles"), systemImage: "dollarsign", color: Palette.green) { TaxesView(tab: .deductions) }
             } header: {
                 SectionLabel(text: String(localized: "Impuestos"))
             } footer: {
@@ -779,9 +782,11 @@ extension ReportsView.Kind {
         case .income: "chart.bar"
         case .balance: "scalemass"
         case .trial: "list.bullet.rectangle"
+        case .cashFlow: "arrow.left.arrow.right"
         case .receivables: "clock"
         case .payables: "clock.arrow.circlepath"
         case .salesTax: "percent"
+        case .budget: "target"
         }
     }
 
@@ -790,9 +795,11 @@ extension ReportsView.Kind {
         case .income: Palette.green
         case .balance: Palette.blue
         case .trial: Palette.indigo
+        case .cashFlow: Palette.teal
         case .receivables: Palette.orange
         case .payables: Palette.purple
         case .salesTax: Palette.pink
+        case .budget: Palette.red
         }
     }
 }

@@ -343,4 +343,15 @@ open -g -j -n .dd/Build/Products/Debug/Chirogra.app --args -AppleLanguages '(es)
   `-qa.conciliarSaldo <centavos>` rellenan el extracto, `-qa.conciliarEmpezar 1` la empieza, `-qa.conciliarMarcar todas`
   marca todas las partidas, `-qa.conciliarCuadrar 1` pone el saldo del extracto igual al conciliado y
   `-qa.conciliarTerminar 1` la termina.
+- Reportes de la fase 2 (1.3): `-qa.seccion reports -qa.reporte cashFlow|budget` abre el flujo de efectivo o el presupuesto
+  contra real (también `balance|trial|receivables|payables|salesTax`); en el iPhone, `-qa.pestana reports -qa.reporte …`
+  (Más › ese reporte). `-qa.periodo mes|trimestre|año` (estados y flujo). `-qa.base caja|devengado`: la base con la que
+  arrancan los reportes si la empresa aún no tiene una elegida (se recuerda por empresa en el aparato,
+  `reportBasisByCompany`). Presupuestos: `-qa.presupuesto nuevo|editar|cuenta` abre «Nuevo presupuesto», «Editar
+  importes» o los 12 meses de la primera cuenta con importe; `-qa.agrupar trimestre|año`. Impuestos: `-qa.seccion taxes
+  -qa.impuestos deducibles` (pestaña en el iPhone; en iPad y Mac, como «Ver por línea», la página de deducibles en lugar de Impuestos, con «‹ Impuestos») o `pagina` (esa página desde el arranque, para las capturas del Mac); `-qa.deduciblesPeriodo
+  añoPasado|trimestre|trimestreAnterior`; `-qa.lineaFiscal N` abre el cambio de línea de la cuenta N. Paquete:
+  `-qa.contador 1` abre «Exportar para mi contador» en Reportes; `-qa.contadorPeriodo año|añoPasado|trimestre`;
+  `-qa.contadorCarpeta <ruta>` lo prepara al abrir la hoja y copia la carpeta y el ZIP a esa ruta (sin ruta absoluta, a
+  `tmp/qa-contador` de la app). Con `-qa.fila N` se elige la fila N del flujo, del presupuesto o de los deducibles.
 - Captura solo de esa ventana con `screencapture -l <id> -o -x`, sacando el id con `CGWindowListCopyWindowInfo` filtrado por su PID; al terminar, `kill <pid>`. La ventana queda inactiva (oculta y en segundo plano): la fila elegida sale en gris y los botones de vidrio atenuados; activa, la fila va en Tinta.

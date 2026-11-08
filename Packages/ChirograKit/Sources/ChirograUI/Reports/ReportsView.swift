@@ -16,10 +16,17 @@ struct ReportsView: View {
         case income = "Resultados"
         case balance = "Balance general"
         case trial = "Balanza"
+        /// Fase 2: estado de flujo de efectivo (método indirecto, `CashFlowLayout`).
+        case cashFlow = "Flujo de efectivo"
         case receivables = "Por cobrar"
         case payables = "Por pagar"
         case salesTax = "Sales tax"
+        /// Fase 2: real contra presupuesto, con la lista y el editor de presupuestos (`Budgets/BudgetsView.swift`).
+        case budget = "Presupuesto"
         var id: String { rawValue }
+
+        /// Reportes con selector de base caja / devengado.
+        var usesBasis: Bool { [.income, .balance, .trial, .cashFlow].contains(self) }
 
         /// Nombre completo: título en iPad y Mac, y lista «Reportes» de la barra lateral.
         var fullTitle: String {
@@ -27,9 +34,11 @@ struct ReportsView: View {
             case .income: String(localized: "Estado de resultados")
             case .balance: String(localized: "Balance general")
             case .trial: String(localized: "Balanza de comprobación")
+            case .cashFlow: String(localized: "Flujo de efectivo")
             case .receivables: String(localized: "Antigüedad por cobrar")
             case .payables: String(localized: "Antigüedad por pagar")
             case .salesTax: String(localized: "Impuesto sobre ventas")
+            case .budget: String(localized: "Presupuesto contra real")
             }
         }
 
@@ -39,9 +48,11 @@ struct ReportsView: View {
             case .income: ("chart.bar.xaxis", Palette.indigo)
             case .balance: ("scalemass", Palette.blue)
             case .trial: ("tablecells", Palette.teal)
+            case .cashFlow: ("arrow.left.arrow.right", Palette.green)
             case .receivables: ("clock", Palette.orange)
             case .payables: ("clock.arrow.circlepath", Palette.red)
             case .salesTax: ("percent", Palette.purple)
+            case .budget: ("target", Palette.indigo)
             }
         }
     }
@@ -86,6 +97,12 @@ struct ReportsView: View {
     @CompanyQuery private var entries: [JournalEntry]
     /// «Crear mi primera factura» del aviso de libros vacíos.
     @State private var creatingInvoice = false
+    /// Base caja / devengado, recordada por empresa en el aparato (`ReportBasis.swift`).
+    @ReportBasisSetting private var basis
+    /// Líneas en base caja y las del flujo de efectivo (con su asiento), calculadas una vez por cambio en el diario.
+    @State private var linesMemo = ReportMemo<[LedgerLine]>()
+    /// «Exportar para mi contador» (`AccountantExportView`).
+    @State private var exportingPackage = false
 
     #if DEBUG
     /// `-qa.periodo mes|trimestre|año` (solo Debug).
@@ -121,13 +138,42 @@ struct ReportsView: View {
 
     private var kind: Kind {
         #if DEBUG
-        // `-qa.reporte balance|trial|receivables|payables|salesTax` con `-qa.seccion reports` (solo Debug).
-        if fixedKind == nil, let raw = UserDefaults.standard.string(forKey: "qa.reporte"),
-           let qa = Kind.allCases.first(where: { "\($0)" == raw }) { return qa }
+        // `-qa.reporte balance|trial|cashFlow|receivables|payables|salesTax|budget` con `-qa.seccion reports` (solo Debug).
+        if fixedKind == nil, let qa = Self.qaKind { return qa }
         #endif
         return fixedKind ?? .income
     }
+
+    #if DEBUG
+    /// `-qa.reporte <kind>` (solo Debug); también lo usa `-qa.pestana reports` del iPhone.
+    static var qaKind: Kind? {
+        UserDefaults.standard.string(forKey: "qa.reporte").flatMap { raw in Kind.allCases.first { "\($0)" == raw } }
+    }
+    #endif
+
     private var ledger: Ledger { Ledger(accounts: accounts, lines: journalLines) }
+
+    /// Líneas de los reportes en la base elegida. En devengo, las de siempre (las mismas cifras que antes de la fase 2);
+    /// en caja, `cashBasisLedgerLines()`. El flujo de efectivo las necesita con su asiento (para la depreciación), así que
+    /// las pide a `Bookkeeper` también en devengo.
+    private var basisLines: [LedgerLine] {
+        let effective = kind.usesBasis ? basis : .accrual
+        guard effective == .cash || kind == .cashFlow else { return ledger.lines }
+        let key = "\(effective.rawValue)|\(journalLines.count)|\(entries.count)|\(CompanySession.key(CompanySession.scope))"
+        return linesMemo.value(for: key) { (try? Bookkeeper(context: context).ledgerLines(basis: effective)) ?? [] }
+    }
+
+    private func incomeStatement(_ interval: DateInterval) -> IncomeStatement {
+        ReportBuilder.incomeStatement(accounts: ledger.ledgerAccounts, lines: basisLines, from: interval.start, to: interval.end)
+    }
+
+    /// Flujo de efectivo del periodo (`from` y `to` incluidos).
+    private func cashFlowStatement(_ interval: DateInterval) -> CashFlowStatement {
+        ReportBuilder.cashFlow(accounts: ledger.ledgerAccounts, lines: basisLines, from: interval.start, to: interval.end.addingTimeInterval(-1))
+    }
+
+    /// Texto de la base para los subtítulos («base caja»); los reportes sin base no lo llevan.
+    private var basisText: String { basis.subtitle }
 
     // MARK: Medidas
 
@@ -162,6 +208,11 @@ struct ReportsView: View {
     }
 
     var body: some View {
+        // Presupuestos: su propia página (lista de presupuestos, editor y real contra presupuesto).
+        if kind == .budget { BudgetsView() } else { reportBody }
+    }
+
+    private var reportBody: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
                 if entries.isEmpty { ReportsIntro { creatingInvoice = true }.padding(.top, isPhone ? 4 : 0).padding(.bottom, 16) }
@@ -186,6 +237,15 @@ struct ReportsView: View {
         .toolbar { toolbar }
         .sheet(isPresented: $editingRange) { rangeEditor }
         .sheet(isPresented: $creatingInvoice) { NavigationStack { InvoiceEditorView() }.editorSheetSizing() }
+        .sheet(isPresented: $exportingPackage) { NavigationStack { AccountantExportView(initialInterval: interval()) }.editorSheetSizing() }
+        #if DEBUG
+        // `-qa.contador 1` abre «Exportar para mi contador» (solo Debug).
+        .task {
+            guard UserDefaults.standard.bool(forKey: "qa.contador") else { return }
+            try? await Task.sleep(for: .seconds(1))
+            exportingPackage = true
+        }
+        #endif
         #if os(macOS)
         .macReportInspector(title: macInspectorTitle, hasSelection: macSelectedKey != nil, placeholder: macPlaceholder,
                             selectionKey: macPick, qaSelectRow: { index in
@@ -211,7 +271,7 @@ struct ReportsView: View {
     private var toolbar: some ToolbarContent {
         if !isPhone {
             switch kind {
-            case .income:
+            case .income, .cashFlow:
                 #if os(macOS)
                 ToolbarItem(placement: .primaryAction) { periodMenu }
                 ToolbarItem(placement: .primaryAction) { comparePicker }
@@ -228,15 +288,43 @@ struct ReportsView: View {
                     }
                     .headerButton()
                 }
+            case .budget: ToolbarItem(placement: .primaryAction) { EmptyView() }
+            }
+            if kind.usesBasis {
+                ToolbarItem(placement: .primaryAction) {
+                    HStack(spacing: 2) {
+                        BasisPicker(basis: $basis, compact: true)
+                        TermHelp(.accountingBasis)
+                    }
+                }
             }
         }
-        ToolbarItem(placement: .primaryAction) {
+        ToolbarItem(placement: .primaryAction) { exportMenu }
+    }
+
+    /// «Exportar»: el CSV y el PDF del reporte y, en los estados, el paquete para el contador.
+    private var exportMenu: some View {
+        Menu {
             ShareLink(item: csvFile, preview: SharePreview("\(csvFile.name).csv")) {
-                if isPhone { Label("Exportar", systemImage: "square.and.arrow.up").labelStyle(.iconOnly) }
-                else { HStack(spacing: 6) { Image(systemName: "square.and.arrow.up"); Text("Exportar") } }
+                Label("CSV (hoja de cálculo)", systemImage: "tablecells")
             }
-            .headerButton()
+            if let document = pdfDocument {
+                let file = LazyReportPDF(name: document.title, documents: [document], companyName: companyName)
+                ShareLink(item: file, preview: SharePreview(document.title + ".pdf")) {
+                    Label("PDF", systemImage: "doc.richtext")
+                }
+            }
+            Divider()
+            Button { exportingPackage = true } label: {
+                Label("Exportar para mi contador…", systemImage: "archivebox")
+            }
+        } label: {
+            if isPhone { Label("Exportar", systemImage: "square.and.arrow.up").labelStyle(.iconOnly) }
+            else { HStack(spacing: 6) { Image(systemName: "square.and.arrow.up"); Text("Exportar") } }
         }
+        .menuIndicator(.hidden)
+        .headerButton()
+        .accessibilityLabel("Exportar")
     }
 
     private var asOfPicker: some View {
@@ -304,12 +392,12 @@ struct ReportsView: View {
 
     private var subtitle: String {
         switch kind {
-        case .income: String(localized: "\(companyName) · base devengado · \(companies.first?.currencyCode ?? "USD")")
-        case .balance: String(localized: "\(companyName) · base devengado · \(companies.first?.currencyCode ?? "USD")")
-        case .trial: String(localized: "Saldos al \(asOf.shortDate) · \(trialBalanceReport.rows.count) cuentas con movimiento")
+        case .income, .balance, .cashFlow: String(localized: "\(companyName) · \(basisText) · \(companies.first?.currencyCode ?? "USD")")
+        case .trial: String(localized: "Saldos al \(asOf.shortDate) · \(trialBalanceReport.rows.count) cuentas con movimiento · \(basisText)")
         case .receivables: String(localized: "Facturas de clientes abiertas · \(lateTotal(receivablesReport).money) vencido")
         case .payables: String(localized: "Facturas de proveedores abiertas · \(lateTotal(payablesReport).money) vencido")
         case .salesTax: String(localized: "Sales tax por jurisdicción · declaración trimestral")
+        case .budget: ""
         }
     }
 
@@ -383,7 +471,9 @@ struct ReportsView: View {
         var style: Style = .line
         /// Cuenta de la fila (las de totales y resultados no tienen).
         var account: LedgerAccount? = nil
-        var id: String { account.map(\.id.uuidString) ?? "\(name)-\(style)" }
+        /// Clave propia (flujo de efectivo: la misma cuenta puede salir en dos secciones).
+        var key: String? = nil
+        var id: String { key ?? account.map(\.id.uuidString) ?? "\(name)-\(style)" }
     }
 
     private struct Block: Identifiable {
@@ -409,8 +499,8 @@ struct ReportsView: View {
 
     /// `comparing`: con el periodo anterior en cada fila (el inspector del Mac compara siempre).
     private func incomeBlocks(comparing: Bool) -> [Block] {
-        let current = ledger.incomeStatement(interval())
-        let previous = comparing ? ledger.incomeStatement(interval(offset: -1)) : nil
+        let current = incomeStatement(interval())
+        let previous = comparing ? incomeStatement(interval(offset: -1)) : nil
         func total(_ name: String, _ now: Int64, _ before: Int64?, _ trend: Trend, _ style: Line.Style = .total) -> Line {
             Line(name: name, amount: now, previous: before, trend: trend, style: style)
         }
@@ -478,9 +568,11 @@ struct ReportsView: View {
         case .income: phoneIncome
         case .balance: phoneBalance
         case .trial: phoneTrial
+        case .cashFlow: phoneCashFlow
         case .receivables: phoneAging(receivablesReport, empty: String(localized: "No hay facturas pendientes de cobro."))
         case .payables: phoneAging(payablesReport, empty: String(localized: "No hay facturas de proveedores pendientes."))
         case .salesTax: phoneSalesTax
+        case .budget: EmptyView()
         }
         if fixedKind == nil { otherReports }
     }
@@ -488,6 +580,7 @@ struct ReportsView: View {
     private var phoneSubtitle: String {
         switch kind {
         case .income: String(localized: "Estado de resultados · \(companyName)")
+        case .cashFlow: String(localized: "Método indirecto · \(companyName)")
         case .salesTax: companyName
         default: subtitle
         }
@@ -496,9 +589,10 @@ struct ReportsView: View {
     /// `ReportePyG`: segmentado, comparar, «Ganancia neta» con su gráfica y los grupos de cuentas.
     @ViewBuilder
     private var phoneIncome: some View {
-        let current = ledger.incomeStatement(interval())
-        let previous = ledger.incomeStatement(interval(offset: -1))
+        let current = incomeStatement(interval())
+        let previous = incomeStatement(interval(offset: -1))
         periodPicker.padding(.top, 4)
+        phoneBasis
         RowGroup(macBorder: true) {
             Toggle(String(localized: "Comparar con \(previousName)"), isOn: $compare).tint(Palette.green)
                 .padding(.horizontal, 16).frame(minHeight: Metrics.target).padding(.vertical, 4)
@@ -586,6 +680,60 @@ struct ReportsView: View {
         .accessibilityElement(children: .combine)
     }
 
+    /// «Devengado | Caja» con su ⓘ, debajo del periodo o de la fecha de corte.
+    private var phoneBasis: some View {
+        BasisPicker(basis: $basis).padding(.top, 10)
+    }
+
+    // MARK: Flujo de efectivo (iPhone)
+
+    /// Secciones del flujo como los bloques de los estados (comparando con el anterior si está activado).
+    private var cashFlowBlocks: [Block] { cashFlowBlocks(comparing: compare) }
+
+    private func cashFlowBlocks(comparing: Bool) -> [Block] {
+        let current = cashFlowStatement(interval())
+        let previous = comparing ? cashFlowStatement(interval(offset: -1)) : nil
+        return CashFlowLayout.sections(current, previous: previous).map { section in
+            Block(title: section.title, lines: section.lines.map { line in
+                Line(name: line.name, amount: line.amount, previous: line.previous, trend: .upIsGood,
+                     style: line.style == .line ? .line : line.style == .grand ? .grand : .total, account: line.account, key: line.key)
+            })
+        }
+    }
+
+    /// Cifra grande con la variación del efectivo del periodo y, debajo, el efectivo al inicio y al final.
+    private func cashFlowCard(_ report: CashFlowStatement) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text("Variación del efectivo · \(periodName(offset: 0))").font(.subheadline).foregroundStyle(Palette.ink2)
+            Text(signedMoney(report.netCashChange)).font(.amount(36)).foregroundStyle(Palette.ink).lineLimit(1).minimumScaleFactor(0.5)
+            Text("Al inicio \(report.beginningCash.money) · al final \(report.endingCash.money)")
+                .font(.footnote).foregroundStyle(Palette.ink2)
+            balanceStatus(report.isReconciled, text: report.isReconciled ? String(localized: "Cuadra con caja y bancos")
+                          : String(localized: "No cuadra con caja y bancos"))
+                .padding(.top, 6)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(18)
+        .background(Palette.surface, in: RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous))
+        .accessibilityElement(children: .combine)
+    }
+
+    @ViewBuilder
+    private var phoneCashFlow: some View {
+        let report = cashFlowStatement(interval())
+        periodPicker.padding(.top, 4)
+        phoneBasis
+        RowGroup(macBorder: true) {
+            Toggle(String(localized: "Comparar con \(previousName)"), isOn: $compare).tint(Palette.green)
+                .padding(.horizontal, 16).frame(minHeight: Metrics.target).padding(.vertical, 4)
+        }
+        .padding(.top, 12)
+        cashFlowCard(report).padding(.top, 16)
+        ForEach(cashFlowBlocks) { phoneBlock($0) }
+        Text("Parte de la ganancia neta y quita lo que no movió dinero: lo que te deben, lo que debes, equipo y préstamos.")
+            .font(.footnote).foregroundStyle(Palette.ink2).padding(.horizontal, Metrics.gutter).padding(.top, 8)
+    }
+
     /// «Otros reportes» (`ReportePyG`): lista con iconos tipo Ajustes y chevron.
     @ViewBuilder
     private var otherReports: some View {
@@ -622,6 +770,7 @@ struct ReportsView: View {
     private var phoneBalance: some View {
         let report = balanceSheetReport
         phoneAsOf
+        phoneBasis
         ForEach(balanceBlocks) { phoneBlock($0) }
         balanceStatus(report.isBalanced, text: report.isBalanced ? String(localized: "Activo = Pasivo + Patrimonio")
                       : String(localized: "Diferencia \((report.totalAssets - report.totalLiabilities - report.totalEquity).money)"))
@@ -642,6 +791,7 @@ struct ReportsView: View {
     private var phoneTrial: some View {
         let report = trialBalanceReport
         phoneAsOf
+        phoneBasis
         SectionLabel(text: String(localized: "Cuentas")).padding(.horizontal, Metrics.gutter).padding(.top, 22).padding(.bottom, 7)
         RowGroup(macBorder: true) {
             if report.rows.isEmpty { phoneLine(Line(name: String(localized: "Sin movimientos"), amount: 0)) }
@@ -781,9 +931,11 @@ struct ReportsView: View {
         case .income: wideIncome
         case .balance: wideBalance
         case .trial: wideTrial
+        case .cashFlow: wideCashFlow
         case .receivables: wideAging(receivablesReport, party: String(localized: "Cliente"), empty: String(localized: "No hay facturas pendientes de cobro."))
         case .payables: wideAging(payablesReport, party: String(localized: "Proveedor"), empty: String(localized: "No hay facturas de proveedores pendientes."))
         case .salesTax: wideSalesTax(salesTaxReport)
+        case .budget: EmptyView()
         }
     }
 
@@ -791,7 +943,7 @@ struct ReportsView: View {
     @ViewBuilder
     private var wideSubtitle: some View {
         if !isMac {
-            Text(kind == .income ? String(localized: "\(rangeTitle) · base devengado") : subtitle)
+            Text(kind == .income || kind == .cashFlow ? String(localized: "\(rangeTitle) · \(basisText)") : subtitle)
                 .font(.subheadline).foregroundStyle(Palette.ink2)
                 .padding(.horizontal, 8).padding(.bottom, 16)
         }
@@ -803,12 +955,12 @@ struct ReportsView: View {
 
     @ViewBuilder
     private var wideIncome: some View {
-        let current = ledger.incomeStatement(interval())
-        let previous = ledger.incomeStatement(interval(offset: -1))
+        let current = incomeStatement(interval())
+        let previous = incomeStatement(interval(offset: -1))
         wideSubtitle
         if isMac {
             kpiRow(incomeKPIs(current, previous))
-            statementDocument(title: Kind.income.fullTitle, range: String(localized: "\(rangeTitle) · base devengado · \(companies.first?.currencyCode ?? "USD")"),
+            statementDocument(title: Kind.income.fullTitle, range: String(localized: "\(rangeTitle) · \(basisText) · \(companies.first?.currencyCode ?? "USD")"),
                               blocks: incomeBlocks, columns: incomeColumns)
         } else {
             RowGroup(macBorder: true) {
@@ -817,6 +969,41 @@ struct ReportsView: View {
             }
             statementGroups(blocks: incomeBlocks, columns: incomeColumns).padding(.top, 14)
         }
+    }
+
+    /// Flujo de efectivo en iPad y Mac: cajas de cifras por actividad y el estado como documento (Mac) o en grupos (iPad),
+    /// con las mismas columnas que el estado de resultados (periodo, anterior, variación y %).
+    @ViewBuilder
+    private var wideCashFlow: some View {
+        let report = cashFlowStatement(interval())
+        wideSubtitle
+        kpiRow([
+            KPIItem(title: String(localized: "Operación"), value: signedMoney(report.operatingTotal),
+                    foot: String(localized: "Ganancia neta \(report.netIncome.money)")),
+            KPIItem(title: String(localized: "Inversión"), value: signedMoney(report.investingTotal)),
+            KPIItem(title: String(localized: "Financiamiento"), value: signedMoney(report.financingTotal)),
+            KPIItem(title: String(localized: "Efectivo al final"), value: report.endingCash.money,
+                    foot: String(localized: "Variación \(signedMoney(report.netCashChange))"),
+                    footColor: report.isReconciled ? Palette.ink2 : Palette.negative),
+        ])
+        if isMac {
+            statementDocument(title: Kind.cashFlow.fullTitle,
+                              range: String(localized: "\(rangeTitle) · \(basisText) · \(companies.first?.currencyCode ?? "USD")"),
+                              blocks: cashFlowBlocks, columns: incomeColumns)
+        } else {
+            RowGroup(macBorder: true) {
+                Toggle("Comparar con periodo anterior", isOn: $compare).tint(Palette.green)
+                    .padding(.horizontal, 16).frame(minHeight: 52)
+            }
+            statementGroups(blocks: cashFlowBlocks, columns: incomeColumns).padding(.top, 14)
+        }
+        HStack(spacing: 8) {
+            balanceStatus(report.isReconciled, text: report.isReconciled ? String(localized: "Cuadra con caja y bancos")
+                          : String(localized: "No cuadra con caja y bancos"))
+            Text("Método indirecto: parte de la ganancia neta y quita lo que no movió dinero.")
+                .font(.footnote).foregroundStyle(Palette.ink2)
+        }
+        .padding(.horizontal, 2).padding(.top, 10)
     }
 
     private func incomeKPIs(_ current: IncomeStatement, _ previous: IncomeStatement) -> [KPIItem] {
@@ -1029,7 +1216,7 @@ struct ReportsView: View {
         ]
         if isMac {
             statementDocument(title: Kind.balance.fullTitle,
-                              range: String(localized: "Al \(asOf.shortDate) · base devengado · \(companies.first?.currencyCode ?? "USD")"),
+                              range: String(localized: "Al \(asOf.shortDate) · \(basisText) · \(companies.first?.currencyCode ?? "USD")"),
                               blocks: balanceBlocks, columns: columns)
         } else {
             statementGroups(blocks: balanceBlocks, columns: columns)
@@ -1353,9 +1540,11 @@ struct ReportsView: View {
         case .income: incomeBlocks(comparing: true).flatMap(\.lines).map(\.id)
         case .balance: balanceBlocks.flatMap(\.lines).map(\.id)
         case .trial: trialBalanceReport.rows.map(\.account.id.uuidString)
+        case .cashFlow: cashFlowBlocks(comparing: true).flatMap(\.lines).map(\.id)
         case .receivables: receivablesReport.rows.map { "party:\($0.party)" }
         case .payables: payablesReport.rows.map { "party:\($0.party)" }
         case .salesTax: salesTaxQuarterRows.map(\.key)
+        case .budget: []
         }
     }
 
@@ -1368,7 +1557,7 @@ struct ReportsView: View {
 
     private var macPlaceholder: String {
         switch kind {
-        case .income, .balance: String(localized: "El reporte no tiene movimientos todavía.")
+        case .income, .balance, .cashFlow, .budget: String(localized: "El reporte no tiene movimientos todavía.")
         case .trial: String(localized: "No hay cuentas con movimiento al corte.")
         case .receivables: String(localized: "No hay facturas pendientes de cobro.")
         case .payables: String(localized: "No hay facturas de proveedores pendientes.")
@@ -1382,6 +1571,8 @@ struct ReportsView: View {
         case .income: return incomeBlocks(comparing: true).flatMap(\.lines).first { $0.id == key }?.name ?? kind.fullTitle
         case .balance: return balanceBlocks.flatMap(\.lines).first { $0.id == key }?.name ?? kind.fullTitle
         case .trial: return trialBalanceReport.rows.first { $0.account.id.uuidString == key }?.account.name ?? kind.fullTitle
+        case .cashFlow: return cashFlowBlocks(comparing: true).flatMap(\.lines).first { $0.id == key }?.name ?? kind.fullTitle
+        case .budget: return kind.fullTitle
         case .receivables, .payables: return String(key.dropFirst("party:".count))
         case .salesTax: return salesTaxQuarterRows.first { $0.key == key }?.name ?? kind.fullTitle
         }
@@ -1415,9 +1606,11 @@ struct ReportsView: View {
             case .income: incomeInspector(key)
             case .balance: balanceInspector(key)
             case .trial: trialInspector(key)
+            case .cashFlow: cashFlowInspector(key)
             case .receivables: agingInspector(key, report: receivablesReport)
             case .payables: agingInspector(key, report: payablesReport)
             case .salesTax: salesTaxInspector(key)
+            case .budget: EmptyView()
             }
         }
     }
@@ -1434,6 +1627,13 @@ struct ReportsView: View {
                 if let account = bookAccount(balanceBlocks.flatMap(\.lines).first { $0.id == key }?.account?.id) {
                     Button("Ver en el libro mayor") { openedAccount = account }.buttonStyle(.primary)
                 }
+            case .cashFlow:
+                if let account = bookAccount(cashFlowBlocks(comparing: true).flatMap(\.lines).first { $0.id == key }?.account?.id) {
+                    Button("Ver en el libro mayor") { openedAccount = account }.buttonStyle(.primary)
+                }
+                Button("Exportar para mi contador…") { exportingPackage = true }.buttonStyle(.secondary)
+            case .budget:
+                EmptyView()
             case .trial:
                 if let account = bookAccount(UUID(uuidString: key)) {
                     Button("Ver en el libro mayor") { openedAccount = account }.buttonStyle(.primary)
@@ -1482,7 +1682,7 @@ struct ReportsView: View {
             let previous = line.previous ?? 0
             let delta = line.amount - previous
             let percent = percentChange(line.amount, previous)
-            let totalIncome = ledger.incomeStatement(interval()).totalIncome
+            let totalIncome = incomeStatement(interval()).totalIncome
             let kindTitle = lineKindTitle(line, grand: String(localized: "Resultado"))
             MacReportFigure(caption: "\(kindTitle) · \(periodName(offset: 0))", amount: line.amount.money) {
                 Text(percent.map { String(localized: "\(signedMoney(delta)) (\($0)) vs. \(previousName)") }
@@ -1502,6 +1702,32 @@ struct ReportsView: View {
             }
             Text("Haz clic en una fila del reporte para ver su detalle aquí.")
                 .font(.subheadline).foregroundStyle(Palette.ink2)
+        }
+    }
+
+    /// Flujo de efectivo: la fila en el periodo frente al anterior y qué significa.
+    @ViewBuilder
+    private func cashFlowInspector(_ key: String) -> some View {
+        if let line = cashFlowBlocks(comparing: true).flatMap(\.lines).first(where: { $0.id == key }) {
+            let previous = line.previous ?? 0
+            let delta = line.amount - previous
+            MacReportFigure(caption: "\(lineKindTitle(line, grand: String(localized: "Resultado"))) · \(periodName(offset: 0))",
+                            amount: line.amount.money) {
+                Text(line.amount >= 0 ? String(localized: "Entra dinero") : String(localized: "Sale dinero"))
+                    .foregroundStyle(Palette.ink2)
+            }
+            MacInspectorSection(title: String(localized: "Comparación")) {
+                MacCompareBars(current: (columnTitle(offset: 0), line.amount), previous: (columnTitle(offset: -1), previous))
+                    .padding(.vertical, 6)
+                MacInspectorRow(columnTitle(offset: 0), value: line.amount.money)
+                MacInspectorRow(columnTitle(offset: -1), value: previous.money)
+                MacInspectorRow(String(localized: "Variación"), value: signedMoney(delta), color: color(for: delta, .upIsGood))
+            }
+            MacInspectorSection(title: String(localized: "Base")) {
+                MacInspectorRow(String(localized: "Base contable"), value: basis.title)
+            }
+            Text(CashFlowLayout.explanation(for: key))
+                .font(.subheadline).foregroundStyle(Palette.ink2).fixedSize(horizontal: false, vertical: true)
         }
     }
 
@@ -1672,11 +1898,11 @@ struct ReportsView: View {
     private var balanceSheetReport: BalanceSheet {
         let fiscalStart = (try? Bookkeeper(context: context).fiscalYearStart(containing: asOf))
             ?? Calendar.current.dateInterval(of: .year, for: asOf)?.start
-        return ReportBuilder.balanceSheet(accounts: ledger.ledgerAccounts, lines: ledger.lines, asOf: endOfDay(asOf), fiscalYearStart: fiscalStart)
+        return ReportBuilder.balanceSheet(accounts: ledger.ledgerAccounts, lines: basisLines, asOf: endOfDay(asOf), fiscalYearStart: fiscalStart)
     }
 
     private var trialBalanceReport: TrialBalance {
-        ReportBuilder.trialBalance(accounts: ledger.ledgerAccounts, lines: ledger.lines, asOf: endOfDay(asOf))
+        ReportBuilder.trialBalance(accounts: ledger.ledgerAccounts, lines: basisLines, asOf: endOfDay(asOf))
     }
 
     // Las listas de facturas y de facturas de proveedor se observan para que los reportes se actualicen solos.
@@ -1709,8 +1935,8 @@ struct ReportsView: View {
         switch kind {
         case .income:
             CSVFile(name: String(localized: "Estado de resultados"),
-                    text: CSVExport.incomeStatement(ledger.incomeStatement(interval()),
-                                                    previous: compare ? ledger.incomeStatement(interval(offset: -1)) : nil))
+                    text: CSVExport.incomeStatement(incomeStatement(interval()),
+                                                    previous: compare ? incomeStatement(interval(offset: -1)) : nil))
         case .balance:
             CSVFile(name: String(localized: "Balance general"), text: CSVExport.balanceSheet(balanceSheetReport))
         case .trial:
@@ -1723,6 +1949,31 @@ struct ReportsView: View {
         case .payables:
             CSVFile(name: String(localized: "Antigüedad de cuentas por pagar"),
                     text: CSVExport.aging(payablesReport, title: String(localized: "Antigüedad de cuentas por pagar"), partyTitle: String(localized: "Proveedor")))
+        case .cashFlow:
+            CSVFile(name: String(localized: "Flujo de efectivo"), text: CSVExport.cashFlow(cashFlowStatement(interval())))
+        case .budget:
+            CSVFile(name: kind.fullTitle, text: "")
+        }
+    }
+
+    /// El reporte como documento para el PDF (los estados; la antigüedad y el sales tax se exportan en CSV).
+    private var pdfDocument: ReportDocument? {
+        let currency = companies.first?.currencyCode ?? "USD"
+        let columns = [columnTitle(offset: 0)] + (compare ? [columnTitle(offset: -1)] : [])
+        let range = String(localized: "\(rangeTitle) · \(basisText) · \(currency)")
+        switch kind {
+        case .income:
+            return .incomeStatement(incomeStatement(interval()), previous: compare ? incomeStatement(interval(offset: -1)) : nil,
+                                    columns: columns, subtitle: range)
+        case .balance:
+            return .balanceSheet(balanceSheetReport, subtitle: String(localized: "Al \(asOf.shortDate) · \(basisText) · \(currency)"))
+        case .trial:
+            return .trialBalance(trialBalanceReport, subtitle: String(localized: "Al \(asOf.shortDate) · \(basisText) · \(currency)"))
+        case .cashFlow:
+            return .cashFlow(cashFlowStatement(interval()), previous: compare ? cashFlowStatement(interval(offset: -1)) : nil,
+                             columns: columns, subtitle: range)
+        case .receivables, .payables, .salesTax, .budget:
+            return nil
         }
     }
 }
