@@ -5572,6 +5572,26 @@
         }
       }
     },
+    "Compartir ZIP…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share ZIP…"
+          }
+        }
+      }
+    },
+    "Compartir carpeta…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share Folder…"
+          }
+        }
+      }
+    },
     "Completado" : {
       "localizations" : {
         "en" : {
@@ -22918,6 +22938,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Preview · Invoice %@"
+          }
+        }
+      }
+    },
+    "Volver a Impuestos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Back to Taxes"
           }
         }
       }

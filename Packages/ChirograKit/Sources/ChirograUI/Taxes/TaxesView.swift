@@ -78,13 +78,23 @@ struct TaxesView: View {
         do { try Bookkeeper(context: context).setDefaultTax(id); errorMessage = nil } catch { errorMessage = error.localizedDescription }
     }
 
+    /// iPad y Mac: «Ver por línea» cambia la página por la de deducibles, con «‹ Impuestos» para volver. No se abre
+    /// encima en la pila: en iOS 26 una página con `@Query` abierta con `navigationDestination` (o un `NavigationLink`
+    /// dentro de un `ScrollView`) se volvía a crear sin parar y la app se quedaba colgada.
     var body: some View {
+        if showingDeductions || qaDeductionsPage {
+            DeductionsView(onClose: { showingDeductions = false })
+        } else {
+            taxesBody
+        }
+    }
+
+    /// `-qa.impuestos pagina` (solo Debug): directamente la página de deducibles.
+    private var qaDeductionsPage: Bool {
         #if DEBUG
-        // `-qa.impuestos pagina`: la página de deducibles en lugar de Impuestos (capturas del Mac: la ventana oculta de
-        // `open -j` no redibuja lo que se abre encima). Solo Debug.
-        if UserDefaults.standard.string(forKey: "qa.impuestos") == "pagina" { DeductionsView() } else { taxesBody }
+        UserDefaults.standard.string(forKey: "qa.impuestos") == "pagina"
         #else
-        taxesBody
+        false
         #endif
     }
 
@@ -175,8 +185,6 @@ struct TaxesView: View {
             }
         }
         #endif
-        // Después del inspector del Mac: dentro de él, la pila de la columna no veía el destino.
-        .navigationDestination(isPresented: $showingDeductions) { DeductionsView() }
     }
 
     // MARK: Trimestre

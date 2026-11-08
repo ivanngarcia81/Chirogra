@@ -78,6 +78,8 @@ enum DeductionsPeriod: String, CaseIterable, Identifiable {
 /// propios); si no, la página completa (iPad y Mac, o desde un enlace).
 struct DeductionsView: View {
     var embedded = false
+    /// En iPad y Mac, la página sustituye a Impuestos: «‹ Impuestos» vuelve (ver `TaxesView.body`).
+    var onClose: (() -> Void)? = nil
 
     @Environment(\.modelContext) private var context
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
@@ -106,6 +108,12 @@ struct DeductionsView: View {
     /// Fila elegida para el inspector: «account:<id>» o «line:<id>».
     @State private var macPick: String?
     @State private var openedAccount: Account?
+    #endif
+
+    #if os(iOS)
+    private static let backPlacement = ToolbarItemPlacement.topBarLeading
+    #else
+    private static let backPlacement = ToolbarItemPlacement.navigation
     #endif
 
     private var company: Company? { companies.first }
@@ -170,6 +178,15 @@ struct DeductionsView: View {
         .macInspectorToggle(isAvailable: form != nil)
         #endif
         .toolbar {
+            if let onClose {
+                ToolbarItem(placement: Self.backPlacement) {
+                    Button(action: onClose) {
+                        Label("Impuestos", systemImage: "chevron.left")
+                    }
+                    .headerButton()
+                    .accessibilityLabel("Volver a Impuestos")
+                }
+            }
             if isWide {
                 ToolbarItem(placement: .primaryAction) { periodMenu }
                 ToolbarItem(placement: .primaryAction) {
@@ -177,7 +194,12 @@ struct DeductionsView: View {
                 }
                 ToolbarItem(placement: .primaryAction) {
                     Button { exportingPackage = true } label: {
+                        #if os(macOS)
                         HStack(spacing: 6) { Image(systemName: "archivebox"); Text("Exportar para mi contador…") }
+                        #else
+                        // En el iPad, solo el símbolo: con el texto, «‹ Impuestos» quedaba escondido en «…».
+                        Label("Exportar para mi contador…", systemImage: "archivebox").labelStyle(.iconOnly)
+                        #endif
                     }
                     .headerButton()
                 }
