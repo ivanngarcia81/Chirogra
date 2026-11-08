@@ -1,5 +1,6 @@
 import ChirograData
 import Foundation
+import SwiftData
 import Testing
 
 /// Valor inicial del interruptor de iCloud (`ChirograStore.resolveSyncPreference`).
@@ -16,14 +17,40 @@ struct SyncPreferenceTests {
         #expect(defaults.object(forKey: ChirograStore.syncEnabledKey) as? Bool == true)
     }
 
-    @Test func librosLocalesDeAntesSiguenSinICloud() throws {
+    @MainActor @Test func librosLocalesDeAntesSiguenSinICloud() throws {
         let (defaults, url) = scratch()
-        try Data("x".utf8).write(to: url)
-        defer { try? FileManager.default.removeItem(at: url) }
+        defer { removeStore(url) }
+        do {
+            let container = try ChirograStore.makeContainer(url: url)
+            try Bookkeeper(context: ModelContext(container)).setUpCompany(legalName: "Taller Luna LLC")
+        }
         #expect(!ChirograStore.resolveSyncPreference(defaults: defaults, storeURL: url))
         // Ya fijado: aunque el almacén desaparezca, no cambia.
-        try FileManager.default.removeItem(at: url)
+        removeStore(url)
         #expect(!ChirograStore.resolveSyncPreference(defaults: defaults, storeURL: url))
+    }
+
+    /// Quien abrió la app y no terminó el alta (o borró los datos de ejemplo) tiene el almacén, pero sin empresa.
+    @Test func almacenVacioEnciendeICloud() throws {
+        let (defaults, url) = scratch()
+        defer { removeStore(url) }
+        _ = try ChirograStore.makeContainer(url: url)
+        #expect(FileManager.default.fileExists(atPath: url.path(percentEncoded: false)))
+        #expect(ChirograStore.resolveSyncPreference(defaults: defaults, storeURL: url))
+    }
+
+    /// Un archivo que no se puede abrir cuenta como libros: no se arriesga una mezcla.
+    @Test func almacenIlegibleSigueSinICloud() throws {
+        let (defaults, url) = scratch()
+        defer { removeStore(url) }
+        try Data("no es una base".utf8).write(to: url)
+        #expect(!ChirograStore.resolveSyncPreference(defaults: defaults, storeURL: url))
+    }
+
+    private func removeStore(_ url: URL) {
+        for suffix in ["", "-shm", "-wal"] {
+            try? FileManager.default.removeItem(at: URL(filePath: url.path(percentEncoded: false) + suffix))
+        }
     }
 
     @Test func elegidoAntesNoSeToca() {

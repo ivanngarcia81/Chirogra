@@ -13,8 +13,9 @@ public enum ChirograStore {
     public static var defaultStoreURL: URL { ModelConfiguration("Chirogra", schema: schema).url }
 
     /// Fija el valor inicial del interruptor de iCloud la primera vez, antes de abrir el almacén:
-    /// - aparato nuevo (sin almacén local): **encendido**, así un segundo aparato espera los libros del primero
-    ///   (`SyncLoadingView`) en vez de pedir el alta y mezclar dos libros al encender iCloud después;
+    /// - aparato sin libros (sin almacén, o con el almacén vacío de quien abrió la app sin terminar el alta):
+    ///   **encendido**, así un segundo aparato espera los libros del primero (`SyncLoadingView`) en vez de pedir el
+    ///   alta y mezclar dos libros al encender iCloud después;
     /// - aparato con libros locales de antes que nunca tocó el interruptor: **apagado**, como estaba (encenderlo
     ///   subiría esos libros y los mezclaría con los de iCloud).
     /// Si el interruptor ya tiene valor (también uno pasado como argumento de arranque), no lo toca.
@@ -22,9 +23,21 @@ public enum ChirograStore {
     @discardableResult
     public static func resolveSyncPreference(defaults: UserDefaults = .standard, storeURL: URL = defaultStoreURL) -> Bool {
         if defaults.object(forKey: syncEnabledKey) == nil {
-            defaults.set(!FileManager.default.fileExists(atPath: storeURL.path(percentEncoded: false)), forKey: syncEnabledKey)
+            defaults.set(!hasLocalBooks(at: storeURL), forKey: syncEnabledKey)
         }
         return defaults.bool(forKey: syncEnabledKey)
+    }
+
+    /// El almacén existe y tiene alguna empresa. Se abre solo en local (sin CloudKit) y se suelta al volver. Si no se
+    /// puede abrir, se da por hecho que sí hay libros: mejor dejar iCloud apagado que arriesgar una mezcla.
+    static func hasLocalBooks(at url: URL) -> Bool {
+        guard FileManager.default.fileExists(atPath: url.path(percentEncoded: false)) else { return false }
+        do {
+            let container = try makeContainer(url: url)
+            return try ModelContext(container).fetchCount(FetchDescriptor<Company>()) > 0
+        } catch {
+            return true
+        }
     }
 
     /// - Parameters:
