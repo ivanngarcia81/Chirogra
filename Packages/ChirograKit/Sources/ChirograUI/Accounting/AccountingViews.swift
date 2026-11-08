@@ -876,6 +876,8 @@ struct JournalEntryDetailView: View {
     }
     @State private var errorMessage: String?
     @State private var confirming = false
+    /// Banca 1.2: revertir un asiento conciliado pide confirmación (`ReconciledChange`).
+    @State private var reconciledRetry: ReconciledChangeRetry?
 
     var body: some View {
         Form {
@@ -938,9 +940,13 @@ struct JournalEntryDetailView: View {
         .inlineTitle()
         .confirmationDialog("¿Revertir este asiento?", isPresented: $confirming, titleVisibility: .visible) {
             Button("Revertir", role: .destructive) {
-                do { try Bookkeeper(context: context).reverse(entry) } catch { errorMessage = error.localizedDescription }
+                do { try Bookkeeper(context: context).reverse(entry) } catch {
+                    // Banca 1.2: revertir un asiento conciliado pide confirmación (`ReconciledChange`).
+                    if let retry = ReconciledChange.retry(for: error, { try $0.reverse(entry) }) { reconciledRetry = retry } else { errorMessage = error.localizedDescription }
+                }
             }
         }
+        .reconciledChangeConfirmation($reconciledRetry) { errorMessage = $0 }
     }
 }
 

@@ -31,6 +31,8 @@ struct InvoiceDetailView: View {
     @State private var confirmingVoid = false
     @State private var confirmingDelete = false
     @State private var errorMessage: String?
+    /// Banca 1.2: anular algo conciliado pide confirmación (`ReconciledChange`).
+    @State private var reconciledRetry: ReconciledChangeRetry?
     /// Borrador recién emitido desde aquí: se ofrece enviarlo (`offerToSendIssued`).
     @State private var justIssued: Invoice?
     /// El campo «Monto» de «Parcial» tiene el foco: se desplaza hasta «Registrar $…» para que el teclado no lo tape.
@@ -152,6 +154,7 @@ struct InvoiceDetailView: View {
             NavigationStack { CreditNoteEditorView(invoice: invoice) }.editorSheetSizing()
         }
         .offerToSendIssued($justIssued)
+        .reconciledChangeConfirmation($reconciledRetry) { errorMessage = $0 }
         .confirmationDialog("¿Anular la factura?", isPresented: $confirmingVoid, titleVisibility: .visible) {
             Button("Anular", role: .destructive, action: void)
         } message: {
@@ -686,7 +689,10 @@ struct InvoiceDetailView: View {
     }
 
     private func void() {
-        do { try books.void(invoice); errorMessage = nil } catch { errorMessage = error.localizedDescription }
+        do { try books.void(invoice); errorMessage = nil } catch {
+            // Banca 1.2: si el cobro o la factura están conciliados, se pregunta antes (`ReconciledChange`).
+            if let retry = ReconciledChange.retry(for: error, { try $0.void(invoice) }) { reconciledRetry = retry } else { errorMessage = error.localizedDescription }
+        }
     }
 
     private func deleteDraft() {

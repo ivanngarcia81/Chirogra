@@ -21,6 +21,7 @@ extension MasterPage {
         case .vendors: VendorTablePage.isReady
         case .bills: BillTablePage.isReady
         case .banking: BankingTablePage.isReady
+        case .bankInbox: BankInboxTablePage.isReady
         case .journal: JournalTablePage.isReady
         case .chart: ChartTablePage.isReady
         }
@@ -41,6 +42,7 @@ extension MasterPage {
         case .vendors: VendorTablePage(selection: selection)
         case .bills: BillTablePage(selection: selection)
         case .banking: BankingTablePage(selection: selection)
+        case .bankInbox: BankInboxTablePage(selection: selection)
         case .journal: JournalTablePage(selection: selection)
         case .chart: ChartTablePage(selection: selection)
         }
@@ -456,6 +458,10 @@ enum QALaunch {
         case "vendors": .expenses(.vendors)
         case "bills": .expenses(.bills)
         case "banking": .section(.banking)
+        // Banca 1.2: bandeja, reglas y conciliación.
+        case "bankInbox": .banking(.inbox)
+        case "bankRules": .banking(.rules)
+        case "reconcile": .banking(.reconcile)
         case "journal": .accounting(.journal)
         case "chart": .accounting(.chart)
         case "ledger": .accounting(.ledger)

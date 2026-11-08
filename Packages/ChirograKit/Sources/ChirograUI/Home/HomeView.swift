@@ -479,9 +479,9 @@ struct HomeView: View {
             .buttonStyle(.plain).foregroundStyle(Palette.brand)
     }
 
+    /// Banca 1.2: con movimientos por revisar, «Revisar N» lleva a la bandeja (canvas `MacInicio`).
     private var bankingLink: some View {
-        SectionLink(item: .section(.banking)) { BankingView() } label: { Text("Banca") }
-            .buttonStyle(.plain).foregroundStyle(Palette.brand)
+        BankingHomeLink()
     }
 
     /// Factura · Gasto · Cliente («Escanear» es de la fase 2). Con letra de accesibilidad, una fila por acción.

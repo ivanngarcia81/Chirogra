@@ -50,6 +50,8 @@ struct ExpenseEditorView: View {
     @State private var frequency: RecurrenceFrequency = .monthly
     @State private var autoCharge = true
     @State private var errorMessage: String?
+    /// Banca 1.2: corregir un gasto conciliado pide confirmación (`ReconciledChange`).
+    @State private var reconciledRetry: ReconciledChangeRetry?
     @State private var editorWidth: CGFloat = 0
     @State private var loaded = false
     /// La fecha (la nueva o la original) cae en un periodo cerrado: se pide la contraseña de cierre para seguir.
@@ -181,6 +183,7 @@ struct ExpenseEditorView: View {
             // Escrito a mano (o puesto en 0): deja de seguir al monto.
             if loaded, new != estimatedTax(in: total) { taxFollowsRate = false }
         }
+        .reconciledChangeConfirmation($reconciledRetry) { errorMessage = $0 }
         .alert(hasClosingPassword ? "Periodo cerrado" : "¿Registrar en un periodo cerrado?", isPresented: $askingUnlock) {
             if hasClosingPassword {
                 SecureField("Contraseña de cierre", text: $closingPassword)
@@ -644,6 +647,11 @@ struct ExpenseEditorView: View {
             if case .invalidEntry(.periodLocked) = error {
                 pendingAnother = another
                 askingUnlock = true
+            } else if case .reconciledLines = error, let expense {
+                reconciledRetry = ReconciledChangeRetry { books in
+                    try books.updateExpense(expense, with: input)
+                    unsavedChanges?.remove(editorToken); dismiss()
+                }
             } else {
                 errorMessage = error.localizedDescription
             }
