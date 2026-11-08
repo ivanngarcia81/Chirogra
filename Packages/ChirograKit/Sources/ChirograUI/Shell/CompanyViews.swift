@@ -226,9 +226,9 @@ struct CompaniesView: View {
             }
         }
         .task(id: companies.map { "\($0.id)\($0.isArchived)" }) { reload() }
-        .confirmationDialog(deleting.map { String(localized: "¿Borrar «\($0.shownName)» y todos sus libros?") } ?? "",
-                            isPresented: Binding(get: { deleting != nil }, set: { if !$0 { deleting = nil } }),
-                            titleVisibility: .visible, presenting: deleting) { company in
+        .alert(deleting.map { String(localized: "¿Borrar «\($0.shownName)» y todos sus libros?") } ?? "",
+               isPresented: Binding(get: { deleting != nil }, set: { if !$0 { deleting = nil } }),
+               presenting: deleting) { company in
             Button("Crear una copia antes…") { makeBackup(of: company) }
             Button("Borrar para siempre", role: .destructive) { delete(company) }
             Button("Cancelar", role: .cancel) {}
@@ -253,8 +253,10 @@ struct CompaniesView: View {
                     VStack(alignment: .leading, spacing: 2) {
                         HStack(spacing: 6) {
                             Text(company.shownName).font(.body.weight(.semibold)).foregroundStyle(Palette.ink)
+                                .layoutPriority(1)
                             if sampleIDs.contains(company.id) {
                                 Text("Ejemplo").font(.caption.weight(.semibold)).foregroundStyle(Palette.orange)
+                                    .fixedSize()
                             }
                         }
                         ForEach(details(company), id: \.self) { line in

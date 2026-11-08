@@ -144,9 +144,9 @@ struct BackupSection: View {
             Text(confirmation(for: pending))
         }
         // Una copia elegida: en lugar de la empresa activa o como otra empresa.
-        .confirmationDialog("¿Restaurar esta copia?",
-                            isPresented: Binding(get: { pending.map { !$0.isUndo } ?? false }, set: { if !$0 { pending = nil } }),
-                            titleVisibility: .visible, presenting: pending) { pending in
+        .alert("¿Restaurar esta copia?",
+               isPresented: Binding(get: { pending.map { !$0.isUndo } ?? false }, set: { if !$0 { pending = nil } }),
+               presenting: pending) { pending in
             Button("Sustituir «\(companyName)»", role: .destructive) { restore(pending, mode: .replaceCompany(nil)) }
             Button("Restaurar como empresa nueva") { restore(pending, mode: .newCompany) }
             Button("Cancelar", role: .cancel) {}
