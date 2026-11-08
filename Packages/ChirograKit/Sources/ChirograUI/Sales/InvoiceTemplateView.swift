@@ -15,7 +15,7 @@ struct InvoiceTemplateView: View {
     /// Dentro de `SettingsWideView`: el título de la ventana sigue siendo «Ajustes».
     var embedded = false
     @Environment(\.modelContext) private var context
-    @Query(sort: \Invoice.issueDate, order: .reverse) private var invoices: [Invoice]
+    @CompanyQuery(sort: \Invoice.issueDate, order: .reverse) private var invoices: [Invoice]
     @State private var photo: PhotosPickerItem?
     @State private var importingLogo = false
     @State private var errorMessage: String?

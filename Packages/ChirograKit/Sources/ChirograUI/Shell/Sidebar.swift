@@ -86,7 +86,9 @@ enum SidebarItem: Hashable {
 struct Sidebar: View {
     @Binding var selection: SidebarItem
     @Binding var query: String
-    @Query private var companies: [Company]
+    @ActiveCompanyQuery private var companies: [Company]
+    /// Todas, para el selector de la ficha del pie.
+    @Query private var selectorCompanies: [Company]
     @AppStorage(ChirograStore.syncEnabledKey) private var iCloudSyncEnabled = true
     @State private var sync = SyncMonitor.shared
     @ScaledMetric(relativeTo: .body) private var iconWidth: CGFloat = Self.iconSide
@@ -320,15 +322,20 @@ struct Sidebar: View {
 
     // MARK: Empresa
 
-    /// Empresa al pie (canvas: monograma, nombre y «iCloud · …»), que abre los ajustes. El selector de empresas del
-    /// canvas es de fase 2 (varias empresas) y no sale.
+    /// Empresa al pie (canvas: monograma, nombre, «iCloud · …» y «⌃⌄»): el selector de empresa. Abre el menú con las
+    /// empresas, «Añadir empresa…», «Empresas…» y «Ajustes de la empresa».
     @ViewBuilder
     private var companyCard: some View {
         if let company = companies.first {
             let name = company.displayName.isEmpty ? company.legalName : company.displayName
-            Button {
-                query = ""
-                selection = .section(.settings)
+            Menu {
+                CompanyMenuItems(companies: selectorCompanies)
+                Section {
+                    Button("Ajustes de la empresa", systemImage: "gearshape") {
+                        query = ""
+                        selection = .section(.settings)
+                    }
+                }
             } label: {
                 HStack(spacing: 10) {
                     CompanyMonogram(name: name, side: Self.monogramSide)
@@ -346,14 +353,22 @@ struct Sidebar: View {
                     .lineLimit(2)
                     .minimumScaleFactor(0.8)
                     Spacer(minLength: 0)
+                    Image(systemName: "chevron.up.chevron.down")
+                        .font(Self.captionFont.weight(.semibold))
+                        .foregroundStyle(Palette.ink2)
+                        .accessibilityHidden(true)
                 }
                 .padding(8)
                 .frame(minHeight: Metrics.target)
                 .contentShape(Rectangle())
             }
+            .menuStyle(.button)
+            .menuIndicator(.hidden)
             .buttonStyle(.plain)
             .accessibilityElement(children: .combine)
-            .accessibilityHint("Abre los ajustes")
+            .accessibilityLabel(Text("Empresa: \(name)"))
+            .accessibilityValue(Text(syncText))
+            .accessibilityHint("Cambia de empresa, añade otra o abre sus ajustes")
             .padding(.horizontal, Self.panelPadding)
             .padding(.vertical, 8)
             .background(Palette.sidebar)
@@ -382,12 +397,12 @@ private struct SidebarCaptionLabelStyle: LabelStyle {
 /// Resultados de la búsqueda de la barra lateral: facturas, clientes, proveedores, gastos y cuentas.
 struct SearchResultsView: View {
     let query: String
-    @Query(sort: \Invoice.createdAt, order: .reverse) private var invoices: [Invoice]
-    @Query(sort: \Estimate.issueDate, order: .reverse) private var estimates: [Estimate]
-    @Query(sort: \Customer.name) private var customers: [Customer]
-    @Query(sort: \Vendor.name) private var vendors: [Vendor]
-    @Query(sort: \Expense.date, order: .reverse) private var expenses: [Expense]
-    @Query(sort: \Account.code) private var accounts: [Account]
+    @CompanyQuery(sort: \Invoice.createdAt, order: .reverse) private var invoices: [Invoice]
+    @CompanyQuery(sort: \Estimate.issueDate, order: .reverse) private var estimates: [Estimate]
+    @CompanyQuery(sort: \Customer.name) private var customers: [Customer]
+    @CompanyQuery(sort: \Vendor.name) private var vendors: [Vendor]
+    @CompanyQuery(sort: \Expense.date, order: .reverse) private var expenses: [Expense]
+    @CompanyQuery(sort: \Account.code) private var accounts: [Account]
 
     private var text: String { query.trimmingCharacters(in: .whitespaces) }
     /// Sin distinguir mayúsculas ni tildes.

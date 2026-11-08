@@ -26,7 +26,7 @@ struct SendDocumentView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     @Environment(\.unsavedChanges) private var unsavedChanges
-    @Query private var companies: [Company]
+    @ActiveCompanyQuery private var companies: [Company]
     @State private var editorToken = EditorToken()
     @State private var recipient = ""
     @State private var subject = ""

@@ -75,15 +75,15 @@ struct ReportsView: View {
     @ScaledMetric(relativeTo: .body) private var amountColumn: CGFloat = Self.amountColumnBase
     @ScaledMetric(relativeTo: .body) private var percentColumn: CGFloat = 64
     @ScaledMetric(relativeTo: .body) private var bucketColumn: CGFloat = Self.bucketColumnBase
-    @Query(sort: \Account.code) private var accounts: [Account]
-    @Query private var journalLines: [JournalLine]
-    @Query private var invoices: [Invoice]
-    @Query private var bills: [Bill]
-    @Query private var companies: [Company]
-    @Query(sort: \Customer.name) private var customers: [Customer]
-    @Query(sort: \Vendor.name) private var vendors: [Vendor]
-    @Query(sort: \TaxRate.name) private var taxRates: [TaxRate]
-    @Query private var entries: [JournalEntry]
+    @CompanyQuery(sort: \Account.code) private var accounts: [Account]
+    @CompanyQuery private var journalLines: [JournalLine]
+    @CompanyQuery private var invoices: [Invoice]
+    @CompanyQuery private var bills: [Bill]
+    @ActiveCompanyQuery private var companies: [Company]
+    @CompanyQuery(sort: \Customer.name) private var customers: [Customer]
+    @CompanyQuery(sort: \Vendor.name) private var vendors: [Vendor]
+    @CompanyQuery(sort: \TaxRate.name) private var taxRates: [TaxRate]
+    @CompanyQuery private var entries: [JournalEntry]
     /// «Crear mi primera factura» del aviso de libros vacíos.
     @State private var creatingInvoice = false
 

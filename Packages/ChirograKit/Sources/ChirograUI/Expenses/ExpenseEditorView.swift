@@ -19,10 +19,10 @@ struct ExpenseEditorView: View {
     @Environment(\.unsavedChanges) private var unsavedChanges
     /// Testigo del editor en `UnsavedChanges`: se retira al guardar, antes de cerrar.
     @State private var editorToken = EditorToken()
-    @Query(sort: \Account.code) private var accounts: [Account]
-    @Query(sort: \Vendor.name) private var vendors: [Vendor]
-    @Query(sort: \Customer.name) private var customers: [Customer]
-    @Query private var companies: [Company]
+    @CompanyQuery(sort: \Account.code) private var accounts: [Account]
+    @CompanyQuery(sort: \Vendor.name) private var vendors: [Vendor]
+    @CompanyQuery(sort: \Customer.name) private var customers: [Customer]
+    @ActiveCompanyQuery private var companies: [Company]
 
     /// Una línea del gasto (categoría e importe). Un gasto normal tiene una; se puede repartir en varias categorías.
     struct LineDraft: Identifiable, Equatable {

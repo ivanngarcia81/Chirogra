@@ -12,8 +12,8 @@ import SwiftUI
 struct VendorTablePage: View {
     static let isReady = true
     @Binding var selection: UUID?
-    @Query(sort: \Vendor.name) private var vendors: [Vendor]
-    @Query(sort: \Account.code) private var accounts: [Account]
+    @CompanyQuery(sort: \Vendor.name) private var vendors: [Vendor]
+    @CompanyQuery(sort: \Account.code) private var accounts: [Account]
     @State private var filter: VendorFilter = .all
     @State private var query = ""
     @State private var creating = false

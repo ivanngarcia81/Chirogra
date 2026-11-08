@@ -7,8 +7,8 @@ import SwiftUI
 /// de color y el saldo en libros; cada una abre su libro mayor. Importar movimientos, la bandeja «por revisar» y la
 /// conciliación son de la fase 2 (DISEÑO §7.4): se anuncian como «Próximamente».
 struct BankingView: View {
-    @Query(sort: \Account.code) private var accounts: [Account]
-    @Query private var journalLines: [JournalLine]
+    @CompanyQuery(sort: \Account.code) private var accounts: [Account]
+    @CompanyQuery private var journalLines: [JournalLine]
     @State private var addingAccount = false
 
     var body: some View {
@@ -89,8 +89,8 @@ extension Account {
 struct AccountMovementsView: View {
     let account: Account
     @State private var monthOffset = 0
-    @Query private var journalLines: [JournalLine]
-    @Query(sort: \Account.code) private var accounts: [Account]
+    @CompanyQuery private var journalLines: [JournalLine]
+    @CompanyQuery(sort: \Account.code) private var accounts: [Account]
     @ScaledMetric(relativeTo: .subheadline) private var amountWidth: CGFloat = 104
     @ScaledMetric(relativeTo: .subheadline) private var dateWidth: CGFloat = 58
 

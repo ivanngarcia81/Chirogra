@@ -16,17 +16,19 @@ import SwiftUI
 ///   Cuando ya hay movimientos y quedan pasos por hacer, una tarjeta «Primeros pasos» con los pendientes (se puede
 ///   ocultar en cada aparato).
 struct HomeView: View {
-    @Query private var companies: [Company]
-    @Query(sort: \Account.code) private var accounts: [Account]
-    @Query private var journalLines: [JournalLine]
-    @Query(sort: \Invoice.dueDate) private var invoices: [Invoice]
-    @Query(sort: \Bill.dueDate) private var bills: [Bill]
-    @Query private var expenses: [Expense]
-    @Query private var customers: [Customer]
-    @Query private var payments: [PaymentReceived]
+    @ActiveCompanyQuery private var companies: [Company]
+    /// Todas las empresas, para el selector del «Empresa · Mes ▾».
+    @Query private var selectorCompanies: [Company]
+    @CompanyQuery(sort: \Account.code) private var accounts: [Account]
+    @CompanyQuery private var journalLines: [JournalLine]
+    @CompanyQuery(sort: \Invoice.dueDate) private var invoices: [Invoice]
+    @CompanyQuery(sort: \Bill.dueDate) private var bills: [Bill]
+    @CompanyQuery private var expenses: [Expense]
+    @CompanyQuery private var customers: [Customer]
+    @CompanyQuery private var payments: [PaymentReceived]
     /// Para decir en «Configura tu sales tax» qué impuesto cobran las facturas.
-    @Query private var taxRates: [TaxRate]
-    @Query private var taxGroups: [TaxGroup]
+    @CompanyQuery private var taxRates: [TaxRate]
+    @CompanyQuery private var taxGroups: [TaxGroup]
     /// La tarjeta de primeros pasos del tablero se ocultó en este aparato.
     @AppStorage("homeSetupStepsHidden") private var setupStepsHidden = false
 
@@ -249,15 +251,22 @@ struct HomeView: View {
 
     // MARK: Periodo
 
-    /// «Octubre 2026 ▾»: elige el mes de las cifras (los últimos 12).
+    /// «Octubre 2026 ▾»: elige el mes de las cifras (los últimos 12). Con la empresa delante («Ríos Diseño & Obra ·
+    /// Octubre 2026 ▾», iPhone y columna del iPad) es también el selector de empresa (canvas `Home`): las empresas,
+    /// «Añadir empresa…» y «Empresas…», y debajo los meses.
     private func periodMenu(compact: Bool, prefix: String? = nil) -> some View {
         Menu {
-            Picker("Mes", selection: $monthOffset) {
-                ForEach(0..<12, id: \.self) { offset in
-                    Text(DateInterval.month(containing: .now, offset: -offset).start.monthYear).tag(-offset)
+            if prefix != nil { CompanyMenuItems(companies: selectorCompanies) }
+            Section {
+                Picker("Mes", selection: $monthOffset) {
+                    ForEach(0..<12, id: \.self) { offset in
+                        Text(DateInterval.month(containing: .now, offset: -offset).start.monthYear).tag(-offset)
+                    }
                 }
+                .pickerStyle(.inline)
+            } header: {
+                if prefix != nil { Text("Mes") }
             }
-            .pickerStyle(.inline)
         } label: {
             HStack(spacing: 4) {
                 Text([prefix, month.start.monthYear].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " · "))
@@ -272,8 +281,8 @@ struct HomeView: View {
         .menuIndicator(.hidden)
         .buttonStyle(.plain)
         .fixedSize(horizontal: false, vertical: true)
-        .accessibilityLabel("Periodo")
-        .accessibilityValue(month.start.monthYear)
+        .accessibilityLabel(prefix == nil ? Text("Periodo") : Text("Empresa y periodo"))
+        .accessibilityValue([prefix, month.start.monthYear].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: ", "))
     }
 
     // MARK: Cifras

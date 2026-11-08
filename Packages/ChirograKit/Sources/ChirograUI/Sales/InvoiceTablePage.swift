@@ -15,8 +15,8 @@ struct InvoiceTablePage: View {
     #endif
     @Binding var selection: UUID?
     @Environment(\.modelContext) private var context
-    @Query(sort: \Invoice.createdAt, order: .reverse) private var invoices: [Invoice]
-    @Query private var payments: [PaymentReceived]
+    @CompanyQuery(sort: \Invoice.createdAt, order: .reverse) private var invoices: [Invoice]
+    @CompanyQuery private var payments: [PaymentReceived]
     @State private var filter: InvoiceListView.Filter = .all
     @State private var query = ""
     @State private var creating = false
@@ -255,7 +255,7 @@ struct InvoicePaymentSheet: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     @Environment(\.unsavedChanges) private var unsavedChanges
-    @Query(sort: \Account.code) private var accounts: [Account]
+    @CompanyQuery(sort: \Account.code) private var accounts: [Account]
     @State private var editorToken = EditorToken()
     @State private var mode: InvoiceDetailView.PaymentMode = .total
     @State private var amount: Int64 = 0

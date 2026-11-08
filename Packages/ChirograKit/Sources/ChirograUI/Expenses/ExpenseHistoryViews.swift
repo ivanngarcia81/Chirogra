@@ -62,12 +62,12 @@ struct ExpenseHistoryItem: Identifiable {
 /// anulan entre sí.
 struct ExpenseHistorySection: View {
     let expense: Expense
-    @Query private var entries: [JournalEntry]
+    @CompanyQuery private var entries: [JournalEntry]
 
     init(expense: Expense) {
         self.expense = expense
         let id: UUID? = expense.id
-        _entries = Query(filter: #Predicate<JournalEntry> { $0.sourceDocumentID == id }, sort: \.number)
+        _entries = CompanyQuery(filter: #Predicate<JournalEntry> { $0.sourceDocumentID == id }, sort: \.number)
     }
 
     var body: some View {
@@ -101,13 +101,13 @@ struct ExpenseHistorySection: View {
 struct ExpenseHistoryInspectorSection: View {
     let expense: Expense
     let open: (JournalEntry) -> Void
-    @Query private var entries: [JournalEntry]
+    @CompanyQuery private var entries: [JournalEntry]
 
     init(expense: Expense, open: @escaping (JournalEntry) -> Void) {
         self.expense = expense
         self.open = open
         let id: UUID? = expense.id
-        _entries = Query(filter: #Predicate<JournalEntry> { $0.sourceDocumentID == id }, sort: \.number)
+        _entries = CompanyQuery(filter: #Predicate<JournalEntry> { $0.sourceDocumentID == id }, sort: \.number)
     }
 
     var body: some View {

@@ -167,7 +167,7 @@ struct AttachmentFile: Transferable {
 struct ExpenseDetailView: View {
     @Bindable var expense: Expense
     @Environment(\.modelContext) private var context
-    @Query private var accounts: [Account]
+    @CompanyQuery private var accounts: [Account]
     @State private var errorMessage: String?
     @State private var removing: Attachment?
     @State private var isTargeted = false

@@ -58,12 +58,14 @@ enum SafetyCopies {
     }
 }
 
-/// «Copias de seguridad» de Datos y seguridad (canvas `AjustesDatos`, DISEÑO §6.5): «Crear copia ahora» guarda los
-/// libros con sus recibos en un archivo `.chirogra`; «Restaurar desde una copia…» los reemplaza por los de un archivo,
-/// después de confirmarlo y guardando antes una copia de lo actual, que «Deshacer la restauración» vuelve a poner.
+/// «Copias de seguridad» de Datos y seguridad (canvas `AjustesDatos`, DISEÑO §6.5), **por empresa** (DATOS-V4 §2):
+/// «Crear copia de esta empresa» guarda los libros de la activa con sus recibos en un archivo `.chirogra` (también sirve
+/// para entregárselos a un cliente); «Restaurar desde una copia…» la pone **en lugar de la empresa activa** (guardando
+/// antes una copia de lo actual, que «Deshacer la restauración» vuelve a poner) o **como empresa nueva** (dentro del
+/// límite del plan). Las demás empresas no se tocan.
 struct BackupSection: View {
     @Environment(\.modelContext) private var context
-    @Query private var companies: [Company]
+    @ActiveCompanyQuery private var companies: [Company]
     @AppStorage(ChirograStore.syncEnabledKey) private var iCloudSyncEnabled = true
     @AppStorage("lastBackupAt") private var lastBackupAt: Double = 0
     @State private var document: BackupDocument?
@@ -91,7 +93,7 @@ struct BackupSection: View {
     var body: some View {
         Section {
             row(systemImage: "externaldrive.fill.badge.plus", color: Palette.green) {
-                Button("Crear copia ahora", action: makeBackup)
+                Button("Crear copia de esta empresa", action: makeBackup)
             }
             row(systemImage: "clock.arrow.circlepath", color: Palette.blue) {
                 Button("Restaurar desde una copia…") { importing = true }
@@ -113,7 +115,7 @@ struct BackupSection: View {
                 if lastBackupAt > 0 {
                     Text("Última copia: \(Date(timeIntervalSinceReferenceDate: lastBackupAt).formatted(date: .abbreviated, time: .shortened))")
                 }
-                Text("Guarda tus libros, con los recibos, en un archivo .chirogra que puedes restaurar en cualquier aparato con Chirogra, sin depender de iCloud.")
+                Text("Guarda los libros de «\(companyName)», con los recibos, en un archivo .chirogra que puedes restaurar en cualquier aparato con Chirogra, sin depender de iCloud. Cada empresa tiene su copia.")
             }
         }
         .buttonStyle(.borderless)
@@ -134,9 +136,19 @@ struct BackupSection: View {
             guard case .success(let url) = result else { return }
             prepare(url: url, isUndo: false)
         }
-        .alert(pending?.isUndo == true ? "¿Deshacer la restauración?" : "¿Restaurar esta copia?",
-               isPresented: Binding(get: { pending != nil }, set: { if !$0 { pending = nil } }), presenting: pending) { pending in
-            Button(pending.isUndo ? "Deshacer" : "Restaurar", role: .destructive) { restore(pending) }
+        .alert("¿Deshacer la restauración?",
+               isPresented: Binding(get: { pending?.isUndo == true }, set: { if !$0 { pending = nil } }), presenting: pending) { pending in
+            Button("Deshacer", role: .destructive) { restore(pending, mode: .replaceCompany(nil)) }
+            Button("Cancelar", role: .cancel) {}
+        } message: { pending in
+            Text(confirmation(for: pending))
+        }
+        // Una copia elegida: en lugar de la empresa activa o como otra empresa.
+        .confirmationDialog("¿Restaurar esta copia?",
+                            isPresented: Binding(get: { pending.map { !$0.isUndo } ?? false }, set: { if !$0 { pending = nil } }),
+                            titleVisibility: .visible, presenting: pending) { pending in
+            Button("Sustituir «\(companyName)»", role: .destructive) { restore(pending, mode: .replaceCompany(nil)) }
+            Button("Restaurar como empresa nueva") { restore(pending, mode: .newCompany) }
             Button("Cancelar", role: .cancel) {}
         } message: { pending in
             Text(confirmation(for: pending))
@@ -169,11 +181,17 @@ struct BackupSection: View {
         let info = pending.info
         let when = info.createdAt.formatted(date: .abbreviated, time: .shortened)
         let source = info.companyName.isEmpty ? String(localized: "Copia del \(when)") : String(localized: "«\(info.companyName)», copia del \(when)")
-        let scope = iCloudSyncEnabled
-            ? String(localized: "Reemplaza todos los libros de este aparato y, con iCloud, los de tus otros aparatos.")
-            : String(localized: "Reemplaza todos los libros de este aparato.")
-        let safety = pending.isUndo ? "" : " " + String(localized: "Antes se guarda una copia de los libros actuales para poder deshacerlo.")
-        return "\(source) · \(String(localized: "\(info.recordCount) registros")). \(scope)\(safety)"
+        if pending.isUndo {
+            let scope = iCloudSyncEnabled
+                ? String(localized: "Los libros de «\(companyName)» vuelven a ser los de antes de restaurar, también en tus otros aparatos con iCloud.")
+                : String(localized: "Los libros de «\(companyName)» vuelven a ser los de antes de restaurar.")
+            return "\(source) · \(String(localized: "\(info.recordCount) registros")). \(scope)"
+        }
+        let replace = iCloudSyncEnabled
+            ? String(localized: "Al sustituir, los libros de «\(companyName)» se reemplazan en este aparato y en tus otros aparatos con iCloud; antes se guarda una copia para poder deshacerlo.")
+            : String(localized: "Al sustituir, los libros de «\(companyName)» se reemplazan; antes se guarda una copia para poder deshacerlo.")
+        let others = String(localized: "Como empresa nueva, se añade junto a las que ya tienes. Las demás empresas no se tocan.")
+        return "\(source) · \(String(localized: "\(info.recordCount) registros")). \(replace) \(others)"
     }
 
     private func makeBackup() {
@@ -199,16 +217,21 @@ struct BackupSection: View {
         }
     }
 
-    private func restore(_ pending: PendingRestore) {
+    private func restore(_ pending: PendingRestore, mode: BackupArchive.RestoreMode) {
         do {
-            if !pending.isUndo {
+            // Antes de sustituir la empresa activa, una copia de ella para poder deshacerlo (como empresa nueva no hace
+            // falta: no se pierde nada).
+            if !pending.isUndo, case .replaceCompany = mode {
                 try SafetyCopies.save(try BackupArchive.make(from: context, appVersion: Self.appVersion))
             }
-            let info = try BackupArchive.restore(pending.data, into: context)
+            let result = try BackupArchive.restoreCompany(pending.data, into: context, mode: mode)
             if pending.isUndo, let used = safetyCopy { try? FileManager.default.removeItem(at: used) }
             safetyCopy = SafetyCopies.all().first
             errorMessage = nil
-            BooksReplacement.shared.didRestore(info)
+            BooksReplacement.shared.didRestore(result.info)
+        } catch BookkeepingError.companyLimitReached {
+            // Como empresa nueva no cabe en el plan: el plan para contadores (o por qué no se puede).
+            CompanyHub.shared.requestAdd(in: context)
         } catch {
             errorMessage = error.localizedDescription
         }

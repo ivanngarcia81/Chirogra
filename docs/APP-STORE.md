@@ -151,6 +151,41 @@ contabilidad,facturas,factura,gastos,recibos,sales tax,impuestos,negocio,libros,
 | Description (en / es) | Full access to your books on all your devices. / Acceso completo a tus libros en todos tus aparatos. |
 | Family Sharing | No |
 
+### Plan para contadores (versión 1.1, varias empresas)
+
+Segundo producto del **mismo grupo «Chirogra»**, de **nivel superior**: en App Store Connect › Subscriptions › Chirogra ›
+«Edit Subscription Levels», ponerlo **por encima** de «Chirogra mensual» (nivel 1 = el más alto). Así, quien tiene el plan
+normal ve «Mejorar» y Apple prorratea el cambio; bajar de plan se aplica al renovar. La app lee el plan de la suscripción
+vigente y fija el límite de empresas: plan normal **1**, contadores **hasta 5** (las archivadas cuentan). Mientras el
+producto no exista en App Store Connect, la app no limita las empresas (hasta 5): **crearlo y mandarlo a revisión con la
+1.1**, o todos los usuarios tendrán 5 empresas.
+
+| Campo | Valor |
+|---|---|
+| Grupo | Chirogra (nivel superior a «Chirogra mensual») |
+| Reference name | Chirogra para contadores mensual |
+| Product ID | com.chirogra.app.contador.mensual |
+| Duración | 1 mes |
+| Precio | **Por decidir** (en `App/Chirogra.storekit`, $99.99 solo para probar en Xcode) |
+| Oferta de introducción | Gratis, 2 semanas, para nuevos suscriptores (la misma que el plan normal) |
+| Display name (en) | Chirogra for Accountants |
+| Display name (es) | Chirogra para contadores |
+| Description (en) | Books for up to 5 businesses, each with its own records. |
+| Description (es) | Libros de hasta 5 empresas, cada una con los suyos. |
+| Family Sharing | No |
+| Captura de revisión | La pantalla del plan para contadores (Ajustes › Empresas › «Añadir empresa…» con el plan normal) |
+
+Texto de la descripción de la app para la 1.1 (añadir al párrafo de la suscripción, en las dos lenguas):
+
+> **en:** Accountants and bookkeepers can manage up to 5 businesses with the Chirogra for Accountants plan. Switch
+> businesses from Home or the sidebar; each one keeps its own customers, invoices, taxes and reports.
+>
+> **es:** Con el plan Chirogra para contadores llevas los libros de hasta 5 empresas. Cambias de empresa desde Inicio o la
+> barra lateral; cada una tiene sus propios clientes, facturas, impuestos y reportes.
+
+Nota para App Review (1.1), además de la de abajo: *"The Chirogra for Accountants plan allows up to 5 businesses. To see
+it: Settings › Businesses › Add business… while on the regular plan."*
+
 ## App Privacy
 
 **Data Not Collected.** Chirogra no recoge datos: no hay servidores propios, ni analíticas, ni publicidad. Los datos del usuario

@@ -31,8 +31,8 @@ struct SalesView: View {
     @State private var query = ""
     @State private var filter: InvoiceListView.Filter = .all
     @State private var estimateFilter: EstimateFilter = .all
-    @Query(sort: \Invoice.createdAt, order: .reverse) private var invoices: [Invoice]
-    @Query(sort: \Estimate.issueDate, order: .reverse) private var estimates: [Estimate]
+    @CompanyQuery(sort: \Invoice.createdAt, order: .reverse) private var invoices: [Invoice]
+    @CompanyQuery(sort: \Estimate.issueDate, order: .reverse) private var estimates: [Estimate]
 
     private var segment: Segment { fixedSegment ?? selectedSegment }
     private var sectionMenu: SalesSectionMenu? { fixedSegment == nil ? SalesSectionMenu(selection: $selectedSegment) : nil }
@@ -165,7 +165,7 @@ struct InvoiceListView: View {
     var onCreate: () -> Void = {}
     /// «Facturas ▾» del iPhone (`SalesView`).
     var sectionMenu: SalesSectionMenu?
-    @Query(sort: \Invoice.createdAt, order: .reverse) private var invoices: [Invoice]
+    @CompanyQuery(sort: \Invoice.createdAt, order: .reverse) private var invoices: [Invoice]
 
     init(query: Binding<String>, filter: Binding<Filter> = .constant(.all), sectionMenu: SalesSectionMenu? = nil,
          onCreate: @escaping () -> Void = {}) {

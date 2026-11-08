@@ -17,7 +17,7 @@ struct CustomerListView: View {
     var sectionMenu: SalesSectionMenu? = nil
     /// «Nuevo cliente» del estado vacío sin clientes.
     var onCreate: () -> Void = {}
-    @Query(sort: \Customer.name) private var customers: [Customer]
+    @CompanyQuery(sort: \Customer.name) private var customers: [Customer]
     @State private var filter: Filter = .all
     /// Cliente nuevo con el nombre buscado («¿Quieres crear «…» como cliente nuevo?»).
     @State private var creatingFromQuery = false
@@ -947,7 +947,7 @@ struct CustomerEditorView: View {
     @Environment(\.unsavedChanges) private var unsavedChanges
     /// Testigo del editor en `UnsavedChanges`: se retira al guardar, antes de cerrar.
     @State private var editorToken = EditorToken()
-    @Query(sort: \TaxGroup.name) private var taxGroups: [TaxGroup]
+    @CompanyQuery(sort: \TaxGroup.name) private var taxGroups: [TaxGroup]
 
     @State private var name = ""
     @State private var contactName = ""
@@ -1036,7 +1036,7 @@ struct CustomerEditorView: View {
 
     private func save() {
         let target = customer ?? Customer(name: name)
-        if customer == nil { context.insert(target) }
+        if customer == nil { Bookkeeper(context: context).insert(target) }
         target.name = name.trimmingCharacters(in: .whitespaces)
         target.email = email; target.phone = phone; target.billingAddress = billingAddress
         target.contactName = contactName.trimmingCharacters(in: .whitespaces)
@@ -1058,7 +1058,7 @@ struct CustomerRefundView: View {
     @Environment(\.unsavedChanges) private var unsavedChanges
     /// Testigo del editor en `UnsavedChanges`: se retira al guardar, antes de cerrar.
     @State private var editorToken = EditorToken()
-    @Query(sort: \Account.code) private var accounts: [Account]
+    @CompanyQuery(sort: \Account.code) private var accounts: [Account]
     @State private var amount: Int64 = 0
     @State private var date = Date()
     @State private var accountID: UUID?

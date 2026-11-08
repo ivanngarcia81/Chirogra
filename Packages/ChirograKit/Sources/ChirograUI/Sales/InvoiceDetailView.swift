@@ -18,8 +18,8 @@ struct InvoiceDetailView: View {
     #if os(iOS)
     @LayoutSizeClass private var sizeClass
     #endif
-    @Query private var companies: [Company]
-    @Query(sort: \Account.code) private var accounts: [Account]
+    @ActiveCompanyQuery private var companies: [Company]
+    @CompanyQuery(sort: \Account.code) private var accounts: [Account]
     @State private var showingCreditNote = false
     @State private var showingPreview = false
     /// «Enviar factura» (y «PDF»): la hoja de envío con Para y Asunto (canvas `FacturaEnviar`).
@@ -755,7 +755,7 @@ struct CreditNoteEditorView: View {
     /// Línea de la factura que se acredita; `nil` reparte el importe entre todas en proporción.
     @State private var lineID: UUID?
     @State private var errorMessage: String?
-    @Query(sort: \Account.code) private var accounts: [Account]
+    @CompanyQuery(sort: \Account.code) private var accounts: [Account]
 
     private var books: Bookkeeper { Bookkeeper(context: context) }
 

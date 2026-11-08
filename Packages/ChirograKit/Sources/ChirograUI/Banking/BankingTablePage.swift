@@ -13,8 +13,8 @@ import SwiftUI
 struct BankingTablePage: View {
     static let isReady = true
     @Binding var selection: UUID?
-    @Query(sort: \Account.code) private var accounts: [Account]
-    @Query private var journalLines: [JournalLine]
+    @CompanyQuery(sort: \Account.code) private var accounts: [Account]
+    @CompanyQuery private var journalLines: [JournalLine]
     /// Cuenta elegida en las tarjetas; sin elegir, la primera (o la de `-qa.cuenta N` en Debug).
     @State private var accountID: UUID?
     @State private var monthOffset = BankingTablePage.initialMonthOffset

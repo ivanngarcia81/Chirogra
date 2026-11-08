@@ -24,7 +24,7 @@ enum EstimateScope: String, CaseIterable, Identifiable {
 /// Las filas son las de las demás listas maestro (`DesignSystem/MasterRows.swift`).
 struct EstimateMasterList: View {
     @Binding var selection: UUID?
-    @Query(sort: \Estimate.issueDate, order: .reverse) private var estimates: [Estimate]
+    @CompanyQuery(sort: \Estimate.issueDate, order: .reverse) private var estimates: [Estimate]
     @State private var scope: EstimateScope = .open
     @State private var query = ""
     @State private var creating = false

@@ -31,7 +31,8 @@ public enum ActiveCompany {
     public static func select(_ company: Company) { id = company.id }
 }
 
-/// Límite de empresas (activas, sin contar las archivadas) según el plan.
+/// Límite de empresas según el plan. Cuentan **todas**, también las archivadas (decisión del usuario, 8-nov: archivar
+/// no deja sitio; los libros archivados siguen en iCloud). Para hacer sitio hay que borrar una empresa.
 public enum CompanyLimits {
     /// Plan normal: una empresa.
     public static let standard = 1
@@ -209,8 +210,8 @@ public struct CompanyOverview: Identifiable, Sendable, Equatable {
 
 extension Bookkeeper {
 
-    /// Límite de empresas activas (sin contar las archivadas). La app lo pone según la suscripción
-    /// (`CompanyLimits.standard` o `.accountant`). Crear la primera empresa siempre se puede.
+    /// Límite de empresas, archivadas incluidas. La app lo pone según la suscripción (`CompanyLimits.standard` o
+    /// `.accountant`). Crear la primera empresa siempre se puede.
     public static var companyLimit = CompanyLimits.standard
 
     /// Empresas en el orden del selector. Por defecto, sin las archivadas.
@@ -218,9 +219,9 @@ extension Bookkeeper {
         try CompanyOwnership.companies(in: context).filter { includeArchived || !$0.isArchived }
     }
 
-    /// Se puede añadir otra empresa sin pasar el límite del plan.
+    /// Se puede añadir otra empresa sin pasar el límite del plan. Las archivadas también cuentan.
     public func canAddCompany() throws -> Bool {
-        try companies().count < Self.companyLimit
+        try companies(includeArchived: true).count < Self.companyLimit
     }
 
     /// Un `Bookkeeper` para dar de alta **otra** empresa: con un id nuevo, todavía sin empresa. Con él se hace el alta
@@ -250,8 +251,8 @@ extension Bookkeeper {
         try saveOrRollback()
     }
 
-    /// Archiva una empresa: sale del selector y deja sitio en el límite; sus libros se quedan. Si era la activa, la
-    /// activa pasa a ser la primera que quede.
+    /// Archiva una empresa: sale del selector; sus libros se quedan y sigue contando para el límite del plan. Si era la
+    /// activa, la activa pasa a ser la primera que quede.
     public func archiveCompany(_ company: Company) throws {
         guard !company.isArchived else { return }
         company.isArchived = true
@@ -261,10 +262,9 @@ extension Bookkeeper {
         if ActiveCompany.id == company.id { ActiveCompany.id = try companies().first?.id }
     }
 
-    /// Vuelve a mostrar una empresa archivada, si cabe en el límite del plan.
+    /// Vuelve a mostrar una empresa archivada. Siempre se puede: las archivadas ya cuentan para el límite del plan.
     public func unarchiveCompany(_ company: Company) throws {
         guard company.isArchived else { return }
-        guard try canAddCompany() else { throw BookkeepingError.companyLimitReached(Self.companyLimit) }
         company.isArchived = false
         company.archivedAt = nil
         forCompany(company.id).audit("Company", company.id, "unarchive", String(localized: "Empresa restaurada: \(company.name)"))

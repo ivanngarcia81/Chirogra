@@ -17,11 +17,11 @@ struct PeriodCloseView: View {
     #if os(iOS)
     @LayoutSizeClass private var sizeClass
     #endif
-    @Query private var companies: [Company]
-    @Query private var invoices: [Invoice]
-    @Query private var expenses: [Expense]
-    @Query private var bills: [Bill]
-    @Query(sort: \PeriodClose.date, order: .reverse) private var history: [PeriodClose]
+    @ActiveCompanyQuery private var companies: [Company]
+    @CompanyQuery private var invoices: [Invoice]
+    @CompanyQuery private var expenses: [Expense]
+    @CompanyQuery private var bills: [Bill]
+    @CompanyQuery(sort: \PeriodClose.date, order: .reverse) private var history: [PeriodClose]
     @State private var newDate: Date?
     @State private var errorMessage: String?
     /// Reabrir pendiente de confirmar (con la contraseña, si hay): la fecha que quedará (`nil` = quitar el cierre).

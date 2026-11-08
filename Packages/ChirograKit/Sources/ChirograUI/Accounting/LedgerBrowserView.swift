@@ -30,7 +30,7 @@ struct LedgerBrowserView: View {
         }
     }
 
-    @Query(sort: \Account.code) private var accounts: [Account]
+    @CompanyQuery(sort: \Account.code) private var accounts: [Account]
     @State private var selectedID: UUID?
     @State private var period: Period = .thisMonth
     @ScaledMetric(relativeTo: .subheadline) private var dateWidth: CGFloat = 58

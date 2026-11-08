@@ -73,7 +73,7 @@ struct SchedulePaymentView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.unsavedChanges) private var unsavedChanges
     @State private var editorToken = EditorToken()
-    @Query(sort: \Account.code) private var accounts: [Account]
+    @CompanyQuery(sort: \Account.code) private var accounts: [Account]
     @State private var date = Date()
     @State private var accountID: UUID?
     @State private var method: PaymentMethod = .bankTransfer
@@ -172,7 +172,7 @@ struct BatchPayView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.unsavedChanges) private var unsavedChanges
     @State private var editorToken = EditorToken()
-    @Query(sort: \Account.code) private var accounts: [Account]
+    @CompanyQuery(sort: \Account.code) private var accounts: [Account]
     @State private var date = Date()
     @State private var accountID: UUID?
     @State private var method: PaymentMethod = .bankTransfer

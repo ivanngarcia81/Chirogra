@@ -43,11 +43,11 @@ struct InvoiceEditorView: View {
     @LayoutSizeClass private var sizeClass
     #endif
     @ScaledMetric(relativeTo: .subheadline) private var amountColumn: CGFloat = 104
-    @Query(sort: \Customer.name) private var customers: [Customer]
-    @Query(sort: \Account.code) private var accounts: [Account]
-    @Query(sort: \TaxGroup.name) private var taxGroups: [TaxGroup]
-    @Query(sort: \TaxRate.name) private var taxRates: [TaxRate]
-    @Query private var companies: [Company]
+    @CompanyQuery(sort: \Customer.name) private var customers: [Customer]
+    @CompanyQuery(sort: \Account.code) private var accounts: [Account]
+    @CompanyQuery(sort: \TaxGroup.name) private var taxGroups: [TaxGroup]
+    @CompanyQuery(sort: \TaxRate.name) private var taxRates: [TaxRate]
+    @ActiveCompanyQuery private var companies: [Company]
     /// «Añadir tasa…» del menú de impuesto (sin ninguna tasa todavía): abre el editor de tasa de Impuestos.
     @State private var addingTaxRate = false
 

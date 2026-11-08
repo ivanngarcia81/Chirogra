@@ -20,13 +20,13 @@ struct TaxesView: View {
     }
 
     @Environment(\.modelContext) private var context
-    @Query(sort: \Account.code) private var accounts: [Account]
-    @Query private var journalLines: [JournalLine]
-    @Query(sort: \TaxAgency.name) private var agencies: [TaxAgency]
-    @Query(sort: \TaxGroup.name) private var groups: [TaxGroup]
-    @Query private var taxLines: [InvoiceTaxLine]
-    @Query private var companies: [Company]
-    @Query(sort: \JournalEntry.date, order: .reverse) private var entries: [JournalEntry]
+    @CompanyQuery(sort: \Account.code) private var accounts: [Account]
+    @CompanyQuery private var journalLines: [JournalLine]
+    @CompanyQuery(sort: \TaxAgency.name) private var agencies: [TaxAgency]
+    @CompanyQuery(sort: \TaxGroup.name) private var groups: [TaxGroup]
+    @CompanyQuery private var taxLines: [InvoiceTaxLine]
+    @ActiveCompanyQuery private var companies: [Company]
+    @CompanyQuery(sort: \JournalEntry.date, order: .reverse) private var entries: [JournalEntry]
 
     @State var tab: Tab = .summary
     /// Trimestre mostrado: 0 el actual, −1 el anterior…
@@ -862,11 +862,11 @@ struct TaxRateEditorView: View {
     @Environment(\.unsavedChanges) private var unsavedChanges
     /// Testigo del editor en `UnsavedChanges`: se retira al guardar, antes de cerrar.
     @State private var editorToken = EditorToken()
-    @Query(sort: \TaxAgency.name) private var agencies: [TaxAgency]
-    @Query private var companies: [Company]
+    @CompanyQuery(sort: \TaxAgency.name) private var agencies: [TaxAgency]
+    @ActiveCompanyQuery private var companies: [Company]
     /// Para que el predeterminado (`defaultCode`) se recalcule si cambian las tasas o los grupos.
-    @Query private var allRates: [TaxRate]
-    @Query private var allGroups: [TaxGroup]
+    @CompanyQuery private var allRates: [TaxRate]
+    @CompanyQuery private var allGroups: [TaxGroup]
 
     @State private var agencyID: UUID?
     /// La agencia ya se preeligió al abrir (una vez).
@@ -1035,7 +1035,7 @@ struct TaxRateEditorView: View {
                 } else {
                     let liability = try books.systemAccount(.salesTaxPayable)
                     owner = TaxAgency(name: newAgencyName.trimmingCharacters(in: .whitespaces), liabilityAccountID: liability.id)
-                    context.insert(owner)
+                    Bookkeeper(context: context).insert(owner)
                 }
                 try books.updateTaxRate(rate, name: name, agency: owner, rateMillionths: millionths)
             } else {
@@ -1058,7 +1058,7 @@ struct TaxGroupEditorView: View {
     @Environment(\.unsavedChanges) private var unsavedChanges
     /// Testigo del editor en `UnsavedChanges`: se retira al guardar, antes de cerrar.
     @State private var editorToken = EditorToken()
-    @Query(sort: \TaxRate.name) private var rates: [TaxRate]
+    @CompanyQuery(sort: \TaxRate.name) private var rates: [TaxRate]
     @State private var name = ""
     @State private var selected: Set<UUID> = []
 
@@ -1101,7 +1101,7 @@ struct TaxGroupEditorView: View {
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
                 Button("Guardar") {
-                    context.insert(TaxGroup(name: name, rates: rates.filter { selected.contains($0.id) }))
+                    Bookkeeper(context: context).insert(TaxGroup(name: name, rates: rates.filter { selected.contains($0.id) }))
                     try? context.save()
                     unsavedChanges?.remove(editorToken); dismiss()
                 }
@@ -1130,8 +1130,8 @@ struct SalesTaxPaymentView: View {
     @Environment(\.unsavedChanges) private var unsavedChanges
     /// Testigo del editor en `UnsavedChanges`: se retira al guardar, antes de cerrar.
     @State private var editorToken = EditorToken()
-    @Query(sort: \TaxAgency.name) private var agencies: [TaxAgency]
-    @Query(sort: \Account.code) private var accounts: [Account]
+    @CompanyQuery(sort: \TaxAgency.name) private var agencies: [TaxAgency]
+    @CompanyQuery(sort: \Account.code) private var accounts: [Account]
     @State private var agencyID: UUID?
     @State private var amount: Int64 = 0
     @State private var date = Date()

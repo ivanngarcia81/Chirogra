@@ -181,11 +181,11 @@ private struct MasterPick: View {
 }
 
 /// La guía de la sección mientras no tiene nada; si ya tiene, «Elige…».
-private struct GuideOrPick<Model: PersistentModel, Editor: View>: View {
+private struct GuideOrPick<Model: CompanyOwned, Editor: View>: View {
     let page: MasterPage
     let guide: EmptyGuide
     @ViewBuilder let editor: () -> Editor
-    @Query private var models: [Model]
+    @CompanyQuery private var models: [Model]
     @State private var creating = false
 
     var body: some View {
@@ -199,12 +199,12 @@ private struct GuideOrPick<Model: PersistentModel, Editor: View>: View {
 }
 
 /// Busca el registro elegido entre los del modelo; si ya no existe (un borrador descartado), el estado vacío.
-private struct ModelLookup<Model: PersistentModel, Content: View>: View {
+private struct ModelLookup<Model: CompanyOwned, Content: View>: View {
     let id: UUID
     let key: KeyPath<Model, UUID>
     let page: MasterPage
     @ViewBuilder let content: (Model) -> Content
-    @Query private var models: [Model]
+    @CompanyQuery private var models: [Model]
 
     var body: some View {
         if let model = models.first(where: { $0[keyPath: key] == id }) {
@@ -340,7 +340,7 @@ private func matches(_ text: String, _ fields: String...) -> Bool {
 
 private struct InvoiceMasterList: View {
     @Binding var selection: UUID?
-    @Query(sort: \Invoice.createdAt, order: .reverse) private var invoices: [Invoice]
+    @CompanyQuery(sort: \Invoice.createdAt, order: .reverse) private var invoices: [Invoice]
     @State private var scope: InvoiceScope = .open
     @State private var query = ""
     @State private var creating = false
@@ -393,7 +393,7 @@ private struct InvoiceMasterList: View {
 
 private struct CustomerMasterList: View {
     @Binding var selection: UUID?
-    @Query(sort: \Customer.name) private var customers: [Customer]
+    @CompanyQuery(sort: \Customer.name) private var customers: [Customer]
     @State private var filter: CustomerListView.Filter = .all
     @State private var query = ""
     @State private var creating = false
@@ -442,8 +442,8 @@ private struct CustomerMasterList: View {
 
 private struct ExpenseMasterList: View {
     @Binding var selection: UUID?
-    @Query(sort: \Expense.date, order: .reverse) private var expenses: [Expense]
-    @Query(sort: \Account.code) private var accounts: [Account]
+    @CompanyQuery(sort: \Expense.date, order: .reverse) private var expenses: [Expense]
+    @CompanyQuery(sort: \Account.code) private var accounts: [Account]
     @State private var withoutReceipt = false
     @State private var query = ""
     @State private var creating = false
@@ -527,7 +527,7 @@ private struct ExpenseMasterList: View {
 
 private struct VendorMasterList: View {
     @Binding var selection: UUID?
-    @Query(sort: \Vendor.name) private var vendors: [Vendor]
+    @CompanyQuery(sort: \Vendor.name) private var vendors: [Vendor]
     @State private var filter: VendorFilter = .all
     @State private var query = ""
     @State private var creating = false
@@ -566,8 +566,8 @@ private struct VendorMasterList: View {
 
 private struct BillMasterList: View {
     @Binding var selection: UUID?
-    @Query(sort: \Bill.dueDate) private var bills: [Bill]
-    @Query(sort: \Account.code) private var accounts: [Account]
+    @CompanyQuery(sort: \Bill.dueDate) private var bills: [Bill]
+    @CompanyQuery(sort: \Account.code) private var accounts: [Account]
     @State private var filter: BillFilter = .open
     @State private var query = ""
     @State private var creating = false
@@ -669,8 +669,8 @@ private struct BillMasterList: View {
 /// Cuentas de dinero con su saldo en libros; el detalle, los movimientos del mes de la elegida.
 private struct BankingMasterList: View {
     @Binding var selection: UUID?
-    @Query(sort: \Account.code) private var accounts: [Account]
-    @Query private var journalLines: [JournalLine]
+    @CompanyQuery(sort: \Account.code) private var accounts: [Account]
+    @CompanyQuery private var journalLines: [JournalLine]
     @State private var adding: NewMovement?
 
     var body: some View {
@@ -744,7 +744,7 @@ private struct BankingMasterList: View {
 
 private struct JournalMasterList: View {
     @Binding var selection: UUID?
-    @Query(sort: [SortDescriptor(\JournalEntry.date, order: .reverse), SortDescriptor(\JournalEntry.number, order: .reverse)])
+    @CompanyQuery(sort: [SortDescriptor(\JournalEntry.date, order: .reverse), SortDescriptor(\JournalEntry.number, order: .reverse)])
     private var entries: [JournalEntry]
     @State private var query = ""
     @State private var creating = false
@@ -781,8 +781,8 @@ private struct JournalMasterList: View {
 
 private struct ChartMasterList: View {
     @Binding var selection: UUID?
-    @Query(sort: \Account.code) private var accounts: [Account]
-    @Query private var journalLines: [JournalLine]
+    @CompanyQuery(sort: \Account.code) private var accounts: [Account]
+    @CompanyQuery private var journalLines: [JournalLine]
     @State private var showArchived = false
     @State private var query = ""
     @State private var creating = false
@@ -873,7 +873,7 @@ private struct ChartMasterRow: View {
 struct BillDetailView: View {
     let bill: Bill
     @Environment(\.modelContext) private var context
-    @Query(sort: \Account.code) private var accounts: [Account]
+    @CompanyQuery(sort: \Account.code) private var accounts: [Account]
     @State private var paying = false
     @State private var scheduling = false
     @State private var errorMessage: String?

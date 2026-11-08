@@ -62,7 +62,7 @@ private struct ClosedPeriodUnlock: ViewModifier {
     @Binding var retry: ClosedPeriodRetry?
     let onError: (String) -> Void
     @Environment(\.modelContext) private var context
-    @Query private var companies: [Company]
+    @ActiveCompanyQuery private var companies: [Company]
     @State private var password = ""
     @State private var wrongPassword = false
 
@@ -120,7 +120,7 @@ struct ClosingPasswordEditor: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.unsavedChanges) private var unsavedChanges
     @State private var editorToken = EditorToken()
-    @Query private var companies: [Company]
+    @ActiveCompanyQuery private var companies: [Company]
     @State private var current = ""
     @State private var new = ""
     @State private var confirm = ""

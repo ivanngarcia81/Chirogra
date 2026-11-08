@@ -15,7 +15,7 @@ struct AccountEditorView: View {
     @Environment(\.unsavedChanges) private var unsavedChanges
     /// Testigo del editor en `UnsavedChanges`: se retira al guardar, antes de cerrar.
     @State private var editorToken = EditorToken()
-    @Query(sort: \Account.code) private var accounts: [Account]
+    @CompanyQuery(sort: \Account.code) private var accounts: [Account]
     @State private var code: String
     @State private var name: String
     @State private var type: AccountType
@@ -200,7 +200,7 @@ struct AccountEditorView: View {
                 try books.updateAccount(account, with: input)
             } else {
                 let created = Account(code: "", name: name, subtype: subtype)
-                context.insert(created)
+                Bookkeeper(context: context).insert(created)
                 do {
                     try books.updateAccount(created, with: input)
                 } catch {

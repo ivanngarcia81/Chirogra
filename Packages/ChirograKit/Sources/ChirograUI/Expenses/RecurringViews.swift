@@ -46,9 +46,9 @@ struct RecurringListView: View {
     /// Pone su propio «+» (en la hoja del iPad y la página del Mac; en el iPhone lo pone `ExpensesView`).
     var showsAddButton = false
     @Environment(\.modelContext) private var context
-    @Query(sort: \RecurringTemplate.nextDate) private var templates: [RecurringTemplate]
-    @Query(sort: \Account.code) private var accounts: [Account]
-    @Query(sort: \Expense.date, order: .reverse) private var expenses: [Expense]
+    @CompanyQuery(sort: \RecurringTemplate.nextDate) private var templates: [RecurringTemplate]
+    @CompanyQuery(sort: \Account.code) private var accounts: [Account]
+    @CompanyQuery(sort: \Expense.date, order: .reverse) private var expenses: [Expense]
     @State private var editing: RecurringTemplate?
     @State private var creating = false
     @State private var deleting: RecurringTemplate?
@@ -242,8 +242,8 @@ struct RecurringTemplateEditorView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.unsavedChanges) private var unsavedChanges
     @State private var editorToken = EditorToken()
-    @Query(sort: \Account.code) private var accounts: [Account]
-    @Query(sort: \Vendor.name) private var vendors: [Vendor]
+    @CompanyQuery(sort: \Account.code) private var accounts: [Account]
+    @CompanyQuery(sort: \Vendor.name) private var vendors: [Vendor]
 
     @State private var name = ""
     @State private var kind: RecurringKind = .expense

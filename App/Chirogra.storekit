@@ -1,38 +1,58 @@
 {
   "identifier" : "5C7F2A10",
-  "nonRenewingSubscriptions" : [
-
-  ],
-  "products" : [
-
-  ],
+  "nonRenewingSubscriptions" : [],
+  "products" : [],
   "settings" : {
     "_applicationInternalID" : "6740000001",
     "_failTransactionsEnabled" : false,
     "_locale" : "es_US",
     "_storefront" : "USA",
-    "_storeKitErrors" : [
-
-    ]
+    "_storeKitErrors" : []
   },
   "subscriptionGroups" : [
     {
       "id" : "21600001",
-      "localizations" : [
-
-      ],
+      "localizations" : [],
       "name" : "Chirogra",
       "subscriptions" : [
         {
-          "adHocOffers" : [
-
-          ],
-          "codeOffers" : [
-
-          ],
-          "displayPrice" : "24.99",
+          "adHocOffers" : [],
+          "codeOffers" : [],
+          "displayPrice" : "99.99",
           "familyShareable" : false,
           "groupNumber" : 1,
+          "internalID" : "6740000004",
+          "introductoryOffer" : {
+            "internalID" : "6740000005",
+            "numberOfPeriods" : 1,
+            "paymentMode" : "free",
+            "subscriptionPeriod" : "P2W"
+          },
+          "localizations" : [
+            {
+              "description" : "Libros de hasta 5 empresas, cada una con los suyos.",
+              "displayName" : "Chirogra para contadores",
+              "locale" : "es_US"
+            },
+            {
+              "description" : "Books for up to 5 businesses, each with its own records.",
+              "displayName" : "Chirogra for Accountants",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.chirogra.app.contador.mensual",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Chirogra para contadores mensual",
+          "subscriptionGroupID" : "21600001",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : []
+        },
+        {
+          "adHocOffers" : [],
+          "codeOffers" : [],
+          "displayPrice" : "24.99",
+          "familyShareable" : false,
+          "groupNumber" : 2,
           "internalID" : "6740000002",
           "introductoryOffer" : {
             "internalID" : "6740000003",
@@ -57,9 +77,7 @@
           "referenceName" : "Chirogra mensual",
           "subscriptionGroupID" : "21600001",
           "type" : "RecurringSubscription",
-          "winbackOffers" : [
-
-          ]
+          "winbackOffers" : []
         }
       ]
     }

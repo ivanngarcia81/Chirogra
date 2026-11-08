@@ -11,7 +11,7 @@ import SwiftUI
 struct CustomerTablePage: View {
     static let isReady = true
     @Binding var selection: UUID?
-    @Query(sort: \Customer.name) private var customers: [Customer]
+    @CompanyQuery(sort: \Customer.name) private var customers: [Customer]
     @State private var filter: CustomerListView.Filter = .all
     @State private var query = ""
     @State private var creating = false

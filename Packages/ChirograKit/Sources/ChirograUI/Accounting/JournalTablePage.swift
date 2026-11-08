@@ -13,7 +13,7 @@ struct JournalTablePage: View {
     static let isReady = true
     @Binding var selection: UUID?
     @Environment(\.modelContext) private var context
-    @Query(sort: [SortDescriptor(\JournalEntry.date, order: .reverse), SortDescriptor(\JournalEntry.number, order: .reverse)])
+    @CompanyQuery(sort: [SortDescriptor(\JournalEntry.date, order: .reverse), SortDescriptor(\JournalEntry.number, order: .reverse)])
     private var entries: [JournalEntry]
     @State private var filter: JournalFilter = .all
     @State private var query = ""

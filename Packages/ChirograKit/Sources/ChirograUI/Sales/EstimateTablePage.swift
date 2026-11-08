@@ -20,7 +20,7 @@ struct EstimatesMacPage: View {
 struct EstimateTablePage: View {
     @Binding var selection: UUID?
     @Environment(\.modelContext) private var context
-    @Query(sort: \Estimate.issueDate, order: .reverse) private var estimates: [Estimate]
+    @CompanyQuery(sort: \Estimate.issueDate, order: .reverse) private var estimates: [Estimate]
     @State private var filter: EstimateFilter = .all
     @State private var query = ""
     @State private var creating = false

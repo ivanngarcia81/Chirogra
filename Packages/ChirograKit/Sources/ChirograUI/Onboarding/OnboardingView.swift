@@ -63,6 +63,16 @@ struct OnboardingView: View {
         }
     }
 
+    /// «Añadir empresa» (`AddCompanySheet`): crea **otra** empresa (`Bookkeeper.forNewCompany()`), que queda activa,
+    /// sin «Probar con datos de ejemplo»; al terminar llama a `onFinish`.
+    let addsCompany: Bool
+    let onFinish: (() -> Void)?
+
+    init(addsCompany: Bool = false, onFinish: (() -> Void)? = nil) {
+        self.addsCompany = addsCompany
+        self.onFinish = onFinish
+    }
+
     @Environment(\.modelContext) private var context
     @State private var step = 1
     @State private var displayName = ""
@@ -148,10 +158,10 @@ struct OnboardingView: View {
               let bank = accounts.first(where: { $0.subtype == .bank }),
               let supplies = accounts.first(where: { $0.subtype == .operatingExpense }) else { return }
         let expense = Expense(payee: "Office Depot", paymentAccountID: bank.id)
-        context.insert(expense)
+        Bookkeeper(context: context).insert(expense)
         let line = ExpenseLine(details: "Office Depot", amount: 4_500, accountID: supplies.id)
         line.expense = expense
-        context.insert(line)
+        Bookkeeper(context: context).insert(line)
         try? Bookkeeper(context: context).record(expense)
     }
     #endif
@@ -243,14 +253,19 @@ struct OnboardingView: View {
                 .textContentType(.organizationName)
                 #endif
         } header: {
-            header("Creemos tu empresa", subtitle: "Estos datos aparecen en tus facturas. Puedes cambiarlos cuando quieras en Ajustes.",
+            header(addsCompany ? "Añade otra empresa" : "Creemos tu empresa",
+                   subtitle: addsCompany ? "Tendrá sus propios libros: clientes, facturas, impuestos y reportes. Puedes cambiar de empresa desde Inicio."
+                                         : "Estos datos aparecen en tus facturas. Puedes cambiarlos cuando quieras en Ajustes.",
                    group: String(localized: "Nombre de la empresa")) {
                 LogoMark(size: Self.logoSize)
             }
         }
 
-        AppLanguageSection()
-        OtherDeviceSection()
+        // El idioma y «¿Ya usas Chirogra en otro aparato?» son de la primera empresa: al añadir otra no hacen falta.
+        if !addsCompany {
+            AppLanguageSection()
+            OtherDeviceSection()
+        }
 
         Section {
             LabeledContent("País o región") { Text("Estados Unidos") }
@@ -481,7 +496,7 @@ struct OnboardingView: View {
             Button(primaryTitle, action: advance)
                 .buttonStyle(.primary)
                 .disabled(!canContinue)
-            if step == 1 {
+            if step == 1 && !addsCompany {
                 Button("Probar con datos de ejemplo", action: loadSample)
                     .font(.body.weight(.semibold))
                     .frame(minHeight: Metrics.target)
@@ -524,7 +539,7 @@ struct OnboardingView: View {
         HStack(spacing: 12) {
             stepDots
             Spacer(minLength: 12)
-            if step == 1 {
+            if step == 1 && !addsCompany {
                 Button("Probar con datos de ejemplo", action: loadSample).buttonStyle(.link)
             } else if step == Self.stepCount {
                 Button("Saltar por ahora", action: skipBalances).buttonStyle(.link)
@@ -549,7 +564,10 @@ struct OnboardingView: View {
     private func createCompany() {
         do {
             let name = displayName.trimmingCharacters(in: .whitespaces)
-            let company = try Bookkeeper(context: context).setUpCompany(
+            // Otra empresa: con un id nuevo y dentro del límite del plan. `setUpCompany` la deja activa, así que lo que
+            // sigue (`Bookkeeper(context:)`) ya va a la nueva.
+            let base = Bookkeeper(context: context)
+            let company = try (addsCompany ? base.forNewCompany() : base).setUpCompany(
                 legalName: legalName.isEmpty ? name : legalName, displayName: name, entityType: entityType,
                 state: state, sector: kind.sector
             )
@@ -564,6 +582,7 @@ struct OnboardingView: View {
                 try books.recordOpeningBalances(bank: openingBank, creditCard: openingCard,
                                                 on: Calendar.current.startOfDay(for: openingDate))
             }
+            onFinish?()
         } catch {
             errorMessage = error.localizedDescription
         }

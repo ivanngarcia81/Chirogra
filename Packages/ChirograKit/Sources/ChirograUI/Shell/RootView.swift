@@ -62,7 +62,11 @@ enum AppSection: String, Hashable, CaseIterable, Identifiable {
 
 /// Raíz de la app: alta de empresa la primera vez, bloqueo opcional con Face ID y navegación principal.
 public struct ChirograRootView: View {
+    /// Todas las empresas (también las archivadas): la raíz decide entre el alta y la app, y calcula la activa.
     @Query private var companies: [Company]
+    /// Empresa activa de este aparato (`ActiveCompany`): al cambiarla, la app se rehace con la nueva.
+    @AppStorage(ActiveCompany.defaultsKey) private var activeCompanyID: String?
+    @State private var companyHub = CompanyHub.shared
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.modelContext) private var modelContext
     @AppStorage("appLockEnabled") private var appLockEnabled = false
@@ -78,16 +82,62 @@ public struct ChirograRootView: View {
     @State private var lockWindow = LockWindow()
     #endif
 
-    public init() {}
+    public init() {
+        // Lo que una pantalla inserta sin empresa toma la activa al guardar (`CompanyStamp`).
+        CompanyStamp.install()
+    }
+
+    /// Ámbito de la empresa activa (`Bookkeeper.companyScope()`), que se deja en `CompanySession` antes de dibujar la
+    /// app: las `@CompanyQuery` de todas las pantallas lo leen al crearse. Depende de `companies` y `activeCompanyID`,
+    /// así que se recalcula al cambiar de empresa, al crear o borrar una y al llegar otra por iCloud.
+    private var companyScope: CompanyScope? {
+        _ = activeCompanyID
+        _ = companies.count
+        let scope = (try? Bookkeeper(context: modelContext).companyScope()) ?? nil
+        CompanySession.scope = scope
+        return scope
+    }
 
     #if DEBUG
     private static var qaLoadedSample = false
+    private static var qaAppliedCompanies = false
+
+    /// Argumentos de QA de varias empresas (solo Debug, REDISEÑO-NATIVO §5), una vez por sesión y cuando ya hay
+    /// empresa: `-qa.segundaEmpresa <nombre>` da de alta otra empresa vacía con ese nombre (si no existe; dentro del
+    /// límite del plan, p. ej. con `-qa.suscripcion contador`), que queda activa; `-qa.empresa N` deja activa la N.ª del
+    /// selector (desde 1); `-qa.empresas lista|alta` abre la lista de empresas o «Añadir empresa…».
+    private func applyQACompanies() {
+        let defaults = UserDefaults.standard
+        guard !Self.qaAppliedCompanies, !companies.isEmpty else { return }
+        Self.qaAppliedCompanies = true
+        let books = Bookkeeper(context: modelContext, actor: "QA")
+        if let name = defaults.string(forKey: "qa.segundaEmpresa"), !companies.contains(where: { $0.displayName == name }) {
+            do {
+                let created = try books.forNewCompany()
+                try created.setUpCompany(legalName: "\(name) LLC", displayName: name, entityType: .llc, state: "TX")
+                _ = try created.setUpSalesTax(totalMillionths: nil, localName: "")
+            } catch {
+                NSLog("Chirogra QA segundaEmpresa: %@", "\(error)")
+            }
+        }
+        let index = defaults.integer(forKey: "qa.empresa")
+        if index > 0, let list = try? books.companies(), list.indices.contains(index - 1) {
+            ActiveCompany.id = list[index - 1].id
+        }
+        switch defaults.string(forKey: "qa.empresas") {
+        case "lista": companyHub.sheet = .list
+        case "alta": companyHub.requestAdd(in: modelContext)
+        default: break
+        }
+    }
     #endif
 
     private var isLocked: Bool { appLockEnabled && !lock.isUnlocked && !companies.isEmpty }
 
     public var body: some View {
         Group {
+            // Primero la empresa activa (también sin empresas: así `CompanySession` no se queda con una borrada).
+            let companyKey = CompanySession.key(companyScope)
             // Con iCloud, en un dispositivo nuevo los libros tardan en llegar: no se pide crear la empresa
             // mientras se importan (`MacCargando`).
             if sync.isSyncing && !skipsSyncWait && companies.isEmpty {
@@ -114,14 +164,16 @@ public struct ChirograRootView: View {
                     #endif
                     #if os(iOS)
                     // La app sigue montada debajo de la ventana de bloqueo: al desbloquear, todo está donde estaba.
-                    AppShell().id(replacement.generation)
+                    AppShell(companyKey: companyKey).id(replacement.generation)
                     #else
-                    if isLocked { LockView(lock: lock) } else { AppShell().id(replacement.generation) }
+                    if isLocked { LockView(lock: lock) } else { AppShell(companyKey: companyKey).id(replacement.generation) }
                     #endif
                 }
             }
         }
-        .sheet(isPresented: $subscription.showsPaywall) { PaywallView() }
+        .sheet(isPresented: $subscription.showsPaywall) { PaywallView(focus: subscription.paywallFocus) }
+        // Lista de empresas, «Añadir empresa» y el plan para contadores al llegar al límite (`CompanyHub`).
+        .companySheets()
         // «Empezar con mi empresa» (aviso de Inicio y Ajustes): tras borrar los datos de ejemplo no queda empresa y sale el
         // alta. La pantalla de suscripción vuelve a salir sola al crear la empresa propia (si salió con los de ejemplo, ya
         // se había gastado su «una vez»), y no se espera a iCloud: el borrado que se sube no son libros que lleguen.
@@ -133,6 +185,13 @@ public struct ChirograRootView: View {
             #endif
         }
         .task { subscription.start() }
+        #if DEBUG
+        .task(id: companies.count) {
+            // Después de `-qa.muestra` y de que la suscripción de QA fije el límite.
+            try? await Task.sleep(for: .milliseconds(300))
+            applyQACompanies()
+        }
+        #endif
         .onChange(of: subscription.isReadOnly && !companies.isEmpty, initial: true) { _, readOnly in
             Bookkeeper.isReadOnly = readOnly
             // Al crear la empresa sin suscripción, o al abrir la app con la suscripción vencida, una vez.
@@ -145,7 +204,11 @@ public struct ChirograRootView: View {
                presenting: replacement.restored) { _ in
             Button("Aceptar", role: .cancel) {}
         } message: { info in
-            Text("Tus libros son ahora los de la copia del \(info.createdAt.formatted(date: .abbreviated, time: .shortened))")
+            if info.companyName.isEmpty {
+                Text("Tus libros son ahora los de la copia del \(info.createdAt.formatted(date: .abbreviated, time: .shortened))")
+            } else {
+                Text("Los libros de «\(info.companyName)» son ahora los de la copia del \(info.createdAt.formatted(date: .abbreviated, time: .shortened))")
+            }
         }
         .tint(Palette.brand)
         .background(Palette.background)
@@ -249,6 +312,9 @@ enum AppLock {
 }
 
 struct AppShell: View {
+    /// Empresa activa (`CompanySession.key`): al cambiar, las pestañas y las columnas se rehacen con la nueva. La
+    /// pestaña y la sección elegidas se quedan.
+    let companyKey: String
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     #if os(iOS)
     @Environment(\.horizontalSizeClass) private var sizeClass
@@ -333,6 +399,10 @@ struct AppShell: View {
 
     /// iPhone: 5 pestañas (Inicio · Ventas · Gastos · Banca · Más), como el canvas.
     private var tabs: some View {
+        tabView.id(companyKey)
+    }
+
+    private var tabView: some View {
         TabView(selection: $tab) {
             ForEach(AppSection.phoneTabs) { section in
                 Tab(section.title, systemImage: section.systemImage, value: section) {
@@ -515,18 +585,31 @@ struct AppShell: View {
         // Al elegir otro elemento de la barra lateral se rehace la vista dividida entera: las pantallas abiertas con
         // `NavigationLink(destination:)` quedan en la pila propia de la columna de detalle, que no se vacía al
         // cambiar la raíz ni con `.id` en el `NavigationStack` interior.
-        .id(selection)
+        // También con otra empresa: todo se crea de nuevo con la empresa activa (`CompanySession`).
+        .id(ShellIdentity(selection: selection, companyKey: companyKey))
         // Después de `.id`, en la vista que no se rehace: antes de él no llegaba a ejecutarse, y el Plan de cuentas se
         // abría con la cuenta elegida en Banca. Al cambiar de pantalla, los editores de la columna ya no existen.
         .onChange(of: selection) {
             unsavedChanges.removeAll()
             masterSelection = nil
         }
+        .onChange(of: companyKey) {
+            unsavedChanges.removeAll()
+            masterSelection = nil
+            pendingSelection = nil
+            query = ""
+        }
         #if os(iOS)
         .onGeometryChange(for: Bool.self) { $0.size.width < $0.size.height } action: { isPortrait = $0 }
         .onChange(of: isPortrait) { _, portrait in orientationChanged(isPortrait: portrait) }
         #endif
     }
+}
+
+/// Identidad de la vista dividida: la sección elegida y la empresa activa.
+private struct ShellIdentity: Hashable {
+    let selection: SidebarItem
+    let companyKey: String
 }
 
 #if os(iOS)
@@ -550,11 +633,12 @@ struct LayoutSizeClass: DynamicProperty {
 /// Reportes, Contabilidad, Impuestos y Ajustes en filas con icono de color. Banca tiene su pestaña; Plantilla de
 /// factura, Usuarios y permisos y Deducibles son de fase 2 y no salen.
 struct MoreView: View {
-    @Query private var companies: [Company]
-    @Query(sort: \Account.code) private var accounts: [Account]
-    @Query private var journalLines: [JournalLine]
-    @Query private var entries: [JournalEntry]
-    @Query private var rates: [TaxRate]
+    @ActiveCompanyQuery private var companies: [Company]
+    @Query private var allCompanies: [Company]
+    @CompanyQuery(sort: \Account.code) private var accounts: [Account]
+    @CompanyQuery private var journalLines: [JournalLine]
+    @CompanyQuery private var entries: [JournalEntry]
+    @CompanyQuery private var rates: [TaxRate]
     @AppStorage(ChirograStore.syncEnabledKey) private var iCloudSyncEnabled = true
     @AppStorage("appLockEnabled") private var appLockEnabled = false
     /// «Abrir Impuestos» de la pista de arriba.
@@ -573,7 +657,12 @@ struct MoreView: View {
             .listRowInsets(EdgeInsets())
 
             if let company = companies.first {
-                Section { companyRow(company) }
+                Section {
+                    companyRow(company)
+                    // Varias empresas: la lista con lo pendiente de cada una, cambiar, añadir, archivar y borrar.
+                    MoreRow(title: String(localized: "Empresas"), value: "\(allCompanies.filter { !$0.isArchived }.count)",
+                            systemImage: "building.2", color: Palette.orange) { CompaniesView() }
+                }
             }
 
             Section(title: "Reportes") {

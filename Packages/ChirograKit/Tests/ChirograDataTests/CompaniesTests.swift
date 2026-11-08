@@ -65,14 +65,21 @@ struct CompaniesTests {
         }
         #expect(try first.companies().count == 5)
         #expect(throws: BookkeepingError.companyLimitReached(5)) { try first.forNewCompany() }
-        // Archivar deja sitio; restaurar no puede pasar el límite.
+        // Archivar no deja sitio (las archivadas cuentan, decisión del usuario del 8-nov); volver a mostrarla, siempre.
         let archived = try #require(try first.companies().last)
         try first.archiveCompany(archived)
+        #expect(try first.companies().count == 4)
+        #expect(try !first.canAddCompany())
+        #expect(throws: BookkeepingError.companyLimitReached(5)) { try first.forNewCompany() }
+        try first.unarchiveCompany(archived)
+        #expect(try first.companies().count == 5)
+        // Borrar sí deja sitio.
+        try first.archiveCompany(archived)
+        try first.deleteCompany(archived)
         #expect(try first.canAddCompany())
         try first.forNewCompany().setUpCompany(legalName: "Empresa 6")
-        #expect(throws: BookkeepingError.companyLimitReached(5)) { try first.unarchiveCompany(archived) }
-        #expect(try first.companies(includeArchived: true).count == 6)
-        #expect(try first.companies().map(\.sortOrder) == [0, 1, 2, 3, 5])
+        #expect(try first.companies(includeArchived: true).count == 5)
+        #expect(try first.companies().map(\.sortOrder) == [0, 1, 2, 3, 4])
     }
 
     @Test("Cada empresa ve solo lo suyo: cuentas, numeración, facturas, reportes y avisos")

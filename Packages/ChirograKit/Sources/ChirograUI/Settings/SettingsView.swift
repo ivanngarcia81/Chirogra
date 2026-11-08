@@ -33,7 +33,7 @@ struct SettingsView: View {
 
 /// Páginas de Ajustes, con su icono de color como en Ajustes del sistema (canvas `MacAjustes`).
 enum SettingsPage: String, CaseIterable, Identifiable {
-    case profile, template, formats, data
+    case profile, template, formats, companies, data
     var id: String { rawValue }
 
     var title: String {
@@ -41,6 +41,7 @@ enum SettingsPage: String, CaseIterable, Identifiable {
         case .profile: String(localized: "Perfil de la empresa")
         case .template: String(localized: "Plantilla de factura")
         case .formats: String(localized: "Moneda y formatos")
+        case .companies: String(localized: "Empresas")
         case .data: String(localized: "iCloud, copias y seguridad")
         }
     }
@@ -50,6 +51,7 @@ enum SettingsPage: String, CaseIterable, Identifiable {
         case .profile: "building.2.fill"
         case .template: "doc.richtext.fill"
         case .formats: "dollarsign"
+        case .companies: "building.2.fill"
         case .data: "icloud.fill"
         }
     }
@@ -59,6 +61,7 @@ enum SettingsPage: String, CaseIterable, Identifiable {
         case .profile: Palette.blue
         case .template: Palette.indigo
         case .formats: Palette.green
+        case .companies: Palette.orange
         case .data: Palette.teal
         }
     }
@@ -68,7 +71,7 @@ enum SettingsPage: String, CaseIterable, Identifiable {
 /// blanco, y su formulario a la derecha, de 640 pt como máximo.
 struct SettingsWideView: View {
     @Environment(\.modelContext) private var context
-    @Query private var companies: [Company]
+    @ActiveCompanyQuery private var companies: [Company]
     #if DEBUG
     /// `-qa.ajustes data` (solo Debug): la página con la que arranca.
     @State private var page: SettingsPage = UserDefaults.standard.string(forKey: "qa.ajustes").flatMap(SettingsPage.init(rawValue:)) ?? .profile
@@ -97,6 +100,7 @@ struct SettingsWideView: View {
                     case .profile: CompanyProfileView(company: company, embedded: true)
                     case .template: InvoiceTemplateView(company: company, embedded: true)
                     case .formats: FormatsView(company: company, embedded: true)
+                    case .companies: CompaniesView(embedded: true)
                     case .data: DataAndSecurityView(embedded: true)
                     }
                 }
@@ -189,7 +193,7 @@ struct SettingsWideView: View {
 struct SettingsLinks: View {
     /// En «Más» del iPhone el perfil ya se abre desde la fila de la empresa.
     var showsCompanyProfile = true
-    @Query private var companies: [Company]
+    @ActiveCompanyQuery private var companies: [Company]
 
     var body: some View {
         if let company = companies.first {
@@ -198,6 +202,7 @@ struct SettingsLinks: View {
             }
             link(.template) { InvoiceTemplateView(company: company) }
             link(.formats) { FormatsView(company: company) }
+            link(.companies) { CompaniesView() }
         }
         link(.data) { DataAndSecurityView() }
         GuideLinkRow()
@@ -300,7 +305,7 @@ struct FormatsView: View {
     let company: Company
     /// Dentro de `SettingsWideView`: el título de la ventana sigue siendo «Ajustes».
     var embedded = false
-    @Query private var invoices: [Invoice]
+    @CompanyQuery private var invoices: [Invoice]
 
     var body: some View {
         Form {

@@ -14,9 +14,9 @@ import SwiftUI
 struct ChartTablePage: View {
     static let isReady = true
     @Binding var selection: UUID?
-    @Query(sort: \Account.code) private var accounts: [Account]
-    @Query private var journalLines: [JournalLine]
-    @Query private var companies: [Company]
+    @CompanyQuery(sort: \Account.code) private var accounts: [Account]
+    @CompanyQuery private var journalLines: [JournalLine]
+    @ActiveCompanyQuery private var companies: [Company]
     @Environment(\.modelContext) private var context
     @State private var filter: ChartFilter = .all
     @State private var showArchived = false
