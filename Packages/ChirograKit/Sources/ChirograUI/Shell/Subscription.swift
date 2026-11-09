@@ -321,7 +321,7 @@ struct SubscriptionSection: View {
 
     var body: some View {
         if store.status != .notConfigured && store.status != .unknown {
-            Section {
+            SettingsSection {
                 HStack(spacing: 12) {
                     IconTile(systemImage: "star.fill", foreground: store.isReadOnly ? Palette.gray : Palette.brand)
                     VStack(alignment: .leading, spacing: 2) {

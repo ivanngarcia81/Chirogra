@@ -271,7 +271,7 @@ private struct MasterListStyle: ViewModifier {
         content
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
-            .background(Palette.surface)
+            .background(Palette.masterColumn)
             #if os(iOS)
             // Acento transparente: con trackpad o teclado, UIKit dibuja en el acento un anillo de foco cuadrado alrededor
             // de la celda elegida (se veía en Gastos, iPad del usuario, 3-nov); `focusEffectDisabled` no llega a la celda.
@@ -300,7 +300,7 @@ extension View {
     /// Filtro de la columna, fijo encima de la lista con fondo opaco. Con `safeAreaBar` formaba parte de la barra y
     /// el efecto de borde dejaba borroso el título grande.
     func masterFilter<Filter: View>(@ViewBuilder _ filter: () -> Filter) -> some View {
-        safeAreaInset(edge: .top, spacing: 0) { filter().background(Palette.surface) }
+        safeAreaInset(edge: .top, spacing: 0) { filter().background(Palette.masterColumn) }
     }
 
     func masterList(_ title: String, query: Binding<String>, prompt: LocalizedStringKey) -> some View {
@@ -379,7 +379,7 @@ private struct InvoiceMasterList: View {
             if filtered.isEmpty {
                 Text(invoices.isEmpty ? EmptyGuide.invoices.title : String(localized: "Ninguna factura coincide"))
                     .font(.subheadline).foregroundStyle(Palette.ink2)
-                    .frame(maxWidth: .infinity).listRowSeparator(.hidden).listRowBackground(Palette.surface)
+                    .frame(maxWidth: .infinity).listRowSeparator(.hidden).listRowBackground(Palette.masterColumn)
             }
         }
         .masterList(String(localized: "Ventas"), query: $query, prompt: "Cliente, número o monto")
@@ -435,7 +435,7 @@ private struct CustomerMasterList: View {
             }
             if filtered.isEmpty {
                 Text(customers.isEmpty ? EmptyGuide.customers.title : String(localized: "Ningún cliente coincide con «\(query)»."))
-                    .font(.subheadline).foregroundStyle(Palette.ink2).frame(maxWidth: .infinity).listRowSeparator(.hidden).listRowBackground(Palette.surface)
+                    .font(.subheadline).foregroundStyle(Palette.ink2).frame(maxWidth: .infinity).listRowSeparator(.hidden).listRowBackground(Palette.masterColumn)
             }
         }
         .masterList(String(localized: "Clientes"), query: $query, prompt: "Nombre, correo o teléfono")
@@ -492,7 +492,7 @@ private struct ExpenseMasterList: View {
             }
             if filtered.isEmpty {
                 Text(expenses.isEmpty ? EmptyGuide.expenses.title : String(localized: "Ningún gasto coincide"))
-                    .font(.subheadline).foregroundStyle(Palette.ink2).frame(maxWidth: .infinity).listRowSeparator(.hidden).listRowBackground(Palette.surface)
+                    .font(.subheadline).foregroundStyle(Palette.ink2).frame(maxWidth: .infinity).listRowSeparator(.hidden).listRowBackground(Palette.masterColumn)
             }
         }
         .masterList(String(localized: "Gastos"), query: $query, prompt: "Beneficiario, categoría o monto")
@@ -563,7 +563,7 @@ private struct VendorMasterList: View {
             }
             if filtered.isEmpty {
                 Text(vendors.isEmpty ? EmptyGuide.vendors.title : String(localized: "Ningún proveedor coincide"))
-                    .font(.subheadline).foregroundStyle(Palette.ink2).frame(maxWidth: .infinity).listRowSeparator(.hidden).listRowBackground(Palette.surface)
+                    .font(.subheadline).foregroundStyle(Palette.ink2).frame(maxWidth: .infinity).listRowSeparator(.hidden).listRowBackground(Palette.masterColumn)
             }
         }
         .masterList(String(localized: "Proveedores"), query: $query, prompt: "Nombre o correo")
@@ -622,7 +622,7 @@ private struct BillMasterList: View {
                     .buttonStyle(.plain)
                     .accessibilityAddTraits(isOn ? [.isSelected] : [])
                     .accessibilityHint(Text("Incluir en el pago en lote"))
-                    .listRowBackground(Palette.surface)
+                    .listRowBackground(Palette.masterColumn)
                 } else {
                     row(bill)
                         .masterRow(bill.id, selection: selection)
@@ -631,7 +631,7 @@ private struct BillMasterList: View {
             }
             if filtered.isEmpty {
                 Text(bills.isEmpty ? EmptyGuide.bills.title : String(localized: "Ninguna factura coincide"))
-                    .font(.subheadline).foregroundStyle(Palette.ink2).frame(maxWidth: .infinity).listRowSeparator(.hidden).listRowBackground(Palette.surface)
+                    .font(.subheadline).foregroundStyle(Palette.ink2).frame(maxWidth: .infinity).listRowSeparator(.hidden).listRowBackground(Palette.masterColumn)
             }
         }
         .masterList(String(localized: "Facturas por pagar"), query: $query, prompt: "Proveedor, número o monto")
@@ -693,7 +693,7 @@ private struct BankingMasterList: View {
                 }
                 .selectionDisabled()
                 .listRowSeparator(.hidden)
-                .listRowBackground(Palette.surface)
+                .listRowBackground(Palette.masterColumn)
             }
             ForEach(shown) { account in
                 MasterRow(title: account.maskedName, amount: ledger.cashBalance(of: account).money,
@@ -707,7 +707,7 @@ private struct BankingMasterList: View {
         }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
-        .background(Palette.surface)
+        .background(Palette.masterColumn)
         #if os(iOS)
         .tint(Palette.brandFill)
         #endif
@@ -771,7 +771,7 @@ private struct JournalMasterList: View {
             }
             if filtered.isEmpty {
                 Text(entries.isEmpty ? EmptyGuide.journal.title : String(localized: "Ningún asiento coincide"))
-                    .font(.subheadline).foregroundStyle(Palette.ink2).frame(maxWidth: .infinity).listRowSeparator(.hidden).listRowBackground(Palette.surface)
+                    .font(.subheadline).foregroundStyle(Palette.ink2).frame(maxWidth: .infinity).listRowSeparator(.hidden).listRowBackground(Palette.masterColumn)
             }
         }
         .masterList(String(localized: "Asientos de diario"), query: $query, prompt: "Concepto, número o monto")

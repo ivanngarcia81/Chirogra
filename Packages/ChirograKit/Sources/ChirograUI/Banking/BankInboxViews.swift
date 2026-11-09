@@ -825,7 +825,7 @@ struct BankInboxMasterList: View {
             if shown.isEmpty {
                 Text(filter == .pending ? String(localized: "No hay movimientos por revisar.") : String(localized: "Nada por aquí todavía."))
                     .font(.subheadline).foregroundStyle(Palette.ink2).frame(maxWidth: .infinity)
-                    .listRowSeparator(.hidden).listRowBackground(Palette.surface)
+                    .listRowSeparator(.hidden).listRowBackground(Palette.masterColumn)
             }
         }
         .masterList(String(localized: "Por revisar"), query: $query, prompt: "Descripción o monto")
@@ -943,7 +943,7 @@ struct BankingShortcutsSection: View {
         }
         .buttonStyle(.plain)
         .selectionDisabled()
-        .listRowBackground(Palette.surface)
+        .listRowBackground(Palette.masterColumn)
         .sheet(isPresented: $importing) { NavigationStack { BankImportView() }.editorSheetSizing() }
     }
 

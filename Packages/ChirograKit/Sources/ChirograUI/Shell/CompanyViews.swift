@@ -159,7 +159,7 @@ struct CompanyMenuItems: View {
     var body: some View {
         let shown = companies.filter { !$0.isArchived }.inSelectorOrder
         let active = CompanySession.scope?.id
-        Section {
+        SettingsSection {
             Picker(selection: Binding(get: { active }, set: { if let id = $0 { CompanyHub.shared.select(id) } })) {
                 ForEach(shown) { company in
                     Text(company.shownName).tag(Optional(company.id))
@@ -171,7 +171,7 @@ struct CompanyMenuItems: View {
         } header: {
             Text("Empresa")
         }
-        Section {
+        SettingsSection {
             Button("Añadir empresa…", systemImage: "plus") { CompanyHub.shared.requestAdd(in: context) }
             Button("Empresas…", systemImage: "building.2") { CompanyHub.shared.sheet = .list }
         }
@@ -208,8 +208,8 @@ struct CompaniesView: View {
     private var activeID: UUID? { CompanySession.scope?.id }
 
     var body: some View {
-        Form {
-            Section {
+        SettingsForm {
+            SettingsSection {
                 ForEach(shown) { company in row(company) }
                     .onMove(perform: move)
                 Button { CompanyHub.shared.requestAdd(in: context) } label: {
@@ -224,7 +224,7 @@ struct CompaniesView: View {
                 Text(limitText)
             }
             if !archived.isEmpty {
-                Section {
+                SettingsSection {
                     ForEach(archived) { company in row(company) }
                 } header: {
                     SectionLabel(text: String(localized: "Archivadas"))
@@ -233,10 +233,9 @@ struct CompaniesView: View {
                 }
             }
             if let errorMessage {
-                Section { ErrorBanner(message: errorMessage) }
+                SettingsSection(plain: true) { ErrorBanner(message: errorMessage) }
             }
         }
-        .formStyle(.grouped)
         .scrollContentBackground(.hidden)
         .background(Palette.background)
         #if os(macOS)
@@ -340,6 +339,18 @@ struct CompaniesView: View {
         if !company.isArchived && company.id != activeID {
             Button("Usar esta empresa", systemImage: "checkmark.circle") { choose(company) }
         }
+        #if os(macOS)
+        // En el Mac las empresas van en tarjetas (`SettingsForm`), no en la lista del sistema: no se arrastran, se
+        // suben y se bajan desde aquí.
+        if !company.isArchived, shown.count > 1, let index = shown.firstIndex(where: { $0.id == company.id }) {
+            if index > 0 {
+                Button("Subir", systemImage: "arrow.up") { move(from: IndexSet(integer: index), to: index - 1) }
+            }
+            if index < shown.count - 1 {
+                Button("Bajar", systemImage: "arrow.down") { move(from: IndexSet(integer: index), to: index + 2) }
+            }
+        }
+        #endif
         Button("Crear copia…", systemImage: "externaldrive.badge.plus") { makeBackup(of: company) }
         if company.isArchived {
             Button("Mostrar en el selector", systemImage: "tray.and.arrow.up") { unarchive(company) }

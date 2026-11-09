@@ -91,7 +91,7 @@ struct BackupSection: View {
     }
 
     var body: some View {
-        Section {
+        SettingsSection {
             row(systemImage: "externaldrive.fill.badge.plus", color: Palette.green) {
                 Button("Crear copia de esta empresa", action: makeBackup)
             }

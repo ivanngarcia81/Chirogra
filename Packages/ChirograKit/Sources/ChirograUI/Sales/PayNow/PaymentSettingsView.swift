@@ -34,19 +34,28 @@ struct PaymentSettingsView: View {
     }
 
     var body: some View {
-        Form {
+        SettingsForm {
             if let errorMessage {
-                Section { ErrorBanner(message: errorMessage) }.listRowBackground(Color.clear).listRowInsets(EdgeInsets())
+                SettingsSection(plain: true) { ErrorBanner(message: errorMessage) }.listRowBackground(Color.clear).listRowInsets(EdgeInsets())
             }
-            Section {
+            SettingsSection {
+                #if os(macOS)
+                LabeledContent("Enlace de pago") {
+                    TextField("Enlace de pago", text: $link, prompt: Text(verbatim: "https://buy.stripe.com/…"))
+                        .textFieldStyle(.plain)
+                        .labelsHidden()
+                        .foregroundStyle(Palette.ink)
+                        .textContentType(.URL)
+                        .autocorrectionDisabled()
+                }
+                #else
                 TextField("Enlace de pago", text: $link, prompt: Text(verbatim: "https://buy.stripe.com/…"))
                     .textContentType(.URL)
                     .autocorrectionDisabled()
-                    #if os(iOS)
                     .keyboardType(.URL)
                     .textInputAutocapitalization(.never)
-                    #endif
                     .accessibilityLabel(Text("Enlace de pago"))
+                #endif
                 Toggle("Mostrar «Pagar ahora» en las facturas", isOn: $showPayNow)
             } header: {
                 SectionLabel(text: String(localized: "Enlace de pago"))
@@ -57,18 +66,16 @@ struct PaymentSettingsView: View {
                     Text("Pega el enlace de tu Stripe Payment Link, Square, PayPal.me u otro. Si tu servicio lo admite, escribe {amount}, {number} o {customer} y cada factura pondrá su saldo, su número y el cliente. Sin «Pagar ahora», la factura no lleva ni el enlace ni las instrucciones.")
                 }
             }
-            Section {
-                TextField("Instrucciones de pago", text: $instructions,
-                          prompt: Text("Ej.: Zelle a pagos@tuempresa.com · Transferencia a la cuenta 1234 del banco…"),
-                          axis: .vertical)
-                    .lineLimit(2...6)
-                    .accessibilityLabel(Text("Instrucciones de pago"))
+            SettingsSection {
+                SettingsTextArea(title: "Instrucciones de pago", text: $instructions,
+                                 prompt: Text("Ej.: Zelle a pagos@tuempresa.com · Transferencia a la cuenta 1234 del banco…"),
+                                 lines: 2...6)
             } header: {
                 SectionLabel(text: String(localized: "Instrucciones"))
             } footer: {
                 Text("Salen como texto en el PDF de la factura y en el correo.")
             }
-            Section {
+            SettingsSection {
                 if showPayNow, let previewInfo {
                     PayNowBlock(info: previewInfo, accent: InvoiceTemplate(company: company).accent,
                                 soft: InvoiceTemplate(company: company).soft)
@@ -87,7 +94,7 @@ struct PaymentSettingsView: View {
             } footer: {
                 Text("El dinero va directo a tu cuenta de ese servicio; Chirogra no lo toca. Cuando te paguen, registra el cobro en la factura con «Registrar pago».")
             }
-            Section {
+            SettingsSection(plain: true) {
                 Button(savedMessage ?? String(localized: "Guardar"), action: save)
                     .buttonStyle(.primary)
                     .disabled(!hasChanges || !linkIsValid)
@@ -95,7 +102,6 @@ struct PaymentSettingsView: View {
                     .listRowBackground(Color.clear)
             }
         }
-        .formStyle(.grouped)
         .toggleStyle(.switch)
         .screenBackground()
         .modifier(PaymentTitle(embedded: embedded))

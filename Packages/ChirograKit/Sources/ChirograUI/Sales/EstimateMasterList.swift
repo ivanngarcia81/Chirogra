@@ -44,7 +44,7 @@ struct EstimateMasterList: View {
             if filtered.isEmpty {
                 Text(estimates.isEmpty ? String(localized: "Todavía no hay estimados") : String(localized: "Ningún estimado coincide"))
                     .font(.subheadline).foregroundStyle(Palette.ink2)
-                    .frame(maxWidth: .infinity).listRowSeparator(.hidden).listRowBackground(Palette.surface)
+                    .frame(maxWidth: .infinity).listRowSeparator(.hidden).listRowBackground(Palette.masterColumn)
             }
         }
         .listStyle(.plain)
@@ -54,13 +54,13 @@ struct EstimateMasterList: View {
         .focusEffectDisabled()
         #endif
         .scrollContentBackground(.hidden)
-        .background(Palette.surface)
+        .background(Palette.masterColumn)
         .tint(Palette.brandFill)
         .navigationTitle(String(localized: "Estimados"))
         .toolbarTitleDisplayMode(.inline)
         .searchable(text: $query, prompt: Text("Cliente, número o monto"))
         .safeAreaInset(edge: .top, spacing: 0) {
-            filterBar.background(Palette.surface)
+            filterBar.background(Palette.masterColumn)
         }
         .toolbar {
             ToolbarItem(placement: .primaryAction) {

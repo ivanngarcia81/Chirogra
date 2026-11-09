@@ -159,7 +159,7 @@ struct SampleBooksBanner: View {
 struct SampleBooksSection: View {
     var body: some View {
         IfSampleBooks { company in
-            Section {
+            SettingsSection {
                 HStack(spacing: 12) {
                     IconTile(systemImage: "sparkles", foreground: Palette.orange)
                     Button("Empezar con mi empresa…") { SampleBooks.shared.confirm() }

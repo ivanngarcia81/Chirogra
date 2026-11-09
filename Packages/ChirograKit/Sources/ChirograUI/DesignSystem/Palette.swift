@@ -62,6 +62,9 @@ public enum Palette {
     public static let separator = Color(uiColor: .separator)
     /// Barra lateral del iPad: panel blanco del canvas (`Sidebar`, device=ipad).
     public static let sidebar = Color(uiColor: .secondarySystemGroupedBackground)
+    /// Columna maestro del iPad (la lista entre la barra lateral y el detalle): un punto menos blanca que la barra
+    /// lateral y más clara que el suelo del detalle, para que las tres columnas se distingan (pedido del 8-nov).
+    public static let masterColumn = Color(light: 0xF7F7F9, dark: 0x111113)
     public static let ink = Color(uiColor: .label)
     #else
     /// Suelo del contenido del Mac, ENTRE las tarjetas (decisión del usuario del 8-nov, «como Tamio»: tres niveles,
@@ -76,6 +79,8 @@ public enum Palette {
     public static let separator = Color(nsColor: .separatorColor)
     /// En el Mac la barra lateral es el material del sistema: sin fondo propio.
     public static let sidebar = Color.clear
+    /// Columna maestro del Mac (páginas sin tabla propia): como las tarjetas.
+    public static let masterColumn = surface
     public static let ink = Color(nsColor: .labelColor)
     #endif
 
