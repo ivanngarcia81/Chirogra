@@ -1,13 +1,35 @@
 # Chirogra: contexto para retomar en otro chat
 
-Resumen del chat de coordinación de Chirogra al **8 de noviembre de 2026**. Léelo entero antes de seguir. El diseño técnico está en [DISEÑO.md](DISEÑO.md), el sistema visual en [REDISEÑO-NATIVO.md](REDISEÑO-NATIVO.md) y la API del esquema 2 en [DATOS-V2.md](DATOS-V2.md); aquí van el estado, las decisiones del usuario, lo pendiente y cómo se trabaja. Al usuario se le habla siempre en español.
+Resumen del chat de coordinación de Chirogra al **9 de noviembre de 2026**. Léelo entero antes de seguir. El diseño técnico está en [DISEÑO.md](DISEÑO.md), el sistema visual en [REDISEÑO-NATIVO.md](REDISEÑO-NATIVO.md) y la API del esquema 2 en [DATOS-V2.md](DATOS-V2.md); aquí van el estado, las decisiones del usuario, lo pendiente y cómo se trabaja. Al usuario se le habla siempre en español.
 
 ## Dónde nos quedamos (empieza aquí)
 
-**CIERRE DEL 8-NOV (léelo primero; el del 7-nov va después).** La fase 2 sin servidor está **hecha e integrada** en la rama
-`fase2-integracion` (worktree `.claude/worktrees/fase2`), **empujada a GitHub** hasta `c7f73a2`. **`main` no se ha tocado**
-(sigue en la 1.0.1 build 15, `c214680`); este CONTEXTO y `docs/PLAN-FASE2.md` están **sin commitear en `main`** y se
-commitean al unir la fase 2.
+**CIERRE DEL 9-NOV (léelo primero).** La fase 2 sin servidor está **unida a `main`** (merge `6f745a4`, 9-nov) y
+empujada; la web (chirogra.com, desde `sitio/` de `main`) ya lleva el icono χ. La rama `fase2-integracion` (worktree
+`.claude/worktrees/fase2`) queda igual que lo unido, en `467cdcf`. **Esquema 4 desplegado a Producción** por el usuario
+(8-nov). **Último build: 21** (`467cdcf`, 1.1.0, iOS y macOS «Upload succeeded» el 9-nov); el próximo es el **22**.
+- **Prueba del build 20 en Producción (8-nov noche, iPhone y Mac del usuario, con datos borrados antes):** compilación
+  Debug del mismo commit firmada por el equipo con el entorno Production (no TestFlight, para poder usar `-qa.*`). Bien:
+  los dos trajeron los libros de ejemplo de Producción (iPhone en segundos, Mac ~40 s); cliente creado en el iPhone
+  llegó al Mac en <1 min sin reabrir; empresa creada en el Mac llegó al iPhone separada; CSV de banca importado en el
+  Mac (4 «Por revisar», depósito sugerido «Pago de F-1003») llegó al iPhone; recibo leído en el Mac (Home Depot
+  $284.17) y guardado con su adjunto, visto en el iPhone; reportes y Ajustes del Mac bien. La primera lectura de un
+  recibo en el Mac tardó 127 s. `/Applications/Chirogra.app` y la app del iPhone quedaron con esa compilación de
+  prueba (no la de TestFlight): instalar encima desde TestFlight conserva los datos.
+- **Build 21 (lo que salió de esa prueba):** `LogoMark` es ahora la χ del icono (degradado índigo, los trazos de
+  `chi-trazos-editables 2.svg`, punto azafrán) en el alta, «Sincronizando con iCloud», el bloqueo y el muro de pago del
+  plan normal (antes la «C» vieja y un libro); en el Mac, el `ScrollView` de Ajustes (`SettingsForm`) y el `Form` del
+  alta van a todo el ancho con la columna dentro: estrechos, la barra pintaba su franja blanca solo encima de ellos,
+  cortada sobre el gris; formulario de cliente: la sección «Cobro» (en inglés salía «Payment received») es
+  «Facturación» / «Billing».
+- **Siguiente:** (1) el usuario prueba el 21 de TestFlight; (2) crea en App Store Connect el producto
+  `com.chirogra.app.contador.mensual` (descripción en `docs/APP-STORE.md`) cuando decida el precio; (3) publicar por
+  partes 1.1 / 1.2 / 1.3; (4) enviar la 1.0.1 (build 15) cuando Apple apruebe la 1.0. Para más adelante (decisión
+  del 8-nov): dividir movimientos y motivo al excluir en banca; permiso de red y nota de privacidad de recibos en el
+  Mac; quizá un aviso de que la primera lectura de un recibo tarda.
+
+**CIERRE DEL 8-NOV.** La fase 2 sin servidor quedó **hecha e integrada** en la rama `fase2-integracion` (unida a
+`main` el 9-nov, ver arriba).
 - **Qué lleva la rama:** varias empresas (`3287645`) + recibos/«Pagar ahora»/sales tax por código postal (1.1) + banca y
   conciliación (1.2) + flujo de efectivo, base caja, deducibles, presupuestos y «Exportar para mi contador» (1.3). 292
   pruebas en verde; compila en iOS y macOS.
@@ -23,9 +45,8 @@ commitean al unir la fase 2.
   oferta, para regalar la suscripción) en Ajustes › Suscripción y en la pantalla de planes. **Plan para contadores SIN
   LÍMITE de empresas** (`CompanyLimits.accountant = unlimited`; antes 5); el normal, 1. **En TestFlight** (entorno
   sandbox) se permiten empresas sin límite con cualquier plan, para probar.
-- **Esquema 4 creado en Desarrollo** desde el Mac (`-qa.esquemaCloudKit 1`, «listo» 8-nov 19:25Z). **Falta que el usuario
-  lo despliegue a Producción** (consola de CloudKit › `iCloud.com.chirogra.app` › Deploy Schema Changes) **antes de abrir
-  el TestFlight**; preguntárselo.
+- **Esquema 4 creado en Desarrollo** desde el Mac (`-qa.esquemaCloudKit 1`, «listo» 8-nov 19:25Z). **Desplegado a
+  Producción por el usuario** el 8-nov (consola de CloudKit › `iCloud.com.chirogra.app` › Deploy Schema Changes).
 - **TestFlight 1.1.0:** builds 16 (`2fadf80`), 17 (`574d673`) y **18 (`c7f73a2`, el bueno)** subidos para iOS y macOS
   (los dos, iOS y macOS, «Upload succeeded»). **Build 19 (`85d0789`):** jerarquía de elevación «como Tamio» (decisión
   del usuario, 8-nov): en el Mac, suelo gris `#F6F6F8`/`#1E1E20` (`Palette.background`), tarjetas y tablas blancas
@@ -37,12 +58,8 @@ commitean al unir la fase 2.
   `Form` `.grouped` del Mac no admiten `listRowBackground` ni `backgroundStyle`, probado); Empresas del Mac con
   «Subir»/«Bajar» en ⋯ (no se arrastran fuera de la lista); columna de páginas de Ajustes blanca en el Mac y, en el
   iPad, `Palette.masterColumn` (`#F7F7F9`/`#111113`), el tono nuevo de TODAS las listas maestro del iPad, entre el
-  blanco de la barra lateral y el gris del detalle (pedido del 8-nov); icono nuevo. **Próximo build: 21.**
-- **Siguiente:** (1) el usuario despliega el esquema 4 y prueba el 18 en sus aparatos (iCloud de Producción entre
-  aparatos, varias empresas, banca, recibos, «Canjear código»); (2) lo que salga, al build 19; (3) unir
-  `fase2-integracion` a `main` y commitear este CONTEXTO y PLAN-FASE2; (4) el usuario crea en App Store Connect el
-  producto `com.chirogra.app.contador.mensual` (descripción «Empresas sin límite…», en `docs/APP-STORE.md`) cuando decida
-  el precio; (5) publicar por partes 1.1 / 1.2 / 1.3. Sigue pendiente enviar la 1.0.1 (build 15) cuando salga la 1.0.
+  blanco de la barra lateral y el gris del detalle (pedido del 8-nov); icono nuevo. Build 21: ver el cierre del 9-nov.
+- **Siguiente (8-nov), ya hecho el 9-nov:** esquema 4 desplegado, build 20 probado en Producción, `fase2-integracion` unida a `main`.
 - Simuladores temporales míos: «Chirogra Fase2 iPhone» (D941CB1C) y «Chirogra Fase2 iPad» (076546B0); se pueden borrar.
 
 **CIERRE DEL 7-NOV (léelo primero).** Todo está en `main` y empujado (`d661702` y este commit); no quedan ramas (`build6` y `build7` borradas) ni trabajo sin subir. La 1.0.0 lleva subidos a App Store Connect los builds **1 a 11** (iOS y macOS); **el bueno es el 11** (7-nov noche, desde `5f16dc4`: el 10 + el arreglo de la «Tasa de Austin» repetida en el alta del Mac) y **el 7-nov (noche) el usuario lo ENVIÓ A REVISIÓN**: el envío de iOS lleva la app 1.0 (build 11) + la suscripción «Chirogra monthly» + su grupo «Chirogra» (la primera suscripción tiene que ir con una versión y con su grupo; se añadió el grupo con «Add for Review» desde su página, y le faltaba el «Display Name and Description» en inglés). La captura de revisión de la suscripción es la pantalla de pago real (UI test en una copia de trabajo, nunca en el repo). El Mac fue en su propio envío, también mandado esa noche: **los dos (iOS y macOS) quedaron en «Waiting for Review»**. Siguiente: esperar la respuesta de Apple (si rechaza, leer el motivo en App Review y contestar o subir el build 12). El usuario probó la app como cliente nuevo con el guion del artículo https://claude.ai/artifact/32kiNBUgqBpqTrZ4MTfgc7 en varias rondas y el 7-nov dijo **«ya todo está bien»**: el guion está **terminado**, no pedir otra ronda salvo que él lo pida. El build 10 lleva, sobre el 5: «Editar» a la vista en la factura emitida; Impuestos antes que Contabilidad en «Más»; método de pago según la cuenta; sales tax completo en la apertura (Tasa de Texas fija → ciudad → tasa de la ciudad → total sumado); «Sales tax por pagar · Vence el …» en Inicio; impuesto incluido del gasto calculado solo con la tasa de la empresa; línea de la factura del iPhone con el total abajo; ícono nuevo (carpeta con la «C»), también en chirogra.com.
@@ -159,6 +176,7 @@ Próxima subida a TestFlight: **build 16** (la 1.0.1 va con el 15) (`CURRENT_PRO
 
 ## Estado actual
 
+- **Desde el 9-nov `main` lleva también la fase 2 sin servidor** (merge `6f745a4`, builds 16 a 21 de la 1.1.0); lo de abajo es lo anterior.
 - **App en `main`:** rediseño nativo (2-nov) + Mac con tabla e inspector (2-nov) + esquema 2 con lo que dibujaba el canvas (3-nov) + ícono (`541169a`) + pendientes menores y `DesignSystem` (`e9db54e`) + copia de seguridad (`de6ef43`) + suscripción y solo lectura (`d4de7a9`) + QA de capturas (`82348a9`) + web (`36f3276`, `30ee87d`, `623c564`) + versión 1.0.0 con iCloud (`0f554ff`) + guía de uso web y arreglo de Impuestos (`8278ac5`, `b6dab31`) + build 2 («Empezar con mi empresa», 1099, «Guía de uso»; `d2eb0b0`) + ícono nuevo y build 3 (`330a0fd`) + builds 4 y 5 con el glosario web (`5c2e9d3`).
 - **Datos:** los tres aparatos ya migraron a `SchemaV2`. **Una versión anterior de la app ya no abre esos datos.** Instalado el build 3 en iPhone, iPad y Mac (con datos de ejemplo «Ríos Diseño & Obra», salvo que el usuario haya usado «Empezar con mi empresa» en su prueba del iPhone), «Solo en este dispositivo».
 - **iCloud:** contenedor `iCloud.com.chirogra.app` asignado al App ID `com.chirogra.app` (iCloud + Push) y esquema 2 desplegado a producción (4-nov).
