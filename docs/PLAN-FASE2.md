@@ -69,7 +69,7 @@ Un solo esquema 4 para todo lo de esta tabla (una migración, un despliegue).
 
 - **Por partes:** 1.1 = varias empresas + plan para contadores + recibos + enlace de pago; 1.2 = conciliación bancaria;
   1.3 = flujo de efectivo, base caja, deducibles y presupuestos. El esquema 4 se hace de una vez para todo.
-- **Precio del plan para contadores: después.** El producto se prepara con su identificador y el límite de empresas; el
+- **Precio del plan para contadores: $99.99 al mes** (decidido el 9-nov; antes «después»). El producto se prepara con su identificador y el límite de empresas; el
   precio se pone en App Store Connect cuando el usuario lo decida.
 - Formatos de extracto: CSV y OFX/QFX (CAMT.053 fuera salvo que lo pida).
 - Pendiente: fuente y licencia de la tabla de sales tax por código postal (se investiga antes del punto 7).

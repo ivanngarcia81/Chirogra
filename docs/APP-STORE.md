@@ -167,7 +167,7 @@ de prueba) no se limita.
 | Reference name | Chirogra para contadores mensual |
 | Product ID | com.chirogra.app.contador.mensual |
 | Duración | 1 mes |
-| Precio | **Por decidir** (en `App/Chirogra.storekit`, $99.99 solo para probar en Xcode) |
+| Precio | **$99.99 al mes** (decidido el 9-nov; el mismo que `App/Chirogra.storekit`) |
 | Oferta de introducción | Gratis, 2 semanas, para nuevos suscriptores (la misma que el plan normal) |
 | Display name (en) | Chirogra for Accountants |
 | Display name (es) | Chirogra para contadores |
