@@ -113,8 +113,13 @@ struct SettingsWideView: View {
                     }
                 }
             }
+            #if os(macOS)
+            // En el Mac el límite de 640 pt lo pone `SettingsForm` dentro de su `ScrollView`.
+            .frame(maxWidth: .infinity)
+            #else
             .frame(maxWidth: 640)
             .frame(maxWidth: .infinity)
+            #endif
         }
         .background(Palette.background)
         #if os(macOS)

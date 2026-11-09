@@ -11955,6 +11955,16 @@
         }
       }
     },
+    "Facturación" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Billing"
+          }
+        }
+      }
+    },
     "Falló el cargo automático a %@" : {
       "localizations" : {
         "en" : {

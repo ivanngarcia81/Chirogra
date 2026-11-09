@@ -20,8 +20,11 @@ struct SettingsForm<Content: View>: View {
             VStack(alignment: .leading, spacing: 22) { content }
                 .padding(.horizontal, 24)
                 .padding(.vertical, 20)
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .frame(maxWidth: 640, alignment: .leading)
+                .frame(maxWidth: .infinity)
         }
+        // El `ScrollView` a todo el ancho y el límite de 640 pt dentro: con el `ScrollView` de 640 pt, el Mac pintaba
+        // la franja blanca de la barra solo encima del formulario, cortada sobre el suelo gris (prueba del build 20).
         .labeledContentStyle(SettingsRowLabeledContentStyle())
         .toggleStyle(SettingsRowToggleStyle())
         #else

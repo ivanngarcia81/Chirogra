@@ -95,6 +95,10 @@ struct OnboardingView: View {
     /// Código postal del negocio (sales tax por código postal, `Sales/PostalTax/`): con la tabla, propone la ciudad y su tasa.
     @State private var postalCode = ""
     @State private var errorMessage: String?
+    #if os(macOS)
+    /// Ancho del formulario, para centrar la columna con márgenes.
+    @State private var formWidth: CGFloat = 0
+    #endif
 
     private static let stepCount = 3
 
@@ -111,8 +115,15 @@ struct OnboardingView: View {
         }
         .formStyle(.grouped)
         .scrollContentBackground(.hidden)
+        #if os(macOS)
+        // En el Mac el `Form` va a todo el ancho y la columna sale de los márgenes: con el `Form` estrecho, la ventana
+        // pintaba arriba la franja blanca de la barra solo a su ancho, cortada sobre el gris (prueba del build 20).
+        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { formWidth = $0 }
+        .contentMargins(.horizontal, max(0, (formWidth - Self.columnWidth) / 2), for: .scrollContent)
+        #else
         .frame(maxWidth: Self.columnWidth)
         .frame(maxWidth: .infinity)
+        #endif
         .background(Palette.background)
         // Cada paso empieza arriba: el paso 2 heredaba el desplazamiento del 1.
         .id(step)

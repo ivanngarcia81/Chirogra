@@ -997,7 +997,8 @@ struct CustomerEditorView: View {
             } footer: {
                 Text("A quién te diriges en los correos y quién suele aceptar los estimados.")
             }
-            Section(title: "Cobro") {
+            // «Facturación» y no «Cobro»: en inglés «Cobro» es «Payment received» (el asiento) y aquí no pegaba (8-nov).
+            Section(title: "Facturación") {
                 TextField("ID fiscal", text: $taxID, prompt: Text("ID fiscal (opcional)"))
                 Picker("Condiciones de pago", selection: $terms) {
                     Text("Al recibir").tag(0)

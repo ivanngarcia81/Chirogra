@@ -196,10 +196,15 @@ struct PaywallView: View {
         Group {
             SubscriptionStoreView(productIDs: productIDs) {
                 VStack(spacing: 14) {
-                    Image(systemName: focus == .accountant ? "building.2.fill" : "book.pages.fill")
-                        .font(.system(size: 44))
-                        .foregroundStyle(Palette.brand)
-                        .accessibilityHidden(true)
+                    // El plan general lleva el logotipo (la χ del icono); antes, un libro del sistema (build 21).
+                    if focus == .accountant {
+                        Image(systemName: "building.2.fill")
+                            .font(.system(size: 44))
+                            .foregroundStyle(Palette.brand)
+                            .accessibilityHidden(true)
+                    } else {
+                        LogoMark(size: 64).accessibilityHidden(true)
+                    }
                     if focus == .accountant {
                         Text("Chirogra para contadores").font(.largeTitle.bold()).foregroundStyle(Palette.ink)
                             .multilineTextAlignment(.center)
