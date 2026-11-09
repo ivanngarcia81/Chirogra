@@ -65,8 +65,7 @@ extension Bookkeeper {
                 try pay(bill, amount: bill.balanceDue, date: date, from: paymentAccount, method: method, reference: reference, save: false)
             }
             audit("BillPayment", nil, "batchPay", String(localized: "Pago en lote de \(bills.count) facturas: \(Money(minorUnits: payments.reduce(0) { $0 + $1.amount }).formatted())"))
-            try ensureWritable()
-            try context.save()
+            try commit()
             return payments
         } catch {
             context.rollback()
@@ -77,7 +76,7 @@ extension Bookkeeper {
     /// Facturas abiertas con pago programado para `date` o antes (incluidas las de cargo automático).
     public func scheduledBills(dueOnOrBefore date: Date = Date(), calendar: Calendar = .current) throws -> [Bill] {
         let limit = calendar.startOfDay(for: date)
-        return try context.fetch(FetchDescriptor<Bill>())
+        return try fetch(Bill.self)
             .filter { $0.isOpen && $0.journalEntryID != nil }
             .filter { bill in bill.scheduledPaymentDate.map { calendar.startOfDay(for: $0) <= limit } ?? false }
             .sorted { ($0.scheduledPaymentDate ?? .distantPast) < ($1.scheduledPaymentDate ?? .distantPast) }

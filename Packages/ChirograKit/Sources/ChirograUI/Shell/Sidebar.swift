@@ -35,6 +35,8 @@ enum SidebarItem: Hashable {
     case expenses(ExpensesView.Segment)
     case report(ReportsView.Kind)
     case accounting(AccountingPage)
+    /// Banca 1.2: Cuentas · Por revisar · Reglas · Conciliación (`BankingPage`, en `Banking/BankInboxViews.swift`).
+    case banking(BankingPage)
 
     /// Sección principal a la que pertenece (la que se marca en la barra).
     var section: AppSection {
@@ -44,6 +46,7 @@ enum SidebarItem: Hashable {
         case .expenses: .expenses
         case .report: .reports
         case .accounting: .accounting
+        case .banking: .banking
         }
     }
 
@@ -60,6 +63,7 @@ enum SidebarItem: Hashable {
         case .expenses(let segment): ExpensesView(fixedSegment: segment)
         case .report(let kind): ReportsView(fixedKind: kind)
         case .accounting(let page): page.destination
+        case .banking(let page): page.destination
         }
     }
 
@@ -74,6 +78,7 @@ enum SidebarItem: Hashable {
              (String(localized: "Facturas por pagar"), .expenses(.bills))]
         case .reports: ReportsView.Kind.allCases.map { ($0.fullTitle, .report($0)) }
         case .accounting: AccountingPage.allCases.map { ($0.title, .accounting($0)) }
+        case .banking: BankingPage.allCases.map { ($0.title, .banking($0)) }
         default: []
         }
     }
@@ -86,7 +91,9 @@ enum SidebarItem: Hashable {
 struct Sidebar: View {
     @Binding var selection: SidebarItem
     @Binding var query: String
-    @Query private var companies: [Company]
+    @ActiveCompanyQuery private var companies: [Company]
+    /// Todas, para el selector de la ficha del pie.
+    @Query private var selectorCompanies: [Company]
     @AppStorage(ChirograStore.syncEnabledKey) private var iCloudSyncEnabled = true
     @State private var sync = SyncMonitor.shared
     @ScaledMetric(relativeTo: .body) private var iconWidth: CGFloat = Self.iconSide
@@ -234,6 +241,8 @@ struct Sidebar: View {
                     .lineLimit(1)
                     .minimumScaleFactor(0.6)
                     .frame(maxWidth: .infinity, alignment: .leading)
+                // Banca cerrada: cuántos movimientos esperan en «Por revisar» (abierta, el número va en la subsección).
+                if section == .banking && !isOpen { BankPendingBadge(isActive: false) }
                 if hasSubsections {
                     Image(systemName: isOpen ? "chevron.down" : "chevron.right")
                         .font(.caption.weight(.semibold))
@@ -261,10 +270,14 @@ struct Sidebar: View {
             selection = item
         } label: {
             // Hasta dos líneas en vez de encogerse: «Balanza de comprobación» quedaba más pequeña que las demás.
-            Text(title)
+            HStack(spacing: 6) {
+                Text(title)
+                    .lineLimit(2)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                if item == .banking(.inbox) { BankPendingBadge(isActive: isActive && Self.fillsSelection) }
+            }
                 .font(.body)
-                .lineLimit(2)
-                .fixedSize(horizontal: false, vertical: true)
                 .foregroundStyle(foreground(isActive))
                 .padding(.leading, Self.subIndent)
                 .padding(.trailing, Self.rowPadding)
@@ -320,15 +333,20 @@ struct Sidebar: View {
 
     // MARK: Empresa
 
-    /// Empresa al pie (canvas: monograma, nombre y «iCloud · …»), que abre los ajustes. El selector de empresas del
-    /// canvas es de fase 2 (varias empresas) y no sale.
+    /// Empresa al pie (canvas: monograma, nombre, «iCloud · …» y «⌃⌄»): el selector de empresa. Abre el menú con las
+    /// empresas, «Añadir empresa…», «Empresas…» y «Ajustes de la empresa».
     @ViewBuilder
     private var companyCard: some View {
         if let company = companies.first {
             let name = company.displayName.isEmpty ? company.legalName : company.displayName
-            Button {
-                query = ""
-                selection = .section(.settings)
+            Menu {
+                CompanyMenuItems(companies: selectorCompanies)
+                Section {
+                    Button("Ajustes de la empresa", systemImage: "gearshape") {
+                        query = ""
+                        selection = .section(.settings)
+                    }
+                }
             } label: {
                 HStack(spacing: 10) {
                     CompanyMonogram(name: name, side: Self.monogramSide)
@@ -346,14 +364,22 @@ struct Sidebar: View {
                     .lineLimit(2)
                     .minimumScaleFactor(0.8)
                     Spacer(minLength: 0)
+                    Image(systemName: "chevron.up.chevron.down")
+                        .font(Self.captionFont.weight(.semibold))
+                        .foregroundStyle(Palette.ink2)
+                        .accessibilityHidden(true)
                 }
                 .padding(8)
                 .frame(minHeight: Metrics.target)
                 .contentShape(Rectangle())
             }
+            .menuStyle(.button)
+            .menuIndicator(.hidden)
             .buttonStyle(.plain)
             .accessibilityElement(children: .combine)
-            .accessibilityHint("Abre los ajustes")
+            .accessibilityLabel(Text("Empresa: \(name)"))
+            .accessibilityValue(Text(syncText))
+            .accessibilityHint("Cambia de empresa, añade otra o abre sus ajustes")
             .padding(.horizontal, Self.panelPadding)
             .padding(.vertical, 8)
             .background(Palette.sidebar)
@@ -382,12 +408,12 @@ private struct SidebarCaptionLabelStyle: LabelStyle {
 /// Resultados de la búsqueda de la barra lateral: facturas, clientes, proveedores, gastos y cuentas.
 struct SearchResultsView: View {
     let query: String
-    @Query(sort: \Invoice.createdAt, order: .reverse) private var invoices: [Invoice]
-    @Query(sort: \Estimate.issueDate, order: .reverse) private var estimates: [Estimate]
-    @Query(sort: \Customer.name) private var customers: [Customer]
-    @Query(sort: \Vendor.name) private var vendors: [Vendor]
-    @Query(sort: \Expense.date, order: .reverse) private var expenses: [Expense]
-    @Query(sort: \Account.code) private var accounts: [Account]
+    @CompanyQuery(sort: \Invoice.createdAt, order: .reverse) private var invoices: [Invoice]
+    @CompanyQuery(sort: \Estimate.issueDate, order: .reverse) private var estimates: [Estimate]
+    @CompanyQuery(sort: \Customer.name) private var customers: [Customer]
+    @CompanyQuery(sort: \Vendor.name) private var vendors: [Vendor]
+    @CompanyQuery(sort: \Expense.date, order: .reverse) private var expenses: [Expense]
+    @CompanyQuery(sort: \Account.code) private var accounts: [Account]
 
     private var text: String { query.trimmingCharacters(in: .whitespaces) }
     /// Sin distinguir mayúsculas ni tildes.
@@ -472,5 +498,22 @@ struct SearchResultsView: View {
         .navigationLinkIndicatorVisibility(.hidden)
         .navigationTitle("Resultados de búsqueda")
         .headerTitle()
+    }
+}
+
+/// Número de movimientos del banco por revisar en la barra lateral (decisión del usuario, 8-nov). Vista aparte para
+/// que la consulta no haga redibujar toda la barra; sin pendientes no enseña nada.
+private struct BankPendingBadge: View {
+    let isActive: Bool
+    @CompanyQuery(filter: #Predicate<BankTransaction> { $0.statusRaw == "toReview" }) private var pending: [BankTransaction]
+
+    var body: some View {
+        if !pending.isEmpty {
+            Text(verbatim: "\(pending.count)")
+                .font(.footnote.weight(.semibold))
+                .monospacedDigit()
+                .foregroundStyle(isActive ? Palette.onBrandFill : Palette.ink2)
+                .accessibilityLabel(Text("\(pending.count) por revisar"))
+        }
     }
 }

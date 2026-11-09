@@ -8,13 +8,13 @@ import SwiftUI
 /// (icono de color, saldo en libros de 24 y código); debajo, los movimientos del mes de la cuenta elegida en la tabla
 /// Fecha · Descripción · Categoría o cuenta · Retiro · Depósito · Saldo, con el mes anterior y el siguiente. El
 /// inspector muestra el movimiento elegido (Detalles, Conciliación) con «Abrir asiento» y «Ver en libro mayor».
-/// Importar movimientos, la bandeja «Por revisar» y la conciliación son de la fase 2: «Importar y conciliar ·
-/// Próximamente» en la barra, desactivado.
+/// Banca 1.2: «Importar extracto» y «Por revisar N» en la barra (también arrastrando el archivo a la página); la
+/// bandeja, las reglas y la conciliación son subsecciones de Banca en la barra lateral.
 struct BankingTablePage: View {
     static let isReady = true
     @Binding var selection: UUID?
-    @Query(sort: \Account.code) private var accounts: [Account]
-    @Query private var journalLines: [JournalLine]
+    @CompanyQuery(sort: \Account.code) private var accounts: [Account]
+    @CompanyQuery private var journalLines: [JournalLine]
     /// Cuenta elegida en las tarjetas; sin elegir, la primera (o la de `-qa.cuenta N` en Debug).
     @State private var accountID: UUID?
     @State private var monthOffset = BankingTablePage.initialMonthOffset
@@ -23,6 +23,11 @@ struct BankingTablePage: View {
     @State private var adding: NewMovement?
     @State private var openedEntry: JournalEntry?
     @State private var openedLedger: Account?
+    @State private var importing: BankImportRequest?
+    @Environment(\.openSidebarItem) private var openSidebarItem
+    @CompanyQuery(filter: #Predicate<BankTransaction> { $0.statusRaw == "toReview" }) private var pending: [BankTransaction]
+    @CompanyQuery(filter: #Predicate<BankTransaction> { $0.matchedLineID != nil }) private var matchedFromBank: [BankTransaction]
+    @CompanyQuery private var reconciliations: [Reconciliation]
 
     var body: some View {
         let ledger = Ledger(accounts: accounts, lines: journalLines)
@@ -89,7 +94,8 @@ struct BankingTablePage: View {
                 }
             }
         } inspector: { movement in
-            BankMovementInspector(movement: movement, account: account)
+            BankMovementInspector(movement: movement, account: account,
+                                  status: bankStatus(of: movement))
         } actions: { movement in
             if let entry = movement.entry {
                 Button("Abrir asiento") { openedEntry = entry }.buttonStyle(.primary)
@@ -99,15 +105,28 @@ struct BankingTablePage: View {
             }
         }
         .toolbar {
-            // Fase 2 (DISEÑO §7.4): se anuncia, desactivado, como en el canvas.
             ToolbarItem(placement: .primaryAction) {
-                Button {} label: {
-                    Label("Importar y conciliar · Próximamente", systemImage: "square.and.arrow.down").labelStyle(.titleAndIcon)
+                Button { importing = BankImportRequest(file: nil) } label: {
+                    Label("Importar extracto", systemImage: "square.and.arrow.down").labelStyle(.titleAndIcon)
                 }
-                .disabled(true)
-                .help("Disponible en una próxima versión")
-                .accessibilityLabel("Importar y conciliar, disponible en una próxima versión")
+                .help("Importa un extracto CSV, OFX o QFX (también puedes arrastrarlo aquí)")
             }
+            if !pending.isEmpty {
+                ToolbarItem(placement: .primaryAction) {
+                    Button { openSidebarItem?(.banking(.inbox)) } label: {
+                        Label("Revisar \(pending.count)", systemImage: "tray").labelStyle(.titleAndIcon)
+                    }
+                    .help("Abre la bandeja «Por revisar»")
+                }
+            }
+        }
+        .dropDestination(for: URL.self) { urls, _ in
+            guard let url = urls.first, let file = try? BankImportFile.load(url) else { return false }
+            importing = BankImportRequest(file: file)
+            return true
+        }
+        .sheet(item: $importing) { request in
+            NavigationStack { BankImportView(initialFile: request.file, preferredAccountID: account?.id) }.editorSheetSizing()
         }
         .onChange(of: monthOffset) { selection = nil }
         .onAppear { showLatestMonthIfEmpty() }
@@ -138,11 +157,26 @@ struct BankingTablePage: View {
         .task {
             try? await Task.sleep(for: .seconds(1))
             if UserDefaults.standard.bool(forKey: "qa.nuevo") { choosingMovement = true }
+            if let file = QABanking.importFile { importing = BankImportRequest(file: file) }
             guard UserDefaults.standard.bool(forKey: "qa.abrir"), let id = selection,
                   let line = journalLines.first(where: { $0.id == id }) else { return }
             openedEntry = line.entry
         }
         #endif
+    }
+
+    /// Conciliación del movimiento: conciliado en una conciliación terminada o abierta, emparejado con un movimiento
+    /// del banco o registrado a mano.
+    private func bankStatus(of movement: BankMovement) -> (text: String, color: Color) {
+        let line = journalLines.first { $0.id == movement.id }
+        if let id = line?.reconciliationID {
+            let done = reconciliations.first { $0.id == id }?.isCompleted ?? false
+            return done ? (String(localized: "Conciliado"), Palette.green) : (String(localized: "Marcado en la conciliación abierta"), Palette.orange)
+        }
+        if matchedFromBank.contains(where: { $0.matchedLineID == movement.id }) {
+            return (String(localized: "Emparejado con el banco"), Palette.blue)
+        }
+        return (String(localized: "Registrado a mano"), Palette.gray)
     }
 
     private func filter(_ rows: [BankMovement]) -> [BankMovement] {
@@ -355,11 +389,12 @@ private struct MovementsHeader: View {
 }
 
 /// Inspector del movimiento (canvas `BancaCuentas`): importe de 24 (verde si entra), descripción y «Depósito · fecha»;
-/// Detalles (Fecha, Cuenta, Categoría o cuenta, importe, Saldo después, Origen) y Conciliación (todo se registra a
-/// mano en el MVP; la importación bancaria es de la fase 2).
+/// Detalles (Fecha, Cuenta, Categoría o cuenta, importe, Saldo después, Origen) y Conciliación (conciliado,
+/// emparejado con el banco o registrado a mano).
 private struct BankMovementInspector: View {
     let movement: BankMovement
     let account: Account?
+    let status: (text: String, color: Color)
 
     var body: some View {
         let isDeposit = movement.deposit > 0
@@ -385,10 +420,8 @@ private struct BankMovementInspector: View {
         }
         MacInspectorSection(title: String(localized: "Conciliación")) {
             MacInspectorRow(label: String(localized: "Estado")) {
-                StatusChip(text: String(localized: "Registrado a mano"), foreground: Palette.ink2, background: .clear,
-                           compact: true, dot: Palette.gray)
+                StatusChip(text: status.text, foreground: Palette.ink2, background: .clear, compact: true, dot: status.color)
             }
-            MacInspectorRow(String(localized: "Importación bancaria"), value: String(localized: "Próximamente"), color: Palette.ink2)
         }
     }
 }

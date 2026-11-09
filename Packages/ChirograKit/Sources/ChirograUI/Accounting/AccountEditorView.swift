@@ -15,7 +15,7 @@ struct AccountEditorView: View {
     @Environment(\.unsavedChanges) private var unsavedChanges
     /// Testigo del editor en `UnsavedChanges`: se retira al guardar, antes de cerrar.
     @State private var editorToken = EditorToken()
-    @Query(sort: \Account.code) private var accounts: [Account]
+    @CompanyQuery(sort: \Account.code) private var accounts: [Account]
     @State private var code: String
     @State private var name: String
     @State private var type: AccountType
@@ -24,6 +24,9 @@ struct AccountEditorView: View {
     @State private var details: String
     @State private var last4: String
     @State private var errorMessage: String?
+    /// Fase 2: línea del Schedule C / 1120-S de la cuenta (`TaxLineChoice`: "" = la sugerida). Ver `Taxes/DeductionsView.swift`.
+    @ActiveCompanyQuery private var companies: [Company]
+    @State private var taxLine: String
 
     /// `newSubtype`: el tipo de una cuenta nueva (Banca la abre como cuenta de banco).
     init(account: Account? = nil, newSubtype: AccountSubtype = .operatingExpense) {
@@ -36,6 +39,13 @@ struct AccountEditorView: View {
         _parentID = State(initialValue: input.parentID)
         _details = State(initialValue: input.details)
         _last4 = State(initialValue: input.last4)
+        _taxLine = State(initialValue: account?.taxFormLineRaw ?? TaxLineChoice.suggested)
+    }
+
+    /// Formulario de la empresa; solo las cuentas de resultados van en él.
+    private var taxForm: TaxForm? {
+        guard !type.isBalanceSheet else { return nil }
+        return companies.first.flatMap { TaxForm.forEntity($0.entityType) }
     }
 
     private var trimmedCode: String { code.trimmingCharacters(in: .whitespaces) }
@@ -73,7 +83,7 @@ struct AccountEditorView: View {
     }
 
     private var tracking: String {
-        "\(code)|\(name)|\(subtype.rawValue)|\(parentID?.uuidString ?? "")|\(details)|\(last4)"
+        "\(code)|\(name)|\(subtype.rawValue)|\(parentID?.uuidString ?? "")|\(details)|\(last4)|\(taxLine)"
     }
 
     var body: some View {
@@ -141,6 +151,21 @@ struct AccountEditorView: View {
                                     : String(localized: "Escribe los 4 dígitos o deja el campo vacío."))
                 }
             }
+            if let taxForm {
+                Section {
+                    Picker(String(localized: "Línea del \(taxForm.title)"), selection: $taxLine) {
+                        TaxLineOptions(form: taxForm)
+                    }
+                } header: {
+                    SectionLabel(text: String(localized: "Impuestos"))
+                } footer: {
+                    Text(taxLineFooter(taxForm))
+                }
+                .onAppear {
+                    // Una línea guardada de otro formulario (la empresa cambió de tipo) se muestra como la sugerida.
+                    if let account { taxLine = TaxLineChoice.current(for: account, form: taxForm) }
+                }
+            }
             Section {
                 TextField("Descripción (opcional)", text: $details, axis: .vertical)
                     .lineLimit(1...4)
@@ -192,17 +217,35 @@ struct AccountEditorView: View {
         return String(localized: "El tipo decide dónde aparece la cuenta en los reportes. Una subcuenta suma en su cuenta principal.")
     }
 
+    /// «Sugerida: Línea 22 · Suministros» y para qué sirve.
+    private func taxLineFooter(_ form: TaxForm) -> String {
+        let sector = companies.first.flatMap { BusinessSector(rawValue: $0.sectorRaw) } ?? .services
+        let suggested = TaxFormCatalog.defaultLineNumber(code: trimmedCode, subtype: subtype, sector: sector, form: form)
+            .flatMap { TaxFormCatalog.line($0, in: form) }
+        let line = suggested.map { String(localized: "Sugerida: \($0.label(for: .appText)).") }
+        return [line, String(localized: "A qué línea de la declaración va la cuenta en Impuestos › Deducibles. Es una ayuda para tu contador.")]
+            .compactMap { $0 }.joined(separator: " ")
+    }
+
+    /// Guarda la línea del formulario si cambió.
+    private func saveTaxLine(_ account: Account, books: Bookkeeper) throws {
+        guard let form = taxForm, TaxLineChoice.current(for: account, form: form) != taxLine else { return }
+        try books.setTaxLine(taxLine == TaxLineChoice.suggested ? nil : taxLine, for: account)
+    }
+
     private func save() {
         let input = AccountInput(code: trimmedCode, name: name, subtype: subtype, details: details, parentID: parentID, last4: last4)
         let books = Bookkeeper(context: context)
         do {
             if let account {
                 try books.updateAccount(account, with: input)
+                try saveTaxLine(account, books: books)
             } else {
                 let created = Account(code: "", name: name, subtype: subtype)
-                context.insert(created)
+                Bookkeeper(context: context).insert(created)
                 do {
                     try books.updateAccount(created, with: input)
+                    try saveTaxLine(created, books: books)
                 } catch {
                     context.delete(created)
                     throw error

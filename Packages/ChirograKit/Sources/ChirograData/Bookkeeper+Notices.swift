@@ -60,13 +60,13 @@ extension Bookkeeper {
         func days(to day: Date) -> Int { calendar.dateComponents([.day], from: today, to: calendar.startOfDay(for: day)).day ?? 0 }
         var notices: [Notice] = []
 
-        for invoice in try context.fetch(FetchDescriptor<Invoice>()) {
+        for invoice in try fetch(Invoice.self) {
             guard let overdue = invoice.daysOverdue(asOf: date, calendar: calendar) else { continue }
             notices.append(Notice(id: "overdueInvoice:\(invoice.id.uuidString)", kind: .overdueInvoice, date: invoice.dueDate, days: -overdue,
                                   amount: invoice.balanceDue, party: invoice.customer?.name ?? "", reference: invoice.number, documentID: invoice.id))
         }
 
-        for bill in try context.fetch(FetchDescriptor<Bill>()) where bill.isOpen && bill.journalEntryID != nil && bill.balanceDue > 0 {
+        for bill in try fetch(Bill.self) where bill.isOpen && bill.journalEntryID != nil && bill.balanceDue > 0 {
             if let scheduled = bill.scheduledPaymentDate {
                 guard calendar.startOfDay(for: scheduled) <= today else { continue }
                 notices.append(Notice(id: "scheduledPayment:\(bill.id.uuidString):\(Self.dayKey(scheduled, calendar))", kind: .scheduledPaymentDue,
@@ -87,30 +87,31 @@ extension Bookkeeper {
             let start = calendar.startOfDay(for: day)
             return start >= recentStart && start <= today
         }
-        for expense in try context.fetch(FetchDescriptor<Expense>()) where expense.recurringTemplateID != nil && !expense.isVoid && isRecent(expense.recurrenceDate) {
+        for expense in try fetch(Expense.self) where expense.recurringTemplateID != nil && !expense.isVoid && isRecent(expense.recurrenceDate) {
             notices.append(Notice(id: "recurring:\(expense.id.uuidString)", kind: .recurringGenerated, date: expense.recurrenceDate ?? expense.date,
                                   days: days(to: expense.date), amount: expense.total, party: expense.payee, reference: "",
                                   documentID: expense.id, needsConfirmation: !expense.isPosted))
         }
-        for bill in try context.fetch(FetchDescriptor<Bill>()) where bill.recurringTemplateID != nil && bill.status != .void && isRecent(bill.recurrenceDate) {
+        for bill in try fetch(Bill.self) where bill.recurringTemplateID != nil && bill.status != .void && isRecent(bill.recurrenceDate) {
             notices.append(Notice(id: "recurring:\(bill.id.uuidString)", kind: .recurringGenerated, date: bill.recurrenceDate ?? bill.billDate,
                                   days: days(to: bill.billDate), amount: bill.total, party: bill.vendor?.name ?? "", reference: bill.vendorNumber,
                                   documentID: bill.id))
         }
 
-        let lines = try ledgerLines()
-        for agency in try context.fetch(FetchDescriptor<TaxAgency>()) where !agency.isArchived {
+        // Solo las líneas de la cuenta de sales tax, y solo si toca avisar: con muchas empresas (lista de empresas), leer
+        // todo el diario de cada una para esto tardaba segundos.
+        for agency in try fetch(TaxAgency.self) where !agency.isArchived {
             let period = try lastSalesTaxFilingPeriod(for: agency, asOf: date, calendar: calendar)
             let until = days(to: period.deadline)
             guard (0...Self.salesTaxNoticeDays).contains(until) else { continue }
             let liability = try account(id: agency.liabilityAccountID) ?? systemAccount(.salesTaxPayable)
-            let owed = ReportBuilder.balance(of: liability.ledgerAccount, lines: lines.filter { $0.date <= Self.endOfDay(period.end, calendar) })
+            let owed = postedBalance(of: liability, asOf: Self.endOfDay(period.end, calendar))
             guard owed > 0 else { continue }
             notices.append(Notice(id: "salesTax:\(agency.id.uuidString):\(Self.dayKey(period.end, calendar))", kind: .salesTaxDue,
                                   date: period.deadline, days: until, amount: owed, party: agency.name, reference: "", documentID: agency.id))
         }
 
-        let states = Dictionary(try context.fetch(FetchDescriptor<NoticeState>()).map { ($0.key, $0) }, uniquingKeysWith: { a, b in a.updatedAt > b.updatedAt ? a : b })
+        let states = Dictionary(try fetch(NoticeState.self).map { ($0.key, $0) }, uniquingKeysWith: { a, b in a.updatedAt > b.updatedAt ? a : b })
         return notices
             .filter { !(states[$0.id]?.isDismissed ?? false) }
             .map { notice in
@@ -145,9 +146,9 @@ extension Bookkeeper {
     }
 
     private func noticeState(_ key: String) throws -> NoticeState {
-        let state = try context.fetch(FetchDescriptor<NoticeState>(predicate: #Predicate { $0.key == key })).first ?? {
+        let state = try fetch(NoticeState.self, #Predicate { $0.key == key }).first ?? {
             let created = NoticeState(key: key)
-            context.insert(created)
+            insert(created)
             return created
         }()
         state.updatedAt = Date()

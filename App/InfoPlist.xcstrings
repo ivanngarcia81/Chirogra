@@ -1,6 +1,24 @@
 {
   "sourceLanguage" : "es",
   "strings" : {
+    "NSCameraUsageDescription" : {
+      "comment" : "Permiso de cámara que muestra iOS (escanear recibos)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chirogra uses the camera to scan your receipts and fill in the expense."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chirogra usa la cámara para escanear tus recibos y rellenar el gasto."
+          }
+        }
+      }
+    },
     "NSFaceIDUsageDescription" : {
       "comment" : "Permiso de Face ID que muestra iOS",
       "extractionState" : "manual",

@@ -132,7 +132,8 @@ private struct CloudSyncMonitor: ViewModifier {
 }
 
 /// Automatizaciones de la app (DATOS-V2 §1–2): `runAutomations()` genera los recurrentes que tocan hasta hoy y registra
-/// los pagos con cargo automático; `resolveRecurringDuplicates()` repara repeticiones duplicadas tras sincronizar.
+/// los pagos con cargo automático; `resolveRecurringDuplicates()` repara repeticiones duplicadas tras sincronizar. Antes,
+/// `adoptOrphanRecords()` da la empresa principal a lo que llegó sin empresa. Corren para cada empresa sin archivar.
 ///
 /// No bloquean la interfaz: corren en una tarea de prioridad baja cuando la pantalla ya está dibujada, cada vez con un
 /// `ModelContext` propio (no el de las pantallas: así nunca guardan ni deshacen lo que el usuario tiene a medias) y lo
@@ -164,17 +165,27 @@ enum AppAutomations {
         Task(priority: .utility) {
             // Que la pantalla se dibuje antes.
             try? await Task.sleep(for: .milliseconds(400))
-            let books = Bookkeeper(context: ModelContext(container))
-            if (try? books.company()) != nil {
+            let base = Bookkeeper(context: ModelContext(container))
+            // Lo que llegó sin empresa (de un aparato con la 1.0.x, o de una pantalla) pasa a ser de la principal para
+            // siempre (DATOS-V4 §1). Al abrir y tras cada importación de iCloud, antes de las automatizaciones.
+            _ = try? base.adoptOrphanRecords()
+            // Para cada empresa, no solo la activa: los recurrentes y los cargos automáticos de los clientes de un
+            // contador tienen que correr aunque esté mirando otra. Las archivadas no: están guardadas, sin uso (al
+            // volver a mostrarlas se ponen al día, porque `runAutomations` genera todo lo que toca hasta hoy).
+            var failures: [UUID: String] = [:]
+            for company in (try? base.companies()) ?? [] {
+                let books = base.forCompany(company.id)
                 if resolve { _ = try? books.resolveRecurringDuplicates() }
                 await Task.yield()
                 if let result = try? books.runAutomations() {
                     // Cargos automáticos que no se pudieron registrar (periodo cerrado, cuenta archivada…): la campana los
                     // marca en su aviso de pago programado. Se recuerdan solo mientras la app está abierta.
-                    AutomationFailures.shared.byBill = Dictionary(
-                        result.autoPayments.failures.map { ($0.bill.id, $0.error.localizedDescription) }, uniquingKeysWith: { a, _ in a })
+                    for failure in result.autoPayments.failures where failures[failure.bill.id] == nil {
+                        failures[failure.bill.id] = failure.error.localizedDescription
+                    }
                 }
             }
+            AutomationFailures.shared.byBill = failures
             running = false
             if pendingResolve { run(container: container, resolvingDuplicates: true) }
         }

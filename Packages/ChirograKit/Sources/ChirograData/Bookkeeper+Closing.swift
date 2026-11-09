@@ -52,7 +52,7 @@ extension Bookkeeper {
 
     /// Historial de cierres y reaperturas, del más reciente al más antiguo.
     public func closingHistory() throws -> [PeriodClose] {
-        try context.fetch(FetchDescriptor<PeriodClose>(sortBy: [SortDescriptor(\.date, order: .reverse)]))
+        try fetch(PeriodClose.self, sortBy: [SortDescriptor(\.date, order: .reverse)])
     }
 
     /// Cierra los libros hasta `date` (incluido): desde entonces no se registra nada con esa fecha o anterior.
@@ -65,7 +65,7 @@ extension Bookkeeper {
             throw BookkeepingError.invalidState(String(localized: "Los libros ya están cerrados hasta esa fecha."))
         }
         let record = PeriodClose(isReopen: false, lockDate: target, previousLockDate: company.lockDate, actor: actor, device: device, note: note)
-        context.insert(record)
+        insert(record)
         company.lockDate = target
         audit("Company", company.id, "closeBooks", String(localized: "Libros cerrados hasta el \(target.formatted(date: .abbreviated, time: .omitted))"))
         try saveOrRollback()
@@ -89,7 +89,7 @@ extension Bookkeeper {
             }
         }
         let record = PeriodClose(isReopen: true, lockDate: target, previousLockDate: current, actor: actor, device: device, note: note)
-        context.insert(record)
+        insert(record)
         company.lockDate = target
         audit("Company", company.id, "reopenBooks", String(localized: "Libros reabiertos"))
         try saveOrRollback()

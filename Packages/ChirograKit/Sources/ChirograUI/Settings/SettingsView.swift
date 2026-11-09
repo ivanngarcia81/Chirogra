@@ -33,14 +33,17 @@ struct SettingsView: View {
 
 /// Páginas de Ajustes, con su icono de color como en Ajustes del sistema (canvas `MacAjustes`).
 enum SettingsPage: String, CaseIterable, Identifiable {
-    case profile, template, formats, data
+    // `payments` (Cobro en línea, `Sales/PayNow/PaymentSettingsView.swift`): agente de recibos y cobro, 1.1.
+    case profile, template, payments, formats, companies, data
     var id: String { rawValue }
 
     var title: String {
         switch self {
         case .profile: String(localized: "Perfil de la empresa")
         case .template: String(localized: "Plantilla de factura")
+        case .payments: String(localized: "Cobro en línea")
         case .formats: String(localized: "Moneda y formatos")
+        case .companies: String(localized: "Empresas")
         case .data: String(localized: "iCloud, copias y seguridad")
         }
     }
@@ -49,7 +52,9 @@ enum SettingsPage: String, CaseIterable, Identifiable {
         switch self {
         case .profile: "building.2.fill"
         case .template: "doc.richtext.fill"
+        case .payments: "creditcard.fill"
         case .formats: "dollarsign"
+        case .companies: "building.2.fill"
         case .data: "icloud.fill"
         }
     }
@@ -58,7 +63,9 @@ enum SettingsPage: String, CaseIterable, Identifiable {
         switch self {
         case .profile: Palette.blue
         case .template: Palette.indigo
+        case .payments: Palette.pink
         case .formats: Palette.green
+        case .companies: Palette.orange
         case .data: Palette.teal
         }
     }
@@ -68,7 +75,7 @@ enum SettingsPage: String, CaseIterable, Identifiable {
 /// blanco, y su formulario a la derecha, de 640 pt como máximo.
 struct SettingsWideView: View {
     @Environment(\.modelContext) private var context
-    @Query private var companies: [Company]
+    @ActiveCompanyQuery private var companies: [Company]
     #if DEBUG
     /// `-qa.ajustes data` (solo Debug): la página con la que arranca.
     @State private var page: SettingsPage = UserDefaults.standard.string(forKey: "qa.ajustes").flatMap(SettingsPage.init(rawValue:)) ?? .profile
@@ -90,19 +97,29 @@ struct SettingsWideView: View {
             }
             .frame(width: Self.navWidth)
             .scrollIndicators(.never)
+            // La columna maestra (pedido el 8-nov): en el Mac, blanca sobre el suelo gris de los formularios; en el
+            // iPad, el tono de las listas maestro, entre el blanco de la barra lateral y el gris de la derecha.
+            .background(Palette.masterColumn)
             Divider()
             Group {
                 if let company = companies.first {
                     switch page {
                     case .profile: CompanyProfileView(company: company, embedded: true)
                     case .template: InvoiceTemplateView(company: company, embedded: true)
+                    case .payments: PaymentSettingsView(company: company, embedded: true)
                     case .formats: FormatsView(company: company, embedded: true)
+                    case .companies: CompaniesView(embedded: true)
                     case .data: DataAndSecurityView(embedded: true)
                     }
                 }
             }
+            #if os(macOS)
+            // En el Mac el límite de 640 pt lo pone `SettingsForm` dentro de su `ScrollView`.
+            .frame(maxWidth: .infinity)
+            #else
             .frame(maxWidth: 640)
             .frame(maxWidth: .infinity)
+            #endif
         }
         .background(Palette.background)
         #if os(macOS)
@@ -189,7 +206,7 @@ struct SettingsWideView: View {
 struct SettingsLinks: View {
     /// En «Más» del iPhone el perfil ya se abre desde la fila de la empresa.
     var showsCompanyProfile = true
-    @Query private var companies: [Company]
+    @ActiveCompanyQuery private var companies: [Company]
 
     var body: some View {
         if let company = companies.first {
@@ -197,7 +214,9 @@ struct SettingsLinks: View {
                 link(.profile) { CompanyProfileView(company: company) }
             }
             link(.template) { InvoiceTemplateView(company: company) }
+            link(.payments) { PaymentSettingsView(company: company) }
             link(.formats) { FormatsView(company: company) }
+            link(.companies) { CompaniesView() }
         }
         link(.data) { DataAndSecurityView() }
         GuideLinkRow()
@@ -226,7 +245,13 @@ private struct SettingsField: View {
 
     var body: some View {
         #if os(macOS)
-        TextField(title, text: $text, prompt: Text(prompt))
+        // Fuera del `Form` del sistema (`SettingsForm`): el nombre a la izquierda y el campo, sin marco, a la derecha.
+        LabeledContent(title) {
+            TextField(title, text: $text, prompt: Text(prompt))
+                .textFieldStyle(.plain)
+                .labelsHidden()
+                .foregroundStyle(Palette.ink)
+        }
         #else
         LabeledContent(title) {
             TextField(title, text: $text, prompt: Text(prompt))
@@ -250,47 +275,52 @@ struct CompanyProfileView: View {
     @Environment(\.modelContext) private var context
 
     var body: some View {
-        Form {
-            Section {
+        SettingsForm {
+            SettingsSection {
                 SettingsField(title: "Nombre comercial", text: $company.displayName, prompt: "Obligatorio")
                 SettingsField(title: "Razón social", text: $company.legalName, prompt: "Obligatorio")
-                Picker("Tipo de empresa", selection: $company.entityTypeRaw) {
+                SettingsPicker("Tipo de empresa", selection: $company.entityTypeRaw) {
                     ForEach(EntityType.allCases, id: \.self) { Text($0.title).tag($0.rawValue) }
                 }
                 SettingsField(title: "ID fiscal (EIN)", text: $company.ein)
             } header: {
                 SectionLabel(text: String(localized: "Identidad"))
             }
-            Section {
+            SettingsSection {
                 SettingsField(title: "Correo", text: $company.email, prompt: "Correo de facturación", kind: .email)
                 SettingsField(title: "Teléfono", text: $company.phone, kind: .phone)
             } header: {
                 SectionLabel(text: String(localized: "Contacto"))
             }
-            Section {
-                TextField("Dirección", text: $company.address, prompt: Text("Calle, ciudad y código postal"), axis: .vertical)
-                    .lineLimit(1...4)
-                Picker("Estado de EE. UU.", selection: $company.state) {
+            SettingsSection {
+                SettingsTextArea(title: "Dirección", text: $company.address, prompt: Text("Calle, ciudad y código postal"), lines: 1...4)
+                SettingsPicker("Estado de EE. UU.", selection: $company.state) {
                     Text("—").tag("")
                     ForEach(USState.all, id: \.self) { Text($0).tag($0) }
                 }
+                // Sales tax por código postal (`Sales/PostalTax/`): la tasa aproximada del ZIP del negocio.
+                PostalCodeField(text: $company.postalCode)
+                PostalTaxSuggestionView(postalCode: company.postalCode)
             } header: {
                 SectionLabel(text: String(localized: "Dirección"))
             } footer: {
                 Text("Estos datos aparecen en el encabezado de tus facturas.")
             }
-            Section {
-                Picker("Inicio del año fiscal", selection: $company.fiscalYearStartMonth) {
+            SettingsSection {
+                SettingsPicker("Inicio del año fiscal", selection: $company.fiscalYearStartMonth) {
                     ForEach(1...12, id: \.self) { month in
                         Text(Calendar.current.standaloneMonthSymbols[month - 1].sentenceCased).tag(month)
                     }
                 }
             }
         }
-        .formStyle(.grouped)
         .screenBackground()
         .modifier(TitleUnlessEmbedded(title: "Perfil de la empresa", embedded: embedded))
         .onDisappear { try? context.save() }
+        #if DEBUG
+        // `-qa.zipEmpresa 78702` (con `-qa.tablaZip muestra`): el código postal del negocio, para la tasa sugerida.
+        .onAppear { if let zip = UserDefaults.standard.string(forKey: "qa.zipEmpresa") { company.postalCode = zip } }
+        #endif
     }
 }
 
@@ -300,11 +330,11 @@ struct FormatsView: View {
     let company: Company
     /// Dentro de `SettingsWideView`: el título de la ventana sigue siendo «Ajustes».
     var embedded = false
-    @Query private var invoices: [Invoice]
+    @CompanyQuery private var invoices: [Invoice]
 
     var body: some View {
-        Form {
-            Section {
+        SettingsForm {
+            SettingsSection {
                 // La última factura emitida, con su importe y vencimiento reales; sin facturas, un ejemplo genérico.
                 let sample = invoices.filter { !$0.number.isEmpty }.max { $0.issueDate < $1.issueDate }
                 VStack(alignment: .leading, spacing: 2) {
@@ -319,7 +349,7 @@ struct FormatsView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .accessibilityElement(children: .combine)
             }
-            Section {
+            SettingsSection {
                 // El nombre de la moneda lo da el sistema en el idioma y la región del teléfono.
                 LabeledContent("Moneda base", value: Locale.current.localizedString(forCurrencyCode: company.currencyCode)
                     .map { "\(company.currencyCode) · \($0.sentenceCased)" } ?? company.currencyCode)
@@ -327,7 +357,7 @@ struct FormatsView: View {
             } header: {
                 SectionLabel(text: String(localized: "Moneda"))
             }
-            Section {
+            SettingsSection {
                 LabeledContent("Formato de fecha", value: Date.now.formatted(Date.FormatStyle(date: .numeric, time: .omitted, locale: .app)))
                 LabeledContent("Idioma", value: languageName)
                 LabeledContent("Inicio del año fiscal", value: Calendar.current.standaloneMonthSymbols[max(0, min(11, company.fiscalYearStartMonth - 1))].sentenceCased)
@@ -338,7 +368,6 @@ struct FormatsView: View {
                 Text("Los separadores, el formato de fecha y el idioma siguen la región y el idioma de tu dispositivo (Ajustes › General › Idioma y región).")
             }
         }
-        .formStyle(.grouped)
         .screenBackground()
         .modifier(TitleUnlessEmbedded(title: "Moneda y formatos", embedded: embedded))
     }
@@ -360,10 +389,10 @@ struct DataAndSecurityView: View {
     @State private var lockUnavailable = false
 
     var body: some View {
-        Form {
+        SettingsForm {
             // Solo con los datos de ejemplo: «Empezar con mi empresa», también para quien ocultó el aviso de Inicio.
             SampleBooksSection()
-            Section {
+            SettingsSection {
                 HStack(spacing: 12) {
                     IconTile(systemImage: "icloud.fill", foreground: Palette.blue)
                     Toggle(isOn: $iCloudSyncEnabled) {
@@ -386,7 +415,7 @@ struct DataAndSecurityView: View {
             }
             SubscriptionSection()
             BackupSection()
-            Section {
+            SettingsSection {
                 HStack(spacing: 12) {
                     IconTile(systemImage: "faceid", foreground: Palette.green)
                     Toggle("Bloquear con Face ID o Touch ID", isOn: Binding(
@@ -408,7 +437,6 @@ struct DataAndSecurityView: View {
                 }
             }
         }
-        .formStyle(.grouped)
         // Interruptores como los del canvas (en el Mac, el de casilla salía por defecto en los formularios).
         .toggleStyle(.switch)
         .screenBackground()

@@ -316,10 +316,60 @@ struct CardModifier: ViewModifier {
             .frame(maxWidth: .infinity, maxHeight: fillsHeight ? .infinity : nil, alignment: .topLeading)
             .background(Palette.surface, in: shape)
             #if os(macOS)
-            .overlay(shape.strokeBorder(Palette.separator, lineWidth: 0.5))
+            .macElevation(cornerRadius: Metrics.cardRadius)
+            #else
+            .padElevation(cornerRadius: Metrics.cardRadius)
             #endif
     }
 }
+
+#if os(iOS)
+extension View {
+    /// En el iPad, las tarjetas se levantan del suelo gris como en el Mac (decisión del usuario del 8-nov, «como
+    /// Tamio»): filo de medio punto y sombra corta. En el iPhone no cambia nada.
+    func padElevation(cornerRadius: CGFloat) -> some View {
+        modifier(PadElevation(cornerRadius: cornerRadius))
+    }
+}
+
+private struct PadElevation: ViewModifier {
+    let cornerRadius: CGFloat
+    @Environment(\.colorScheme) private var scheme
+
+    func body(content: Content) -> some View {
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            let shape = RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+            content
+                .overlay(shape.strokeBorder(Color.primary.opacity(scheme == .dark ? 0.12 : 0.08), lineWidth: 0.5))
+                .shadow(color: .black.opacity(scheme == .dark ? 0 : 0.05), radius: 1.5, y: 1)
+        } else {
+            content
+        }
+    }
+}
+#endif
+
+#if os(macOS)
+extension View {
+    /// Lo que levanta una tarjeta del suelo en el Mac (como Tamio): filo de medio punto y sombra muy corta. En claro
+    /// la tarjeta es blanca como antes era el suelo; lo que dibuja su borde es el filo. En oscuro, sin sombra.
+    func macElevation(cornerRadius: CGFloat) -> some View {
+        modifier(MacElevation(cornerRadius: cornerRadius))
+    }
+}
+
+private struct MacElevation: ViewModifier {
+    let cornerRadius: CGFloat
+    @Environment(\.colorScheme) private var scheme
+
+    func body(content: Content) -> some View {
+        let shape = RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+        content
+            .overlay(shape.strokeBorder(Color.primary.opacity(scheme == .dark ? 0.12 : 0.10), lineWidth: 0.5))
+            .shadow(color: .black.opacity(scheme == .dark ? 0 : 0.05), radius: 1.5, y: 1)
+    }
+}
+#endif
 
 extension View {
     func card(padding: CGFloat = Metrics.cardPadding) -> some View { modifier(CardModifier(padding: padding)) }
@@ -1386,6 +1436,8 @@ enum EmptyGuide: CaseIterable {
 /// Palabras de contabilidad que no todo el mundo conoce, con su explicación en una o dos frases llanas (`TermHelp`).
 enum Jargon: CaseIterable {
     case debitCredit, taxable, ownersEquity, combinedRate, bookBalance
+    /// Base caja o devengado de los reportes (fase 2, `Reports/ReportBasis.swift`).
+    case accountingBasis
 
     var term: String {
         switch self {
@@ -1394,6 +1446,7 @@ enum Jargon: CaseIterable {
         case .ownersEquity: String(localized: "Capital del dueño")
         case .combinedRate: String(localized: "Tasa combinada")
         case .bookBalance: String(localized: "Saldo en libros")
+        case .accountingBasis: String(localized: "Base caja o devengado")
         }
     }
 
@@ -1405,6 +1458,7 @@ enum Jargon: CaseIterable {
         case .ownersEquity: "capital"
         case .combinedRate: "combinada"
         case .bookBalance: "saldo"
+        case .accountingBasis: "base"
         }
     }
     #endif
@@ -1421,6 +1475,8 @@ enum Jargon: CaseIterable {
             String(localized: "La suma de las tasas que cobras juntas en una venta: la del estado, la del condado y la de la ciudad.")
         case .bookBalance:
             String(localized: "Lo que hay en la cuenta según lo que has registrado en Chirogra. Puede no ser igual al banco si falta algún movimiento por anotar.")
+        case .accountingBasis:
+            String(localized: "Devengado: la venta cuenta al facturarla y el gasto al recibir la factura, aunque aún no se cobre ni se pague. Caja: solo cuenta lo que ya entró o salió del banco. Muchos negocios pequeños declaran en caja; pregúntale a tu contador cuál usas.")
         }
     }
 }
@@ -1480,24 +1536,41 @@ struct TermHelp: View {
     }
 }
 
-/// Logotipo de Chirogra (canvas `Main`, icono de la cabecera): cuadrado en Tinta, «C» abierta blanca y punto de azafrán,
-/// igual en claro y en oscuro.
+/// Logotipo de Chirogra: el icono de la app (`App/AppIcon.icon`, build 20) en pequeño, con el degradado de índigo,
+/// la χ blanca de trazo redondo y el punto de azafrán. Antes era la «C» abierta del canvas `Main`, que quedó vieja al
+/// cambiar el icono (prueba del build 20: alta, «Sincronizando con iCloud» y bloqueo).
 struct LogoMark: View {
     var size: CGFloat = 28
 
     var body: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: size * 9 / 40, style: .continuous).fill(Palette.logoFill)
-            Circle()
-                .trim(from: 0.1, to: 0.9)
-                .stroke(Palette.logoMark, style: StrokeStyle(lineWidth: size * 3.4 / 40, lineCap: .round))
-                .frame(width: size * 18 / 40, height: size * 18 / 40)
+            RoundedRectangle(cornerRadius: size * 0.225, style: .continuous).fill(Palette.logoFill)
+            ChiStrokes()
+                .stroke(Palette.logoMark, style: StrokeStyle(lineWidth: size * 104 / 1024, lineCap: .round, lineJoin: .round))
+            // El punto, como en `04-punto 2.svg`: centro (540, 250) y radio 40 sobre 1024.
             Circle().fill(Palette.accent)
-                .frame(width: size * 5.4 / 40, height: size * 5.4 / 40)
-                .offset(x: size * 8.6 / 40)
+                .frame(width: size * 80 / 1024, height: size * 80 / 1024)
+                .position(x: size * 540 / 1024, y: size * 250 / 1024)
         }
         .frame(width: size, height: size)
+        .accessibilityElement()
         .accessibilityLabel("Chirogra")
+    }
+}
+
+/// Los dos trazos de la χ del icono (`chi-trazos-editables 2.svg`), en un lienzo de 1024 escalado al tamaño pedido.
+nonisolated private struct ChiStrokes: Shape {
+    func path(in rect: CGRect) -> Path {
+        func p(_ x: CGFloat, _ y: CGFloat) -> CGPoint {
+            CGPoint(x: rect.minX + rect.width * x / 1024, y: rect.minY + rect.height * y / 1024)
+        }
+        var path = Path()
+        path.move(to: p(292, 298))
+        path.addCurve(to: p(512, 512), control1: p(392, 280), control2: p(440, 360))
+        path.addCurve(to: p(732, 722), control1: p(584, 664), control2: p(632, 740))
+        path.move(to: p(320, 740))
+        path.addLine(to: p(704, 284))
+        return path
     }
 }
 

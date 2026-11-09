@@ -7,8 +7,8 @@ import Testing
 struct CloudKitSchemaTests {
     @Test("El modelo de Core Data del esquema actual cumple las reglas de CloudKit")
     func modelFollowsCloudKitRules() throws {
-        let model = try #require(NSManagedObjectModel.makeManagedObjectModel(for: SchemaV3.models))
-        #expect(model.entities.count == SchemaV3.models.count)
+        let model = try #require(NSManagedObjectModel.makeManagedObjectModel(for: SchemaV4.models))
+        #expect(model.entities.count == SchemaV4.models.count)
         for entity in model.entities {
             for relationship in entity.relationshipsByName.values {
                 #expect(relationship.inverseRelationship != nil, "\(entity.name ?? "").\(relationship.name) sin inversa")
@@ -28,8 +28,13 @@ struct CloudKitSchemaTests {
     /// los otros aparatos y producción rechazaba la subida entera (SchemaV3.swift).
     @Test("Ninguna propiedad usa un nombre que Core Data reserva en CloudKit")
     func noReservedFieldNames() throws {
-        let reserved: Set<String> = ["entityName", "moveReceipt", "recordName", "recordID", "recordType"]
-        let model = try #require(NSManagedObjectModel.makeManagedObjectModel(for: SchemaV3.models))
+        // Los campos que Core Data pone en cada registro de CloudKit, y nombres de `NSObject`/`NSManagedObject` que no
+        // pueden ser propiedades de una entidad (esquema 4: también `description`).
+        let reserved: Set<String> = ["entityName", "moveReceipt", "recordName", "recordID", "recordType",
+                                     "description", "debugDescription", "hash", "superclass", "className", "objectID", "entity",
+                                     "managedObjectContext", "isFault", "isDeleted", "isInserted", "isUpdated", "hasChanges",
+                                     "changedValues", "faultingState", "hasPersistentChangedValues", "self", "zone"]
+        let model = try #require(NSManagedObjectModel.makeManagedObjectModel(for: SchemaV4.models))
         for entity in model.entities {
             for name in entity.propertiesByName.keys {
                 #expect(!reserved.contains(name), "\(entity.name ?? "").\(name) choca con un campo reservado de CloudKit")
@@ -41,7 +46,7 @@ struct CloudKitSchemaTests {
     /// used with CloudKit»): `subjectEntity` es una propiedad nueva y el valor lo copia la migración a medida.
     @Test("El historial guarda la entidad en subjectEntity, sin renombrar ninguna propiedad")
     func auditEventSubject() throws {
-        let model = try #require(NSManagedObjectModel.makeManagedObjectModel(for: SchemaV3.models))
+        let model = try #require(NSManagedObjectModel.makeManagedObjectModel(for: SchemaV4.models))
         let audit = try #require(model.entitiesByName["AuditEvent"])
         #expect(audit.attributesByName["subjectEntity"] != nil)
         #expect(audit.attributesByName["entityName"] == nil)
@@ -51,5 +56,34 @@ struct CloudKitSchemaTests {
                         "\(entity.name ?? "").\(name) renombrada: CloudKit no lo admite")
             }
         }
+    }
+
+    /// En Producción solo se puede **añadir** (7-nov-2026): ninguna propiedad del esquema 3 desaparece ni cambia de tipo
+    /// en el 4, y lo nuevo es opcional o tiene valor por defecto (lo comprueba `modelFollowsCloudKitRules`).
+    @Test("El esquema 4 solo añade: nada del 3 se quita, se renombra ni cambia de tipo")
+    func schema4OnlyAdds() throws {
+        let old = try #require(NSManagedObjectModel.makeManagedObjectModel(for: SchemaV3.models))
+        let new = try #require(NSManagedObjectModel.makeManagedObjectModel(for: SchemaV4.models))
+        for entity in old.entities {
+            let name = try #require(entity.name)
+            let current = try #require(new.entitiesByName[name], "falta la entidad \(name)")
+            for (property, attribute) in entity.attributesByName {
+                let now = current.attributesByName[property]
+                #expect(now?.attributeType == attribute.attributeType, "\(name).\(property) cambió o falta")
+                #expect(now?.allowsExternalBinaryDataStorage == attribute.allowsExternalBinaryDataStorage, "\(name).\(property)")
+            }
+            for (property, relationship) in entity.relationshipsByName {
+                let now = current.relationshipsByName[property]
+                #expect(now?.destinationEntity?.name == relationship.destinationEntity?.name, "\(name).\(property) cambió o falta")
+                #expect(now?.isToMany == relationship.isToMany, "\(name).\(property)")
+                #expect(now?.inverseRelationship?.name == relationship.inverseRelationship?.name, "\(name).\(property)")
+            }
+        }
+        // Todos los modelos salvo Company llevan la empresa.
+        for entity in new.entities where entity.name != "Company" {
+            #expect(entity.attributesByName["companyID"]?.attributeType == .UUIDAttributeType, "\(entity.name ?? "")")
+        }
+        #expect(Set(new.entities.compactMap(\.name)).subtracting(old.entities.compactMap(\.name))
+                == ["BankTransaction", "BankRule", "BankImportProfile", "Reconciliation", "Budget", "BudgetLine"])
     }
 }

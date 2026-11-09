@@ -13,8 +13,8 @@ import SwiftUI
 struct BillTablePage: View {
     static let isReady = true
     @Binding var selection: UUID?
-    @Query(sort: \Bill.dueDate) private var bills: [Bill]
-    @Query(sort: \Account.code) private var accounts: [Account]
+    @CompanyQuery(sort: \Bill.dueDate) private var bills: [Bill]
+    @CompanyQuery(sort: \Account.code) private var accounts: [Account]
     @State private var filter: BillFilter = .open
     @State private var query = ""
     @State private var creating = false

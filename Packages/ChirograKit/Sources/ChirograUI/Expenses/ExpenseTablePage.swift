@@ -23,8 +23,8 @@ struct ExpenseTablePage: View {
     static let isReady = true
     @Binding var selection: UUID?
     @Environment(\.modelContext) private var context
-    @Query(sort: \Expense.date, order: .reverse) private var expenses: [Expense]
-    @Query(sort: \Account.code) private var accounts: [Account]
+    @CompanyQuery(sort: \Expense.date, order: .reverse) private var expenses: [Expense]
+    @CompanyQuery(sort: \Account.code) private var accounts: [Account]
     @State private var period: ExpensePeriod
     @State private var withoutReceipt = false
     @State private var query = ""
@@ -375,7 +375,7 @@ private struct ExpensePageDestinations: ViewModifier {
             .navigationDestination(item: $openedExpense) { expense in ExpenseDetailView(expense: expense) }
             .navigationDestination(item: $openedVendor) { vendor in VendorDetailView(vendor: vendor) }
             .navigationDestination(item: $openedEntry) { entry in JournalEntryDetailView(entry: entry) }
-            .navigationDestination(isPresented: $showingRecurring) {
+            .stableDestination(isPresented: $showingRecurring) {
                 RecurringListView(showsAddButton: true)
                     .navigationTitle("Recurrentes")
                     .navigationSubtitle(String(localized: "Gastos"))
@@ -643,7 +643,7 @@ private struct ExpenseInspector: View {
     let attach: () -> Void
     let attachFiles: ([ReceiptFile]) -> Void
     let remove: (Attachment) -> Void
-    @Query(sort: \Account.code) private var accounts: [Account]
+    @CompanyQuery(sort: \Account.code) private var accounts: [Account]
     @State private var isTargeted = false
 
     private func accountName(_ id: UUID?) -> String? { accounts.first { $0.id == id }?.name }

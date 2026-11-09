@@ -18,8 +18,8 @@ struct InvoiceDetailView: View {
     #if os(iOS)
     @LayoutSizeClass private var sizeClass
     #endif
-    @Query private var companies: [Company]
-    @Query(sort: \Account.code) private var accounts: [Account]
+    @ActiveCompanyQuery private var companies: [Company]
+    @CompanyQuery(sort: \Account.code) private var accounts: [Account]
     @State private var showingCreditNote = false
     @State private var showingPreview = false
     /// «Enviar factura» (y «PDF»): la hoja de envío con Para y Asunto (canvas `FacturaEnviar`).
@@ -31,6 +31,8 @@ struct InvoiceDetailView: View {
     @State private var confirmingVoid = false
     @State private var confirmingDelete = false
     @State private var errorMessage: String?
+    /// Banca 1.2: anular algo conciliado pide confirmación (`ReconciledChange`).
+    @State private var reconciledRetry: ReconciledChangeRetry?
     /// Borrador recién emitido desde aquí: se ofrece enviarlo (`offerToSendIssued`).
     @State private var justIssued: Invoice?
     /// El campo «Monto» de «Parcial» tiene el foco: se desplaza hasta «Registrar $…» para que el teclado no lo tape.
@@ -152,6 +154,7 @@ struct InvoiceDetailView: View {
             NavigationStack { CreditNoteEditorView(invoice: invoice) }.editorSheetSizing()
         }
         .offerToSendIssued($justIssued)
+        .reconciledChangeConfirmation($reconciledRetry) { errorMessage = $0 }
         .confirmationDialog("¿Anular la factura?", isPresented: $confirmingVoid, titleVisibility: .visible) {
             Button("Anular", role: .destructive, action: void)
         } message: {
@@ -686,7 +689,10 @@ struct InvoiceDetailView: View {
     }
 
     private func void() {
-        do { try books.void(invoice); errorMessage = nil } catch { errorMessage = error.localizedDescription }
+        do { try books.void(invoice); errorMessage = nil } catch {
+            // Banca 1.2: si el cobro o la factura están conciliados, se pregunta antes (`ReconciledChange`).
+            if let retry = ReconciledChange.retry(for: error, { try $0.void(invoice) }) { reconciledRetry = retry } else { errorMessage = error.localizedDescription }
+        }
     }
 
     private func deleteDraft() {
@@ -755,7 +761,7 @@ struct CreditNoteEditorView: View {
     /// Línea de la factura que se acredita; `nil` reparte el importe entre todas en proporción.
     @State private var lineID: UUID?
     @State private var errorMessage: String?
-    @Query(sort: \Account.code) private var accounts: [Account]
+    @CompanyQuery(sort: \Account.code) private var accounts: [Account]
 
     private var books: Bookkeeper { Bookkeeper(context: context) }
 

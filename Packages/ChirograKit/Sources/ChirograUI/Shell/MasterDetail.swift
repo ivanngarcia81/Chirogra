@@ -12,6 +12,8 @@ import TipKit
 /// (`hasMacTable`, `macTable(selection:)` en `Shell/MacTablePage.swift`); hasta entonces sigue con estas columnas.
 enum MasterPage: Hashable {
     case invoices, customers, expenses, vendors, bills, banking, journal, chart
+    /// Banca 1.2: bandeja «Por revisar» (`BankInboxMasterList` en el iPad, `BankInboxTablePage` en el Mac).
+    case bankInbox
     #if os(iOS)
     /// Estimados: columna maestro en el iPad (`EstimateMasterList`). En el Mac van con su tabla (`EstimatesMacPage`).
     case estimates
@@ -27,7 +29,8 @@ enum MasterPage: Hashable {
         case .section(.expenses), .expenses(.expenses): self = .expenses
         case .expenses(.vendors): self = .vendors
         case .expenses(.bills): self = .bills
-        case .section(.banking): self = .banking
+        case .section(.banking), .banking(.accounts): self = .banking
+        case .banking(.inbox): self = .bankInbox
         case .accounting(.journal): self = .journal
         case .accounting(.chart): self = .chart
         default: return nil
@@ -43,6 +46,7 @@ enum MasterPage: Hashable {
         case .vendors: ("shippingbox", String(localized: "Elige un proveedor"))
         case .bills: ("doc.text", String(localized: "Elige una factura por pagar"))
         case .banking: ("building.columns", String(localized: "Elige una cuenta"))
+        case .bankInbox: ("tray", String(localized: "Elige un movimiento"))
         case .journal: ("doc.plaintext", String(localized: "Elige un asiento"))
         case .chart: ("list.bullet.indent", String(localized: "Elige una cuenta"))
         #if os(iOS)
@@ -90,6 +94,7 @@ struct MasterColumn: View {
         case .vendors: VendorMasterList(selection: $selection)
         case .bills: BillMasterList(selection: $selection)
         case .banking: BankingMasterList(selection: $selection)
+        case .bankInbox: BankInboxMasterList(selection: $selection)
         case .journal: JournalMasterList(selection: $selection)
         case .chart: ChartMasterList(selection: $selection)
         #if os(iOS)
@@ -113,6 +118,7 @@ struct MasterDetailColumn: View {
             case .vendors: ModelLookup(id: id, key: \Vendor.id, page: page) { VendorDetailView(vendor: $0) }
             case .bills: ModelLookup(id: id, key: \Bill.id, page: page) { BillDetailView(bill: $0) }
             case .banking: ModelLookup(id: id, key: \Account.id, page: page) { BankAccountDetail(account: $0) }
+            case .bankInbox: ModelLookup(id: id, key: \BankTransaction.id, page: page) { BankReviewDetail(transaction: $0) }
             case .journal: ModelLookup(id: id, key: \JournalEntry.id, page: page) { JournalEntryDetailView(entry: $0) }
             case .chart: ModelLookup(id: id, key: \Account.id, page: page) { LedgerView(account: $0, inDetailColumn: true) }
             #if os(iOS)
@@ -163,6 +169,7 @@ private struct MasterPlaceholder: View {
             case .estimates: GuideOrPick<Estimate, InvoiceEditorView>(page: page, guide: .estimates) { InvoiceEditorView(mode: .estimate(nil)) }
             #endif
             case .banking, .chart: MasterPick(page: page)
+            case .bankInbox: BankInboxPlaceholder()
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -181,11 +188,11 @@ private struct MasterPick: View {
 }
 
 /// La guía de la sección mientras no tiene nada; si ya tiene, «Elige…».
-private struct GuideOrPick<Model: PersistentModel, Editor: View>: View {
+private struct GuideOrPick<Model: CompanyOwned, Editor: View>: View {
     let page: MasterPage
     let guide: EmptyGuide
     @ViewBuilder let editor: () -> Editor
-    @Query private var models: [Model]
+    @CompanyQuery private var models: [Model]
     @State private var creating = false
 
     var body: some View {
@@ -199,12 +206,12 @@ private struct GuideOrPick<Model: PersistentModel, Editor: View>: View {
 }
 
 /// Busca el registro elegido entre los del modelo; si ya no existe (un borrador descartado), el estado vacío.
-private struct ModelLookup<Model: PersistentModel, Content: View>: View {
+private struct ModelLookup<Model: CompanyOwned, Content: View>: View {
     let id: UUID
     let key: KeyPath<Model, UUID>
     let page: MasterPage
     @ViewBuilder let content: (Model) -> Content
-    @Query private var models: [Model]
+    @CompanyQuery private var models: [Model]
 
     var body: some View {
         if let model = models.first(where: { $0[keyPath: key] == id }) {
@@ -264,7 +271,7 @@ private struct MasterListStyle: ViewModifier {
         content
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
-            .background(Palette.surface)
+            .background(Palette.masterColumn)
             #if os(iOS)
             // Acento transparente: con trackpad o teclado, UIKit dibuja en el acento un anillo de foco cuadrado alrededor
             // de la celda elegida (se veía en Gastos, iPad del usuario, 3-nov); `focusEffectDisabled` no llega a la celda.
@@ -278,7 +285,7 @@ private struct MasterListStyle: ViewModifier {
     }
 }
 
-private extension View {
+extension View {
     /// Título de la columna maestro: en el iPad, en la fila de la barra junto a «+», como en Mail con la lista
     /// estrecha. Grande (`.inlineLarge`) quedaba debajo de la barra: el filtro fijo lo tapaba (hueco vacío) o, con el
     /// filtro en la barra, el efecto de borde lo desenfocaba. En el Mac, el de la ventana.
@@ -293,7 +300,7 @@ private extension View {
     /// Filtro de la columna, fijo encima de la lista con fondo opaco. Con `safeAreaBar` formaba parte de la barra y
     /// el efecto de borde dejaba borroso el título grande.
     func masterFilter<Filter: View>(@ViewBuilder _ filter: () -> Filter) -> some View {
-        safeAreaInset(edge: .top, spacing: 0) { filter().background(Palette.surface) }
+        safeAreaInset(edge: .top, spacing: 0) { filter().background(Palette.masterColumn) }
     }
 
     func masterList(_ title: String, query: Binding<String>, prompt: LocalizedStringKey) -> some View {
@@ -340,7 +347,7 @@ private func matches(_ text: String, _ fields: String...) -> Bool {
 
 private struct InvoiceMasterList: View {
     @Binding var selection: UUID?
-    @Query(sort: \Invoice.createdAt, order: .reverse) private var invoices: [Invoice]
+    @CompanyQuery(sort: \Invoice.createdAt, order: .reverse) private var invoices: [Invoice]
     @State private var scope: InvoiceScope = .open
     @State private var query = ""
     @State private var creating = false
@@ -372,7 +379,7 @@ private struct InvoiceMasterList: View {
             if filtered.isEmpty {
                 Text(invoices.isEmpty ? EmptyGuide.invoices.title : String(localized: "Ninguna factura coincide"))
                     .font(.subheadline).foregroundStyle(Palette.ink2)
-                    .frame(maxWidth: .infinity).listRowSeparator(.hidden).listRowBackground(Palette.surface)
+                    .frame(maxWidth: .infinity).listRowSeparator(.hidden).listRowBackground(Palette.masterColumn)
             }
         }
         .masterList(String(localized: "Ventas"), query: $query, prompt: "Cliente, número o monto")
@@ -393,7 +400,7 @@ private struct InvoiceMasterList: View {
 
 private struct CustomerMasterList: View {
     @Binding var selection: UUID?
-    @Query(sort: \Customer.name) private var customers: [Customer]
+    @CompanyQuery(sort: \Customer.name) private var customers: [Customer]
     @State private var filter: CustomerListView.Filter = .all
     @State private var query = ""
     @State private var creating = false
@@ -428,7 +435,7 @@ private struct CustomerMasterList: View {
             }
             if filtered.isEmpty {
                 Text(customers.isEmpty ? EmptyGuide.customers.title : String(localized: "Ningún cliente coincide con «\(query)»."))
-                    .font(.subheadline).foregroundStyle(Palette.ink2).frame(maxWidth: .infinity).listRowSeparator(.hidden).listRowBackground(Palette.surface)
+                    .font(.subheadline).foregroundStyle(Palette.ink2).frame(maxWidth: .infinity).listRowSeparator(.hidden).listRowBackground(Palette.masterColumn)
             }
         }
         .masterList(String(localized: "Clientes"), query: $query, prompt: "Nombre, correo o teléfono")
@@ -442,8 +449,8 @@ private struct CustomerMasterList: View {
 
 private struct ExpenseMasterList: View {
     @Binding var selection: UUID?
-    @Query(sort: \Expense.date, order: .reverse) private var expenses: [Expense]
-    @Query(sort: \Account.code) private var accounts: [Account]
+    @CompanyQuery(sort: \Expense.date, order: .reverse) private var expenses: [Expense]
+    @CompanyQuery(sort: \Account.code) private var accounts: [Account]
     @State private var withoutReceipt = false
     @State private var query = ""
     @State private var creating = false
@@ -485,7 +492,7 @@ private struct ExpenseMasterList: View {
             }
             if filtered.isEmpty {
                 Text(expenses.isEmpty ? EmptyGuide.expenses.title : String(localized: "Ningún gasto coincide"))
-                    .font(.subheadline).foregroundStyle(Palette.ink2).frame(maxWidth: .infinity).listRowSeparator(.hidden).listRowBackground(Palette.surface)
+                    .font(.subheadline).foregroundStyle(Palette.ink2).frame(maxWidth: .infinity).listRowSeparator(.hidden).listRowBackground(Palette.masterColumn)
             }
         }
         .masterList(String(localized: "Gastos"), query: $query, prompt: "Beneficiario, categoría o monto")
@@ -511,6 +518,8 @@ private struct ExpenseMasterList: View {
         #if DEBUG
         // `-qa.fila N` (solo Debug): elige la fila N de la columna maestro al abrir (capturas de la App Store).
         .task { if selection == nil, let index = QAMasterRow.index, filtered.indices.contains(index) { selection = filtered[index].id } }
+        // `-qa.escanear prueba|<ruta>` (recibos, `Expenses/Receipts/ReceiptQA.swift`): «Nuevo gasto» con ese recibo, ya leído.
+        .task { if ReceiptQA.argument != nil { creating = true } }
         #endif
         .sheet(isPresented: $showingRecurring) {
             NavigationStack {
@@ -527,7 +536,7 @@ private struct ExpenseMasterList: View {
 
 private struct VendorMasterList: View {
     @Binding var selection: UUID?
-    @Query(sort: \Vendor.name) private var vendors: [Vendor]
+    @CompanyQuery(sort: \Vendor.name) private var vendors: [Vendor]
     @State private var filter: VendorFilter = .all
     @State private var query = ""
     @State private var creating = false
@@ -554,7 +563,7 @@ private struct VendorMasterList: View {
             }
             if filtered.isEmpty {
                 Text(vendors.isEmpty ? EmptyGuide.vendors.title : String(localized: "Ningún proveedor coincide"))
-                    .font(.subheadline).foregroundStyle(Palette.ink2).frame(maxWidth: .infinity).listRowSeparator(.hidden).listRowBackground(Palette.surface)
+                    .font(.subheadline).foregroundStyle(Palette.ink2).frame(maxWidth: .infinity).listRowSeparator(.hidden).listRowBackground(Palette.masterColumn)
             }
         }
         .masterList(String(localized: "Proveedores"), query: $query, prompt: "Nombre o correo")
@@ -566,8 +575,8 @@ private struct VendorMasterList: View {
 
 private struct BillMasterList: View {
     @Binding var selection: UUID?
-    @Query(sort: \Bill.dueDate) private var bills: [Bill]
-    @Query(sort: \Account.code) private var accounts: [Account]
+    @CompanyQuery(sort: \Bill.dueDate) private var bills: [Bill]
+    @CompanyQuery(sort: \Account.code) private var accounts: [Account]
     @State private var filter: BillFilter = .open
     @State private var query = ""
     @State private var creating = false
@@ -613,7 +622,7 @@ private struct BillMasterList: View {
                     .buttonStyle(.plain)
                     .accessibilityAddTraits(isOn ? [.isSelected] : [])
                     .accessibilityHint(Text("Incluir en el pago en lote"))
-                    .listRowBackground(Palette.surface)
+                    .listRowBackground(Palette.masterColumn)
                 } else {
                     row(bill)
                         .masterRow(bill.id, selection: selection)
@@ -622,7 +631,7 @@ private struct BillMasterList: View {
             }
             if filtered.isEmpty {
                 Text(bills.isEmpty ? EmptyGuide.bills.title : String(localized: "Ninguna factura coincide"))
-                    .font(.subheadline).foregroundStyle(Palette.ink2).frame(maxWidth: .infinity).listRowSeparator(.hidden).listRowBackground(Palette.surface)
+                    .font(.subheadline).foregroundStyle(Palette.ink2).frame(maxWidth: .infinity).listRowSeparator(.hidden).listRowBackground(Palette.masterColumn)
             }
         }
         .masterList(String(localized: "Facturas por pagar"), query: $query, prompt: "Proveedor, número o monto")
@@ -669,8 +678,8 @@ private struct BillMasterList: View {
 /// Cuentas de dinero con su saldo en libros; el detalle, los movimientos del mes de la elegida.
 private struct BankingMasterList: View {
     @Binding var selection: UUID?
-    @Query(sort: \Account.code) private var accounts: [Account]
-    @Query private var journalLines: [JournalLine]
+    @CompanyQuery(sort: \Account.code) private var accounts: [Account]
+    @CompanyQuery private var journalLines: [JournalLine]
     @State private var adding: NewMovement?
 
     var body: some View {
@@ -684,7 +693,7 @@ private struct BankingMasterList: View {
                 }
                 .selectionDisabled()
                 .listRowSeparator(.hidden)
-                .listRowBackground(Palette.surface)
+                .listRowBackground(Palette.masterColumn)
             }
             ForEach(shown) { account in
                 MasterRow(title: account.maskedName, amount: ledger.cashBalance(of: account).money,
@@ -693,18 +702,12 @@ private struct BankingMasterList: View {
                 }
                 .masterRow(account.id, selection: selection)
             }
-            Section {
-                Label("Importar y conciliar · Próximamente", systemImage: "square.and.arrow.down")
-                    .font(.footnote.weight(.semibold))
-                    .foregroundStyle(Palette.ink2)
-                    .accessibilityLabel("Importar y conciliar, disponible en una próxima versión")
-                    .selectionDisabled()
-                    .listRowBackground(Palette.surface)
-            }
+            // Banca 1.2 (canvas `iPadBancaCuentas`): «Bandeja» con Por revisar, Conciliar, Reglas e Importar.
+            BankingShortcutsSection()
         }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
-        .background(Palette.surface)
+        .background(Palette.masterColumn)
         #if os(iOS)
         .tint(Palette.brandFill)
         #endif
@@ -744,7 +747,7 @@ private struct BankingMasterList: View {
 
 private struct JournalMasterList: View {
     @Binding var selection: UUID?
-    @Query(sort: [SortDescriptor(\JournalEntry.date, order: .reverse), SortDescriptor(\JournalEntry.number, order: .reverse)])
+    @CompanyQuery(sort: [SortDescriptor(\JournalEntry.date, order: .reverse), SortDescriptor(\JournalEntry.number, order: .reverse)])
     private var entries: [JournalEntry]
     @State private var query = ""
     @State private var creating = false
@@ -768,7 +771,7 @@ private struct JournalMasterList: View {
             }
             if filtered.isEmpty {
                 Text(entries.isEmpty ? EmptyGuide.journal.title : String(localized: "Ningún asiento coincide"))
-                    .font(.subheadline).foregroundStyle(Palette.ink2).frame(maxWidth: .infinity).listRowSeparator(.hidden).listRowBackground(Palette.surface)
+                    .font(.subheadline).foregroundStyle(Palette.ink2).frame(maxWidth: .infinity).listRowSeparator(.hidden).listRowBackground(Palette.masterColumn)
             }
         }
         .masterList(String(localized: "Asientos de diario"), query: $query, prompt: "Concepto, número o monto")
@@ -781,8 +784,8 @@ private struct JournalMasterList: View {
 
 private struct ChartMasterList: View {
     @Binding var selection: UUID?
-    @Query(sort: \Account.code) private var accounts: [Account]
-    @Query private var journalLines: [JournalLine]
+    @CompanyQuery(sort: \Account.code) private var accounts: [Account]
+    @CompanyQuery private var journalLines: [JournalLine]
     @State private var showArchived = false
     @State private var query = ""
     @State private var creating = false
@@ -873,7 +876,7 @@ private struct ChartMasterRow: View {
 struct BillDetailView: View {
     let bill: Bill
     @Environment(\.modelContext) private var context
-    @Query(sort: \Account.code) private var accounts: [Account]
+    @CompanyQuery(sort: \Account.code) private var accounts: [Account]
     @State private var paying = false
     @State private var scheduling = false
     @State private var errorMessage: String?

@@ -4,11 +4,30 @@ import SwiftData
 import Testing
 @testable import ChirograData
 
-/// Un almacén escrito con el esquema 1 (en disco, con los modelos congelados de `SchemaV1`) se abre con el
-/// contenedor de la app, se migra a `SchemaV2` y conserva todo; los campos nuevos toman su valor por defecto.
+/// Un almacén escrito con un esquema anterior (en disco, con los modelos congelados de `SchemaV1`, `SchemaV2` o
+/// `SchemaV3`) se abre con el contenedor de la app, se migra hasta `SchemaV4` y conserva todo; los campos nuevos toman
+/// su valor por defecto y todo queda con la empresa que había (`companyID`).
 @MainActor
-@Suite("Migración del esquema 1 al 2")
+@Suite("Migración de los esquemas 1, 2 y 3 al 4")
 struct MigrationTests {
+
+    /// Registros sin empresa, de todos los modelos.
+    static func orphanCount(_ context: ModelContext) throws -> Int {
+        try CompanyOwnership.ownedTypes.reduce(0) { $0 + (try count($1, in: context)) }
+    }
+
+    private static func count<T: CompanyOwned>(_ type: T.Type, in context: ModelContext) throws -> Int {
+        try context.fetchCount(FetchDescriptor<T>(predicate: T.orphans))
+    }
+
+    /// Registros con esa empresa, de todos los modelos.
+    static func ownedCount(_ context: ModelContext, companyID: UUID) throws -> Int {
+        try CompanyOwnership.ownedTypes.reduce(0) { $0 + (try owned($1, companyID, in: context)) }
+    }
+
+    private static func owned<T: CompanyOwned>(_ type: T.Type, _ id: UUID, in context: ModelContext) throws -> Int {
+        try context.fetchCount(FetchDescriptor<T>(predicate: T.ownedBy(id, includeOrphans: false)))
+    }
 
     static func temporaryStore() throws -> URL {
         let folder = FileManager.default.temporaryDirectory.appending(path: "chirogra-migracion-\(UUID().uuidString)", directoryHint: .isDirectory)
@@ -202,6 +221,16 @@ struct MigrationTests {
         #expect(invoice.customer?.contactName == "" && (invoice.customer?.datedNotes ?? []).isEmpty)
         #expect(try context.fetch(FetchDescriptor<JournalEntry>()).allSatisfy { $0.replacesEntryID == nil })
 
+        // Esquema 4: todo es de la empresa que había; los campos nuevos, con su valor por defecto.
+        #expect(try Self.orphanCount(context) == 0)
+        #expect(try Self.ownedCount(context, companyID: company.id) == 7 + 4 + 8 + 3 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1)
+        #expect(company.sortOrder == 0 && !company.isArchived && company.postalCode.isEmpty && company.paymentLinkURL.isEmpty)
+        #expect(company.showPayNowOnInvoice && company.paymentInstructions.isEmpty)
+        #expect(try books.accounts().allSatisfy { $0.taxFormLineRaw.isEmpty })
+        #expect(try context.fetch(FetchDescriptor<JournalLine>()).allSatisfy { $0.reconciliationID == nil && $0.clearedAt == nil })
+        #expect(invoice.customer?.postalCode == "")
+        #expect(try context.fetchCount(FetchDescriptor<BankTransaction>()) == 0)
+
         // Y se puede seguir trabajando con las funciones nuevas sobre los datos migrados.
         let checking = try #require(try books.account(id: ids.checkingID))
         try books.updateAccount(checking, with: AccountInput(code: "1010", name: "Corriente", subtype: .bank, last4: "4821"))
@@ -227,13 +256,17 @@ struct MigrationTests {
         #expect(try reopened.mainContext.fetch(FetchDescriptor<Account>()).first { $0.code == "1010" }?.last4 == "4821")
     }
 
-    /// Comprobación manual contra un almacén escrito por la app publicada con el esquema 1 (p. ej. `SampleData` en
-    /// `4f4e68e`). Se activa con `CHIROGRA_V1_STORE=/ruta/Chirogra.store swift test --filter MigrationTests`;
-    /// el almacén se copia antes de abrirlo, así que el original no se toca. Ver docs/DATOS-V2.md.
-    @Test("Un almacén escrito por la versión publicada (esquema 1) se migra y cuadra",
-          .enabled(if: ProcessInfo.processInfo.environment["CHIROGRA_V1_STORE"] != nil))
+    /// Comprobación manual contra un almacén escrito por una versión publicada (esquema 1, 2 o 3; p. ej. `SampleData`
+    /// en `4f4e68e` o en `c214680`). Se activa con `CHIROGRA_STORE=/ruta/Chirogra.store swift test --filter
+    /// MigrationTests` (también vale el nombre de antes, `CHIROGRA_V1_STORE`); el almacén se copia antes de abrirlo, así
+    /// que el original no se toca. Ver docs/DATOS-V2.md y docs/DATOS-V4.md.
+    nonisolated static var publishedStore: String? {
+        ProcessInfo.processInfo.environment["CHIROGRA_STORE"] ?? ProcessInfo.processInfo.environment["CHIROGRA_V1_STORE"]
+    }
+
+    @Test("Un almacén escrito por una versión publicada se migra al esquema 4 y cuadra", .enabled(if: publishedStore != nil))
     func migratesStoreFromPublishedApp() throws {
-        let source = URL(filePath: try #require(ProcessInfo.processInfo.environment["CHIROGRA_V1_STORE"]))
+        let source = URL(filePath: try #require(Self.publishedStore))
         let url = try Self.temporaryStore()
         defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
         for suffix in ["", "-wal", "-shm"] {
@@ -252,38 +285,124 @@ struct MigrationTests {
         #expect(ReportBuilder.trialBalance(accounts: try books.ledgerAccounts(), lines: try books.ledgerLines(), asOf: .distantFuture).isBalanced)
         #expect(try books.company()?.invoiceAccentHex == InvoiceAccent.ink.hex)
         _ = try books.notices()
+        #expect(try Self.orphanCount(container.mainContext) == 0)
+        let companies = try container.mainContext.fetch(FetchDescriptor<Company>())
+        #expect(companies.filter { !$0.isArchived }.count == 1)
+        #expect(try container.mainContext.fetch(FetchDescriptor<AuditEvent>()).contains { !$0.subjectEntity.isEmpty })
     }
 
-    @Test("El plan de migración va de la versión 1 a la 3 y la app usa la 3")
+    @Test("El plan de migración va de la versión 1 a la 4 y la app usa la 4")
     func plan() {
         #expect(ChirograMigrationPlan.schemas.map { $0.versionIdentifier }
-                == [Schema.Version(1, 0, 0), Schema.Version(2, 0, 0), Schema.Version(3, 0, 0)])
-        #expect(ChirograMigrationPlan.stages.count == 2)
+                == [Schema.Version(1, 0, 0), Schema.Version(2, 0, 0), Schema.Version(3, 0, 0), Schema.Version(4, 0, 0)])
+        #expect(ChirograMigrationPlan.stages.count == 3)
         #expect(SchemaV2.models.count == SchemaV1.models.count + 8)
         #expect(SchemaV3.models.count == SchemaV2.models.count)
-        #expect(ChirograStore.schema.entities.count == SchemaV3.models.count)
+        #expect(SchemaV4.models.count == SchemaV3.models.count + 6)
+        #expect(ChirograStore.schema.entities.count == SchemaV4.models.count)
+        #expect(CompanyOwnership.ownedTypes.count == SchemaV4.models.count - 1)
     }
 
-    /// Esquema 2 → 3: `AuditEvent.entityName` pasa a `subjectEntity` y conserva el valor (lo usan la detección de los
-    /// datos de ejemplo y la actividad de las facturas).
+    /// Esquema 2 → 3 → 4: `AuditEvent.entityName` pasa a `subjectEntity` y conserva el valor (lo usan la detección de
+    /// los datos de ejemplo y la actividad de las facturas), y todo queda con la empresa.
     @MainActor
-    @Test("Un almacén del esquema 2 se migra al 3 y el historial conserva su entidad")
+    @Test("Un almacén del esquema 2 se migra al 4: el historial conserva su entidad y todo tiene empresa")
     func migratesV2Store() throws {
         let url = try Self.temporaryStore()
         defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
-        let companyID = UUID()
+        let companyID: UUID
         do {
             let schema = Schema(versionedSchema: SchemaV2.self)
             let container = try ModelContainer(for: schema, configurations: ModelConfiguration("Chirogra", schema: schema, url: url, cloudKitDatabase: .none))
             let context = ModelContext(container)
-            context.insert(SchemaV2.AuditEvent(actor: "Ejemplo", entityName: "Company", entityID: companyID, action: "create", summary: "Alta"))
-            context.insert(SchemaV2.AuditEvent(actor: "Ana", entityName: "Invoice", entityID: UUID(), action: "sent", summary: "F-1001"))
+            let company = SchemaV2.Company()
+            company.legalName = "Dos LLC"
+            context.insert(company)
+            companyID = company.id
+            for (actor, entity, id, action) in [("Ejemplo", "Company", companyID, "create"), ("Ana", "Invoice", UUID(), "sent")] {
+                let event = SchemaV2.AuditEvent()
+                event.actor = actor
+                event.entityName = entity
+                event.entityID = id
+                event.action = action
+                context.insert(event)
+            }
+            let template = SchemaV2.RecurringTemplate()
+            template.name = "Renta"
+            context.insert(template)
+            let line = SchemaV2.RecurringTemplateLine()
+            line.amount = 100_000
+            line.template = template
+            context.insert(line)
             try context.save()
         }
         let container = try ChirograStore.makeContainer(url: url)
-        let events = try ModelContext(container).fetch(FetchDescriptor<AuditEvent>(sortBy: [SortDescriptor(\.actor)]))
+        let context = ModelContext(container)
+        let events = try context.fetch(FetchDescriptor<AuditEvent>(sortBy: [SortDescriptor(\.actor)]))
         #expect(events.map(\.subjectEntity) == ["Invoice", "Company"])
         #expect(events.last?.entityID == companyID)
         #expect(events.map(\.action) == ["sent", "create"])
+        #expect(try Self.orphanCount(context) == 0)
+        #expect(try Self.ownedCount(context, companyID: companyID) == 4)
+        #expect(try context.fetch(FetchDescriptor<RecurringTemplate>()).first?.total == 100_000)
+    }
+
+    /// Esquema 3 → 4 con los libros mezclados de dos altas (dos aparatos que hicieron el alta y se juntaron por iCloud):
+    /// todo pasa a la empresa más antigua y la otra, vacía, queda archivada.
+    @MainActor
+    @Test("Un almacén del esquema 3 se migra al 4: todo a la empresa más antigua y las demás archivadas")
+    func migratesV3Store() throws {
+        let url = try Self.temporaryStore()
+        defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
+        let oldest: UUID, newer: UUID
+        do {
+            let schema = Schema(versionedSchema: SchemaV3.self)
+            let container = try ModelContainer(for: schema, configurations: ModelConfiguration("Chirogra", schema: schema, url: url, cloudKitDatabase: .none))
+            let context = ModelContext(container)
+            let first = SchemaV2.Company()
+            first.legalName = "Primera LLC"
+            first.createdAt = Date(timeIntervalSinceReferenceDate: 800_000_000)
+            let second = SchemaV2.Company()
+            second.legalName = "Segunda LLC"
+            second.createdAt = Date(timeIntervalSinceReferenceDate: 810_000_000)
+            context.insert(second)
+            context.insert(first)
+            oldest = first.id
+            newer = second.id
+            let account = SchemaV2.Account()
+            account.code = "1010"
+            account.subtypeRaw = AccountSubtype.bank.rawValue
+            context.insert(account)
+            let entry = SchemaV2.JournalEntry()
+            entry.number = 1
+            context.insert(entry)
+            let line = SchemaV2.JournalLine()
+            line.debit = 500
+            line.entry = entry
+            line.account = account
+            context.insert(line)
+            let event = SchemaV3.AuditEvent()
+            event.subjectEntity = "Company"
+            event.entityID = first.id
+            context.insert(event)
+            try context.save()
+        }
+        let container = try ChirograStore.makeContainer(url: url)
+        let context = container.mainContext
+        #expect(try Self.orphanCount(context) == 0)
+        #expect(try Self.ownedCount(context, companyID: oldest) == 4)
+        let companies = try context.fetch(FetchDescriptor<Company>()).sorted { $0.sortOrder < $1.sortOrder }
+        #expect(companies.map(\.id) == [oldest, newer])
+        #expect(companies.map(\.isArchived) == [false, true])
+        #expect(try context.fetch(FetchDescriptor<AuditEvent>()).first?.subjectEntity == "Company")
+        let books = Bookkeeper(context: context)
+        #expect(try books.company()?.id == oldest)
+        #expect(try books.accounts().count == 1)
+        #expect(ReportBuilder.trialBalance(accounts: try books.ledgerAccounts(), lines: try books.ledgerLines(), asOf: .distantFuture).rows.count == 1)
+
+        // Reabrir no vuelve a migrar ni cambia nada.
+        let reopened = try ChirograStore.makeContainer(url: url)
+        #expect(try Self.orphanCount(reopened.mainContext) == 0)
+        #expect(try reopened.mainContext.fetch(FetchDescriptor<Company>()).filter(\.isArchived).map(\.id) == [newer])
     }
 }

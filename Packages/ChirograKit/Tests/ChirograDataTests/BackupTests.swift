@@ -19,6 +19,12 @@ struct BackupTests {
         try books.attachReceipt(Data("%PDF-1.7 recibo".utf8), filename: "recibo.pdf", contentType: .pdf, to: expense)
         let vendor = try #require(try context.fetch(FetchDescriptor<Vendor>()).first)
         try books.attachW9(Data("%PDF-1.7 w9".utf8), filename: "w9.pdf", contentType: .pdf, to: vendor)
+        // Esquema 4: perfil de CSV y una conciliación con líneas marcadas (los movimientos, reglas y el presupuesto ya
+        // vienen en los datos de ejemplo).
+        let checking = try #require(try books.accounts().first { $0.code == "1010" })
+        try books.saveImportProfile(CSVImportSettings(mapping: CSVColumnMapping(date: 0, details: 1, amount: 2)), for: checking)
+        let session = try books.startReconciliation(for: checking, statementDate: Date(), endingBalance: 0)
+        try books.setCleared(Array(try books.reconciliationLines(session).prefix(2)), true, in: session)
         return container
     }
 

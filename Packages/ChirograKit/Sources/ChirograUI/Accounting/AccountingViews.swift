@@ -6,9 +6,9 @@ import SwiftUI
 /// Contabilidad del iPhone (canvas `Mas` · Contabilidad): plan de cuentas, asientos, libro mayor y cierre, como filas
 /// de Ajustes con su icono de color. En iPad y Mac son subsecciones de la barra lateral.
 struct AccountingView: View {
-    @Query private var accounts: [Account]
-    @Query private var entries: [JournalEntry]
-    @Query private var companies: [Company]
+    @CompanyQuery private var accounts: [Account]
+    @CompanyQuery private var entries: [JournalEntry]
+    @ActiveCompanyQuery private var companies: [Company]
 
     var body: some View {
         List {
@@ -83,9 +83,9 @@ extension AccountSubtype {
 /// Plan de cuentas del iPhone: grupos por tipo con código, nombre, tipo de detalle y saldo (canvas `MacPlanCuentas`,
 /// en lista). Cada cuenta abre su libro mayor.
 struct ChartOfAccountsView: View {
-    @Query(sort: \Account.code) private var accounts: [Account]
+    @CompanyQuery(sort: \Account.code) private var accounts: [Account]
     @ScaledMetric(relativeTo: .body) private var codeWidth: CGFloat = 48
-    @Query private var journalLines: [JournalLine]
+    @CompanyQuery private var journalLines: [JournalLine]
     @State private var showingNew = false
     @State private var editing: Account?
     @State private var showArchived = false
@@ -171,7 +171,7 @@ struct ChartOfAccountsView: View {
 
 /// Asientos de diario del iPhone: concepto, número, fecha y origen, e importe.
 struct JournalListView: View {
-    @Query(sort: [SortDescriptor(\JournalEntry.date, order: .reverse), SortDescriptor(\JournalEntry.number, order: .reverse)])
+    @CompanyQuery(sort: [SortDescriptor(\JournalEntry.date, order: .reverse), SortDescriptor(\JournalEntry.number, order: .reverse)])
     private var entries: [JournalEntry]
     @State private var showingEditor = false
 
@@ -236,6 +236,8 @@ extension EntrySource {
         case .customerRefund: String(localized: "Reembolso a cliente")
         case .reversal: String(localized: "Reversión")
         case .opening: String(localized: "Saldos iniciales")
+        case .bankDeposit: String(localized: "Depósito")
+        case .transfer: String(localized: "Transferencia")
         }
     }
 }
@@ -261,9 +263,9 @@ struct JournalEntryEditorView: View {
     @LayoutSizeClass private var sizeClass
     #endif
     @ScaledMetric(relativeTo: .body) private var amountWidth: CGFloat = 110
-    @Query(sort: \Account.code) private var accounts: [Account]
-    @Query private var journalLines: [JournalLine]
-    @Query private var companies: [Company]
+    @CompanyQuery(sort: \Account.code) private var accounts: [Account]
+    @CompanyQuery private var journalLines: [JournalLine]
+    @ActiveCompanyQuery private var companies: [Company]
 
     /// Qué se registra: una plantilla en llano o el asiento a mano; `nil` hasta elegir (build 4).
     @State private var mode: Mode?
@@ -874,6 +876,8 @@ struct JournalEntryDetailView: View {
     }
     @State private var errorMessage: String?
     @State private var confirming = false
+    /// Banca 1.2: revertir un asiento conciliado pide confirmación (`ReconciledChange`).
+    @State private var reconciledRetry: ReconciledChangeRetry?
 
     var body: some View {
         Form {
@@ -936,15 +940,19 @@ struct JournalEntryDetailView: View {
         .inlineTitle()
         .confirmationDialog("¿Revertir este asiento?", isPresented: $confirming, titleVisibility: .visible) {
             Button("Revertir", role: .destructive) {
-                do { try Bookkeeper(context: context).reverse(entry) } catch { errorMessage = error.localizedDescription }
+                do { try Bookkeeper(context: context).reverse(entry) } catch {
+                    // Banca 1.2: revertir un asiento conciliado pide confirmación (`ReconciledChange`).
+                    if let retry = ReconciledChange.retry(for: error, { try $0.reverse(entry) }) { reconciledRetry = retry } else { errorMessage = error.localizedDescription }
+                }
             }
         }
+        .reconciledChangeConfirmation($reconciledRetry) { errorMessage = $0 }
     }
 }
 
 /// Libro mayor del iPhone: elegir la cuenta, por tipo.
 struct LedgerAccountPickerView: View {
-    @Query(sort: \Account.code) private var accounts: [Account]
+    @CompanyQuery(sort: \Account.code) private var accounts: [Account]
 
     var body: some View {
         List {

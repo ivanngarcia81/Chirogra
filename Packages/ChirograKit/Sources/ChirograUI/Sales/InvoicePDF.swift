@@ -75,6 +75,8 @@ struct SalesDocument {
     /// Importe de la barra de la vista previa: total, o saldo de una factura abierta.
     var amount: Int64
     var pricesIncludeTax = false
+    /// Recuadro «Pagar ahora» con QR e instrucciones (`Sales/PayNow/`); `nil` sin enlace ni instrucciones.
+    var payNow: PayNowInfo?
 
     var filename: String {
         switch kind {
@@ -126,6 +128,7 @@ struct SalesDocument {
             totals = rows
             amount = invoice.isOpen ? invoice.balanceDue : invoice.total
         }
+        payNow = PayNowInfo.forInvoice(invoice, amount: amount)
     }
 
     init(estimate: Estimate) {
@@ -222,6 +225,8 @@ struct SalesDocument {
 /// vista previa muestra ese mismo PDF.
 enum InvoicePDF {
     static let pageSize = CGSize(width: 612, height: 792)   // US Letter, en puntos
+    /// Espacio de coordenadas de la página (para el enlace de «Pagar ahora», `PayNowLinkAreas`).
+    static let pageSpace = "invoicePage"
 
     static func linesPerPage(for company: Company?) -> Int {
         company?.invoiceStyle == .compact ? 20 : 16
@@ -251,15 +256,25 @@ enum InvoicePDF {
               let pdf = CGContext(consumer: consumer, mediaBox: &box, nil) else { return Data() }
         let pages = pages(for: document, company: company)
         for (index, lines) in pages.enumerated() {
+            let areas = PayNowLinkAreas()
             let page = InvoiceDocumentView(document: document, company: company, lines: lines,
                                            pageNumber: index + 1, pageCount: pages.count)
                 .frame(width: pageSize.width, height: pageSize.height)
+                .coordinateSpace(.named(pageSpace))
                 .environment(\.colorScheme, .light)
+                .environment(\.payNowLinkAreas, areas)
             let renderer = ImageRenderer(content: page)
             renderer.proposedSize = ProposedViewSize(pageSize)
             renderer.render { _, draw in
                 pdf.beginPDFPage(nil)
                 draw(pdf)
+                // «Pagar ahora» y el QR se pueden pulsar en el PDF (el origen del PDF está abajo a la izquierda).
+                if let url = document.payNow?.url {
+                    for rect in areas.rects where rect.width > 0 && rect.height > 0 {
+                        pdf.setURL(url as CFURL, for: CGRect(x: rect.minX, y: pageSize.height - rect.maxY,
+                                                             width: rect.width, height: rect.height))
+                    }
+                }
                 pdf.endPDFPage()
             }
         }
@@ -382,6 +397,9 @@ struct InvoiceDocumentView: View {
             if pageNumber == 1 { parties }
             table(template)
             if isLastPage { totals(template) }
+            if isLastPage, let payNow = document.payNow {
+                PayNowBlock(info: payNow, accent: template.accent, soft: template.soft)
+            }
             Spacer(minLength: 0)
             footer(template)
         }

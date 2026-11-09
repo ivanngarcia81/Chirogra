@@ -120,7 +120,7 @@ struct EstimateListView: View {
     @Binding var filter: EstimateFilter
     var sectionMenu: SalesSectionMenu?
     var onCreate: () -> Void = {}
-    @Query(sort: \Estimate.issueDate, order: .reverse) private var estimates: [Estimate]
+    @CompanyQuery(sort: \Estimate.issueDate, order: .reverse) private var estimates: [Estimate]
 
     private var filtered: [Estimate] { estimates.filter { filter.matches($0) && EstimateFilter.search($0, query) } }
 
@@ -229,7 +229,7 @@ struct EstimateDetailView: View {
     #if os(iOS)
     @LayoutSizeClass private var sizeClass
     #endif
-    @Query private var companies: [Company]
+    @ActiveCompanyQuery private var companies: [Company]
     @State private var editing = false
     @State private var sending = false
     @State private var accepting = false

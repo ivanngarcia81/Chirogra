@@ -15,7 +15,7 @@ struct InvoiceTemplateView: View {
     /// Dentro de `SettingsWideView`: el título de la ventana sigue siendo «Ajustes».
     var embedded = false
     @Environment(\.modelContext) private var context
-    @Query(sort: \Invoice.issueDate, order: .reverse) private var invoices: [Invoice]
+    @CompanyQuery(sort: \Invoice.issueDate, order: .reverse) private var invoices: [Invoice]
     @State private var photo: PhotosPickerItem?
     @State private var importingLogo = false
     @State private var errorMessage: String?
@@ -32,17 +32,17 @@ struct InvoiceTemplateView: View {
     }
 
     var body: some View {
-        Form {
+        SettingsForm {
             if let errorMessage {
-                Section { ErrorBanner(message: errorMessage) }.listRowBackground(Color.clear).listRowInsets(EdgeInsets())
+                SettingsSection(plain: true) { ErrorBanner(message: errorMessage) }.listRowBackground(Color.clear).listRowInsets(EdgeInsets())
             }
-            Section {
+            SettingsSection(plain: true) {
                 preview
                     .frame(maxWidth: .infinity)
                     .listRowBackground(Color.clear)
                     .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
             }
-            Section {
+            SettingsSection {
                 swatches
                 LabeledContent("Estilo") {
                     Picker("Estilo", selection: $company.invoiceStyleRaw) {
@@ -53,11 +53,13 @@ struct InvoiceTemplateView: View {
                     .labelsHidden()
                     .fixedSize()
                 }
+                #if os(iOS)
                 .labeledContentStyle(.automatic)
+                #endif
             } header: {
                 SectionLabel(text: String(localized: "Apariencia"))
             }
-            Section {
+            SettingsSection {
                 Toggle("Mostrar logo", isOn: $company.invoiceShowLogo)
                 logoRow
                 #if os(iOS)
@@ -74,7 +76,7 @@ struct InvoiceTemplateView: View {
             } footer: {
                 Text("Sin logo, la factura lleva tus iniciales en el color de la plantilla. La imagen se reduce a 512 px.")
             }
-            Section {
+            SettingsSection {
                 Toggle("Mostrar ID fiscal (EIN)", isOn: $company.invoiceShowEIN)
                 Toggle("Mostrar dirección", isOn: $company.invoiceShowAddress)
                 Toggle("Mostrar teléfono", isOn: $company.invoiceShowPhone)
@@ -83,33 +85,28 @@ struct InvoiceTemplateView: View {
             } footer: {
                 Text("Salen en el encabezado de tus facturas y estimados. Se editan en Perfil de la empresa.")
             }
-            Section {
-                Picker("Términos predeterminados", selection: $company.defaultPaymentTermsDays) {
+            SettingsSection {
+                SettingsPicker("Términos predeterminados", selection: $company.defaultPaymentTermsDays) {
                     Text("Al recibir").tag(0)
                     Text("Neto 15").tag(15)
                     Text("Neto 30").tag(30)
                     Text("Neto 60").tag(60)
                 }
-                TextField("Mensaje por defecto", text: $company.defaultInvoiceMessage,
-                          prompt: Text("Gracias por su preferencia."), axis: .vertical)
-                    .lineLimit(2...5)
-                    .accessibilityLabel("Mensaje por defecto")
+                SettingsTextArea(title: "Mensaje por defecto", text: $company.defaultInvoiceMessage,
+                                 prompt: Text("Gracias por su preferencia."))
             } header: {
                 SectionLabel(text: String(localized: "Facturas nuevas"))
             } footer: {
                 Text("Con estos términos y este mensaje nacen las facturas y los estimados nuevos (los del cliente mandan si los tiene).")
             }
-            Section {
-                TextField("Nota al pie", text: $company.invoiceFooter, prompt: Text("Pago por transferencia a la cuenta…"), axis: .vertical)
-                    .lineLimit(2...5)
-                    .accessibilityLabel("Nota al pie")
+            SettingsSection {
+                SettingsTextArea(title: "Nota al pie", text: $company.invoiceFooter, prompt: Text("Pago por transferencia a la cuenta…"))
             } header: {
                 SectionLabel(text: String(localized: "Nota al pie"))
             } footer: {
                 Text("Aparece al final de cada factura, junto a los términos.")
             }
         }
-        .formStyle(.grouped)
         .toggleStyle(.switch)
         .screenBackground()
         .modifier(TemplateTitle(embedded: embedded))

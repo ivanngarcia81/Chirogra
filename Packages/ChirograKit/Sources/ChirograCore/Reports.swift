@@ -23,12 +23,15 @@ public struct LedgerLine: Hashable, Sendable {
     public var date: Date
     public var debit: Int64
     public var credit: Int64
+    /// Asiento al que pertenece (opcional): el flujo de efectivo lo usa para reconocer las partidas no monetarias.
+    public var entryID: UUID?
 
-    public init(accountID: UUID, date: Date, debit: Int64, credit: Int64) {
+    public init(accountID: UUID, date: Date, debit: Int64, credit: Int64, entryID: UUID? = nil) {
         self.accountID = accountID
         self.date = date
         self.debit = debit
         self.credit = credit
+        self.entryID = entryID
     }
 }
 

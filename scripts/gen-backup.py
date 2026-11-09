@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """Genera Packages/ChirograKit/Sources/ChirograData/Backup+Generated.swift a partir de los modelos del esquema actual
-(los de SchemaV2 y, encima, los que SchemaV3 redefine).
+(los de SchemaV4: SchemaV4Models.swift, SchemaV4Models2.swift y SchemaV4Banking.swift).
 
 La copia de seguridad (`BackupArchive`, DISEÑO §6.5) guarda cada modelo como un registro `Codable` con todas sus
 propiedades guardadas y sus relaciones a uno (por `id`); las relaciones a muchos se rehacen solas por su inversa,
-salvo las de muchos a muchos, que se guardan en el lado que declara la inversa.
+salvo las de muchos a muchos, que se guardan en el lado que declara la inversa. Desde el esquema 4 la copia es de una
+empresa: se exportan la empresa y los registros con su `companyID` (`BackupScope`).
 
 Uso: scripts/gen-backup.py   (después de cambiar un modelo; `BackupTests` falla si el archivo no está al día)
 """
@@ -14,9 +15,9 @@ import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 SOURCES = ROOT / "Packages/ChirograKit/Sources"
-# En orden: un modelo definido en un archivo posterior sustituye al del anterior (SchemaV3 solo redefine AuditEvent).
-MODEL_FILES = [SOURCES / "ChirograData/SchemaV2.swift", SOURCES / "ChirograData/SchemaV2Models.swift",
-               SOURCES / "ChirograData/SchemaV3.swift"]
+# En orden: un modelo definido en un archivo posterior sustituiría al del anterior.
+MODEL_FILES = [SOURCES / "ChirograData/SchemaV4Models.swift", SOURCES / "ChirograData/SchemaV4Models2.swift",
+               SOURCES / "ChirograData/SchemaV4Banking.swift"]
 # Clave en la copia de una propiedad que cambió de nombre en el esquema: así el formato de la copia no cambia y las
 # copias de antes se siguen restaurando (y las nuevas, en una versión anterior de la app).
 BACKUP_KEYS = {("AuditEvent", "subjectEntity"): "entityName"}
@@ -105,8 +106,8 @@ for path in MODEL_FILES:
         else:
             i += 1
 
-if len(models) != 33:
-    print(f"gen-backup: aviso, {len(models)} modelos (se esperaban 33)", file=sys.stderr)
+if len(models) != 39:
+    print(f"gen-backup: aviso, {len(models)} modelos (se esperaban 39)", file=sys.stderr)
 
 # --- Clasificación de propiedades ---
 for model in models.values():
@@ -195,7 +196,7 @@ def record_type(prop):
 
 out = []
 w = out.append
-w("// Generado por scripts/gen-backup.py a partir del esquema actual (SchemaV2 + SchemaV3). No editar a mano: cambia el modelo y vuelve a")
+w("// Generado por scripts/gen-backup.py a partir del esquema actual (SchemaV4). No editar a mano: cambia el modelo y vuelve a")
 w("// ejecutar el script (BackupTests comprueba que cubre todas las propiedades del esquema).")
 w("")
 w("import ChirograCore")
@@ -239,10 +240,12 @@ w("// MARK: - Exportar")
 w("")
 w("extension BackupPayload {")
 w("    @MainActor")
-w("    init(context: ModelContext) throws {")
+w("    /// Los registros de la empresa de `scope` (o de todo, sin empresa).")
+w("    init(context: ModelContext, scope: BackupScope) throws {")
 for name in order:
     model = models[name]
-    w(f"        {lower_first(name)} = try context.fetch(FetchDescriptor<{name}>()).map {{ model in")
+    source = "scope.companies()" if name == "Company" else f"scope.descriptor({name}.self)"
+    w(f"        {lower_first(name)} = try context.fetch({source}).map {{ model in")
     w(f"            {name}Record(")
     fields = []
     for prop in model.props:

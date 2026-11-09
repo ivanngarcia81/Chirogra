@@ -15,20 +15,20 @@ extension Bookkeeper {
         guard let company = try company() else { throw BookkeepingError.noCompany }
         guard let info = StateSalesTax.forState(code ?? company.state), let millionths = info.rateMillionths else { return nil }
 
-        let agencies = try context.fetch(FetchDescriptor<TaxAgency>())
+        let agencies = try fetch(TaxAgency.self)
         let agency: TaxAgency
         if let existing = agencies.first(where: { $0.name == info.agency && !$0.isArchived }) {
             agency = existing
         } else {
             agency = TaxAgency(name: info.agency, filingFrequency: .quarterly, liabilityAccountID: try systemAccount(.salesTaxPayable).id)
-            context.insert(agency)
+            insert(agency)
         }
         let rate: TaxRate
         if let existing = (agency.rates ?? []).first(where: { $0.name == info.name && $0.rateMillionths == millionths && !$0.isArchived }) {
             rate = existing
         } else {
             rate = TaxRate(name: info.name, rateMillionths: millionths, agency: agency)
-            context.insert(rate)
+            insert(rate)
             audit("TaxRate", rate.id, "create", String(localized: "Tasa estatal creada en el alta: \(info.name) \(rate.percent)%"))
         }
         if company.defaultTaxGroupID == nil {
@@ -67,9 +67,7 @@ extension Bookkeeper {
     /// grupo. `nil` si no hay predeterminado o ya no existe.
     public func defaultTaxCode() throws -> TaxCodeSummary? {
         guard let id = try company()?.defaultTaxGroupID else { return nil }
-        var descriptor = FetchDescriptor<TaxGroup>(predicate: #Predicate { $0.id == id })
-        descriptor.fetchLimit = 1
-        if let group = try context.fetch(descriptor).first {
+        if let group = try taxGroup(id: id) {
             return TaxCodeSummary(id: group.id, name: group.name, rates: (group.rates ?? []).filter { !$0.isArchived })
         }
         guard let rate = try taxRate(id: id), !rate.isArchived else { return nil }
@@ -105,16 +103,16 @@ extension Bookkeeper {
                 throw BookkeepingError.invalidState(String(localized: "La tasa necesita una agencia."))
             }
             owner = TaxAgency(name: agencyName, filingFrequency: .quarterly, liabilityAccountID: try systemAccount(.salesTaxPayable).id)
-            context.insert(owner)
+            insert(owner)
         }
         let rate = TaxRate(name: name, rateMillionths: rateMillionths, agency: owner)
-        context.insert(rate)
+        insert(rate)
         audit("TaxRate", rate.id, "create", String(localized: "Tasa creada: \(name) \(rate.percent)%"))
 
         var group: TaxGroup?
         if let base, !base.rates.isEmpty {
             let combined = TaxGroup(name: combinedTaxName(base: base, adding: name, state: company.state), rates: base.rates + [rate])
-            context.insert(combined)
+            insert(combined)
             audit("TaxGroup", combined.id, "create", String(localized: "Grupo creado: \(combined.name) \(combined.percent)%"))
             company.defaultTaxGroupID = combined.id
             audit("Company", company.id, "defaultTax", String(localized: "Impuesto predeterminado cambiado"))
@@ -173,9 +171,7 @@ extension Bookkeeper {
     public func hasOpeningBalances() throws -> Bool {
         let opening = EntrySource.opening.rawValue
         let posted = EntryStatus.posted.rawValue
-        return try context.fetchCount(FetchDescriptor<JournalEntry>(predicate: #Predicate {
-            $0.sourceRaw == opening && $0.statusRaw == posted
-        })) > 0
+        return try count(JournalEntry.self, #Predicate { $0.sourceRaw == opening && $0.statusRaw == posted }) > 0
     }
 
     private func firstAccount(_ subtype: AccountSubtype) throws -> Account {

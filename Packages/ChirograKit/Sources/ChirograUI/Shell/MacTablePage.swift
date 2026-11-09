@@ -21,6 +21,7 @@ extension MasterPage {
         case .vendors: VendorTablePage.isReady
         case .bills: BillTablePage.isReady
         case .banking: BankingTablePage.isReady
+        case .bankInbox: BankInboxTablePage.isReady
         case .journal: JournalTablePage.isReady
         case .chart: ChartTablePage.isReady
         }
@@ -41,6 +42,7 @@ extension MasterPage {
         case .vendors: VendorTablePage(selection: selection)
         case .bills: BillTablePage(selection: selection)
         case .banking: BankingTablePage(selection: selection)
+        case .bankInbox: BankInboxTablePage(selection: selection)
         case .journal: JournalTablePage(selection: selection)
         case .chart: ChartTablePage(selection: selection)
         }
@@ -237,7 +239,7 @@ where Value: Identifiable, Value.ID == UUID,
                 if sorted.isEmpty { emptyState }
             }
             .clipShape(shape)
-            .overlay(shape.strokeBorder(Palette.separator, lineWidth: 0.5))
+            .macElevation(cornerRadius: Metrics.tableRadius)
     }
 
     private var emptyState: some View {
@@ -256,7 +258,7 @@ where Value: Identifiable, Value.ID == UUID,
         }
         .frame(maxWidth: 520)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Palette.background)
+        .background(Palette.surface)
     }
 
     /// Inspector (canvas: título de 15 bold, secciones de filas «etiqueta · valor» y los botones al pie).
@@ -288,7 +290,7 @@ where Value: Identifiable, Value.ID == UUID,
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .background(Palette.background)
+        // Sin fondo propio: el inspector lleva el gris del sistema, el mismo de la barra lateral (como Tamio).
     }
 }
 
@@ -456,6 +458,10 @@ enum QALaunch {
         case "vendors": .expenses(.vendors)
         case "bills": .expenses(.bills)
         case "banking": .section(.banking)
+        // Banca 1.2: bandeja, reglas y conciliación.
+        case "bankInbox": .banking(.inbox)
+        case "bankRules": .banking(.rules)
+        case "reconcile": .banking(.reconcile)
         case "journal": .accounting(.journal)
         case "chart": .accounting(.chart)
         case "ledger": .accounting(.ledger)

@@ -12,12 +12,11 @@ extension Bookkeeper {
     @discardableResult
     public func createExpense(_ input: ExpenseInput, post: Bool = true) throws -> Expense {
         let expense = Expense(date: input.date, payee: input.payee, paymentAccountID: input.paymentAccountID, vendor: input.vendor)
-        context.insert(expense)
+        insert(expense)
         apply(input, to: expense)
         do {
             if post { try record(expense, save: false) }
-            try ensureWritable()
-            try context.save()
+            try commit()
         } catch {
             context.rollback()
             throw error
@@ -73,8 +72,7 @@ extension Bookkeeper {
             expense.total = draft.totalCredits
             expense.revision += 1
             audit("Expense", expense.id, "edit", String(localized: "Gasto editado: \(Money(minorUnits: before.total).formatted()) → \(Money(minorUnits: draft.totalCredits).formatted()) (asiento \(original.number) revertido, nuevo \(replacement.number))"))
-            try ensureWritable()
-            try context.save()
+            try commit()
             return replacement
         } catch {
             context.rollback()
@@ -91,8 +89,7 @@ extension Bookkeeper {
             }
             expense.voidedAt = date
             audit("Expense", expense.id, "void", String(localized: "Gasto anulado: \(expense.payee)\(reason.isEmpty ? "" : " · \(reason)")"))
-            try ensureWritable()
-            try context.save()
+            try commit()
         } catch {
             context.rollback()
             throw error
@@ -102,11 +99,10 @@ extension Bookkeeper {
     /// Historial de asientos de un gasto (originales, reversiones y vigente), del más antiguo al más nuevo.
     public func entries(ofExpense expense: Expense) throws -> [JournalEntry] {
         let expenseID: UUID? = expense.id
-        return try context.fetch(FetchDescriptor<JournalEntry>(predicate: #Predicate { $0.sourceDocumentID == expenseID },
-                                                               sortBy: [SortDescriptor(\.number)]))
+        return try fetch(JournalEntry.self, #Predicate { $0.sourceDocumentID == expenseID }, sortBy: [SortDescriptor(\.number)])
     }
 
-    private func apply(_ input: ExpenseInput, to expense: Expense) {
+    func apply(_ input: ExpenseInput, to expense: Expense) {
         expense.date = input.date
         expense.payee = input.payee
         expense.vendor = input.vendor
@@ -121,7 +117,7 @@ extension Bookkeeper {
         for (index, line) in input.lines.enumerated() {
             let model = ExpenseLine(details: line.details, amount: line.amount, accountID: line.accountID, order: index)
             model.expense = expense
-            context.insert(model)
+            insert(model)
         }
         expense.total = input.total
     }
@@ -230,9 +226,7 @@ extension Bookkeeper {
     public func setDefaultTax(_ id: UUID?) throws {
         guard let company = try company() else { throw BookkeepingError.noCompany }
         if let id {
-            var descriptor = FetchDescriptor<TaxGroup>(predicate: #Predicate { $0.id == id })
-            descriptor.fetchLimit = 1
-            guard try context.fetch(descriptor).first != nil || taxRate(id: id) != nil else {
+            guard try taxGroup(id: id) != nil || taxRate(id: id) != nil else {
                 throw BookkeepingError.invalidState(String(localized: "Esa tasa de impuesto no existe."))
             }
         }
@@ -244,9 +238,7 @@ extension Bookkeeper {
     /// Nombre del grupo o tasa con ese id («Austin, TX», «Texas»).
     public func taxCodeName(_ id: UUID?) throws -> String? {
         guard let id else { return nil }
-        var descriptor = FetchDescriptor<TaxGroup>(predicate: #Predicate { $0.id == id })
-        descriptor.fetchLimit = 1
-        return try context.fetch(descriptor).first?.name ?? taxRate(id: id)?.name
+        return try taxGroup(id: id)?.name ?? taxRate(id: id)?.name
     }
 
     /// Valores iniciales de una factura o estimado nuevo para el cliente: impuesto (el del cliente o el de la empresa;
@@ -275,7 +267,7 @@ extension Bookkeeper {
         let prepared = try AttachmentProcessing.prepareLogo(data, filename: filename, contentType: contentType)
         if let old = company.logo { context.delete(old) }
         let attachment = Attachment(filename: prepared.filename, contentType: prepared.contentType, data: prepared.data)
-        context.insert(attachment)
+        insert(attachment)
         company.logo = attachment
         audit("Company", company.id, "logo", String(localized: "Logo cambiado"))
         try saveOrRollback()
@@ -304,7 +296,7 @@ extension Bookkeeper {
         let prepared = try AttachmentProcessing.prepare(data, filename: filename, contentType: contentType)
         if let old = vendor.w9Attachment { context.delete(old) }
         let attachment = Attachment(filename: prepared.filename, contentType: prepared.contentType, data: prepared.data)
-        context.insert(attachment)
+        insert(attachment)
         vendor.w9Attachment = attachment
         vendor.w9Received = true
         vendor.w9ReceivedDate = vendor.w9ReceivedDate ?? date

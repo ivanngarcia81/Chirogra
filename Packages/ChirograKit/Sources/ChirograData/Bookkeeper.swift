@@ -16,6 +16,11 @@ public enum BookkeepingError: Error, Equatable, LocalizedError {
     case duplicateAccountCode(String)
     /// La suscripción terminó: los libros se pueden ver y exportar, pero no se registra nada (`Bookkeeper.isReadOnly`).
     case readOnly
+    /// Esquema 4: ya hay tantas empresas activas como permite el plan (`Bookkeeper.companyLimit`).
+    case companyLimitReached(Int)
+    /// Esquema 4: el asiento tiene líneas de una conciliación terminada; para cambiarlo hay que confirmarlo
+    /// (`Bookkeeper.allowingReconciledChanges()`).
+    case reconciledLines
 
     public var errorDescription: String? {
         switch self {
@@ -32,6 +37,11 @@ public enum BookkeepingError: Error, Equatable, LocalizedError {
         case .wrongClosingPassword: String(localized: "La contraseña de cierre no es correcta.")
         case .duplicateAccountCode(let code): String(localized: "Ya hay una cuenta activa con el número \(code).")
         case .readOnly: String(localized: "Tus libros están en solo lectura porque la suscripción terminó. Suscríbete para seguir registrando.")
+        case .companyLimitReached(let limit):
+            limit == 1 ? String(localized: "Tu plan incluye una empresa. Con el plan para contadores llevas todas las que quieras.")
+                : String(localized: "Tu plan incluye hasta \(limit) empresas. Archiva una para añadir otra.")
+        case .reconciledLines:
+            String(localized: "Este movimiento ya está conciliado con el extracto del banco. Si lo cambias, la conciliación dejará de cuadrar.")
         }
     }
 }
@@ -70,12 +80,26 @@ extension PostingError {
 public struct Bookkeeper {
     public let context: ModelContext
     public var actor: String
+    /// Esquema 4: empresa con la que trabaja. `nil` = la activa del aparato (`ActiveCompany`) o, si no hay, la primera
+    /// (`resolvedCompanyID()`, `Bookkeeper+Companies.swift`).
+    public var companyID: UUID?
     /// `true` en la copia que devuelve `unlockedForClosedPeriod(password:)`: deja registrar en un periodo cerrado.
     public private(set) var allowsPostingInClosedPeriod = false
+    /// `true` en la copia que devuelve `allowingReconciledChanges()`: deja revertir asientos con líneas conciliadas.
+    public private(set) var allowsChangingReconciled = false
 
-    public init(context: ModelContext, actor: String = "") {
+    public init(context: ModelContext, actor: String = "", companyID: UUID? = nil) {
         self.context = context
         self.actor = actor
+        self.companyID = companyID
+    }
+
+    /// Copia que deja cambiar (revertir, editar, anular) asientos con líneas de una conciliación terminada, después de
+    /// que el usuario confirme el aviso (DISEÑO §4.6). Queda en la auditoría al revertir.
+    public func allowingReconciledChanges() -> Bookkeeper {
+        var copy = self
+        copy.allowsChangingReconciled = true
+        return copy
     }
 
     /// Copia de este `Bookkeeper` que puede registrar con fecha en un periodo cerrado. Si la empresa tiene
@@ -94,29 +118,29 @@ public struct Bookkeeper {
 
     // MARK: - Consultas
 
+    /// La empresa de este `Bookkeeper` (`resolvedCompanyID()`).
     public func company() throws -> Company? {
-        try context.fetch(FetchDescriptor<Company>()).first
+        guard let id = try resolvedCompanyID() else { return nil }
+        var descriptor = FetchDescriptor<Company>(predicate: #Predicate { $0.id == id })
+        descriptor.fetchLimit = 1
+        return try context.fetch(descriptor).first
     }
 
     public func accounts(includeArchived: Bool = false) throws -> [Account] {
-        let all = try context.fetch(FetchDescriptor<Account>(sortBy: [SortDescriptor(\.code), SortDescriptor(\.name)]))
+        let all = try fetch(Account.self, sortBy: [SortDescriptor(\.code), SortDescriptor(\.name)])
         return includeArchived ? all : all.filter { !$0.isArchived }
     }
 
     public func account(id: UUID?) throws -> Account? {
         guard let id else { return nil }
-        var descriptor = FetchDescriptor<Account>(predicate: #Predicate { $0.id == id })
-        descriptor.fetchLimit = 1
-        return try context.fetch(descriptor).first
+        return try fetch(Account.self, #Predicate { $0.id == id }, limit: 1).first
     }
 
     /// Primera cuenta activa de sistema (o, si no hay, cualquiera) con ese subtipo.
     public func systemAccount(_ subtype: AccountSubtype) throws -> Account {
         let raw = subtype.rawValue
-        let candidates = try context.fetch(FetchDescriptor<Account>(
-            predicate: #Predicate { $0.subtypeRaw == raw && !$0.isArchived },
-            sortBy: [SortDescriptor(\.code)]
-        ))
+        let candidates = try fetch(Account.self, #Predicate { $0.subtypeRaw == raw && !$0.isArchived },
+                                   sortBy: [SortDescriptor(\.code)])
         guard let account = candidates.first(where: \.isSystem) ?? candidates.first else {
             throw BookkeepingError.missingSystemAccount(subtype)
         }
@@ -125,21 +149,38 @@ public struct Bookkeeper {
 
     public func entry(id: UUID?) throws -> JournalEntry? {
         guard let id else { return nil }
-        var descriptor = FetchDescriptor<JournalEntry>(predicate: #Predicate { $0.id == id })
-        descriptor.fetchLimit = 1
-        return try context.fetch(descriptor).first
+        return try fetch(JournalEntry.self, #Predicate { $0.id == id }, limit: 1).first
     }
 
-    /// Líneas contabilizadas en el formato de los reportes de `ChirograCore`.
-    public func ledgerLines() throws -> [LedgerLine] {
+    /// Asientos contabilizados de la empresa.
+    public func postedEntries() throws -> [JournalEntry] {
         let posted = EntryStatus.posted.rawValue
-        let entries = try context.fetch(FetchDescriptor<JournalEntry>(predicate: #Predicate { $0.statusRaw == posted }))
-        return entries.flatMap { entry in
+        return try fetch(JournalEntry.self, #Predicate { $0.statusRaw == posted })
+    }
+
+    /// Líneas contabilizadas en el formato de los reportes de `ChirograCore` (con el asiento, para el flujo de efectivo).
+    public func ledgerLines() throws -> [LedgerLine] {
+        try postedEntries().flatMap { entry in
             (entry.lines ?? []).compactMap { line in
                 guard let accountID = line.account?.id else { return nil }
-                return LedgerLine(accountID: accountID, date: entry.date, debit: line.debit, credit: line.credit)
+                return LedgerLine(accountID: accountID, date: entry.date, debit: line.debit, credit: line.credit, entryID: entry.id)
             }
         }
+    }
+
+    /// Las líneas contabilizadas de **una** cuenta (por su relación, sin recorrer todo el diario): para saldos sueltos,
+    /// como el sales tax de cada empresa en la lista de empresas o el aviso de sales tax, que con muchas empresas
+    /// (plan para contadores sin límite) no pueden leer todos los asientos de cada una.
+    public func postedLedgerLines(of account: Account) -> [LedgerLine] {
+        (account.lines ?? []).compactMap { line in
+            guard let entry = line.entry, entry.status == .posted else { return nil }
+            return LedgerLine(accountID: account.id, date: entry.date, debit: line.debit, credit: line.credit, entryID: entry.id)
+        }
+    }
+
+    /// Saldo contabilizado de una cuenta (sus propias líneas), hasta `asOf` si se da.
+    public func postedBalance(of account: Account, asOf: Date? = nil) -> Int64 {
+        ReportBuilder.balance(of: account.ledgerAccount, lines: postedLedgerLines(of: account), asOf: asOf)
     }
 
     public func ledgerAccounts() throws -> [LedgerAccount] {
@@ -155,7 +196,10 @@ public struct Bookkeeper {
 
     // MARK: - Alta de empresa
 
-    /// Crea la empresa, el plan de cuentas de la plantilla de su sector y las series de numeración.
+    /// Crea la empresa, el plan de cuentas de la plantilla de su sector y las series de numeración, y la deja activa
+    /// en este aparato. Esquema 4: con un `Bookkeeper` de `forNewCompany()` da de alta **otra** empresa (con el id de
+    /// ese `Bookkeeper`), dentro del límite del plan; con uno sin `companyID`, solo la primera (si ya hay una, falla
+    /// con `companyAlreadyExists`, como antes).
     @discardableResult
     public func setUpCompany(
         legalName: String,
@@ -166,18 +210,24 @@ public struct Bookkeeper {
         locale: Locale = .current
     ) throws -> Company {
         guard try company() == nil else { throw BookkeepingError.companyAlreadyExists }
+        let existing = try companies(includeArchived: true)
+        if !existing.isEmpty, try !canAddCompany() { throw BookkeepingError.companyLimitReached(Self.companyLimit) }
         let company = Company(legalName: legalName, displayName: displayName, entityType: entityType, state: state)
+        if let companyID { company.id = companyID }
         company.sectorRaw = sector.rawValue
+        company.sortOrder = (existing.map(\.sortOrder).max() ?? -1) + 1
         context.insert(company)
+        let books = forCompany(company.id)
         for entry in sector.template.entries {
-            context.insert(Account(code: entry.code, name: entry.name(for: locale), subtype: entry.subtype, isSystem: entry.isSystem))
+            books.insert(Account(code: entry.code, name: entry.name(for: locale), subtype: entry.subtype, isSystem: entry.isSystem))
         }
         for kind in DocumentKind.allCases {
             let format = kind.defaultFormat
-            context.insert(NumberSequence(kind: kind, prefix: format.prefix, nextNumber: format.firstNumber, minimumDigits: format.minimumDigits))
+            books.insert(NumberSequence(kind: kind, prefix: format.prefix, nextNumber: format.firstNumber, minimumDigits: format.minimumDigits))
         }
-        audit("Company", company.id, "create", String(localized: "Alta de \(legalName)"))
+        books.audit("Company", company.id, "create", String(localized: "Alta de \(legalName)"))
         try context.save()
+        ActiveCompany.select(company)
         return company
     }
 
@@ -205,12 +255,12 @@ public struct Bookkeeper {
 
         let entry = JournalEntry(number: try nextNumber(.journalEntry), date: draft.date, memo: draft.memo, source: draft.source)
         entry.sourceDocumentID = sourceDocumentID
-        context.insert(entry)
+        insert(entry)
         for (index, line) in draft.lines.enumerated() {
             guard let account = accountsByID[line.accountID] else { throw BookkeepingError.unknownAccount }
             let model = JournalLine(account: account, debit: line.debit, credit: line.credit, memo: line.memo, order: index)
             model.entry = entry
-            context.insert(model)
+            insert(model)
         }
         audit("JournalEntry", entry.id, "post", String(localized: "Asiento \(entry.number): \(draft.memo)"))
         if save { try saveOrRollback() }
@@ -222,6 +272,10 @@ public struct Bookkeeper {
     public func reverse(_ entry: JournalEntry, on date: Date = Date(), memo: String? = nil, save: Bool = true) throws -> JournalEntry {
         guard entry.status == .posted, !entry.isReversed, entry.reversesEntryID == nil else {
             throw BookkeepingError.invalidState(String(localized: "Este asiento ya fue revertido o es una reversión."))
+        }
+        if try hasReconciledLines(entry) {
+            guard allowsChangingReconciled else { throw BookkeepingError.reconciledLines }
+            audit("JournalEntry", entry.id, "changeReconciled", String(localized: "Asiento conciliado cambiado: \(entry.number)"))
         }
         let reversal = try post(entry.draft.reversal(on: date, memo: memo), sourceDocumentID: entry.sourceDocumentID, save: false)
         reversal.reversesEntryID = entry.id
@@ -241,7 +295,7 @@ public struct Bookkeeper {
         }
         let invoice = existing ?? Invoice(customer: input.customer, issueDate: input.issueDate, dueDate: input.dueDate)
         if existing == nil {
-            context.insert(invoice)
+            insert(invoice)
             invoice.pricesIncludeTax = try company()?.pricesIncludeTax ?? false
         }
         apply(input, to: invoice)
@@ -265,7 +319,7 @@ public struct Bookkeeper {
             let model = InvoiceLine(details: line.details, quantity: line.quantity, unitPrice: line.unitPrice,
                                     isTaxable: line.isTaxable, incomeAccountID: line.incomeAccountID, order: index)
             model.invoice = invoice
-            context.insert(model)
+            insert(model)
         }
     }
 
@@ -287,7 +341,7 @@ public struct Bookkeeper {
     @discardableResult
     public func refreshDraftTotals() throws -> Int {
         let draft = InvoiceStatus.draft.rawValue
-        let drafts = try context.fetch(FetchDescriptor<Invoice>(predicate: #Predicate { $0.statusRaw == draft }))
+        let drafts = try fetch(Invoice.self, #Predicate { $0.statusRaw == draft })
         var changed = 0
         for invoice in drafts where try storeDraftTotals(of: invoice) { changed += 1 }
         if changed > 0 { try saveOrRollback() }
@@ -298,10 +352,8 @@ public struct Bookkeeper {
     /// el de una sola `TaxRate` (esquema 2: «tasa predeterminada»), que cuenta como grupo de un componente.
     public func taxComponents(groupID: UUID?, on date: Date) throws -> [TaxComponent] {
         guard let groupID else { return [] }
-        var descriptor = FetchDescriptor<TaxGroup>(predicate: #Predicate { $0.id == groupID })
-        descriptor.fetchLimit = 1
         let rates: [TaxRate]
-        if let group = try context.fetch(descriptor).first {
+        if let group = try taxGroup(id: groupID) {
             rates = group.rates ?? []
         } else if let rate = try taxRate(id: groupID) {
             rates = [rate]
@@ -317,9 +369,12 @@ public struct Bookkeeper {
 
     public func taxRate(id: UUID?) throws -> TaxRate? {
         guard let id else { return nil }
-        var descriptor = FetchDescriptor<TaxRate>(predicate: #Predicate { $0.id == id })
-        descriptor.fetchLimit = 1
-        return try context.fetch(descriptor).first
+        return try fetch(TaxRate.self, #Predicate { $0.id == id }, limit: 1).first
+    }
+
+    public func taxGroup(id: UUID?) throws -> TaxGroup? {
+        guard let id else { return nil }
+        return try fetch(TaxGroup.self, #Predicate { $0.id == id }, limit: 1).first
     }
 
     /// Componentes con que se **emitió** una factura (tasas guardadas en `taxLines`), para que las notas de crédito
@@ -399,7 +454,8 @@ public struct Bookkeeper {
     /// Registra un cobro aplicado a una factura: Debe Banco / Haber CxC.
     @discardableResult
     public func recordPayment(
-        for invoice: Invoice, amount: Int64, date: Date = Date(), depositAccount: Account, method: PaymentMethod = .bankTransfer
+        for invoice: Invoice, amount: Int64, date: Date = Date(), depositAccount: Account, method: PaymentMethod = .bankTransfer,
+        save: Bool = true
     ) throws -> PaymentReceived {
         guard invoice.isOpen else { throw BookkeepingError.invalidState(String(localized: "La factura no está pendiente de cobro.")) }
         guard amount <= invoice.balanceDue else { throw BookkeepingError.overpayment(balanceDue: invoice.balanceDue) }
@@ -417,16 +473,16 @@ public struct Bookkeeper {
 
         let payment = PaymentReceived(customer: invoice.customer, date: date, amount: amount, method: method, depositAccountID: depositAccount.id)
         let entry = try post(draft, sourceDocumentID: payment.id, save: false)
-        context.insert(payment)
+        insert(payment)
         entry.lines?.forEach { $0.customerID = invoice.customer?.id }
         payment.journalEntryID = entry.id
         let application = PaymentApplication(amount: amount, invoice: invoice)
         application.payment = payment
-        context.insert(application)
+        insert(application)
 
         invoice.amountPaid += amount
         invoice.status = invoice.balanceDue == 0 ? .paid : .partiallyPaid
-        try saveOrRollback()
+        if save { try saveOrRollback() }
         return payment
     }
 
@@ -472,7 +528,7 @@ public struct Bookkeeper {
         let entry = try post(posting.entry, sourceDocumentID: note.id, save: false)
         entry.lines?.forEach { $0.customerID = invoice.customer?.id }
         note.journalEntryID = entry.id
-        context.insert(note)
+        insert(note)
         if invoice.isOpen { apply(note, to: invoice, amount: min(posting.total, invoice.balanceDue), date: date) }
         try saveOrRollback()
         return note
@@ -544,7 +600,7 @@ public struct Bookkeeper {
 
     private func apply(_ note: CreditNote, to invoice: Invoice, amount: Int64, date: Date) {
         guard amount > 0 else { return }
-        context.insert(CreditApplication(note: note, invoice: invoice, amount: amount, date: date))
+        insert(CreditApplication(note: note, invoice: invoice, amount: amount, date: date))
         note.unappliedAmount -= amount
         invoice.creditsApplied += amount
         invoice.status = invoice.balanceDue == 0 ? .paid : .partiallyPaid
@@ -607,7 +663,7 @@ public struct Bookkeeper {
         let payment = BillPayment(bill: bill, date: date, amount: amount, method: method, paymentAccountID: paymentAccount.id)
         payment.reference = reference
         let entry = try post(draft, sourceDocumentID: payment.id, save: false)
-        context.insert(payment)
+        insert(payment)
         entry.lines?.forEach { $0.vendorID = bill.vendor?.id }
         payment.journalEntryID = entry.id
         bill.amountPaid += amount
@@ -647,7 +703,7 @@ public struct Bookkeeper {
 
     /// Antigüedad de cuentas por cobrar: facturas emitidas con saldo, por cliente.
     public func receivablesAging(asOf date: Date = Date(), calendar: Calendar = .current) throws -> AgingReport {
-        let items = try context.fetch(FetchDescriptor<Invoice>()).filter { $0.isOpen && $0.balanceDue != 0 }.map {
+        let items = try fetch(Invoice.self).filter { $0.isOpen && $0.balanceDue != 0 }.map {
             AgingReport.OpenItem(party: $0.customer?.name ?? String(localized: "Sin cliente"), document: $0.number, dueDate: $0.dueDate, balance: $0.balanceDue)
         }
         return ReportBuilder.aging(items: items, asOf: date, calendar: calendar)
@@ -655,7 +711,7 @@ public struct Bookkeeper {
 
     /// Antigüedad de cuentas por pagar: facturas de proveedor registradas con saldo, por proveedor.
     public func payablesAging(asOf date: Date = Date(), calendar: Calendar = .current) throws -> AgingReport {
-        let items = try context.fetch(FetchDescriptor<Bill>()).filter { $0.isOpen && $0.journalEntryID != nil && $0.balanceDue != 0 }.map {
+        let items = try fetch(Bill.self).filter { $0.isOpen && $0.journalEntryID != nil && $0.balanceDue != 0 }.map {
             AgingReport.OpenItem(party: $0.vendor?.name ?? String(localized: "Sin proveedor"), document: $0.vendorNumber, dueDate: $0.dueDate, balance: $0.balanceDue)
         }
         return ReportBuilder.aging(items: items, asOf: date, calendar: calendar)
@@ -665,7 +721,7 @@ public struct Bookkeeper {
 
     /// Resumen de sales tax del periodo con facturas emitidas (no anuladas) y notas de crédito.
     public func salesTaxSummary(from: Date, to: Date) throws -> SalesTaxSummary {
-        let invoices = try context.fetch(FetchDescriptor<Invoice>()).filter { $0.status != .draft && $0.status != .void }
+        let invoices = try fetch(Invoice.self).filter { $0.status != .draft && $0.status != .void }
         var documents = invoices.map { invoice in
             let exempt = invoice.customer?.isTaxExempt ?? false
             let taxes = (invoice.taxLines ?? []).map {
@@ -682,7 +738,7 @@ public struct Bookkeeper {
             return SalesTaxDocument(date: invoice.issueDate, netSales: invoice.netSales,
                                     taxableBase: exempt ? 0 : base, isExempt: exempt, taxes: taxes)
         }
-        for note in try context.fetch(FetchDescriptor<CreditNote>()) {
+        for note in try fetch(CreditNote.self) {
             guard let invoice = note.invoice else { continue }
             let exempt = invoice.customer?.isTaxExempt ?? false
             let base = note.isTaxable && !exempt ? note.amount : 0
@@ -728,12 +784,12 @@ public struct Bookkeeper {
 
     func sequence(_ kind: DocumentKind) throws -> NumberSequence {
         let raw = kind.rawValue
-        if let existing = try context.fetch(FetchDescriptor<NumberSequence>(predicate: #Predicate { $0.kindRaw == raw })).first {
+        if let existing = try fetch(NumberSequence.self, #Predicate { $0.kindRaw == raw }).first {
             return existing
         }
         let format = kind.defaultFormat
         let created = NumberSequence(kind: kind, prefix: format.prefix, nextNumber: format.firstNumber, minimumDigits: format.minimumDigits)
-        context.insert(created)
+        insert(created)
         return created
     }
 
@@ -756,7 +812,7 @@ public struct Bookkeeper {
     }
 
     func audit(_ entity: String, _ id: UUID?, _ action: String, _ summary: String) {
-        context.insert(AuditEvent(actor: actor, entityName: entity, entityID: id, action: action, summary: summary))
+        insert(AuditEvent(actor: actor, entityName: entity, entityID: id, action: action, summary: summary))
     }
 
     /// Libros en solo lectura: la app lo activa cuando la suscripción terminó (`SubscriptionStore`). Se pueden ver,
@@ -767,9 +823,17 @@ public struct Bookkeeper {
         if Self.isReadOnly { throw BookkeepingError.readOnly }
     }
 
+    /// Guarda sin deshacer si falla (lo hace quien llama): comprueba solo lectura y pone la empresa a lo insertado.
+    func commit() throws {
+        try ensureWritable()
+        stampInsertedModels()
+        try context.save()
+    }
+
     func saveOrRollback() throws {
         do {
             try ensureWritable()
+            stampInsertedModels()
             try context.save()
         } catch {
             context.rollback()

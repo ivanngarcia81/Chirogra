@@ -309,4 +309,49 @@ open -g -j -n .dd/Build/Products/Debug/Chirogra.app --args -AppleLanguages '(es)
 - Solo Facturas: `-qa.pago 1` abre «Registrar pago…», `-qa.registrar 1` además lo registra; `-qa.abrir 1` abre la factura completa.
 - Build 4 (la app se explica sola): `-qa.vacia 1` crea una empresa nueva y vacía («Taller Luna») sin pasar por el alta (estados vacíos); `-qa.pistas reset|todas|ocultas` (TipKit; con otros `-qa.*` y sin este, las pistas no salen); `-qa.asiento aportacion|retiro|traspaso|manual` abre el editor de asientos con esa plantilla y $500 (con `-qa.nuevo 1` en Asientos del Mac); `-qa.ayuda debitoCredito|gravable|capital|combinada|saldo` abre ese ⓘ (en el Mac, con la ventana oculta de `open -j`, el globo no sale); `-qa.tasaNueva 1` abre «Añadir tasa…» en una factura nueva si no hay tasas.
 - Alta (para las capturas de la guía web): `-qa.alta 1|2|3`, `-qa.altaEstado TX`, `-qa.altaCiudad Austin -qa.altaCiudadTasa 2`, `-qa.altaBanco 1250000 -qa.altaTarjeta 30000` (centavos), `-qa.altaCrear 1`. Para una ventana de otro tamaño: `-"NSWindow Frame SwiftUI.WindowGroup<ChirograUI.ChirograRootView>-1-AppWindow-1" "x y ancho alto 0 0 <pantalla>"`.
+- Recibos y cobro (1.1, `Expenses/Receipts/`, `Sales/PayNow/`, `Sales/PostalTax/`):
+  - Escanear recibos: `-qa.escanear prueba` abre «Nuevo gasto» con un recibo de prueba hecho en la app (The Home Depot,
+    $284.17, 29-oct) y lo lee; `-qa.escanear <ruta>` con una foto o un PDF (en el Mac, ruta dentro del contenedor). Se
+    abre solo en Gastos: en el Mac con `-qa.seccion expenses -qa.nuevo 1`, en el iPhone con `-qa.pestana expenses` y en el
+    iPad al abrir Gastos. `-qa.reciboIA no` lee solo con las reglas (sin Apple Intelligence); `-qa.guardarGasto 1`
+    pulsa «Guardar» al terminar de leer. El resultado de cada lectura (renglones, segundos, total, impuesto, comercio y
+    si se usó el modelo) queda en `qa.recibo.resultado` de los ajustes de la app (`defaults read …/Preferences/<id>.plist
+    qa.recibo.resultado`). Ojo: la primera lectura en un contenedor nuevo tarda ~1–1.5 min (el sistema compila el modelo
+    de texto para el Neural Engine); después, segundos.
+  - Cobro en línea: `-qa.ajustes payments` abre Ajustes › Cobro en línea (iPad y Mac); `-qa.enlacePago <url>` y
+    `-qa.instruccionesPago <texto>` los escriben y guardan. Con eso guardado, `-qa.seccion invoices -qa.fila N -qa.enviar 1`
+    (Mac) abre «Enviar factura» con «Pagar ahora» y el QR en la vista previa.
+  - Sales tax por código postal: `-qa.tablaZip muestra` carga la tabla de muestra **inventada** (o `-qa.tablaZip <ruta>`
+    un JSON con el formato de `PostalTaxTable`); `-qa.zipEmpresa 77002` pone el código postal en Ajustes › Perfil
+    (`-qa.ajustes profile`); `-qa.crearTasa 1` abre la confirmación de «Crear la tasa…» y `-qa.crearTasa confirmar` la
+    crea; en el alta, `-qa.altaZip 78702` (con `-qa.alta 1 -qa.altaEstado TX`).
+- Varias empresas (1.1): `-qa.segundaEmpresa <nombre>` da de alta otra empresa vacía con ese nombre (TX, si no existe y
+  cabe en el plan) y la deja activa; `-qa.empresa N` deja activa la N.ª del selector (desde 1); `-qa.empresas lista|alta`
+  abre la lista de empresas o «Añadir empresa…» (con el plan normal y el límite lleno, la pantalla del plan para
+  contadores; con `-qa.alta 1 -qa.altaEstado TX -qa.altaCrear 1` además la crea). `-qa.suscripcion contador` = plan para
+  contadores activo (empresas sin límite); `activa`/`prueba` = plan normal (1). `-qa.ajustes companies` abre Ajustes › Empresas.
+  En una copia del Mac sin iCloud firmado, `-iCloudSyncEnabled NO` (si no, CloudKit la cierra al arrancar).
+- Banca 1.2 (conciliación): `-qa.seccion bankInbox|bankRules|reconcile` abre la bandeja «Por revisar», las reglas o la
+  conciliación (subsecciones de Banca en la barra lateral; `banking` sigue siendo Cuentas). `-qa.importar <ruta>` abre
+  «Importar movimientos» con ese CSV/OFX/QFX (en Banca del iPhone, la columna de la bandeja del iPad y la tabla del Mac) y
+  `-qa.importarAuto 1` además importa; `-qa.revisar N` abre «Revisar transacción» del N.º por revisar (iPhone y Mac),
+  `-qa.revisarModo emparejar|categorizar|regla` y `-qa.revisarCategoria 1` (elige la primera categoría);
+  `-qa.aceptarSugeridas 1` pulsa «Aceptar sugeridas»; `-qa.fila N` elige el N.º movimiento en la columna del iPad (y en
+  la tabla del Mac, como siempre); en el iPhone, `-qa.bandeja 1` y `-qa.reglas 1` abren la bandeja completa y las reglas;
+  `-qa.reglaNueva 1` abre «Nueva regla». Conciliación: `-qa.conciliar N` abre la de la N.ª cuenta de banco o tarjeta (desde
+  0; en el iPhone desde Banca, en iPad y Mac con `-qa.seccion reconcile`), `-qa.conciliarFecha AAAA-MM-DD` y
+  `-qa.conciliarSaldo <centavos>` rellenan el extracto, `-qa.conciliarEmpezar 1` la empieza, `-qa.conciliarMarcar todas`
+  marca todas las partidas, `-qa.conciliarCuadrar 1` pone el saldo del extracto igual al conciliado y
+  `-qa.conciliarTerminar 1` la termina.
+- Reportes de la fase 2 (1.3): `-qa.seccion reports -qa.reporte cashFlow|budget` abre el flujo de efectivo o el presupuesto
+  contra real (también `balance|trial|receivables|payables|salesTax`); en el iPhone, `-qa.pestana reports -qa.reporte …`
+  (Más › ese reporte). `-qa.periodo mes|trimestre|año` (estados y flujo). `-qa.base caja|devengado`: la base con la que
+  arrancan los reportes si la empresa aún no tiene una elegida (se recuerda por empresa en el aparato,
+  `reportBasisByCompany`). Presupuestos: `-qa.presupuesto nuevo|editar|cuenta` abre «Nuevo presupuesto», «Editar
+  importes» o los 12 meses de la primera cuenta con importe; `-qa.agrupar trimestre|año`. Impuestos: `-qa.seccion taxes
+  -qa.impuestos deducibles` (pestaña en el iPhone; en iPad y Mac, como «Ver por línea», la página de deducibles en lugar de Impuestos, con «‹ Impuestos») o `pagina` (esa página desde el arranque, para las capturas del Mac); `-qa.deduciblesPeriodo
+  añoPasado|trimestre|trimestreAnterior`; `-qa.lineaFiscal N` abre el cambio de línea de la cuenta N. Paquete:
+  `-qa.contador 1` abre «Exportar para mi contador» en Reportes; `-qa.contadorPeriodo año|añoPasado|trimestre`;
+  `-qa.contadorCarpeta <ruta>` lo prepara al abrir la hoja y copia la carpeta y el ZIP a esa ruta (sin ruta absoluta, a
+  `tmp/qa-contador` de la app). Con `-qa.fila N` se elige la fila N del flujo, del presupuesto o de los deducibles.
 - Captura solo de esa ventana con `screencapture -l <id> -o -x`, sacando el id con `CGWindowListCopyWindowInfo` filtrado por su PID; al terminar, `kill <pid>`. La ventana queda inactiva (oculta y en segundo plano): la fila elegida sale en gris y los botones de vidrio atenuados; activa, la fila va en Tinta.

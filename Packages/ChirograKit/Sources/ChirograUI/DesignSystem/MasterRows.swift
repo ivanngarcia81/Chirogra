@@ -119,7 +119,7 @@ struct MasterRowBackground: View {
 
     var body: some View {
         ZStack {
-            Palette.surface
+            Palette.masterColumn
             if isSelected {
                 RoundedRectangle(cornerRadius: Self.radius, style: .continuous)
                     .fill(Palette.brandFill)

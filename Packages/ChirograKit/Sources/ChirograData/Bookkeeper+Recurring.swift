@@ -28,7 +28,7 @@ public struct RecurringRun {
 extension Bookkeeper {
 
     public func recurringTemplates(includePaused: Bool = true) throws -> [RecurringTemplate] {
-        try context.fetch(FetchDescriptor<RecurringTemplate>(sortBy: [SortDescriptor(\.nextDate)]))
+        try fetch(RecurringTemplate.self, sortBy: [SortDescriptor(\.nextDate)])
             .filter { includePaused || $0.isActive }
     }
 
@@ -54,7 +54,7 @@ extension Bookkeeper {
         }
 
         let template = existing ?? RecurringTemplate(name: name, kind: input.kind, frequency: input.frequency, startDate: start)
-        if existing == nil { context.insert(template) }
+        if existing == nil { insert(template) }
         let scheduleChanged = existing != nil && (template.startDate != start || template.frequency != input.frequency)
         template.name = name
         template.kind = input.kind
@@ -79,7 +79,7 @@ extension Bookkeeper {
         for (index, line) in input.lines.enumerated() {
             let model = RecurringTemplateLine(details: line.details, amount: line.amount, accountID: line.accountID, order: index)
             model.template = template
-            context.insert(model)
+            insert(model)
         }
         audit("RecurringTemplate", template.id, existing == nil ? "create" : "update", String(localized: "Recurrente: \(name)"))
         try saveOrRollback()
@@ -140,8 +140,8 @@ extension Bookkeeper {
     /// Fechas (inicio del día) de las repeticiones ya generadas por la plantilla.
     func generatedDates(of template: RecurringTemplate, calendar: Calendar) throws -> Set<Date> {
         let templateID: UUID? = template.id
-        let expenses = try context.fetch(FetchDescriptor<Expense>(predicate: #Predicate { $0.recurringTemplateID == templateID }))
-        let bills = try context.fetch(FetchDescriptor<Bill>(predicate: #Predicate { $0.recurringTemplateID == templateID }))
+        let expenses = try fetch(Expense.self, #Predicate { $0.recurringTemplateID == templateID })
+        let bills = try fetch(Bill.self, #Predicate { $0.recurringTemplateID == templateID })
         let dates = expenses.filter { !$0.isVoid }.compactMap(\.recurrenceDate) + bills.filter { $0.status != .void }.compactMap(\.recurrenceDate)
         return Set(dates.map { calendar.startOfDay(for: $0) })
     }
@@ -155,11 +155,11 @@ extension Bookkeeper {
             expense.memo = template.memo.isEmpty ? template.name : template.memo
             expense.recurringTemplateID = template.id
             expense.recurrenceDate = date
-            context.insert(expense)
+            insert(expense)
             for line in template.sortedLines {
                 let model = ExpenseLine(details: line.details.isEmpty ? payee : line.details, amount: line.amount, accountID: line.accountID, order: line.order)
                 model.expense = expense
-                context.insert(model)
+                insert(model)
             }
             expense.total = template.total
             if template.autoCharge {
@@ -173,11 +173,11 @@ extension Bookkeeper {
             bill.memo = template.memo.isEmpty ? template.name : template.memo
             bill.recurringTemplateID = template.id
             bill.recurrenceDate = date
-            context.insert(bill)
+            insert(bill)
             for line in template.sortedLines {
                 let model = BillLine(details: line.details.isEmpty ? template.name : line.details, amount: line.amount, accountID: line.accountID, order: line.order)
                 model.bill = bill
-                context.insert(model)
+                insert(model)
             }
             try record(bill, save: false)
             if template.autoCharge {
@@ -197,14 +197,14 @@ extension Bookkeeper {
     @discardableResult
     public func resolveRecurringDuplicates(calendar: Calendar = .current) throws -> Int {
         var voided = 0
-        let expenses = try context.fetch(FetchDescriptor<Expense>()).filter { $0.recurringTemplateID != nil && !$0.isVoid }
+        let expenses = try fetch(Expense.self).filter { $0.recurringTemplateID != nil && !$0.isVoid }
         for group in Dictionary(grouping: expenses, by: { RecurrenceKey($0.recurringTemplateID, $0.recurrenceDate, calendar) }).values where group.count > 1 {
             for duplicate in group.sorted(by: Self.olderFirst).dropFirst() {
                 try void(duplicate, reason: String(localized: "Repetición duplicada"))
                 voided += 1
             }
         }
-        let bills = try context.fetch(FetchDescriptor<Bill>()).filter { $0.recurringTemplateID != nil && $0.status != .void }
+        let bills = try fetch(Bill.self).filter { $0.recurringTemplateID != nil && $0.status != .void }
         for group in Dictionary(grouping: bills, by: { RecurrenceKey($0.recurringTemplateID, $0.recurrenceDate, calendar) }).values where group.count > 1 {
             for duplicate in group.sorted(by: Self.olderFirst).dropFirst() where duplicate.amountPaid == 0 {
                 try void(duplicate)

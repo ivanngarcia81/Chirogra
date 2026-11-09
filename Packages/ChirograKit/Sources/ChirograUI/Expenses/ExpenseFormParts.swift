@@ -12,14 +12,17 @@ struct MoneyRow: View {
     let title: String
     @Binding var minorUnits: Int64
     var font: Font? = nil
+    /// Se leyó del recibo (`ScannedMark` junto a la etiqueta).
+    var marked = false
     /// Al salir del campo (no en cada tecla: cambiar otro estado mientras se escribe reformateaba el campo a medias).
     var onEndEditing: (() -> Void)? = nil
     @FocusState private var focused: Bool
 
-    init(_ title: String, minorUnits: Binding<Int64>, font: Font? = nil, onEndEditing: (() -> Void)? = nil) {
+    init(_ title: String, minorUnits: Binding<Int64>, font: Font? = nil, marked: Bool = false, onEndEditing: (() -> Void)? = nil) {
         self.title = title
         self._minorUnits = minorUnits
         self.font = font
+        self.marked = marked
         self.onEndEditing = onEndEditing
     }
 
@@ -33,7 +36,7 @@ struct MoneyRow: View {
                 .accessibilityLabel(title)
                 .focused($focused)
         } label: {
-            Text(title)
+            ScannedLabel(title: title, marked: marked)
         }
         .onChange(of: focused) { _, isFocused in
             if !isFocused { onEndEditing?() }
@@ -53,10 +56,12 @@ struct ExpenseCategoryPicker: View {
     let title: String
     let accounts: [Account]
     @Binding var selection: UUID?
+    /// La propuso la lectura del recibo (canvas `ReciboGasto`: «Categoría · Sugerida»).
+    var suggested = false
 
     var body: some View {
         let groups = ExpenseCategories.groups(from: accounts, keeping: selection)
-        Picker(title, selection: $selection) {
+        Picker(selection: $selection) {
             Text("Elegir…").tag(UUID?.none)
             Section {
                 ForEach(groups.costs) { Text($0.displayName).tag(Optional($0.id)) }
@@ -71,6 +76,8 @@ struct ExpenseCategoryPicker: View {
                                                   : "Compras de equipo y pagos por adelantado")
                 }
             }
+        } label: {
+            ScannedLabel(title: title, subtitle: suggested ? String(localized: "Sugerida") : nil, marked: suggested)
         }
     }
 }

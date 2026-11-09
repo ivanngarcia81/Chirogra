@@ -13,6 +13,10 @@ public enum EntrySource: String, CaseIterable, Sendable, Codable {
     case customerRefund
     case reversal
     case opening
+    /// Esquema 4: depósito registrado desde un movimiento del banco (ingreso, aportación…) sin factura.
+    case bankDeposit
+    /// Esquema 4: transferencia entre dos cuentas de dinero (banco, caja, tarjeta).
+    case transfer
 }
 
 /// Línea de un asiento: un importe al debe **o** al haber, en unidades mínimas.

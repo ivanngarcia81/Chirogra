@@ -12,21 +12,22 @@ import SwiftUI
 ///   Mac, además, el inspector de la derecha con la tasa elegida en la tabla y la declaración del trimestre.
 /// En Tasas (iPhone) y en la caja «Facturas nuevas» (iPad y Mac): el impuesto predeterminado de la empresa, «Precios con
 /// impuesto incluido» y el origen de las ventas. Cada tasa se edita («Editar tasa…»; las facturas emitidas no cambian).
-/// «Deducibles» y «Exportar para mi contador» son de la fase 2.
+/// Fase 2 (1.3): «Deducibles» como tercera pestaña en el iPhone (`DeductionsView` dentro) y, en iPad y Mac, la tarjeta
+/// «Gastos deducibles» de `MacImpuestos` con «Ver por línea» (página `DeductionsView`) y «Exportar para mi contador…».
 struct TaxesView: View {
     enum Tab: String, CaseIterable, Identifiable {
-        case summary = "Resumen", rates = "Tasas"
+        case summary = "Resumen", rates = "Tasas", deductions = "Deducibles"
         var id: String { rawValue }
     }
 
     @Environment(\.modelContext) private var context
-    @Query(sort: \Account.code) private var accounts: [Account]
-    @Query private var journalLines: [JournalLine]
-    @Query(sort: \TaxAgency.name) private var agencies: [TaxAgency]
-    @Query(sort: \TaxGroup.name) private var groups: [TaxGroup]
-    @Query private var taxLines: [InvoiceTaxLine]
-    @Query private var companies: [Company]
-    @Query(sort: \JournalEntry.date, order: .reverse) private var entries: [JournalEntry]
+    @CompanyQuery(sort: \Account.code) private var accounts: [Account]
+    @CompanyQuery private var journalLines: [JournalLine]
+    @CompanyQuery(sort: \TaxAgency.name) private var agencies: [TaxAgency]
+    @CompanyQuery(sort: \TaxGroup.name) private var groups: [TaxGroup]
+    @CompanyQuery private var taxLines: [InvoiceTaxLine]
+    @ActiveCompanyQuery private var companies: [Company]
+    @CompanyQuery(sort: \JournalEntry.date, order: .reverse) private var entries: [JournalEntry]
 
     @State var tab: Tab = .summary
     /// Trimestre mostrado: 0 el actual, −1 el anterior…
@@ -36,6 +37,11 @@ struct TaxesView: View {
     @State private var showingGroup = false
     @State private var editingRate: TaxRate?
     @State private var errorMessage: String?
+    /// Fase 2: deducibles del año (tarjeta de iPad y Mac), su página y el paquete del contador.
+    @ReportBasisSetting private var basis
+    @State private var deductionsMemo = ReportMemo<TaxFormSummary?>()
+    @State private var showingDeductions = false
+    @State private var exportingPackage = false
     @State private var width: CGFloat = 0
     #if os(macOS)
     /// Tasa o grupo elegido en la tabla para el inspector (clave de `macRateItems`); sin elegir, el primero.
@@ -72,9 +78,29 @@ struct TaxesView: View {
         do { try Bookkeeper(context: context).setDefaultTax(id); errorMessage = nil } catch { errorMessage = error.localizedDescription }
     }
 
+    /// iPad y Mac: «Ver por línea» cambia la página por la de deducibles, con «‹ Impuestos» para volver. No se abre
+    /// encima en la pila: en iOS 26 una página con `@Query` abierta con `navigationDestination` (o un `NavigationLink`
+    /// dentro de un `ScrollView`) se volvía a crear sin parar y la app se quedaba colgada.
     var body: some View {
+        if showingDeductions || qaDeductionsPage {
+            DeductionsView(onClose: { showingDeductions = false })
+        } else {
+            taxesBody
+        }
+    }
+
+    /// `-qa.impuestos pagina` (solo Debug): directamente la página de deducibles.
+    private var qaDeductionsPage: Bool {
+        #if DEBUG
+        UserDefaults.standard.string(forKey: "qa.impuestos") == "pagina"
+        #else
+        false
+        #endif
+    }
+
+    private var taxesBody: some View {
         let _ = taxLines.count   // se observa para recalcular el resumen al emitir facturas
-        ScrollView {
+        return ScrollView {
             if isWide { wideBody } else { compactBody }
         }
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
@@ -111,6 +137,17 @@ struct TaxesView: View {
         .sheet(isPresented: $showingPayment) { NavigationStack { SalesTaxPaymentView(owed: payable) }.editorSheetSizing() }
         .sheet(isPresented: $showingGroup) { NavigationStack { TaxGroupEditorView() }.editorSheetSizing() }
         .sheet(item: $editingRate) { rate in NavigationStack { TaxRateEditorView(rate: rate) }.editorSheetSizing() }
+        .sheet(isPresented: $exportingPackage) { NavigationStack { AccountantExportView() }.editorSheetSizing() }
+        #if DEBUG
+        // `-qa.impuestos deducibles` abre los deducibles: la pestaña en el iPhone, la página en iPad y Mac (solo Debug).
+        .task {
+            guard UserDefaults.standard.string(forKey: "qa.impuestos") == "deducibles" else { return }
+            tab = .deductions
+            // Después de medir el ancho: al aparecer, la página aún no sabe si es ancha.
+            try? await Task.sleep(for: .seconds(1))
+            if isWide { showingDeductions = true }
+        }
+        #endif
         #if DEBUG
         // `-qa.tasa N` abre «Editar tasa» de la tasa N (orden de la tabla, sin los grupos); `-qa.tasa nueva` y
         // `-qa.tasa grupo`, «Nueva tasa» y «Nuevo grupo». Solo Debug.
@@ -218,12 +255,14 @@ struct TaxesView: View {
 
     private var compactBody: some View {
         VStack(alignment: .leading, spacing: 0) {
-            quarterMenu(compact: true)
+            // Los deducibles llevan su propio periodo (el año): el trimestre del sales tax no les aplica.
+            if tab != .deductions { quarterMenu(compact: true) }
             FilterPicker(title: String(localized: "Sección"), options: Tab.allCases, selection: $tab) { $0.localizedTitle }
                 .padding(.top, 8)
             switch tab {
             case .summary: summaryTab
             case .rates: ratesTab
+            case .deductions: DeductionsView(embedded: true)
             }
         }
         .padding(.horizontal, Metrics.gutter)
@@ -434,7 +473,7 @@ struct TaxesView: View {
     // MARK: - iPad y Mac (`MacImpuestos`)
 
     /// Cuatro cifras (cobrado, pagado, saldo y fecha límite), las tasas con lo cobrado en el trimestre y los pagos a la
-    /// agencia (en el lugar de «Gastos deducibles», que es de la fase 2).
+    /// agencia; a la derecha, «Gastos deducibles» del año (fase 2) encima de «Facturas nuevas» y los pagos.
     private var wideBody: some View {
         let interval = quarter(quarterOffset)
         let summary = summary(interval)
@@ -465,6 +504,7 @@ struct TaxesView: View {
             layout {
                 ratesTable(summary, interval: interval).frame(maxWidth: .infinity)
                 VStack(alignment: .leading, spacing: 16) {
+                    deductionsCard
                     defaultsCard
                     paymentsCard
                 }
@@ -668,6 +708,60 @@ struct TaxesView: View {
         }
     }
 
+    /// Deducibles del año en curso (canvas `MacImpuestos` · «Gastos deducibles 2026»): el total, las líneas con más
+    /// importe con su barra, «Ver por línea» y «Exportar para mi contador…».
+    private var deductionsSummary: TaxFormSummary? {
+        guard let form = company.flatMap({ TaxForm.forEntity($0.entityType) }) else { return nil }
+        let range = DeductionsPeriod.yearToDate.range()
+        let key = "\(basis.rawValue)|\(journalLines.count)|\(accounts.map(\.taxFormLineRaw).joined().hashValue)"
+        return deductionsMemo.value(for: key) {
+            try? Bookkeeper(context: context).taxSummary(from: range.from, to: range.to, basis: basis, form: form)
+        }
+    }
+
+    private var deductionsCard: some View {
+        let summary = deductionsSummary
+        let rows = (summary?.rows ?? []).filter { $0.line.kind == .deduction }.sorted { $0.deductibleAmount > $1.deductibleAmount }
+        let top = max(1, rows.first?.deductibleAmount ?? 1)
+        return VStack(alignment: .leading, spacing: 0) {
+            HStack(alignment: .firstTextBaseline) {
+                Text("Gastos deducibles \(Date.now.formatted(.appDateTime.year()))").font(.cardTitle).accessibilityAddTraits(.isHeader)
+                Spacer(minLength: 8)
+                Text((summary?.totalDeductions ?? 0).money).font(.cardTitle).monospacedDigit()
+            }
+            .padding(.bottom, 6)
+            if summary == nil {
+                Text("Sin formulario para este tipo de empresa: exporta el paquete para tu contador.")
+                    .font(.subheadline).foregroundStyle(Palette.ink2).padding(.vertical, 6)
+            }
+            ForEach(rows.prefix(6)) { row in
+                Divider()
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack {
+                        Text(row.line.name(for: .appText)).lineLimit(1)
+                        Spacer(minLength: 8)
+                        Text(row.deductibleAmount.money).fontWeight(.semibold).monospacedDigit()
+                    }
+                    Capsule().fill(Palette.surface2).frame(height: 4)
+                        .overlay(alignment: .leading) {
+                            GeometryReader { proxy in
+                                Capsule().fill(Palette.brand).frame(width: proxy.size.width * CGFloat(max(0, row.deductibleAmount)) / CGFloat(top))
+                            }
+                        }
+                        .accessibilityHidden(true)
+                }
+                .padding(.vertical, 6)
+                .accessibilityElement(children: .combine)
+            }
+            HStack(spacing: 8) {
+                Button("Ver por línea") { showingDeductions = true }.buttonStyle(.secondary).disabled(summary == nil)
+                Button("Exportar para mi contador…") { exportingPackage = true }.buttonStyle(.secondary)
+            }
+            .padding(.top, 10)
+        }
+        .card(padding: 14)
+    }
+
     private var paymentsCard: some View {
         let payments = entries.filter { $0.source == .salesTaxPayment && $0.reversesEntryID == nil }
         return VStack(alignment: .leading, spacing: 0) {
@@ -862,11 +956,11 @@ struct TaxRateEditorView: View {
     @Environment(\.unsavedChanges) private var unsavedChanges
     /// Testigo del editor en `UnsavedChanges`: se retira al guardar, antes de cerrar.
     @State private var editorToken = EditorToken()
-    @Query(sort: \TaxAgency.name) private var agencies: [TaxAgency]
-    @Query private var companies: [Company]
+    @CompanyQuery(sort: \TaxAgency.name) private var agencies: [TaxAgency]
+    @ActiveCompanyQuery private var companies: [Company]
     /// Para que el predeterminado (`defaultCode`) se recalcule si cambian las tasas o los grupos.
-    @Query private var allRates: [TaxRate]
-    @Query private var allGroups: [TaxGroup]
+    @CompanyQuery private var allRates: [TaxRate]
+    @CompanyQuery private var allGroups: [TaxGroup]
 
     @State private var agencyID: UUID?
     /// La agencia ya se preeligió al abrir (una vez).
@@ -1035,7 +1129,7 @@ struct TaxRateEditorView: View {
                 } else {
                     let liability = try books.systemAccount(.salesTaxPayable)
                     owner = TaxAgency(name: newAgencyName.trimmingCharacters(in: .whitespaces), liabilityAccountID: liability.id)
-                    context.insert(owner)
+                    Bookkeeper(context: context).insert(owner)
                 }
                 try books.updateTaxRate(rate, name: name, agency: owner, rateMillionths: millionths)
             } else {
@@ -1058,7 +1152,7 @@ struct TaxGroupEditorView: View {
     @Environment(\.unsavedChanges) private var unsavedChanges
     /// Testigo del editor en `UnsavedChanges`: se retira al guardar, antes de cerrar.
     @State private var editorToken = EditorToken()
-    @Query(sort: \TaxRate.name) private var rates: [TaxRate]
+    @CompanyQuery(sort: \TaxRate.name) private var rates: [TaxRate]
     @State private var name = ""
     @State private var selected: Set<UUID> = []
 
@@ -1101,7 +1195,7 @@ struct TaxGroupEditorView: View {
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
                 Button("Guardar") {
-                    context.insert(TaxGroup(name: name, rates: rates.filter { selected.contains($0.id) }))
+                    Bookkeeper(context: context).insert(TaxGroup(name: name, rates: rates.filter { selected.contains($0.id) }))
                     try? context.save()
                     unsavedChanges?.remove(editorToken); dismiss()
                 }
@@ -1130,8 +1224,8 @@ struct SalesTaxPaymentView: View {
     @Environment(\.unsavedChanges) private var unsavedChanges
     /// Testigo del editor en `UnsavedChanges`: se retira al guardar, antes de cerrar.
     @State private var editorToken = EditorToken()
-    @Query(sort: \TaxAgency.name) private var agencies: [TaxAgency]
-    @Query(sort: \Account.code) private var accounts: [Account]
+    @CompanyQuery(sort: \TaxAgency.name) private var agencies: [TaxAgency]
+    @CompanyQuery(sort: \Account.code) private var accounts: [Account]
     @State private var agencyID: UUID?
     @State private var amount: Int64 = 0
     @State private var date = Date()
@@ -1217,3 +1311,4 @@ extension SalesTaxPosition {
         }
     }
 }
+

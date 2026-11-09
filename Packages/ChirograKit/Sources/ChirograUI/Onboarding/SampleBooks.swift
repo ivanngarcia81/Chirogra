@@ -10,6 +10,9 @@ import SwiftUI
 /// - Ajustes › iCloud, copias y seguridad tiene la misma acción (`SampleBooksSection`), para quien lo ocultó.
 /// - Las dos piden la confirmación a la raíz (`SampleBooks.shared.confirm()`), que borra los libros
 ///   (`SampleData.discard`) y vuelve al alta «Creemos tu empresa» (`ChirograRootView`).
+/// - Con varias empresas (plan para contadores) el aviso sale mientras la **activa** es la de ejemplo, y «Empezar con
+///   mi empresa» borra solo esa (`Bookkeeper.deleteCompany`): las empresas reales no se tocan nunca. Si todas son de
+///   ejemplo (dos copias llegadas por iCloud), se borra todo y se vuelve al alta, como antes.
 @MainActor
 @Observable
 final class SampleBooks {
@@ -26,9 +29,10 @@ final class SampleBooks {
     static let bannerHiddenKey = "sampleBooksBannerHidden"
 }
 
-/// Muestra `content` solo mientras los libros son los de ejemplo; le pasa el nombre de la empresa de ejemplo.
+/// Muestra `content` solo mientras la empresa activa es la de ejemplo; le pasa su nombre. Las altas de ejemplo se
+/// buscan en todas las empresas (`@Query` sin filtro de empresa a propósito): la marca es de los libros.
 struct IfSampleBooks<Content: View>: View {
-    @Query private var companies: [Company]
+    @ActiveCompanyQuery private var companies: [Company]
     @Query(filter: SampleData.sampleCreationsPredicate) private var sampleCreations: [AuditEvent]
     @ViewBuilder var content: (String) -> Content
 
@@ -155,7 +159,7 @@ struct SampleBooksBanner: View {
 struct SampleBooksSection: View {
     var body: some View {
         IfSampleBooks { company in
-            Section {
+            SettingsSection {
                 HStack(spacing: 12) {
                     IconTile(systemImage: "sparkles", foreground: Palette.orange)
                     Button("Empezar con mi empresa…") { SampleBooks.shared.confirm() }
@@ -185,6 +189,9 @@ private struct SampleBooksConfirmation: ViewModifier {
     @State private var sampleBooks = SampleBooks.shared
     @AppStorage(ChirograStore.syncEnabledKey) private var iCloudSyncEnabled = true
     @AppStorage(SampleBooks.bannerHiddenKey) private var bannerHidden = false
+    /// Para volver a mirar `activeSample` al cambiar de empresa.
+    @AppStorage(ActiveCompany.defaultsKey) private var activeCompanyID: String?
+    /// Todas las empresas (está en la raíz, fuera del filtro de empresa).
     @Query private var companies: [Company]
     @Query(filter: SampleData.sampleCreationsPredicate) private var sampleCreations: [AuditEvent]
     #if DEBUG
@@ -192,11 +199,18 @@ private struct SampleBooksConfirmation: ViewModifier {
     @State private var qaApplied = false
     #endif
 
+    /// Todas las empresas son de ejemplo: «Empezar con mi empresa» borra todo y vuelve al alta.
     private var isSample: Bool { SampleData.isSample(companies: companies, sampleCreations: sampleCreations) }
 
-    private var companyName: String {
-        companies.first.map { $0.displayName.isEmpty ? $0.legalName : $0.displayName } ?? ""
+    /// La empresa activa, si es la de ejemplo (con otras reales al lado, solo se borra esa).
+    private var activeSample: Company? {
+        _ = activeCompanyID
+        guard let active = companies.first(where: { $0.id == CompanySession.scope?.id }) ?? companies.first,
+              SampleData.isSample(companies: [active], sampleCreations: sampleCreations) else { return nil }
+        return active
     }
+
+    private var companyName: String { activeSample?.shownName ?? companies.first?.shownName ?? "" }
 
     func body(content: Content) -> some View {
         content
@@ -212,8 +226,8 @@ private struct SampleBooksConfirmation: ViewModifier {
             } message: {
                 Text(sampleBooks.errorMessage ?? "")
             }
-            // Si los libros dejan de ser de ejemplo con la confirmación abierta (llega otra empresa por iCloud), se cierra.
-            .onChange(of: isSample) { _, sample in if !sample { sampleBooks.isConfirming = false } }
+            // Si la activa deja de ser la de ejemplo con la confirmación abierta (se cambió de empresa), se cierra.
+            .onChange(of: activeSample?.id) { _, sample in if sample == nil { sampleBooks.isConfirming = false } }
             #if DEBUG
             // `-qa.empezar 1` (solo Debug): abre la confirmación en cuanto hay datos de ejemplo; `-qa.empezar confirmar`
             // además borra, como al tocar «Borrar y empezar».
@@ -230,14 +244,23 @@ private struct SampleBooksConfirmation: ViewModifier {
     }
 
     private var message: String {
-        let what = String(localized: "Se borran todos los datos de ejemplo de «\(companyName)»: clientes, facturas, gastos, asientos y ajustes. Después creas tu empresa desde cero.")
+        let what = isSample
+            ? String(localized: "Se borran todos los datos de ejemplo de «\(companyName)»: clientes, facturas, gastos, asientos y ajustes. Después creas tu empresa desde cero.")
+            : String(localized: "Se borra la empresa de ejemplo «\(companyName)» con sus clientes, facturas, gastos y asientos. Tus otras empresas no se tocan.")
         let scope = iCloudSyncEnabled ? " " + String(localized: "También se borran en tus otros aparatos con iCloud.") : ""
         return what + scope
     }
 
     private func discard() {
         do {
-            try SampleData.discard(from: context)
+            if isSample {
+                try SampleData.discard(from: context)
+            } else if let activeSample {
+                // Hay empresas reales: se borra solo la de ejemplo y la activa pasa a la siguiente.
+                try Bookkeeper(context: context).deleteCompany(activeSample)
+            } else {
+                throw SampleDataError.notSample
+            }
             bannerHidden = false
             onDiscard()
         } catch {

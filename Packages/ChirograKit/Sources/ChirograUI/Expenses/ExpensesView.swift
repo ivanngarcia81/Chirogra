@@ -22,6 +22,9 @@ struct ExpensesView: View {
 
     @State private var selectedSegment: Segment = .expenses
     @State private var showingEditor = false
+    /// «Escanear recibo» (iPhone y iPad con cámara): la cámara de documentos y después «Nuevo gasto» con el recibo.
+    @State private var scanningReceipt = false
+    @State private var scannedReceipt: ReceiptFile?
 
     private var segment: Segment { fixedSegment ?? selectedSegment }
 
@@ -60,14 +63,37 @@ struct ExpensesView: View {
         .navigationTitle(title)
         .headerTitle()
         .toolbar {
+            #if os(iOS)
+            if segment == .expenses, DocumentScanner.isAvailable {
+                ToolbarItem(placement: .primaryAction) {
+                    Button("Escanear recibo", systemImage: "doc.viewfinder") { scanningReceipt = true }
+                        .headerButton()
+                }
+            }
+            #endif
             ToolbarItem(placement: .primaryAction) {
                 AddButton(title: addTitle) { showingEditor = true }
             }
         }
-        .sheet(isPresented: $showingEditor) {
+        #if os(iOS)
+        .fullScreenCover(isPresented: $scanningReceipt) {
+            DocumentScannerView { file in
+                scanningReceipt = false
+                guard let file else { return }
+                scannedReceipt = file
+                showingEditor = true
+            }
+            .ignoresSafeArea()
+        }
+        #endif
+        #if DEBUG
+        // `-qa.escanear prueba|<ruta>` (con `-qa.pestana expenses`): abre «Nuevo gasto» con ese recibo, ya leído.
+        .task { if segment == .expenses, ReceiptQA.argument != nil { showingEditor = true } }
+        #endif
+        .sheet(isPresented: $showingEditor, onDismiss: { scannedReceipt = nil }) {
             NavigationStack {
                 switch segment {
-                case .expenses: ExpenseEditorView()
+                case .expenses: ExpenseEditorView(initialReceipt: scannedReceipt)
                 case .bills: BillEditorView()
                 case .recurring: RecurringTemplateEditorView()
                 case .vendors: VendorEditorView()
@@ -159,9 +185,9 @@ struct ExpenseListView: View {
     var showBills: () -> Void = {}
     /// «Anotar mi primer gasto» del estado vacío (el «+» de `ExpensesView`).
     var onCreate: (() -> Void)? = nil
-    @Query(sort: \Expense.date, order: .reverse) private var expenses: [Expense]
-    @Query(sort: \Account.code) private var accounts: [Account]
-    @Query(sort: \Bill.dueDate) private var bills: [Bill]
+    @CompanyQuery(sort: \Expense.date, order: .reverse) private var expenses: [Expense]
+    @CompanyQuery(sort: \Account.code) private var accounts: [Account]
+    @CompanyQuery(sort: \Bill.dueDate) private var bills: [Bill]
     @State private var filter: ExpenseReceiptFilter = .all
     @State private var cardWidth: CGFloat = 0
     @State private var errorMessage: String?
@@ -471,8 +497,8 @@ struct BillListView: View {
     var section: Binding<ExpensesView.Segment>? = nil
     /// «Anotar una factura por pagar» del estado vacío (el «+» de `ExpensesView`).
     var onCreate: (() -> Void)? = nil
-    @Query(sort: \Bill.dueDate) private var bills: [Bill]
-    @Query(sort: \Account.code) private var accounts: [Account]
+    @CompanyQuery(sort: \Bill.dueDate) private var bills: [Bill]
+    @CompanyQuery(sort: \Account.code) private var accounts: [Account]
     @State private var paying: Bill?
     @State private var scheduling: Bill?
     @State private var isSelecting = false
@@ -635,8 +661,8 @@ struct BillEditorView: View {
     @Environment(\.unsavedChanges) private var unsavedChanges
     /// Testigo del editor en `UnsavedChanges`: se retira al guardar, antes de cerrar.
     @State private var editorToken = EditorToken()
-    @Query(sort: \Account.code) private var accounts: [Account]
-    @Query(sort: \Vendor.name) private var vendors: [Vendor]
+    @CompanyQuery(sort: \Account.code) private var accounts: [Account]
+    @CompanyQuery(sort: \Vendor.name) private var vendors: [Vendor]
 
     @State private var vendorID: UUID?
     @State private var number = ""
@@ -700,9 +726,9 @@ struct BillEditorView: View {
     private func save() {
         let bill = Bill(vendor: vendors.first { $0.id == vendorID }, vendorNumber: number, billDate: billDate, dueDate: dueDate)
         let line = BillLine(details: details, amount: amount, accountID: accountID)
-        context.insert(bill)
+        Bookkeeper(context: context).insert(bill)
         line.bill = bill
-        context.insert(line)
+        Bookkeeper(context: context).insert(line)
         do {
             try Bookkeeper(context: context).record(bill)
             unsavedChanges?.remove(editorToken); dismiss()
@@ -722,7 +748,7 @@ struct PayBillView: View {
     @Environment(\.unsavedChanges) private var unsavedChanges
     /// Testigo del editor en `UnsavedChanges`: se retira al guardar, antes de cerrar.
     @State private var editorToken = EditorToken()
-    @Query(sort: \Account.code) private var accounts: [Account]
+    @CompanyQuery(sort: \Account.code) private var accounts: [Account]
     @State private var amount: Int64 = 0
     @State private var date = Date()
     @State private var accountID: UUID?
@@ -800,7 +826,7 @@ struct PayBillView: View {
 struct VendorListView: View {
     /// «Añadir mi primer proveedor» del estado vacío (el «+» de `ExpensesView`).
     var onCreate: (() -> Void)? = nil
-    @Query(sort: \Vendor.name) private var vendors: [Vendor]
+    @CompanyQuery(sort: \Vendor.name) private var vendors: [Vendor]
     @State private var query = ""
 
     private var shown: [Vendor] {
@@ -857,7 +883,7 @@ struct VendorEditorView: View {
     @Environment(\.unsavedChanges) private var unsavedChanges
     /// Testigo del editor en `UnsavedChanges`: se retira al guardar, antes de cerrar.
     @State private var editorToken = EditorToken()
-    @Query(sort: \Account.code) private var accounts: [Account]
+    @CompanyQuery(sort: \Account.code) private var accounts: [Account]
 
     @State private var name = ""
     @State private var email = ""
@@ -965,7 +991,7 @@ struct VendorEditorView: View {
 
     private func save() {
         let target = vendor ?? Vendor(name: name)
-        if vendor == nil { context.insert(target) }
+        if vendor == nil { Bookkeeper(context: context).insert(target) }
         target.name = name.trimmingCharacters(in: .whitespaces)
         target.email = email; target.phone = phone; target.paymentTermsDays = terms
         target.defaultExpenseAccountID = defaultAccountID; target.is1099 = is1099

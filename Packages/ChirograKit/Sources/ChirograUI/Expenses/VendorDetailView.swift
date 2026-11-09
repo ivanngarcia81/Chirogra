@@ -9,7 +9,7 @@ struct VendorDetailView: View {
     let vendor: Vendor
     @Environment(\.modelContext) private var context
     @Environment(\.openURL) private var openURL
-    @Query(sort: \Account.code) private var accounts: [Account]
+    @CompanyQuery(sort: \Account.code) private var accounts: [Account]
     @State private var editing = false
     @State private var paying: Bill?
     @State private var scheduling: Bill?

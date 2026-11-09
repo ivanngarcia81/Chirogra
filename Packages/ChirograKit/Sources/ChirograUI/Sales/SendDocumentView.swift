@@ -26,7 +26,7 @@ struct SendDocumentView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     @Environment(\.unsavedChanges) private var unsavedChanges
-    @Query private var companies: [Company]
+    @ActiveCompanyQuery private var companies: [Company]
     @State private var editorToken = EditorToken()
     @State private var recipient = ""
     @State private var subject = ""
@@ -199,13 +199,15 @@ struct SendDocumentView: View {
         let signature = companyName.isEmpty ? "" : "\n\n\(companyName)"
         switch source {
         case .invoice(let invoice):
+            // «Pagar ahora» (`Sales/PayNow/`): el enlace de pago y las instrucciones, antes de la firma.
+            let payNow = document.payNow.map { "\n\n" + $0.emailText } ?? ""
             if purpose == .reminder {
                 subject = String(localized: "Recordatorio de pago · Factura \(invoice.number)") + (companyName.isEmpty ? "" : " · \(companyName)")
-                message = invoice.reminderText + signature
+                message = invoice.reminderText + payNow + signature
             } else {
                 subject = String(localized: "Factura \(invoice.number)") + (companyName.isEmpty ? "" : " · \(companyName)")
                 message = String(localized: "Hola, \(customer): te enviamos la factura \(invoice.number) por \(invoice.balanceDue.money), con vencimiento el \(invoice.dueDate.dayMonth). La encontrarás adjunta en PDF.")
-                    + signature
+                    + payNow + signature
             }
         case .estimate(let estimate):
             subject = String(localized: "Estimado \(estimate.number)") + (companyName.isEmpty ? "" : " · \(companyName)")

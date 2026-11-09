@@ -12,11 +12,11 @@ struct NoticesButton: View {
     let onOpen: (Notice) -> Void
     @Environment(\.modelContext) private var context
     // Se observan para recalcular los avisos cuando cambian los datos de los que salen.
-    @Query private var states: [NoticeState]
-    @Query private var invoices: [Invoice]
-    @Query private var bills: [Bill]
-    @Query private var expenses: [Expense]
-    @Query private var lines: [JournalLine]
+    @CompanyQuery private var states: [NoticeState]
+    @CompanyQuery private var invoices: [Invoice]
+    @CompanyQuery private var bills: [Bill]
+    @CompanyQuery private var expenses: [Expense]
+    @CompanyQuery private var lines: [JournalLine]
     @State private var showing = false
 
     var body: some View {
@@ -61,10 +61,10 @@ struct NoticesList: View {
     let onOpen: (Notice) -> Void
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
-    @Query private var states: [NoticeState]
-    @Query private var invoices: [Invoice]
-    @Query private var bills: [Bill]
-    @Query private var expenses: [Expense]
+    @CompanyQuery private var states: [NoticeState]
+    @CompanyQuery private var invoices: [Invoice]
+    @CompanyQuery private var bills: [Bill]
+    @CompanyQuery private var expenses: [Expense]
     @State private var errorMessage: String?
 
     private var books: Bookkeeper { Bookkeeper(context: context) }
@@ -246,9 +246,9 @@ extension Notice {
 /// Documento de un aviso, para abrirlo encima de Inicio.
 struct NoticeDestination: View {
     let notice: Notice
-    @Query private var invoices: [Invoice]
-    @Query private var bills: [Bill]
-    @Query private var expenses: [Expense]
+    @CompanyQuery private var invoices: [Invoice]
+    @CompanyQuery private var bills: [Bill]
+    @CompanyQuery private var expenses: [Expense]
 
     var body: some View {
         let id = notice.documentID
