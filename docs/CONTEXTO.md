@@ -1,8 +1,49 @@
 # Chirogra: contexto para retomar en otro chat
 
-Resumen del chat de coordinación de Chirogra al **7 de noviembre de 2026**. Léelo entero antes de seguir. El diseño técnico está en [DISEÑO.md](DISEÑO.md), el sistema visual en [REDISEÑO-NATIVO.md](REDISEÑO-NATIVO.md) y la API del esquema 2 en [DATOS-V2.md](DATOS-V2.md); aquí van el estado, las decisiones del usuario, lo pendiente y cómo se trabaja. Al usuario se le habla siempre en español.
+Resumen del chat de coordinación de Chirogra al **8 de noviembre de 2026**. Léelo entero antes de seguir. El diseño técnico está en [DISEÑO.md](DISEÑO.md), el sistema visual en [REDISEÑO-NATIVO.md](REDISEÑO-NATIVO.md) y la API del esquema 2 en [DATOS-V2.md](DATOS-V2.md); aquí van el estado, las decisiones del usuario, lo pendiente y cómo se trabaja. Al usuario se le habla siempre en español.
 
 ## Dónde nos quedamos (empieza aquí)
+
+**CIERRE DEL 8-NOV (léelo primero; el del 7-nov va después).** La fase 2 sin servidor está **hecha e integrada** en la rama
+`fase2-integracion` (worktree `.claude/worktrees/fase2`), **empujada a GitHub** hasta `c7f73a2`. **`main` no se ha tocado**
+(sigue en la 1.0.1 build 15, `c214680`); este CONTEXTO y `docs/PLAN-FASE2.md` están **sin commitear en `main`** y se
+commitean al unir la fase 2.
+- **Qué lleva la rama:** varias empresas (`3287645`) + recibos/«Pagar ahora»/sales tax por código postal (1.1) + banca y
+  conciliación (1.2) + flujo de efectivo, base caja, deducibles, presupuestos y «Exportar para mi contador» (1.3). 292
+  pruebas en verde; compila en iOS y macOS.
+- **Arreglos del coordinador:** cuelgue al 100 % de CPU al abrir páginas con `navigationDestination(isPresented:)` y
+  `@CompanyQuery` (Más › pista de sales tax › «Abrir Impuestos», 95 s) → `StablePage`/`stableDestination` en
+  `Shell/CompanyScope.swift`. Con muchas empresas, `Bookkeeper.scope()` leía y ordenaba todas las empresas en cada
+  búsqueda y la lista de empresas recorría todo el diario de cada una → ahora no (50 empresas: 5,2 s → 0,2 s).
+- **Decisiones del usuario (8-nov), todas hechas:** banca: «dividir» movimiento y motivo al excluir, **más adelante**; las
+  reglas creadas desde la bandeja solo proponen; número de pendientes en la barra lateral; «Por revisar» arriba en el
+  iPhone si hay pendientes. Recibos: tabla de sales tax de fuentes oficiales (SST, 24 estados); permiso de red del Mac y
+  nota de privacidad, **más adelante**; el lector se prepara al abrir la app. Reportes, como están: presupuestos dentro de
+  Reportes, el flujo de efectivo sigue la base, «Ver por línea» del iPad cambia en sitio. **«Canjear código»** (códigos de
+  oferta, para regalar la suscripción) en Ajustes › Suscripción y en la pantalla de planes. **Plan para contadores SIN
+  LÍMITE de empresas** (`CompanyLimits.accountant = unlimited`; antes 5); el normal, 1. **En TestFlight** (entorno
+  sandbox) se permiten empresas sin límite con cualquier plan, para probar.
+- **Esquema 4 creado en Desarrollo** desde el Mac (`-qa.esquemaCloudKit 1`, «listo» 8-nov 19:25Z). **Falta que el usuario
+  lo despliegue a Producción** (consola de CloudKit › `iCloud.com.chirogra.app` › Deploy Schema Changes) **antes de abrir
+  el TestFlight**; preguntárselo.
+- **TestFlight 1.1.0:** builds 16 (`2fadf80`), 17 (`574d673`) y **18 (`c7f73a2`, el bueno)** subidos para iOS y macOS
+  (los dos, iOS y macOS, «Upload succeeded»). **Build 19 (`85d0789`):** jerarquía de elevación «como Tamio» (decisión
+  del usuario, 8-nov): en el Mac, suelo gris `#F6F6F8`/`#1E1E20` (`Palette.background`), tarjetas y tablas blancas
+  (`Palette.surface`) con filo de 0,5 y sombra corta (`macElevation`), e inspector SIN fondo propio (gris del sistema,
+  como la barra lateral); en el iPad, las tarjetas con el mismo filo y sombra (`padElevation`; el iPhone no cambia).
+  En macOS 27 `controlBackgroundColor` y `windowBackgroundColor` son blancos los dos: por eso valores fijos (Tamio igual).
+  **Build 20 (`80559f0`):** Ajustes del Mac con tarjetas propias (`Settings/SettingsCards.swift`: `SettingsForm` y
+  `SettingsSection` son el `Form`/`Section` del sistema en iOS y tarjetas blancas en el Mac, porque las secciones del
+  `Form` `.grouped` del Mac no admiten `listRowBackground` ni `backgroundStyle`, probado); Empresas del Mac con
+  «Subir»/«Bajar» en ⋯ (no se arrastran fuera de la lista); columna de páginas de Ajustes blanca en el Mac y, en el
+  iPad, `Palette.masterColumn` (`#F7F7F9`/`#111113`), el tono nuevo de TODAS las listas maestro del iPad, entre el
+  blanco de la barra lateral y el gris del detalle (pedido del 8-nov); icono nuevo. **Próximo build: 21.**
+- **Siguiente:** (1) el usuario despliega el esquema 4 y prueba el 18 en sus aparatos (iCloud de Producción entre
+  aparatos, varias empresas, banca, recibos, «Canjear código»); (2) lo que salga, al build 19; (3) unir
+  `fase2-integracion` a `main` y commitear este CONTEXTO y PLAN-FASE2; (4) el usuario crea en App Store Connect el
+  producto `com.chirogra.app.contador.mensual` (descripción «Empresas sin límite…», en `docs/APP-STORE.md`) cuando decida
+  el precio; (5) publicar por partes 1.1 / 1.2 / 1.3. Sigue pendiente enviar la 1.0.1 (build 15) cuando salga la 1.0.
+- Simuladores temporales míos: «Chirogra Fase2 iPhone» (D941CB1C) y «Chirogra Fase2 iPad» (076546B0); se pueden borrar.
 
 **CIERRE DEL 7-NOV (léelo primero).** Todo está en `main` y empujado (`d661702` y este commit); no quedan ramas (`build6` y `build7` borradas) ni trabajo sin subir. La 1.0.0 lleva subidos a App Store Connect los builds **1 a 11** (iOS y macOS); **el bueno es el 11** (7-nov noche, desde `5f16dc4`: el 10 + el arreglo de la «Tasa de Austin» repetida en el alta del Mac) y **el 7-nov (noche) el usuario lo ENVIÓ A REVISIÓN**: el envío de iOS lleva la app 1.0 (build 11) + la suscripción «Chirogra monthly» + su grupo «Chirogra» (la primera suscripción tiene que ir con una versión y con su grupo; se añadió el grupo con «Add for Review» desde su página, y le faltaba el «Display Name and Description» en inglés). La captura de revisión de la suscripción es la pantalla de pago real (UI test en una copia de trabajo, nunca en el repo). El Mac fue en su propio envío, también mandado esa noche: **los dos (iOS y macOS) quedaron en «Waiting for Review»**. Siguiente: esperar la respuesta de Apple (si rechaza, leer el motivo en App Review y contestar o subir el build 12). El usuario probó la app como cliente nuevo con el guion del artículo https://claude.ai/artifact/32kiNBUgqBpqTrZ4MTfgc7 en varias rondas y el 7-nov dijo **«ya todo está bien»**: el guion está **terminado**, no pedir otra ronda salvo que él lo pida. El build 10 lleva, sobre el 5: «Editar» a la vista en la factura emitida; Impuestos antes que Contabilidad en «Más»; método de pago según la cuenta; sales tax completo en la apertura (Tasa de Texas fija → ciudad → tasa de la ciudad → total sumado); «Sales tax por pagar · Vence el …» en Inicio; impuesto incluido del gasto calculado solo con la tasa de la empresa; línea de la factura del iPhone con el total abajo; ícono nuevo (carpeta con la «C»), también en chirogra.com.
 
@@ -17,6 +58,13 @@ Resumen del chat de coordinación de Chirogra al **7 de noviembre de 2026**. Lé
 - Visto de paso: con el producto ya en App Store Connect, una compilación firmada por el equipo (sandbox, sin suscripción) abre la hoja de suscripción al arrancar y queda en solo lectura; con esa hoja abierta, cerrar la app del Mac con AppleScript (`quit`) falla con «User canceled (-128)»: usar `kill`.
 - **1.0.1 (build 12) SUBIDA a App Store Connect** (sustituida por el 13; ver abajo) (iOS y macOS, «Upload succeeded», 7-nov 20:51 y 20:54, desde `5e2c5e6`) con los dos arreglos (`MARKETING_VERSION` 1.0.1 y `CURRENT_PROJECT_VERSION` 12 en `project.yml` y pbxproj, comprobado con xcodegen). **Decisión del usuario (7-nov):** dejar que la 1.0 (build 11) siga en revisión y se publique, y mandar el 12 **después, como 1.0.1** (cuando la 1.0 salga, la versión 1.0.0 se cierra y no admite builds nuevos). Para enviarla: crear la versión 1.0.1 en App Store Connect (iOS y macOS), elegir el **build 15** y notas de la versión («La app del Mac recibe al momento los cambios de tus otros aparatos; un aparato nuevo trae tus libros de iCloud sin pedir el alta»).
 - Estado de los aparatos: Mac con el build 12 (Release, firma de desarrollo) en `/Applications` (datos de ejemplo + 2 clientes y la F-1006 de prueba, iCloud encendido); iPad con el build 12 en Debug, instalado limpio, con iCloud encendido por defecto y los mismos libros. Los dos usan el iCloud de **Desarrollo**. `com.chirogra.uitestsqa.xctrunner` quitado del iPad.
+
+**8-NOV: FASE 2 SIN SERVIDOR EN MARCHA (plan en docs/PLAN-FASE2.md, decisiones del usuario incluidas).** Por partes: 1.1 = varias empresas + plan para contadores + recibos + enlace de pago; 1.2 = conciliación bancaria; 1.3 = flujo de efectivo, base caja, deducibles y presupuestos. Un solo **esquema 4** para todo (aprobado por el usuario). Ramas de agentes, **sin fusionar en `main` ni desplegar a CloudKit**:
+- **Datos** (`worktree-agent-a2b283a9e9fa326a4`, `10fa59d`; worktree en `.claude/worktrees/`): esquema 4 (39 modelos; `companyID` en todos; banca, presupuestos, deducibles, código postal, enlace de pago), migración a medida V3→V4 (empresa principal = la más antigua; las sobrantes de libros mezclados quedan archivadas), esquemas 2 y 3 congelados con sus hashes comprobados, API en `docs/DATOS-V4.md`.
+- **Varias empresas en pantalla** (`worktree-agent-a3d1a95ef0bc5efc5`, `3287645`, sale de la de datos): `@CompanyQuery`/`@ActiveCompanyQuery` en toda la UI, selector (Inicio en iPhone/iPad; ficha al pie de la barra lateral en iPad/Mac), Ajustes › Empresas, «Añadir empresa», copias por empresa, plan para contadores `com.chirogra.app.contador.mensual` (en `App/Chirogra.storekit` a $99.99 solo para probar; textos en APP-STORE.md). 243 pruebas.
+- **Decisiones del usuario:** las archivadas y la de ejemplo **cuentan** para el límite; sin el producto de contador a la venta (pero con el normal) el límite es **1**; al bajar de plan se conservan y usan todas; preguntar «¿Descartar los cambios?» al cambiar de empresa; precio del plan para contadores, más adelante; la **nómina** empieza junto con el servidor.
+- **Comprobado en los aparatos del usuario (iCloud de Desarrollo, 8-nov):** el Mac (esquema 2 con iCloud) migró al 4 con los mismos saldos, todo con empresa, y volvió a subir sus 192 registros sin errores; iPad e iPhone, instalados limpios, recibieron los libros; «Taller Luna» creada en el iPad (`-qa.segundaEmpresa`) llegó al Mac y al iPhone con sus 45 cuentas y su tasa, separada. Instalada para revisión una compilación de `3287645` + `UserDefaults.register(["qa.suscripcion": "contador"])` (solo en la copia, para no quedar en solo lectura sin suscripción); el Mac en Debug.
+- **Siguiente:** revisión del usuario → agentes por áreas (banca; reportes; recibos, enlace de pago y sales tax por ZIP) → integrar → `-qa.esquemaCloudKit 1`, desplegar el esquema 4 a Producción y probar en Producción → `main`.
 
 **Lo siguiente (lo que queda para publicar la 1.0):**
 1. **Usuario · suscripción en App Store Connect:** grupo «Chirogra», `com.chirogra.app.mensual`, 1 mes, $24.99, 2 semanas gratis (textos en [APP-STORE.md](APP-STORE.md)).
@@ -234,7 +282,7 @@ Barra lateral, estados de iCloud, aviso «¿Descartar los cambios?» en los edit
 1. **Sin servidor:** enlace de pago propio del usuario en Ajustes (Stripe Payment Link, Square, PayPal.me, datos de Zelle o transferencia) → botón «Pagar ahora» y QR en el PDF y el correo de la factura. El cobro se registra a mano.
 2. **Con servidor, junto con Plaid:** Stripe Connect (la cuenta de Stripe de cada usuario; el dinero no pasa por Chirogra), un enlace por factura con su importe, aviso de Stripe al servidor y la app registra el cobro al abrir (el servidor no escribe en el iCloud del usuario). Comisión de Stripe como gasto, cuenta puente «Fondos no depositados» hasta el depósito, que se concilia con la importación del banco. Posible comisión de Chirogra por pago (p. ej. 0.5 %). Entraría en el plan «Chirogra + Banco» ($39.99/mes; el plan sin banco sigue a $29.99), en el mismo grupo de suscripción.
 
-**Nómina (payroll): idea pendiente, sin decidir (6-nov).** El usuario preguntó si la app tendrá nómina. Hoy no: DISEÑO.md la deja para «más adelante». Lo que sí se puede: registrar la nómina pagada con otro servicio (Gusto, ADP, QuickBooks Payroll) como gasto o asiento; el plan de cuentas ya trae «6850 · Sueldos y salarios» y «2300 · Nómina por pagar». Si se hace, la recomendación es **no construirla desde cero** (retenciones federales y estatales, depósitos, 941/940, W-2/W-4, cambian cada año) sino integrar un proveedor de nómina embebida (Gusto Embedded, Check) a través del servidor de la fase 2 (el de Plaid), como plan más alto. Falta que el usuario decida si la quiere y cuándo.
+**Nómina (payroll): idea pendiente, sin decidir (6-nov).** El usuario preguntó si la app tendrá nómina. Hoy no: DISEÑO.md la deja para «más adelante». Lo que sí se puede: registrar la nómina pagada con otro servicio (Gusto, ADP, QuickBooks Payroll) como gasto o asiento; el plan de cuentas ya trae «6850 · Sueldos y salarios» y «2300 · Nómina por pagar». Si se hace, la recomendación es **no construirla desde cero** (retenciones federales y estatales, depósitos, 941/940, W-2/W-4, cambian cada año) sino integrar un proveedor de nómina embebida (Gusto Embedded, Check) a través del servidor de la fase 2 (el de Plaid), como plan más alto. **Decidido el 8-nov:** el usuario la quiere, y se empieza **junto con el trabajo del servidor** (la etapa de Plaid y Stripe Connect), integrando un proveedor de nómina embebida (Gusto Embedded o Check), no construyéndola desde cero. Ver docs/PLAN-FASE2.md, «Después: con servidor».
 
 ## Reglas de trabajo
 
