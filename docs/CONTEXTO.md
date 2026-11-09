@@ -11,9 +11,9 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
 
 ## Dónde nos quedamos (empieza aquí)
 
-- **`main` lleva todo** (fase 2 sin servidor unida el 9-nov, merge `6f745a4`) y está empujado. La rama
-  `fase2-integracion` (worktree `.claude/worktrees/fase2`) quedó igual que lo unido (`467cdcf`); **puede haber otro chat
-  trabajando en ella**: no tocarla sin mirar antes `git status` y su último commit.
+- **`main` lleva todo** (fase 2 sin servidor unida el 9-nov, merge `6f745a4`) y está empujado. El 9-nov se borraron
+  las worktrees y ramas locales de los agentes y `fase2-integracion` (todo estaba ya en `main`); en GitHub sigue
+  `origin/fase2-integracion`, igual que lo unido.
 - **Versiones en App Store Connect:**
   - **1.0 (build 11):** el 7-nov se envió a revisión con la suscripción «Chirogra monthly» y su grupo. Apple la
     **rechazó** porque la descripción no tenía el enlace a las condiciones de uso (EULA). El 9-nov el usuario la está
@@ -58,7 +58,6 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
   logo desde Fotos; un cargo automático que se cobre solo al vencer; registrar y revertir un asiento en pantalla en el
   Mac; si el botón de idioma del alta abre la página de Chirogra en Ajustes o la raíz.
 - `soporte@chirogra.com` (reenvío en Cloudflare, lo crea el usuario): sin confirmar.
-- Simuladores temporales míos que se pueden borrar: «Chirogra Fase2 iPhone» (D941CB1C) y «Chirogra Fase2 iPad» (076546B0).
 - **No construido a propósito (espera al servidor):** Plaid, Stripe Connect, sales tax exacto por dirección, usuarios y
   permisos, «Vista por el cliente», nómina (PLAN-FASE2.md, «Después: con servidor»).
 
