@@ -40,12 +40,9 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
 **Siguiente (orden acordado el 10-nov):**
 
 *A. Ahora, mientras Apple revisa la 1.0 (todo entra en la 1.1, sin tocar el esquema de iCloud):*
-1. Usuario: probar los builds 21 y 22 de TestFlight.
-2. Usuario: terminar el plan de contadores en App Store Connect (en borrador desde el 10-nov, con su captura). Falta:
-   textos (en `Chirogra for Accountants` / `Unlimited businesses, each with its own books.`; es `Chirogra para
-   contadores` / `Empresas sin límite, cada una con sus libros.`), disponibilidad, comprobar $99.99 y 2 semanas gratis,
-   **nivel 1** del grupo (salió en el 2). No pulsar «Add for Review»: va **con la 1.1**. Mientras no esté completo, la
-   sandbox no lo devuelve («Subscription Unavailable»): para capturarlo, `SKTestSession` o ejecutar desde Xcode.
+1. Usuario: probar el build 27 de TestFlight.
+2. **Plan de contadores: COMPLETO en App Store Connect** (el usuario lo terminó el 10-nov: textos, disponibilidad,
+   precio y nivel). Sin enviar a revisión: va **con la 1.1**, en el mismo envío.
 3. **Panel de clientes: HECHO el 10-nov, en el build 23** (`5473946`, subido el 10-nov para iOS y macOS). Canvas «Chirogra — Panel de
    clientes» (https://claude.ai/artifact/46eihuFoKbh8RrMEvHHNxA), encargo en `docs/PANEL-CLIENTES.md`. Datos:
    `Bookkeeper.clientSummaries` (`ChirograData/Bookkeeper+Clients.swift`, pruebas en `ClientSummaryTests`): estado

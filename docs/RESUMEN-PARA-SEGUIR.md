@@ -22,10 +22,8 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 ## Lo que le toca al usuario
 
 1. Esperar la aprobación de la 1.0 y enviar la 1.0.1 (build 15).
-2. Terminar el plan **«Chirogra para contadores»** en App Store Connect (en borrador, con su captura de revisión):
-   textos en/es (`Chirogra for Accountants` / `Unlimited businesses, each with its own books.`; `Chirogra para
-   contadores` / `Empresas sin límite, cada una con sus libros.`), disponibilidad, comprobar $99.99 y 2 semanas gratis,
-   y pasarlo al **nivel 1** del grupo. No pulsar «Add for Review»: se envía con la 1.1.
+2. Plan **«Chirogra para contadores»**: **completo en App Store Connect** (10-nov), sin enviar. No pulsar «Add for
+   Review» suelto: se añade al envío de la 1.1.
 3. Probar el build 27 en TestFlight. Si sale «solo lectura», suscribirse ahí es gratis (compra de prueba).
 
 ## Lo siguiente
