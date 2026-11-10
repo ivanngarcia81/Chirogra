@@ -4007,6 +4007,16 @@
         }
       }
     },
+    "Arrastra la foto o el PDF del recibo a cada gasto. Paga a tus proveedores a tiempo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Drag the photo or PDF of the receipt onto each expense. Pay your vendors on time."
+          }
+        }
+      }
+    },
     "Arrastra una foto o un PDF" : {
       "localizations" : {
         "en" : {
@@ -7433,6 +7443,16 @@
         }
       }
     },
+    "Crear mi empresa" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create my company"
+          }
+        }
+      }
+    },
     "Crear mi primer estimado" : {
       "localizations" : {
         "en" : {
@@ -10646,6 +10666,16 @@
         }
       }
     },
+    "Envía facturas y estimados con tu sales tax, manda recordatorios y registra cada cobro, completo o parcial." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send invoices and estimates with your sales tax, send reminders and record every payment, full or partial."
+          }
+        }
+      }
+    },
     "Envíala por correo o como PDF" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -10972,6 +11002,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Profit and loss · %@"
+          }
+        }
+      }
+    },
+    "Estado de resultados, balance general y sales tax por periodo, listos para exportar." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Profit and loss, balance sheet and sales tax by period, ready to export."
           }
         }
       }
@@ -11773,6 +11813,16 @@
         }
       }
     },
+    "Facturación" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Billing"
+          }
+        }
+      }
+    },
     "Facturado en %@" : {
       "localizations" : {
         "en" : {
@@ -11945,22 +11995,22 @@
         }
       }
     },
+    "Facturas que se cobran" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invoices that get paid"
+          }
+        }
+      }
+    },
     "Facturas, estimados y cobros" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Invoices, estimates and payments"
-          }
-        }
-      }
-    },
-    "Facturación" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Billing"
           }
         }
       }
@@ -12618,6 +12668,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Expenses"
+          }
+        }
+      }
+    },
+    "Gastos con su recibo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Expenses with their receipts"
           }
         }
       }
@@ -13975,6 +14035,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "The reconciliation is already completed."
+          }
+        }
+      }
+    },
+    "La contabilidad completa de tu negocio, clara desde el primer día." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Complete bookkeeping for your small business, clear from day one."
           }
         }
       }
@@ -16655,6 +16725,16 @@
         }
       }
     },
+    "No se pudieron crear los datos de ejemplo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't create the sample data"
+          }
+        }
+      }
+    },
     "No se pudo adjuntar el archivo: usa una foto o un PDF." : {
       "localizations" : {
         "en" : {
@@ -17277,6 +17357,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Number or name"
+          }
+        }
+      }
+    },
+    "OK" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
           }
         }
       }
@@ -19261,6 +19351,16 @@
         }
       }
     },
+    "Privada por diseño" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Private by design"
+          }
+        }
+      }
+    },
     "Probar con datos de ejemplo" : {
       "localizations" : {
         "en" : {
@@ -20840,6 +20940,16 @@
         }
       }
     },
+    "Reportes para tu contador" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reports for your accountant"
+          }
+        }
+      }
+    },
     "Reportes.pdf" : {
       "localizations" : {
         "en" : {
@@ -21900,6 +22010,16 @@
         }
       }
     },
+    "Saltar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skip"
+          }
+        }
+      }
+    },
     "Saltar por ahora" : {
       "localizations" : {
         "en" : {
@@ -22729,6 +22849,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No email"
+          }
+        }
+      }
+    },
+    "Sin cuenta, sin anuncios y sin rastreo. Tus libros viven en tus aparatos y, si quieres, en tu iCloud." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No account, no ads and no tracking. Your books live on your devices and, if you want, in your iCloud."
           }
         }
       }
@@ -23995,6 +24125,16 @@
         }
       }
     },
+    "Te damos la bienvenida a" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Welcome to"
+          }
+        }
+      }
+    },
     "Te damos la bienvenida a Chirogra, %@" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -24368,6 +24508,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "All months"
+          }
+        }
+      }
+    },
+    "Toma la foto o guarda el PDF del recibo junto a cada gasto. Paga a tus proveedores a tiempo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Take a photo or save the PDF of the receipt with each expense. Pay your vendors on time."
           }
         }
       }

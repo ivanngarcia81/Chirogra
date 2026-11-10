@@ -16,16 +16,22 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
   `origin/fase2-integracion`, igual que lo unido.
 - **Versiones en App Store Connect:**
   - **1.0 (build 11):** el 7-nov se envió a revisión con la suscripción «Chirogra monthly» y su grupo. Apple la
-    **rechazó** porque la descripción no tenía el enlace a las condiciones de uso (EULA). El 9-nov el usuario la está
-    reenviando con el **build 11**: descripción completa con «Privacy Policy: …» y «Terms of Use: …» al final (en/es,
+    **rechazó** porque la descripción no tenía el enlace a las condiciones de uso (EULA). El 9-nov el usuario la
+    **reenvió** con el **build 11** (en revisión esa noche): descripción completa con «Privacy Policy: …» y «Terms of Use: …» al final (en/es,
     iOS y macOS; texto en APP-STORE.md) y «Chirogra monthly» en el envío; **el plan de contadores NO va en la 1.0**.
     El aviso «Newer Build Available» es normal: se pulsa Submit.
   - **1.0.1 (build 15): enviarla en cuanto Apple apruebe la 1.0.** El build 11 tiene el fallo de iCloud en Producción
     (no sincroniza nada; ver «Lo aprendido») y el 15 lo arregla. Crear la versión 1.0.1 (iOS y macOS), elegir el build
     15, notas: «La app del Mac recibe al momento los cambios de tus otros aparatos; un aparato nuevo trae tus libros de
     iCloud sin pedir el alta».
-  - **1.1.0 (builds 16 a 21, TestFlight):** la fase 2 entera. El **21** (`467cdcf`) es el último; el usuario lo prueba.
-    **El próximo build es el 22.**
+  - **1.1.0 (builds 16 a 21, TestFlight):** la fase 2 entera. El **21** (`467cdcf`) lo prueba el usuario; el **22** lleva además
+    la bienvenida en carrusel (abajo). **Toda la fase 2 va en la 1.1** (decisión del
+    9-nov: no se esconde nada para 1.2/1.3), con el plan de contadores en el envío.
+- **Bienvenida en carrusel (aprobada por el usuario el 10-nov en su iPhone; build 22):** opción B del canvas «Chirogra — Bienvenida»
+  (https://claude.ai/artifact/PB4NmST2UPeAA3wTZFjres) en `Onboarding/WelcomeView.swift`. Sale sin empresas antes del
+  alta (ajuste `welcome.seen`); «Crear mi empresa» → paso 1, que ya no lleva los datos de ejemplo ni el aviso de iCloud
+  (pasaron a la última página; «Atrás» del paso 1 vuelve a ella). Botones en vidrio, no morados como el canvas.
+  `-qa.bienvenida N` la abre en la página N; `-qa.muestra` y `-qa.alta` la saltan.
 - **Esquema 4 desplegado a Producción** (8-nov). El build 20 se probó en Producción en el iPhone y el Mac del usuario
   (8-nov): sincronizan libros, clientes, empresas, banca y recibos. `/Applications/Chirogra.app` y la app del iPhone
   tienen esa compilación de prueba (Debug, entorno Production); instalar encima desde TestFlight conserva los datos.
@@ -33,13 +39,12 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
 **Siguiente:**
 1. Usuario: terminar el reenvío de la 1.0 (arriba) y esperar a Apple. Después, la 1.0.1 (build 15).
 2. Usuario: probar el build 21 de TestFlight.
-3. Usuario: crear en App Store Connect `com.chirogra.app.contador.mensual` a **$99.99 al mes** (ficha completa en
-   APP-STORE.md) y ponerlo en el **nivel 1** del grupo «Chirogra» (encima de «Chirogra monthly»). En su pantalla
-   «Edit Level» no se dejaba cambiar: probar desde otro navegador o la app del Mac. Claude hace la captura de revisión
-   cuando lo pida.
-4. Publicar la fase 2 por partes: 1.1 (varias empresas, plan de contadores, recibos, enlace de pago), 1.2 (banca y
-   conciliación), 1.3 (flujo de efectivo, base caja, deducibles, presupuestos). Hoy todo va junto en la 1.1.0; decidir
-   con el usuario si se esconde lo de 1.2/1.3 o se publica todo.
+3. Plan de contadores: **creado** en App Store Connect el 9-nov; el 10-nov se le subió la captura de revisión y quedó
+   en borrador. Falta: textos (en `Chirogra for Accountants` / `Unlimited businesses, each with its own books.`; es
+   `Chirogra para contadores` / `Empresas sin límite, cada una con sus libros.`), disponibilidad, comprobar precio
+   $99.99 y 2 semanas gratis, ponerlo en el **nivel 1** del grupo (salió en el 2) y mandarlo **con la 1.1**, no solo. Mientras no esté completo, la sandbox no lo devuelve (en el simulador sale
+   «Subscription Unavailable»): para capturarlo, ejecutar desde Xcode, que usa `App/Chirogra.storekit`.
+4. Usuario: probar el build 22 (bienvenida). Después, preparar el envío de la 1.1.0.
 5. Más adelante (decisión del 8-nov): dividir movimientos y motivo al excluir en banca; permiso de red y nota de
    privacidad de recibos en el Mac; quizá avisar de que la primera lectura de un recibo tarda (127 s en el Mac).
 
@@ -57,7 +62,6 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
 - Sin comprobar: VoiceOver de verdad y letra grande; correo real (`MFMailComposeViewController`, `NSSharingService`);
   logo desde Fotos; un cargo automático que se cobre solo al vencer; registrar y revertir un asiento en pantalla en el
   Mac; si el botón de idioma del alta abre la página de Chirogra en Ajustes o la raíz.
-- `soporte@chirogra.com` (reenvío en Cloudflare, lo crea el usuario): sin confirmar.
 - **No construido a propósito (espera al servidor):** Plaid, Stripe Connect, sales tax exacto por dirección, usuarios y
   permisos, «Vista por el cliente», nómina (PLAN-FASE2.md, «Después: con servidor»).
 
@@ -74,6 +78,9 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
   `ivanngarcia81.github.io`). Privacidad `/privacidad/` · `/privacy/`, soporte `/soporte/` · `/support/`, guía
   `/guia/` · `/guide/` (con glosario: al cambiar un menú de la app, ponerlo al día en los dos idiomas; al cambiar una
   pantalla, rehacer su captura).
+- **Correo:** `soporte@chirogra.com` se reenvía al Gmail del usuario con Cloudflare Email Routing (activado el 9-nov;
+  MX `route1-3.mx.cloudflare.net`, SPF y DKIM `cf2024-1` puestos por Cloudflare). Solo recibe: para enviar desde esa
+  dirección haría falta otro servicio.
 
 ## Decisiones del usuario (no deshacer sin preguntar)
 
@@ -140,6 +147,17 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
 - `Shape` con aislamiento MainActor por defecto: declararlo `nonisolated`.
 - Con la hoja de suscripción abierta, `quit` por AppleScript falla («User canceled (-128)»): usar `kill`.
 - La prueba de humo de `BankingView` con `ImageRenderer` se cae en ese renderizador (en pantalla funciona).
+- **StoreKit en el simulador:** con `xcodebuild test` no se usa `App/Chirogra.storekit` (ni poniéndolo en la acción de
+  pruebas del esquema): el simulador pregunta a la sandbox de verdad, que solo devuelve productos completos en App Store
+  Connect. Para capturar la pantalla de compra: en la prueba de `UITestsQA`, `SKTestSession(configurationFileNamed:)`
+  con el `.storekit` como recurso del target de pruebas. Muestra el nombre interno del producto y lo guarda en caché.
+- En el simulador, `simctl uninstall` con el simulador apagado no hace nada: arrancarlo antes (`simctl boot` y
+  `bootstatus`), o los datos de la prueba anterior siguen ahí.
+- Animaciones de entrada: un cambio de estado en `onChange(initial: true)` u `onAppear` cae en la misma pasada en que
+  aparece la vista y SwiftUI lo pinta ya terminado. Usar `.task(id:)` con una espera corta (la bienvenida usa 150 ms).
+  Las capturas finales no lo delatan: comprobarlo con varias capturas seguidas (`simctl io … screenshot` en bucle).
+- Para ver la bienvenida en el iPhone del usuario sin tocar su app: copia «Chirogra Prueba»
+  (`com.chirogra.qa.bienvenida`, entitlements vacíos y, solo en la copia, `resolveSyncPreference` con iCloud apagado).
 
 ## Reglas de trabajo
 

@@ -481,7 +481,7 @@ struct AddCompanySheet: View {
 
     var body: some View {
         NavigationStack {
-            OnboardingView(addsCompany: true) { dismiss() }
+            OnboardingView(addsCompany: true, onFinish: { dismiss() })
                 .toolbar {
                     ToolbarItem(placement: .cancellationAction) { Button("Cancelar") { dismiss() } }
                 }

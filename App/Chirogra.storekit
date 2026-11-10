@@ -30,12 +30,12 @@
           },
           "localizations" : [
             {
-              "description" : "Libros de hasta 5 empresas, cada una con los suyos.",
+              "description" : "Empresas sin límite, cada una con sus libros.",
               "displayName" : "Chirogra para contadores",
               "locale" : "es_US"
             },
             {
-              "description" : "Books for up to 5 businesses, each with its own records.",
+              "description" : "Unlimited businesses, each with its own books.",
               "displayName" : "Chirogra for Accountants",
               "locale" : "en_US"
             }

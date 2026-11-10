@@ -67,10 +67,13 @@ struct OnboardingView: View {
     /// sin «Probar con datos de ejemplo»; al terminar llama a `onFinish`.
     let addsCompany: Bool
     let onFinish: (() -> Void)?
+    /// «Atrás» del paso 1: vuelve a la bienvenida (`WelcomeView`), donde están los datos de ejemplo y el aviso de iCloud.
+    let onBack: (() -> Void)?
 
-    init(addsCompany: Bool = false, onFinish: (() -> Void)? = nil) {
+    init(addsCompany: Bool = false, onFinish: (() -> Void)? = nil, onBack: (() -> Void)? = nil) {
         self.addsCompany = addsCompany
         self.onFinish = onFinish
+        self.onBack = onBack
     }
 
     @Environment(\.modelContext) private var context
@@ -135,7 +138,7 @@ struct OnboardingView: View {
         .onChange(of: state) { localRate = nil; localTaxName = "" }
 
         #if os(iOS)
-        .safeAreaBar(edge: .top, spacing: 0) { if step > 1 { backBar } }
+        .safeAreaBar(edge: .top, spacing: 0) { if canGoBack { backBar } }
         // Mientras se escribe, la barra se esconde: subía con el teclado y tapaba los campos (en el paso 3, «Fecha del
         // saldo» y la tarjeta).
         .bottomBarHiddenWithKeyboard { bottomBar }
@@ -223,6 +226,13 @@ struct OnboardingView: View {
         if step < Self.stepCount { step += 1 } else { createCompany() }
     }
 
+    /// Paso anterior o, desde el paso 1, la bienvenida.
+    private var canGoBack: Bool { step > 1 || onBack != nil }
+
+    private func goBack() {
+        if step > 1 { step -= 1 } else { onBack?() }
+    }
+
     // MARK: Encabezado
 
     /// Encabezado grande centrado del paso (canvas: logotipo o símbolo, título de 34 pt y una frase gris), seguido del
@@ -277,10 +287,10 @@ struct OnboardingView: View {
             }
         }
 
-        // El idioma y «¿Ya usas Chirogra en otro aparato?» son de la primera empresa: al añadir otra no hacen falta.
+        // El idioma es de la primera empresa: al añadir otra no hace falta. «¿Ya usas Chirogra en otro aparato?» y los
+        // datos de ejemplo pasaron a la bienvenida (`WelcomeView`): el paso 1 queda con los datos de la empresa.
         if !addsCompany {
             AppLanguageSection()
-            OtherDeviceSection()
         }
 
         Section {
@@ -545,11 +555,7 @@ struct OnboardingView: View {
             Button(primaryTitle, action: advance)
                 .buttonStyle(.primary)
                 .disabled(!canContinue)
-            if step == 1 && !addsCompany {
-                Button("Probar con datos de ejemplo", action: loadSample)
-                    .font(.body.weight(.semibold))
-                    .frame(minHeight: Metrics.target)
-            } else if step == Self.stepCount {
+            if step == Self.stepCount {
                 Button("Saltar por ahora", action: skipBalances)
                     .font(.body.weight(.semibold))
                     .frame(minHeight: Metrics.target)
@@ -557,7 +563,7 @@ struct OnboardingView: View {
         }
         .padding(.horizontal, 12)
         .padding(.top, 14)
-        .padding(.bottom, step == 2 ? 12 : 2)
+        .padding(.bottom, step == Self.stepCount ? 2 : 12)
         .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 36, style: .continuous))
         .padding(.horizontal, 12)
         .padding(.bottom, 4)
@@ -567,7 +573,7 @@ struct OnboardingView: View {
     /// «Atrás» del paso 2: círculo de vidrio arriba a la izquierda (canvas `OnbTipo`).
     private var backBar: some View {
         HStack {
-            Button { step -= 1 } label: {
+            Button(action: goBack) {
                 Image(systemName: "chevron.left").font(.title3.weight(.semibold))
                     .frame(width: 32, height: 32)
             }
@@ -588,13 +594,11 @@ struct OnboardingView: View {
         HStack(spacing: 12) {
             stepDots
             Spacer(minLength: 12)
-            if step == 1 && !addsCompany {
-                Button("Probar con datos de ejemplo", action: loadSample).buttonStyle(.link)
-            } else if step == Self.stepCount {
+            if step == Self.stepCount {
                 Button("Saltar por ahora", action: skipBalances).buttonStyle(.link)
             }
-            Button("Atrás") { step -= 1 }
-                .disabled(step == 1)
+            Button("Atrás", action: goBack)
+                .disabled(!canGoBack)
             Button(primaryTitle, action: advance)
                 .buttonStyle(.primaryCompact)
                 .keyboardShortcut(.defaultAction)
@@ -638,9 +642,6 @@ struct OnboardingView: View {
         }
     }
 
-    private func loadSample() {
-        do { try SampleData.populate(context) } catch { errorMessage = error.localizedDescription }
-    }
 }
 
 /// Coloca las vistas en filas y pasa a la siguiente cuando no caben (chips).
@@ -674,29 +675,4 @@ struct FlowLayout: Layout {
 
 #Preview {
     OnboardingView().modelContainer(try! ChirograStore.makeContainer(inMemory: true))
-}
-
-/// Paso 1 del alta con iCloud encendido: quien ya lleva sus libros en otro aparato no tiene que crear la empresa otra
-/// vez. Si llegó aquí es que iCloud no trajo libros (el otro aparato no los ha subido, p. ej. con iCloud apagado desde
-/// la 1.0): al encenderlo allí, llegan solos y la raíz deja el alta (`companies` deja de estar vacío).
-private struct OtherDeviceSection: View {
-    @AppStorage(ChirograStore.syncEnabledKey) private var iCloudSyncEnabled = true
-
-    var body: some View {
-        if iCloudSyncEnabled {
-            Section {
-                HStack(alignment: .top, spacing: 12) {
-                    IconTile(systemImage: "icloud.fill", foreground: Palette.blue)
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("¿Ya usas Chirogra en otro aparato?")
-                            .font(.body.weight(.semibold)).foregroundStyle(Palette.ink)
-                        Text("No crees la empresa otra vez: en ese aparato, enciende «Sincronizar con iCloud» en Ajustes (en el iPhone, en Más) y tus libros llegarán aquí solos.")
-                            .font(.subheadline).foregroundStyle(Palette.ink2)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                }
-                .accessibilityElement(children: .combine)
-            }
-        }
-    }
 }

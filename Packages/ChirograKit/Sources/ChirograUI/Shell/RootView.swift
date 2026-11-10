@@ -78,6 +78,11 @@ public struct ChirograRootView: View {
     @State private var paywallShownOnce = false
     /// «Crear una empresa nueva» desde la pantalla de sincronización.
     @State private var skipsSyncWait = false
+    /// La bienvenida (`WelcomeView`) ya se pasó en este aparato: sin empresas (p. ej. tras «Empezar con mi empresa»), se
+    /// va directo al alta.
+    @AppStorage(WelcomeView.seenKey) private var welcomeSeen = false
+    /// Página con que abre la bienvenida: la última al volver con «Atrás» desde el paso 1 del alta.
+    @State private var welcomeStartPage = 0
     #if os(iOS)
     @State private var lockWindow = LockWindow()
     #endif
@@ -85,6 +90,9 @@ public struct ChirograRootView: View {
     public init() {
         // Lo que una pantalla inserta sin empresa toma la activa al guardar (`CompanyStamp`).
         CompanyStamp.install()
+        #if DEBUG
+        _welcomeStartPage = State(initialValue: Self.applyQAWelcome())
+        #endif
     }
 
     /// Ámbito de la empresa activa (`Bookkeeper.companyScope()`), que se deja en `CompanySession` antes de dibujar la
@@ -100,6 +108,23 @@ public struct ChirograRootView: View {
 
     #if DEBUG
     private static var qaLoadedSample = false
+    private static var qaAppliedWelcome = false
+
+    /// `-qa.bienvenida N` abre la bienvenida en la página N (desde 1) aunque ya se hubiera visto; `-qa.muestra` y
+    /// `-qa.alta` la saltan, para que sus capturas sigan llegando a los libros de ejemplo y al alta. Devuelve la página.
+    private static func applyQAWelcome() -> Int {
+        let defaults = UserDefaults.standard
+        guard !qaAppliedWelcome else { return 0 }
+        qaAppliedWelcome = true
+        if defaults.object(forKey: "qa.bienvenida") != nil {
+            defaults.set(false, forKey: WelcomeView.seenKey)
+            return max(defaults.integer(forKey: "qa.bienvenida") - 1, 0)
+        }
+        if QALaunch.loadsSample || defaults.object(forKey: "qa.alta") != nil {
+            defaults.set(true, forKey: WelcomeView.seenKey)
+        }
+        return 0
+    }
     private static var qaAppliedCompanies = false
 
     /// Argumentos de QA de varias empresas (solo Debug, REDISEÑO-NATIVO §5), una vez por sesión y cuando ya hay
@@ -142,8 +167,11 @@ public struct ChirograRootView: View {
             // mientras se importan (`MacCargando`).
             if sync.isSyncing && !skipsSyncWait && companies.isEmpty {
                 SyncLoadingView { skipsSyncWait = true }
+            } else if companies.isEmpty && !welcomeSeen {
+                // La primera vez: la bienvenida en carrusel, y de ahí al alta o a los datos de ejemplo.
+                WelcomeView(startPage: welcomeStartPage, onCreate: { welcomeSeen = true }, onSample: { welcomeSeen = true })
             } else if companies.isEmpty {
-                OnboardingView()
+                OnboardingView(onBack: { welcomeStartPage = WelcomeView.pageCount - 1; welcomeSeen = false })
                     #if DEBUG
                     // `-qa.muestra 1`: los datos de ejemplo sin pasar por el alta («Probar con datos de ejemplo»). Una sola
                     // vez por sesión: tras «Empezar con mi empresa» el alta tiene que quedar vacía.
