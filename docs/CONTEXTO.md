@@ -1,6 +1,7 @@
 # Chirogra: contexto para retomar en otro chat
 
-Estado de Chirogra al **9 de noviembre de 2026**. Léelo entero antes de seguir. El diseño técnico está en
+Estado de Chirogra al **10 de noviembre de 2026**. **Para empezar rápido, lee primero
+[RESUMEN-PARA-SEGUIR.md](RESUMEN-PARA-SEGUIR.md)** (estado, builds 22–26 y lo siguiente); luego este, entero. El diseño técnico está en
 [DISEÑO.md](DISEÑO.md), el sistema visual y los argumentos de QA en [REDISEÑO-NATIVO.md](REDISEÑO-NATIVO.md) (§5), los
 datos en [DATOS-V4.md](DATOS-V4.md) (y [DATOS-V2.md](DATOS-V2.md)), la fase 2 en [PLAN-FASE2.md](PLAN-FASE2.md) y la
 ficha de la App Store en [APP-STORE.md](APP-STORE.md). Aquí van el estado, lo pendiente, las decisiones del usuario, lo
