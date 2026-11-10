@@ -498,14 +498,31 @@ struct SectorTemplateTests {
         #expect(try books.accounts().first { $0.code == "4000" }?.name == "Ventas de mercancía")
     }
 
-    @Test("Los datos de ejemplo crean el plan de cuentas en el idioma de la app")
+    @Test("Los datos de ejemplo salen en el idioma de la app: plan de cuentas, empresa, clientes y descripciones")
     func sampleDataFollowsLanguage() throws {
-        for (identifier, expected) in [("es_US", "Ingresos por servicios"), ("en_US", "Service Revenue")] {
+        let cases = [("es_US", "Ingresos por servicios", "Ríos Diseño & Obra", "Café Aurora", "Renta del taller"),
+                     ("en_US", "Service Revenue", "Rios Design & Build", "Aurora Café", "Workshop rent")]
+        for (identifier, revenue, company, customer, expense) in cases {
             let sample = try ChirograStore.makeContainer(inMemory: true)
-            try SampleData.populate(sample.mainContext, locale: Locale(identifier: identifier))
-            let accounts = try Bookkeeper(context: sample.mainContext).accounts()
-            #expect(accounts.first { $0.code == "4000" }?.name == expected)
+            let context = sample.mainContext
+            try SampleData.populate(context, locale: Locale(identifier: identifier))
+            let books = Bookkeeper(context: context)
+            #expect(try books.accounts().first { $0.code == "4000" }?.name == revenue)
+            #expect(try books.company()?.displayName == company)
+            #expect(try context.fetch(FetchDescriptor<Customer>()).contains { $0.name == customer })
+            #expect(try context.fetch(FetchDescriptor<Expense>()).contains { $0.payee == expense })
+            // Lo mismo en los dos idiomas: sigue siendo de ejemplo y los movimientos del banco se emparejan igual.
+            #expect(try SampleData.isSample(context))
+            #expect(try books.bankInbox(account: books.accounts().first { $0.code == "1010" }!).isEmpty)
         }
+        // Las cifras no cambian con el idioma.
+        let totals = try ["es_US", "en_US"].map { identifier in
+            let sample = try ChirograStore.makeContainer(inMemory: true)
+            try SampleData.populate(sample.mainContext, today: Date(timeIntervalSince1970: 1_793_000_000),
+                                    locale: Locale(identifier: identifier))
+            return try sample.mainContext.fetch(FetchDescriptor<Invoice>()).map(\.balanceDue).sorted()
+        }
+        #expect(totals[0] == totals[1])
     }
 
     @Test("Construcción y servicios tienen ingresos distintos")

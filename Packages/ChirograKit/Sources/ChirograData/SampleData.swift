@@ -28,12 +28,14 @@ public enum SampleData {
         }
     }
 
-    /// El plan de cuentas (categorías) y el asiento de apertura salen en el idioma de la app (`locale`);
-    /// clientes, proveedores y descripciones son contenido de ejemplo «escrito por el usuario» y no se traducen.
+    /// Todo sale en el idioma de la app (`locale`): el plan de cuentas (categorías) y también la empresa, los
+    /// clientes, los proveedores y las descripciones (`SampleTexts`). Lo que crea el usuario después no se traduce
+    /// nunca; esto sí, porque es lo primero que se ve al probar la app (y lo que ve el revisor de Apple).
     public static func populate(_ context: ModelContext, today: Date = Date(), calendar: Calendar = .current,
                                 locale: Locale = .current) throws {
+        let t = SampleTexts(locale: locale)
         let books = Bookkeeper(context: context, actor: actor)
-        try books.setUpCompany(legalName: "Ríos Diseño & Obra LLC", displayName: "Ríos Diseño & Obra",
+        try books.setUpCompany(legalName: t.legalName, displayName: t.displayName,
                                entityType: .llc, state: "TX", locale: locale)
         func day(_ offset: Int) -> Date { calendar.date(byAdding: .day, value: offset, to: today) ?? today }
         func account(_ code: String) throws -> Account {
@@ -51,7 +53,7 @@ public enum SampleData {
         let services = try account("4000")
         let materials = try account("4100")
 
-        try books.post(JournalEntryDraft(date: day(-120), memo: String(localized: "Saldos iniciales"), source: .opening, lines: [
+        try books.post(JournalEntryDraft(date: day(-120), memo: t.openingBalances, source: .opening, lines: [
             .debit(checking.id, 3_800_000), .debit(savings.id, 950_000), .credit(capital.id, 4_750_000),
         ]))
 
@@ -71,28 +73,27 @@ public enum SampleData {
             company.defaultTaxGroupID = austin.id
             company.defaultPaymentTermsDays = 15
             company.phone = "(512) 555-0142"
-            company.email = "hola@riosdiseno.com"
-            company.website = "riosdiseno.com"
+            company.email = t.companyEmail
+            company.website = t.website
             company.address = "1400 E 6th St, Austin, TX 78702"
-            company.defaultInvoiceMessage = "Gracias por su preferencia."
-            company.invoiceFooter = "Pago a 15 días por transferencia a la cuenta indicada."
+            company.defaultInvoiceMessage = t.invoiceMessage
+            company.invoiceFooter = t.invoiceFooter
         }
 
-        let customers = [("Café Aurora", "hola@cafeaurora.com"), ("Hotel Mirador", "compras@hotelmirador.com"),
-                         ("Clínica Del Valle", "admin@clinicadelvalle.com")].map { name, email in
+        let customers = t.customers.map { name, email in
             let customer = Customer(name: name, email: email, paymentTermsDays: 15)
             customer.defaultTaxGroupID = austin.id
             books.insert(customer)
             return customer
         }
         let mirador = customers[1]
-        mirador.contactName = "Laura Méndez"
-        mirador.contactTitle = "Gerente"
-        mirador.notes = "Pagan los viernes. Enviar facturas a Laura con copia a contabilidad."
-        customers[0].contactName = "Sofía Ríos"
-        customers[0].contactTitle = "Dueña"
-        books.insert(CustomerNote(customer: mirador, date: day(-11), text: "Interesados en remodelar el lobby en enero.", author: "Ana R."))
-        books.insert(CustomerNote(customer: mirador, date: day(-60), text: "Piden factura con orden de compra a partir de octubre.", author: "Ana R."))
+        mirador.contactName = t.miradorContact
+        mirador.contactTitle = t.miradorTitle
+        mirador.notes = t.miradorNotes
+        customers[0].contactName = t.auroraContact
+        customers[0].contactTitle = t.auroraTitle
+        books.insert(CustomerNote(customer: mirador, date: day(-11), text: t.noteLobby, author: "Ana R."))
+        books.insert(CustomerNote(customer: mirador, date: day(-60), text: t.notePurchaseOrder, author: "Ana R."))
 
         func invoice(_ customer: Customer, issued: Int, lines: [(String, Decimal, Int64, Account, Bool)]) throws -> Invoice {
             let invoice = Invoice(customer: customer, issueDate: day(issued))
@@ -105,35 +106,35 @@ public enum SampleData {
                 books.insert(model)
             }
             try books.issue(invoice)
-            try books.recordInvoiceSent(invoice, to: customer.email, subject: "Factura \(invoice.number) · Ríos Diseño & Obra", date: day(issued))
+            try books.recordInvoiceSent(invoice, to: customer.email, subject: t.invoiceSubject(invoice.number), date: day(issued))
             return invoice
         }
 
-        let paid = try invoice(customers[0], issued: -40, lines: [("Diseño de interiores · fase 1", 1, 180_000, services, false)])
+        let paid = try invoice(customers[0], issued: -40, lines: [(t.interiorDesign, 1, 180_000, services, false)])
         try books.recordPayment(for: paid, amount: paid.balanceDue, date: day(-30), depositAccount: checking)
-        let overdue = try invoice(customers[1], issued: -23, lines: [("Remodelación de lobby", 1, 150_000, services, false),
-                                                                     ("Materiales", 1, 55_427, materials, true)])
-        try books.recordReminder(overdue, to: mirador.email, subject: "Recordatorio: factura \(overdue.number) vencida", date: today)
-        _ = try invoice(customers[2], issued: -18, lines: [("Señalética y mobiliario", 1, 100_000, services, false),
-                                                           ("Vinil impreso", 4, 2_310, materials, true)])
-        let partial = try invoice(customers[1], issued: -10, lines: [("Diseño de habitaciones", 2, 128_500, services, false)])
+        let overdue = try invoice(customers[1], issued: -23, lines: [(t.lobbyRemodel, 1, 150_000, services, false),
+                                                                     (t.materials, 1, 55_427, materials, true)])
+        try books.recordReminder(overdue, to: mirador.email, subject: t.reminderSubject(overdue.number), date: today)
+        _ = try invoice(customers[2], issued: -18, lines: [(t.signage, 1, 100_000, services, false),
+                                                           (t.vinyl, 4, 2_310, materials, true)])
+        let partial = try invoice(customers[1], issued: -10, lines: [(t.roomDesign, 2, 128_500, services, false)])
         try books.recordPayment(for: partial, amount: 100_000, date: day(-3), depositAccount: checking)
-        _ = try invoice(customers[0], issued: -3, lines: [("Rediseño de terraza", 1, 240_000, services, false)])
+        _ = try invoice(customers[0], issued: -3, lines: [(t.patioRedesign, 1, 240_000, services, false)])
 
-        let lumber = Vendor(name: "Maderas del Norte", email: "ventas@maderasnorte.com")
+        let lumber = Vendor(name: t.lumberName, email: t.lumberEmail)
         lumber.defaultExpenseAccountID = try account("5000").id
         lumber.preferredPaymentMethod = .bankTransfer
         lumber.preferredPaymentAccountID = checking.id
         books.insert(lumber)
         let bill = Bill(vendor: lumber, vendorNumber: "B-221", billDate: day(-12), dueDate: day(9))
         books.insert(bill)
-        let billLine = BillLine(details: "Triplay y herrajes", amount: 84_230, accountID: try account("5000").id)
+        let billLine = BillLine(details: t.plywood, amount: 84_230, accountID: try account("5000").id)
         billLine.bill = bill
         books.insert(billLine)
         try books.record(bill)
         try books.schedulePayment(for: bill, on: day(7), from: checking, method: .bankTransfer)
 
-        let contractor = Vendor(name: "Luis Mora", email: "luis.mora@correo.com")
+        let contractor = Vendor(name: "Luis Mora", email: t.contractorEmail)
         contractor.is1099 = true
         contractor.tinLast4 = "7310"
         contractor.w9Received = true
@@ -154,10 +155,10 @@ public enum SampleData {
         try books.generateRecurring(through: today, calendar: calendar)
 
         let expenses: [(String, Int, Int64, String, Account)] = [
-            ("Renta del taller", -28, 120_000, "6400", checking),
+            (t.workshopRent, -28, 120_000, "6400", checking),
             ("UBER *TRIP", -2, 1_840, "6050", card),
             ("Home Depot", -6, 21_475, "6500", card),
-            ("Seguro del vehículo", -14, 31_000, "6200", checking),
+            (t.vehicleInsurance, -14, 31_000, "6200", checking),
         ]
         for (payee, offset, amount, code, paymentAccount) in expenses {
             let expense = Expense(date: day(offset), payee: payee, paymentAccountID: paymentAccount.id)
@@ -175,23 +176,23 @@ public enum SampleData {
 
         // Estimado aceptado, aún sin facturar (canvas `Estimado`).
         let estimate = try books.saveEstimate(EstimateInput(
-            customer: mirador, title: "Remodelación del lobby", issueDate: day(-5), expirationDate: day(25),
-            taxGroupID: austin.id, customerMessage: "Precios válidos por 30 días.",
+            customer: mirador, title: t.estimateTitle, issueDate: day(-5), expirationDate: day(25),
+            taxGroupID: austin.id, customerMessage: t.estimateMessage,
             lines: [
-                .init(details: "Diseño de lobby", unitPrice: 240_000, isTaxable: false, incomeAccountID: services.id),
-                .init(details: "Mano de obra", quantity: 40, unitPrice: 5_800, isTaxable: false, incomeAccountID: services.id),
-                .init(details: "Madera de roble", quantity: 12, unitPrice: 8_500, isTaxable: true, incomeAccountID: materials.id),
+                .init(details: t.lobbyDesign, unitPrice: 240_000, isTaxable: false, incomeAccountID: services.id),
+                .init(details: t.labor, quantity: 40, unitPrice: 5_800, isTaxable: false, incomeAccountID: services.id),
+                .init(details: t.oak, quantity: 12, unitPrice: 8_500, isTaxable: true, incomeAccountID: materials.id),
             ]
         ))
         try books.setStatus(.sent, of: estimate, date: day(-5))
-        try books.setStatus(.accepted, of: estimate, acceptedBy: "Laura Méndez", date: day(-2))
+        try books.setStatus(.accepted, of: estimate, acceptedBy: t.miradorContact, date: day(-2))
 
         // Esquema 4: banco (canvas de conciliación) y presupuesto. Movimientos del banco y de la tarjeta: el cobro de
         // Café Aurora y la renta emparejados con lo registrado; Uber y Shell por revisar (Shell con una regla).
-        try books.saveBankRule(BankRuleInput(name: "Gasolina", matchText: "shell", amountSign: .outflow, targetAccountID: try account("6050").id))
+        try books.saveBankRule(BankRuleInput(name: t.fuelRule, matchText: "shell", amountSign: .outflow, targetAccountID: try account("6050").id))
         let bankLines = [
-            BankStatementLine(date: day(-30), amount: 180_000, details: "DEPOSIT CAFE AURORA", externalID: "fitid:S-1"),
-            BankStatementLine(date: day(-28), amount: -120_000, details: "CHECK 1043 RENTA TALLER", checkNumber: "1043", externalID: "fitid:S-2"),
+            BankStatementLine(date: day(-30), amount: 180_000, details: t.depositDetails, externalID: "fitid:S-1"),
+            BankStatementLine(date: day(-28), amount: -120_000, details: t.checkDetails, checkNumber: "1043", externalID: "fitid:S-2"),
         ]
         try books.importStatementLines(bankLines, source: .ofx, into: checking)
         try books.importStatementLines([
@@ -202,7 +203,7 @@ public enum SampleData {
             if let candidate = try books.matchCandidates(for: transaction).first { try books.match(transaction, to: candidate.line) }
         }
         let fiscalYear = calendar.component(.year, from: try books.fiscalYearStart(containing: today, calendar: calendar))
-        let budget = try books.createBudget(name: "Presupuesto \(fiscalYear)", fiscalYear: fiscalYear)
+        let budget = try books.createBudget(name: t.budgetName(fiscalYear), fiscalYear: fiscalYear)
         try books.setAnnualBudget(9_000_000, account: services, in: budget, calendar: calendar)
         try books.setAnnualBudget(1_440_000, account: try account("6400"), in: budget, calendar: calendar)
         try books.setAnnualBudget(240_000, account: try account("6050"), in: budget, calendar: calendar)
@@ -251,4 +252,78 @@ public enum SampleDataError: Error, Equatable, LocalizedError {
         case .notSample: String(localized: "Estos libros no son los de ejemplo, así que no se borraron.")
         }
     }
+}
+
+/// Los textos de los datos de ejemplo, en español o en inglés según el idioma de la app. Las cifras, las fechas y los
+/// importes son los mismos en los dos (las pruebas y las capturas cuentan con ellos); solo cambian los nombres.
+struct SampleTexts {
+    let spanish: Bool
+
+    init(locale: Locale) { spanish = locale.language.languageCode?.identifier == "es" }
+
+    private func pick(_ es: String, _ en: String) -> String { spanish ? es : en }
+
+    var legalName: String { pick("Ríos Diseño & Obra LLC", "Rios Design & Build LLC") }
+    var displayName: String { pick("Ríos Diseño & Obra", "Rios Design & Build") }
+    var openingBalances: String { pick("Saldos iniciales", "Opening balances") }
+    var companyEmail: String { pick("hola@riosdiseno.com", "hello@riosdesignbuild.com") }
+    var website: String { pick("riosdiseno.com", "riosdesignbuild.com") }
+    var invoiceMessage: String { pick("Gracias por su preferencia.", "Thank you for your business.") }
+    var invoiceFooter: String {
+        pick("Pago a 15 días por transferencia a la cuenta indicada.", "Payment due in 15 days by bank transfer to the account shown.")
+    }
+
+    var customers: [(String, String)] {
+        spanish
+            ? [("Café Aurora", "hola@cafeaurora.com"), ("Hotel Mirador", "compras@hotelmirador.com"),
+               ("Clínica Del Valle", "admin@clinicadelvalle.com")]
+            : [("Aurora Café", "hello@auroracafe.com"), ("Mirador Hotel", "purchasing@miradorhotel.com"),
+               ("Del Valle Clinic", "admin@delvalleclinic.com")]
+    }
+    var miradorContact: String { pick("Laura Méndez", "Laura Mendez") }
+    var miradorTitle: String { pick("Gerente", "General Manager") }
+    var miradorNotes: String {
+        pick("Pagan los viernes. Enviar facturas a Laura con copia a contabilidad.",
+             "They pay on Fridays. Send invoices to Laura and copy accounting.")
+    }
+    var auroraContact: String { pick("Sofía Ríos", "Sofia Rios") }
+    var auroraTitle: String { pick("Dueña", "Owner") }
+    var noteLobby: String { pick("Interesados en remodelar el lobby en enero.", "Interested in remodeling the lobby in January.") }
+    var notePurchaseOrder: String {
+        pick("Piden factura con orden de compra a partir de octubre.", "Invoices need a purchase order starting in October.")
+    }
+
+    func invoiceSubject(_ number: String) -> String {
+        spanish ? "Factura \(number) · \(displayName)" : "Invoice \(number) · \(displayName)"
+    }
+    func reminderSubject(_ number: String) -> String {
+        spanish ? "Recordatorio: factura \(number) vencida" : "Reminder: invoice \(number) is past due"
+    }
+
+    var interiorDesign: String { pick("Diseño de interiores · fase 1", "Interior design · phase 1") }
+    var lobbyRemodel: String { pick("Remodelación de lobby", "Lobby remodel") }
+    var materials: String { pick("Materiales", "Materials") }
+    var signage: String { pick("Señalética y mobiliario", "Signage and furniture") }
+    var vinyl: String { pick("Vinil impreso", "Printed vinyl") }
+    var roomDesign: String { pick("Diseño de habitaciones", "Guest room design") }
+    var patioRedesign: String { pick("Rediseño de terraza", "Patio redesign") }
+
+    var lumberName: String { pick("Maderas del Norte", "Northside Lumber") }
+    var lumberEmail: String { pick("ventas@maderasnorte.com", "sales@northsidelumber.com") }
+    var plywood: String { pick("Triplay y herrajes", "Plywood and hardware") }
+    var contractorEmail: String { pick("luis.mora@correo.com", "luis.mora@mail.com") }
+
+    var workshopRent: String { pick("Renta del taller", "Workshop rent") }
+    var vehicleInsurance: String { pick("Seguro del vehículo", "Vehicle insurance") }
+
+    var estimateTitle: String { pick("Remodelación del lobby", "Lobby remodel") }
+    var estimateMessage: String { pick("Precios válidos por 30 días.", "Prices valid for 30 days.") }
+    var lobbyDesign: String { pick("Diseño de lobby", "Lobby design") }
+    var labor: String { pick("Mano de obra", "Labor") }
+    var oak: String { pick("Madera de roble", "Oak lumber") }
+
+    var fuelRule: String { pick("Gasolina", "Fuel") }
+    var depositDetails: String { pick("DEPOSIT CAFE AURORA", "DEPOSIT AURORA CAFE") }
+    var checkDetails: String { pick("CHECK 1043 RENTA TALLER", "CHECK 1043 WORKSHOP RENT") }
+    func budgetName(_ year: Int) -> String { spanish ? "Presupuesto \(year)" : "Budget \(year)" }
 }

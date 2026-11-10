@@ -102,7 +102,8 @@ struct WelcomeView: View {
 
     private func loadSample() {
         do {
-            try SampleData.populate(context)
+            // En el idioma de la app (no el del sistema): con la app en inglés, la empresa de ejemplo sale en inglés.
+            try SampleData.populate(context, locale: .app)
             onSample()
         } catch {
             errorMessage = error.localizedDescription

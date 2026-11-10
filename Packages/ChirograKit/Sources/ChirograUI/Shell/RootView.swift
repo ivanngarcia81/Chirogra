@@ -185,7 +185,7 @@ public struct ChirograRootView: View {
                     .onAppear {
                         if QALaunch.loadsSample && !Self.qaLoadedSample {
                             Self.qaLoadedSample = true
-                            try? SampleData.populate(modelContext)
+                            try? SampleData.populate(modelContext, locale: .app)
                         }
                     }
                     #endif

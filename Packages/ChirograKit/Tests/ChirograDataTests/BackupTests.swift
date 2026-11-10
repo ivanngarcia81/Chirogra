@@ -13,7 +13,7 @@ struct BackupTests {
     func sampleContainer() throws -> ModelContainer {
         let container = try ChirograStore.makeContainer(inMemory: true)
         let context = container.mainContext
-        try SampleData.populate(context)
+        try SampleData.populate(context, locale: Locale(identifier: "es_US"))
         let books = Bookkeeper(context: context)
         let expense = try #require(try context.fetch(FetchDescriptor<Expense>()).first)
         try books.attachReceipt(Data("%PDF-1.7 recibo".utf8), filename: "recibo.pdf", contentType: .pdf, to: expense)

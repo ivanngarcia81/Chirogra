@@ -40,7 +40,7 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
 **Siguiente (orden acordado el 10-nov):**
 
 *A. Ahora, mientras Apple revisa la 1.0 (todo entra en la 1.1, sin tocar el esquema de iCloud):*
-1. Usuario: probar el build 28 de TestFlight.
+1. Usuario: build 28 probado en TestFlight el 10-nov («With receipt» bien en inglés). Falta probar el **build 29**.
 2. **Plan de contadores: COMPLETO en App Store Connect** (el usuario lo terminó el 10-nov: textos, disponibilidad,
    precio y nivel). Sin enviar a revisión: va **con la 1.1**, en el mismo envío.
 3. **Panel de clientes: HECHO el 10-nov, en el build 23** (`5473946`, subido el 10-nov para iOS y macOS). Canvas «Chirogra — Panel de
@@ -91,13 +91,17 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
    los importes (`Int64.money`); el mensaje del carrusel reserva tres líneas. **Sin hacer, a propósito:** la campana de
    Avisos que desaparece al abrirlos (lo hace el sistema con la hoja que sale del botón), la barra de «Continuar» del
    alta en el iPad (vidrio normal del sistema), el selector Devengado/Caja con letra grande, textos cortados menores del
-   Mac y los datos de ejemplo en español con la app en inglés. Informes completos de los agentes en el scratchpad de la sesión (no en el repo).
+   Mac (los datos de ejemplo en inglés, hechos en el build 29). Informes completos de los agentes en el scratchpad de la sesión (no en el repo).
    **Build 27** (`7095e90`, subido el 10-nov para iOS y macOS): «Con recibo» del filtro de Gastos salía en español con la
    app en inglés (faltaba en el catálogo); `StringCatalogTests.enumLabelsAreInCatalog` exige ahora en el catálogo las
    etiquetas de los enums de `ChirograUI` (se traducen con `localizedTitle` y el compilador no las extrae).
    **Build 28** (`b379921`, subido el 10-nov para iOS y macOS): en el panel, la fila elegida pone en blanco estado, cifras de color y «LLC · Texas»
    (el rojo sobre Tinta no se leía) y las columnas Sales tax, Avisos y Última actividad ya no se cortan en el Mac
    ni Sales tax en el iPad vertical. Textos de la 1.1 (descripción, What's New, revisor) y capturas: APP-STORE.md.
+   **Build 29** (subido el 10-nov para iOS y macOS): los datos de ejemplo salen en el idioma de la app («Rios Design &
+   Build», «Aurora Café», «Workshop rent»…; `SampleTexts` en `SampleData.swift`), con las mismas cifras en los dos.
+   La bienvenida pasa `Locale.app` (idioma de la app, no la región del aparato): antes, con la app en inglés y la
+   región en español, todo salía en español, también el plan de cuentas. Comprobado en el simulador en los dos idiomas.
 
 *B. Cuando Apple apruebe la 1.0:*
 7. Usuario: enviar la 1.0.1 (build 15).
