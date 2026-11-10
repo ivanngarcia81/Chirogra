@@ -247,6 +247,8 @@ private struct WelcomePage: View {
     #if os(iOS)
     @Environment(\.horizontalSizeClass) private var sizeClass
     #endif
+    /// Alto de tres líneas de `.body` (sigue el tamaño de letra).
+    @ScaledMetric(relativeTo: .body) private var messageMinHeight: CGFloat = 66
     /// 0 = todo escondido; 1 = todo en su sitio. Cada pieza entra con su propio retraso (`appear`).
     @State private var shown = false
 
@@ -360,6 +362,9 @@ private struct WelcomePage: View {
             Text(message)
                 .font(.body)
                 .foregroundStyle(Palette.ink2)
+                // Siempre el alto de tres líneas: con una o dos, el bloque centrado subía o bajaba el título entre
+                // páginas (QA del 10-nov). Con letra grande puede crecer.
+                .frame(minHeight: messageMinHeight, alignment: .top)
         }
         .multilineTextAlignment(.center)
         .fixedSize(horizontal: false, vertical: true)

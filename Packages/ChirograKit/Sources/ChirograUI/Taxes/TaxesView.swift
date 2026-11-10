@@ -161,7 +161,7 @@ struct TaxesView: View {
             case "grupo": showingGroup = true; return
             default: break
             }
-            let rates = agencies.flatMap { ($0.rates ?? []).filter { !$0.isArchived } }
+            let rates = agencies.flatMap { $0.sortedRates.filter { !$0.isArchived } }
             let index = UserDefaults.standard.integer(forKey: "qa.tasa")
             if rates.indices.contains(index) { editingRate = rates[index] }
         }
@@ -374,12 +374,12 @@ struct TaxesView: View {
         }
         RowGroup {
             ForEach(groups.filter { !$0.isArchived }) { group in
-                let kind = String(localized: "Combinada · \((group.rates ?? []).count) tasas")
+                let kind = String(localized: "Combinada · \(group.sortedRates.count) tasas")
                 rateRow(group.name, group.id == defaultTaxID ? String(localized: "\(kind) · predeterminada") : kind, group.percent)
                     .contextMenu { defaultButton(group.id) }
             }
             ForEach(agencies) { agency in
-                ForEach((agency.rates ?? []).filter { !$0.isArchived }) { rate in
+                ForEach(agency.sortedRates.filter { !$0.isArchived }) { rate in
                     let kind = String(localized: "Componente · \(agency.name)")
                     Button { editingRate = rate } label: {
                         rateRow(rate.name, rate.id == defaultTaxID ? String(localized: "\(kind) · predeterminada") : kind, rate.percent,
@@ -500,7 +500,9 @@ struct TaxesView: View {
                         foot: days >= 0 ? String(localized: "Faltan \(days) días") : String(localized: "Venció hace \(-days) días"),
                         footColor: days < 0 ? Palette.negative : Palette.warning),
             ], large: true)
-            let sideBySide = width - 40 >= 820
+            // Con letra de accesibilidad, uno debajo del otro: lado a lado, la columna de 320 pt partía las cifras en dos
+            // líneas («$2,645.» / «44», QA del 10-nov).
+            let sideBySide = width - 40 >= 820 && !dynamicTypeSize.isAccessibilitySize
             let layout = sideBySide ? AnyLayout(HStackLayout(alignment: .top, spacing: 16)) : AnyLayout(VStackLayout(spacing: 16))
             if let errorMessage { ErrorBanner(message: errorMessage) }
             layout {
@@ -524,7 +526,7 @@ struct TaxesView: View {
         let collected = Dictionary((summary?.rows ?? []).compactMap { row in row.rateID.map { ($0, row.tax) } }, uniquingKeysWith: +)
         let number = (Calendar.current.component(.month, from: interval.start) - 1) / 3 + 1
         let activeGroups = groups.filter { !$0.isArchived }
-        let rates = agencies.flatMap { agency in (agency.rates ?? []).filter { !$0.isArchived }.map { (agency, $0) } }
+        let rates = agencies.flatMap { agency in agency.sortedRates.filter { !$0.isArchived }.map { (agency, $0) } }
         #if os(macOS)
         let picked = macSelectedItem?.key
         #else
@@ -546,7 +548,7 @@ struct TaxesView: View {
             } rows: {
                 ForEach(Array(activeGroups.enumerated()), id: \.element.id) { index, group in
                     rateTableRow(group.name, kind: String(localized: "Combinada"), percent: group.percent,
-                                 collected: (group.rates ?? []).reduce(0) { $0 + (collected[$1.id] ?? 0) }, bold: true,
+                                 collected: group.sortedRates.reduce(0) { $0 + (collected[$1.id] ?? 0) }, bold: true,
                                  key: "group:\(group.id)", index: index, picked: picked, id: group.id, rate: nil)
                 }
                 ForEach(Array(rates.enumerated()), id: \.element.1.id) { index, item in
@@ -615,8 +617,9 @@ struct TaxesView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         ReportCellText(text: kind).lineLimit(1).frame(width: 150, alignment: .leading)
-        Text("\(percent.formatted())%").frame(width: 64, alignment: .trailing)
-        Text(collected.money).frame(width: 110, alignment: .trailing)
+        // En una línea: con letra grande «8.25» y «%» se separaban (QA del 10-nov).
+        Text("\(percent.formatted())%").lineLimit(1).minimumScaleFactor(0.6).frame(width: 64, alignment: .trailing)
+        Text(collected.money).lineLimit(1).minimumScaleFactor(0.6).frame(width: 110, alignment: .trailing)
     }
 
     // MARK: Inspector del Mac
@@ -643,11 +646,11 @@ struct TaxesView: View {
         let summary = summary(quarter(quarterOffset))
         let collected = Dictionary((summary?.rows ?? []).compactMap { row in row.rateID.map { ($0, row.tax) } }, uniquingKeysWith: +)
         let groupItems = groups.filter { !$0.isArchived }.map { group in
-            MacRateItem(key: "group:\(group.id)", name: group.name, percent: group.percent, agency: nil, components: group.rates ?? [],
-                        collected: (group.rates ?? []).reduce(0) { $0 + (collected[$1.id] ?? 0) }, id: group.id, rate: nil)
+            MacRateItem(key: "group:\(group.id)", name: group.name, percent: group.percent, agency: nil, components: group.sortedRates,
+                        collected: group.sortedRates.reduce(0) { $0 + (collected[$1.id] ?? 0) }, id: group.id, rate: nil)
         }
         let rateItems = agencies.flatMap { agency in
-            (agency.rates ?? []).filter { !$0.isArchived }.map { rate in
+            agency.sortedRates.filter { !$0.isArchived }.map { rate in
                 MacRateItem(key: "rate:\(rate.id)", name: rate.name, percent: rate.percent, agency: agency.name, components: [],
                             collected: collected[rate.id] ?? 0, id: rate.id, rate: rate)
             }
@@ -729,7 +732,7 @@ struct TaxesView: View {
             HStack(alignment: .firstTextBaseline) {
                 Text("Gastos deducibles \(Date.now.formatted(.appDateTime.year()))").font(.cardTitle).accessibilityAddTraits(.isHeader)
                 Spacer(minLength: 8)
-                Text((summary?.totalDeductions ?? 0).money).font(.cardTitle).monospacedDigit()
+                Text((summary?.totalDeductions ?? 0).money).font(.cardTitle).monospacedDigit().fixedSize()
             }
             .padding(.bottom, 6)
             if summary == nil {
@@ -742,7 +745,7 @@ struct TaxesView: View {
                     HStack {
                         Text(row.line.name(for: .appText)).lineLimit(1)
                         Spacer(minLength: 8)
-                        Text(row.deductibleAmount.money).fontWeight(.semibold).monospacedDigit()
+                        Text(row.deductibleAmount.money).fontWeight(.semibold).monospacedDigit().fixedSize()
                     }
                     Capsule().fill(Palette.surface2).frame(height: 4)
                         .overlay(alignment: .leading) {
@@ -814,7 +817,7 @@ private struct TaxDefaultsRows: View {
                     }
                 }
                 ForEach(agencies) { agency in
-                    let rates = (agency.rates ?? []).filter { !$0.isArchived }
+                    let rates = agency.sortedRates.filter { !$0.isArchived }
                     if !rates.isEmpty {
                         Section(heading: agency.name) {
                             ForEach(rates) { Text(verbatim: "\($0.name) · \($0.percent.formatted())%").tag(Optional($0.id)) }

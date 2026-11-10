@@ -293,8 +293,12 @@ struct ReadOnlyBanner: View {
         .padding(.horizontal, 16)
         .padding(.vertical, 8)
         .background(Palette.surface)
+        // Todo el aviso abre la suscripción: el botón pequeño medía 28 pt (QA del 10-nov, mínimo 44).
+        .contentShape(Rectangle())
+        .onTapGesture { store.showsPaywall = true }
         .overlay(alignment: .bottom) { Divider() }
         .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(.isButton)
     }
 }
 

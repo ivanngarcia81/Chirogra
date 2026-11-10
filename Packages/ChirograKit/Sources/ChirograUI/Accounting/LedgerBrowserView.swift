@@ -105,6 +105,8 @@ struct LedgerBrowserView: View {
                 Image(systemName: "chevron.down").font(.caption.weight(.semibold)).accessibilityHidden(true)
             }
         }
+        // Nuestro chevron y no el del sistema: en el Mac salían los dos («⌄ ⌄», QA del 10-nov).
+        .menuIndicator(.hidden)
         .accessibilityLabel("Cuenta")
         .accessibilityValue(selected?.displayName ?? "")
         .headerButton()
@@ -123,6 +125,8 @@ struct LedgerBrowserView: View {
                 Image(systemName: "chevron.down").font(.caption.weight(.semibold)).accessibilityHidden(true)
             }
         }
+        // Nuestro chevron y no el del sistema: en el Mac salían los dos («⌄ ⌄», QA del 10-nov).
+        .menuIndicator(.hidden)
         .accessibilityLabel("Periodo")
         .accessibilityValue(period.title)
         .headerButton()

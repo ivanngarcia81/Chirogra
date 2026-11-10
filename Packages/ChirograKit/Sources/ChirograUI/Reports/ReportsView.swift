@@ -226,7 +226,9 @@ struct ReportsView: View {
         }
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
         .background(Palette.background)
-        .navigationTitle(isPhone && kind == .income ? String(localized: "Resultados") : kind.fullTitle)
+        // En el iPhone con letra de accesibilidad, el nombre corto: el largo se cortaba («Antigüedad por cobr…», QA del 10-nov).
+        .navigationTitle(isPhone && (kind == .income || dynamicTypeSize.isAccessibilitySize)
+                         ? String(localized: String.LocalizationValue(kind.rawValue)) : kind.fullTitle)
         #if os(macOS)
         .navigationSubtitle(subtitle)
         #endif

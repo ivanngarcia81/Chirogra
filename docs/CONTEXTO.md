@@ -81,9 +81,19 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
    renovación; «6%». **Pendiente de la QA:** letra grande (cifras partidas en Impuestos, Plan de cuentas y Banca;
    panel del iPad), orden variable de las tasas en Impuestos, doble chevron del Libro mayor (Mac), buscador de Gastos
    cortado en inglés (Mac), controles de < 44 pt (botón del aviso de solo lectura), «Seguridad» abre lo mismo que
-   «iCloud y copias», signo menos mezclado (− y -), campana de Avisos que desaparece al abrirlos desde el panel, y
-   **decidir** si «Gastos del mes» de Inicio (incluye costo de ventas, ▼90 %) y la tarjeta de Gastos (solo gastos,
-   ▼85 %) deben usar la misma base. Informes completos de los agentes en el scratchpad de la sesión (no en el repo).
+   «iCloud y copias», signo menos mezclado (− y -) y campana de Avisos que desaparece al abrirlos desde el panel.
+   **Decisión del usuario del 10-nov (cambia la del 2-nov):** la tarjeta del mes de Gastos (Mac, iPhone e iPad) usa la
+   base de Inicio y del estado de resultados (gastos + costo de ventas de los asientos, con las facturas de proveedor)
+   y, si el mes las tiene, dice «Incluye $X de facturas de proveedor». Lo eligió viendo las dos versiones en el Mac.
+   **Segunda tanda de la QA (10-nov, build 26 con lo anterior):** letra grande (Plan de cuentas
+   y Banca en líneas, Impuestos uno debajo del otro y cifras en una línea, Empresas con «Ejemplo» debajo, títulos
+   cortos de Reportes en el iPhone, panel en tarjetas en el iPad); tasas en orden estable (`stableOrder`: la mayor
+   primero y luego por nombre); un solo chevron en el Libro mayor del Mac; «Buscar gastos» en el Mac; el aviso de
+   solo lectura entero abre la suscripción y «Buscar en…» con 44 pt; «Seguridad» baja al bloqueo; signo «−» en todos
+   los importes (`Int64.money`); el mensaje del carrusel reserva tres líneas. **Sin hacer, a propósito:** la campana de
+   Avisos que desaparece al abrirlos (lo hace el sistema con la hoja que sale del botón), la barra de «Continuar» del
+   alta en el iPad (vidrio normal del sistema), el selector Devengado/Caja con letra grande, textos cortados menores del
+   Mac y los datos de ejemplo en español con la app en inglés. Informes completos de los agentes en el scratchpad de la sesión (no en el repo).
 
 *B. Cuando Apple apruebe la 1.0:*
 7. Usuario: enviar la 1.0.1 (build 15).

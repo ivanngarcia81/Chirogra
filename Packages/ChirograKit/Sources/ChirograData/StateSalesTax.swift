@@ -104,3 +104,23 @@ public struct StateSalesTax: Sendable, Equatable {
         StateSalesTax("WY", "Wyoming", 40_000, "Wyoming Department of Revenue"),
     ]
 }
+
+// MARK: - Orden estable de las tasas
+
+/// Las relaciones de SwiftData no guardan orden: las tasas salían en otro orden en cada arranque (QA del 10-nov). Primero
+/// la mayor (la estatal) y, entre iguales, por nombre: «Texas 6.25 %, Austin 1 %, Austin MTA 1 %».
+extension Sequence where Element == TaxRate {
+    public var stableOrder: [TaxRate] {
+        sorted { ($1.rateMillionths, $0.name.lowercased()) < ($0.rateMillionths, $1.name.lowercased()) }
+    }
+}
+
+extension TaxAgency {
+    /// Sus tasas en orden estable (`stableOrder`).
+    public var sortedRates: [TaxRate] { (rates ?? []).stableOrder }
+}
+
+extension TaxGroup {
+    /// Sus tasas en orden estable (`stableOrder`).
+    public var sortedRates: [TaxRate] { (rates ?? []).stableOrder }
+}

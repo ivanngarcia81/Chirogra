@@ -404,11 +404,25 @@ struct FormatsView: View {
 struct DataAndSecurityView: View {
     /// Dentro de `SettingsWideView`: el título de la ventana sigue siendo «Ajustes».
     var embedded = false
+    /// «Seguridad» de Más: baja hasta el bloqueo con Face ID (antes abría igual que «iCloud y copias», QA del 10-nov).
+    var showsSecurity = false
     @AppStorage(ChirograStore.syncEnabledKey) private var iCloudSyncEnabled = true
     @AppStorage("appLockEnabled") private var appLockEnabled = false
     @State private var lockUnavailable = false
 
     var body: some View {
+        ScrollViewReader { proxy in
+            form.task {
+                guard showsSecurity else { return }
+                try? await Task.sleep(for: .milliseconds(300))
+                withAnimation { proxy.scrollTo(Self.securityID, anchor: .center) }
+            }
+        }
+    }
+
+    private static let securityID = "security"
+
+    private var form: some View {
         SettingsForm {
             // Solo con los datos de ejemplo: «Empezar con mi empresa», también para quien ocultó el aviso de Inicio.
             SampleBooksSection()
@@ -446,6 +460,7 @@ struct DataAndSecurityView: View {
                         }
                     ))
                 }
+                .id(Self.securityID)
             } header: {
                 SectionLabel(text: String(localized: "Seguridad"))
             } footer: {

@@ -52,6 +52,7 @@ struct ClientsView: View {
     @Environment(\.modelContext) private var context
     #if os(iOS)
     @Environment(\.horizontalSizeClass) private var sizeClass
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     #endif
     @Query private var companies: [Company]
     @AppStorage(ChirograStore.syncEnabledKey) private var iCloudSyncEnabled = true
@@ -84,7 +85,9 @@ struct ClientsView: View {
         #if os(macOS)
         true
         #else
-        sizeClass == .regular
+        // Con letra de accesibilidad, las tarjetas también en el iPad: en la tabla las columnas de cifras quedaban
+        // ilegibles («Est…», «2 · $3,…», QA del 10-nov).
+        sizeClass == .regular && !dynamicTypeSize.isAccessibilitySize
         #endif
     }
 
@@ -426,9 +429,9 @@ struct ClientsView: View {
                     }
                 } actions: {
                     if filter == .archived {
-                        Button("Buscar en todos") { filter = .all }
+                        Button { filter = .all } label: { Text("Buscar en todos").frame(minHeight: Metrics.target).contentShape(Rectangle()) }
                     } else {
-                        Button("Buscar en Archivados") { filter = .archived }
+                        Button { filter = .archived } label: { Text("Buscar en Archivados").frame(minHeight: Metrics.target).contentShape(Rectangle()) }
                     }
                 }
             } else if filter == .archived {

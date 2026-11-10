@@ -834,7 +834,7 @@ struct MoreView: View {
                         systemImage: "icloud", color: Palette.teal) { DataAndSecurityView() }
                 MoreRow(title: String(localized: "Seguridad"),
                         value: appLockEnabled ? String(localized: "Face ID") : String(localized: "Desactivado"),
-                        systemImage: "faceid", color: Palette.red) { DataAndSecurityView() }
+                        systemImage: "faceid", color: Palette.red) { DataAndSecurityView(showsSecurity: true) }
             }
 
             Section(title: "Ayuda") { GuideLinkRow() }

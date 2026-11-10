@@ -83,6 +83,7 @@ extension AccountSubtype {
 /// Plan de cuentas del iPhone: grupos por tipo con código, nombre, tipo de detalle y saldo (canvas `MacPlanCuentas`,
 /// en lista). Cada cuenta abre su libro mayor.
 struct ChartOfAccountsView: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @CompanyQuery(sort: \Account.code) private var accounts: [Account]
     @ScaledMetric(relativeTo: .body) private var codeWidth: CGFloat = 48
     @CompanyQuery private var journalLines: [JournalLine]
@@ -105,6 +106,17 @@ struct ChartOfAccountsView: View {
                         ForEach(Self.outline(rows), id: \.account.id) { item in
                             let account = item.account
                             NavigationLink { LedgerView(account: account) } label: {
+                                if dynamicTypeSize.isAccessibilitySize {
+                                    // Con letra de accesibilidad, en líneas: en fila, el nombre y el saldo se partían
+                                    // («corrien-te», «$39,29 / 0.00», QA del 10-nov).
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(account.maskedName).strikethrough(account.isArchived).foregroundStyle(Palette.ink)
+                                        Text(verbatim: "\(account.code) · \(account.subtype.title)").font(.footnote).foregroundStyle(Palette.ink2)
+                                        Text(ledger.balance(of: account).money).monospacedDigit().foregroundStyle(Palette.ink)
+                                    }
+                                    .padding(.leading, CGFloat(item.depth) * 16)
+                                    .accessibilityElement(children: .combine)
+                                } else {
                                 HStack(spacing: 12) {
                                     Text(account.code).foregroundStyle(Palette.ink2).monospacedDigit().frame(minWidth: codeWidth, alignment: .leading)
                                     VStack(alignment: .leading, spacing: 1) {
@@ -117,6 +129,7 @@ struct ChartOfAccountsView: View {
                                     Text(ledger.balance(of: account).money).monospacedDigit().foregroundStyle(Palette.ink)
                                 }
                                 .accessibilityElement(children: .combine)
+                                }
                             }
                             .swipeActions {
                                 if !account.isSystem {

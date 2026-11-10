@@ -5428,6 +5428,16 @@
         }
       }
     },
+    "Buscar gastos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search expenses"
+          }
+        }
+      }
+    },
     "Buscar ⌘K" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -14173,6 +14183,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Includes %@ %@"
+          }
+        }
+      }
+    },
+    "Incluye %@ de facturas de proveedor" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Includes %@ in vendor bills"
           }
         }
       }

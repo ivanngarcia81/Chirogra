@@ -25,6 +25,8 @@ struct ExpenseTablePage: View {
     @Environment(\.modelContext) private var context
     @CompanyQuery(sort: \Expense.date, order: .reverse) private var expenses: [Expense]
     @CompanyQuery(sort: \Account.code) private var accounts: [Account]
+    @CompanyQuery private var journalLines: [JournalLine]
+    @CompanyQuery private var bills: [Bill]
     @State private var period: ExpensePeriod
     @State private var withoutReceipt = false
     /// «Reclasificar…» (varios gastos de una categoría a otra).
@@ -68,9 +70,6 @@ struct ExpenseTablePage: View {
         let labels = Dictionary(accounts.map { ($0.id, $0.paymentLabel) }, uniquingKeysWith: { first, _ in first })
         return expenses.filter { !$0.isVoid }.map { ExpenseTableRow($0, accountNames: names, paymentLabels: labels) }
     }
-
-    /// Lo que cuenta en la tarjeta del mes: solo lo contabilizado.
-    private var postedExpenses: [Expense] { expenses.filter { $0.isPosted && !$0.isVoid } }
 
     /// Los gastos del periodo, antes de la búsqueda y de «Solo sin recibo».
     private func inPeriod(_ rows: [ExpenseTableRow]) -> [ExpenseTableRow] {
@@ -136,7 +135,7 @@ struct ExpenseTablePage: View {
             title: String(localized: "Gastos"),
             subtitle: count,
             rows: shown, footer: count,
-            query: $query, searchPrompt: Text("Proveedor, categoría o monto"),
+            query: $query, searchPrompt: Text("Buscar gastos"),
             selection: $selection,
             sortOrder: [KeyPathComparator(\ExpenseTableRow.date, order: .reverse)],
             addTitle: String(localized: "Nuevo gasto"), onAdd: { creating = true },
@@ -174,7 +173,8 @@ struct ExpenseTablePage: View {
         } filter: {
             VStack(alignment: .leading, spacing: 14) {
                 if case .month(let start) = period {
-                    ExpenseMonthCard(month: start, expenses: postedExpenses, accounts: accounts)
+                    ExpenseMonthCard(month: start, ledger: Ledger(accounts: accounts, lines: journalLines),
+                                     bills: bills.filter { $0.journalEntryID != nil && $0.status != .void })
                 }
                 Toggle("Solo sin recibo", isOn: $withoutReceipt)
                     .toggleStyle(.checkbox)
@@ -520,14 +520,13 @@ private struct ExpenseReceiptCell: View {
 // MARK: - Tarjeta del mes
 
 /// Gasto del mes por categoría (canvas `MacGastos`: «Gastos de octubre», la cifra, la comparación con el mes anterior,
-/// la barra y la leyenda). Las mismas cifras que el estado de resultados (gastos y costo de ventas), como la tarjeta del
-/// mes de `ExpenseListView` y «Gastos» de Inicio; las cuatro mayores y el resto en «Otros».
-/// Suma solo los gastos de la tabla (decisión del usuario, 2-nov): antes salía del estado de resultados e incluía las
-/// facturas por pagar, y no cuadraba con las filas de abajo.
+/// la barra y la leyenda); las cuatro mayores y el resto en «Otros». Decisión del usuario del 10-nov (cambia la del 2-nov):
+/// las cifras de los asientos, gastos y costo de ventas, como «Gastos» de Inicio y el estado de resultados, con las
+/// facturas de proveedor. Como la tabla solo lista gastos, si el mes tiene facturas de proveedor se dice cuánto suman.
 private struct ExpenseMonthCard: View {
     let month: Date
-    let expenses: [Expense]
-    let accounts: [Account]
+    let ledger: Ledger
+    let bills: [Bill]
 
     private struct Slice {
         let name: String
@@ -538,17 +537,19 @@ private struct ExpenseMonthCard: View {
     var body: some View {
         let rows = categoryRows(DateInterval.month(containing: month))
         let total = rows.reduce(0) { $0 + $1.amount }
+        let interval = DateInterval.month(containing: month)
+        let billed = bills.filter { $0.billDate >= interval.start && $0.billDate < interval.end }.reduce(0) { $0 + $1.total }
         let previous = categoryRows(DateInterval.month(containing: month, offset: -1)).reduce(0) { $0 + $1.amount }
         let slices = slices(rows)
         let monthName = month.formatted(.appDateTime.month(.wide))
         let shape = RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous)
         ViewThatFits(in: .horizontal) {
             HStack(alignment: .center, spacing: 20) {
-                summary(total: total, previous: previous, monthName: monthName).frame(minWidth: 170, alignment: .leading)
+                summary(total: total, previous: previous, monthName: monthName, billed: billed).frame(minWidth: 170, alignment: .leading)
                 breakdown(slices, total: total).frame(minWidth: 300)
             }
             VStack(alignment: .leading, spacing: 12) {
-                summary(total: total, previous: previous, monthName: monthName)
+                summary(total: total, previous: previous, monthName: monthName, billed: billed)
                 breakdown(slices, total: total)
             }
         }
@@ -561,19 +562,11 @@ private struct ExpenseMonthCard: View {
     }
 
     /// Importe por categoría de los gastos del intervalo (sus líneas); lo que no tiene categoría va a «Sin categoría».
+    /// Gastos y costo de ventas del mes por cuenta, de los asientos (como Inicio y el estado de resultados).
     private func categoryRows(_ interval: DateInterval) -> [(name: String, amount: Int64)] {
-        let names = Dictionary(accounts.map { ($0.id, $0.name) }, uniquingKeysWith: { first, _ in first })
-        var totals: [String: Int64] = [:]
-        for expense in expenses where interval.contains(expense.date) && expense.date < interval.end {
-            var categorized: Int64 = 0
-            for line in expense.sortedLines {
-                guard let id = line.accountID, let name = names[id] else { continue }
-                totals[name, default: 0] += line.amount
-                categorized += line.amount
-            }
-            if expense.total > categorized { totals[String(localized: "Sin categoría"), default: 0] += expense.total - categorized }
-        }
-        return totals.filter { $0.value > 0 }.map { (name: $0.key, amount: $0.value) }.sorted { $0.amount > $1.amount }
+        let statement = ledger.incomeStatement(interval)
+        return (statement.costOfGoodsSold + statement.expenses).filter { $0.amount > 0 }
+            .map { (name: $0.account.name, amount: $0.amount) }.sorted { $0.amount > $1.amount }
     }
 
     private func slices(_ rows: [(name: String, amount: Int64)]) -> [Slice] {
@@ -586,7 +579,7 @@ private struct ExpenseMonthCard: View {
     }
 
     /// «Gastos de octubre», la cifra de 24 y «▼ 8% vs. septiembre» (si los dos meses tienen gastos).
-    private func summary(total: Int64, previous: Int64, monthName: String) -> some View {
+    private func summary(total: Int64, previous: Int64, monthName: String, billed: Int64) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             Text("Gastos de \(monthName)").font(.label).foregroundStyle(Palette.ink2)
             Text(total.money).font(.amount(24)).foregroundStyle(Palette.ink).lineLimit(1).minimumScaleFactor(0.6)
@@ -607,6 +600,9 @@ private struct ExpenseMonthCard: View {
                     }
                 }
                 .font(.footnote)
+            }
+            if billed > 0 {
+                Text("Incluye \(billed.money) de facturas de proveedor").font(.footnote).foregroundStyle(Palette.ink2)
             }
         }
         .accessibilityElement(children: .combine)

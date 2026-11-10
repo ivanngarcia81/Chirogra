@@ -86,7 +86,7 @@ extension Bookkeeper {
     public func defaultTaxCode() throws -> TaxCodeSummary? {
         guard let id = try company()?.defaultTaxGroupID else { return nil }
         if let group = try taxGroup(id: id) {
-            return TaxCodeSummary(id: group.id, name: group.name, rates: (group.rates ?? []).filter { !$0.isArchived })
+            return TaxCodeSummary(id: group.id, name: group.name, rates: group.sortedRates.filter { !$0.isArchived })
         }
         guard let rate = try taxRate(id: id), !rate.isArchived else { return nil }
         return TaxCodeSummary(id: rate.id, name: rate.name, rates: [rate])

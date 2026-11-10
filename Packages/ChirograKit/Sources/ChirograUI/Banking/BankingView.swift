@@ -7,6 +7,8 @@ import SwiftUI
 /// revisar», «Conciliada al…»); cada una abre su libro mayor. Debajo, Conciliar, Reglas, los movimientos ya revisados e
 /// «Importar extracto», y la bandeja «Por revisar» con ✓ para aceptar lo que propone la app (banca 1.2).
 struct BankingView: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    private var isAX: Bool { dynamicTypeSize.isAccessibilitySize }
     @Environment(\.modelContext) private var modelContext
     @CompanyQuery(sort: \Account.code) private var accounts: [Account]
     @CompanyQuery private var journalLines: [JournalLine]
@@ -141,12 +143,16 @@ struct BankingView: View {
             IconTile(systemImage: account.bankSymbol, foreground: account.bankColor)
             VStack(alignment: .leading, spacing: 1) {
                 // Hasta dos líneas: en el iPhone «Cuenta corriente ••4821» se cortaba en «••4…» (3-nov).
-                Text(account.maskedName).foregroundStyle(Palette.ink).lineLimit(2)
-                Text(subtitle.0).font(.footnote).foregroundStyle(subtitle.1).lineLimit(1)
+                Text(account.maskedName).foregroundStyle(Palette.ink).lineLimit(isAX ? nil : 2)
+                Text(subtitle.0).font(.footnote).foregroundStyle(subtitle.1).lineLimit(isAX ? nil : 1)
+                // Con letra de accesibilidad, el saldo debajo: en fila dejaba el nombre en «Cu e…» (QA del 10-nov).
+                if isAX { Text(balance.money).monospacedDigit().foregroundStyle(Palette.ink) }
             }
             .layoutPriority(1)
-            Spacer(minLength: 8)
-            Text(balance.money).monospacedDigit().foregroundStyle(Palette.ink).fixedSize()
+            if !isAX {
+                Spacer(minLength: 8)
+                Text(balance.money).monospacedDigit().foregroundStyle(Palette.ink).fixedSize()
+            }
         }
         .padding(.vertical, 2)
         .accessibilityElement(children: .combine)

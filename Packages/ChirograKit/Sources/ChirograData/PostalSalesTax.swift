@@ -119,7 +119,7 @@ extension Bookkeeper {
     @discardableResult
     public func createTaxCode(for suggestion: SalesTaxSuggestion) throws -> TaxCodeSummary {
         if let id = try suggestion.existingTaxCodeID ?? taxCodeID(withRate: suggestion.rate.combinedRateMillionths) {
-            if let group = try taxGroup(id: id) { return TaxCodeSummary(id: group.id, name: group.name, rates: group.rates ?? []) }
+            if let group = try taxGroup(id: id) { return TaxCodeSummary(id: group.id, name: group.name, rates: group.sortedRates) }
             if let rate = try taxRate(id: id) { return TaxCodeSummary(id: rate.id, name: rate.name, rates: [rate]) }
         }
         let rate = suggestion.rate

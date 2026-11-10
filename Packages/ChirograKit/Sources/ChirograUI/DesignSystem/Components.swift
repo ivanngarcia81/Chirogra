@@ -6,14 +6,20 @@ import SwiftUI
 
 extension Int64 {
     /// Centavos → "$1,250.00".
-    var money: String { Money(minorUnits: self).formatted() }
+    var money: String { Self.minusSign(Money(minorUnits: self).formatted()) }
     /// Centavos → "$1,250": cifras clave del canvas, sin centavos (redondeado).
     var moneyWhole: String {
-        Money(minorUnits: self).decimalValue.formatted(.currency(code: "USD").precision(.fractionLength(0)))
+        Self.minusSign(Money(minorUnits: self).decimalValue.formatted(.currency(code: "USD").precision(.fractionLength(0))))
     }
     /// Centavos → "1,250.00": columnas de importes del iPhone, donde el "$" de cada fila quitaba sitio al nombre.
     var amountOnly: String {
-        Money(minorUnits: self).decimalValue.formatted(.number.precision(.fractionLength(2)))
+        Self.minusSign(Money(minorUnits: self).decimalValue.formatted(.number.precision(.fractionLength(2))))
+    }
+
+    /// El signo menos tipográfico («−$293.14»), el mismo que ya usaban los movimientos y los descuentos: el formato del
+    /// sistema pone el guion («-$293.14») y en una misma pantalla salían los dos (QA del 10-nov).
+    private static func minusSign(_ text: String) -> String {
+        text.hasPrefix("-") ? "\u{2212}" + text.dropFirst() : text
     }
 }
 

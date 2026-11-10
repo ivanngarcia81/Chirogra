@@ -193,6 +193,7 @@ struct CompanyMenuItems: View {
 struct CompaniesView: View {
     /// En la hoja del selector: «Listo» y, al elegir una, se cierra.
     var inSheet = false
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     /// Dentro de `SettingsWideView`: el título de la ventana sigue siendo «Ajustes».
     var embedded = false
     @Environment(\.modelContext) private var context
@@ -283,7 +284,10 @@ struct CompaniesView: View {
                 HStack(spacing: 12) {
                     CompanyMonogram(name: company.shownName, side: Self.monogramSide)
                     VStack(alignment: .leading, spacing: 2) {
-                        HStack(spacing: 6) {
+                        // Con letra de accesibilidad, «Ejemplo» debajo: al lado dejaba el nombre en «Río s…» (QA del 10-nov).
+                        let layout = dynamicTypeSize.isAccessibilitySize ? AnyLayout(VStackLayout(alignment: .leading, spacing: 2))
+                            : AnyLayout(HStackLayout(spacing: 6))
+                        layout {
                             Text(company.shownName).font(.body.weight(.semibold)).foregroundStyle(Palette.ink)
                                 .layoutPriority(1)
                             if sampleIDs.contains(company.id) {
@@ -295,7 +299,7 @@ struct CompaniesView: View {
                             Text(line).font(.footnote).foregroundStyle(Palette.ink2)
                         }
                     }
-                    .lineLimit(2)
+                    .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 2)
                     Spacer(minLength: 8)
                     if isActive {
                         Image(systemName: "checkmark").font(.body.weight(.semibold)).foregroundStyle(Palette.brand)

@@ -354,7 +354,7 @@ public struct Bookkeeper {
         guard let groupID else { return [] }
         let rates: [TaxRate]
         if let group = try taxGroup(id: groupID) {
-            rates = group.rates ?? []
+            rates = group.sortedRates
         } else if let rate = try taxRate(id: groupID) {
             rates = [rate]
         } else {

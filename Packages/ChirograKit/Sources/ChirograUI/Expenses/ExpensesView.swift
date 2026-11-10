@@ -198,6 +198,7 @@ struct ExpenseListView: View {
     @CompanyQuery(sort: \Expense.date, order: .reverse) private var expenses: [Expense]
     @CompanyQuery(sort: \Account.code) private var accounts: [Account]
     @CompanyQuery(sort: \Bill.dueDate) private var bills: [Bill]
+    @CompanyQuery private var journalLines: [JournalLine]
     @State private var filter: ExpenseReceiptFilter = .all
     @State private var cardWidth: CGFloat = 0
     @State private var errorMessage: String?
@@ -358,24 +359,17 @@ struct ExpenseListView: View {
         return DateInterval.month(containing: latest)
     }
 
-    /// Gasto del mes por categoría: solo los gastos de la lista (sus líneas), como la tarjeta de Gastos del Mac
-    /// (decisión del usuario, 2-nov: antes salía del estado de resultados e incluía las facturas por pagar). Las cuatro
-    /// mayores y el resto en «Otros».
+    /// Gasto del mes por categoría, de los asientos (gastos y costo de ventas), como la tarjeta de Gastos del Mac, «Gastos»
+    /// de Inicio y el estado de resultados (decisión del usuario del 10-nov, cambia la del 2-nov). Si el mes tiene facturas
+    /// de proveedor, que la lista no muestra, se dice cuánto suman. Las cuatro mayores y el resto en «Otros».
     private var monthCard: some View {
         let month = cardMonth
-        let names = Dictionary(accounts.map { ($0.id, $0.name) }, uniquingKeysWith: { first, _ in first })
-        var totals: [String: Int64] = [:]
-        for expense in posted where month.contains(expense.date) && expense.date < month.end {
-            var categorized: Int64 = 0
-            for line in expense.sortedLines {
-                guard let id = line.accountID, let name = names[id] else { continue }
-                totals[name, default: 0] += line.amount
-                categorized += line.amount
-            }
-            if expense.total > categorized { totals[String(localized: "Sin categoría"), default: 0] += expense.total - categorized }
-        }
-        let rows = totals.filter { $0.value > 0 }.map { (name: $0.key, amount: $0.value) }.sorted { $0.amount > $1.amount }
+        let statement = Ledger(accounts: accounts, lines: journalLines).incomeStatement(month)
+        let rows = (statement.costOfGoodsSold + statement.expenses).filter { $0.amount > 0 }
+            .map { (name: $0.account.name, amount: $0.amount) }.sorted { $0.amount > $1.amount }
         let total = rows.reduce(0) { $0 + $1.amount }
+        let billed = bills.filter { $0.journalEntryID != nil && $0.status != .void && $0.billDate >= month.start && $0.billDate < month.end }
+            .reduce(0) { $0 + $1.total }
         var slices = rows.prefix(4).map { (name: $0.name, amount: $0.amount) }
         let colors = ExpenseCategoryStyle.barColors(for: slices.map(\.name))
         let rest = rows.dropFirst(4).reduce(0) { $0 + $1.amount }
@@ -385,6 +379,9 @@ struct ExpenseListView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Total del mes").font(.subheadline).foregroundStyle(Palette.ink2)
                 Text(total.money).font(.amount(28)).foregroundStyle(Palette.ink)
+                if billed > 0 {
+                    Text("Incluye \(billed.money) de facturas de proveedor").font(.footnote).foregroundStyle(Palette.ink2)
+                }
             }
             .accessibilityElement(children: .combine)
             if total > 0 {
