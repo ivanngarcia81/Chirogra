@@ -95,6 +95,9 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
    Avisos que desaparece al abrirlos (lo hace el sistema con la hoja que sale del botón), la barra de «Continuar» del
    alta en el iPad (vidrio normal del sistema), el selector Devengado/Caja con letra grande, textos cortados menores del
    Mac y los datos de ejemplo en español con la app en inglés. Informes completos de los agentes en el scratchpad de la sesión (no en el repo).
+   **Build 27** (`7095e90`, subido el 10-nov para iOS y macOS): «Con recibo» del filtro de Gastos salía en español con la
+   app en inglés (faltaba en el catálogo); `StringCatalogTests.enumLabelsAreInCatalog` exige ahora en el catálogo las
+   etiquetas de los enums de `ChirograUI` (se traducen con `localizedTitle` y el compilador no las extrae).
 
 *B. Cuando Apple apruebe la 1.0:*
 7. Usuario: enviar la 1.0.1 (build 15).

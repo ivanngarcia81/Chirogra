@@ -5,10 +5,10 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 
 ## Estado
 
-- `main` está empujado hasta el commit de este resumen. Último build subido: **26** (`eccaaa9`), para iOS y macOS.
+- `main` está empujado hasta el commit de este resumen. Último build subido: **27** (`7095e90`), para iOS y macOS.
 - **1.0 (build 11):** en revisión de Apple. Cuando la aprueben, el usuario envía la **1.0.1 (build 15)**, que arregla
   iCloud en Producción.
-- **1.1.0:** lista en el **build 26**. Lleva toda la fase 2 (decisión del 9-nov) y lo hecho el 10-nov:
+- **1.1.0:** lista en el **build 27**. Lleva toda la fase 2 (decisión del 9-nov) y lo hecho el 10-nov:
 
 | Build | Commit | Qué trae |
 |---|---|---|
@@ -17,6 +17,7 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 | 24 | `d7c2e0a` | «Reclasificar gastos…» en lote; tasa al cambiar de estado en Ajustes; errores del alta visibles; aviso 1099 del Mac; Puerto Rico 10.5 % comprobado. |
 | 25 | `f23f5a7` | Arreglos de la QA con tres agentes (iPhone, iPad y copia del Mac): «+» de Inicio en solo lectura, gráfica de Inicio, «Por cobrar» filtrado, ventana del Mac, panel, textos y plurales. |
 | 26 | `eccaaa9` | Tarjeta del mes de Gastos con la base de Inicio (decisión del 10-nov, cambia la del 2-nov), letra grande, tasas en orden estable, signo «−», «Seguridad» en Más. |
+| 27 | `7095e90` | «With receipt» en el filtro de Gastos en inglés (faltaba en el catálogo) y prueba que exige en el catálogo las etiquetas de los enums. |
 
 ## Lo que le toca al usuario
 
@@ -25,7 +26,7 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
    textos en/es (`Chirogra for Accountants` / `Unlimited businesses, each with its own books.`; `Chirogra para
    contadores` / `Empresas sin límite, cada una con sus libros.`), disponibilidad, comprobar $99.99 y 2 semanas gratis,
    y pasarlo al **nivel 1** del grupo. No pulsar «Add for Review»: se envía con la 1.1.
-3. Probar el build 26 en TestFlight. Si sale «solo lectura», suscribirse ahí es gratis (compra de prueba).
+3. Probar el build 27 en TestFlight. Si sale «solo lectura», suscribirse ahí es gratis (compra de prueba).
 
 ## Lo siguiente
 
