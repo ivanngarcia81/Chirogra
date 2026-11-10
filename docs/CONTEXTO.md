@@ -72,7 +72,7 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
    para bajar la tabla de sales tax por código postal (`PostalTaxTableLoader.remoteURL`), y su fuente está sin decidir.
 6. Build 24 con 4 y 5 (`d7c2e0a`), subido el 10-nov para iOS y macOS.
 6b. **QA con tres agentes (10-nov, iPhone, iPad y copia del Mac):** sin cierres; lo nuevo funciona; las cifras cuadran.
-   **Build 25** arregla: «+» de Inicio en solo lectura (ahora `whenWritable`); gráfica de Inicio (meses como
+   **Build 25** (`f23f5a7`, subido el 10-nov para iOS y macOS) arregla: «+» de Inicio en solo lectura (ahora `whenWritable`); gráfica de Inicio (meses como
    categorías, par desde cero y desplazado: con fechas y `.position(by:)` salía corrida); «Por cobrar» de Ventas con
    filtro; ventana del Mac de 1242 pt (la nota de solo lectura con `fixedSize` vertical en la barra estrecha al crear
    la ventana); textos de la tienda con el idioma de la app; panel (columnas según el ancho, «Client», inspector y
