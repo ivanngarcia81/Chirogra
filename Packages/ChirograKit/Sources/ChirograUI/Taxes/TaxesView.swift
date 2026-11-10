@@ -758,13 +758,30 @@ struct TaxesView: View {
                 .padding(.vertical, 6)
                 .accessibilityElement(children: .combine)
             }
-            HStack(spacing: 8) {
-                Button("Ver por línea") { showingDeductions = true }.buttonStyle(.secondary).disabled(summary == nil)
-                Button("Exportar para mi contador…") { exportingPackage = true }.buttonStyle(.secondary)
+            // Lado a lado si caben enteros en una línea; si no (columna estrecha del iPad o del Mac, inglés, letra
+            // grande), uno debajo del otro a todo el ancho: «Export for My Accountant…» se partía en tres líneas.
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 8) {
+                    viewByLineButton(disabled: summary == nil)
+                    exportButton
+                }
+                .lineLimit(1)
+                VStack(spacing: 8) {
+                    exportButton
+                    viewByLineButton(disabled: summary == nil)
+                }
             }
             .padding(.top, 10)
         }
         .card(padding: 14)
+    }
+
+    private func viewByLineButton(disabled: Bool) -> some View {
+        Button("Ver por línea") { showingDeductions = true }.buttonStyle(.secondary).disabled(disabled)
+    }
+
+    private var exportButton: some View {
+        Button("Exportar para mi contador…") { exportingPackage = true }.buttonStyle(.secondary)
     }
 
     private var paymentsCard: some View {

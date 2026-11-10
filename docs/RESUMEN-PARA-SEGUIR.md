@@ -5,10 +5,10 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 
 ## Estado
 
-- `main` está empujado hasta el commit de este resumen. Último build subido: **29**, para iOS y macOS.
+- `main` está empujado hasta el commit de este resumen. Último build subido: **30**, para iOS y macOS.
 - **1.0 (build 11):** en revisión de Apple. Cuando la aprueben, el usuario envía la **1.0.1 (build 15)**, que arregla
   iCloud en Producción.
-- **1.1.0:** lista en el **build 29**. Lleva toda la fase 2 (decisión del 9-nov) y lo hecho el 10-nov:
+- **1.1.0:** lista en el **build 30**. Lleva toda la fase 2 (decisión del 9-nov) y lo hecho el 10-nov:
 
 | Build | Commit | Qué trae |
 |---|---|---|
@@ -20,6 +20,7 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 | 27 | `7095e90` | «With receipt» en el filtro de Gastos en inglés (faltaba en el catálogo) y prueba que exige en el catálogo las etiquetas de los enums. |
 | 28 | `b379921` | Panel de clientes: fila elegida legible (blanco sobre Tinta) y columnas Sales tax, Avisos y Última actividad sin cortar. |
 | 29 | (commit «Datos de ejemplo en el idioma de la app») | Con la app en inglés, la empresa de ejemplo sale en inglés («Rios Design & Build»), también con la región en español. |
+| 30 | (commit «Botón de exportar para el contador entero») | Tarjeta de deducibles de Impuestos: «Export for My Accountant…» ya no se parte en tres líneas (iPad) ni se corta (Mac); si no caben, los botones van uno debajo del otro. |
 
 ## Lo que le toca al usuario
 
@@ -27,13 +28,13 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 2. Plan **«Chirogra para contadores»**: **completo en App Store Connect** (10-nov), sin enviar. No pulsar «Add for
    Review» suelto: se añade al envío de la 1.1.
 3. ~~Probar el build 28 en TestFlight.~~ **Hecho (10-nov):** el usuario comprobó «With receipt» en el filtro de Gastos en inglés.
-4. Probar el **build 29**: con el iPhone en inglés, «Try with sample data» debe dar «Rios Design & Build».
+4. Probar el **build 30**: con el iPhone en inglés, «Try with sample data» debe dar «Rios Design & Build».
 
 ## Lo siguiente
 
 1. **Envío de la 1.1.0** (cuando la 1.0 y la 1.0.1 estén aprobadas): **todo preparado el 10-nov** en
    [APP-STORE.md](APP-STORE.md) (descripción, texto promocional, «What's New» en/es, notas para el revisor) y capturas
-   `00-bienvenida` y `06-panel-clientes` en el escritorio. Elegir el **build 29** y añadir el plan para contadores al envío.
+   `00-bienvenida` y `06-panel-clientes` en el escritorio. Elegir el **build 30** y añadir el plan para contadores al envío.
 2. **1.2** (cambia el esquema de iCloud: desplegar a Producción y probar): asientos de ajuste del contador, bitácora
    de cambios, dividir movimientos del banco y motivo al excluir.
 3. **2.0 con servidor:** Plaid (plan «Chirogra + Banco»), el contador dentro de los libros del cliente, Stripe, nómina.

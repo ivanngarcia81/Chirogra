@@ -40,7 +40,7 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
 **Siguiente (orden acordado el 10-nov):**
 
 *A. Ahora, mientras Apple revisa la 1.0 (todo entra en la 1.1, sin tocar el esquema de iCloud):*
-1. Usuario: build 28 probado en TestFlight el 10-nov («With receipt» bien en inglés). Falta probar el **build 29**.
+1. Usuario: build 28 probado en TestFlight el 10-nov («With receipt» bien en inglés). Falta probar el **build 30**.
 2. **Plan de contadores: COMPLETO en App Store Connect** (el usuario lo terminó el 10-nov: textos, disponibilidad,
    precio y nivel). Sin enviar a revisión: va **con la 1.1**, en el mismo envío.
 3. **Panel de clientes: HECHO el 10-nov, en el build 23** (`5473946`, subido el 10-nov para iOS y macOS). Canvas «Chirogra — Panel de
@@ -102,6 +102,9 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
    Build», «Aurora Café», «Workshop rent»…; `SampleTexts` en `SampleData.swift`), con las mismas cifras en los dos.
    La bienvenida pasa `Locale.app` (idioma de la app, no la región del aparato): antes, con la app en inglés y la
    región en español, todo salía en español, también el plan de cuentas. Comprobado en el simulador en los dos idiomas.
+   **Build 30** (subido el 10-nov para iOS y macOS): en la tarjeta «Gastos deducibles» de Impuestos (`TaxesView.deductionsCard`),
+   «Ver por línea» y «Exportar para mi contador…» van lado a lado solo si caben enteros (`ViewThatFits`); si no, uno
+   debajo del otro. En inglés se partía en tres líneas en el iPad y se cortaba en el Mac. Capturas 05-impuestos (en) rehechas.
 
 *B. Cuando Apple apruebe la 1.0:*
 7. Usuario: enviar la 1.0.1 (build 15).

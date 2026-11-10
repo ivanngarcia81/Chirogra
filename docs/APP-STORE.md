@@ -233,7 +233,7 @@ La descripción y el texto promocional de arriba ya son los de la 1.1 (los de la
 **Capturas nuevas de la 1.1** (10-nov, en `en/` y `es/` de la carpeta del escritorio): `00-bienvenida.png` (primera página del
 carrusel) y `06-panel-clientes.png` en «iPhone 6.9», «iPad 13» y «Mac». El panel sale con seis empresas de muestra
 (atajo `-qa.panelMuestra`, solo en la copia de captura; ver CONTEXTO, «Comprobar en pantalla»).
-**Capturas en inglés rehechas el 10-nov (build 29):** las 01–06 de `en/` (iPhone, iPad y Mac) salen ahora con «Rios Design &
+**Capturas en inglés rehechas el 10-nov (builds 29 y 30):** las 01–06 de `en/` (iPhone, iPad y Mac) salen ahora con «Rios Design &
 Build» y sus clientes en inglés; las de la 1.0 tenían la empresa en español (y en el Mac también el plan de cuentas). Las
 anteriores están en «Anteriores en inglés (empresa en español)» dentro de la misma carpeta. Mismas pantallas que en la 1.0,
 con la fecha del 10-nov (Inicio y Gastos en octubre con `-qa.mes anterior`), sin el aviso de datos de ejemplo
