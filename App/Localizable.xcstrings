@@ -6924,6 +6924,16 @@
         }
       }
     },
+    "Con recibo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "With receipt"
+          }
+        }
+      }
+    },
     "Con saldo" : {
       "extractionState" : "manual",
       "localizations" : {

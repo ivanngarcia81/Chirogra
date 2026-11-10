@@ -45,4 +45,28 @@ struct StringCatalogTests {
         #expect(missing.isEmpty, "Sin inglés: \(missing.sorted())")
         #expect(mismatched.isEmpty, "Marcadores distintos: \(mismatched.sorted())")
     }
+
+    /// Las etiquetas de los enums de las pantallas (`case x = "Con recibo"`) se traducen con `localizedTitle` en
+    /// tiempo de ejecución y el compilador no las extrae: si falta una en el catálogo, sale en español con la app
+    /// en inglés (pasó con «Con recibo» del filtro de Gastos).
+    @Test("Las etiquetas de los enums de las pantallas están en el catálogo")
+    func enumLabelsAreInCatalog() throws {
+        let catalog = try JSONDecoder().decode(Catalog.self, from: Data(contentsOf: Self.url))
+        let sources = Self.url.deletingLastPathComponent().deletingLastPathComponent()
+            .appending(path: "Packages/ChirograKit/Sources/ChirograUI")
+        let files = FileManager.default.enumerator(at: sources, includingPropertiesForKeys: nil)?
+            .compactMap { $0 as? URL }.filter { $0.pathExtension == "swift" } ?? []
+        #expect(files.count > 50)
+        var missing: [String] = []
+        for file in files {
+            let source = try String(contentsOf: file, encoding: .utf8)
+            for enumMatch in source.matches(of: /enum \w+\s*:\s*String[^{]*\{([\s\S]*?)\n\}/) {
+                for label in enumMatch.output.1.matches(of: /(?:case\s+|,\s*)\w+\s*=\s*"([^"]+)"/)
+                where catalog.strings[String(label.output.1)] == nil {
+                    missing.append("\(file.lastPathComponent): \(label.output.1)")
+                }
+            }
+        }
+        #expect(missing.isEmpty, "Etiquetas sin entrada en el catálogo: \(missing.sorted())")
+    }
 }
