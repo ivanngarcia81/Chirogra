@@ -70,7 +70,7 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
    aviso 1099 del Mac solo cuenta a los que llegan al mínimo. Ya estaban: la nota «Todo se lee en este aparato» y el
    aviso de la primera lectura del recibo (también en el Mac). **No hecho:** el permiso de red del Mac solo hace falta
    para bajar la tabla de sales tax por código postal (`PostalTaxTableLoader.remoteURL`), y su fuente está sin decidir.
-6. Build 24 con 4 y 5, subido el 10-nov.
+6. Build 24 con 4 y 5 (`d7c2e0a`), subido el 10-nov para iOS y macOS.
 
 *B. Cuando Apple apruebe la 1.0:*
 7. Usuario: enviar la 1.0.1 (build 15).
