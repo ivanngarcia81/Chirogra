@@ -159,6 +159,12 @@ struct CompanyMenuItems: View {
     var body: some View {
         let shown = companies.filter { !$0.isArchived }.inSelectorOrder
         let active = CompanySession.scope?.id
+        // Plan para contadores: el panel con todas (canvas `iPhoneEntrada`).
+        if ClientsRouter.isAvailable(companies: companies) {
+            SettingsSection {
+                Button("Todos los clientes", systemImage: "building.2") { ClientsRouter.shared.showPanel() }
+            }
+        }
         SettingsSection {
             Picker(selection: Binding(get: { active }, set: { if let id = $0 { CompanyHub.shared.select(id) } })) {
                 ForEach(shown) { company in

@@ -135,7 +135,14 @@ struct Sidebar: View {
 
                 searchField.padding(.bottom, 4)
 
-                group(String(localized: "Negocio"), sections: AppSection.business)
+                // Plan para contadores (canvas «Panel de clientes»): «Clientes» arriba, y el primer grupo lleva el nombre
+                // de la empresa abierta, para que se vea de quién son las secciones de debajo.
+                if ClientsRouter.isAvailable(companies: selectorCompanies) {
+                    sectionRow(.clients).padding(.top, 6)
+                    group(companies.first?.shownName ?? String(localized: "Negocio"), sections: AppSection.business)
+                } else {
+                    group(String(localized: "Negocio"), sections: AppSection.business)
+                }
                 group(String(localized: "Libros"), sections: AppSection.books)
             }
             .padding(.horizontal, Self.panelPadding)
@@ -243,6 +250,13 @@ struct Sidebar: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                 // Banca cerrada: cuántos movimientos esperan en «Por revisar» (abierta, el número va en la subsección).
                 if section == .banking && !isOpen { BankPendingBadge(isActive: false) }
+                if section == .clients, let count = ClientsRouter.shared.attentionCount, count > 0 {
+                    Text(verbatim: "\(count)")
+                        .font(.footnote.weight(.semibold))
+                        .monospacedDigit()
+                        .foregroundStyle(isActive && Self.fillsSelection ? Palette.onBrandFill : Palette.ink2)
+                        .accessibilityLabel(Text("\(count) necesitan atención"))
+                }
                 if hasSubsections {
                     Image(systemName: isOpen ? "chevron.down" : "chevron.right")
                         .font(.caption.weight(.semibold))

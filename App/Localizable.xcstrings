@@ -669,6 +669,36 @@
         }
       }
     },
+    "%@ · vence hoy" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · due today"
+          }
+        }
+      }
+    },
+    "%@ · vencido ayer" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · overdue since yesterday"
+          }
+        }
+      }
+    },
+    "%@ · vencido hace %lld días" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · %lld days overdue"
+          }
+        }
+      }
+    },
     "%@ · venció %@" : {
       "localizations" : {
         "en" : {
@@ -851,12 +881,32 @@
         }
       }
     },
+    "%@: conciliada hasta %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@: reconciled through %@"
+          }
+        }
+      }
+    },
     "%@: ingresos %@, gastos %@" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@: income %@, expenses %@"
+          }
+        }
+      }
+    },
+    "%@: sin conciliar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@: never reconciled"
           }
         }
       }
@@ -1021,6 +1071,16 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "%lld avisos sin leer" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld unread notices"
           }
         }
       }
@@ -1253,6 +1313,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld of %lld customers"
+          }
+        }
+      }
+    },
+    "%lld de %lld clientes necesitan atención" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld of %lld clients need attention"
           }
         }
       }
@@ -2118,6 +2188,16 @@
         }
       }
     },
+    "%lld necesitan atención" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld need attention"
+          }
+        }
+      }
+    },
     "%lld periodos cerrados" : {
       "localizations" : {
         "en" : {
@@ -2789,6 +2869,16 @@
         }
       }
     },
+    "Abre este cliente" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens this client"
+          }
+        }
+      }
+    },
     "Abre la Vista Rápida" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2868,6 +2958,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Open Entry"
+          }
+        }
+      }
+    },
+    "Abrir cliente" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Client"
           }
         }
       }
@@ -3987,6 +4087,26 @@
         }
       }
     },
+    "Archivado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Archived"
+          }
+        }
+      }
+    },
+    "Archivados" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Archived"
+          }
+        }
+      }
+    },
     "Archivar" : {
       "localizations" : {
         "en" : {
@@ -4248,6 +4368,16 @@
         }
       }
     },
+    "Ayer" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yesterday"
+          }
+        }
+      }
+    },
     "Ayuda" : {
       "localizations" : {
         "en" : {
@@ -4370,6 +4500,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Add category"
+          }
+        }
+      }
+    },
+    "Añadir cliente" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add client"
           }
         }
       }
@@ -4512,6 +4652,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Last year"
+          }
+        }
+      }
+    },
+    "Añádelo y lo verás aquí con lo que tiene pendiente, junto a %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add it and you'll see it here with what it has pending, next to %@."
+          }
+        }
+      }
+    },
+    "Añádelo y lo verás en esta tabla con lo que tiene pendiente, junto a %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add it and you'll see it in this table with what it has pending, next to %@."
           }
         }
       }
@@ -5158,6 +5318,26 @@
         }
       }
     },
+    "Buscar cliente" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search clients"
+          }
+        }
+      }
+    },
+    "Buscar en Archivados" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search Archived"
+          }
+        }
+      }
+    },
     "Buscar ⌘K" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -5783,6 +5963,16 @@
         }
       }
     },
+    "Cerrado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Closed"
+          }
+        }
+      }
+    },
     "Cerrado hasta" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -5861,6 +6051,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Close periods"
+          }
+        }
+      }
+    },
+    "Cerrar periodo…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close Period…"
           }
         }
       }
@@ -9897,6 +10097,16 @@
         }
       }
     },
+    "Elige un cliente para ver lo que tiene pendiente." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose a client to see what it has pending."
+          }
+        }
+      }
+    },
     "Elige un estimado" : {
       "localizations" : {
         "en" : {
@@ -12005,6 +12215,16 @@
         }
       }
     },
+    "Facturas vencidas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Overdue invoices"
+          }
+        }
+      }
+    },
     "Facturas, estimados y cobros" : {
       "localizations" : {
         "en" : {
@@ -13075,6 +13295,16 @@
         }
       }
     },
+    "Hace %lld días" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld days ago"
+          }
+        }
+      }
+    },
     "Hacen falta los 12 meses." : {
       "localizations" : {
         "en" : {
@@ -13256,6 +13486,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Hi %@, you have %@ overdue with us. Could you help us with the payment? Thank you!"
+          }
+        }
+      }
+    },
+    "Hoy" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today"
           }
         }
       }
@@ -14954,6 +15194,16 @@
         }
       }
     },
+    "Los clientes que archives salen de la lista y del selector, pero sus libros se conservan." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clients you archive leave the list and the switcher, but their books are kept."
+          }
+        }
+      }
+    },
     "Los cobros de facturas se registran desde la factura." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -16080,6 +16330,16 @@
         }
       }
     },
+    "Nada pendiente." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing pending."
+          }
+        }
+      }
+    },
     "Nada por aquí todavía" : {
       "localizations" : {
         "en" : {
@@ -16120,6 +16380,26 @@
         }
       }
     },
+    "Nada que atender" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing to handle"
+          }
+        }
+      }
+    },
+    "Nada vence en los próximos 7 días y no hay movimientos por revisar." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing is due in the next 7 days and there are no transactions to review."
+          }
+        }
+      }
+    },
     "Nada vencido" : {
       "localizations" : {
         "en" : {
@@ -16141,12 +16421,32 @@
         }
       }
     },
+    "Necesitan atención" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Need attention"
+          }
+        }
+      }
+    },
     "Negocio" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Business"
+          }
+        }
+      }
+    },
+    "Negocio propio" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sole proprietorship"
           }
         }
       }
@@ -16322,6 +16622,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No customers match “%@”."
+          }
+        }
+      }
+    },
+    "Ningún cliente se llama así. Revisa cómo está escrito o búscalo entre los archivados." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No client has that name. Check the spelling or look among the archived ones."
+          }
+        }
+      }
+    },
+    "Ningún cliente tiene nada pendiente en este momento." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No client has anything pending right now."
           }
         }
       }
@@ -16517,6 +16837,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Non-taxable"
+          }
+        }
+      }
+    },
+    "No hay clientes archivados" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No archived clients"
           }
         }
       }
@@ -17503,6 +17833,46 @@
         }
       }
     },
+    "Orden: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sort: %@"
+          }
+        }
+      }
+    },
+    "Ordenar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sort"
+          }
+        }
+      }
+    },
+    "Ordenar por" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sort By"
+          }
+        }
+      }
+    },
+    "Ordenar por %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sort by %@"
+          }
+        }
+      }
+    },
     "Origen" : {
       "localizations" : {
         "en" : {
@@ -18214,6 +18584,16 @@
         }
       }
     },
+    "Paquete para el contador…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accountant Package…"
+          }
+        }
+      }
+    },
     "Para" : {
       "localizations" : {
         "en" : {
@@ -18516,6 +18896,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Due per books"
+          }
+        }
+      }
+    },
+    "Pendientes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pending"
           }
         }
       }
@@ -19756,6 +20146,26 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "Próxima fecha límite" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next deadline"
+          }
+        }
+      }
+    },
+    "Próxima fecha límite: %@ · sales tax" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next deadline: %@ · sales tax"
           }
         }
       }
@@ -23305,6 +23715,16 @@
         }
       }
     },
+    "Sin resultados para «%@»" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No results for “%@”"
+          }
+        }
+      }
+    },
     "Sin saldo" : {
       "localizations" : {
         "en" : {
@@ -23403,6 +23823,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "On %@ taxable"
+          }
+        }
+      }
+    },
+    "Sociedad" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Partnership"
           }
         }
       }
@@ -24481,6 +24911,16 @@
         }
       }
     },
+    "Todos los clientes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All Clients"
+          }
+        }
+      }
+    },
     "Todos los gastos tienen recibo" : {
       "localizations" : {
         "en" : {
@@ -24508,6 +24948,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "All months"
+          }
+        }
+      }
+    },
+    "Todos tus clientes están al día" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All your clients are up to date"
           }
         }
       }
@@ -24956,6 +25406,26 @@
         }
       }
     },
+    "Tu cliente está al día" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your client is up to date"
+          }
+        }
+      }
+    },
+    "Tu cliente necesita atención" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your client needs attention"
+          }
+        }
+      }
+    },
     "Tu plan es para una empresa y la de ejemplo ya la ocupa. Bórrala con «Empezar con mi empresa» y crea la tuya." : {
       "localizations" : {
         "en" : {
@@ -25052,6 +25522,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Your subscription ended. You can still view your books and make backups."
+          }
+        }
+      }
+    },
+    "Tus %lld clientes están al día" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All %lld of your clients are up to date"
           }
         }
       }
@@ -25502,6 +25982,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "A single invoice"
+          }
+        }
+      }
+    },
+    "Urgencia" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Urgency"
+          }
+        }
+      }
+    },
+    "Urgente" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Urgent"
           }
         }
       }
@@ -26508,6 +27008,16 @@
         }
       }
     },
+    "Volver a clientes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Back to clients"
+          }
+        }
+      }
+    },
     "Volver a escanear" : {
       "localizations" : {
         "en" : {
@@ -26715,6 +27225,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "accrual basis"
+          }
+        }
+      }
+    },
+    "clients.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clients"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clientes"
           }
         }
       }
@@ -27348,6 +27874,16 @@
         }
       }
     },
+    "¿Llevas los libros de otro negocio?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Do you keep the books for another business?"
+          }
+        }
+      }
+    },
     "¿Pagas algo cada mes?" : {
       "localizations" : {
         "en" : {
@@ -27448,6 +27984,16 @@
         }
       }
     },
+    "Última actividad" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last activity"
+          }
+        }
+      }
+    },
     "Última compra" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -27495,6 +28041,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Last sync"
+          }
+        }
+      }
+    },
+    "Último movimiento" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last activity"
+          }
+        }
+      }
+    },
+    "Último movimiento: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last activity: %@"
           }
         }
       }

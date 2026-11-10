@@ -138,6 +138,8 @@ struct TaxesView: View {
         .sheet(isPresented: $showingGroup) { NavigationStack { TaxGroupEditorView() }.editorSheetSizing() }
         .sheet(item: $editingRate) { rate in NavigationStack { TaxRateEditorView(rate: rate) }.editorSheetSizing() }
         .sheet(isPresented: $exportingPackage) { NavigationStack { AccountantExportView() }.editorSheetSizing() }
+        // Panel de clientes: «Paquete para el contador…».
+        .onClientRoute({ $0 == .accountantPackage }) { _ in exportingPackage = true }
         #if DEBUG
         // `-qa.impuestos deducibles` abre los deducibles: la pestaña en el iPhone, la página en iPad y Mac (solo Debug).
         .task {

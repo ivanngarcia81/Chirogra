@@ -90,6 +90,13 @@ struct ReconciliationHubView: View {
 
     var body: some View {
         content
+            // Panel de clientes: «Conciliación» abre la cuenta más atrasada.
+            .onClientRoute({ route in
+                if case .reconcile = route { return true }
+                return false
+            }) { route in
+                if case .reconcile(let id) = route, let account = shown.first(where: { $0.id == id }) { opened = account }
+            }
             #if DEBUG
             .task {
                 try? await Task.sleep(for: .seconds(1))

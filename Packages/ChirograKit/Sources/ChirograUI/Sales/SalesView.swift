@@ -47,6 +47,11 @@ struct SalesView: View {
             }
         }
         .background(Palette.background)
+        // Panel de clientes: «Facturas vencidas».
+        .onClientRoute({ $0 == .overdueInvoices }) { _ in
+            selectedSegment = .invoices
+            filter = .overdue
+        }
         .navigationTitle(fixedSegment == .customers ? "Clientes" : fixedSegment == .estimates ? "Estimados" : "Ventas")
         .headerTitle()
         // Una sola búsqueda en el contenedor y siempre visible: puesta en cada lista, desaparecía al volver de

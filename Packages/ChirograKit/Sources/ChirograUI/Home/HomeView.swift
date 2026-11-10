@@ -189,6 +189,21 @@ struct HomeView: View {
     private var toolbar: some ToolbarContent {
         switch layout {
         case .phone:
+            // Plan para contadores: de vuelta al panel de clientes (canvas `iPhoneEntrada`).
+            #if os(iOS)
+            if ClientsRouter.isAvailable(companies: selectorCompanies) {
+                ToolbarItem(placement: .topBarLeading) {
+                    // Icono y texto juntos (canvas «‹ Clientes»): con `Label` la barra deja solo el icono.
+                    Button { ClientsRouter.shared.showPanel() } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "chevron.left").fontWeight(.semibold)
+                            Text(AppSection.clients.title)
+                        }
+                    }
+                    .accessibilityLabel(Text("Volver a clientes"))
+                }
+            }
+            #endif
             ToolbarItem(placement: .primaryAction) { bell }
             ToolbarItem(placement: .primaryAction) { newMenu }
             if let company = companies.first {

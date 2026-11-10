@@ -118,6 +118,8 @@ struct InvoiceTablePage: View {
             actions(for: invoice)
         }
         .onChange(of: selection) { errorMessage = nil }
+        // Panel de clientes: «Facturas vencidas».
+        .onClientRoute({ $0 == .overdueInvoices }) { _ in filter = .overdue }
         .sheet(isPresented: $creating) { NavigationStack { InvoiceEditorView() }.editorSheetSizing() }
         .sheet(item: $paying) { invoice in NavigationStack { InvoicePaymentSheet(invoice: invoice) }.editorSheetSizing() }
         .sheet(item: $sending) { invoice in NavigationStack { SendDocumentView(source: .invoice(invoice)) }.editorSheetSizing() }

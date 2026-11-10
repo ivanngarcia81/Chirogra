@@ -36,17 +36,52 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
   (8-nov): sincronizan libros, clientes, empresas, banca y recibos. `/Applications/Chirogra.app` y la app del iPhone
   tienen esa compilación de prueba (Debug, entorno Production); instalar encima desde TestFlight conserva los datos.
 
-**Siguiente:**
-1. Usuario: terminar el reenvío de la 1.0 (arriba) y esperar a Apple. Después, la 1.0.1 (build 15).
-2. Usuario: probar el build 21 de TestFlight.
-3. Plan de contadores: **creado** en App Store Connect el 9-nov; el 10-nov se le subió la captura de revisión y quedó
-   en borrador. Falta: textos (en `Chirogra for Accountants` / `Unlimited businesses, each with its own books.`; es
-   `Chirogra para contadores` / `Empresas sin límite, cada una con sus libros.`), disponibilidad, comprobar precio
-   $99.99 y 2 semanas gratis, ponerlo en el **nivel 1** del grupo (salió en el 2) y mandarlo **con la 1.1**, no solo. Mientras no esté completo, la sandbox no lo devuelve (en el simulador sale
-   «Subscription Unavailable»): para capturarlo, ejecutar desde Xcode, que usa `App/Chirogra.storekit`.
-4. Usuario: probar el build 22 (bienvenida). Después, preparar el envío de la 1.1.0.
-5. Más adelante (decisión del 8-nov): dividir movimientos y motivo al excluir en banca; permiso de red y nota de
-   privacidad de recibos en el Mac; quizá avisar de que la primera lectura de un recibo tarda (127 s en el Mac).
+**Siguiente (orden acordado el 10-nov):**
+
+*A. Ahora, mientras Apple revisa la 1.0 (todo entra en la 1.1, sin tocar el esquema de iCloud):*
+1. Usuario: probar los builds 21 y 22 de TestFlight.
+2. Usuario: terminar el plan de contadores en App Store Connect (en borrador desde el 10-nov, con su captura). Falta:
+   textos (en `Chirogra for Accountants` / `Unlimited businesses, each with its own books.`; es `Chirogra para
+   contadores` / `Empresas sin límite, cada una con sus libros.`), disponibilidad, comprobar $99.99 y 2 semanas gratis,
+   **nivel 1** del grupo (salió en el 2). No pulsar «Add for Review»: va **con la 1.1**. Mientras no esté completo, la
+   sandbox no lo devuelve («Subscription Unavailable»): para capturarlo, `SKTestSession` o ejecutar desde Xcode.
+3. **Panel de clientes: HECHO el 10-nov, en el build 23.** Canvas «Chirogra — Panel de
+   clientes» (https://claude.ai/artifact/46eihuFoKbh8RrMEvHHNxA), encargo en `docs/PANEL-CLIENTES.md`. Datos:
+   `Bookkeeper.clientSummaries` (`ChirograData/Bookkeeper+Clients.swift`, pruebas en `ClientSummaryTests`): estado
+   (urgente: sales tax vencido o a ≤ 7 días, o banco sin conciliar > 60 días; pendiente: banco por revisar, facturas
+   vencidas, conciliación > 30 días o avisos), sales tax del último periodo sin pagar (o el del periodo en curso),
+   la cuenta más atrasada en conciliar, cierre y último asiento. Pantalla: `ChirograUI/Clients/ClientsView.swift`
+   (iPhone: tarjetas; iPad y Mac: `Table`; Mac: inspector y menú contextual). Navegación: `ClientsRouter` —
+   `AppSection.clients` arriba en la barra lateral (se abre al arrancar), en el iPhone el panel tapa las pestañas
+   al abrir e Inicio lleva «‹ Clientes»; «Todos los clientes» en el selector de empresa; cada pendiente cambia de
+   empresa y abre su pantalla (`ClientRoute`, la recoge cada pantalla con `onClientRoute`). Existe con el plan para
+   contadores o con más de una empresa. «Clientes» del panel es la clave `clients.title` («Clients»; el de Ventas
+   es «Customers»). Decisiones del usuario: Clientes como pantalla principal del iPhone y filtros en cápsulas.
+   Probado en simulador (iPhone: todas las rutas con una prueba de UI; iPad claro y oscuro) y copia del Mac.
+4. **Reclasificar en lote**: elegir varios gastos o movimientos y cambiarlos de cuenta de una vez.
+5. Arreglos menores sin esquema: tasa de Puerto Rico (comprobar), crear la tasa al cambiar el estado en Ajustes,
+   mostrar el error al crear tasa o asiento de apertura, aviso 1099 del Mac que cuenta proveedores bajo el mínimo,
+   permiso de red y nota de privacidad de recibos en el Mac, aviso de que la primera lectura de un recibo tarda.
+6. Build 23 con 3–5, probado en iPhone, iPad y Mac.
+
+*B. Cuando Apple apruebe la 1.0:*
+7. Usuario: enviar la 1.0.1 (build 15).
+8. Enviar la 1.1.0 (último build): capturas nuevas (carrusel y panel), notas «What's New» en/es, notas para el revisor
+   y el plan de contadores en el mismo envío.
+
+*C. 1.2, sin servidor pero con cambio de esquema (desplegar a Producción y probar, ver «Lo aprendido»):*
+9. Asientos de ajuste marcados como del contador.
+10. Bitácora de cambios (quién cambió qué y cuándo, también lo borrado).
+11. Banca: dividir un movimiento en varias cuentas y motivo al excluir.
+
+*D. 2.0, con servidor (Supabase, proyecto aparte; PLAN-FASE2.md «Después: con servidor»):*
+12. Plaid (plan «Chirogra + Banco»; entra a la bandeja «Por revisar» como otra `BankTransactionSource`). Cambia la
+    promesa de privacidad: texto de la bienvenida, política y etiqueta de la tienda.
+13. El contador dentro de los libros del cliente: usuarios y permisos, preguntas al cliente sobre movimientos.
+14. Stripe Connect (cobro por enlace en la factura), sales tax exacto por dirección.
+15. Nómina con un proveedor embebido (Gusto Embedded o Check), plan más alto.
+
+*Fijo cada año:* actualizar el mínimo del 1099-NEC (`Form1099.swift`, `inflationAdjusted`).
 
 ## Pendiente menor y sin comprobar
 

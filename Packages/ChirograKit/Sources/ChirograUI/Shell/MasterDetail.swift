@@ -367,6 +367,10 @@ private struct InvoiceMasterList: View {
     }
 
     var body: some View {
+        list.onClientRoute({ $0 == .overdueInvoices }) { _ in scope = .overdue }
+    }
+
+    private var list: some View {
         List(selection: $selection) {
             ForEach(filtered) { invoice in
                 MasterRow(title: invoice.customer?.name ?? String(localized: "Sin cliente"),

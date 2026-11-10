@@ -30,6 +30,8 @@ struct NoticesButton: View {
         .badge(unread)
         .accessibilityLabel(unread > 0 ? String(localized: "Avisos, \(unread) sin leer") : String(localized: "Avisos"))
         .help("Avisos")
+        // Panel de clientes: «Avisos».
+        .onClientRoute({ $0 == .notices }) { _ in showing = true }
         .popover(isPresented: $showing, arrowEdge: .bottom) {
             NavigationStack {
                 NoticesList { notice in

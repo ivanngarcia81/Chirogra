@@ -90,6 +90,18 @@ struct BankingView: View {
         .sheet(item: $reviewing) { BankReviewSheet(start: $0).editorSheetSizing() }
         .navigationDestination(item: $qaReconcile) { ReconciliationView(account: $0) }
         .stableDestination(isPresented: $qaInbox) { BankInboxScreen() }
+        // Panel de clientes: «Banco» (bandeja) y «Conciliación» de una cuenta.
+        .onClientRoute({ route in
+            if route == .bankInbox { return true }
+            if case .reconcile = route { return true }
+            return false
+        }) { route in
+            if case .reconcile(let id) = route {
+                qaReconcile = accounts.first { $0.id == id && ($0.subtype == .bank || $0.subtype == .creditCard) }
+            } else {
+                qaInbox = true
+            }
+        }
         .stableDestination(isPresented: $qaRules) { BankRulesView() }
         .alert("No se pudo completar", isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
             Button("Aceptar", role: .cancel) {}

@@ -8,11 +8,15 @@ import TipKit
 /// Secciones de navegación del canvas (DISEÑO §7.1).
 enum AppSection: String, Hashable, CaseIterable, Identifiable {
     case home, sales, expenses, banking, reports, accounting, taxes, settings
+    /// Panel de clientes del plan para contadores (`ClientsView`): primera entrada de la barra lateral, fuera de los grupos.
+    case clients
 
     var id: String { rawValue }
 
     var title: String {
         switch self {
+        // «Clientes» a secas ya es el de Ventas («Customers»): este es el del contador («Clients»).
+        case .clients: String(localized: "clients.title", defaultValue: "Clientes")
         case .home: String(localized: "Inicio")
         case .sales: String(localized: "Ventas")
         case .expenses: String(localized: "Gastos")
@@ -34,6 +38,7 @@ enum AppSection: String, Hashable, CaseIterable, Identifiable {
         case .accounting: "book.closed"
         case .taxes: "receipt"
         case .settings: "gearshape"
+        case .clients: "building.2"
         }
     }
 
@@ -56,6 +61,7 @@ enum AppSection: String, Hashable, CaseIterable, Identifiable {
         case .accounting: AccountingView()
         case .taxes: TaxesView()
         case .settings: SettingsView()
+        case .clients: ClientsView()
         }
     }
 }
@@ -388,6 +394,9 @@ struct AppShell: View {
     @State private var masterHidden = false
     @State private var monitor = SyncMonitor.shared
     @State private var companyHub = CompanyHub.shared
+    @State private var router = ClientsRouter.shared
+    /// Todas las empresas: con varias (o con el plan para contadores) existe el panel de clientes.
+    @Query private var allCompanies: [Company]
     #if os(macOS)
     @ScaledMetric(relativeTo: .body) private var masterWidth: CGFloat = 280
     #else
@@ -414,6 +423,15 @@ struct AppShell: View {
         }
         // Cambiar de empresa con un editor sin guardar pregunta antes, como cambiar de pantalla (`CompanyHub.select`).
         .onAppear { companyHub.unsavedChanges = unsavedChanges }
+        // Panel de clientes: al arrancar, la ruta de un pendiente y «Todos los clientes» (`ClientsRouter`).
+        .onChange(of: panelAvailable, initial: true) { _, available in panelAvailabilityChanged(available) }
+        .onChange(of: router.pending) { _, route in if let route { follow(route) } }
+        .onChange(of: router.panelRequests) {
+            #if os(iOS)
+            guard sizeClass != .compact else { return }
+            #endif
+            sidebarSelection.wrappedValue = .section(.clients)
+        }
         .alert("¿Descartar los cambios?", isPresented: Binding(get: { companyHub.pendingCompanyID != nil },
                                                                set: { if !$0 { companyHub.pendingCompanyID = nil } })) {
             Button("Descartar", role: .destructive) { companyHub.discardAndSwitch() }
@@ -443,9 +461,55 @@ struct AppShell: View {
         })
     }
 
-    /// iPhone: 5 pestañas (Inicio · Ventas · Gastos · Banca · Más), como el canvas.
+    private var panelAvailable: Bool { ClientsRouter.isAvailable(companies: allCompanies) }
+
+    /// iPhone: 5 pestañas (Inicio · Ventas · Gastos · Banca · Más), como el canvas. Con el panel de clientes, al abrir la
+    /// app se ve el panel; al elegir un cliente, sus pestañas (canvas `iPhoneEntrada`).
+    @ViewBuilder
     private var tabs: some View {
-        tabView.id(companyKey)
+        if panelAvailable && router.showsPanel {
+            NavigationStack {
+                ClientsView().safeAreaInset(edge: .top, spacing: 0) { SyncErrorBanner() }
+            }
+        } else {
+            tabView.id(companyKey)
+        }
+    }
+
+    /// Al arrancar con el panel: en iPad y Mac se abre «Clientes» (en el iPhone ya está a la vista). Si el panel aparece
+    /// tarde (la suscripción tarda en contestar, o se añade la segunda empresa), no se le quita la pantalla a nadie.
+    private func panelAvailabilityChanged(_ available: Bool) {
+        guard available, !router.openedAtLaunch else { return }
+        router.openedAtLaunch = true
+        var inTime = Date.now < router.launchedAt.addingTimeInterval(5)
+        #if DEBUG
+        let defaults = UserDefaults.standard
+        if ["qa.pestana", "qa.seccion", "qa.reporte"].contains(where: { defaults.object(forKey: $0) != nil }) { inTime = false }
+        #endif
+        #if os(iOS)
+        if sizeClass == .compact {
+            if !inTime { router.showsPanel = false }
+            return
+        }
+        #endif
+        if inTime { show(.section(.clients)) }
+    }
+
+    /// Lleva a la pantalla de una ruta del panel. Las que no necesitan más que eso se recogen aquí; las demás las recoge
+    /// su pantalla al aparecer (`onClientRoute`).
+    private func follow(_ route: ClientRoute) {
+        #if os(iOS)
+        if sizeClass == .compact {
+            tab = route.phoneTab
+            if route == .home { _ = router.take { $0 == .home } }
+            return
+        }
+        #endif
+        sidebarSelection.wrappedValue = route.sidebarItem
+        switch route {
+        case .home, .bankInbox, .salesTax, .periodClose: _ = router.take { $0 == route }
+        default: break
+        }
     }
 
     private var tabView: some View {
@@ -690,6 +754,8 @@ struct MoreView: View {
     @AppStorage("appLockEnabled") private var appLockEnabled = false
     /// «Abrir Impuestos» de la pista de arriba.
     @State private var showingTaxes = false
+    /// Panel de clientes: «Cerrar periodo…».
+    @State private var showingClose = false
 
     var body: some View {
         List {
@@ -770,6 +836,15 @@ struct MoreView: View {
         .navigationTitle("Más")
         .headerTitle()
         .stableDestination(isPresented: $showingTaxes) { TaxesView() }
+        .stableDestination(isPresented: $showingClose) { PeriodCloseView() }
+        // Panel de clientes: Impuestos y Cierre de periodo viven en «Más». El paquete para el contador lo abre Impuestos
+        // (que recoge la ruta), así que aquí solo se empuja Impuestos.
+        .onClientRoute({ $0 == .salesTax || $0 == .periodClose }) { route in
+            if route == .periodClose { showingClose = true } else { showingTaxes = true }
+        }
+        .onChange(of: ClientsRouter.shared.pending, initial: true) { _, route in
+            if route == .accountantPackage { showingTaxes = true }
+        }
     }
 
     private var entriesThisMonth: Int {
