@@ -62,7 +62,10 @@ struct BudgetCreateView: View {
                 case .copy:
                     Picker("Copiar de", selection: $sourceID) {
                         Text("Elegir…").tag(UUID?.none)
-                        ForEach(budgets) { Text("\($0.name) · \(String($0.fiscalYear))").tag(Optional($0.id)) }
+                        ForEach(budgets) { budget in
+                            let year = String(budget.fiscalYear)
+                            Text(verbatim: budget.name.contains(year) ? budget.name : "\(budget.name) · \(year)").tag(Optional(budget.id))
+                        }
                     }
                 case .actuals:
                     Picker("Lo real de", selection: $sourceYear) {

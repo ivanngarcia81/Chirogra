@@ -71,6 +71,19 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
    aviso de la primera lectura del recibo (también en el Mac). **No hecho:** el permiso de red del Mac solo hace falta
    para bajar la tabla de sales tax por código postal (`PostalTaxTableLoader.remoteURL`), y su fuente está sin decidir.
 6. Build 24 con 4 y 5 (`d7c2e0a`), subido el 10-nov para iOS y macOS.
+6b. **QA con tres agentes (10-nov, iPhone, iPad y copia del Mac):** sin cierres; lo nuevo funciona; las cifras cuadran.
+   **Build 25** arregla: «+» de Inicio en solo lectura (ahora `whenWritable`); gráfica de Inicio (meses como
+   categorías, par desde cero y desplazado: con fechas y `.position(by:)` salía corrida); «Por cobrar» de Ventas con
+   filtro; ventana del Mac de 1242 pt (la nota de solo lectura con `fixedSize` vertical en la barra estrecha al crear
+   la ventana); textos de la tienda con el idioma de la app; panel (columnas según el ancho, «Client», inspector y
+   filtro, orden guardado y en el menú, búsqueda en Archivados, chip a la vista, plurales); «Añadir cliente» del Mac
+   (un solo pie, sin repetir el nombre); mayúsculas en inglés de botones; presupuesto sin el año repetido; fecha de
+   renovación; «6%». **Pendiente de la QA:** letra grande (cifras partidas en Impuestos, Plan de cuentas y Banca;
+   panel del iPad), orden variable de las tasas en Impuestos, doble chevron del Libro mayor (Mac), buscador de Gastos
+   cortado en inglés (Mac), controles de < 44 pt (botón del aviso de solo lectura), «Seguridad» abre lo mismo que
+   «iCloud y copias», signo menos mezclado (− y -), campana de Avisos que desaparece al abrirlos desde el panel, y
+   **decidir** si «Gastos del mes» de Inicio (incluye costo de ventas, ▼90 %) y la tarjeta de Gastos (solo gastos,
+   ▼85 %) deben usar la misma base. Informes completos de los agentes en el scratchpad de la sesión (no en el repo).
 
 *B. Cuando Apple apruebe la 1.0:*
 7. Usuario: enviar la 1.0.1 (build 15).

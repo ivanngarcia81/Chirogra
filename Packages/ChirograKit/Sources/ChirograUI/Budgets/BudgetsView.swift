@@ -116,7 +116,7 @@ struct BudgetsView: View {
         .background(Palette.background)
         .navigationTitle(ReportsView.Kind.budget.fullTitle)
         #if os(macOS)
-        .navigationSubtitle(Text(verbatim: budget.map { "\($0.name) · \(fiscalYearLabel($0)) · \(basis.subtitle)" } ?? ""))
+        .navigationSubtitle(Text(verbatim: budget.map { "\(titled($0)) · \(basis.subtitle)" } ?? ""))
         #endif
         .headerTitle()
         #if os(macOS)
@@ -200,6 +200,12 @@ struct BudgetsView: View {
 
     /// «2026» o, con otro inicio del año fiscal, «jul 2026 – jun 2027».
     /// Sin leer los libros (solo el mes de inicio de la empresa): el cuerpo se evalúa muchas veces.
+    /// «Presupuesto 2026» y no «Presupuesto 2026 · 2026»: el año solo si el nombre no lo lleva ya (QA del 10-nov).
+    private func titled(_ budget: Budget) -> String {
+        let label = fiscalYearLabel(budget)
+        return budget.name.contains(label) ? budget.name : "\(budget.name) · \(label)"
+    }
+
     private func fiscalYearLabel(_ budget: Budget) -> String {
         let startMonth = companies.first?.fiscalYearStartMonth ?? 1
         let calendar = Calendar.current
@@ -231,7 +237,7 @@ struct BudgetsView: View {
         Menu {
             if sortedBudgets.count > 1 {
                 Picker("Presupuesto", selection: Binding(get: { budget?.id.uuidString ?? "" }, set: { storedSelection = $0 })) {
-                    ForEach(sortedBudgets) { Text("\($0.name) · \(String($0.fiscalYear))").tag($0.id.uuidString) }
+                    ForEach(sortedBudgets) { Text(verbatim: titled($0)).tag($0.id.uuidString) }
                 }
                 .pickerStyle(.inline)
                 Divider()
@@ -392,7 +398,7 @@ struct BudgetsView: View {
     @ViewBuilder
     private var compactContent: some View {
         if let budget, let report {
-            Text("\(budget.name) · \(fiscalYearLabel(budget))").font(.subheadline).foregroundStyle(Palette.ink2).padding(.bottom, 8)
+            Text(verbatim: titled(budget)).font(.subheadline).foregroundStyle(Palette.ink2).padding(.bottom, 8)
             groupingPicker
             BasisPicker(basis: $basis).padding(.top, 10)
             periodStepper(report).padding(.top, 8)
@@ -487,7 +493,7 @@ struct BudgetsView: View {
     private var wideContent: some View {
         if let budget, let report {
             #if os(iOS)
-            Text(verbatim: "\(budget.name) · \(fiscalYearLabel(budget)) · \(basis.subtitle)").font(.subheadline).foregroundStyle(Palette.ink2)
+            Text(verbatim: "\(titled(budget)) · \(basis.subtitle)").font(.subheadline).foregroundStyle(Palette.ink2)
                 .padding(.horizontal, 8).padding(.bottom, 12)
             #endif
             if let errorMessage { ErrorBanner(message: errorMessage).padding(.bottom, 12) }

@@ -214,12 +214,12 @@ struct HomeView: View {
         case .pad:
             ToolbarItem(placement: .primaryAction) { bell }
             ToolbarItem(placement: .primaryAction) {
-                Button { sheet = .expense } label: { Label("Nuevo gasto", systemImage: "wallet.bifold") }.headerButton()
+                Button { write(.expense) } label: { Label("Nuevo gasto", systemImage: "wallet.bifold") }.headerButton()
             }
             ToolbarSpacer(.fixed, placement: .primaryAction)
             ToolbarItem(placement: .primaryAction) {
                 // Icono y texto juntos: con `Label` la barra del iPad deja solo el icono.
-                Button { sheet = .invoice } label: { HStack(spacing: 6) { Image(systemName: "plus"); Text("Factura") } }
+                Button { write(.invoice) } label: { HStack(spacing: 6) { Image(systemName: "plus"); Text("Factura") } }
                     .accessibilityLabel("Nueva factura")
                     .headerButton()
             }
@@ -227,15 +227,20 @@ struct HomeView: View {
             ToolbarItem(placement: .primaryAction) { if !isFirstUse { periodMenu(compact: false) } }
             ToolbarItem(placement: .primaryAction) {
                 ControlGroup {
-                    Button { sheet = .expense } label: { HStack(spacing: 4) { Image(systemName: "plus"); Text("Gasto") } }
+                    Button { write(.expense) } label: { HStack(spacing: 4) { Image(systemName: "plus"); Text("Gasto") } }
                         .accessibilityLabel("Nuevo gasto")
-                    Button { sheet = .invoice } label: { HStack(spacing: 4) { Image(systemName: "plus"); Text("Factura") } }
+                    Button { write(.invoice) } label: { HStack(spacing: 4) { Image(systemName: "plus"); Text("Factura") } }
                         .accessibilityLabel("Nueva factura")
                 }
                 .headerButton()
             }
             ToolbarItem(placement: .primaryAction) { bell }
         }
+    }
+
+    /// Abre un editor de la barra; en solo lectura, la pantalla de suscripción (QA del 10-nov: aquí se saltaba).
+    private func write(_ item: NewItem) {
+        SubscriptionStore.shared.whenWritable { sheet = item }
     }
 
     /// Campana de avisos (canvas `Home`, `iPadInicio`), junto a «+» en el mismo grupo de vidrio.
@@ -245,9 +250,9 @@ struct HomeView: View {
 
     private var newMenu: some View {
         Menu {
-            Button("Factura", systemImage: "doc.badge.plus") { sheet = .invoice }
-            Button("Gasto", systemImage: "wallet.bifold") { sheet = .expense }
-            Button("Cliente", systemImage: "person.badge.plus") { sheet = .customer }
+            Button("Factura", systemImage: "doc.badge.plus") { write(.invoice) }
+            Button("Gasto", systemImage: "wallet.bifold") { write(.expense) }
+            Button("Cliente", systemImage: "person.badge.plus") { write(.customer) }
         } label: { Label("Nuevo", systemImage: "plus").labelStyle(.iconOnly) }
         .headerButton()
     }
@@ -538,6 +543,8 @@ struct HomeView: View {
         let isIncome: Bool
         let amount: Double
         var id: String { "\(month.timeIntervalSince1970)-\(isIncome)" }
+        /// Categoría del eje: el mes («2026-11»).
+        var key: String { month.formatted(.iso8601.year().month()) }
     }
 
     private func chartPoints(months: Int) -> [MonthPoint] {
@@ -583,17 +590,27 @@ struct HomeView: View {
                     VStack(alignment: .leading, spacing: 10) { legend; monthsPicker }
                 }
             }
+            // Meses como categorías («2026-11»), no como fechas: con fechas y `.position(by:)` el par de barras quedaba
+            // corrido medio mes respecto a su letra, y el último se montaba sobre el eje (QA del 10-nov).
             Chart(points) { point in
-                BarMark(x: .value("Mes", point.month, unit: .month), y: .value("Importe", point.amount), width: .fixed(barWidth))
+                // Desde cero cada una (`yStart`/`yEnd`): con el mismo mes, `y:` las apilaba.
+                BarMark(x: .value("Mes", point.key), yStart: .value("Importe", 0), yEnd: .value("Importe", point.amount),
+                        width: .fixed(barWidth))
                     .foregroundStyle(by: .value("Serie", point.isIncome ? String(localized: "Ingresos") : String(localized: "Gastos")))
-                    .position(by: .value("Serie", point.isIncome ? 0 : 1))
+                    // El par junto y centrado en su mes: cada barra media barra a un lado. Con `.position(by:)` se
+                    // repartían por todo el ancho del mes y parecían del mes de al lado.
+                    .offset(x: point.isIncome ? -(barWidth / 2 + 1) : barWidth / 2 + 1)
                     .clipShape(UnevenRoundedRectangle(topLeadingRadius: 3, topTrailingRadius: 3))
             }
             .chartForegroundStyleScale([String(localized: "Ingresos"): Palette.income, String(localized: "Gastos"): Palette.expenseBar])
             .chartLegend(.hidden)
             .chartXAxis {
-                AxisMarks(values: .stride(by: .month)) { _ in
-                    AxisValueLabel(format: .dateTime.month(.narrow)).foregroundStyle(Palette.ink2)
+                AxisMarks(values: points.filter(\.isIncome).map(\.key)) { value in
+                    AxisValueLabel {
+                        if let key = value.as(String.self), let month = points.first(where: { $0.key == key })?.month {
+                            Text(month.formatted(.dateTime.month(.narrow))).foregroundStyle(Palette.ink2)
+                        }
+                    }
                 }
             }
             .chartYAxis {
@@ -1346,7 +1363,7 @@ struct HomeView: View {
                 Text("Cuando registres ventas y gastos, aparecerán tu efectivo, tus ingresos del mes y lo que te deben.")
                     .font(.subheadline).foregroundStyle(Palette.ink2)
                     .frame(maxWidth: 300)
-                Button("Crear tu primera factura") { sheet = .invoice }
+                Button("Crear tu primera factura") { write(.invoice) }
                     .buttonStyle(.primaryCompact)
                     .padding(.top, 10)
             }

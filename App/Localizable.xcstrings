@@ -1482,6 +1482,16 @@
         }
       }
     },
+    "%lld de 1 gasto · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld of 1 expense · %@"
+          }
+        }
+      }
+    },
     "%lld de 2" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2630,12 +2640,52 @@
         }
       }
     },
+    "1 aviso sin leer" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 unread notice"
+          }
+        }
+      }
+    },
+    "1 de %lld clientes necesita atención" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 of %lld clients needs attention"
+          }
+        }
+      }
+    },
     "1 factura seleccionada" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "1 bill selected"
+          }
+        }
+      }
+    },
+    "1 necesita atención" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 needs attention"
+          }
+        }
+      }
+    },
+    "1 vencida" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 overdue"
           }
         }
       }
@@ -4539,7 +4589,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Add client"
+            "value" : "Add Client"
           }
         }
       }
@@ -5368,6 +5418,16 @@
         }
       }
     },
+    "Buscar en todos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search All"
+          }
+        }
+      }
+    },
     "Buscar ⌘K" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -5598,16 +5658,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Switches to this business"
-          }
-        }
-      }
-    },
-    "Cambia de empresa desde Inicio o la barra lateral" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Switch businesses from Home or the sidebar"
           }
         }
       }
@@ -10929,7 +10979,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Send reminder"
+            "value" : "Send Reminder"
           }
         }
       }
@@ -16050,7 +16100,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Currency and formats"
+            "value" : "Currency and Formats"
           }
         }
       }
@@ -16721,6 +16771,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No entry matches the search or filter."
+          }
+        }
+      }
+    },
+    "Ningún cliente archivado se llama así." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No archived client has that name."
           }
         }
       }
@@ -17663,7 +17723,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "New invoice"
+            "value" : "New Invoice"
           }
         }
       }
@@ -17764,7 +17824,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "New customer"
+            "value" : "New Customer"
           }
         }
       }
@@ -17784,7 +17844,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "New expense"
+            "value" : "New Expense"
           }
         }
       }
@@ -17834,7 +17894,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "New vendor"
+            "value" : "New Vendor"
           }
         }
       }
@@ -17845,6 +17905,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "New vendor…"
+          }
+        }
+      }
+    },
+    "Nunca" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Never"
           }
         }
       }
@@ -19115,7 +19185,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Company profile"
+            "value" : "Company Profile"
           }
         }
       }
@@ -21394,7 +21464,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Record payment"
+            "value" : "Record Payment"
           }
         }
       }
@@ -22629,12 +22699,12 @@
         }
       }
     },
-    "Sales tax de %@: %@ %% en Impuestos. Revisa allí si también cobras una tasa local." : {
+    "Sales tax de %@: %@%% en Impuestos. Revisa allí si también cobras una tasa local." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sales tax for %@: %@ %% in Taxes. Check there if you also charge a local rate."
+            "value" : "Sales tax for %@: %@%% in Taxes. Check there if you also charge a local rate."
           }
         }
       }
@@ -23174,6 +23244,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Select an account to see its reconciliations."
+          }
+        }
+      }
+    },
+    "Selecciona una factura de proveedor para ver sus detalles." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select a bill to see its details."
           }
         }
       }
@@ -24907,12 +24987,12 @@
         }
       }
     },
-    "Tendrá sus propios libros: clientes, facturas, impuestos y reportes. Puedes cambiar de empresa desde Inicio." : {
+    "Tendrá sus propios libros: clientes, facturas, impuestos y reportes. La verás en Clientes, junto a las demás." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "It will have its own books: customers, invoices, taxes and reports. You can switch businesses from Home."
+            "value" : "It will have its own books: customers, invoices, taxes and reports. You'll see it in Clients, next to the others."
           }
         }
       }
@@ -26162,6 +26242,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "An estimate that was already invoiced can't be edited."
+          }
+        }
+      }
+    },
+    "Un panel con lo pendiente de cada empresa" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A panel with what each business has pending"
           }
         }
       }
@@ -27529,6 +27619,22 @@
         }
       }
     },
+    "clients.column" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Client"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cliente"
+          }
+        }
+      }
+    },
     "clients.title" : {
       "localizations" : {
         "en" : {
@@ -27541,6 +27647,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Clientes"
+          }
+        }
+      }
+    },
+    "columna" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "column"
           }
         }
       }

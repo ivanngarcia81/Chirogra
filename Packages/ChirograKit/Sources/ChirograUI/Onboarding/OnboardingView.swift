@@ -275,12 +275,16 @@ struct OnboardingView: View {
             TextField("Nombre de la empresa", text: $displayName, prompt: Text("Nombre"))
                 // En iOS el título del campo no llega a VoiceOver dentro de un formulario: solo leía «Nombre».
                 .accessibilityLabel(Text("Nombre de la empresa"))
+                #if os(macOS)
+                // El grupo ya dice «Nombre de la empresa»: en el Mac el campo lo repetía a su izquierda.
+                .labelsHidden()
+                #endif
                 #if os(iOS)
                 .textContentType(.organizationName)
                 #endif
         } header: {
             header(addsCompany ? "Añade otra empresa" : "Creemos tu empresa",
-                   subtitle: addsCompany ? "Tendrá sus propios libros: clientes, facturas, impuestos y reportes. Puedes cambiar de empresa desde Inicio."
+                   subtitle: addsCompany ? "Tendrá sus propios libros: clientes, facturas, impuestos y reportes. La verás en Clientes, junto a las demás."
                                          : "Estos datos aparecen en tus facturas. Puedes cambiarlos cuando quieras en Ajustes.",
                    group: String(localized: "Nombre de la empresa")) {
                 LogoMark(size: Self.logoSize)
@@ -597,7 +601,8 @@ struct OnboardingView: View {
             if step == Self.stepCount {
                 Button("Saltar por ahora", action: skipBalances).buttonStyle(.link)
             }
-            Button("Atrás", action: goBack)
+            // Al añadir otra empresa, el paso 1 cierra la hoja: «Cancelar» aquí y no en otra barra debajo (QA del 10-nov).
+            Button(step == 1 && addsCompany ? "Cancelar" : "Atrás", action: goBack)
                 .disabled(!canGoBack)
             Button(primaryTitle, action: advance)
                 .buttonStyle(.primaryCompact)

@@ -334,7 +334,7 @@ struct CompanyProfileView: View {
         do {
             let books = Bookkeeper(context: context).forCompany(company.id)
             if let rate = try books.stateChanged(from: old, to: new) {
-                stateTaxNote = String(localized: "Sales tax de \(rate.name): \(rate.percent) % en Impuestos. Revisa allí si también cobras una tasa local.")
+                stateTaxNote = String(localized: "Sales tax de \(rate.name): \(rate.percent)% en Impuestos. Revisa allí si también cobras una tasa local.")
             } else {
                 stateTaxNote = nil
             }

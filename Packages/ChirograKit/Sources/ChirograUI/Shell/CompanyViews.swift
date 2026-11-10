@@ -487,10 +487,15 @@ struct AddCompanySheet: View {
 
     var body: some View {
         NavigationStack {
+            #if os(macOS)
+            // En el Mac, «Cancelar» va en el pie del alta (su «Atrás» del paso 1): con la barra salían dos pies.
+            OnboardingView(addsCompany: true, onFinish: { dismiss() }, onBack: { dismiss() })
+            #else
             OnboardingView(addsCompany: true, onFinish: { dismiss() })
                 .toolbar {
                     ToolbarItem(placement: .cancellationAction) { Button("Cancelar") { dismiss() } }
                 }
+            #endif
         }
         .editorSheetSizing()
         #if os(macOS)

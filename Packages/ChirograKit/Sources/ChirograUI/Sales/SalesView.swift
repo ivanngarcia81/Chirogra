@@ -191,7 +191,9 @@ struct InvoiceListView: View {
         }
     }
 
-    private var receivable: Int64 { invoices.filter(\.isOpen).reduce(0) { $0 + $1.balanceDue } }
+    /// Lo por cobrar de lo que se ve: con un filtro o una búsqueda, solo esas facturas (QA del 10-nov: con «Vencida»
+    /// decía el total de todas).
+    private var receivable: Int64 { filtered.filter(\.isOpen).reduce(0) { $0 + $1.balanceDue } }
 
     var body: some View {
         List {

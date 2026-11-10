@@ -113,7 +113,7 @@ struct BillTablePage: View {
                 guard let bill, !bill.vendorNumber.isEmpty else { return String(localized: "Factura por pagar") }
                 return String(localized: "Factura de proveedor \(bill.vendorNumber)")
             },
-            inspectorPlaceholder: String(localized: "Selecciona una factura para ver sus detalles.")
+            inspectorPlaceholder: String(localized: "Selecciona una factura de proveedor para ver sus detalles.")
         ) {
             TableColumn(Text(verbatim: "")) { bill in
                 if bill.isOpen {

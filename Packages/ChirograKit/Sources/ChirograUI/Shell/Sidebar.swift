@@ -255,7 +255,7 @@ struct Sidebar: View {
                         .font(.footnote.weight(.semibold))
                         .monospacedDigit()
                         .foregroundStyle(isActive && Self.fillsSelection ? Palette.onBrandFill : Palette.ink2)
-                        .accessibilityLabel(Text("\(count) necesitan atención"))
+                        .accessibilityLabel(count == 1 ? Text("1 necesita atención") : Text("\(count) necesitan atención"))
                 }
                 if hasSubsections {
                     Image(systemName: isOpen ? "chevron.down" : "chevron.right")

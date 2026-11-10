@@ -212,7 +212,7 @@ struct PaywallView: View {
                             .font(.body).multilineTextAlignment(.center).foregroundStyle(Palette.ink2)
                         VStack(alignment: .leading, spacing: 8) {
                             feature("building.2", "Empresas sin límite, cada una con sus libros")
-                            feature("arrow.left.arrow.right", "Cambia de empresa desde Inicio o la barra lateral")
+                            feature("list.bullet.rectangle", "Un panel con lo pendiente de cada empresa")
                             feature("externaldrive", "Una copia por empresa para entregársela a tu cliente")
                             feature("icloud", "Los libros y recibos de todas ocupan espacio en tu iCloud")
                         }
@@ -233,6 +233,10 @@ struct PaywallView: View {
                 }
                 .padding(.horizontal, 24)
                 .padding(.vertical, 12)
+                // La pantalla de la tienda pone el idioma de su storefront (en EE. UU., inglés) a lo que lleva dentro:
+                // nuestros textos salían en inglés con la app en español (QA del 10-nov). Los botones de StoreKit
+                // («Try It Free», «Restore…») siguen el idioma de la tienda y no se pueden cambiar.
+                .environment(\.locale, .appText)
             }
             .subscriptionStoreButtonLabel(.multiline)
             .storeButton(.visible, for: .restorePurchases)
@@ -247,7 +251,9 @@ struct PaywallView: View {
             }
         }
         #if os(macOS)
-        .frame(minWidth: 480, idealWidth: 520, minHeight: 620)
+        // Con un alto máximo: sin él, la hoja pedía ~1200 pt y al salir sola al abrir la app estiraba la ventana más allá
+        // de la pantalla (QA del 10-nov). El contenido de la tienda se desplaza.
+        .frame(minWidth: 480, idealWidth: 520, minHeight: 560, idealHeight: 680, maxHeight: 760)
         #endif
     }
 
@@ -304,7 +310,9 @@ struct ReadOnlySidebarNote: View {
                  ? "Empieza tu prueba gratis de 14 días para registrar. Puedes ver tus libros y sacar copias."
                  : "Tu suscripción terminó. Puedes ver tus libros y sacar copias.")
                 .font(.subheadline).foregroundStyle(Palette.ink2)
-                .fixedSize(horizontal: false, vertical: true)
+                // Sin `fixedSize` vertical: al crear la ventana la barra lateral mide casi cero de ancho, y el texto
+                // entero pedía una altura enorme que estiraba la ventana más allá de la pantalla (QA del 10-nov).
+                .lineLimit(2...6)
             Button(store.canStartTrial ? "Probar gratis" : "Suscribirme") { store.showsPaywall = true }
                 .buttonStyle(.borderedProminent).tint(Palette.brandFill).controlSize(.small)
         }
@@ -369,7 +377,8 @@ struct SubscriptionSection: View {
     private var statusText: String {
         switch store.status {
         case .subscribed(let isTrial, let expires):
-            let day = expires?.formatted(date: .abbreviated, time: .omitted) ?? ""
+            // Con el formato del resto de la app («10 dic 2026»), no el del sistema («dic 10, 2026»).
+            let day = expires?.shortDate ?? ""
             return isTrial ? String(localized: "Prueba gratis hasta el \(day)") : String(localized: "Activa · se renueva el \(day)")
         case .lapsed:
             return store.canStartTrial ? String(localized: "Prueba gratis de 14 días sin empezar · solo lectura")

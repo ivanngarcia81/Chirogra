@@ -91,7 +91,12 @@ struct ReclassifyExpensesView: View {
                     ForEach(candidates) { expense in row(expense) }
                 } header: {
                     HStack {
-                        Text("\(chosen.count) de \(candidates.count) gastos · \(chosen.reduce(0) { $0 + amount(of: $1) }.money)")
+                        let total = chosen.reduce(0) { $0 + amount(of: $1) }.money
+                        if candidates.count == 1 {
+                            Text("\(chosen.count) de 1 gasto · \(total)")
+                        } else {
+                            Text("\(chosen.count) de \(candidates.count) gastos · \(total)")
+                        }
                         Spacer()
                         if !candidates.isEmpty {
                             Button(excluded.isEmpty ? "Desmarcar todos" : "Marcar todos") {

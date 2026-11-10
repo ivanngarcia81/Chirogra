@@ -58,7 +58,12 @@ struct ClientsView: View {
     @State private var clients: [ClientSummary] = []
     @State private var loaded = false
     @State private var filter: ClientFilter = .all
-    @State private var sort: ClientSort = .urgency
+    /// El orden elegido se conserva al salir y volver (QA del 10-nov).
+    @AppStorage("clients.sort") private var sort: ClientSort = .urgency
+    /// La tabla está ordenada por una columna que no es ninguno de los órdenes del menú.
+    @State private var columnOrder = false
+    /// Ancho del panel (iPad y Mac): si no caben todas las columnas, se quitan las menos importantes.
+    @State private var width: CGFloat = .infinity
     @State private var query = ""
     @State private var selection: UUID?
     @State private var tableOrder = [KeyPathComparator(\ClientRow.urgency)]
@@ -105,6 +110,7 @@ struct ClientsView: View {
             return needing.isEmpty ? String(localized: "Tu cliente está al día") : String(localized: "Tu cliente necesita atención")
         }
         if needing.isEmpty { return String(localized: "Tus \(active.count) clientes están al día") }
+        if needing.count == 1 { return String(localized: "1 de \(active.count) clientes necesita atención") }
         return String(localized: "\(needing.count) de \(active.count) clientes necesitan atención")
     }
 
@@ -122,6 +128,10 @@ struct ClientsView: View {
         .searchable(text: $query, prompt: Text("Buscar cliente"))
         .toolbar { toolbar }
         .task(id: companies.map { "\($0.id)\($0.isArchived)\($0.sortOrder)" }) { reload() }
+        .onAppear { if !columnOrder { setSort(sort) } }
+        // Lo elegido que el filtro o la búsqueda esconden deja de estar elegido (el inspector lo seguía mostrando).
+        .onChange(of: filter) { dropHiddenSelection() }
+        .onChange(of: query) { dropHiddenSelection() }
         .onReceive(NotificationCenter.default.publisher(for: ModelContext.didSave)) { _ in scheduleReload() }
         .alert(deleting.map { String(localized: "¿Borrar «\($0.name)» y todos sus libros?") } ?? "",
                isPresented: Binding(get: { deleting != nil }, set: { if !$0 { deleting = nil } }),
@@ -183,7 +193,7 @@ struct ClientsView: View {
             .pickerStyle(.inline)
         } label: {
             #if os(macOS)
-            Text("Orden: \(sort.title)")
+            Text("Orden: \(columnOrder ? String(localized: "columna") : sort.title)")
             #else
             Label("Ordenar", systemImage: "arrow.up.arrow.down")
             #endif
@@ -200,15 +210,31 @@ struct ClientsView: View {
         .labelsHidden()
     }
 
-    private func count(_ option: ClientFilter) -> Int { clients.filter(option.matches).count }
+    /// Con texto en la búsqueda, los números de los filtros cuentan solo lo que coincide.
+    private func count(_ option: ClientFilter) -> Int {
+        let text = query.trimmingCharacters(in: .whitespaces)
+        return clients.filter { option.matches($0) && (text.isEmpty || $0.name.localizedStandardContains(text)) }.count
+    }
 
     private func setSort(_ value: ClientSort) {
         sort = value
+        columnOrder = false
         switch value {
         case .urgency: tableOrder = [KeyPathComparator(\ClientRow.urgency)]
         case .name: tableOrder = [KeyPathComparator(\ClientRow.name, comparator: .localizedStandard)]
         case .deadline: tableOrder = [KeyPathComparator(\ClientRow.deadlineDays)]
         }
+    }
+
+    /// Orden por una columna de la tabla: el menú dice cuál si es uno de los suyos, y «columna» si no (QA del 10-nov:
+    /// seguía diciendo «Urgencia»).
+    private func columnSorted(_ order: [KeyPathComparator<ClientRow>]) {
+        tableOrder = order
+        let key = order.first?.keyPath
+        if key == \ClientRow.urgency { sort = .urgency; columnOrder = false }
+        else if key == \ClientRow.name { sort = .name; columnOrder = false }
+        else if key == \ClientRow.deadlineDays { sort = .deadline; columnOrder = false }
+        else { columnOrder = true }
     }
 
     // MARK: iPhone
@@ -243,6 +269,8 @@ struct ClientsView: View {
     /// Filtros con su número (canvas: cápsulas; decisión del usuario del 10-nov: con cuatro filtros y sus números, un
     /// menú escondería justo lo útil).
     private var filterChips: some View {
+        // El elegido siempre a la vista: «Archivados» quedaba fuera, en el borde (QA del 10-nov).
+        ScrollViewReader { proxy in
         ScrollView(.horizontal) {
             HStack(spacing: 8) {
                 ForEach(ClientFilter.allCases) { option in
@@ -263,11 +291,14 @@ struct ClientsView: View {
                     .buttonStyle(.plain)
                     .accessibilityAddTraits(isOn ? .isSelected : [])
                     .accessibilityLabel(Text(verbatim: "\(option.title), \(count(option))"))
+                    .id(option)
                 }
             }
             .padding(.horizontal, 20)
         }
         .scrollIndicators(.hidden)
+        .onChange(of: filter) { _, option in withAnimation { proxy.scrollTo(option, anchor: .center) } }
+        }
     }
 
     @ViewBuilder
@@ -388,9 +419,15 @@ struct ClientsView: View {
                 ContentUnavailableView {
                     Label("Sin resultados para «\(query.trimmingCharacters(in: .whitespaces))»", systemImage: "magnifyingglass")
                 } description: {
-                    Text("Ningún cliente se llama así. Revisa cómo está escrito o búscalo entre los archivados.")
+                    if filter == .archived {
+                        Text("Ningún cliente archivado se llama así.")
+                    } else {
+                        Text("Ningún cliente se llama así. Revisa cómo está escrito o búscalo entre los archivados.")
+                    }
                 } actions: {
-                    if filter != .archived {
+                    if filter == .archived {
+                        Button("Buscar en todos") { filter = .all }
+                    } else {
                         Button("Buscar en Archivados") { filter = .archived }
                     }
                 }
@@ -433,18 +470,25 @@ struct ClientsView: View {
             }
         }
         .background(Palette.background)
+        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
         #if os(macOS)
         .inspector(isPresented: $showsInspector) {
-            ClientInspector(client: clients.first { $0.id == selection }, canWrite: canWrite,
+            ClientInspector(client: shown.first { $0.id == selection }, canWrite: canWrite,
                             actions: { AnyView(actions($0)) })
                 .inspectorColumnWidth(min: 260, ideal: 300, max: 380)
         }
         #endif
     }
 
+    /// Columnas según el sitio (QA del 10-nov: en el Mac con el inspector y en el iPad vertical con la barra lateral no
+    /// cabían): primero se quitan Avisos y Última actividad (Mac), luego Conciliado y Cerrado.
+    private var showsAll: Bool { width >= 980 }
+    private var showsBooks: Bool { width >= Self.booksMinWidth }
+
     private var table: some View {
-        Table(rows, selection: $selection, sortOrder: Binding(get: { tableOrder }, set: { tableOrder = $0; sort = .urgency })) {
-            TableColumn("Cliente", value: \.name, comparator: .localizedStandard) { row in
+        Table(rows, selection: $selection, sortOrder: Binding(get: { tableOrder }, set: { columnSorted($0) })) {
+            // «Cliente» a secas es el de Ventas («Customer»): este es el del contador («Client»).
+            TableColumn(Text(String(localized: "clients.column", defaultValue: "Cliente")), value: \.name, comparator: .localizedStandard) { row in
                 HStack(spacing: 10) {
                     CompanyMonogram(name: row.client.name, side: Self.monogramSide)
                     VStack(alignment: .leading, spacing: 0) {
@@ -472,11 +516,13 @@ struct ClientsView: View {
             .width(min: Self.w.overdue.0, ideal: Self.w.overdue.1, max: Self.w.overdue.2)
             .alignment(.trailing)
             #if os(macOS)
+            if showsAll {
             TableColumn("Avisos", value: \.notices) { row in
                 ClientCell(text: row.client.unreadNotices > 0 ? "\(row.client.unreadNotices)" : "—")
             }
             .width(min: 44, ideal: 52)
             .alignment(.trailing)
+            }
             #endif
             TableColumn("Sales tax", value: \.deadlineDays) { row in
                 ClientCell(text: row.client.salesTax.map { "\($0.amount.moneyWhole) · \($0.deadline.dayMonth)" } ?? "—",
@@ -484,6 +530,7 @@ struct ClientsView: View {
             }
             .width(min: Self.w.tax.0, ideal: Self.w.tax.1, max: Self.w.tax.2)
             .alignment(.trailing)
+            if showsBooks {
             TableColumn(Self.reconciledTitle, value: \.reconciledDays) { row in
                 ClientCell(text: row.client.reconciledColumn,
                            tone: row.client.reconciliationIsUrgent ? .bad : row.client.reconciliationIsLate ? .warning : .plain)
@@ -495,12 +542,15 @@ struct ClientsView: View {
             }
             .width(min: Self.w.closed.0, ideal: Self.w.closed.1, max: Self.w.closed.2)
             .alignment(.trailing)
+            }
             #if os(macOS)
+            if showsAll {
             TableColumn("Última actividad", value: \.lastActivity) { row in
                 ClientCell(text: row.client.lastActivityText)
             }
             .width(min: 72, ideal: 90)
             .alignment(.trailing)
+            }
             #endif
         }
         .contextMenu(forSelectionType: UUID.self) { ids in
@@ -572,6 +622,10 @@ struct ClientsView: View {
                 Button("Borrar…", systemImage: "trash", role: .destructive) { deleting = client }
             }
         }
+    }
+
+    private func dropHiddenSelection() {
+        if let selection, !shown.contains(where: { $0.id == selection }) { self.selection = nil }
     }
 
     private func open(_ client: ClientSummary) {
@@ -654,6 +708,7 @@ struct ClientsView: View {
     private static let w = ColumnWidths(status: (80, 92, 130), bank: (52, 70, 130), overdue: (72, 96, 140),
                                         tax: (88, 106, 150), reconciled: (70, 84, 130), closed: (70, 80, 120))
     private static let monogramSide: CGFloat = 26
+    private static let booksMinWidth: CGFloat = 700
     private static let rowPadding: CGFloat = 4
     private static let boxRadius: CGFloat = 8
     private static let boxMargin: CGFloat = 16
@@ -664,6 +719,7 @@ struct ClientsView: View {
     private static let w = ColumnWidths(status: (104, 104, 104), bank: (64, 64, 64), overdue: (116, 116, 116),
                                         tax: (124, 124, 124), reconciled: (104, 104, 104), closed: (92, 92, 92))
     private static let monogramSide: CGFloat = 36
+    private static let booksMinWidth: CGFloat = 840
     private static let rowPadding: CGFloat = 6
     private static let boxRadius: CGFloat = 20
     private static let boxMargin: CGFloat = 20
@@ -783,7 +839,8 @@ extension ClientSummary {
 
     var reconciledColumn: String {
         guard let reconciliation else { return "—" }
-        return reconciliation.reconciledThrough?.dayMonth ?? String(localized: "Sin conciliar")
+        // Corto en la columna («Sin conciliar» y «Not reconciled» se cortaban); la tarjeta y el inspector lo dicen entero.
+        return reconciliation.reconciledThrough?.dayMonth ?? String(localized: "Nunca")
     }
 
     var salesTaxText: String? {
@@ -817,11 +874,11 @@ extension ClientSummary {
         }
         if overdueInvoices > 0 {
             items.append(.init(id: "invoices", title: String(localized: "Facturas vencidas"),
-                               value: "\(String(localized: "\(overdueInvoices) vencidas")) · \(overdueAmount.moneyWhole)",
+                               value: "\(overdueInvoices == 1 ? String(localized: "1 vencida") : String(localized: "\(overdueInvoices) vencidas")) · \(overdueAmount.moneyWhole)",
                                systemImage: "doc.text", tone: .warning, route: .overdueInvoices))
         }
         if unreadNotices > 0 {
-            items.append(.init(id: "notices", title: String(localized: "Avisos"), value: String(localized: "\(unreadNotices) avisos sin leer"),
+            items.append(.init(id: "notices", title: String(localized: "Avisos"), value: unreadNotices == 1 ? String(localized: "1 aviso sin leer") : String(localized: "\(unreadNotices) avisos sin leer"),
                                systemImage: "bell", tone: .secondary, route: .notices))
         }
         return items
