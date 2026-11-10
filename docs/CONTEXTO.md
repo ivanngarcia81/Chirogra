@@ -85,7 +85,7 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
    **Decisión del usuario del 10-nov (cambia la del 2-nov):** la tarjeta del mes de Gastos (Mac, iPhone e iPad) usa la
    base de Inicio y del estado de resultados (gastos + costo de ventas de los asientos, con las facturas de proveedor)
    y, si el mes las tiene, dice «Incluye $X de facturas de proveedor». Lo eligió viendo las dos versiones en el Mac.
-   **Segunda tanda de la QA (10-nov, build 26 con lo anterior):** letra grande (Plan de cuentas
+   **Segunda tanda de la QA (10-nov, build 26 `eccaaa9`, subido para iOS y macOS, con lo anterior):** letra grande (Plan de cuentas
    y Banca en líneas, Impuestos uno debajo del otro y cifras en una línea, Empresas con «Ejemplo» debajo, títulos
    cortos de Reportes en el iPhone, panel en tarjetas en el iPad); tasas en orden estable (`stableOrder`: la mayor
    primero y luego por nombre); un solo chevron en el Libro mayor del Mac; «Buscar gastos» en el Mac; el aviso de
