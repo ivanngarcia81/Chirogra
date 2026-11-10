@@ -266,3 +266,43 @@ struct OnboardingSetupTests {
         #expect(try books.company()?.defaultTaxGroupID != nil)
     }
 }
+
+@MainActor
+@Suite("Ajustes: cambiar el estado de la empresa")
+struct StateChangeTests {
+    @Test("Crea la tasa del nuevo estado y la deja predeterminada si antes era la estatal sola")
+    func replacesPlainStateRate() throws {
+        let container = try ChirograStore.makeContainer(inMemory: true)
+        let books = Bookkeeper(context: container.mainContext, actor: "Pruebas")
+        let company = try books.setUpCompany(legalName: "Taller", entityType: .llc, state: "TX", locale: Locale(identifier: "es_US"))
+        try books.setUpSalesTax(totalMillionths: nil)
+        let texas = try #require(try books.defaultTaxCode())
+        #expect(texas.name == "Texas")
+
+        company.state = "FL"
+        let florida = try #require(try books.stateChanged(from: "TX", to: "FL"))
+        #expect(florida.name == "Florida" && florida.rateMillionths == 60_000)
+        #expect(company.defaultTaxGroupID == florida.id)
+        #expect(florida.agency?.name == StateSalesTax.forState("FL")?.agency)
+        // La de Texas sigue ahí (las facturas emitidas la usan).
+        #expect(try books.taxRate(id: texas.id) != nil)
+
+        // A un estado sin sales tax estatal: no se crea nada y el predeterminado se queda.
+        company.state = "OR"
+        #expect(try books.stateChanged(from: "FL", to: "OR") == nil)
+        #expect(company.defaultTaxGroupID == florida.id)
+    }
+
+    @Test("Con un grupo estatal + local como predeterminado, solo crea la tasa nueva")
+    func keepsCombinedGroup() throws {
+        let container = try ChirograStore.makeContainer(inMemory: true)
+        let books = Bookkeeper(context: container.mainContext, actor: "Pruebas")
+        let company = try books.setUpCompany(legalName: "Taller", entityType: .llc, state: "TX", locale: Locale(identifier: "es_US"))
+        try books.setUpSalesTax(totalMillionths: 82_500, localName: "Austin")
+        let group = try #require(company.defaultTaxGroupID)
+        company.state = "CA"
+        let california = try #require(try books.stateChanged(from: "TX", to: "CA"))
+        #expect(california.rateMillionths == 72_500)
+        #expect(company.defaultTaxGroupID == group)
+    }
+}

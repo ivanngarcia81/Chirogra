@@ -88,6 +88,7 @@ public struct StateSalesTax: Sendable, Equatable {
         StateSalesTax("OK", "Oklahoma", 45_000, "Oklahoma Tax Commission"),
         StateSalesTax("OR", "Oregon", nil, ""),
         StateSalesTax("PA", "Pennsylvania", 60_000, "Pennsylvania Department of Revenue"),
+        // IVU: 10.5 % estatal + 1 % municipal (11.5 %); el municipal va como tasa local. Comprobado el 10-nov-2026.
         StateSalesTax("PR", "Puerto Rico", 105_000, "Departamento de Hacienda de Puerto Rico"),
         StateSalesTax("RI", "Rhode Island", 70_000, "Rhode Island Division of Taxation"),
         StateSalesTax("SC", "South Carolina", 60_000, "South Carolina Department of Revenue"),

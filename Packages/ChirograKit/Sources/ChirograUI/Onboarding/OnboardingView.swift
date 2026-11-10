@@ -628,20 +628,41 @@ struct OnboardingView: View {
             company.ein = ein.trimmingCharacters(in: .whitespaces)
             company.postalCode = postalCode.trimmingCharacters(in: .whitespaces)
             try context.save()
-            let books = Bookkeeper(context: context)
-            // La tasa estatal base como impuesto predeterminado (nada en los estados sin sales tax estatal).
-            try books.setUpSalesTax(totalMillionths: localMillionths > 0 ? totalMillionths : nil,
-                                    localName: trimmedLocalName)
-            if hasOpeningBalances {
-                try books.recordOpeningBalances(bank: openingBank, creditCard: openingCard,
-                                                on: Calendar.current.startOfDay(for: openingDate))
-            }
-            onFinish?()
         } catch {
             errorMessage = error.localizedDescription
+            return
         }
+        // La empresa ya existe: el alta se cierra (la raíz pasa a la app) y lo que falle después no se vería aquí. Se
+        // avisa en la app (`SetupIssue`) y se sigue: la tasa y el saldo de apertura se pueden poner luego.
+        let books = Bookkeeper(context: context)
+        var problems: [String] = []
+        do {
+            // La tasa estatal base como impuesto predeterminado (nada en los estados sin sales tax estatal).
+            try books.setUpSalesTax(totalMillionths: localMillionths > 0 ? totalMillionths : nil, localName: trimmedLocalName)
+        } catch {
+            problems.append(String(localized: "No se pudo crear la tasa de sales tax: \(error.localizedDescription) Añádela en Impuestos."))
+        }
+        if hasOpeningBalances {
+            do {
+                try books.recordOpeningBalances(bank: openingBank, creditCard: openingCard,
+                                                on: Calendar.current.startOfDay(for: openingDate))
+            } catch {
+                problems.append(String(localized: "No se pudo registrar el saldo de apertura: \(error.localizedDescription) Regístralo en Contabilidad con un asiento."))
+            }
+        }
+        if !problems.isEmpty { SetupIssue.shared.message = problems.joined(separator: "\n\n") }
+        onFinish?()
     }
 
+}
+
+/// Lo que falló al terminar el alta, después de crear la empresa (la tasa o el saldo de apertura). Lo enseña la raíz:
+/// el alta ya no está a la vista.
+@MainActor
+@Observable
+final class SetupIssue {
+    static let shared = SetupIssue()
+    var message: String?
 }
 
 /// Coloca las vistas en filas y pasa a la siguiente cuando no caben (chips).

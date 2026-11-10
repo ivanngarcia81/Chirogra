@@ -70,7 +70,8 @@ struct VendorTablePage: View {
         let rows = active
         let shown = filtered(rows)
         let owed = rows.reduce(0) { $0 + $1.openBalance }
-        let with1099 = rows.filter(\.is1099).count
+        // Solo los que ya llegan al mínimo del año (`Form1099`): marcados pero por debajo, todavía no requieren el formulario.
+        let with1099 = rows.filter { $0.is1099 && Form1099.reachesThreshold(paid: $0.paidThisYear, taxYear: year) }.count
         MacTablePage(
             title: String(localized: "Proveedores"),
             subtitle: String(localized: "\(String(localized: "\(rows.count) proveedores")) · \(owed.money) por pagar"),

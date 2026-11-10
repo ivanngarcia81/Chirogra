@@ -25,6 +25,8 @@ struct ExpensesView: View {
     /// «Escanear recibo» (iPhone y iPad con cámara): la cámara de documentos y después «Nuevo gasto» con el recibo.
     @State private var scanningReceipt = false
     @State private var scannedReceipt: ReceiptFile?
+    /// «Reclasificar gastos…» (varios de una categoría a otra).
+    @State private var reclassifying = false
 
     private var segment: Segment { fixedSegment ?? selectedSegment }
 
@@ -74,7 +76,15 @@ struct ExpensesView: View {
             ToolbarItem(placement: .primaryAction) {
                 AddButton(title: addTitle) { showingEditor = true }
             }
+            if segment == .expenses {
+                ToolbarItem(placement: .secondaryAction) {
+                    Button("Reclasificar gastos…", systemImage: "arrow.left.arrow.right") {
+                        SubscriptionStore.shared.whenWritable { reclassifying = true }
+                    }
+                }
+            }
         }
+        .sheet(isPresented: $reclassifying) { NavigationStack { ReclassifyExpensesView() }.editorSheetSizing() }
         #if os(iOS)
         .fullScreenCover(isPresented: $scanningReceipt) {
             DocumentScannerView { file in

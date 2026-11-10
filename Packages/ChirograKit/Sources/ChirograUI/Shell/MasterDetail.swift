@@ -455,6 +455,8 @@ private struct ExpenseMasterList: View {
     @Binding var selection: UUID?
     @CompanyQuery(sort: \Expense.date, order: .reverse) private var expenses: [Expense]
     @CompanyQuery(sort: \Account.code) private var accounts: [Account]
+    /// «Reclasificar gastos…» (varios de una categoría a otra).
+    @State private var reclassifying = false
     @State private var withoutReceipt = false
     @State private var query = ""
     @State private var creating = false
@@ -506,6 +508,12 @@ private struct ExpenseMasterList: View {
                     .headerButton()
             }
             ToolbarItem(placement: .secondaryAction) {
+                Button("Reclasificar gastos…", systemImage: "arrow.left.arrow.right") {
+                    SubscriptionStore.shared.whenWritable { reclassifying = true }
+                }
+                .headerButton()
+            }
+            ToolbarItem(placement: .secondaryAction) {
                 Button("Recurrentes", systemImage: "arrow.trianglehead.2.clockwise") {
                     RecurringTip().invalidate(reason: .actionPerformed)
                     showingRecurring = true
@@ -514,6 +522,7 @@ private struct ExpenseMasterList: View {
             }
         }
         .masterAddButton(String(localized: "Gasto"), label: String(localized: "Nuevo gasto"), tip: NewExpenseTip()) { creating = true }
+        .sheet(isPresented: $reclassifying) { NavigationStack { ReclassifyExpensesView() }.editorSheetSizing() }
         .task(id: expenses.isEmpty) {
             NewExpenseTip.hasExpenses = !expenses.isEmpty
             RecurringTip.hasExpenses = !expenses.isEmpty

@@ -39,6 +39,24 @@ extension Bookkeeper {
         return rate
     }
 
+    /// El estado de la empresa cambió (Ajustes › Perfil): crea la tasa estatal del nuevo estado, si tiene sales tax
+    /// estatal, y si el impuesto predeterminado era la tasa estatal sola del estado anterior, pasa a ser la nueva. Si el
+    /// predeterminado es un grupo (estatal + local) o una tasa propia, no se toca: lo decide el usuario en Impuestos.
+    /// Devuelve la tasa del nuevo estado (`nil` si no tiene sales tax estatal).
+    @discardableResult
+    public func stateChanged(from oldState: String, to newState: String) throws -> TaxRate? {
+        guard oldState != newState, let company = try company() else { return nil }
+        let previousDefault = company.defaultTaxGroupID
+        guard let rate = try setUpStateSalesTax(state: newState) else { return nil }
+        if let previousDefault, let old = StateSalesTax.forState(oldState),
+           let current = try taxRate(id: previousDefault), current.name == old.name, current.agency?.name == old.agency {
+            company.defaultTaxGroupID = rate.id
+            audit("Company", company.id, "defaultTax", String(localized: "Impuesto predeterminado cambiado"))
+            try saveOrRollback()
+        }
+        return rate
+    }
+
     /// El sales tax del alta en un paso (build 7: Iván pidió poner la tasa en la página de apertura en vez de ir luego
     /// a Impuestos): la tasa estatal base (`setUpStateSalesTax`) y, si `totalMillionths` es mayor, la diferencia como
     /// tasa local («Austin» 2 %) en la misma agencia del estado, sumada en un grupo que queda como predeterminado

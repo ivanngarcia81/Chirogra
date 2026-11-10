@@ -273,6 +273,8 @@ struct CompanyProfileView: View {
     /// Dentro de `SettingsWideView`: el título de la ventana sigue siendo «Ajustes».
     var embedded = false
     @Environment(\.modelContext) private var context
+    /// Qué pasó con el sales tax al cambiar el estado (se creó la tasa, o no se pudo).
+    @State private var stateTaxNote: String?
 
     var body: some View {
         SettingsForm {
@@ -304,7 +306,10 @@ struct CompanyProfileView: View {
             } header: {
                 SectionLabel(text: String(localized: "Dirección"))
             } footer: {
-                Text("Estos datos aparecen en el encabezado de tus facturas.")
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Estos datos aparecen en el encabezado de tus facturas.")
+                    if let stateTaxNote { Text(stateTaxNote).foregroundStyle(Palette.ink) }
+                }
             }
             SettingsSection {
                 SettingsPicker("Inicio del año fiscal", selection: $company.fiscalYearStartMonth) {
@@ -317,10 +322,25 @@ struct CompanyProfileView: View {
         .screenBackground()
         .modifier(TitleUnlessEmbedded(title: "Perfil de la empresa", embedded: embedded))
         .onDisappear { try? context.save() }
+        // Otro estado: su tasa estatal en Impuestos (y como predeterminada si la de antes era la estatal sola).
+        .onChange(of: company.state) { old, new in stateChanged(from: old, to: new) }
         #if DEBUG
         // `-qa.zipEmpresa 78702` (con `-qa.tablaZip muestra`): el código postal del negocio, para la tasa sugerida.
         .onAppear { if let zip = UserDefaults.standard.string(forKey: "qa.zipEmpresa") { company.postalCode = zip } }
         #endif
+    }
+
+    private func stateChanged(from old: String, to new: String) {
+        do {
+            let books = Bookkeeper(context: context).forCompany(company.id)
+            if let rate = try books.stateChanged(from: old, to: new) {
+                stateTaxNote = String(localized: "Sales tax de \(rate.name): \(rate.percent) % en Impuestos. Revisa allí si también cobras una tasa local.")
+            } else {
+                stateTaxNote = nil
+            }
+        } catch {
+            stateTaxNote = String(localized: "No se pudo crear la tasa del estado: \(error.localizedDescription)")
+        }
     }
 }
 

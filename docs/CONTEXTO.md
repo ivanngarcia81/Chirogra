@@ -58,11 +58,19 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
    contadores o con más de una empresa. «Clientes» del panel es la clave `clients.title` («Clients»; el de Ventas
    es «Customers»). Decisiones del usuario: Clientes como pantalla principal del iPhone y filtros en cápsulas.
    Probado en simulador (iPhone: todas las rutas con una prueba de UI; iPad claro y oscuro) y copia del Mac.
-4. **Reclasificar en lote**: elegir varios gastos o movimientos y cambiarlos de cuenta de una vez.
-5. Arreglos menores sin esquema: tasa de Puerto Rico (comprobar), crear la tasa al cambiar el estado en Ajustes,
-   mostrar el error al crear tasa o asiento de apertura, aviso 1099 del Mac que cuenta proveedores bajo el mínimo,
-   permiso de red y nota de privacidad de recibos en el Mac, aviso de que la primera lectura de un recibo tarda.
-6. Build 23 con 3–5, probado en iPhone, iPad y Mac.
+4. **Reclasificar en lote: HECHO el 10-nov, en el build 24.** «Reclasificar gastos…» (`Expenses/ReclassifyExpensesView.swift`;
+   menú «···» de Gastos en iPhone e iPad, «Reclasificar…» en la barra del Mac): categoría actual + periodo, gastos
+   marcados, categoría nueva. `Bookkeeper.reclassifyExpenses` cambia solo las líneas de la categoría actual con
+   `updateExpense` (reversión + asiento nuevo); los de periodo cerrado se cuentan aparte (`ReclassifyTests`). Los
+   movimientos del banco ya categorizados no entran (crean gastos, que sí entran; los depósitos no).
+5. **Arreglos menores: HECHOS el 10-nov, en el build 24.** Puerto Rico 10.5 % estatal comprobado (IVU 11.5 % = 10.5 +
+   1 municipal, guías de 2026 de terceros); al cambiar el estado en Ajustes se crea su tasa
+   (`Bookkeeper.stateChanged`, y pasa a predeterminada si la anterior era la estatal sola; `StateChangeTests`); los
+   fallos de la tasa o del saldo de apertura tras crear la empresa salen en un aviso de la raíz (`SetupIssue`); el
+   aviso 1099 del Mac solo cuenta a los que llegan al mínimo. Ya estaban: la nota «Todo se lee en este aparato» y el
+   aviso de la primera lectura del recibo (también en el Mac). **No hecho:** el permiso de red del Mac solo hace falta
+   para bajar la tabla de sales tax por código postal (`PostalTaxTableLoader.remoteURL`), y su fuente está sin decidir.
+6. Build 24 con 4 y 5, subido el 10-nov.
 
 *B. Cuando Apple apruebe la 1.0:*
 7. Usuario: enviar la 1.0.1 (build 15).
@@ -87,11 +95,6 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
 
 - Sin decidir: quien tenga libros en la 1.0 con iCloud apagado y estrene otro aparato con la 1.0.1 ve el alta; el aviso
   `OtherDeviceSection` del alta le dice que encienda iCloud en el primero.
-- **Tasa de Puerto Rico** en `ChirograData/StateSalesTax.swift`: 10.5 % de memoria, sin comprobar.
-- Si el usuario cambia el estado en Ajustes, no se crea la tasa nueva. Un error al crear la tasa o el asiento de apertura
-  después de crear la empresa no se le muestra.
-- El aviso de la tabla de proveedores del Mac («N proveedores requieren 1099-NEC») cuenta los marcados como 1099 aunque
-  no lleguen al mínimo.
 - **1099-NEC:** la tabla `inflationAdjusted` de `ChirograData/Form1099.swift` ($600 hasta 2025, $2,000 desde 2026) hay
   que **actualizarla cada año** cuando el IRS publique la cifra.
 - Sin comprobar: VoiceOver de verdad y letra grande; correo real (`MFMailComposeViewController`, `NSSharingService`);

@@ -587,6 +587,16 @@
         }
       }
     },
+    "%@ · por confirmar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · to confirm"
+          }
+        }
+      }
+    },
     "%@ · predeterminada" : {
       "localizations" : {
         "en" : {
@@ -1406,6 +1416,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld of %lld %@ expenses"
+          }
+        }
+      }
+    },
+    "%lld de %lld gastos · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld of %lld expenses · %@"
           }
         }
       }
@@ -3653,6 +3673,16 @@
         }
       }
     },
+    "Algunos gastos no se cambiaron" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Some expenses weren't changed"
+          }
+        }
+      }
+    },
     "Alta de %@" : {
       "localizations" : {
         "en" : {
@@ -5713,6 +5743,16 @@
         }
       }
     },
+    "Cambiar varios gastos de una categoría a otra" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Move several expenses from one category to another"
+          }
+        }
+      }
+    },
     "Cambiar…" : {
       "localizations" : {
         "en" : {
@@ -5899,6 +5939,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Category"
+          }
+        }
+      }
+    },
+    "Categoría actual" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Current category"
           }
         }
       }
@@ -8270,6 +8320,16 @@
         }
       }
     },
+    "De «%@» a «%@». Total: %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "From “%@” to “%@”. Total: %@."
+          }
+        }
+      }
+    },
     "Debe" : {
       "localizations" : {
         "en" : {
@@ -8733,6 +8793,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Uncheck All"
+          }
+        }
+      }
+    },
+    "Desmarcar todos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deselect All"
           }
         }
       }
@@ -9503,6 +9573,16 @@
         }
       }
     },
+    "El año pasado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last year"
+          }
+        }
+      }
+    },
     "El balance no cuadra" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -10163,6 +10243,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Choose a vendor if you buy from them often or pay their bills. Otherwise, just enter who you paid in “Paid to”."
+          }
+        }
+      }
+    },
+    "Elige una categoría distinta de la actual." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose a category different from the current one."
           }
         }
       }
@@ -12989,6 +13079,16 @@
         }
       }
     },
+    "Gastos reclasificados" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Expenses reclassified"
+          }
+        }
+      }
+    },
     "Gastos y costos" : {
       "localizations" : {
         "en" : {
@@ -14259,6 +14359,16 @@
         }
       }
     },
+    "La categoría nueva no existe o está archivada." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The new category doesn't exist or is archived."
+          }
+        }
+      }
+    },
     "La conciliación no cuadra: faltan %@." : {
       "localizations" : {
         "en" : {
@@ -14435,6 +14545,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "The account already has activity: its type can't change. If needed, create another account and reclassify with a journal entry."
+          }
+        }
+      }
+    },
+    "La empresa se creó, pero falta algo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The company was created, but something is missing"
           }
         }
       }
@@ -15734,6 +15854,16 @@
         }
       }
     },
+    "Marcar todos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select All"
+          }
+        }
+      }
+    },
     "Margen %lld%%" : {
       "localizations" : {
         "en" : {
@@ -16882,6 +17012,16 @@
         }
       }
     },
+    "No hay gastos de esta categoría en el periodo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "There are no expenses in this category for the period."
+          }
+        }
+      }
+    },
     "No hay movimientos de esta cuenta hasta la fecha del extracto." : {
       "localizations" : {
         "en" : {
@@ -17055,6 +17195,16 @@
         }
       }
     },
+    "No se pudieron cambiar %lld:" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld couldn't be changed:"
+          }
+        }
+      }
+    },
     "No se pudieron crear los datos de ejemplo" : {
       "localizations" : {
         "en" : {
@@ -17075,12 +17225,42 @@
         }
       }
     },
+    "No se pudo cambiar 1:" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 couldn't be changed:"
+          }
+        }
+      }
+    },
     "No se pudo completar" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Couldn’t Complete"
+          }
+        }
+      }
+    },
+    "No se pudo crear la tasa de sales tax: %@ Añádela en Impuestos." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't create the sales tax rate: %@ Add it in Taxes."
+          }
+        }
+      }
+    },
+    "No se pudo crear la tasa del estado: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't create the state rate: %@"
           }
         }
       }
@@ -17111,6 +17291,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "The transaction couldn't be recorded."
+          }
+        }
+      }
+    },
+    "No se pudo registrar el saldo de apertura: %@ Regístralo en Contabilidad con un asiento." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't record the opening balance: %@ Record it in Accounting with a journal entry."
           }
         }
       }
@@ -17444,6 +17634,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "New agency…"
+          }
+        }
+      }
+    },
+    "Nueva categoría" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New category"
           }
         }
       }
@@ -20532,6 +20732,16 @@
         }
       }
     },
+    "Qué reclasificar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What to reclassify"
+          }
+        }
+      }
+    },
     "Qué se acredita" : {
       "localizations" : {
         "en" : {
@@ -20779,6 +20989,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Recent"
+          }
+        }
+      }
+    },
+    "Reclasificar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reclassify"
+          }
+        }
+      }
+    },
+    "Reclasificar gastos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reclassify Expenses"
+          }
+        }
+      }
+    },
+    "Reclasificar gastos…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reclassify Expenses…"
+          }
+        }
+      }
+    },
+    "Reclasificar…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reclassify…"
           }
         }
       }
@@ -22379,6 +22629,16 @@
         }
       }
     },
+    "Sales tax de %@: %@ %% en Impuestos. Revisa allí si también cobras una tasa local." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sales tax for %@: %@ %% in Taxes. Check there if you also charge a local rate."
+          }
+        }
+      }
+    },
     "Sales tax incluido" : {
       "localizations" : {
         "en" : {
@@ -22647,6 +22907,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "They’re tried from highest to lowest priority; the first one that matches suggests the category. The ones that “record automatically” save the transaction without going through the inbox."
+          }
+        }
+      }
+    },
+    "Se reclasificaron %lld gastos." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld expenses were reclassified."
+          }
+        }
+      }
+    },
+    "Se reclasificó 1 gasto." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 expense was reclassified."
           }
         }
       }
@@ -23127,6 +23407,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No Notifications"
+          }
+        }
+      }
+    },
+    "Sin beneficiario" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No payee"
           }
         }
       }
@@ -23843,6 +24133,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Partnership"
+          }
+        }
+      }
+    },
+    "Solo cambian las líneas de la categoría actual. Los gastos ya registrados se corrigen con un asiento que revierte el anterior y uno nuevo, como al editarlos. Los de un periodo cerrado no se cambian." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Only lines in the current category change. Recorded expenses are corrected with an entry that reverses the previous one and a new one, as when you edit them. Expenses in a closed period aren't changed."
           }
         }
       }
@@ -27930,6 +28230,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Reopen the reconciliation?"
+          }
+        }
+      }
+    },
+    "¿Reclasificar %lld gastos?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reclassify %lld expenses?"
+          }
+        }
+      }
+    },
+    "¿Reclasificar 1 gasto?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reclassify 1 expense?"
           }
         }
       }

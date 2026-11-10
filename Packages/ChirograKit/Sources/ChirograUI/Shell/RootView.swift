@@ -79,6 +79,7 @@ public struct ChirograRootView: View {
     @State private var lock = AppLockState()
     @State private var sync = SyncMonitor.shared
     @State private var replacement = BooksReplacement.shared
+    @State private var setupIssue = SetupIssue.shared
     @State private var subscription = SubscriptionStore.shared
     /// La pantalla de suscripción ya salió sola en esta sesión (después solo con «Suscribirme» o al intentar registrar).
     @State private var paywallShownOnce = false
@@ -239,6 +240,13 @@ public struct ChirograRootView: View {
                 paywallShownOnce = true
                 subscription.showsPaywall = true
             }
+        }
+        // Lo que falló al terminar el alta (`SetupIssue`): la empresa se creó, pero falta la tasa o el saldo de apertura.
+        .alert("La empresa se creó, pero falta algo", isPresented: Binding(get: { setupIssue.message != nil },
+                                                                          set: { if !$0 { setupIssue.message = nil } })) {
+            Button("Aceptar", role: .cancel) {}
+        } message: {
+            Text(setupIssue.message ?? "")
         }
         .alert("Copia restaurada", isPresented: Binding(get: { replacement.restored != nil }, set: { if !$0 { replacement.restored = nil } }),
                presenting: replacement.restored) { _ in

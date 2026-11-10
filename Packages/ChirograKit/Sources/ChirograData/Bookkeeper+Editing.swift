@@ -80,6 +80,37 @@ extension Bookkeeper {
         }
     }
 
+    /// Reclasifica gastos (herramienta «Reclasificar gastos», plan de trabajo del 10-nov): en cada uno, las líneas de la
+    /// cuenta `from` pasan a `to` y el resto se queda. Va gasto a gasto con `updateExpense`: los contabilizados se corrigen
+    /// con su reversión y un asiento nuevo, y uno que no se puede cambiar (periodo cerrado, asiento revertido) no frena a
+    /// los demás, se cuenta en `failures`. Los anulados y los que no tienen líneas de `from` se saltan.
+    @discardableResult
+    public func reclassifyExpenses(_ expenses: [Expense], from: UUID, to: UUID) throws -> ReclassificationResult {
+        guard from != to else { throw BookkeepingError.invalidState(String(localized: "Elige una categoría distinta de la actual.")) }
+        guard let target = try account(id: to), !target.isArchived else {
+            throw BookkeepingError.invalidState(String(localized: "La categoría nueva no existe o está archivada."))
+        }
+        try ensureWritable()
+        var result = ReclassificationResult()
+        for expense in expenses where !expense.isVoid {
+            var input = ExpenseInput(expense)
+            guard input.lines.contains(where: { $0.accountID == from }) else { continue }
+            input.lines = input.lines.map { line in
+                var line = line
+                if line.accountID == from { line.accountID = target.id }
+                return line
+            }
+            do {
+                try updateExpense(expense, with: input)
+                result.changed += 1
+            } catch {
+                let name = expense.payee.isEmpty ? (expense.vendor?.name ?? "") : expense.payee
+                result.failures.append(.init(expenseID: expense.id, name: name, reason: error.localizedDescription))
+            }
+        }
+        return result
+    }
+
     /// Anula un gasto: revierte su asiento (en su misma fecha) y lo marca anulado. Sin asiento, solo lo marca.
     public func void(_ expense: Expense, reason: String = "", on date: Date = Date()) throws {
         guard !expense.isVoid else { return }
@@ -311,4 +342,16 @@ extension Bookkeeper {
         vendor.preferredPaymentAccountID = account?.id
         try saveOrRollback()
     }
+}
+
+/// Resultado de `reclassifyExpenses`: cuántos se cambiaron y cuáles no se pudieron cambiar, con el motivo.
+public struct ReclassificationResult: Sendable, Equatable {
+    public struct Failure: Sendable, Equatable {
+        public var expenseID: UUID
+        public var name: String
+        public var reason: String
+    }
+
+    public var changed = 0
+    public var failures: [Failure] = []
 }

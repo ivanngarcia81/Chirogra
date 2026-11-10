@@ -27,6 +27,8 @@ struct ExpenseTablePage: View {
     @CompanyQuery(sort: \Account.code) private var accounts: [Account]
     @State private var period: ExpensePeriod
     @State private var withoutReceipt = false
+    /// «Reclasificar…» (varios gastos de una categoría a otra).
+    @State private var reclassifying = false
     @State private var query = ""
     @State private var creating = false
     @State private var openedExpense: Expense?
@@ -189,8 +191,16 @@ struct ExpenseTablePage: View {
             actions(for: row.expense)
         }
         .onAppear(perform: startOnLatestMonth)
+        .sheet(isPresented: $reclassifying) { NavigationStack { ReclassifyExpensesView() }.editorSheetSizing() }
         .toolbar {
             ToolbarItem(placement: .primaryAction) { periodPicker }
+            ToolbarItem(placement: .primaryAction) {
+                Button { SubscriptionStore.shared.whenWritable { reclassifying = true } } label: {
+                    Label("Reclasificar…", systemImage: "arrow.left.arrow.right").labelStyle(.titleAndIcon)
+                }
+                .help("Cambiar varios gastos de una categoría a otra")
+                .headerButton()
+            }
             ToolbarItem(placement: .primaryAction) {
                 Button { showingRecurring = true } label: {
                     Label("Recurrentes", systemImage: "arrow.trianglehead.2.clockwise").labelStyle(.titleAndIcon)
