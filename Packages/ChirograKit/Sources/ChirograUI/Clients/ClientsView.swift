@@ -496,7 +496,7 @@ struct ClientsView: View {
                     CompanyMonogram(name: row.client.name, side: Self.monogramSide)
                     VStack(alignment: .leading, spacing: 0) {
                         Text(row.client.name).fontWeight(.semibold).lineLimit(1)
-                        Text(row.client.kindText).font(.caption).foregroundStyle(Palette.ink2).lineLimit(1)
+                        ClientCaption(text: row.client.kindText)
                     }
                 }
                 .padding(.vertical, Self.rowPadding)
@@ -523,7 +523,7 @@ struct ClientsView: View {
             TableColumn("Avisos", value: \.notices) { row in
                 ClientCell(text: row.client.unreadNotices > 0 ? "\(row.client.unreadNotices)" : "—")
             }
-            .width(min: 44, ideal: 52)
+            .width(min: 88, ideal: 96)
             .alignment(.trailing)
             }
             #endif
@@ -551,7 +551,7 @@ struct ClientsView: View {
             TableColumn("Última actividad", value: \.lastActivity) { row in
                 ClientCell(text: row.client.lastActivityText)
             }
-            .width(min: 72, ideal: 90)
+            .width(min: 104, ideal: 108)
             .alignment(.trailing)
             }
             #endif
@@ -709,7 +709,7 @@ struct ClientsView: View {
 
     #if os(macOS)
     private static let w = ColumnWidths(status: (80, 92, 130), bank: (52, 70, 130), overdue: (72, 96, 140),
-                                        tax: (88, 106, 150), reconciled: (70, 84, 130), closed: (70, 80, 120))
+                                        tax: (124, 128, 170), reconciled: (70, 84, 130), closed: (70, 80, 120))
     private static let monogramSide: CGFloat = 26
     private static let booksMinWidth: CGFloat = 700
     private static let rowPadding: CGFloat = 4
@@ -720,7 +720,7 @@ struct ClientsView: View {
     private static let closedTitle = String(localized: "Cerrado")
     #else
     private static let w = ColumnWidths(status: (104, 104, 104), bank: (64, 64, 64), overdue: (116, 116, 116),
-                                        tax: (124, 124, 124), reconciled: (104, 104, 104), closed: (92, 92, 92))
+                                        tax: (136, 136, 136), reconciled: (104, 104, 104), closed: (92, 92, 92))
     private static let monogramSide: CGFloat = 36
     private static let booksMinWidth: CGFloat = 840
     private static let rowPadding: CGFloat = 6
@@ -734,30 +734,44 @@ struct ClientsView: View {
 
 // MARK: - Piezas
 
-/// Estado con su punto de color y la palabra (sin cápsula: el color nunca va solo).
+/// Estado con su punto de color y la palabra (sin cápsula: el color nunca va solo). En la fila elegida de la tabla
+/// (relleno de Tinta), en blanco: los colores fijos no cambian solos y el rojo sobre Tinta no se leía.
 struct ClientStatusLabel: View {
     let status: ClientSummary.Status
+    @Environment(\.backgroundProminence) private var prominence
 
     var body: some View {
+        let selected = prominence == .increased
         HStack(spacing: 6) {
-            Circle().fill(status.dotColor).frame(width: 7, height: 7).accessibilityHidden(true)
-            Text(status.title).fontWeight(.semibold).foregroundStyle(status.textColor)
+            Circle().fill(selected ? Color.white : status.dotColor).frame(width: 7, height: 7).accessibilityHidden(true)
+            Text(status.title).fontWeight(.semibold).foregroundStyle(selected ? Color.white : status.textColor)
         }
         .lineLimit(1)
     }
 }
 
-/// Celda de la tabla con el tono de su dato.
+/// Celda de la tabla con el tono de su dato, en blanco sobre la fila elegida (como `MacCellText`).
 private struct ClientCell: View {
     let text: String
     var tone: ClientTone = .plain
+    @Environment(\.backgroundProminence) private var prominence
 
     var body: some View {
         Text(verbatim: text)
             .fontWeight(tone == .plain ? .regular : .semibold)
-            .foregroundStyle(text == "—" ? Palette.ink2 : tone.color)
+            .foregroundStyle(prominence == .increased ? Color.white : text == "—" ? Palette.ink2 : tone.color)
             .lineLimit(1)
             .monospacedDigit()
+    }
+}
+
+/// Segunda línea de la columna Cliente («LLC · Texas»), en blanco sobre la fila elegida.
+private struct ClientCaption: View {
+    let text: String
+    @Environment(\.backgroundProminence) private var prominence
+
+    var body: some View {
+        Text(text).font(.caption).foregroundStyle(prominence == .increased ? Color.white : Palette.ink2).lineLimit(1)
     }
 }
 
