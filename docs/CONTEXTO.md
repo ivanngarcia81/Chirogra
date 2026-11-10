@@ -45,7 +45,7 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
    contadores` / `Empresas sin límite, cada una con sus libros.`), disponibilidad, comprobar $99.99 y 2 semanas gratis,
    **nivel 1** del grupo (salió en el 2). No pulsar «Add for Review»: va **con la 1.1**. Mientras no esté completo, la
    sandbox no lo devuelve («Subscription Unavailable»): para capturarlo, `SKTestSession` o ejecutar desde Xcode.
-3. **Panel de clientes: HECHO el 10-nov, en el build 23.** Canvas «Chirogra — Panel de
+3. **Panel de clientes: HECHO el 10-nov, en el build 23** (`5473946`, subido el 10-nov para iOS y macOS). Canvas «Chirogra — Panel de
    clientes» (https://claude.ai/artifact/46eihuFoKbh8RrMEvHHNxA), encargo en `docs/PANEL-CLIENTES.md`. Datos:
    `Bookkeeper.clientSummaries` (`ChirograData/Bookkeeper+Clients.swift`, pruebas en `ClientSummaryTests`): estado
    (urgente: sales tax vencido o a ≤ 7 días, o banco sin conciliar > 60 días; pendiente: banco por revisar, facturas
