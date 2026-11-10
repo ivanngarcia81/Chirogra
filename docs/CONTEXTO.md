@@ -40,7 +40,7 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
 **Siguiente (orden acordado el 10-nov):**
 
 *A. Ahora, mientras Apple revisa la 1.0 (todo entra en la 1.1, sin tocar el esquema de iCloud):*
-1. Usuario: probar el build 27 de TestFlight.
+1. Usuario: probar el build 28 de TestFlight.
 2. **Plan de contadores: COMPLETO en App Store Connect** (el usuario lo terminó el 10-nov: textos, disponibilidad,
    precio y nivel). Sin enviar a revisión: va **con la 1.1**, en el mismo envío.
 3. **Panel de clientes: HECHO el 10-nov, en el build 23** (`5473946`, subido el 10-nov para iOS y macOS). Canvas «Chirogra — Panel de
@@ -95,6 +95,9 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
    **Build 27** (`7095e90`, subido el 10-nov para iOS y macOS): «Con recibo» del filtro de Gastos salía en español con la
    app en inglés (faltaba en el catálogo); `StringCatalogTests.enumLabelsAreInCatalog` exige ahora en el catálogo las
    etiquetas de los enums de `ChirograUI` (se traducen con `localizedTitle` y el compilador no las extrae).
+   **Build 28** (`b379921`, subido el 10-nov para iOS y macOS): en el panel, la fila elegida pone en blanco estado, cifras de color y «LLC · Texas»
+   (el rojo sobre Tinta no se leía) y las columnas Sales tax, Avisos y Última actividad ya no se cortan en el Mac
+   ni Sales tax en el iPad vertical. Textos de la 1.1 (descripción, What's New, revisor) y capturas: APP-STORE.md.
 
 *B. Cuando Apple apruebe la 1.0:*
 7. Usuario: enviar la 1.0.1 (build 15).
@@ -273,6 +276,12 @@ las claves que lista como cambiadas en las dos ramas.
   `screencapture -l <windowID> -o -x` (id por PID con `CGWindowListCopyWindowInfo` con `optionAll`; las hojas son
   ventanas aparte). Al terminar, `kill` del PID y `rm -rf ~/Library/Containers/com.chirogra.qa.<nombre>`. System Events
   busca procesos por nombre: si hace falta accesibilidad, renombrar la copia («ChirograQA»).
+- **Capturas de la tienda en el Mac** (10-nov): la pantalla es de 1920×1080 a 1x. En la copia, `defaultSize` de
+  `App/ChirograApp.swift` a 1624×986 y arrancar con `-ApplePersistenceIgnoreState YES` (si no, vuelve al tamaño
+  guardado); para que la ventana salga activa, `open -a <copia>` justo antes de `screencapture` y luego `open -a` de la
+  app que estaba delante (`activate()` desde otro proceso no sirve). Se compone en 2880×1800 sobre el degradado lila
+  (`#E2E7FD` → `#F7F7FD`, ventana de 2500 px centrada, sombra). El panel con seis empresas: un `-qa.panelMuestra`
+  hecho en la copia (cinco empresas con `forNewCompany`, asientos, facturas vencidas, extracto y conciliaciones).
 - **Aparato físico:** `xcodebuild test … -destination 'id=<UDID>' -resultBundlePath r.xcresult DEVELOPMENT_TEAM=4N9XEU7F4P
   -allowProvisioningUpdates` con capturas como `XCTAttachment` (`xcrun xcresulttool export attachments`); al terminar,
   `xcrun devicectl device uninstall app --device <UDID> com.chirogra.uitestsqa.xctrunner`. Cambia los datos del usuario.
