@@ -24,8 +24,8 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
     (no sincroniza nada; ver «Lo aprendido») y el 15 lo arregla. Crear la versión 1.0.1 (iOS y macOS), elegir el build
     15, notas: «La app del Mac recibe al momento los cambios de tus otros aparatos; un aparato nuevo trae tus libros de
     iCloud sin pedir el alta».
-  - **1.1.0 (builds 16 a 21, TestFlight):** la fase 2 entera. El **21** (`467cdcf`) lo prueba el usuario; el **22** lleva además
-    la bienvenida en carrusel (abajo). **Toda la fase 2 va en la 1.1** (decisión del
+  - **1.1.0 (builds 16 a 21, TestFlight):** la fase 2 entera. El **21** (`467cdcf`) lo prueba el usuario; el **22** (`3662619`, subido
+    el 10-nov para iOS y macOS) lleva además la bienvenida en carrusel (abajo). **Toda la fase 2 va en la 1.1** (decisión del
     9-nov: no se esconde nada para 1.2/1.3), con el plan de contadores en el envío.
 - **Bienvenida en carrusel (aprobada por el usuario el 10-nov en su iPhone; build 22):** opción B del canvas «Chirogra — Bienvenida»
   (https://claude.ai/artifact/PB4NmST2UPeAA3wTZFjres) en `Onboarding/WelcomeView.swift`. Sale sin empresas antes del
