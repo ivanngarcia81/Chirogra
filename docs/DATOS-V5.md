@@ -46,6 +46,16 @@ Data no encuentra las propiedades nuevas y la app se cierra (pasó en las prueba
 - **Banca** (canvas `BancaRevisar`): tercer segmento «Dividir» y, al excluir, «Motivo de exclusión» con los motivos del
   canvas y «Otro motivo», que añadí yo. Los atajos (deslizar, menú contextual, botón del Mac) preguntan el motivo con un
   diálogo.
+- **Bienvenida del contador** (canvas «Chirogra — Contadores», https://claude.ai/artifact/EYXyE1QxcnfgvuxTbz6bzT, opción A
+  elegida por el usuario el 10-nov; `Onboarding/AccountantWelcome.swift`). El carrusel tiene una sexta página, «¿Para
+  quién llevas los libros?», con «Mi negocio» o «Los de mis clientes» (`WelcomeAudience`, ajuste `welcome.audience`).
+  - «Mi negocio» va al alta de siempre.
+  - «Los de mis clientes» abre «Chirogra para contadores», con «Dar de alta mi primer cliente» (el alta dice «Tu primer
+    cliente») e «Importar copia de un cliente» (`restoreCompany(.newCompany)`).
+  - Tras el alta, la pantalla de planes sale con el plan para contadores.
+  - Con el plan para contadores ya activo, «Los de mis clientes» sale marcada, salvo que la persona haya elegido a mano
+    (decisión del usuario del 10-nov).
+  - QA: `-qa.bienvenida 6`, `-welcome.audience accountant`, `-qa.introContador 1`.
 - QA: `-qa.seccion auditLog` (Mac), `-qa.bitacora 1` (iPhone), `-qa.bitacoraMuestra 1`,
   `-qa.revisarModo dividir|excluir`, `-qa.prueba12 1` (empresa «Prueba 1.2 LLC» con todo lo nuevo, para probar iCloud).
 

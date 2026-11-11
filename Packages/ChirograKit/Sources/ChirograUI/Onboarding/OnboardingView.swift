@@ -66,6 +66,8 @@ struct OnboardingView: View {
     /// «Añadir empresa» (`AddCompanySheet`): crea **otra** empresa (`Bookkeeper.forNewCompany()`), que queda activa,
     /// sin «Probar con datos de ejemplo»; al terminar llama a `onFinish`.
     let addsCompany: Bool
+    /// La primera empresa la da de alta un contador (bienvenida: «Los de mis clientes»).
+    private var forAccountant: Bool { !addsCompany && WelcomeAudience.current == .accountant }
     let onFinish: (() -> Void)?
     /// «Atrás» del paso 1: vuelve a la bienvenida (`WelcomeView`), donde están los datos de ejemplo y el aviso de iCloud.
     let onBack: (() -> Void)?
@@ -283,10 +285,12 @@ struct OnboardingView: View {
                 .textContentType(.organizationName)
                 #endif
         } header: {
-            header(addsCompany ? "Añade otra empresa" : "Creemos tu empresa",
+            // 1.2: el contador que eligió «Los de mis clientes» en la bienvenida da de alta a su primer cliente.
+            header(addsCompany ? "Añade otra empresa" : (forAccountant ? "Tu primer cliente" : "Creemos tu empresa"),
                    subtitle: addsCompany ? "Tendrá sus propios libros: clientes, facturas, impuestos y reportes. La verás en Clientes, junto a las demás."
-                                         : "Estos datos aparecen en tus facturas. Puedes cambiarlos cuando quieras en Ajustes.",
-                   group: String(localized: "Nombre de la empresa")) {
+                                         : (forAccountant ? "Tendrá sus propios libros: clientes, facturas, impuestos y reportes. Después añadirás a los demás desde el panel de clientes."
+                                                          : "Estos datos aparecen en tus facturas. Puedes cambiarlos cuando quieras en Ajustes."),
+                   group: forAccountant && !addsCompany ? String(localized: "Nombre de la empresa del cliente") : String(localized: "Nombre de la empresa")) {
                 LogoMark(size: Self.logoSize)
             }
         }

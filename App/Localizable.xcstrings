@@ -3594,16 +3594,16 @@
     },
     "Ajuste del contador %lld: %@" : {
       "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Ajuste del contador %1$lld: %2$@"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Accountant adjustment %lld: %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Ajuste del contador %1$lld: %2$@"
           }
         }
       }
@@ -3634,6 +3634,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Business settings"
+          }
+        }
+      }
+    },
+    "Ajustes del contador" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accountant adjustments"
           }
         }
       }
@@ -4501,6 +4511,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "That way you know what you really earn, and your receipts are handy at tax time."
+          }
+        }
+      }
+    },
+    "Así te enseñamos lo que necesitas desde el principio." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "So we can show you what you need from the start."
           }
         }
       }
@@ -5777,6 +5797,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Every change to your books, with the date and the device it was made on. The change log can’t be edited or deleted."
+          }
+        }
+      }
+    },
+    "Cada cliente con sus libros, su sales tax y su cierre." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Each client with their own books, sales tax, and close."
           }
         }
       }
@@ -7628,6 +7658,16 @@
         }
       }
     },
+    "Continuar como contador" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continue as an Accountant"
+          }
+        }
+      }
+    },
     "Contraseña" : {
       "localizations" : {
         "en" : {
@@ -8662,6 +8702,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "DESCRIPTION"
+          }
+        }
+      }
+    },
+    "Dar de alta mi primer cliente" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set Up My First Client"
           }
         }
       }
@@ -11043,6 +11093,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Businesses"
+          }
+        }
+      }
+    },
+    "Empresas sin límite" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unlimited companies"
           }
         }
       }
@@ -14425,6 +14485,16 @@
         }
       }
     },
+    "Importar copia de un cliente (.chirogra)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Import a Client’s Backup (.chirogra)"
+          }
+        }
+      }
+    },
     "Importar extracto" : {
       "localizations" : {
         "en" : {
@@ -15593,16 +15663,16 @@
     },
     "Las partes suman %@ y el movimiento es de %@." : {
       "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Las partes suman %1$@ y el movimiento es de %2$@."
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "The parts add up to %@ and the transaction is %@."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Las partes suman %1$@ y el movimiento es de %2$@."
           }
         }
       }
@@ -15810,12 +15880,32 @@
         }
       }
     },
+    "Lleva los libros de todos tus clientes en un solo lugar, cada uno en su empresa." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keep the books for all your clients in one place, each in its own company."
+          }
+        }
+      }
+    },
     "Lleva sales tax" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Taxable"
+          }
+        }
+      }
+    },
+    "Llevo los libros de mi empresa: facturas, gastos y sales tax." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I keep the books for my own business: invoices, expenses, and sales tax."
           }
         }
       }
@@ -15906,6 +15996,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Actuals from"
+          }
+        }
+      }
+    },
+    "Lo urgente de cada uno: sales tax, banco sin conciliar, facturas vencidas." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What’s urgent for each: sales tax, unreconciled banks, overdue invoices."
           }
         }
       }
@@ -16008,6 +16108,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Payments, expenses and journal entries that use this account appear here."
+          }
+        }
+      }
+    },
+    "Los de mis clientes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "My clients’ books"
           }
         }
       }
@@ -16641,6 +16751,16 @@
         }
       }
     },
+    "Mi negocio" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "My business"
+          }
+        }
+      }
+    },
     "Mira tu app del banco y copia el saldo actual de la cuenta que usas para el negocio." : {
       "localizations" : {
         "en" : {
@@ -16926,16 +17046,16 @@
     },
     "Movimiento dividido en %lld cuentas: %@" : {
       "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Movimiento dividido en %1$lld cuentas: %2$@"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Transaction split across %lld accounts: %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Movimiento dividido en %1$lld cuentas: %2$@"
           }
         }
       }
@@ -18203,6 +18323,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Company name"
+          }
+        }
+      }
+    },
+    "Nombre de la empresa del cliente" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Client’s company name"
           }
         }
       }
@@ -19575,6 +19705,16 @@
         }
       }
     },
+    "Panel de clientes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Client dashboard"
+          }
+        }
+      }
+    },
     "Paquete para el contador" : {
       "localizations" : {
         "en" : {
@@ -20703,6 +20843,7 @@
       }
     },
     "Presupuesto creado: %@ %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -20710,8 +20851,7 @@
             "value" : "Budget created: %@ %@"
           }
         }
-      },
-      "extractionState" : "stale"
+      }
     },
     "Presupuesto renombrado: %@" : {
       "localizations" : {
@@ -21550,6 +21690,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Who changed what, and when"
+          }
+        }
+      }
+    },
+    "Quién cambió qué y cuándo, también lo borrado." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Who changed what and when, including deletions."
           }
         }
       }
@@ -25330,6 +25480,16 @@
         }
       }
     },
+    "Soy contador o bookkeeper y llevo varias empresas." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I’m an accountant or bookkeeper with several companies."
+          }
+        }
+      }
+    },
     "Subcuentas" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -25876,6 +26036,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Phone"
+          }
+        }
+      }
+    },
+    "Tendrá sus propios libros: clientes, facturas, impuestos y reportes. Después añadirás a los demás desde el panel de clientes." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "It gets its own books: customers, invoices, taxes, and reports. You’ll add the rest from the client dashboard."
           }
         }
       }
@@ -26810,6 +26980,16 @@
         }
       }
     },
+    "Tu primer cliente" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your First Client"
+          }
+        }
+      }
+    },
     "Tu suscripción terminó. Puedes ver tus libros y sacar copias." : {
       "localizations" : {
         "en" : {
@@ -26826,6 +27006,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "All %lld of your clients are up to date"
+          }
+        }
+      }
+    },
+    "Tus asientos quedan marcados y se pueden filtrar." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your entries are marked and can be filtered."
           }
         }
       }
@@ -29253,6 +29443,16 @@
         }
       }
     },
+    "¿Para quién llevas los libros?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Whose books do you keep?"
+          }
+        }
+      }
+    },
     "¿Por qué excluyes este movimiento?" : {
       "localizations" : {
         "en" : {
@@ -29519,6 +29719,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "✓ accepts what the app suggests. Tap a transaction to choose another category, match it or exclude it."
+          }
+        }
+      }
+    },
+    "Importar copia de un cliente…" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Import a Client’s Backup…"
           }
         }
       }

@@ -3,14 +3,15 @@ import SwiftData
 import SwiftUI
 
 /// Bienvenida de la primera vez (canvas «Chirogra — Bienvenida», opción B: `Carrusel`, `iPadCarrusel`, `MacCarrusel`).
-/// Cinco páginas (Bienvenida, Facturas, Gastos, Reportes, Privada) que se pasan deslizando o con «Continuar»; «Saltar» va
-/// a la última, con «Crear mi empresa» (paso 1 del alta), «Probar con datos de ejemplo» y «¿Ya usas Chirogra en otro
-/// aparato?» (hoja con el aviso de iCloud, que antes estaba en el paso 1 del alta).
+/// Seis páginas (Bienvenida, Facturas, Gastos, Reportes, Privada y, desde la 1.2, «¿Para quién llevas los libros?») que se
+/// pasan deslizando o con «Continuar»; «Saltar» va a la última, con «Crear mi empresa» o «Continuar como contador» según
+/// la elección (canvas «Chirogra — Contadores», opción A; `AccountantWelcome.swift`), «Probar con datos de ejemplo» y
+/// «¿Ya usas Chirogra en otro aparato?» (hoja con el aviso de iCloud, que antes estaba en el paso 1 del alta).
 /// Cada ilustración se anima al llegar a su página (la χ se dibuja, la factura se marca como pagada, el recibo cae en su
 /// gasto, las barras crecen, el candado se cierra). Con «Reducir movimiento» todo aparece quieto.
 /// Los botones siguen la decisión del usuario (vidrio en Tinta, sin relleno morado) y no los del canvas.
 struct WelcomeView: View {
-    static let pageCount = 5
+    static let pageCount = 6
     /// Ajuste de este aparato: la bienvenida ya se pasó («Crear mi empresa» o los datos de ejemplo).
     static let seenKey = "welcome.seen"
 
@@ -26,16 +27,40 @@ struct WelcomeView: View {
     #endif
     @AppStorage(ChirograStore.syncEnabledKey) private var iCloudSyncEnabled = true
     @State private var page: Int
+    @AppStorage(WelcomeAudience.key) private var audienceRaw = WelcomeAudience.own.rawValue
+    /// «Continuar como contador»: «Chirogra para contadores» en lugar del carrusel.
+    @State private var showsAccountantIntro = false
+    /// Para marcar «Los de mis clientes» si ya tiene el plan para contadores (comprado en otro aparato o con un código).
+    @State private var subscription = SubscriptionStore.shared
+    /// Eligió una tarjeta a mano: la suscripción ya no la cambia.
+    @State private var pickedByHand = false
     @State private var showsOtherDevice = false
     @State private var errorMessage: String?
 
     init(startPage: Int = 0, onCreate: @escaping () -> Void, onSample: @escaping () -> Void) {
         _page = State(initialValue: min(max(startPage, 0), Self.pageCount - 1))
+        #if DEBUG
+        // `-qa.introContador 1` abre «Chirogra para contadores» (con `-welcome.audience accountant`, la elección hecha).
+        _showsAccountantIntro = State(initialValue: UserDefaults.standard.bool(forKey: "qa.introContador"))
+        #endif
         self.onCreate = onCreate
         self.onSample = onSample
     }
 
     private var isLast: Bool { page == Self.pageCount - 1 }
+
+    private var audience: Binding<WelcomeAudience> {
+        Binding(get: { WelcomeAudience(rawValue: audienceRaw) ?? .own }, set: { pickedByHand = true; audienceRaw = $0.rawValue })
+    }
+
+    private var proceedTitle: String {
+        audience.wrappedValue == .accountant ? String(localized: "Continuar como contador") : String(localized: "Crear mi empresa")
+    }
+
+    /// El botón de la última página: el alta o, para un contador, «Chirogra para contadores».
+    private func proceed() {
+        if audience.wrappedValue == .accountant { showsAccountantIntro = true } else { onCreate() }
+    }
 
     private func go(_ target: Int) {
         let clamped = min(max(target, 0), Self.pageCount - 1)
@@ -43,8 +68,21 @@ struct WelcomeView: View {
     }
 
     var body: some View {
+        if showsAccountantIntro {
+            AccountantIntroView(onCreate: onCreate, onImported: onSample, onBack: { showsAccountantIntro = false })
+        } else {
+            carousel
+        }
+    }
+
+    private var carousel: some View {
         pages
             .background(Palette.background)
+            // Con el plan para contadores ya activo, la última página sale con «Los de mis clientes» marcada (la app
+            // tarda un momento en saber el plan: por eso al cambiar y no solo al abrir).
+            .onChange(of: subscription.plan == .accountant, initial: true) { _, isAccountant in
+                if isAccountant && !pickedByHand { audienceRaw = WelcomeAudience.accountant.rawValue }
+            }
             #if os(iOS)
             .overlay(alignment: .top) { topBar }
             .safeAreaInset(edge: .bottom, spacing: 0) { bottomBar }
@@ -73,8 +111,14 @@ struct WelcomeView: View {
         // El carrusel del sistema: se pasa deslizando, como en el canvas; los puntos son los propios, en la barra.
         TabView(selection: Binding(get: { page }, set: { go($0) })) {
             ForEach(0..<Self.pageCount, id: \.self) { index in
-                WelcomePage(index: index, isCurrent: page == index, otherDevice: otherDeviceAction(for: index))
-                    .tag(index)
+                Group {
+                    if index == Self.pageCount - 1 {
+                        AudiencePage(selection: audience, otherDevice: otherDeviceAction(for: index))
+                    } else {
+                        WelcomePage(index: index, isCurrent: page == index, otherDevice: nil)
+                    }
+                }
+                .tag(index)
             }
         }
         .tabViewStyle(.page(indexDisplayMode: .never))
@@ -82,7 +126,13 @@ struct WelcomeView: View {
         #else
         // En el Mac no hay carrusel del sistema: la página entra de lado, con las flechas o los botones del pie.
         ZStack {
-            WelcomePage(index: page, isCurrent: true, otherDevice: nil)
+            Group {
+                if isLast {
+                    AudiencePage(selection: audience, otherDevice: nil)
+                } else {
+                    WelcomePage(index: page, isCurrent: true, otherDevice: nil)
+                }
+            }
                 .id(page)
                 .transition(reduceMotion ? .identity : .push(from: .trailing))
         }
@@ -168,7 +218,7 @@ struct WelcomeView: View {
         let content = VStack(spacing: 12) {
             dots
             if isLast {
-                Button("Crear mi empresa", action: onCreate)
+                Button(proceedTitle, action: proceed)
                     .buttonStyle(.primary)
                 Button("Probar con datos de ejemplo", action: loadSample)
                     .font(.body.weight(.semibold))
@@ -219,7 +269,7 @@ struct WelcomeView: View {
             Button("Atrás") { go(page - 1) }
                 .disabled(page == 0)
             if isLast {
-                Button("Crear mi empresa", action: onCreate)
+                Button(proceedTitle, action: proceed)
                     .buttonStyle(.primaryCompact)
                     .keyboardShortcut(.defaultAction)
             } else {

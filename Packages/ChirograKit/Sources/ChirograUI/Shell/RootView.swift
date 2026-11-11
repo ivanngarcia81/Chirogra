@@ -238,6 +238,8 @@ public struct ChirograRootView: View {
             // Al crear la empresa sin suscripción, o al abrir la app con la suscripción vencida, una vez.
             if readOnly && !paywallShownOnce {
                 paywallShownOnce = true
+                // 1.2: quien eligió «Los de mis clientes» en la bienvenida ve el plan para contadores.
+                if WelcomeAudience.current == .accountant { subscription.paywallFocus = .accountant }
                 subscription.showsPaywall = true
             }
         }
