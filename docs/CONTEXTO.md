@@ -206,6 +206,10 @@ momento; las plantillas de asiento no se marcan como del contador; la reversión
 - **Nómina:** sí, pero junto con el servidor, integrando Gusto Embedded o Check (no desde cero).
 - **Cobro en línea:** hoy, enlace de pago propio («Pagar ahora» y QR). Con servidor: Stripe Connect (el dinero no pasa
   por Chirogra), cuenta puente «Fondos no depositados», en el plan «Chirogra + Banco».
+  Apple Pay y Google Pay (decisión del usuario, 11-nov): sin integración propia, van dentro de Stripe. Hoy ya salen en
+  los enlaces de Stripe o Square que el negocio pega en «Pagar ahora»; con Stripe Connect, dejarlos encendidos en los
+  métodos de pago de la cuenta. Idea aparte para después: «Tap to Pay on iPhone» (cobro en persona con el iPhone, por
+  Stripe Terminal; pide permiso de Apple). La suscripción de Chirogra sigue siendo compra dentro de la app.
 - El guion de prueba del usuario (artículo 32kiNBUgqBpqTrZ4MTfgc7) está **terminado**: no pedir otra ronda salvo que él
   lo pida.
 
