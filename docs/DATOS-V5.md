@@ -70,3 +70,13 @@ Data no encuentra las propiedades nuevas y la app se cierra (pasó en las prueba
 1. ~~En el Mac con iCloud: `-qa.esquemaCloudKit 1` y «Deploy Schema Changes…» a Producción.~~ **Hecho el 10-nov.**
 2. Probar en Producción en sus aparatos (CONTEXTO, «Lo aprendido»).
 3. `MARKETING_VERSION` 1.2.0 y el build nuevo.
+
+## Pendiente para la 1.2: tasas de ciudad por código postal (decisión del usuario, 11-nov)
+
+Hoy solo se llena sola la tasa del estado (`StateSalesTax`, los 50). La búsqueda por código postal
+(`PostalSalesTax.swift`, `PostalTaxTableLoader`, «Usar la tasa de Austin…» en el alta) está hecha pero apagada:
+`remoteURL = nil` y sin tabla real (la de `-qa.tablaZip muestra` solo trae 78701/78702). Falta: elegir la fuente
+(archivos de cada estado, los gratuitos del Streamlined Sales Tax, o una comercial revisando su licencia), generar el
+JSON, publicarlo en chirogra.com (`sitio/`), poner `remoteURL` y el permiso `com.apple.security.network.client` en el
+Mac, y mantenerla al día (las tasas cambian cada trimestre). Ojo: en New Jersey 0 % de ciudad es lo correcto (6.625 %
+en todo el estado, salvo las Urban Enterprise Zones).
