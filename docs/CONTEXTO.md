@@ -115,8 +115,10 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
 *C. 1.2, sin servidor pero con cambio de esquema (desplegar a Producción y probar, ver «Lo aprendido»).* **HECHA el
 10-nov en la rama `version-1.2`, sin commitear** (detalle en [DATOS-V5.md](DATOS-V5.md)). Esquema 5 (solo añade tres
 textos), datos y pantallas, con 316 pruebas pasando. Vista en la copia del Mac y en el simulador del iPhone. **Esquema 5 desplegado a
-Producción el 10-nov** (creado en Development con `-qa.esquemaCloudKit 1`, que ahora sale sin abrir los libros). Falta:
-commitear, probar en Producción en sus aparatos y subir el build 1.2.
+Producción el 10-nov** (creado en Development con `-qa.esquemaCloudKit 1`, que ahora sale sin abrir los libros). Commit `084a042`.
+**Probada en Producción en el Mac (10-nov):** la migración conserva todo (comprobado con una copia del respaldo) y la
+empresa «Prueba 1.2 LLC» (`-qa.prueba12 1`) subió a iCloud sin errores con los campos nuevos. El usuario la vio llegar
+entera a su iPhone con la 1.1 (10-nov). Falta: borrar la empresa de prueba y subir el build 1.2.
 9. Asientos de ajuste marcados como del contador: hecho (`EntrySource.accountantAdjustment`).
 10. Bitácora de cambios: hecho (aparato y antes/después; Contabilidad › «Bitácora de cambios»).
 11. Banca: dividir y motivo al excluir: hecho (canvas `BancaRevisar`).

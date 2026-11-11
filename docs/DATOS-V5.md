@@ -47,7 +47,7 @@ Data no encuentra las propiedades nuevas y la app se cierra (pasó en las prueba
   canvas y «Otro motivo», que añadí yo. Los atajos (deslizar, menú contextual, botón del Mac) preguntan el motivo con un
   diálogo.
 - QA: `-qa.seccion auditLog` (Mac), `-qa.bitacora 1` (iPhone), `-qa.bitacoraMuestra 1`,
-  `-qa.revisarModo dividir|excluir`.
+  `-qa.revisarModo dividir|excluir`, `-qa.prueba12 1` (empresa «Prueba 1.2 LLC» con todo lo nuevo, para probar iCloud).
 
 ## Antes de subir un build
 
