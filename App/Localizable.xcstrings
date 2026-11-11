@@ -16991,6 +16991,16 @@
         }
       }
     },
+    "Mostrar primeros pasos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show getting started"
+          }
+        }
+      }
+    },
     "Mostrar teléfono" : {
       "localizations" : {
         "en" : {

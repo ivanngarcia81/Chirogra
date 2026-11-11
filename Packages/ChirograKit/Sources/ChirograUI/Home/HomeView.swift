@@ -1380,25 +1380,37 @@ struct HomeView: View {
                     .padding(.top, 20)
             }
 
+            // «Ocultar» también con los libros vacíos: quien ya conoce la app no tenía cómo quitar la lista (pedido del
+            // usuario, 11-nov). Aquí se queda la cabecera con «Mostrar» para volver a verla; es la misma preferencia
+            // del aparato que la tarjeta del tablero.
             SectionHeader(title: String(localized: "Primeros pasos")) {
-                Text("\(done) de \(steps.count)").font(.subheadline).foregroundStyle(Palette.ink2)
+                HStack(alignment: .firstTextBaseline, spacing: 12) {
+                    Text("\(done) de \(steps.count)").font(.subheadline).foregroundStyle(Palette.ink2)
+                    Button(setupStepsHidden ? "Mostrar" : "Ocultar") { setupStepsHidden.toggle() }
+                        .buttonStyle(.plain)
+                        .foregroundStyle(Palette.brand)
+                        .frame(minHeight: Metrics.target)
+                        .accessibilityLabel(setupStepsHidden ? "Mostrar primeros pasos" : "Ocultar primeros pasos")
+                }
             }
             .padding(.horizontal, Metrics.gutter)
             .padding(.top, 26).padding(.bottom, 8)
 
-            VStack(spacing: 0) {
-                ProgressView(value: Double(done), total: Double(steps.count))
-                    .tint(Palette.brand)
-                    .accessibilityLabel("Progreso de configuración")
-                    .accessibilityValue(Text("\(done) de \(steps.count)"))
-                    .padding(.horizontal, 16).padding(.top, 16).padding(.bottom, 14)
-                ForEach(steps) { step in
-                    Divider().padding(.leading, 16 + 22 + 12)
-                    stepRow(step)
+            if !setupStepsHidden {
+                VStack(spacing: 0) {
+                    ProgressView(value: Double(done), total: Double(steps.count))
+                        .tint(Palette.brand)
+                        .accessibilityLabel("Progreso de configuración")
+                        .accessibilityValue(Text("\(done) de \(steps.count)"))
+                        .padding(.horizontal, 16).padding(.top, 16).padding(.bottom, 14)
+                    ForEach(steps) { step in
+                        Divider().padding(.leading, 16 + 22 + 12)
+                        stepRow(step)
+                    }
                 }
+                .background(Palette.surface, in: RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous))
+                .padding(.horizontal, Metrics.gutter)
             }
-            .background(Palette.surface, in: RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous))
-            .padding(.horizontal, Metrics.gutter)
         }
         .padding(.top, 4).padding(.bottom, 24)
         .frame(maxWidth: 640)
