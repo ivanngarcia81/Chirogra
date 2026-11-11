@@ -17,6 +17,11 @@ public enum EntrySource: String, CaseIterable, Sendable, Codable {
     case bankDeposit
     /// Esquema 4: transferencia entre dos cuentas de dinero (banco, caja, tarjeta).
     case transfer
+    /// 1.2: asiento a mano marcado como ajuste del contador. Una versión anterior lo lee como `manual`.
+    case accountantAdjustment
+
+    /// Asiento escrito a mano (también el ajuste del contador): se puede revertir desde Contabilidad.
+    public var isManual: Bool { self == .manual || self == .accountantAdjustment }
 }
 
 /// Línea de un asiento: un importe al debe **o** al haber, en unidades mínimas.

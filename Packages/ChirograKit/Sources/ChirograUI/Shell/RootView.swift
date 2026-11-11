@@ -764,6 +764,10 @@ struct MoreView: View {
     @State private var showingTaxes = false
     /// Panel de clientes: «Cerrar periodo…».
     @State private var showingClose = false
+    #if DEBUG
+    /// `-qa.bitacora 1` abre la bitácora de cambios (1.2).
+    @State private var showingAuditLog = UserDefaults.standard.bool(forKey: "qa.bitacora")
+    #endif
 
     var body: some View {
         List {
@@ -816,6 +820,7 @@ struct MoreView: View {
                         systemImage: "book.closed", color: Palette.teal) { LedgerAccountPickerView() }
                 MoreRow(title: String(localized: "Cierre de periodo"), value: closeSubtitle,
                         systemImage: "lock", color: Palette.gray) { PeriodCloseView() }
+                MoreRow(title: String(localized: "Bitácora de cambios"), systemImage: "clock.arrow.circlepath", color: Palette.orange) { AuditLogView() }
             }
 
             Section(title: "Ajustes") {
@@ -845,6 +850,9 @@ struct MoreView: View {
         .headerTitle()
         .stableDestination(isPresented: $showingTaxes) { TaxesView() }
         .stableDestination(isPresented: $showingClose) { PeriodCloseView() }
+        #if DEBUG
+        .stableDestination(isPresented: $showingAuditLog) { AuditLogView() }
+        #endif
         // Panel de clientes: Impuestos y Cierre de periodo viven en «Más». El paquete para el contador lo abre Impuestos
         // (que recoge la ruta), así que aquí solo se empuja Impuestos.
         .onClientRoute({ $0 == .salesTax || $0 == .periodClose }) { route in

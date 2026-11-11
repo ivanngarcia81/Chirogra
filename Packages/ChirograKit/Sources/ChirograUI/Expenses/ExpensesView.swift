@@ -997,6 +997,8 @@ struct VendorEditorView: View {
     }
 
     private func save() {
+        // Bitácora (1.2): el antes y el después de los campos.
+        let before = vendor.map { AuditSnapshot($0) }
         let target = vendor ?? Vendor(name: name)
         if vendor == nil { Bookkeeper(context: context).insert(target) }
         target.name = name.trimmingCharacters(in: .whitespaces)
@@ -1004,6 +1006,7 @@ struct VendorEditorView: View {
         target.defaultExpenseAccountID = defaultAccountID; target.is1099 = is1099
         target.tinLast4 = String(tinLast4.filter(\.isNumber).suffix(4))
         let books = Bookkeeper(context: context)
+        books.logSave(.vendor, id: target.id, name: target.name, before: before, after: AuditSnapshot(target))
         do {
             try books.setPreferredPayment(for: target, method: preferredMethod, account: accounts.account(preferredAccountID))
             if target.w9Received != w9Received || (w9Received && target.w9ReceivedDate.map { !Calendar.current.isDate($0, inSameDayAs: w9Date) } ?? true) {

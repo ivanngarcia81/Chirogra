@@ -1135,6 +1135,47 @@
         }
       }
     },
+    "%lld cambios" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld change"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld changes"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld cambio"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld cambios"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld clientes" : {
       "localizations" : {
         "en" : {
@@ -1312,6 +1353,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld of %lld entries"
+          }
+        }
+      }
+    },
+    "%lld de %lld cambios" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld of %lld changes"
           }
         }
       }
@@ -1524,7 +1576,6 @@
       }
     },
     "%lld días" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "variations" : {
@@ -3242,7 +3293,6 @@
       }
     },
     "Activa" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3532,6 +3582,32 @@
         }
       }
     },
+    "Ajuste del contador" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accountant adjustment"
+          }
+        }
+      }
+    },
+    "Ajuste del contador %lld: %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Ajuste del contador %1$lld: %2$@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accountant adjustment %lld: %@"
+          }
+        }
+      }
+    },
     "Ajustes" : {
       "localizations" : {
         "en" : {
@@ -3733,6 +3809,16 @@
         }
       }
     },
+    "Alta" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Created"
+          }
+        }
+      }
+    },
     "Alta de %@" : {
       "localizations" : {
         "en" : {
@@ -3882,6 +3968,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Annual"
+          }
+        }
+      }
+    },
+    "Anulación" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Void"
           }
         }
       }
@@ -4096,6 +4192,17 @@
         }
       }
     },
+    "Aquí verás cada cambio de tus libros, con la fecha y el aparato en que se hizo." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You’ll see every change to your books here, with the date and the device it was made on."
+          }
+        }
+      }
+    },
     "Aquí verás cada cobro, gasto y pago de esta cuenta, con su saldo. Si pusiste dinero de tu bolsillo para empezar, regístralo aquí." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -4223,6 +4330,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Drag a photo or a PDF"
+          }
+        }
+      }
+    },
+    "Artículo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Item"
+          }
+        }
+      }
+    },
+    "Artículo editado: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Item edited: %@"
+          }
+        }
+      }
+    },
+    "Artículo nuevo: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New item: %@"
           }
         }
       }
@@ -4786,6 +4923,27 @@
         }
       }
     },
+    "Aún no hay cambios" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Changes Yet"
+          }
+        }
+      }
+    },
+    "Aún no hay cambios." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No changes yet."
+          }
+        }
+      }
+    },
     "Aún no hay facturas" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -5172,6 +5330,16 @@
         }
       }
     },
+    "Bitácora de cambios" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Change Log"
+          }
+        }
+      }
+    },
     "Bloquea los meses ya revisados para que nadie los cambie por error" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -5204,6 +5372,16 @@
         }
       }
     },
+    "Borrado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deleted"
+          }
+        }
+      }
+    },
     "Borrador" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -5211,6 +5389,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Draft"
+          }
+        }
+      }
+    },
+    "Borrador de factura borrado: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Draft invoice deleted: %@"
           }
         }
       }
@@ -5254,6 +5442,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Drafts"
+          }
+        }
+      }
+    },
+    "Borrados" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deleted"
           }
         }
       }
@@ -5418,6 +5617,16 @@
         }
       }
     },
+    "Buscar en la bitácora" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search the change log"
+          }
+        }
+      }
+    },
     "Buscar en todos" : {
       "localizations" : {
         "en" : {
@@ -5558,6 +5767,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Every year on %@"
+          }
+        }
+      }
+    },
+    "Cada cambio de tus libros, con la fecha y el aparato en que se hizo. La bitácora no se puede editar ni borrar." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Every change to your books, with the date and the device it was made on. The change log can’t be edited or deleted."
           }
         }
       }
@@ -5819,6 +6038,37 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Change…"
+          }
+        }
+      }
+    },
+    "Cambio" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Change"
+          }
+        }
+      }
+    },
+    "Cambio, cuenta, cliente o aparato" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Change, account, customer, or device"
+          }
+        }
+      }
+    },
+    "Cambios" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Changes"
           }
         }
       }
@@ -6377,12 +6627,32 @@
         }
       }
     },
+    "Cliente editado: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Customer edited: %@"
+          }
+        }
+      }
+    },
     "Cliente exento de sales tax" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Customer exempt from sales tax"
+          }
+        }
+      }
+    },
+    "Cliente nuevo: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New customer: %@"
           }
         }
       }
@@ -6501,7 +6771,6 @@
       }
     },
     "Cobro de %@" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -7047,7 +7316,6 @@
       }
     },
     "Conciliación" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -7063,6 +7331,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Reconciliation started: %@"
+          }
+        }
+      }
+    },
+    "Conciliación descartada" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reconciliation discarded"
           }
         }
       }
@@ -7244,6 +7522,47 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Accounting · %lld entries"
+          }
+        }
+      }
+    },
+    "Contabilidad · %lld cambios" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Accounting · %lld change"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Accounting · %lld changes"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Contabilidad · %lld cambio"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Contabilidad · %lld cambios"
+                }
+              }
+            }
           }
         }
       }
@@ -7437,6 +7756,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Convert to Invoice…"
+          }
+        }
+      }
+    },
+    "Copia de seguridad" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Backup"
           }
         }
       }
@@ -7685,8 +8014,17 @@
         }
       }
     },
+    "Creado: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Created: %@"
+          }
+        }
+      }
+    },
     "Crear" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -8575,6 +8913,16 @@
         }
       }
     },
+    "Del contador" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accountant"
+          }
+        }
+      }
+    },
     "Del total abierto" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -8999,6 +9347,16 @@
         }
       }
     },
+    "Devuelto a la bandeja" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Returned to inbox"
+          }
+        }
+      }
+    },
     "Diario" : {
       "localizations" : {
         "en" : {
@@ -9096,6 +9454,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Available in a future version"
+          }
+        }
+      }
+    },
+    "Dividir" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Split"
+          }
+        }
+      }
+    },
+    "Dividir y siguiente" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Split and Next"
+          }
+        }
+      }
+    },
+    "Duplicada" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Duplicate"
           }
         }
       }
@@ -9211,6 +9601,16 @@
         }
       }
     },
+    "Edición" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit"
+          }
+        }
+      }
+    },
     "Editada" : {
       "localizations" : {
         "en" : {
@@ -9257,6 +9657,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Edited once: the edit reversed the previous entry on its date and posted a new one."
+          }
+        }
+      }
+    },
+    "Editado: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edited: %@"
           }
         }
       }
@@ -11329,6 +11739,16 @@
         }
       }
     },
+    "Estado anterior" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Previous status"
+          }
+        }
+      }
+    },
     "Estado de EE. UU." : {
       "localizations" : {
         "en" : {
@@ -11628,6 +12048,16 @@
         }
       }
     },
+    "Estimado borrado: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estimate deleted: %@"
+          }
+        }
+      }
+    },
     "Estimado.pdf" : {
       "localizations" : {
         "en" : {
@@ -11780,6 +12210,7 @@
       }
     },
     "Excluidos" : {
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -11787,8 +12218,7 @@
             "value" : "Excluded"
           }
         }
-      },
-      "extractionState" : "manual"
+      }
     },
     "Excluir" : {
       "localizations" : {
@@ -11810,12 +12240,42 @@
         }
       }
     },
+    "Excluir sin motivo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exclude Without a Reason"
+          }
+        }
+      }
+    },
     "Excluir transacción" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Exclude Transaction"
+          }
+        }
+      }
+    },
+    "Excluir y siguiente" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exclude and Next"
+          }
+        }
+      }
+    },
+    "Exclusión" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Excluded"
           }
         }
       }
@@ -11966,6 +12426,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Invoice %@"
+          }
+        }
+      }
+    },
+    "Factura %@ anulada" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invoice %@ voided"
           }
         }
       }
@@ -12566,7 +13036,6 @@
       }
     },
     "Fechas" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -12715,6 +13184,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Filter by type"
+          }
+        }
+      }
+    },
+    "Filtrar por área" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filter by Area"
           }
         }
       }
@@ -12971,6 +13451,16 @@
         }
       }
     },
+    "Gasto editado: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Expense edited: %@"
+          }
+        }
+      }
+    },
     "Gasto editado: %@ → %@ (asiento %lld revertido, nuevo %lld)" : {
       "localizations" : {
         "en" : {
@@ -12987,6 +13477,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Operating expense"
+          }
+        }
+      }
+    },
+    "Gasto personal" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Personal expense"
           }
         }
       }
@@ -13731,6 +14232,16 @@
         }
       }
     },
+    "Identificación fiscal" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tax ID"
+          }
+        }
+      }
+    },
     "Idioma" : {
       "localizations" : {
         "en" : {
@@ -13819,6 +14330,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Import a CSV, OFX or QFX statement (you can also drag it here)"
+          }
+        }
+      }
+    },
+    "Importación" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Import"
           }
         }
       }
@@ -14036,7 +14557,6 @@
       }
     },
     "Importes" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -14082,6 +14602,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tax collected · %@"
+          }
+        }
+      }
+    },
+    "Impuesto combinado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Combined tax"
           }
         }
       }
@@ -14940,6 +15470,16 @@
         }
       }
     },
+    "La suma de las líneas debe ser igual a %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The lines must add up to %@."
+          }
+        }
+      }
+    },
     "La suma de las tasas que cobras juntas en una venta: la del estado, la del condado y la de la ciudad." : {
       "localizations" : {
         "en" : {
@@ -15047,6 +15587,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Only you see notes; they don't appear on invoices."
+          }
+        }
+      }
+    },
+    "Las partes suman %@ y el movimiento es de %@." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Las partes suman %1$@ y el movimiento es de %2$@."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The parts add up to %@ and the transaction is %@."
           }
         }
       }
@@ -15254,6 +15810,16 @@
         }
       }
     },
+    "Lleva sales tax" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Taxable"
+          }
+        }
+      }
+    },
     "Lo necesitas para facturarle; guarda su correo y sus condiciones de pago." : {
       "localizations" : {
         "en" : {
@@ -15310,6 +15876,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "What's left to invoice"
+          }
+        }
+      }
+    },
+    "Lo que tenía" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What it had"
           }
         }
       }
@@ -15380,6 +15956,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Logo removed"
+          }
+        }
+      }
+    },
+    "Los ajustes del contador salen marcados en el libro diario y se pueden filtrar." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accountant adjustments are marked in the journal and can be filtered."
           }
         }
       }
@@ -15659,6 +16245,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Line %@ · %@"
+          }
+        }
+      }
+    },
+    "Línea %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Line %lld"
           }
         }
       }
@@ -16248,6 +16844,16 @@
         }
       }
     },
+    "Motivo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reason"
+          }
+        }
+      }
+    },
     "Motivo (devolución, ajuste de precio…)" : {
       "localizations" : {
         "en" : {
@@ -16268,6 +16874,26 @@
         }
       }
     },
+    "Motivo de exclusión" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reason for excluding"
+          }
+        }
+      }
+    },
+    "Motivo de la exención" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exemption reason"
+          }
+        }
+      }
+    },
     "Movimiento" : {
       "localizations" : {
         "en" : {
@@ -16278,12 +16904,58 @@
         }
       }
     },
+    "Movimiento del banco" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bank transaction"
+          }
+        }
+      }
+    },
+    "Movimiento devuelto a «Por revisar»: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transaction returned to “For Review”: %@"
+          }
+        }
+      }
+    },
+    "Movimiento dividido en %lld cuentas: %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Movimiento dividido en %1$lld cuentas: %2$@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transaction split across %lld accounts: %@"
+          }
+        }
+      }
+    },
     "Movimiento emparejado con el asiento %lld" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Transaction matched to entry %lld"
+          }
+        }
+      }
+    },
+    "Movimiento excluido: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transaction excluded: %@"
           }
         }
       }
@@ -16805,6 +17477,16 @@
         }
       }
     },
+    "Ningún cambio coincide con la búsqueda o el filtro." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No changes match the search or filter."
+          }
+        }
+      }
+    },
     "Ningún cliente archivado se llama así." : {
       "localizations" : {
         "en" : {
@@ -17261,6 +17943,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "It won’t be included in your books (a personal expense, a duplicate, a transfer you already recorded). You can return it to the inbox from “Bank Transactions”."
+          }
+        }
+      }
+    },
+    "No se incluirá en tus libros. Puedes devolverla a la bandeja desde «Movimientos del banco»." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "It won’t be included in your books. You can return it to the inbox from “Bank Transactions.”"
           }
         }
       }
@@ -18293,6 +18985,16 @@
         }
       }
     },
+    "Otro motivo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Other reason"
+          }
+        }
+      }
+    },
     "Otro pasivo corriente" : {
       "localizations" : {
         "en" : {
@@ -18520,7 +19222,6 @@
       }
     },
     "Pagado con" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -18940,6 +19641,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "To turn it into an invoice, use “Convert to Invoice”."
+          }
+        }
+      }
+    },
+    "Para dividir el movimiento hacen falta al menos dos partes." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Splitting a transaction takes at least two parts."
           }
         }
       }
@@ -19543,6 +20254,16 @@
         }
       }
     },
+    "Por asignar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unassigned"
+          }
+        }
+      }
+    },
     "Por categoría" : {
       "localizations" : {
         "en" : {
@@ -19971,12 +20692,33 @@
         }
       }
     },
+    "Presupuesto creado: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Budget created: %@"
+          }
+        }
+      }
+    },
     "Presupuesto creado: %@ %@" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Budget created: %@ %@"
+          }
+        }
+      },
+      "extractionState" : "stale"
+    },
+    "Presupuesto renombrado: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Budget renamed: %@"
           }
         }
       }
@@ -20261,6 +21003,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Vendor"
+          }
+        }
+      }
+    },
+    "Proveedor editado: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vendor edited: %@"
+          }
+        }
+      }
+    },
+    "Proveedor nuevo: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New vendor: %@"
           }
         }
       }
@@ -20778,6 +21540,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Remove…"
+          }
+        }
+      }
+    },
+    "Quién cambió qué y cuándo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Who changed what, and when"
+          }
+        }
+      }
+    },
+    "Qué" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What"
           }
         }
       }
@@ -21326,6 +22108,16 @@
         }
       }
     },
+    "Referencia" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reference"
+          }
+        }
+      }
+    },
     "Referencia (opcional)" : {
       "localizations" : {
         "en" : {
@@ -21559,6 +22351,16 @@
         }
       }
     },
+    "Registro" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recorded"
+          }
+        }
+      }
+    },
     "Registro en periodo cerrado autorizado" : {
       "localizations" : {
         "en" : {
@@ -21575,6 +22377,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Rule"
+          }
+        }
+      }
+    },
+    "Regla del banco" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bank rule"
           }
         }
       }
@@ -21747,6 +22559,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Needs follow-up"
+          }
+        }
+      }
+    },
+    "Restauración" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restore"
+          }
+        }
+      }
+    },
+    "Restaurado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restored"
           }
         }
       }
@@ -22069,6 +22901,7 @@
       }
     },
     "Revisados" : {
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -22076,8 +22909,7 @@
             "value" : "Reviewed"
           }
         }
-      },
-      "extractionState" : "manual"
+      }
     },
     "Revisar" : {
       "localizations" : {
@@ -23188,6 +24020,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Select an entry to see its lines."
+          }
+        }
+      }
+    },
+    "Selecciona un cambio para ver el detalle." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select a change to see the details."
           }
         }
       }
@@ -24387,6 +25230,16 @@
         }
       }
     },
+    "Solo se borran borradores; una factura emitida se anula." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Only drafts can be deleted; void an issued invoice instead."
+          }
+        }
+      }
+    },
     "Solo se editan facturas emitidas sin cobros ni créditos." : {
       "localizations" : {
         "en" : {
@@ -24842,6 +25695,16 @@
         }
       }
     },
+    "Tasa de impuesto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tax rate"
+          }
+        }
+      }
+    },
     "Tasa de impuesto sobre ventas" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -25163,6 +26026,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tap to check"
+          }
+        }
+      }
+    },
+    "Toca una acción arriba para volver a categorizarla." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap an action above to categorize it instead."
           }
         }
       }
@@ -25755,6 +26628,17 @@
         }
       }
     },
+    "Transferencia entre mis cuentas" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transfer between my accounts"
+          }
+        }
+      }
+    },
     "Transferencia · %@" : {
       "localizations" : {
         "en" : {
@@ -26216,6 +27100,16 @@
         }
       }
     },
+    "Título" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Title"
+          }
+        }
+      }
+    },
     "USD · Dólar" : {
       "localizations" : {
         "en" : {
@@ -26402,6 +27296,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "A single invoice"
+          }
+        }
+      }
+    },
+    "Una transferencia entre cuentas no se puede dividir: regístrala sola." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A transfer between accounts can’t be split: record it on its own."
           }
         }
       }
@@ -27722,7 +28626,6 @@
       }
     },
     "de %@" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -27966,6 +28869,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "no end date"
+          }
+        }
+      }
+    },
+    "sin número" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "no number"
           }
         }
       }
@@ -28340,6 +29253,16 @@
         }
       }
     },
+    "¿Por qué excluyes este movimiento?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Why are you excluding this transaction?"
+          }
+        }
+      }
+    },
     "¿Quieres crear «%@» como cliente nuevo?" : {
       "localizations" : {
         "en" : {
@@ -28579,9 +29502,6 @@
         }
       }
     },
-    "✓" : {
-      "shouldTranslate" : false
-    },
     "✓ Cuadra" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -28602,6 +29522,9 @@
           }
         }
       }
+    },
+    "✓" : {
+      "shouldTranslate" : false
     }
   },
   "version" : "1.0"

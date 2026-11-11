@@ -524,10 +524,9 @@ struct EstimateDetailView: View {
         }
     }
 
+    /// Borra el estimado dejando lo que tenía en la bitácora (1.2).
     private func delete() {
-        context.delete(estimate)
-        try? context.save()
-        dismiss()
+        do { try books.deleteEstimate(estimate); dismiss() } catch { errorMessage = error.localizedDescription }
     }
 }
 

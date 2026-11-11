@@ -137,15 +137,16 @@ struct JournalTablePage: View {
     }
 }
 
-/// Filtro por origen: todos, los manuales, los que generan los documentos (facturas, cobros, gastos…) y los revertidos o
-/// de reversión.
+/// Filtro por origen: todos, los manuales (con los ajustes del contador), los ajustes del contador (1.2), los que generan
+/// los documentos (facturas, cobros, gastos…) y los revertidos o de reversión.
 private enum JournalFilter: String, CaseIterable, Hashable {
-    case all, manual, automatic, reversals
+    case all, manual, accountant, automatic, reversals
 
     var title: String {
         switch self {
         case .all: String(localized: "Todos")
         case .manual: String(localized: "Manuales")
+        case .accountant: String(localized: "Del contador")
         case .automatic: String(localized: "De documentos")
         case .reversals: String(localized: "Reversiones")
         }
@@ -154,8 +155,9 @@ private enum JournalFilter: String, CaseIterable, Hashable {
     func matches(_ entry: JournalEntry) -> Bool {
         switch self {
         case .all: true
-        case .manual: entry.source == .manual
-        case .automatic: entry.source != .manual && entry.source != .reversal
+        case .manual: entry.source.isManual
+        case .accountant: entry.source == .accountantAdjustment
+        case .automatic: !entry.source.isManual && entry.source != .reversal
         case .reversals: entry.source == .reversal || entry.isReversed || entry.reversesEntryID != nil
         }
     }
@@ -250,7 +252,7 @@ extension JournalEntry {
     }
 
     /// Un asiento manual contabilizado que no se ha revertido ni es una reversión (lo mismo que `JournalEntryDetailView`).
-    var canReverse: Bool { source == .manual && status == .posted && !isReversed && reversesEntryID == nil }
+    var canReverse: Bool { source.isManual && status == .posted && !isReversed && reversesEntryID == nil }
 
     /// Estado de la fila: punto + texto, como las facturas.
     var tableStatus: StatusChip {

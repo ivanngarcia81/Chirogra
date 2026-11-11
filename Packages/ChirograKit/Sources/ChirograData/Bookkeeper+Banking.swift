@@ -29,6 +29,24 @@ public struct BankRuleRun {
 }
 
 /// Lo que se creó al registrar un movimiento desde la bandeja.
+/// Una parte de un movimiento dividido (`Bookkeeper.categorize(_:splitInto:)`): cuenta, importe (positivo) y nota.
+public struct BankSplitPart: Sendable, Equatable, Identifiable {
+    public var id = UUID()
+    public var accountID: UUID
+    public var amount: Int64
+    public var memo: String
+
+    public init(accountID: UUID, amount: Int64, memo: String = "") {
+        self.accountID = accountID
+        self.amount = amount
+        self.memo = memo
+    }
+
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        (lhs.accountID, lhs.amount, lhs.memo) == (rhs.accountID, rhs.amount, rhs.memo)
+    }
+}
+
 public enum BankCategorization {
     /// Gasto contabilizado (salida a una cuenta de gasto, costo…).
     case expense(Expense)
@@ -327,17 +345,35 @@ extension Bookkeeper {
         try saveOrRollback()
     }
 
-    /// Deja de lado un movimiento (duplicado, ya registrado de otra forma…).
-    public func ignore(_ transaction: BankTransaction) throws {
+    /// Deja de lado un movimiento (duplicado, ya registrado de otra forma, personal…) con su motivo (1.2), que queda en
+    /// el movimiento (`ignoreReason`) y en la bitácora.
+    public func ignore(_ transaction: BankTransaction, reason: String = "") throws {
         try ensurePending(transaction)
         transaction.status = .ignored
+        transaction.ignoreReason = reason.trimmingCharacters(in: .whitespacesAndNewlines)
         transaction.reviewedAt = Date()
+        var changes = Self.bankDetails(transaction)
+        changes.value(String(localized: "Motivo"), transaction.ignoreReason)
+        audit("BankTransaction", transaction.id, "ignore", String(localized: "Movimiento excluido: \(transaction.details)"), changes: changes)
         try saveOrRollback()
+    }
+
+    /// Fecha e importe de un movimiento, para la bitácora.
+    static func bankDetails(_ transaction: BankTransaction) -> AuditChanges {
+        var changes = AuditChanges()
+        changes.value(String(localized: "Fecha"), AuditChanges.day(transaction.date))
+        changes.value(String(localized: "Importe"), money: transaction.amount)
+        return changes
     }
 
     /// Lo devuelve a la bandeja: quita el emparejamiento o el «ignorado». Si se creó un documento desde él, el documento
     /// **se queda** (si sobra, anúlalo aparte); su línea vuelve a salir como candidata.
     public func returnToInbox(_ transaction: BankTransaction) throws {
+        var changes = Self.bankDetails(transaction)
+        changes.value(String(localized: "Estado anterior"), transaction.status.auditTitle)
+        changes.value(String(localized: "Motivo de exclusión"), transaction.ignoreReason)
+        audit("BankTransaction", transaction.id, "returnToInbox", String(localized: "Movimiento devuelto a «Por revisar»: \(transaction.details)"), changes: changes)
+        transaction.ignoreReason = ""
         transaction.status = .toReview
         transaction.matchedEntryID = nil
         transaction.matchedLineID = nil
@@ -357,45 +393,113 @@ extension Bookkeeper {
     public func categorize(_ transaction: BankTransaction, as category: Account? = nil, vendor: Vendor? = nil,
                            customer: Customer? = nil, payee: String? = nil, memo: String = "") throws -> BankCategorization {
         try ensurePending(transaction)
-        guard let bank = try account(id: transaction.accountID) else { throw BookkeepingError.unknownAccount }
         guard let category = try category ?? account(id: transaction.categoryAccountID) else {
             throw BookkeepingError.invalidState(String(localized: "Elige una cuenta para registrar el movimiento."))
         }
-        guard category.id != bank.id else { throw BookkeepingError.invalidDocument(.sameAccount) }
+        return try register(transaction, parts: [(category, abs(transaction.amount), "")], vendor: vendor, customer: customer,
+                            payee: payee, memo: memo)
+    }
+
+    /// Registra el movimiento **dividido** en varias cuentas (1.2): una salida → un gasto con una línea por parte; una
+    /// entrada → un depósito con una línea al haber por parte. Las partes suman el importe del movimiento y ninguna va a
+    /// una cuenta de dinero (una transferencia se registra sola, sin dividir). El movimiento queda con la cuenta de la
+    /// parte mayor en `categoryAccountID`; las partes son las líneas del documento (`splitParts(of:)`).
+    @discardableResult
+    public func categorize(_ transaction: BankTransaction, splitInto parts: [BankSplitPart], vendor: Vendor? = nil,
+                           customer: Customer? = nil, payee: String? = nil, memo: String = "") throws -> BankCategorization {
+        try ensurePending(transaction)
+        guard parts.count >= 2 else {
+            throw BookkeepingError.invalidState(String(localized: "Para dividir el movimiento hacen falta al menos dos partes."))
+        }
+        guard parts.allSatisfy({ $0.amount > 0 }) else { throw BookkeepingError.invalidDocument(.nonPositiveAmount) }
+        let total = parts.reduce(Int64(0)) { $0 + $1.amount }
+        guard total == abs(transaction.amount) else {
+            throw BookkeepingError.invalidState(String(localized: "Las partes suman \(Money(minorUnits: total).formatted()) y el movimiento es de \(Money(minorUnits: abs(transaction.amount)).formatted())."))
+        }
+        let accounts = try parts.map { part -> (Account, Int64, String) in
+            guard let account = try account(id: part.accountID) else { throw BookkeepingError.unknownAccount }
+            guard !account.subtype.isMoneyAccount else {
+                throw BookkeepingError.invalidState(String(localized: "Una transferencia entre cuentas no se puede dividir: regístrala sola."))
+            }
+            return (account, part.amount, part.memo.trimmingCharacters(in: .whitespacesAndNewlines))
+        }
+        return try register(transaction, parts: accounts, vendor: vendor, customer: customer, payee: payee, memo: memo)
+    }
+
+    /// Las partes de un movimiento registrado dividido (las líneas del gasto o del depósito que creó); vacío si no se
+    /// dividió.
+    public func splitParts(of transaction: BankTransaction) throws -> [BankSplitPart] {
+        guard transaction.status == .categorized else { return [] }
+        let parts: [BankSplitPart]
+        if let expense = try fetch(Expense.self, Self.expensePredicate(transaction.createdDocumentID), limit: 1).first {
+            parts = expense.sortedLines.compactMap { line in
+                line.accountID.map { BankSplitPart(accountID: $0, amount: line.amount, memo: line.details) }
+            }
+        } else if let entry = try entry(id: transaction.matchedEntryID), entry.source == .bankDeposit {
+            parts = entry.sortedLines.filter { $0.account?.id != transaction.accountID }.compactMap { line in
+                line.account.map { BankSplitPart(accountID: $0.id, amount: line.credit - line.debit, memo: line.memo) }
+            }
+        } else {
+            parts = []
+        }
+        return parts.count >= 2 ? parts : []
+    }
+
+    private static func expensePredicate(_ id: UUID?) -> Predicate<Expense> {
+        let target = id ?? UUID()
+        return #Predicate<Expense> { $0.id == target }
+    }
+
+    /// Núcleo de `categorize`: una parte a una cuenta de dinero → transferencia; si no, gasto (salida) o depósito
+    /// (entrada) con una línea por parte. Todo en un solo guardado.
+    private func register(_ transaction: BankTransaction, parts: [(account: Account, amount: Int64, memo: String)],
+                          vendor: Vendor?, customer: Customer?, payee: String?, memo: String) throws -> BankCategorization {
+        guard let bank = try account(id: transaction.accountID) else { throw BookkeepingError.unknownAccount }
+        guard parts.allSatisfy({ $0.account.id != bank.id }) else { throw BookkeepingError.invalidDocument(.sameAccount) }
         guard transaction.amount != 0 else { throw BookkeepingError.invalidDocument(.nonPositiveAmount) }
         let vendor = try vendor ?? self.vendor(id: transaction.vendorID)
         let name = payee ?? (transaction.payee.isEmpty ? (vendor?.name ?? transaction.details) : transaction.payee)
+        let main = parts.max { $0.amount < $1.amount }!.account
         do {
             let result: BankCategorization
-            if category.subtype.isMoneyAccount {
+            if parts.count == 1, main.subtype.isMoneyAccount {
                 let amount = abs(transaction.amount)
                 let lines: [JournalLineDraft] = transaction.amount > 0
-                    ? [.debit(bank.id, amount), .credit(category.id, amount)]
-                    : [.debit(category.id, amount), .credit(bank.id, amount)]
+                    ? [.debit(bank.id, amount), .credit(main.id, amount)]
+                    : [.debit(main.id, amount), .credit(bank.id, amount)]
                 let entry = try post(JournalEntryDraft(date: transaction.date, memo: memo.isEmpty ? String(localized: "Transferencia · \(transaction.details)") : memo,
                                                        source: .transfer, lines: lines), sourceDocumentID: transaction.id, save: false)
                 result = .transfer(entry)
             } else if transaction.amount < 0 {
                 let input = ExpenseInput(date: transaction.date, payee: name, vendor: vendor, customer: customer, paymentAccountID: bank.id,
                                          method: bank.subtype == .creditCard ? .card : .bankTransfer, reference: transaction.checkNumber,
-                                         memo: memo, lines: [.init(details: transaction.details, amount: -transaction.amount, accountID: category.id)])
+                                         memo: memo, lines: parts.map { .init(details: $0.memo.isEmpty ? transaction.details : $0.memo, amount: $0.amount, accountID: $0.account.id) })
                 let expense = Expense(date: input.date, payee: input.payee, paymentAccountID: bank.id, vendor: vendor)
                 insert(expense)
                 apply(input, to: expense)
                 try record(expense, save: false)
                 result = .expense(expense)
             } else {
+                let lines: [JournalLineDraft] = [.debit(bank.id, transaction.amount)] + parts.map { .credit($0.account.id, $0.amount, memo: $0.memo) }
                 let entry = try post(JournalEntryDraft(date: transaction.date, memo: memo.isEmpty ? String(localized: "Depósito · \(name)") : memo,
-                                                       source: .bankDeposit,
-                                                       lines: [.debit(bank.id, transaction.amount), .credit(category.id, transaction.amount)]),
+                                                       source: .bankDeposit, lines: lines),
                                      sourceDocumentID: transaction.id, save: false)
                 entry.lines?.forEach { $0.customerID = customer?.id; $0.vendorID = vendor?.id }
                 result = .deposit(entry)
             }
-            transaction.categoryAccountID = category.id
+            transaction.categoryAccountID = main.id
             transaction.vendorID = vendor?.id
             transaction.customerID = customer?.id
-            try finish(transaction, with: result)
+            var changes = Self.bankDetails(transaction)
+            if parts.count > 1 {
+                for part in parts {
+                    changes.value(part.account.displayName, Money(minorUnits: part.amount).formatted() + (part.memo.isEmpty ? "" : " · \(part.memo)"))
+                }
+            } else {
+                changes.value(String(localized: "Cuenta"), main.displayName)
+            }
+            try finish(transaction, with: result, changes: changes,
+                       summary: parts.count > 1 ? String(localized: "Movimiento dividido en \(parts.count) cuentas: \(transaction.details)") : nil)
             return result
         } catch {
             context.rollback()
@@ -442,7 +546,8 @@ extension Bookkeeper {
         }
     }
 
-    private func finish(_ transaction: BankTransaction, with result: BankCategorization) throws {
+    private func finish(_ transaction: BankTransaction, with result: BankCategorization, changes: AuditChanges? = nil,
+                        summary: String? = nil) throws {
         guard let entry = try entry(id: result.entryID) else { throw BookkeepingError.invalidState(String(localized: "No se pudo registrar el movimiento.")) }
         let documentID: UUID? = switch result {
         case .expense(let expense): expense.id
@@ -451,7 +556,8 @@ extension Bookkeeper {
         case .deposit, .transfer: entry.id
         }
         link(transaction, to: entry, documentID: documentID, status: .categorized)
-        audit("BankTransaction", transaction.id, "categorize", String(localized: "Movimiento registrado: \(transaction.details)"))
+        audit("BankTransaction", transaction.id, "categorize", summary ?? String(localized: "Movimiento registrado: \(transaction.details)"),
+              changes: changes ?? Self.bankDetails(transaction))
         try commit()
     }
 

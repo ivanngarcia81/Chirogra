@@ -167,10 +167,13 @@ where Value: Identifiable, Value.ID == UUID,
         .navigationSubtitle(subtitle)
         .searchable(text: $query, placement: .toolbar, prompt: searchPrompt)
         .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Button { SubscriptionStore.shared.whenWritable(onAdd) } label: { Label(addTitle, systemImage: "plus").labelStyle(.titleAndIcon) }
-                    .help(addTitle)
-                    .headerButton()
+            // Sin `addTitle` (la bitácora), no hay botón de añadir.
+            if !addTitle.isEmpty {
+                ToolbarItem(placement: .primaryAction) {
+                    Button { SubscriptionStore.shared.whenWritable(onAdd) } label: { Label(addTitle, systemImage: "plus").labelStyle(.titleAndIcon) }
+                        .help(addTitle)
+                        .headerButton()
+                }
             }
             ToolbarItem(placement: .primaryAction) {
                 Button { showsInspector.toggle() } label: {
@@ -466,6 +469,7 @@ enum QALaunch {
         case "chart": .accounting(.chart)
         case "ledger": .accounting(.ledger)
         case "close": .accounting(.close)
+        case "auditLog": .accounting(.auditLog)
         case "reports": .section(.reports)
         case "taxes": .section(.taxes)
         case "settings": .section(.settings)

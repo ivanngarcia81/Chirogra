@@ -1,7 +1,7 @@
 # Chirogra: contexto para retomar en otro chat
 
 Estado de Chirogra al **10 de noviembre de 2026**. **Para empezar rápido, lee primero
-[RESUMEN-PARA-SEGUIR.md](RESUMEN-PARA-SEGUIR.md)** (estado, builds 22–26 y lo siguiente); luego este, entero. El diseño técnico está en
+[RESUMEN-PARA-SEGUIR.md](RESUMEN-PARA-SEGUIR.md)** (estado, builds 22–30 y lo siguiente); luego este, entero. El diseño técnico está en
 [DISEÑO.md](DISEÑO.md), el sistema visual y los argumentos de QA en [REDISEÑO-NATIVO.md](REDISEÑO-NATIVO.md) (§5), los
 datos en [DATOS-V4.md](DATOS-V4.md) (y [DATOS-V2.md](DATOS-V2.md)), la fase 2 en [PLAN-FASE2.md](PLAN-FASE2.md) y la
 ficha de la App Store en [APP-STORE.md](APP-STORE.md). Aquí van el estado, lo pendiente, las decisiones del usuario, lo
@@ -107,14 +107,19 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
    debajo del otro. En inglés se partía en tres líneas en el iPad y se cortaba en el Mac. Capturas 05-impuestos (en) rehechas.
 
 *B. Cuando Apple apruebe la 1.0:*
-7. Usuario: enviar la 1.0.1 (build 15).
-8. Enviar la 1.1.0 (último build): capturas nuevas (carrusel y panel), notas «What's New» en/es, notas para el revisor
+7. Usuario: enviar la 1.0.1 (build 15). Sin decidir: saltársela y enviar directo la 1.1 (el build 30 ya lleva el
+   arreglo de iCloud); preguntarle cuando aprueben la 1.0.
+8. Enviar la 1.1.0 (**build 30**): capturas nuevas (carrusel y panel), notas «What's New» en/es, notas para el revisor
    y el plan de contadores en el mismo envío.
 
-*C. 1.2, sin servidor pero con cambio de esquema (desplegar a Producción y probar, ver «Lo aprendido»):*
-9. Asientos de ajuste marcados como del contador.
-10. Bitácora de cambios (quién cambió qué y cuándo, también lo borrado).
-11. Banca: dividir un movimiento en varias cuentas y motivo al excluir.
+*C. 1.2, sin servidor pero con cambio de esquema (desplegar a Producción y probar, ver «Lo aprendido»).* **HECHA el
+10-nov en la rama `version-1.2`, sin commitear** (detalle en [DATOS-V5.md](DATOS-V5.md)). Esquema 5 (solo añade tres
+textos), datos y pantallas, con 316 pruebas pasando. Vista en la copia del Mac y en el simulador del iPhone. **Esquema 5 desplegado a
+Producción el 10-nov** (creado en Development con `-qa.esquemaCloudKit 1`, que ahora sale sin abrir los libros). Falta:
+commitear, probar en Producción en sus aparatos y subir el build 1.2.
+9. Asientos de ajuste marcados como del contador: hecho (`EntrySource.accountantAdjustment`).
+10. Bitácora de cambios: hecho (aparato y antes/después; Contabilidad › «Bitácora de cambios»).
+11. Banca: dividir y motivo al excluir: hecho (canvas `BancaRevisar`).
 
 *D. 2.0, con servidor (Supabase, proyecto aparte; PLAN-FASE2.md «Después: con servidor»):*
 12. Plaid (plan «Chirogra + Banco»; entra a la bandeja «Por revisar» como otra `BankTransactionSource`). Cambia la

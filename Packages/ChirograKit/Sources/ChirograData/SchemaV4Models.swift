@@ -943,12 +943,7 @@ extension SchemaV4 {
         public var action: String = ""
         public var summary: String = ""
 
-        public init(actor: String, entityName: String, entityID: UUID?, action: String, summary: String) {
-            self.actor = actor
-            self.subjectEntity = entityName
-            self.entityID = entityID
-            self.action = action
-            self.summary = summary
-        }
+        /// CONGELADO desde el esquema 5 (10-nov-2026): solo las propiedades guardadas; la app usa el de `SchemaV5`.
+        public init() {}
     }
 }

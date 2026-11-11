@@ -49,24 +49,8 @@ extension SchemaV4 {
         public var importedAt: Date = Date()
         public var reviewedAt: Date?
 
-        public init(accountID: UUID?, date: Date, amount: Int64, details: String, externalID: String, source: BankSourceKind) {
-            self.accountID = accountID
-            self.date = date
-            self.amount = amount
-            self.details = details
-            self.externalID = externalID
-            self.sourceRaw = source.rawValue
-        }
-
-        public var status: BankTransactionStatus {
-            get { BankTransactionStatus(rawValue: statusRaw) ?? .toReview }
-            set { statusRaw = newValue.rawValue }
-        }
-
-        public var source: BankSourceKind { BankSourceKind(rawValue: sourceRaw) ?? .csv }
-        /// Entra dinero (depósito, o pago/devolución en una tarjeta).
-        public var isInflow: Bool { amount > 0 }
-        public var isPending: Bool { status == .toReview }
+        /// CONGELADO desde el esquema 5 (10-nov-2026): solo las propiedades guardadas; la app usa el de `SchemaV5`.
+        public init() {}
     }
 
     /// Regla de la bandeja «Por revisar»: «si la descripción contiene X → cuenta Y / proveedor Z». Se prueban por
@@ -218,6 +202,18 @@ public enum BankTransactionStatus: String, CaseIterable, Sendable, Codable {
     case matched
     /// Ignorado (duplicado, movimiento interno ya registrado…).
     case ignored
+}
+
+extension BankTransactionStatus {
+    /// Para la bitácora.
+    var auditTitle: String {
+        switch self {
+        case .toReview: String(localized: "Por revisar")
+        case .categorized: String(localized: "Registrado")
+        case .matched: String(localized: "Emparejado")
+        case .ignored: String(localized: "Excluido")
+        }
+    }
 }
 
 /// Signo de los movimientos a los que aplica una regla.

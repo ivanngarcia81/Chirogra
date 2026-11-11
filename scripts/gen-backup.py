@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Genera Packages/ChirograKit/Sources/ChirograData/Backup+Generated.swift a partir de los modelos del esquema actual
-(los de SchemaV4: SchemaV4Models.swift, SchemaV4Models2.swift y SchemaV4Banking.swift).
+(los de SchemaV4: SchemaV4Models.swift, SchemaV4Models2.swift y SchemaV4Banking.swift, salvo los que SchemaV5.swift
+sustituye: AuditEvent y BankTransaction).
 
 La copia de seguridad (`BackupArchive`, DISEÑO §6.5) guarda cada modelo como un registro `Codable` con todas sus
 propiedades guardadas y sus relaciones a uno (por `id`); las relaciones a muchos se rehacen solas por su inversa,
@@ -17,7 +18,7 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 SOURCES = ROOT / "Packages/ChirograKit/Sources"
 # En orden: un modelo definido en un archivo posterior sustituiría al del anterior.
 MODEL_FILES = [SOURCES / "ChirograData/SchemaV4Models.swift", SOURCES / "ChirograData/SchemaV4Models2.swift",
-               SOURCES / "ChirograData/SchemaV4Banking.swift"]
+               SOURCES / "ChirograData/SchemaV4Banking.swift", SOURCES / "ChirograData/SchemaV5.swift"]
 # Clave en la copia de una propiedad que cambió de nombre en el esquema: así el formato de la copia no cambia y las
 # copias de antes se siguen restaurando (y las nuevas, en una versión anterior de la app).
 BACKUP_KEYS = {("AuditEvent", "subjectEntity"): "entityName"}
@@ -196,7 +197,7 @@ def record_type(prop):
 
 out = []
 w = out.append
-w("// Generado por scripts/gen-backup.py a partir del esquema actual (SchemaV4). No editar a mano: cambia el modelo y vuelve a")
+w("// Generado por scripts/gen-backup.py a partir del esquema actual (SchemaV5). No editar a mano: cambia el modelo y vuelve a")
 w("// ejecutar el script (BackupTests comprueba que cubre todas las propiedades del esquema).")
 w("")
 w("import ChirograCore")

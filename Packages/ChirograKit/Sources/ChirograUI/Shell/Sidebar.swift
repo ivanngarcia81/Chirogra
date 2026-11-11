@@ -6,6 +6,8 @@ import SwiftUI
 /// Páginas de Contabilidad. En iPad y Mac son subsecciones de la barra lateral (canvas `MacDiario`).
 enum AccountingPage: String, CaseIterable, Identifiable {
     case chart, journal, ledger, close
+    /// 1.2: bitácora de cambios (`AuditLogView`).
+    case auditLog
     var id: String { rawValue }
 
     var title: String {
@@ -14,6 +16,7 @@ enum AccountingPage: String, CaseIterable, Identifiable {
         case .journal: String(localized: "Asientos de diario")
         case .ledger: String(localized: "Libro mayor")
         case .close: String(localized: "Cierre de periodo")
+        case .auditLog: String(localized: "Bitácora de cambios")
         }
     }
 
@@ -24,6 +27,7 @@ enum AccountingPage: String, CaseIterable, Identifiable {
         case .journal: JournalListView()
         case .ledger: LedgerBrowserView()
         case .close: PeriodCloseView()
+        case .auditLog: AuditLogView()
         }
     }
 }

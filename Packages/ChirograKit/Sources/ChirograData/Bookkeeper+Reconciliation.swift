@@ -174,6 +174,10 @@ extension Bookkeeper {
                 line.clearedAt = nil
             }
         }
+        var changes = AuditChanges()
+        changes.value(String(localized: "Fecha del extracto"), AuditChanges.day(reconciliation.statementDate))
+        changes.value(String(localized: "Saldo final del extracto"), money: reconciliation.statementEndingBalance)
+        audit("Reconciliation", reconciliation.id, "cancel", String(localized: "Conciliación descartada"), changes: changes)
         context.delete(reconciliation)
         try saveOrRollback()
     }

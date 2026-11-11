@@ -39,12 +39,16 @@ extension Bookkeeper {
     @discardableResult
     public func updateExpense(_ expense: Expense, with input: ExpenseInput, calendar: Calendar = .current) throws -> JournalEntry? {
         guard !expense.isVoid else { throw BookkeepingError.invalidState(String(localized: "El gasto está anulado.")) }
+        let before = ExpenseInput(expense)
+        let changes = AuditSnapshot(before, accountName: accountName).changes(to: AuditSnapshot(input, accountName: accountName))
         guard expense.isPosted, let original = try entry(id: expense.journalEntryID) else {
             apply(input, to: expense)
+            if !changes.isEmpty {
+                audit("Expense", expense.id, "edit", String(localized: "Gasto editado: \(input.payee)"), changes: changes)
+            }
             try saveOrRollback()
             return nil
         }
-        let before = ExpenseInput(expense)
         let accountingChanged = !calendar.isDate(before.date, inSameDayAs: input.date)
             || before.paymentAccountID != input.paymentAccountID
             || before.lines.map { [$0.accountID?.uuidString ?? "", String($0.amount)] } != input.lines.map { [$0.accountID?.uuidString ?? "", String($0.amount)] }
@@ -52,7 +56,7 @@ extension Bookkeeper {
             || before.customer?.id != input.customer?.id
         guard accountingChanged else {
             apply(input, to: expense)
-            audit("Expense", expense.id, "edit", String(localized: "Gasto editado (sin cambios contables): \(input.payee)"))
+            audit("Expense", expense.id, "edit", String(localized: "Gasto editado (sin cambios contables): \(input.payee)"), changes: changes)
             try saveOrRollback()
             return nil
         }
@@ -71,7 +75,7 @@ extension Bookkeeper {
             expense.journalEntryID = replacement.id
             expense.total = draft.totalCredits
             expense.revision += 1
-            audit("Expense", expense.id, "edit", String(localized: "Gasto editado: \(Money(minorUnits: before.total).formatted()) → \(Money(minorUnits: draft.totalCredits).formatted()) (asiento \(original.number) revertido, nuevo \(replacement.number))"))
+            audit("Expense", expense.id, "edit", String(localized: "Gasto editado: \(Money(minorUnits: before.total).formatted()) → \(Money(minorUnits: draft.totalCredits).formatted()) (asiento \(original.number) revertido, nuevo \(replacement.number))"), changes: changes)
             try commit()
             return replacement
         } catch {

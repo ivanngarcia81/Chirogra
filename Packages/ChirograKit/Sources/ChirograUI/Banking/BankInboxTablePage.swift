@@ -25,6 +25,8 @@ struct BankInboxTablePage: View {
     @State private var reviewing: BankTransaction?
     @State private var importing: BankImportRequest?
     @State private var ruleDraft: BankRuleDraftRequest?
+    /// «Excluir»: se pregunta el motivo (1.2).
+    @State private var excluding: BankTransaction?
     @State private var errorMessage: String?
 
     var body: some View {
@@ -102,6 +104,9 @@ struct BankInboxTablePage: View {
             return true
         }
         .sheet(item: $reviewing) { BankReviewSheet(start: $0).editorSheetSizing() }
+        .bankExclusionDialog($excluding) { target, reason in
+            act { try Bookkeeper(context: modelContext).ignore(target, reason: reason) } then: { selectNext(after: target) }
+        }
         .sheet(item: $importing) { request in
             NavigationStack { BankImportView(initialFile: request.file, preferredAccountID: accountID) }.editorSheetSizing()
         }
@@ -137,9 +142,7 @@ struct BankInboxTablePage: View {
             }
             HStack {
                 Button("Crear regla…") { ruleDraft = BankRuleDraftRequest(input: draftRule(for: transaction)) }.buttonStyle(.secondary)
-                Button("Excluir", role: .destructive) {
-                    act { try context.books.ignore(transaction) } then: { selectNext(after: transaction) }
-                }
+                Button("Excluir", role: .destructive) { excluding = transaction }
                 .buttonStyle(.destructive)
             }
         } else {
@@ -210,7 +213,7 @@ nonisolated struct BankInboxRow: Identifiable {
             statusColor = suggestion.textColor
             dot = suggestion.dotColor
         } else {
-            statusText = transaction.statusTitle
+            statusText = transaction.statusWithReason
             statusColor = Palette.ink2
             dot = transaction.statusDot
         }

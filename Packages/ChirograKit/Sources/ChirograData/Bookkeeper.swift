@@ -262,7 +262,9 @@ public struct Bookkeeper {
             model.entry = entry
             insert(model)
         }
-        audit("JournalEntry", entry.id, "post", String(localized: "Asiento \(entry.number): \(draft.memo)"))
+        audit("JournalEntry", entry.id, "post", draft.source == .accountantAdjustment
+              ? String(localized: "Ajuste del contador \(entry.number): \(draft.memo)")
+              : String(localized: "Asiento \(entry.number): \(draft.memo)"))
         if save { try saveOrRollback() }
         return entry
     }
@@ -615,6 +617,8 @@ public struct Bookkeeper {
             try reverse(entry, on: date, memo: String(localized: "Anulación factura \(invoice.number)"), save: false)
         }
         invoice.status = .void
+        audit("Invoice", invoice.id, "void", String(localized: "Factura \(invoice.number) anulada"),
+              changes: { var c = AuditChanges(); c.value(String(localized: "Total"), money: invoice.total); return c }())
         try saveOrRollback()
     }
 
@@ -811,9 +815,7 @@ public struct Bookkeeper {
         return sequence.format(try nextNumber(kind))
     }
 
-    func audit(_ entity: String, _ id: UUID?, _ action: String, _ summary: String) {
-        insert(AuditEvent(actor: actor, entityName: entity, entityID: id, action: action, summary: summary))
-    }
+    // `audit(_:_:_:_:changes:)` (la bitácora) está en `Bookkeeper+AuditLog.swift`.
 
     /// Libros en solo lectura: la app lo activa cuando la suscripción terminó (`SubscriptionStore`). Se pueden ver,
     /// exportar y sacar copias, pero ningún servicio de `Bookkeeper` guarda. Las pruebas lo dejan en `false`.

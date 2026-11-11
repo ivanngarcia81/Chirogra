@@ -36,8 +36,10 @@ public enum SchemaV4: VersionedSchema {
 }
 
 public enum ChirograMigrationPlan: SchemaMigrationPlan {
-    public static var schemas: [any VersionedSchema.Type] { [SchemaV1.self, SchemaV2.self, SchemaV3.self, SchemaV4.self] }
-    public static var stages: [MigrationStage] { [migrateV1toV2, migrateV2toV3, migrateV3toV4] }
+    public static var schemas: [any VersionedSchema.Type] { [SchemaV1.self, SchemaV2.self, SchemaV3.self, SchemaV4.self, SchemaV5.self] }
+    public static var stages: [MigrationStage] { [migrateV1toV2, migrateV2toV3, migrateV3toV4, migrateV4toV5] }
+
+    // `migrateV4toV5` (ligera) está en `SchemaV5.swift`.
 
     /// Ligera: SwiftData/Core Data añade las columnas y tablas nuevas con sus valores por defecto.
     public static var migrateV1toV2: MigrationStage { .lightweight(fromVersion: SchemaV1.self, toVersion: SchemaV2.self) }
@@ -50,12 +52,13 @@ public enum ChirograMigrationPlan: SchemaMigrationPlan {
     /// Es determinista (fecha de alta y después id), así que dos aparatos que migran a la vez escriben lo mismo.
     public static var migrateV3toV4: MigrationStage {
         .custom(fromVersion: SchemaV3.self, toVersion: SchemaV4.self, willMigrate: nil, didMigrate: { context in
-            try CompanyOwnership.adoptOrphans(in: context, archivingExtraCompanies: true)
+            try CompanyOwnership.adoptOrphans(in: context, archivingExtraCompanies: true, types: CompanyOwnership.ownedTypesV4)
             try context.save()
         })
     }
 }
 
+// Los modelos que la app usa: los del esquema 4, salvo `AuditEvent` y `BankTransaction`, que son del 5 (`SchemaV5.swift`).
 public typealias Company = SchemaV4.Company
 public typealias Account = SchemaV4.Account
 public typealias JournalEntry = SchemaV4.JournalEntry
@@ -80,7 +83,7 @@ public typealias TaxAgency = SchemaV4.TaxAgency
 public typealias TaxRate = SchemaV4.TaxRate
 public typealias TaxGroup = SchemaV4.TaxGroup
 public typealias NumberSequence = SchemaV4.NumberSequence
-public typealias AuditEvent = SchemaV4.AuditEvent
+public typealias AuditEvent = SchemaV5.AuditEvent
 public typealias RecurringTemplate = SchemaV4.RecurringTemplate
 public typealias RecurringTemplateLine = SchemaV4.RecurringTemplateLine
 public typealias CustomerNote = SchemaV4.CustomerNote
@@ -89,7 +92,7 @@ public typealias Estimate = SchemaV4.Estimate
 public typealias EstimateLine = SchemaV4.EstimateLine
 public typealias PeriodClose = SchemaV4.PeriodClose
 public typealias NoticeState = SchemaV4.NoticeState
-public typealias BankTransaction = SchemaV4.BankTransaction
+public typealias BankTransaction = SchemaV5.BankTransaction
 public typealias BankRule = SchemaV4.BankRule
 public typealias BankImportProfile = SchemaV4.BankImportProfile
 public typealias Reconciliation = SchemaV4.Reconciliation
@@ -117,6 +120,34 @@ extension CompanyOwnership {
         PeriodClose.self, NoticeState.self, BankTransaction.self, BankRule.self, BankImportProfile.self, Reconciliation.self,
         Budget.self, BudgetLine.self,
     ]
+}
+
+extension CompanyOwnership {
+    /// `ownedTypes` con las clases del esquema 4 (congeladas) en lugar de las que el 5 sustituye: para la migración
+    /// 3 → 4, que trabaja sobre un almacén del esquema 4.
+    static var ownedTypesV4: [any CompanyOwned.Type] {
+        ownedTypes.map { type in
+            switch ObjectIdentifier(type) {
+            case ObjectIdentifier(SchemaV5.AuditEvent.self): SchemaV4.AuditEvent.self
+            case ObjectIdentifier(SchemaV5.BankTransaction.self): SchemaV4.BankTransaction.self
+            default: type
+            }
+        }
+    }
+}
+
+// Las clases congeladas del esquema 4 que el 5 sustituye (solo para `ownedTypesV4`).
+extension SchemaV4.AuditEvent: CompanyOwned {
+    public static func ownedBy(_ companyID: UUID, includeOrphans: Bool) -> Predicate<SchemaV4.AuditEvent> {
+        let id: UUID? = companyID
+        return #Predicate<SchemaV4.AuditEvent> { $0.companyID == id || (includeOrphans && $0.companyID == nil) }
+    }
+}
+extension SchemaV4.BankTransaction: CompanyOwned {
+    public static func ownedBy(_ companyID: UUID, includeOrphans: Bool) -> Predicate<SchemaV4.BankTransaction> {
+        let id: UUID? = companyID
+        return #Predicate<SchemaV4.BankTransaction> { $0.companyID == id || (includeOrphans && $0.companyID == nil) }
+    }
 }
 
 extension SchemaV4.Account: CompanyOwned {
@@ -257,7 +288,7 @@ extension SchemaV4.NumberSequence: CompanyOwned {
         return #Predicate<NumberSequence> { $0.companyID == id || (includeOrphans && $0.companyID == nil) }
     }
 }
-extension SchemaV4.AuditEvent: CompanyOwned {
+extension SchemaV5.AuditEvent: CompanyOwned {
     public static func ownedBy(_ companyID: UUID, includeOrphans: Bool) -> Predicate<AuditEvent> {
         let id: UUID? = companyID
         return #Predicate<AuditEvent> { $0.companyID == id || (includeOrphans && $0.companyID == nil) }
@@ -311,7 +342,7 @@ extension SchemaV4.NoticeState: CompanyOwned {
         return #Predicate<NoticeState> { $0.companyID == id || (includeOrphans && $0.companyID == nil) }
     }
 }
-extension SchemaV4.BankTransaction: CompanyOwned {
+extension SchemaV5.BankTransaction: CompanyOwned {
     public static func ownedBy(_ companyID: UUID, includeOrphans: Bool) -> Predicate<BankTransaction> {
         let id: UUID? = companyID
         return #Predicate<BankTransaction> { $0.companyID == id || (includeOrphans && $0.companyID == nil) }

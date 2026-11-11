@@ -1,4 +1,4 @@
-// Generado por scripts/gen-backup.py a partir del esquema actual (SchemaV4). No editar a mano: cambia el modelo y vuelve a
+// Generado por scripts/gen-backup.py a partir del esquema actual (SchemaV5). No editar a mano: cambia el modelo y vuelve a
 // ejecutar el script (BackupTests comprueba que cubre todas las propiedades del esquema).
 
 import ChirograCore
@@ -378,6 +378,8 @@ extension BackupPayload {
         var entityID: UUID?
         var action: String?
         var summary: String?
+        var device: String?
+        var changeDetails: String?
     }
 
     struct RecurringTemplateRecord: Codable {
@@ -517,6 +519,7 @@ extension BackupPayload {
         var importBatchID: UUID?
         var importedAt: Date?
         var reviewedAt: Date?
+        var ignoreReason: String?
     }
 
     struct BankRuleRecord: Codable {
@@ -650,7 +653,7 @@ extension BackupArchive {
         "TaxRate": ["id", "companyID", "name", "rateMillionths", "effectiveFrom", "effectiveTo", "isArchived", "agency", "groups"],
         "TaxGroup": ["id", "companyID", "name", "isArchived", "rates"],
         "NumberSequence": ["id", "companyID", "kindRaw", "prefix", "nextNumber", "minimumDigits"],
-        "AuditEvent": ["id", "companyID", "date", "actor", "subjectEntity", "entityID", "action", "summary"],
+        "AuditEvent": ["id", "companyID", "date", "actor", "subjectEntity", "entityID", "action", "summary", "device", "changeDetails"],
         "RecurringTemplate": ["id", "companyID", "name", "kindRaw", "payee", "memo", "frequencyRaw", "startDate", "nextDate", "endDate", "isActive", "autoCharge", "paymentAccountID", "methodRaw", "billTermsDays", "lastGeneratedDate", "lastRunAt", "createdAt", "vendor", "lines"],
         "RecurringTemplateLine": ["id", "companyID", "details", "amount", "accountID", "order", "template"],
         "CustomerNote": ["id", "companyID", "date", "text", "author", "createdAt", "customer"],
@@ -659,7 +662,7 @@ extension BackupArchive {
         "EstimateLine": ["id", "companyID", "details", "quantity", "unitPrice", "isTaxable", "incomeAccountID", "itemID", "order", "invoicedQuantity", "estimate"],
         "PeriodClose": ["id", "companyID", "actionRaw", "lockDate", "previousLockDate", "date", "actor", "device", "note"],
         "NoticeState": ["id", "companyID", "key", "isRead", "isDismissed", "updatedAt"],
-        "BankTransaction": ["id", "companyID", "accountID", "date", "amount", "details", "payee", "memo", "checkNumber", "externalID", "sourceRaw", "statusRaw", "categoryAccountID", "vendorID", "customerID", "ruleID", "matchedEntryID", "matchedLineID", "createdDocumentID", "importBatchID", "importedAt", "reviewedAt"],
+        "BankTransaction": ["id", "companyID", "accountID", "date", "amount", "details", "payee", "memo", "checkNumber", "externalID", "sourceRaw", "statusRaw", "categoryAccountID", "vendorID", "customerID", "ruleID", "matchedEntryID", "matchedLineID", "createdDocumentID", "importBatchID", "importedAt", "reviewedAt", "ignoreReason"],
         "BankRule": ["id", "companyID", "name", "matchText", "amountSignRaw", "bankAccountID", "targetAccountID", "vendorID", "payee", "autoApply", "priority", "isActive", "createdAt"],
         "BankImportProfile": ["id", "companyID", "accountID", "name", "columnsJSON", "dateFormat", "amountSignRaw", "delimiter", "hasHeaderRow", "createdAt", "lastUsedAt"],
         "Reconciliation": ["id", "companyID", "accountID", "statementDate", "statementEndingBalance", "beginningBalance", "statusRaw", "closedAt", "createdAt"],
@@ -1070,7 +1073,9 @@ extension BackupPayload {
                 entityName: model.subjectEntity,
                 entityID: model.entityID,
                 action: model.action,
-                summary: model.summary
+                summary: model.summary,
+                device: model.device,
+                changeDetails: model.changeDetails
             )
         }.sorted { ($0.id?.uuidString ?? "") < ($1.id?.uuidString ?? "") }
         recurringTemplate = try context.fetch(scope.descriptor(RecurringTemplate.self)).map { model in
@@ -1218,7 +1223,8 @@ extension BackupPayload {
                 createdDocumentID: model.createdDocumentID,
                 importBatchID: model.importBatchID,
                 importedAt: model.importedAt,
-                reviewedAt: model.reviewedAt
+                reviewedAt: model.reviewedAt,
+                ignoreReason: model.ignoreReason
             )
         }.sorted { ($0.id?.uuidString ?? "") < ($1.id?.uuidString ?? "") }
         bankRule = try context.fetch(scope.descriptor(BankRule.self)).map { model in
@@ -1829,6 +1835,8 @@ extension BackupPayload {
             model.entityID = record.entityID
             model.action = record.action ?? ""
             model.summary = record.summary ?? ""
+            model.device = record.device ?? ""
+            model.changeDetails = record.changeDetails ?? ""
             context.insert(model)
             registry.auditEvent[model.id] = model
         }
@@ -1980,6 +1988,7 @@ extension BackupPayload {
             model.importBatchID = record.importBatchID
             model.importedAt = record.importedAt ?? Date()
             model.reviewedAt = record.reviewedAt
+            model.ignoreReason = record.ignoreReason ?? ""
             context.insert(model)
             registry.bankTransaction[model.id] = model
         }

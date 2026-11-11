@@ -291,16 +291,18 @@ struct MigrationTests {
         #expect(try container.mainContext.fetch(FetchDescriptor<AuditEvent>()).contains { !$0.subjectEntity.isEmpty })
     }
 
-    @Test("El plan de migración va de la versión 1 a la 4 y la app usa la 4")
+    @Test("El plan de migración va de la versión 1 a la 5 y la app usa la 5")
     func plan() {
         #expect(ChirograMigrationPlan.schemas.map { $0.versionIdentifier }
-                == [Schema.Version(1, 0, 0), Schema.Version(2, 0, 0), Schema.Version(3, 0, 0), Schema.Version(4, 0, 0)])
-        #expect(ChirograMigrationPlan.stages.count == 3)
+                == [Schema.Version(1, 0, 0), Schema.Version(2, 0, 0), Schema.Version(3, 0, 0), Schema.Version(4, 0, 0), Schema.Version(5, 0, 0)])
+        #expect(ChirograMigrationPlan.stages.count == 4)
         #expect(SchemaV2.models.count == SchemaV1.models.count + 8)
         #expect(SchemaV3.models.count == SchemaV2.models.count)
         #expect(SchemaV4.models.count == SchemaV3.models.count + 6)
-        #expect(ChirograStore.schema.entities.count == SchemaV4.models.count)
-        #expect(CompanyOwnership.ownedTypes.count == SchemaV4.models.count - 1)
+        #expect(SchemaV5.models.count == SchemaV4.models.count)
+        #expect(ChirograStore.schema.entities.count == SchemaV5.models.count)
+        #expect(CompanyOwnership.ownedTypes.count == SchemaV5.models.count - 1)
+        #expect(ChirograStore.schema.entities.first { $0.name == "AuditEvent" }?.storedProperties.contains { $0.name == "device" } == true)
     }
 
     /// Esquema 2 → 3 → 4: `AuditEvent.entityName` pasa a `subjectEntity` y conserva el valor (lo usan la detección de
@@ -404,5 +406,48 @@ struct MigrationTests {
         let reopened = try ChirograStore.makeContainer(url: url)
         #expect(try Self.orphanCount(reopened.mainContext) == 0)
         #expect(try reopened.mainContext.fetch(FetchDescriptor<Company>()).filter(\.isArchived).map(\.id) == [newer])
+    }
+
+    /// Esquema 4 → 5 (1.1 → 1.2): ligera. Lo de antes se conserva y las propiedades nuevas nacen vacías.
+    @MainActor
+    @Test("Un almacén del esquema 4 se migra al 5: la bitácora y los movimientos conservan todo y lo nuevo nace vacío")
+    func migratesV4Store() throws {
+        let url = try Self.temporaryStore()
+        defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
+        let companyID: UUID, transactionID: UUID
+        do {
+            let schema = Schema(versionedSchema: SchemaV4.self)
+            let container = try ModelContainer(for: schema, configurations: ModelConfiguration("Chirogra", schema: schema, url: url, cloudKitDatabase: .none))
+            let context = ModelContext(container)
+            let company = SchemaV4.Company(legalName: "Cuatro LLC")
+            context.insert(company)
+            companyID = company.id
+            let event = SchemaV4.AuditEvent()
+            event.companyID = companyID
+            event.subjectEntity = "Company"
+            event.entityID = companyID
+            event.action = "create"
+            event.summary = "Alta de Cuatro LLC"
+            context.insert(event)
+            let transaction = SchemaV4.BankTransaction()
+            transaction.companyID = companyID
+            transaction.amount = -4_250
+            transaction.details = "UBER *TRIP"
+            transaction.statusRaw = BankTransactionStatus.ignored.rawValue
+            context.insert(transaction)
+            transactionID = transaction.id
+            try context.save()
+        }
+        let container = try ChirograStore.makeContainer(url: url)
+        let context = container.mainContext
+        let event = try #require(try context.fetch(FetchDescriptor<AuditEvent>()).first)
+        #expect(event.summary == "Alta de Cuatro LLC")
+        #expect(event.subjectEntity == "Company")
+        #expect(event.device.isEmpty && event.changeDetails.isEmpty)
+        let transaction = try #require(try context.fetch(FetchDescriptor<BankTransaction>()).first)
+        #expect(transaction.id == transactionID)
+        #expect(transaction.amount == -4_250 && transaction.status == .ignored)
+        #expect(transaction.ignoreReason.isEmpty)
+        #expect(try Self.ownedCount(context, companyID: companyID) == 2)
     }
 }

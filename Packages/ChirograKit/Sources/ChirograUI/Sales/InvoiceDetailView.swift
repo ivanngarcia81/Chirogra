@@ -695,10 +695,9 @@ struct InvoiceDetailView: View {
         }
     }
 
+    /// Borra el borrador dejando lo que tenía en la bitácora (1.2).
     private func deleteDraft() {
-        context.delete(invoice)
-        try? context.save()
-        dismiss()
+        do { try books.deleteDraft(invoice); dismiss() } catch { errorMessage = error.localizedDescription }
     }
 }
 

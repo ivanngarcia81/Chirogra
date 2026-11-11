@@ -75,7 +75,10 @@ public enum CompanyOwnership {
     ///   antes del esquema 4, sin nada propio) y numera `sortOrder` por antigüedad.
     /// - Returns: cuántos registros cambió.
     @discardableResult
-    public static func adoptOrphans(in context: ModelContext, archivingExtraCompanies: Bool = false) throws -> Int {
+    /// `types`: las clases de los modelos; la migración 3 → 4 pasa las del esquema 4 (`ownedTypesV4`), que es el del
+    /// almacén en ese momento (con las del 5, Core Data no encuentra sus propiedades nuevas y la app se cierra).
+    public static func adoptOrphans(in context: ModelContext, archivingExtraCompanies: Bool = false,
+                                    types: [any CompanyOwned.Type] = ownedTypes) throws -> Int {
         let companies = try context.fetch(FetchDescriptor<Company>())
         guard let primary = primaryCompany(among: companies) else { return 0 }
         if archivingExtraCompanies {
@@ -89,7 +92,7 @@ public enum CompanyOwnership {
             }
         }
         var changed = 0
-        for type in ownedTypes {
+        for type in types {
             changed += try adopt(type, companyID: primary.id, in: context)
         }
         return changed

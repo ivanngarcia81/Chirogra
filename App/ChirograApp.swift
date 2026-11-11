@@ -28,6 +28,9 @@ struct ChirograApp: App {
             NSLog("Chirogra esquema CloudKit: %@", result)
             // También en los ajustes de la app, para leerlo con `defaults read` (el registro no siempre se ve).
             UserDefaults.standard.set("\(Date.now.formatted(.iso8601)) \(result)", forKey: "qa.esquemaCloudKit.resultado")
+            // Sale sin abrir los libros: esta compilación lleva un esquema nuevo y migraría el almacén del aparato, que la
+            // versión instalada ya no podría abrir (1.2, 10-nov).
+            exit(0)
         }
         #endif
         // Pistas de una sola vez (TipKit; en Debug, `-qa.pistas reset|todas|ocultas`).

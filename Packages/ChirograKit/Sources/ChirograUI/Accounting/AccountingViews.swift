@@ -22,6 +22,8 @@ struct AccountingView: View {
                 row(String(localized: "Cierre de periodo"),
                     companies.first?.lockDate.map { String(localized: "Cerrado hasta el \($0.shortDate)") } ?? String(localized: "Sin cierre"),
                     "lock", Palette.gray) { PeriodCloseView() }
+                row(String(localized: "Bitácora de cambios"), String(localized: "Quién cambió qué y cuándo"),
+                    "clock.arrow.circlepath", Palette.orange) { AuditLogView() }
             }
         }
         .groupedList()
@@ -226,6 +228,9 @@ struct JournalEntryRow: View {
         } trailing: {
             VStack(alignment: dynamicTypeSize.amountAlignment, spacing: 3) {
                 Text(entry.totalDebits.money).monospacedDigit().foregroundStyle(Palette.ink)
+                if entry.source == .accountantAdjustment {
+                    StatusChip(text: String(localized: "Del contador"), foreground: Palette.info, background: Palette.infoWash, compact: true, dot: Palette.info)
+                }
                 if entry.isReversed || entry.reversesEntryID != nil {
                     StatusChip(text: entry.isReversed ? String(localized: "Revertido") : String(localized: "Reversión"),
                                foreground: Palette.ink2, background: Palette.surface2, compact: true, dot: Palette.gray)
@@ -251,6 +256,7 @@ extension EntrySource {
         case .opening: String(localized: "Saldos iniciales")
         case .bankDeposit: String(localized: "Depósito")
         case .transfer: String(localized: "Transferencia")
+        case .accountantAdjustment: String(localized: "Ajuste del contador")
         }
     }
 }
@@ -290,6 +296,9 @@ struct JournalEntryEditorView: View {
     @State private var templateAmount: Int64 = 0
     @State private var templateMoney: UUID?
     @State private var templateDestination: UUID?
+    /// 1.2: el asiento a mano se marca como ajuste del contador. Encendido de entrada con el plan para contadores
+    /// (decisión del usuario del 10-nov); se puede apagar.
+    @State private var isAccountantAdjustment = SubscriptionStore.shared.plan == .accountant
 
     enum Mode: Hashable {
         case template(JournalTemplate)
@@ -329,7 +338,7 @@ struct JournalEntryEditorView: View {
                                   destination: templateDestinationID, accounts: accounts)
                 ?? JournalEntryDraft(date: date, memo: memo, source: .manual, lines: [])
         }
-        return JournalEntryDraft(date: date, memo: memo, source: .manual, lines: lines.compactMap { line in
+        return JournalEntryDraft(date: date, memo: memo, source: isAccountantAdjustment ? .accountantAdjustment : .manual, lines: lines.compactMap { line in
             guard let accountID = line.accountID else { return nil }
             return JournalLineDraft(accountID: accountID, debit: line.debit, credit: line.credit, memo: line.memo)
         })
@@ -574,11 +583,15 @@ struct JournalEntryEditorView: View {
             Section {
                 DatePicker("Fecha", selection: $date, displayedComponents: .date)
                 TextField("Concepto", text: $memo)
+                Toggle("Ajuste del contador", isOn: $isAccountantAdjustment)
             } header: {
                 SectionLabel(text: String(localized: "Datos del asiento"))
             } footer: {
-                if dateIsLocked, let lock = companies.first?.lockDate {
-                    Label(lockedNote(lock), systemImage: "lock").foregroundStyle(Palette.warning)
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(accountantNote)
+                    if dateIsLocked, let lock = companies.first?.lockDate {
+                        Label(lockedNote(lock), systemImage: "lock").foregroundStyle(Palette.warning)
+                    }
                 }
             }
             Section {
@@ -677,9 +690,19 @@ struct JournalEntryEditorView: View {
             formRow(String(localized: "Concepto")) {
                 TextField("Concepto", text: $memo).fieldBox().frame(maxWidth: 440)
             }
+            Divider()
+            formRow(String(localized: "Ajuste del contador")) {
+                Toggle("Ajuste del contador", isOn: $isAccountantAdjustment).labelsHidden()
+            }
+            .help(accountantNote)
         }
         .padding(.horizontal, 12)
         .card(padding: 0)
+    }
+
+    /// Qué hace la marca del contador.
+    private var accountantNote: String {
+        String(localized: "Los ajustes del contador salen marcados en el libro diario y se pueden filtrar.")
     }
 
     private func formRow<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
@@ -939,7 +962,7 @@ struct JournalEntryDetailView: View {
                 .font(.label).foregroundStyle(Palette.ink2).textCase(nil)
                 .accessibilityHidden(true)
             }
-            if entry.source == .manual && !entry.isReversed && entry.reversesEntryID == nil {
+            if entry.source.isManual && !entry.isReversed && entry.reversesEntryID == nil {
                 Section {
                     Button("Revertir asiento", role: .destructive) { confirming = true }
                 } footer: {

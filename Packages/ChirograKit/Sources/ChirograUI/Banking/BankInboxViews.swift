@@ -84,7 +84,7 @@ struct BankTransactionRow: View {
                     Text(suggestion.title).foregroundStyle(isSelected ? colors.secondary : suggestion.textColor).lineLimit(1)
                 } else {
                     StatusDot(color: isSelected ? Palette.onBrandFill : transaction.statusDot)
-                    Text(transaction.statusTitle).foregroundStyle(colors.secondary).lineLimit(1)
+                    Text(transaction.statusWithReason).foregroundStyle(colors.secondary).lineLimit(1)
                 }
             }
             .font(MasterRowColors.detailFont)
@@ -105,6 +105,8 @@ struct BankInboxSection: View {
     let review: (BankTransaction) -> Void
     let importStatement: () -> Void
     let report: (String) -> Void
+    /// Excluir deslizando: se pregunta el motivo (1.2).
+    @State private var excluding: BankTransaction?
 
     var body: some View {
         Section {
@@ -141,7 +143,7 @@ struct BankInboxSection: View {
                     }
                 }
                 .swipeActions(edge: .trailing) {
-                    Button("Excluir", role: .destructive) { ignore(transaction) }
+                    Button("Excluir", role: .destructive) { excluding = transaction }
                 }
             }
         } header: {
@@ -163,6 +165,7 @@ struct BankInboxSection: View {
                 Text("✓ acepta lo que propone la app. Toca un movimiento para elegir otra categoría, emparejarlo o excluirlo.")
             }
         }
+        .bankExclusionDialog($excluding) { target, reason in ignore(target, reason: reason) }
     }
 
     private func accept(_ suggestion: BankSuggestion, _ transaction: BankTransaction) {
@@ -178,9 +181,9 @@ struct BankInboxSection: View {
         }
     }
 
-    private func ignore(_ transaction: BankTransaction) {
+    private func ignore(_ transaction: BankTransaction, reason: String) {
         SubscriptionStore.shared.whenWritable {
-            do { try context.books.ignore(transaction) } catch { report(error.localizedDescription) }
+            do { try context.books.ignore(transaction, reason: reason) } catch { report(error.localizedDescription) }
         }
     }
 }
@@ -200,6 +203,7 @@ struct BankInboxScreen: View {
     @State private var filter: BankInboxFilter?
     @State private var query = ""
     @State private var reviewing: BankTransaction?
+    @State private var excluding: BankTransaction?
     @State private var errorMessage: String?
 
     var body: some View {
@@ -227,7 +231,7 @@ struct BankInboxScreen: View {
                     .buttonStyle(.plain)
                     .swipeActions {
                         if transaction.isPending {
-                            Button("Excluir", role: .destructive) { act { try context.books.ignore(transaction) } }
+                            Button("Excluir", role: .destructive) { excluding = transaction }
                         } else {
                             Button("Devolver a la bandeja") { act { try context.books.returnToInbox(transaction) } }.tint(Palette.blue)
                         }
@@ -250,6 +254,7 @@ struct BankInboxScreen: View {
         .navigationTitle("Movimientos del banco")
         .inlineTitle()
         .sheet(item: $reviewing) { BankReviewSheet(start: $0).editorSheetSizing() }
+        .bankExclusionDialog($excluding) { target, reason in act { try Bookkeeper(context: modelContext).ignore(target, reason: reason) } }
         .alert("No se pudo completar", isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
             Button("Aceptar", role: .cancel) {}
         } message: { Text(errorMessage ?? "") }
@@ -327,13 +332,24 @@ struct BankReviewDetail: View {
 struct BankReviewedSummary: View {
     let transaction: BankTransaction
     @Environment(\.modelContext) private var context
+    @CompanyQuery(sort: \Account.code) private var accounts: [Account]
     @State private var errorMessage: String?
+
+    /// Las partes, si se registró dividido (1.2).
+    private var splitParts: [BankSplitPart] { (try? Bookkeeper(context: context).splitParts(of: transaction)) ?? [] }
+    private func splitName(_ part: BankSplitPart) -> String { accounts.first { $0.id == part.accountID }?.displayName ?? "—" }
 
     var body: some View {
         Form {
             Section { BankReviewHeader(transaction: transaction, accountName: nil) }
             Section {
                 LabeledContent("Estado", value: transaction.statusTitle)
+                if transaction.status == .ignored, !transaction.ignoreReason.isEmpty {
+                    LabeledContent("Motivo", value: transaction.ignoreReason)
+                }
+                ForEach(splitParts) { part in
+                    LabeledContent(splitName(part), value: part.amount.money)
+                }
                 if let reviewed = transaction.reviewedAt { LabeledContent("Revisado", value: reviewed.shortDate) }
             } footer: {
                 Text("Devolver a la bandeja quita el emparejamiento o la exclusión. Lo que se registró desde el movimiento se queda: anúlalo aparte si sobra.")
@@ -374,8 +390,8 @@ struct BankReviewHeader: View {
     }
 }
 
-/// Formulario de revisión: Categorizar o Emparejar (canvas `BancaRevisar`; «Dividir» necesita una API de varias
-/// líneas que aún no hay), la sugerencia, la regla automática y «Excluir transacción». El ✓ de la barra registra.
+/// Formulario de revisión (canvas `BancaRevisar`): Categorizar, Emparejar o Dividir (1.2: varias cuentas), la sugerencia,
+/// la regla automática y «Excluir transacción», que pasa al motivo de exclusión. El ✓ de la barra registra.
 struct BankReviewForm: View {
     let transaction: BankTransaction
     let position: String
@@ -383,7 +399,7 @@ struct BankReviewForm: View {
     let onDone: (BankTransaction) -> Void
 
     enum Mode: String, CaseIterable, Identifiable {
-        case categorize = "Categorizar", match = "Emparejar"
+        case categorize = "Categorizar", match = "Emparejar", split = "Dividir"
         var id: String { rawValue }
     }
 
@@ -417,7 +433,11 @@ struct BankReviewForm: View {
     @State private var createsRule = false
     @State private var ruleText = ""
     @State private var errorMessage: String?
-    @State private var confirmingIgnore = false
+    /// «Excluir transacción» pulsado: el formulario pasa al motivo (canvas); tocar una acción arriba lo deshace.
+    @State private var excluding = false
+    @State private var exclusionReason: BankExclusionReason? = .personal
+    @State private var otherReason = ""
+    @State private var splitLines: [BankSplitLine] = []
     @State private var closedPeriodRetry: ClosedPeriodRetry?
     @State private var loaded = false
 
@@ -428,6 +448,11 @@ struct BankReviewForm: View {
         BankCategoryOptions.groups(for: transaction.amount, bankAccountID: transaction.accountID, accounts: accounts)
     }
     private var category: Account? { accounts.first { $0.id == categoryID } }
+    /// Cuentas para las líneas de la división: las de la categoría salvo las de dinero (una transferencia no se divide).
+    private var splitAccounts: [Account] {
+        var seen = Set<UUID>()
+        return groups.flatMap(\.accounts).filter { !$0.subtype.isMoneyAccount && seen.insert($0.id).inserted }
+    }
 
     /// Lo ya registrado por el mismo importe y las facturas abiertas por ese importe o, si el cliente o el proveedor
     /// sale en la descripción, por más (un cobro o pago parcial). Las demás abiertas no: serían ruido.
@@ -450,11 +475,17 @@ struct BankReviewForm: View {
     }
 
     private var canConfirm: Bool {
-        mode == .categorize ? categoryID != nil && (!createsRule || !ruleText.trimmingCharacters(in: .whitespaces).isEmpty)
-            : matchOptions.contains { $0.id == matchID }
+        if excluding { return exclusionReason != nil || !otherReason.trimmingCharacters(in: .whitespaces).isEmpty }
+        return switch mode {
+        case .categorize: categoryID != nil && (!createsRule || !ruleText.trimmingCharacters(in: .whitespaces).isEmpty)
+        case .match: matchOptions.contains { $0.id == matchID }
+        case .split: BankSplitSections.isComplete(splitLines, total: abs(transaction.amount))
+        }
     }
 
     private var confirmTitle: String {
+        if excluding { return String(localized: "Excluir y siguiente") }
+        if mode == .split { return String(localized: "Dividir y siguiente") }
         guard mode == .match else { return String(localized: "Categorizar y siguiente") }
         guard let option = matchOptions.first(where: { $0.id == matchID }) else { return String(localized: "Emparejar y siguiente") }
         switch option {
@@ -468,8 +499,9 @@ struct BankReviewForm: View {
         Form {
             Section { BankReviewHeader(transaction: transaction, accountName: bankAccount?.maskedName) }
             Section {
-                Picker("Acción", selection: $mode) {
-                    ForEach(Mode.allCases) { Text($0.localizedTitle).tag($0) }
+                // Mientras se excluye no hay acción elegida; tocar una vuelve a ella (canvas).
+                Picker("Acción", selection: Binding<Mode?>(get: { excluding ? nil : mode }, set: { if let new = $0 { select(new) } })) {
+                    ForEach(Mode.allCases) { Text($0.localizedTitle).tag(Optional($0)) }
                 }
                 .pickerStyle(.segmented)
                 .labelsHidden()
@@ -479,21 +511,33 @@ struct BankReviewForm: View {
             if let errorMessage {
                 ErrorBanner(message: errorMessage).listRowBackground(Color.clear).listRowInsets(EdgeInsets())
             }
-            suggestionSection
-            switch mode {
-            case .categorize: categorizeSections
-            case .match: matchSection
+            if excluding {
+                BankExclusionSection(reason: $exclusionReason, otherReason: $otherReason)
+            } else {
+                suggestionSection
+                switch mode {
+                case .categorize: categorizeSections
+                case .match: matchSection
+                case .split: BankSplitSections(total: abs(transaction.amount), accounts: splitAccounts, lines: $splitLines)
+                }
             }
             Section {
-                Button("Excluir transacción", role: .destructive) { confirmingIgnore = true }
-                    .frame(maxWidth: .infinity, minHeight: Metrics.target)
-                    .confirmationDialog("¿Excluir este movimiento?", isPresented: $confirmingIgnore, titleVisibility: .visible) {
-                        Button("Excluir", role: .destructive, action: ignore)
-                    } message: {
-                        Text("No se incluirá en tus libros (un gasto personal, un duplicado, una transferencia que ya registraste). Puedes devolverlo a la bandeja desde «Movimientos del banco».")
+                if excluding {
+                    Button(role: .destructive, action: ignore) {
+                        Text("Excluir y siguiente").fontWeight(.semibold).foregroundStyle(Palette.negative)
+                            .frame(maxWidth: .infinity, minHeight: Metrics.target)
                     }
+                    .disabled(!canConfirm)
+                } else {
+                    Button("Excluir transacción", role: .destructive) { excluding = true }
+                        .frame(maxWidth: .infinity, minHeight: Metrics.target)
+                }
             } footer: {
-                Text("\(confirmTitle): al confirmar pasarás al siguiente.")
+                if excluding {
+                    Text("Toca una acción arriba para volver a categorizarla.")
+                } else {
+                    Text("\(confirmTitle): al confirmar pasarás al siguiente.")
+                }
             }
         }
         .formStyle(.grouped)
@@ -688,11 +732,36 @@ struct BankReviewForm: View {
         if UserDefaults.standard.bool(forKey: "qa.revisarCategoria"), categoryID == nil {
             categoryID = BankCategoryOptions.quickPicks(for: transaction, groups: groups, history: history).first?.id
         }
+        // 1.2: `-qa.revisarModo dividir` (con `-qa.revisarCategoria 1`, dos líneas 70/30) y `-qa.revisarModo excluir`.
+        switch UserDefaults.standard.string(forKey: "qa.revisarModo") {
+        case "dividir":
+            select(.split)
+            let picks = splitAccounts.prefix(3).map(\.id)
+            if UserDefaults.standard.bool(forKey: "qa.revisarCategoria"), picks.count >= 2 {
+                let total = abs(transaction.amount)
+                let first = total * 7 / 10
+                splitLines = [BankSplitLine(accountID: picks[0], amount: first), BankSplitLine(accountID: picks[1], amount: total - first)]
+            }
+        case "excluir": excluding = true
+        default: break
+        }
         #endif
     }
 
     private func confirm() {
+        if excluding { return ignore() }
         SubscriptionStore.shared.whenWritable { perform(with: books) }
+    }
+
+    /// Elige una acción del segmentado (y sale de «Excluir»). Al pasar a Dividir, la primera línea lleva la categoría
+    /// elegida con todo el importe y la segunda queda por llenar.
+    private func select(_ new: Mode) {
+        excluding = false
+        mode = new
+        if new == .split, splitLines.isEmpty {
+            splitLines = [BankSplitLine(accountID: category.flatMap { $0.subtype.isMoneyAccount ? nil : $0.id }, amount: abs(transaction.amount)),
+                          BankSplitLine()]
+        }
     }
 
     private func perform(with books: Bookkeeper) {
@@ -708,6 +777,11 @@ struct BankReviewForm: View {
                     let text = ruleText.trimmingCharacters(in: .whitespaces)
                     try books.saveBankRule(BankRuleDraft.input(for: transaction, matchText: text, target: category, vendor: vendor, payee: name))
                 }
+            case .split:
+                let name = payee.trimmingCharacters(in: .whitespaces)
+                let vendor = transaction.amount < 0 ? BankReview.vendor(named: name, in: vendors) : nil
+                let parts = splitLines.compactMap { line in line.accountID.map { BankSplitPart(accountID: $0, amount: line.amount) } }
+                try books.categorize(transaction, splitInto: parts, vendor: vendor, payee: name.isEmpty ? nil : name)
             case .match:
                 switch matchOptions.first(where: { $0.id == matchID }) {
                 case .line(let candidate): try books.match(transaction, to: candidate.line)
@@ -729,7 +803,7 @@ struct BankReviewForm: View {
     private func ignore() {
         SubscriptionStore.shared.whenWritable {
             do {
-                try books.ignore(transaction)
+                try books.ignore(transaction, reason: BankExclusionSection.text(exclusionReason, other: otherReason))
                 onDone(transaction)
             } catch {
                 errorMessage = error.localizedDescription
@@ -793,6 +867,7 @@ struct BankInboxMasterList: View {
     @State private var accountID: UUID?
     @State private var query = ""
     @State private var importing = false
+    @State private var excluding: BankTransaction?
     @State private var errorMessage: String?
 
     private var bankAccounts: [Account] { accounts.filter { ($0.subtype == .bank || $0.subtype == .creditCard) && !$0.isArchived } }
@@ -816,7 +891,7 @@ struct BankInboxMasterList: View {
                                     act { try BankReview.accept(suggestion, for: transaction, books: context.books) }
                                 }
                             }
-                            Button("Excluir", systemImage: "nosign", role: .destructive) { act { try context.books.ignore(transaction) } }
+                            Button("Excluir", systemImage: "nosign", role: .destructive) { excluding = transaction }
                         } else {
                             Button("Devolver a la bandeja", systemImage: "tray.and.arrow.up") { act { try context.books.returnToInbox(transaction) } }
                         }
@@ -865,6 +940,7 @@ struct BankInboxMasterList: View {
             }
         }
         .sheet(isPresented: $importing) { NavigationStack { BankImportView(preferredAccountID: accountID) }.editorSheetSizing() }
+        .bankExclusionDialog($excluding) { target, reason in act { try Bookkeeper(context: modelContext).ignore(target, reason: reason) } }
         .alert("No se pudo completar", isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
             Button("Aceptar", role: .cancel) {}
         } message: { Text(errorMessage ?? "") }

@@ -1052,8 +1052,11 @@ struct CustomerEditorView: View {
     }
 
     private func save() {
+        let books = Bookkeeper(context: context)
+        // Bitácora (1.2): el antes y el después de los campos.
+        let before = customer.map { AuditSnapshot($0) }
         let target = customer ?? Customer(name: name)
-        if customer == nil { Bookkeeper(context: context).insert(target) }
+        if customer == nil { books.insert(target) }
         target.name = name.trimmingCharacters(in: .whitespaces)
         target.email = email; target.phone = phone; target.billingAddress = billingAddress
         target.postalCode = postalCode.trimmingCharacters(in: .whitespaces)
@@ -1062,6 +1065,7 @@ struct CustomerEditorView: View {
         target.taxID = taxID.trimmingCharacters(in: .whitespaces)
         target.paymentTermsDays = terms; target.defaultTaxGroupID = taxGroupID
         target.isTaxExempt = isTaxExempt; target.exemptionReason = exemptionReason
+        books.logSave(.customer, id: target.id, name: target.name, before: before, after: AuditSnapshot(target))
         try? context.save()
         if customer == nil { onCreate?(target) }
         unsavedChanges?.remove(editorToken); dismiss()

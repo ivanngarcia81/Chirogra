@@ -43,7 +43,9 @@ extension Bookkeeper {
             copy.budget = budget
             insert(copy)
         }
-        audit("Budget", budget.id, "create", String(localized: "Presupuesto creado: \(name) \(String(fiscalYear))"))
+        // Sin repetir el año si el nombre ya lo lleva («Presupuesto 2026»).
+        let title = name.contains(String(fiscalYear)) ? name : "\(name) \(String(fiscalYear))"
+        audit("Budget", budget.id, "create", String(localized: "Presupuesto creado: \(title)"))
         try saveOrRollback()
         return budget
     }
@@ -74,6 +76,9 @@ extension Bookkeeper {
     public func renameBudget(_ budget: Budget, to name: String) throws {
         let name = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !name.isEmpty else { throw BookkeepingError.invalidState(String(localized: "El presupuesto necesita un nombre.")) }
+        var changes = AuditChanges()
+        changes.field(String(localized: "Nombre"), budget.name, name)
+        if !changes.isEmpty { audit("Budget", budget.id, "update", String(localized: "Presupuesto renombrado: \(name)"), changes: changes) }
         budget.name = name
         try saveOrRollback()
     }
