@@ -122,7 +122,7 @@ entera a su iPhone con la 1.1 (10-nov). Empresa de prueba borrada desde el iPhon
 llegó al Mac en 90 s). **1.2.0 build 31 (`b4d04c5`) subido el 10-nov para iOS y macOS** a App Store Connect. No se
 envía a revisión hasta que estén aprobadas la 1.0 y la 1.1. Ojo: instalar la 1.2 en un aparato pasa sus libros al
 esquema 5, y la 1.1 ya no los abre.
-**Build 32** (10-nov): la bienvenida del contador (opción A del canvas «Chirogra — Contadores»; DATOS-V5.md).
+**Build 32 (`0b4137d`, subido el 10-nov para iOS y macOS)**: la bienvenida del contador (opción A del canvas «Chirogra — Contadores»; DATOS-V5.md).
 9. Asientos de ajuste marcados como del contador: hecho (`EntrySource.accountantAdjustment`).
 10. Bitácora de cambios: hecho (aparato y antes/después; Contabilidad › «Bitácora de cambios»).
 11. Banca: dividir y motivo al excluir: hecho (canvas `BancaRevisar`).
