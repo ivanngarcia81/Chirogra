@@ -4,11 +4,13 @@ import Observation
 
 // MARK: - Tabla de sales tax por código postal (paso 1, PLAN-FASE2 §7)
 //
-// La tabla se publicará en chirogra.com (estática, sin servidor propio) y la app la descargará y guardará en su
-// carpeta; aquí se carga en `PostalTaxTables.current`, que usan `suggestedSalesTax(for:)` y las pantallas. **Aún no hay
-// fuente con una licencia que permita redistribuirla** (informe del agente de recibos y cobro, 8-nov): la descarga
-// está apagada (`remoteURL == nil`) y no se incluye ninguna tabla real. Para probar, `-qa.tablaZip muestra` carga la
-// tabla de muestra inventada (`PostalTaxSample`) o `-qa.tablaZip <ruta>` un JSON con el formato de `PostalTaxTable`.
+// La tabla viaja dentro de la app (`PostalTaxTable.bundled()`, generada con `scripts/tasas/generar.py` de los archivos
+// oficiales de los estados; docs/DATOS-V5.md) y se carga en `PostalTaxTables.current`, que usan
+// `suggestedSalesTax(for:)` y las pantallas. Se lee fuera del hilo principal (son unos 27 000 ZIP). Si algún día se
+// publica en chirogra.com (`remoteURL`), la app guarda la descargada y usa la más reciente de las dos; hoy está apagado
+// (en el Mac haría falta además el permiso `com.apple.security.network.client`). Para probar, `-qa.tablaZip muestra`
+// carga la tabla de muestra inventada (`PostalTaxSample`) o `-qa.tablaZip <ruta>` un JSON con el formato de
+// `PostalTaxTable`.
 
 @MainActor
 enum PostalTaxTableLoader {
@@ -18,8 +20,7 @@ enum PostalTaxTableLoader {
     }
     static let status = Status()
 
-    /// Dónde se publicará la tabla. `nil` mientras no se decida la fuente (y en el Mac haría falta el permiso
-    /// `com.apple.security.network.client`, que la app no tiene).
+    /// Dónde se publicaría la tabla para tenerla al día sin esperar a una versión nueva. `nil`: solo la de la app.
     static let remoteURL: URL? = nil
     /// Cada cuánto se busca una tabla nueva (las fuentes cambian, como mucho, cada mes).
     static let refreshInterval: TimeInterval = 7 * 86_400
@@ -43,9 +44,13 @@ enum PostalTaxTableLoader {
             return
         }
         #endif
-        if let data = try? Data(contentsOf: cacheURL), let table = try? PostalTaxTable(json: data) {
-            PostalTaxTables.current = table
-        }
+        let cache = cacheURL
+        let table = await Task.detached(priority: .utility) { () -> PostalTaxTable? in
+            let downloaded = (try? Data(contentsOf: cache)).flatMap { try? PostalTaxTable(json: $0) }
+            // La más reciente: la descargada puede quedar vieja cuando llega una versión nueva de la app.
+            return [downloaded, PostalTaxTable.bundled()].compactMap { $0 }.max { $0.effectiveDate < $1.effectiveDate }
+        }.value
+        if PostalTaxTables.current == nil { PostalTaxTables.current = table }
         status.hasTable = PostalTaxTables.current != nil
         await refreshIfDue()
     }

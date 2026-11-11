@@ -16,8 +16,9 @@ let package = Package(
     targets: [
         // Dominio puro: dinero, doble partida, impuestos y reportes. Sin SwiftUI ni SwiftData.
         .target(name: "ChirograCore"),
-        // Persistencia con SwiftData y servicio de contabilización.
-        .target(name: "ChirograData", dependencies: ["ChirograCore"]),
+        // Persistencia con SwiftData y servicio de contabilización. Trae la tabla de sales tax por ZIP
+        // (`scripts/tasas/generar.py`, docs/DATOS-V5.md).
+        .target(name: "ChirograData", dependencies: ["ChirograCore"], resources: [.copy("Resources/sales-tax-zip.json")]),
         // Vistas SwiftUI y sistema de diseño (tokens del canvas de Claude Design).
         .target(
             name: "ChirograUI",

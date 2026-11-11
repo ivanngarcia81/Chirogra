@@ -3,9 +3,9 @@ import Foundation
 
 // MARK: - Sales tax por código postal, paso 1 (PLAN-FASE2 §7, docs/DATOS-V4.md §6)
 //
-// La tabla de tasas por ZIP aún no tiene fuente ni licencia decididas: se publicará en chirogra.com y la app la cargará
-// (`PostalTaxTables.current`). Aquí queda el punto de entrada: el formato de la tabla, la búsqueda y la sugerencia para
-// un cliente. **Solo sugiere**: el usuario confirma antes de que una factura cobre esa tasa.
+// La tabla sale de los archivos oficiales de los estados (`scripts/tasas/generar.py`, docs/DATOS-V5.md) y viaja dentro
+// de la app (`PostalTaxTable.bundled`); la app la carga en `PostalTaxTables.current`. Aquí queda el formato, la búsqueda
+// y la sugerencia para un cliente. **Solo sugiere**: el usuario confirma antes de que una factura cobre esa tasa.
 
 /// Tasa de sales tax de un código postal.
 public struct PostalTaxRate: Codable, Hashable, Sendable {
@@ -57,6 +57,13 @@ public struct PostalTaxTable: Sendable {
     }
 
     public var count: Int { rates.count }
+
+    /// La tabla que trae la app (`Resources/sales-tax-zip.json`), o `nil` si no se puede leer.
+    public static func bundled() -> PostalTaxTable? {
+        guard let url = Bundle.module.url(forResource: "sales-tax-zip", withExtension: "json"),
+              let data = try? Data(contentsOf: url) else { return nil }
+        return try? PostalTaxTable(json: data)
+    }
 
     public func rate(for postalCode: String) -> PostalTaxRate? {
         Self.normalized(postalCode).flatMap { rates[$0] }

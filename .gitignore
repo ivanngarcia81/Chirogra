@@ -6,3 +6,6 @@ build/
 *.xcuserstate
 xcuserdata/
 Packages/ChirograKit/Package.resolved
+
+# Python (scripts/tasas)
+__pycache__/

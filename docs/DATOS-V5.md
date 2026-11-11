@@ -71,12 +71,39 @@ Data no encuentra las propiedades nuevas y la app se cierra (pasó en las prueba
 2. Probar en Producción en sus aparatos (CONTEXTO, «Lo aprendido»).
 3. `MARKETING_VERSION` 1.2.0 y el build nuevo.
 
-## Pendiente para la 1.2: tasas de ciudad por código postal (decisión del usuario, 11-nov)
+## Tasas de ciudad por código postal (1.2, decisión del usuario, 11-nov)
 
 Hoy solo se llena sola la tasa del estado (`StateSalesTax`, los 50). La búsqueda por código postal
 (`PostalSalesTax.swift`, `PostalTaxTableLoader`, «Usar la tasa de Austin…» en el alta) está hecha pero apagada:
 `remoteURL = nil` y sin tabla real (la de `-qa.tablaZip muestra` solo trae 78701/78702). Falta: elegir la fuente
 (archivos de cada estado, los gratuitos del Streamlined Sales Tax, o una comercial revisando su licencia), generar el
 JSON, publicarlo en chirogra.com (`sitio/`), poner `remoteURL` y el permiso `com.apple.security.network.client` en el
-Mac, y mantenerla al día (las tasas cambian cada trimestre). Ojo: en New Jersey 0 % de ciudad es lo correcto (6.625 %
+Mac, y mantenerla al día (las tasas cambian cada trimestre).
+
+**Decisión (11-nov):** fuentes oficiales y gratuitas de los estados, no las tablas de Avalara (licencia sin aclarar y
+es competencia) ni servicios de pago (eso, con servidor, en la 2.0). Primero los 23 estados del Streamlined Sales Tax
+(un solo lector: archivos de tasas y de límites, trimestrales) y Texas, California, Florida, New York e Illinois, cada
+uno con su lector. Para pasar de condado o ciudad a ZIP donde el estado no lo da, el cruce ZIP–condado de HUD. Un
+programa en `scripts/` genera el JSON y se publica en chirogra.com; cada trimestre se vuelve a correr. El ZIP no
+coincide con los límites fiscales: un ZIP puede tener varias tasas; la tabla guarda la que cubre más y la app sigue
+diciendo «aproximada». Ojo: en New Jersey 0 % de ciudad es lo correcto (6.625 %
 en todo el estado, salvo las Urban Enterprise Zones).
+
+**Hecho (11-nov, sin commitear hasta que el usuario lo pida):** `scripts/tasas/` — `descargar.sh <carpeta>` baja los
+archivos oficiales y `python3 -I scripts/tasas/generar.py --datos <carpeta> --salida
+Packages/ChirograKit/Sources/ChirograData/Resources/sales-tax-zip.json` arma la tabla (una tasa por línea). La tabla
+**viaja dentro de la app** (recurso de ChirograData, `PostalTaxTable.bundled()`): funciona sin internet y el Mac no
+necesita permiso de red; `remoteURL` sigue en `nil` (si algún día se publica en chirogra.com, la app usa la más
+reciente). Cada trimestre: correr los dos programas, revisar el resumen por estado y subir un build.
+
+- Streamlined (19 estados con impuesto local): AR GA IA KS MN NC ND NE NV OH OK SD TN UT VT WA WI WV WY. Por ZIP, la
+  combinación condado + ciudad + distritos de sus registros de dirección (si no hay, ZIP+4; si no, el ZIP entero). La
+  tasa estatal es la de `StateSalesTax.swift` y el resto va como local (Nevada pone todo en el condado).
+- TX (`city-rates.xlsx`; los archivos por dirección del Comptroller dan 403 a los programas), CA (Excel del CDTFA), IL
+  (archivo de ancho fijo del IDOR; las ciudades «por dirección» toman su registro R00), FL (DR-15DSS, recargo por
+  condado), NY (Publication 718). ZIP → ciudad o condado con los archivos de relación del Census 2020: manda el lugar
+  habitado más grande del ZIP; si es un CDP, el condado.
+- Solo tasa estatal: CT DC IN KY MA MD ME MI NJ RI (Lodi 07644 → New Jersey 6.625 %).
+- Sin tabla todavía (la app dice «No hay una tasa para … escríbela a mano»): AL AK AZ CO HI ID LA MO MS NM PA SC VA y
+  los que no tienen sales tax.
+- Pruebas: `PostalTaxTableTests` (Austin 8.25, Los Angeles 10.25, Miami 7, NYC 8.875, Chicago 10.5, Lodi 6.625).
