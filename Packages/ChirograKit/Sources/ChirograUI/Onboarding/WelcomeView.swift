@@ -205,10 +205,16 @@ struct WelcomeView: View {
             }
             Spacer()
             if !isLast {
-                Button("Saltar") { go(Self.pageCount - 1) }
-                    .font(.body)
-                    .frame(minHeight: Metrics.target)
-                    .padding(.horizontal, 4)
+                // Cápsula de vidrio como «Atrás»: el texto azul suelto junto a la hora no se veía (pedido del usuario,
+                // 11-nov).
+                Button { go(Self.pageCount - 1) } label: {
+                    Text("Saltar").font(.body.weight(.semibold))
+                        .frame(minHeight: 32)
+                        .padding(.horizontal, 6)
+                }
+                .buttonStyle(.glass)
+                .buttonBorderShape(.capsule)
+                .tint(Palette.ink)
             }
         }
         .padding(.horizontal, isCompact ? 16 : 24)
