@@ -135,7 +135,7 @@ public enum BackupArchive {
         do {
             if let replacedScope { try delete(replacedScope, in: context) }
             try file.payload.insert(into: context)
-            let summary = String(localized: "Copia restaurada del \(file.info.createdAt.formatted(date: .abbreviated, time: .shortened))")
+            let summary = String(localized: "Copia restaurada del \(AuditFormat.dayTime(file.info.createdAt))")
             Bookkeeper(context: context, actor: actor, companyID: prepared.companyID)
                 .insert(AuditEvent(actor: actor, entityName: "Backup", entityID: nil, action: "restore", summary: summary))
             try context.save()

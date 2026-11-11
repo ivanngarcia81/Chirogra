@@ -159,6 +159,7 @@ struct AccountantIntroView: View {
     @Environment(\.modelContext) private var context
     #if os(iOS)
     @Environment(\.horizontalSizeClass) private var sizeClass
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     #endif
     @State private var importing = false
     @State private var errorMessage: String?
@@ -274,7 +275,9 @@ struct AccountantIntroView: View {
         }
         return Group {
             if sizeClass == .regular {
-                content.frame(width: 360).frame(maxWidth: .infinity).padding(.bottom, 20)
+                // Con fondo y más ancho con letra grande: los botones se montaban sobre la lista (QA del 11-nov).
+                content.frame(width: dynamicTypeSize.isAccessibilitySize ? 520 : 360).frame(maxWidth: .infinity)
+                    .padding(.top, 8).padding(.bottom, 20).background(Palette.background)
             } else {
                 content
                     .padding(.horizontal, 12)

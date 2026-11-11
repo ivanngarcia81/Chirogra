@@ -184,19 +184,51 @@ struct ChartOfAccountsView: View {
     }
 }
 
+/// Filtro por origen: todos, los manuales (con los ajustes del contador), los ajustes del contador (1.2), los que generan
+/// los documentos (facturas, cobros, gastos…) y los revertidos o de reversión. En el Mac va en la tabla; en el iPad, en
+/// la columna, y en el iPhone, en la barra (QA del 11-nov: el editor promete que los ajustes «se pueden filtrar»).
+enum JournalFilter: String, CaseIterable, Hashable {
+    case all, manual, accountant, automatic, reversals
+
+    var title: String {
+        switch self {
+        case .all: String(localized: "Todos")
+        case .manual: String(localized: "Manuales")
+        case .accountant: String(localized: "Del contador")
+        case .automatic: String(localized: "De documentos")
+        case .reversals: String(localized: "Reversiones")
+        }
+    }
+
+    func matches(_ entry: JournalEntry) -> Bool {
+        switch self {
+        case .all: true
+        case .manual: entry.source.isManual
+        case .accountant: entry.source == .accountantAdjustment
+        case .automatic: !entry.source.isManual && entry.source != .reversal
+        case .reversals: entry.source == .reversal || entry.isReversed || entry.reversesEntryID != nil
+        }
+    }
+}
+
 /// Asientos de diario del iPhone: concepto, número, fecha y origen, e importe.
 struct JournalListView: View {
     @CompanyQuery(sort: [SortDescriptor(\JournalEntry.date, order: .reverse), SortDescriptor(\JournalEntry.number, order: .reverse)])
     private var entries: [JournalEntry]
     @State private var showingEditor = false
+    @State private var filter: JournalFilter = .all
 
     var body: some View {
+        let shown = entries.filter(filter.matches)
         List {
             if entries.isEmpty {
                 EmptyStateView(guide: .journal) { showingEditor = true }
+            } else if shown.isEmpty {
+                Text("Ningún asiento coincide").foregroundStyle(Palette.ink2).frame(maxWidth: .infinity)
+                    .listRowBackground(Color.clear)
             }
             Section {
-                ForEach(entries) { entry in
+                ForEach(shown) { entry in
                     NavigationLink { JournalEntryDetailView(entry: entry) } label: { JournalEntryRow(entry: entry) }
                 }
             }
@@ -207,7 +239,15 @@ struct JournalListView: View {
         .navigationTitle("Asientos de diario")
         .headerTitle()
         .toolbar {
-            ToolbarItem(placement: .primaryAction) { AddButton(title: "Nuevo asiento") { showingEditor = true } }
+            ToolbarItemGroup(placement: .primaryAction) {
+                if !entries.isEmpty {
+                    FilterMenu(options: JournalFilter.allCases, selection: $filter, label: \.title) { option in
+                        entries.filter(option.matches).count
+                    }
+                    .accessibilityLabel("Filtrar por origen")
+                }
+                AddButton(title: "Nuevo asiento") { showingEditor = true }
+            }
         }
         .sheet(isPresented: $showingEditor) {
             NavigationStack { JournalEntryEditorView() }
@@ -1033,7 +1073,8 @@ struct LedgerView: View {
     @State private var editing = false
     @ScaledMetric(relativeTo: .subheadline) private var amountWidth: CGFloat = 100
     @ScaledMetric(relativeTo: .subheadline) private var dateWidth: CGFloat = 58
-    @ScaledMetric(relativeTo: .subheadline) private var kindWidth: CGFloat = 110
+    /// Cabe «Ajuste del contador» (QA del 11-nov: salía «Ajuste del cont…»).
+    @ScaledMetric(relativeTo: .subheadline) private var kindWidth: CGFloat = 140
 
     /// Rango de fechas completo de los días elegidos (del inicio de `from` al final de `to`).
     private var range: (from: Date, to: Date)? {

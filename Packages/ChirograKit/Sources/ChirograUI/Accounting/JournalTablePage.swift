@@ -77,7 +77,8 @@ struct JournalTablePage: View {
             TableColumn("Origen", value: \.sourceRaw) { entry in
                 MacCellText(text: entry.source.title)
             }
-            .width(min: 70, ideal: 96, max: 180)
+            // Ancho para «Ajuste del contador» y «Factura de proveedor» enteros (QA del 11-nov).
+            .width(min: 110, ideal: 140, max: 200)
             TableColumn("Estado", value: \.tableStatusRank) { entry in
                 MacCellStatus(chip: entry.tableStatus)
             }
@@ -133,32 +134,6 @@ struct JournalTablePage: View {
             } else {
                 errorMessage = error.localizedDescription
             }
-        }
-    }
-}
-
-/// Filtro por origen: todos, los manuales (con los ajustes del contador), los ajustes del contador (1.2), los que generan
-/// los documentos (facturas, cobros, gastos…) y los revertidos o de reversión.
-private enum JournalFilter: String, CaseIterable, Hashable {
-    case all, manual, accountant, automatic, reversals
-
-    var title: String {
-        switch self {
-        case .all: String(localized: "Todos")
-        case .manual: String(localized: "Manuales")
-        case .accountant: String(localized: "Del contador")
-        case .automatic: String(localized: "De documentos")
-        case .reversals: String(localized: "Reversiones")
-        }
-    }
-
-    func matches(_ entry: JournalEntry) -> Bool {
-        switch self {
-        case .all: true
-        case .manual: entry.source.isManual
-        case .accountant: entry.source == .accountantAdjustment
-        case .automatic: !entry.source.isManual && entry.source != .reversal
-        case .reversals: entry.source == .reversal || entry.isReversed || entry.reversesEntryID != nil
         }
     }
 }

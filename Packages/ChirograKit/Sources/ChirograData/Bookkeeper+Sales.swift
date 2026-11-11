@@ -301,7 +301,7 @@ extension Bookkeeper {
             estimate.acceptedBy = acceptedBy
         default: break
         }
-        audit("Estimate", estimate.id, status.rawValue, String(localized: "Estimado \(estimate.number): \(status.rawValue)"))
+        audit("Estimate", estimate.id, status.rawValue, String(localized: "Estimado \(estimate.number): \(status.auditTitle)"))
         try saveOrRollback()
     }
 
@@ -370,5 +370,19 @@ extension Bookkeeper {
         audit("Estimate", estimate.id, "convert", String(localized: "Estimado \(estimate.number) convertido en factura borrador"))
         try saveOrRollback()
         return invoice
+    }
+}
+
+extension EstimateStatus {
+    /// Para la bitácora («Estimado E-0001: aceptado»); antes salía el valor interno («accepted», QA del 11-nov).
+    var auditTitle: String {
+        switch self {
+        case .draft: String(localized: "estimate.audit.draft", defaultValue: "borrador")
+        case .sent: String(localized: "estimate.audit.sent", defaultValue: "enviado")
+        case .accepted: String(localized: "estimate.audit.accepted", defaultValue: "aceptado")
+        case .declined: String(localized: "estimate.audit.declined", defaultValue: "rechazado")
+        case .expired: String(localized: "estimate.audit.expired", defaultValue: "vencido")
+        case .converted: String(localized: "estimate.audit.converted", defaultValue: "convertido")
+        }
     }
 }

@@ -240,7 +240,8 @@ struct AuditLogView: View {
             TableColumn("Qué", value: \.subjectEntity) { event in
                 MacCellText(text: event.subjectTitle)
             }
-            .width(min: 70, ideal: 110, max: 170)
+            // «Movimiento del banco» y «Factura de proveedor» enteros (QA del 11-nov).
+            .width(min: 110, ideal: 150, max: 200)
             TableColumn("Cambio", value: \.summary) { event in
                 Text(event.summary).lineLimit(1)
             }

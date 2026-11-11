@@ -123,6 +123,13 @@ llegó al Mac en 90 s). **1.2.0 build 31 (`b4d04c5`) subido el 10-nov para iOS y
 envía a revisión hasta que estén aprobadas la 1.0 y la 1.1. Ojo: instalar la 1.2 en un aparato pasa sus libros al
 esquema 5, y la 1.1 ya no los abre.
 **Build 32 (`0b4137d`, subido el 10-nov para iOS y macOS)**: la bienvenida del contador (opción A del canvas «Chirogra — Contadores»; DATOS-V5.md).
+**Build 33 (11-nov)**: arreglos de la QA de la 1.2 con tres agentes (iPhone, iPad, copia del Mac). Lo más serio: en
+iOS, un `TextField` dentro de un `LabeledContent` con el estilo de la app (`InkValueLabeledContentStyle`, valor en
+`fixedSize`) solo toma el toque sobre su propio texto; `labeledField` pasa al estilo del sistema (Proveedor, Otro
+motivo, Reglas, Conciliación). **Pendiente, de antes de la 1.2:** el mismo patrón en el descuento de la factura,
+«Para» de Enviar, el presupuesto (total y meses) y otros `MoneyField` en `LabeledContent`: se pueden usar tocando la
+cifra, pero el resto de la fila no responde. Decisiones del usuario (11-nov): la bitácora se queda en el idioma del
+momento; las plantillas de asiento no se marcan como del contador; la reversión de un ajuste del contador sí.
 9. Asientos de ajuste marcados como del contador: hecho (`EntrySource.accountantAdjustment`).
 10. Bitácora de cambios: hecho (aparato y antes/después; Contabilidad › «Bitácora de cambios»).
 11. Banca: dividir y motivo al excluir: hecho (canvas `BancaRevisar`).

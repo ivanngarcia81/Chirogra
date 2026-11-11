@@ -763,10 +763,11 @@ private struct JournalMasterList: View {
     @CompanyQuery(sort: [SortDescriptor(\JournalEntry.date, order: .reverse), SortDescriptor(\JournalEntry.number, order: .reverse)])
     private var entries: [JournalEntry]
     @State private var query = ""
+    @State private var filter: JournalFilter = .all
     @State private var creating = false
 
     private var filtered: [JournalEntry] {
-        entries.filter { matches(query, $0.memo, "#\($0.number)", $0.source.title, $0.totalDebits.money) }
+        entries.filter { filter.matches($0) && matches(query, $0.memo, "#\($0.number)", $0.source.title, $0.totalDebits.money) }
     }
 
     var body: some View {
@@ -775,7 +776,10 @@ private struct JournalMasterList: View {
                 MasterRow(title: entry.memo.isEmpty ? String(localized: "Asiento \(entry.number)") : entry.memo,
                           amount: entry.totalDebits.money,
                           subtitle: "#\(entry.number) · \(entry.date.shortDate) · \(entry.source.title)") {
-                    if entry.isReversed || entry.reversesEntryID != nil {
+                    if entry.source == .accountantAdjustment {
+                        MasterStatus(chip: StatusChip(text: String(localized: "Del contador"), foreground: Palette.info,
+                                                      background: .clear, compact: true, dot: Palette.info))
+                    } else if entry.isReversed || entry.reversesEntryID != nil {
                         MasterStatus(chip: StatusChip(text: entry.isReversed ? String(localized: "Revertido") : String(localized: "Reversión"),
                                                       foreground: Palette.ink2, background: .clear, compact: true, dot: Palette.gray))
                     }
@@ -788,6 +792,17 @@ private struct JournalMasterList: View {
             }
         }
         .masterList(String(localized: "Asientos de diario"), query: $query, prompt: "Concepto, número o monto")
+        .masterFilter {
+            HStack(spacing: 8) {
+                Text("Mostrar").foregroundStyle(Palette.ink2)
+                Spacer(minLength: 8)
+                FilterPicker(title: String(localized: "Filtrar por origen"), options: JournalFilter.allCases, selection: $filter,
+                             label: \.title) { option in entries.filter(option.matches).count }
+            }
+            .frame(minHeight: Metrics.target)
+            .padding(.horizontal, 16)
+            .padding(.bottom, 8)
+        }
         .masterAddButton(String(localized: "Asiento"), label: String(localized: "Nuevo asiento")) { creating = true }
         // El editor del asiento cabe en la hoja de 760 pt: en el iPad usa su tabla de líneas sin el plan de cuentas de
         // consulta (que solo sale desde 1000 pt), igual que con la hoja de página de antes.

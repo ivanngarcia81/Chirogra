@@ -56,7 +56,10 @@ extension Bookkeeper {
             || before.customer?.id != input.customer?.id
         guard accountingChanged else {
             apply(input, to: expense)
-            audit("Expense", expense.id, "edit", String(localized: "Gasto editado (sin cambios contables): \(input.payee)"), changes: changes)
+            // Guardar sin tocar nada no deja evento (como clientes y proveedores; QA del 11-nov).
+            if !changes.isEmpty {
+                audit("Expense", expense.id, "edit", String(localized: "Gasto editado (sin cambios contables): \(input.payee)"), changes: changes)
+            }
             try saveOrRollback()
             return nil
         }
@@ -75,7 +78,7 @@ extension Bookkeeper {
             expense.journalEntryID = replacement.id
             expense.total = draft.totalCredits
             expense.revision += 1
-            audit("Expense", expense.id, "edit", String(localized: "Gasto editado: \(Money(minorUnits: before.total).formatted()) → \(Money(minorUnits: draft.totalCredits).formatted()) (asiento \(original.number) revertido, nuevo \(replacement.number))"), changes: changes)
+            audit("Expense", expense.id, "edit", String(localized: "Gasto editado: \(AuditFormat.money(before.total)) → \(AuditFormat.money(draft.totalCredits)) (asiento \(original.number) revertido, nuevo \(replacement.number))"), changes: changes)
             try commit()
             return replacement
         } catch {

@@ -58,6 +58,11 @@ struct Version12Tests {
         let reversal = try books.reverse(entry)
         #expect(reversal.reversesEntryID == entry.id)
         #expect(try balance(rent) == 0)
+        // La reversión de un ajuste del contador lleva su marca; la de un asiento manual, la de reversión.
+        #expect(reversal.source == .accountantAdjustment)
+        let manual = try books.post(JournalEntryDraft(date: day(-1), memo: "Manual", source: .manual,
+                                                      lines: [.debit(prepaid.id, 1_000), .credit(rent.id, 1_000)]))
+        #expect(try books.reverse(manual).source == .reversal)
     }
 
     // MARK: Bitácora
@@ -103,11 +108,30 @@ struct Version12Tests {
         #expect(event.detailLines.contains { $0.hasPrefix("Total: $45.00 → $50.00") })
         #expect(event.detailLines.contains { $0.hasPrefix("Línea 1: 6500 · Suministros · $45.00") && $0.contains("6350 · Gastos de oficina · $50.00") })
         #expect(!event.detailLines.contains { $0.hasPrefix("Fecha") })
-        // Sin cambios no hay detalle (y en uno sin asiento, ni evento).
+        // Guardar sin cambiar nada no deja evento (QA del 11-nov).
         let before = try books.auditLog(entityID: expense.id).count
         try books.updateExpense(expense, with: ExpenseInput(expense))
-        #expect(try books.auditLog(entityID: expense.id).first { $0.action == "edit" }?.changeDetails.isEmpty == true
-                || books.auditLog(entityID: expense.id).count == before)
+        #expect(try books.auditLog(entityID: expense.id).count == before)
+    }
+
+    @Test("La bitácora escribe el estado del estimado en palabras y los importes negativos con el signo menos")
+    func auditTexts() throws {
+        let customer = Customer(name: "Café Aurora")
+        books.insert(customer)
+        let income = try account("4000")
+        let estimate = try books.saveEstimate(EstimateInput(customer: customer, issueDate: day(0), expirationDate: day(30),
+                                                            lines: [.init(details: "Mural", unitPrice: 90_000, isTaxable: false, incomeAccountID: income.id)]))
+        try books.setStatus(.sent, of: estimate)
+        try books.setStatus(.accepted, of: estimate, acceptedBy: "Ana")
+        let summaries = try books.auditLog(entityID: estimate.id).map(\.summary)
+        #expect(summaries.contains { $0.hasSuffix(": enviado") })
+        #expect(summaries.contains { $0.hasSuffix(": aceptado") })
+        #expect(!summaries.contains { $0.contains("accepted") || $0.contains("sent") })
+        #expect(AuditFormat.money(-4_310).hasPrefix("\u{2212}"))
+        #expect(!AuditFormat.money(-4_310).contains("-"))
+        var changes = AuditChanges()
+        changes.money("Importe", 0, -4_310)
+        #expect(changes.text.contains("\u{2212}"))
     }
 
     @Test("Las pantallas anotan altas y ediciones de clientes; una edición sin cambios no se anota")

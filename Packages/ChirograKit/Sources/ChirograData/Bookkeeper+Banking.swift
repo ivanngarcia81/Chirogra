@@ -493,7 +493,7 @@ extension Bookkeeper {
             var changes = Self.bankDetails(transaction)
             if parts.count > 1 {
                 for part in parts {
-                    changes.value(part.account.displayName, Money(minorUnits: part.amount).formatted() + (part.memo.isEmpty ? "" : " · \(part.memo)"))
+                    changes.value(part.account.displayName, AuditFormat.money(part.amount) + (part.memo.isEmpty ? "" : " · \(part.memo)"))
                 }
             } else {
                 changes.value(String(localized: "Cuenta"), main.displayName)

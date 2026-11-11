@@ -22,6 +22,7 @@ struct WelcomeView: View {
 
     @Environment(\.modelContext) private var context
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     #if os(iOS)
     @Environment(\.horizontalSizeClass) private var sizeClass
     #endif
@@ -54,7 +55,9 @@ struct WelcomeView: View {
     }
 
     private var proceedTitle: String {
-        audience.wrappedValue == .accountant ? String(localized: "Continuar como contador") : String(localized: "Crear mi empresa")
+        // Con letra de accesibilidad, «Continuar»: «Continuar como contador» no cabía en el botón (QA del 11-nov).
+        if audience.wrappedValue == .accountant && dynamicTypeSize.isAccessibilitySize { return String(localized: "Continuar") }
+        return audience.wrappedValue == .accountant ? String(localized: "Continuar como contador") : String(localized: "Crear mi empresa")
     }
 
     /// El botón de la última página: el alta o, para un contador, «Chirogra para contadores».
@@ -237,10 +240,13 @@ struct WelcomeView: View {
                 .padding(.horizontal, 12)
                 .padding(.bottom, 4)
         } else {
+            // Con fondo: sin él, la lista pasaba por debajo de los botones (QA del iPad con letra grande, 11-nov).
             content
-                .frame(width: 360)
+                .frame(width: dynamicTypeSize.isAccessibilitySize ? 520 : 360)
                 .frame(maxWidth: .infinity)
+                .padding(.top, 8)
                 .padding(.bottom, 20)
+                .background(Palette.background)
         }
     }
     #endif

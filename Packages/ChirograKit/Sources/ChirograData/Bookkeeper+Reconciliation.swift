@@ -144,11 +144,11 @@ extension Bookkeeper {
         try ensureOpen(reconciliation)
         let summary = try summary(of: reconciliation)
         guard summary.isBalanced else {
-            throw BookkeepingError.invalidState(String(localized: "La conciliación no cuadra: faltan \(Money(minorUnits: summary.difference).formatted())."))
+            throw BookkeepingError.invalidState(String(localized: "La conciliación no cuadra: faltan \(AuditFormat.money(summary.difference))."))
         }
         reconciliation.status = .completed
         reconciliation.closedAt = Date()
-        audit("Reconciliation", reconciliation.id, "complete", String(localized: "Conciliación terminada al \(reconciliation.statementDate.formatted(date: .abbreviated, time: .omitted))"))
+        audit("Reconciliation", reconciliation.id, "complete", String(localized: "Conciliación terminada al \(AuditFormat.day(reconciliation.statementDate))"))
         try saveOrRollback()
     }
 

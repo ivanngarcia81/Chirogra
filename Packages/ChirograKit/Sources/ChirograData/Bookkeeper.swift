@@ -58,7 +58,7 @@ extension JournalValidationError {
             String(localized: "El debe (\(Money(minorUnits: debits).formatted())) y el haber (\(Money(minorUnits: credits).formatted())) no cuadran.")
         case .unknownAccount(let index): String(localized: "La cuenta de la línea \(index + 1) no existe.")
         case .accountNotPostable(let index): String(localized: "La cuenta de la línea \(index + 1) está archivada o es una cuenta padre.")
-        case .periodLocked(let lockDate): String(localized: "El periodo está cerrado hasta el \(lockDate.formatted(date: .abbreviated, time: .omitted)).")
+        case .periodLocked(let lockDate): String(localized: "El periodo está cerrado hasta el \(AuditFormat.day(lockDate)).")
         }
     }
 }
@@ -279,7 +279,11 @@ public struct Bookkeeper {
             guard allowsChangingReconciled else { throw BookkeepingError.reconciledLines }
             audit("JournalEntry", entry.id, "changeReconciled", String(localized: "Asiento conciliado cambiado: \(entry.number)"))
         }
-        let reversal = try post(entry.draft.reversal(on: date, memo: memo), sourceDocumentID: entry.sourceDocumentID, save: false)
+        var draft = entry.draft.reversal(on: date, memo: memo)
+        // La reversión de un ajuste del contador también es suya: sale con la marca y en el filtro «Del contador»
+        // (decisión del usuario del 11-nov). Sigue enlazada con `reversesEntryID`, así que cuenta como reversión.
+        if entry.source == .accountantAdjustment { draft.source = .accountantAdjustment }
+        let reversal = try post(draft, sourceDocumentID: entry.sourceDocumentID, save: false)
         reversal.reversesEntryID = entry.id
         entry.reversedByEntryID = reversal.id
         if save { try saveOrRollback() }

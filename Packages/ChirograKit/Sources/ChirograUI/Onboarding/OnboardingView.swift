@@ -305,7 +305,8 @@ struct OnboardingView: View {
             LabeledContent("País o región") { Text("Estados Unidos") }
             LabeledContent("Moneda") { Text("USD · Dólar") }
             Picker("Estado de EE. UU.", selection: $state) {
-                Text("Elige tu estado").tag("")
+                // El contador da de alta la empresa de un cliente: no es «tu» estado (QA del 11-nov).
+                Text(forAccountant || addsCompany ? "Elige el estado" : "Elige tu estado").tag("")
                 ForEach(StateSalesTax.all, id: \.code) { Text(verbatim: $0.name).tag($0.code) }
             }
             PostalCodeField(text: $postalCode)
@@ -437,7 +438,8 @@ struct OnboardingView: View {
         Section {
             ForEach(Kind.allCases) { option in kindRow(option) }
         } header: {
-            header("¿A qué se dedica tu negocio?", subtitle: "Te sugerimos un plan de cuentas listo para usar.",
+            header(forAccountant ? "¿A qué se dedica tu cliente?" : addsCompany ? "¿A qué se dedica la empresa?" : "¿A qué se dedica tu negocio?",
+                   subtitle: "Te sugerimos un plan de cuentas listo para usar.",
                    group: String(localized: "Tipo de negocio")) {
                 Image(systemName: "building.2")
                     .font(.system(size: Self.logoSize * 0.55, weight: .regular))
@@ -503,8 +505,11 @@ struct OnboardingView: View {
     @ViewBuilder
     private var bankStep: some View {
         OpeningBalanceFields(bank: $openingBank, card: $openingCard, date: $openingDate) {
-            header("¿Cuánto dinero tiene hoy tu cuenta del negocio?",
-                   subtitle: "Así «Efectivo disponible» empieza con el dinero que de verdad tienes. Si ahora no lo sabes, salta este paso: podrás ponerlo desde Inicio.",
+            header(forAccountant ? "¿Cuánto dinero tiene hoy la cuenta del banco de tu cliente?"
+                   : addsCompany ? "¿Cuánto dinero tiene hoy la cuenta del banco de la empresa?" : "¿Cuánto dinero tiene hoy tu cuenta del negocio?",
+                   subtitle: forAccountant || addsCompany
+                   ? "Así «Efectivo disponible» empieza con el dinero que de verdad tiene. Si ahora no lo sabes, salta este paso: podrás ponerlo desde Inicio."
+                   : "Así «Efectivo disponible» empieza con el dinero que de verdad tienes. Si ahora no lo sabes, salta este paso: podrás ponerlo desde Inicio.",
                    group: String(localized: "Cuenta del banco")) {
                 Image(systemName: "building.columns")
                     .font(.system(size: Self.logoSize * 0.55, weight: .regular))

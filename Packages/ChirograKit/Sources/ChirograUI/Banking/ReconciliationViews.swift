@@ -734,12 +734,16 @@ private struct ReconciliationMacSession: View {
 extension View {
     /// En el Mac, un campo de formulario con su etiqueta a la izquierda (el `TextField` de `MoneyField` no la pone en
     /// un `Form` agrupado); en iOS, tal cual.
+    /// En iOS con el estilo del sistema, como `SettingsField`: el de la app (`InkValueLabeledContentStyle`) deja el
+    /// valor en `fixedSize`, y el campo medía lo que su texto de ayuda; tocar el resto de la fila no le daba el foco
+    /// (QA del iPad, 11-nov).
     @ViewBuilder
     func labeledField(_ title: String) -> some View {
         #if os(macOS)
         LabeledContent(title) { self.labelsHidden().multilineTextAlignment(.trailing) }
         #else
         LabeledContent(title) { self.multilineTextAlignment(.trailing) }
+            .labeledContentStyle(.automatic)
         #endif
     }
 }

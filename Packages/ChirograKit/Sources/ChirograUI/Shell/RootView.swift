@@ -769,6 +769,8 @@ struct MoreView: View {
     #if DEBUG
     /// `-qa.bitacora 1` abre la bitácora de cambios (1.2).
     @State private var showingAuditLog = UserDefaults.standard.bool(forKey: "qa.bitacora")
+    /// `-qa.diario 1` abre los asientos de diario.
+    @State private var showingJournal = UserDefaults.standard.bool(forKey: "qa.diario")
     #endif
 
     var body: some View {
@@ -854,6 +856,7 @@ struct MoreView: View {
         .stableDestination(isPresented: $showingClose) { PeriodCloseView() }
         #if DEBUG
         .stableDestination(isPresented: $showingAuditLog) { AuditLogView() }
+        .stableDestination(isPresented: $showingJournal) { JournalListView() }
         #endif
         // Panel de clientes: Impuestos y Cierre de periodo viven en «Más». El paquete para el contador lo abre Impuestos
         // (que recoge la ruta), así que aquí solo se empuja Impuestos.

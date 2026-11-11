@@ -67,7 +67,7 @@ extension Bookkeeper {
         let record = PeriodClose(isReopen: false, lockDate: target, previousLockDate: company.lockDate, actor: actor, device: device, note: note)
         insert(record)
         company.lockDate = target
-        audit("Company", company.id, "closeBooks", String(localized: "Libros cerrados hasta el \(target.formatted(date: .abbreviated, time: .omitted))"))
+        audit("Company", company.id, "closeBooks", String(localized: "Libros cerrados hasta el \(AuditFormat.day(target))"))
         try saveOrRollback()
         return record
     }

@@ -22,11 +22,12 @@ struct BankSplitLine: Identifiable, Equatable {
 }
 
 /// Las líneas de la división: cuenta e importe, «Añadir línea» y «Por asignar» (lo que falta para llegar al importe
-/// del movimiento; en verde con ✓ cuando cuadra).
+/// del movimiento; en verde con ✓ solo cuando ya se puede registrar).
 struct BankSplitSections: View {
     let total: Int64
     let accounts: [Account]
     @Binding var lines: [BankSplitLine]
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     static func remaining(_ lines: [BankSplitLine], total: Int64) -> Int64 { total - lines.reduce(0) { $0 + $1.amount } }
 
@@ -37,42 +38,75 @@ struct BankSplitSections: View {
 
     var body: some View {
         let remaining = Self.remaining(lines, total: total)
-        Section {
-            ForEach($lines) { $line in
-                VStack(alignment: .leading, spacing: 8) {
-                    AccountPicker(title: String(localized: "Cuenta"), accounts: accounts, selection: $line.accountID)
-                    LabeledContent("Importe") {
-                        MoneyField(title: String(localized: "Importe"), minorUnits: $line.amount)
-                            .labelsHidden().multilineTextAlignment(.trailing)
-                    }
+        let complete = Self.isComplete(lines, total: total)
+        // Una sección por línea, con la cuenta y el importe en filas separadas: en una sola fila, tocar el importe
+        // abría el menú de la cuenta (QA del iPad, 11-nov).
+        ForEach(Array(lines.enumerated()), id: \.element.id) { index, line in
+            Section {
+                AccountPicker(title: String(localized: "Cuenta"), accounts: accounts, selection: binding(line, \.accountID))
+                    .lineSplitActions(canRemove: lines.count > 2) { remove(line.id) }
+                LabeledContent("Importe") {
+                    MoneyField(title: String(localized: "Importe"), minorUnits: binding(line, \.amount))
+                        .labelsHidden().multilineTextAlignment(.trailing)
                 }
-                .padding(.vertical, 4)
+                #if os(iOS)
+                // El estilo del sistema: con el de la app el campo medía lo que «$0.00» y no tomaba el toque de la fila.
+                .labeledContentStyle(.automatic)
+                #endif
+                .lineSplitActions(canRemove: lines.count > 2) { remove(line.id) }
+            } header: {
+                if index == 0 { SectionLabel(text: String(localized: "Líneas")) }
             }
-            .onDelete { offsets in
-                lines.remove(atOffsets: offsets)
-            }
+        }
+        Section {
             Button("Añadir línea", systemImage: "plus.circle") {
                 lines.append(BankSplitLine(amount: max(0, remaining)))
             }
             .frame(minHeight: Metrics.target)
-        } header: {
-            SectionLabel(text: String(localized: "Líneas"))
-        }
-        Section {
-            HStack(spacing: 8) {
+            let layout = dynamicTypeSize.isAccessibilitySize ? AnyLayout(VStackLayout(alignment: .leading, spacing: 4))
+                : AnyLayout(HStackLayout(spacing: 8))
+            layout {
                 Text("Por asignar").foregroundStyle(Palette.ink)
-                Spacer(minLength: 8)
-                Text(remaining.money).monospacedDigit().fontWeight(.semibold)
-                    .foregroundStyle(remaining == 0 ? Palette.positive : Palette.warning)
-                if remaining == 0 {
-                    Image(systemName: "checkmark").fontWeight(.semibold).foregroundStyle(Palette.positive)
-                        .accessibilityLabel(Text("Cuadra"))
+                if !dynamicTypeSize.isAccessibilitySize { Spacer(minLength: 8) }
+                HStack(spacing: 6) {
+                    Text(remaining.money).monospacedDigit().fontWeight(.semibold).lineLimit(1)
+                        .foregroundStyle(complete ? Palette.positive : remaining == 0 ? Palette.ink2 : Palette.warning)
+                    if complete {
+                        Image(systemName: "checkmark").fontWeight(.semibold).foregroundStyle(Palette.positive)
+                            .accessibilityLabel(Text("Cuadra"))
+                    }
                 }
             }
             .frame(minHeight: Metrics.target)
             .accessibilityElement(children: .combine)
         } footer: {
-            Text("La suma de las líneas debe ser igual a \(total.money).")
+            Text(complete || remaining != 0 ? String(localized: "La suma de las líneas debe ser igual a \(total.money).")
+                 : String(localized: "Elige la cuenta y el importe de cada línea."))
+        }
+    }
+
+    /// El campo de una línea por su id (una línea quitada devuelve lo último que tenía, sin fallar).
+    private func binding<Value>(_ line: BankSplitLine, _ key: WritableKeyPath<BankSplitLine, Value>) -> Binding<Value> {
+        Binding(get: { lines.first { $0.id == line.id }?[keyPath: key] ?? line[keyPath: key] },
+                set: { value in if let index = lines.firstIndex(where: { $0.id == line.id }) { lines[index][keyPath: key] = value } })
+    }
+
+    private func remove(_ id: UUID) { lines.removeAll { $0.id == id } }
+}
+
+private extension View {
+    /// Quitar una línea de la división: deslizar en iPhone y iPad, menú contextual en los tres.
+    @ViewBuilder
+    func lineSplitActions(canRemove: Bool, remove: @escaping () -> Void) -> some View {
+        if canRemove {
+            #if os(iOS)
+            swipeActions { Button("Quitar línea", systemImage: "trash", role: .destructive, action: remove) }
+                .contextMenu { Button("Quitar línea", systemImage: "trash", role: .destructive, action: remove) }
+            #else
+            contextMenu { Button("Quitar línea", systemImage: "trash", role: .destructive, action: remove) }
+            #endif
+        } else {
+            self
         }
     }
 }
@@ -95,7 +129,7 @@ struct BankExclusionSection: View {
         } header: {
             SectionLabel(text: String(localized: "Motivo de exclusión"))
         } footer: {
-            Text("No se incluirá en tus libros. Puedes devolverla a la bandeja desde «Movimientos del banco».")
+            Text("No se incluirá en tus libros. Puedes devolverlo a la bandeja desde el filtro «Excluidos».")
         }
     }
 
@@ -132,7 +166,7 @@ extension View {
             }
             Button("Excluir sin motivo", role: .destructive) { perform(target, "") }
         } message: { _ in
-            Text("No se incluirá en tus libros. Puedes devolverla a la bandeja desde «Movimientos del banco».")
+            Text("No se incluirá en tus libros. Puedes devolverlo a la bandeja desde el filtro «Excluidos».")
         }
     }
 }

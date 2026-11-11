@@ -38,8 +38,11 @@ Data no encuentra las propiedades nuevas y la app se cierra (pasó en las prueba
 
 ## Pantallas
 
-- **Contabilidad:** interruptor «Ajuste del contador» en el asiento a mano, filtro «Del contador» en el diario del iPad
-  y el Mac, y etiqueta «Del contador» en la fila del iPhone.
+- **Contabilidad:** interruptor «Ajuste del contador» en el asiento a mano, filtro por origen («Del contador» y los
+  demás) en el diario de los tres aparatos (Mac: tabla; iPad: columna; iPhone: botón de filtro de la barra, desde el
+  build 33) y etiqueta «Del contador» en la fila del iPhone y del iPad. La reversión de un ajuste del contador también
+  lleva su origen (`reverse` copia `.accountantAdjustment`; decisión del usuario del 11-nov). Las plantillas (aportación,
+  retiro, traspaso) quedan como manuales: las hace el dueño (decisión del 11-nov).
 - **Bitácora de cambios** (`Accounting/AuditLogView.swift`): Contabilidad en la barra lateral y en «Más» del iPhone. En
   el iPhone y el iPad, lista por días con su detalle; en el Mac, tabla e inspector. Filtros: Todo, Ventas, Gastos, Banca,
   Contabilidad, Empresa y Borrados.
@@ -56,7 +59,10 @@ Data no encuentra las propiedades nuevas y la app se cierra (pasó en las prueba
   - Con el plan para contadores ya activo, «Los de mis clientes» sale marcada, salvo que la persona haya elegido a mano
     (decisión del usuario del 10-nov).
   - QA: `-qa.bienvenida 6`, `-welcome.audience accountant`, `-qa.introContador 1`.
-- QA: `-qa.seccion auditLog` (Mac), `-qa.bitacora 1` (iPhone), `-qa.bitacoraMuestra 1`,
+- **Bitácora, textos guardados:** el resumen y el antes/después se guardan como texto en el idioma de la app en ese
+  momento; si se cambia de idioma, la bitácora queda mezclada (aceptado por el usuario el 11-nov). Fechas e importes con
+  el formato de la app (`AuditFormat`: «5 nov 2026», «−$43.10»). Guardar sin cambiar nada no deja evento.
+- QA: `-qa.seccion auditLog` (Mac), `-qa.bitacora 1` y `-qa.diario 1` (iPhone, con `-qa.pestana settings`), `-qa.bitacoraMuestra 1`,
   `-qa.revisarModo dividir|excluir`, `-qa.prueba12 1` (empresa «Prueba 1.2 LLC» con todo lo nuevo, para probar iCloud).
 
 ## Antes de subir un build

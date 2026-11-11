@@ -188,6 +188,11 @@ struct PaywallView: View {
     @Environment(\.dismiss) private var dismiss
     private let store = SubscriptionStore.shared
 
+    private var hasStandardPlan: Bool {
+        if case .subscribed = store.status { return store.plan == .standard }
+        return false
+    }
+
     private var productIDs: [String] {
         focus == .accountant ? [SubscriptionStore.accountantProductID] : SubscriptionStore.productIDs
     }
@@ -208,8 +213,14 @@ struct PaywallView: View {
                     if focus == .accountant {
                         Text("Chirogra para contadores").font(.largeTitle.bold()).foregroundStyle(Palette.ink)
                             .multilineTextAlignment(.center)
-                        Text("Tu plan es para una empresa. Con el plan para contadores llevas los libros de todas las empresas que quieras, cada una con sus clientes, facturas, impuestos y reportes.")
+                        // «Tu plan es para una empresa» solo a quien ya tiene el plan normal; un contador nuevo aún no
+                        // tiene plan (QA del 11-nov).
+                        Text(hasStandardPlan
+                             ? String(localized: "Tu plan es para una empresa. Con el plan para contadores llevas los libros de todas las empresas que quieras, cada una con sus clientes, facturas, impuestos y reportes.")
+                             : String(localized: "Lleva los libros de todas las empresas que quieras, cada una con sus clientes, facturas, impuestos y reportes."))
                             .font(.body).multilineTextAlignment(.center).foregroundStyle(Palette.ink2)
+                            // Entero: en el iPad en horizontal salía cortado con «…» (QA del 11-nov).
+                            .fixedSize(horizontal: false, vertical: true)
                         VStack(alignment: .leading, spacing: 8) {
                             feature("building.2", "Empresas sin límite, cada una con sus libros")
                             feature("list.bullet.rectangle", "Un panel con lo pendiente de cada empresa")

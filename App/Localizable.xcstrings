@@ -4525,6 +4525,16 @@
         }
       }
     },
+    "Así «Efectivo disponible» empieza con el dinero que de verdad tiene. Si ahora no lo sabes, salta este paso: podrás ponerlo desde Inicio." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "That way, “Cash on hand” starts with the money they really have. If you don't know it now, skip this step: you can add it from Home."
+          }
+        }
+      }
+    },
     "Así «Efectivo disponible» empieza con el dinero que de verdad tienes, y Banca y los reportes cuadran con tu banco." : {
       "localizations" : {
         "en" : {
@@ -8757,7 +8767,6 @@
       }
     },
     "De documentos" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -10646,6 +10655,16 @@
         }
       }
     },
+    "Elige el estado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose the state"
+          }
+        }
+      }
+    },
     "Elige la cuenta al confirmar" : {
       "localizations" : {
         "en" : {
@@ -10662,6 +10681,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Choose the account for line %lld"
+          }
+        }
+      }
+    },
+    "Elige la cuenta y el importe de cada línea." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose the account and amount for each line."
           }
         }
       }
@@ -10773,6 +10802,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Choose a vendor if you buy from them often or pay their bills. Otherwise, just enter who you paid in “Paid to”."
+          }
+        }
+      }
+    },
+    "Elige una acción arriba para volver a categorizarlo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose an action above to categorize it instead."
           }
         }
       }
@@ -13227,7 +13266,6 @@
       }
     },
     "Filtrar por origen" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -15880,6 +15918,16 @@
         }
       }
     },
+    "Lleva los libros de todas las empresas que quieras, cada una con sus clientes, facturas, impuestos y reportes." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keep the books for as many companies as you like, each with its own customers, invoices, taxes, and reports."
+          }
+        }
+      }
+    },
     "Lleva los libros de todos tus clientes en un solo lugar, cada uno en su empresa." : {
       "localizations" : {
         "en" : {
@@ -16430,7 +16478,6 @@
       }
     },
     "Manuales" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -18057,22 +18104,12 @@
         }
       }
     },
-    "No se incluirá en tus libros (un gasto personal, un duplicado, una transferencia que ya registraste). Puedes devolverlo a la bandeja desde «Movimientos del banco»." : {
+    "No se incluirá en tus libros. Puedes devolverlo a la bandeja desde el filtro «Excluidos»." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "It won’t be included in your books (a personal expense, a duplicate, a transfer you already recorded). You can return it to the inbox from “Bank Transactions”."
-          }
-        }
-      }
-    },
-    "No se incluirá en tus libros. Puedes devolverla a la bandeja desde «Movimientos del banco»." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "It won’t be included in your books. You can return it to the inbox from “Bank Transactions.”"
+            "value" : "It won’t be included in your books. You can return it to the inbox from the “Excluded” filter."
           }
         }
       }
@@ -22897,7 +22934,6 @@
       }
     },
     "Reversiones" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -26200,16 +26236,6 @@
         }
       }
     },
-    "Toca una acción arriba para volver a categorizarla." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tap an action above to categorize it instead."
-          }
-        }
-      }
-    },
     "Toca una cuenta para llevarla a otra línea o excluirla." : {
       "localizations" : {
         "en" : {
@@ -28865,6 +28891,108 @@
         }
       }
     },
+    "estimate.audit.accepted" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "aceptado"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "accepted"
+          }
+        }
+      }
+    },
+    "estimate.audit.converted" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "convertido"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "converted"
+          }
+        }
+      }
+    },
+    "estimate.audit.declined" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "rechazado"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "declined"
+          }
+        }
+      }
+    },
+    "estimate.audit.draft" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "borrador"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "draft"
+          }
+        }
+      }
+    },
+    "estimate.audit.expired" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "vencido"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "expired"
+          }
+        }
+      }
+    },
+    "estimate.audit.sent" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "enviado"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "sent"
+          }
+        }
+      }
+    },
     "estimate.expired" : {
       "localizations" : {
         "en" : {
@@ -29207,6 +29335,26 @@
         }
       }
     },
+    "¿A qué se dedica la empresa?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What does the company do?"
+          }
+        }
+      }
+    },
+    "¿A qué se dedica tu cliente?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What does your client do?"
+          }
+        }
+      }
+    },
     "¿A qué se dedica tu negocio?" : {
       "localizations" : {
         "en" : {
@@ -29349,6 +29497,26 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "¿Crear la tasa «%1$@» de %2$@?"
+          }
+        }
+      }
+    },
+    "¿Cuánto dinero tiene hoy la cuenta del banco de la empresa?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How much money is in the company's bank account today?"
+          }
+        }
+      }
+    },
+    "¿Cuánto dinero tiene hoy la cuenta del banco de tu cliente?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How much money is in your client's bank account today?"
           }
         }
       }

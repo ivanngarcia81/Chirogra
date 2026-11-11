@@ -29,7 +29,7 @@ public struct AuditChanges: Sendable, Equatable {
 
     public mutating func money(_ label: String, _ before: Int64, _ after: Int64) {
         guard before != after else { return }
-        field(label, Money(minorUnits: before).formatted(), Money(minorUnits: after).formatted())
+        field(label, Self.money(before), Self.money(after))
     }
 
     public mutating func date(_ label: String, _ before: Date?, _ after: Date?, calendar: Calendar = .current) {
@@ -52,7 +52,7 @@ public struct AuditChanges: Sendable, Equatable {
         lines.append("\(label): \(text)")
     }
 
-    public mutating func value(_ label: String, money: Int64) { value(label, Money(minorUnits: money).formatted()) }
+    public mutating func value(_ label: String, money: Int64) { value(label, Self.money(money)) }
 
     /// Una línea tal cual.
     public mutating func note(_ text: String) {
@@ -64,8 +64,35 @@ public struct AuditChanges: Sendable, Equatable {
     public var text: String { lines.joined(separator: "\n") }
 
     static func shown(_ value: String) -> String { value.isEmpty ? "—" : value }
-    static func day(_ date: Date?) -> String { date?.formatted(date: .abbreviated, time: .omitted) ?? "" }
+    /// «5 nov 2026», como las fechas de la app (no «nov 5, 2026» del español de EE. UU.: QA del 11-nov).
+    public static func day(_ date: Date?) -> String { date.map(AuditFormat.day) ?? "" }
+    /// «−$43.10», con el signo menos de la app.
+    public static func money(_ amount: Int64) -> String { AuditFormat.money(amount) }
     static func yesNo(_ value: Bool) -> String { value ? String(localized: "Sí") : String(localized: "No") }
+}
+
+/// Formato de las fechas y los importes que se guardan como texto en la bitácora y en los mensajes del servicio: el de
+/// la interfaz (`Locale.appText` y `Int64.money` de ChirograUI), que este módulo no ve.
+public enum AuditFormat {
+    /// El idioma de la app con la región del aparato; en español de EE. UU., el de Latinoamérica («16 nov 2026»).
+    public static var textLocale: Locale {
+        let language = String((Bundle.main.preferredLocalizations.first ?? Locale.current.language.languageCode?.identifier ?? "es").prefix(2))
+        let region = Locale.current.region?.identifier ?? "US"
+        return Locale(identifier: language == "es" && region == "US" ? "es_419" : "\(language)_\(region)")
+    }
+
+    public static func day(_ date: Date) -> String {
+        date.formatted(Date.FormatStyle(locale: textLocale).day().month(.abbreviated).year())
+    }
+
+    public static func dayTime(_ date: Date) -> String {
+        date.formatted(Date.FormatStyle(locale: textLocale).day().month(.abbreviated).year().hour().minute())
+    }
+
+    public static func money(_ amount: Int64) -> String {
+        let text = Money(minorUnits: amount).formatted()
+        return text.hasPrefix("-") ? "\u{2212}" + text.dropFirst() : text
+    }
 }
 
 extension Bookkeeper {
@@ -181,7 +208,7 @@ public struct AuditSnapshot: Sendable, Equatable {
         return changes
     }
 
-    static func money(_ amount: Int64) -> String { Money(minorUnits: amount).formatted() }
+    static func money(_ amount: Int64) -> String { AuditFormat.money(amount) }
     static func days(_ days: Int) -> String { String(localized: "\(days) días") }
 }
 

@@ -143,7 +143,7 @@ struct BankInboxSection: View {
                     }
                 }
                 .swipeActions(edge: .trailing) {
-                    Button("Excluir", role: .destructive) { excluding = transaction }
+                    Button("Excluir", role: .destructive) { excluding = transaction }.tint(Palette.negative)
                 }
             }
         } header: {
@@ -231,7 +231,7 @@ struct BankInboxScreen: View {
                     .buttonStyle(.plain)
                     .swipeActions {
                         if transaction.isPending {
-                            Button("Excluir", role: .destructive) { excluding = transaction }
+                            Button("Excluir", role: .destructive) { excluding = transaction }.tint(Palette.negative)
                         } else {
                             Button("Devolver a la bandeja") { act { try context.books.returnToInbox(transaction) } }.tint(Palette.blue)
                         }
@@ -524,7 +524,8 @@ struct BankReviewForm: View {
             Section {
                 if excluding {
                     Button(role: .destructive, action: ignore) {
-                        Text("Excluir y siguiente").fontWeight(.semibold).foregroundStyle(Palette.negative)
+                        // Sin motivo escrito, gris: el rojo fijo hacía que pareciera activo (QA del 11-nov).
+                        Text("Excluir y siguiente").fontWeight(.semibold).foregroundStyle(canConfirm ? Palette.negative : Palette.ink2)
                             .frame(maxWidth: .infinity, minHeight: Metrics.target)
                     }
                     .disabled(!canConfirm)
@@ -534,7 +535,7 @@ struct BankReviewForm: View {
                 }
             } footer: {
                 if excluding {
-                    Text("Toca una acción arriba para volver a categorizarla.")
+                    Text("Elige una acción arriba para volver a categorizarlo.")
                 } else {
                     Text("\(confirmTitle): al confirmar pasarás al siguiente.")
                 }
@@ -565,6 +566,8 @@ struct BankReviewForm: View {
                     .headerButton()
             }
         }
+        // «Listo» en el teclado: el decimal del importe de Dividir no tiene y tapaba «Excluir transacción» (QA del 11-nov).
+        .keyboardDoneButton()
         .closedPeriodUnlock($closedPeriodRetry) { errorMessage = $0 }
         .onAppear(perform: load)
     }
@@ -883,6 +886,14 @@ struct BankInboxMasterList: View {
                 BankTransactionRow(transaction: transaction, suggestion: context.suggestion(for: transaction),
                                    accountName: accountID == nil ? names[transaction.accountID ?? UUID()] : nil)
                     .masterRow(transaction.id, selection: selection)
+                    // Deslizar para excluir o devolver, como en el iPhone (QA del iPad, 11-nov).
+                    .swipeActions {
+                        if transaction.isPending {
+                            Button("Excluir", role: .destructive) { excluding = transaction }.tint(Palette.negative)
+                        } else {
+                            Button("Devolver a la bandeja") { act { try context.books.returnToInbox(transaction) } }.tint(Palette.blue)
+                        }
+                    }
                     .contextMenu {
                         if transaction.isPending {
                             let suggestion = context.suggestion(for: transaction)

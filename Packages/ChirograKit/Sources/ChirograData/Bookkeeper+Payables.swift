@@ -31,7 +31,7 @@ extension Bookkeeper {
         bill.scheduledPaymentAccountID = account.id
         bill.scheduledPaymentMethodRaw = method.rawValue
         audit("Bill", bill.id, "schedulePayment",
-              String(localized: "Pago programado de \(bill.vendorNumber) para el \(date.formatted(date: .abbreviated, time: .omitted))"))
+              String(localized: "Pago programado de \(bill.vendorNumber) para el \(AuditFormat.day(date))"))
         try saveOrRollback()
     }
 
