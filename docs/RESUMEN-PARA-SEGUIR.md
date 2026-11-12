@@ -35,6 +35,22 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 | 36 | `3e50675` | 1.2.0: **sales tax por código postal dentro de la app**: 27,583 ZIP en 34 estados (24 con tasa de condado y ciudad, 10 solo con la del estado). Se sugiere en el alta, en Ajustes y en el cliente. `scripts/tasas/`, DATOS-V5.md. |
 | 37 | `e002ed1` | 1.2.0: filas con campo que toman el toque en toda la fila (`.fieldRow()`: descuento, Enviar, presupuesto, plantillas, monto parcial); títulos en los importes de reembolso, nota de crédito y pago de sales tax; «Base: …» en menú con letra de accesibilidad. |
 
+## Último chat (11 y 12-nov)
+
+- **Build 36:** sales tax por código postal dentro de la app (`sales-tax-zip.json`, 27,583 ZIP en 34 estados), sacado
+  de fuentes oficiales con `scripts/tasas/` (Streamlined + lectores de TX, CA, IL, FL y NY). El buscador de Texas daba
+  403 a las descargas automáticas: no se rodeó, se usó `city-rates.xlsx`. Subido iOS y macOS, empujado.
+- **Documentos:** RESUMEN y CONTEXTO al día; textos de la 1.2 para la tienda («What's New» en/es y notas para el
+  revisor) en APP-STORE.md, «Versión 1.2.0». En CONTEXTO quedó escrito que Apple Pay y Google Pay van dentro de Stripe
+  (2.0) y que la suscripción sigue siendo compra dentro de la app.
+- **Build 37 (el usuario eligió «Arreglos menores»):** filas con campo que toman el toque en toda la fila
+  (`.fieldRow()` en `Components.swift`), títulos en tres importes sueltos y «Base: …» en menú con letra de
+  accesibilidad. Comprobado con XCUITest en el iPad y capturas AX3 del iPhone; 320 pruebas. Subido iOS y macOS el
+  12-nov y empujado (`120c8a3`).
+- Para las pruebas se borró la app del simulador del iPad de QA (`ADB9E3BB`, solo tenía «Prueba 1.2»).
+- **Ofrecido y sin empezar:** escribir el plan de la 2.0 con servidor (Plaid, contador dentro de los libros, Stripe,
+  nómina). Esperar a que el usuario lo pida.
+
 ## Lo que le toca al usuario
 
 1. Esperar la aprobación de la 1.0 y enviar la 1.0.1 (build 15). **Sin decidir (10-nov):** saltarse la 1.0.1 y enviar

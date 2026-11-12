@@ -323,6 +323,12 @@ las claves que lista como cambiadas en las dos ramas.
 - **Simulador** (iPhone/iPad): pruebas de interfaz temporales con un target `UITestsQA` añadido a `project.yml` +
   `xcodegen`, en una copia del repo en el scratchpad (**nunca commitear** `UITestsQA`, el cambio de `project.yml` ni el
   `.xcodeproj` regenerado). Las capturas horizontales salen giradas.
+  Trucos del iPad (11-nov): `-qa.muestra 1` solo carga el ejemplo si la app no tiene ya otra empresa (si la tiene,
+  `xcrun simctl uninstall <id> com.chirogra.app` en el simulador de QA); las facturas son maestro-detalle (tocar la
+  factura, y Enviar sale por «Recordatorio»; `-qa.enviar` y `-qa.pago` son solo del Mac); el diario pide tocar «Nuevo
+  asiento»; el título «Monto» del pago parcial está oculto a la accesibilidad (`app.textFields.firstMatch`). El foco se
+  comprueba con `value(forKey: "hasKeyboardFocus")`; letra grande con `-UIPreferredContentSizeCategoryName
+  UICTContentSizeCategoryAccessibilityXL`.
 - **Mac sin tocar los datos del usuario:** copia de prueba con otro identificador (`PRODUCT_BUNDLE_IDENTIFIER=com.chirogra.qa.<nombre>
   CODE_SIGN_IDENTITY=- CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM= CODE_SIGN_ENTITLEMENTS=<un .entitlements con <dict/>>`),
   arrancada con `open -g -j -n <app> --args -iCloudSyncEnabled NO -qa.…` (REDISEÑO-NATIVO §5: `-qa.muestra 1`,
