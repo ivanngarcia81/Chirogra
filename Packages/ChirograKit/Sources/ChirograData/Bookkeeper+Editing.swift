@@ -85,7 +85,15 @@ extension Bookkeeper {
             expense.journalEntryID = replacement.id
             expense.total = draft.totalCredits
             expense.revision += 1
-            audit("Expense", expense.id, "edit", String(localized: "Gasto editado: \(AuditFormat.money(before.total)) → \(AuditFormat.money(draft.totalCredits)) (asiento \(original.number) revertido, nuevo \(replacement.number))"), changes: changes)
+            // Solo cambió la categoría (mismos importes): la bitácora lo dice en el resumen, no «$240 → $240» (QA Hudson, H20).
+            let recategorized = zip(before.lines, input.lines).filter { $0.accountID != $1.accountID }
+            if before.lines.count == input.lines.count, !recategorized.isEmpty,
+               zip(before.lines, input.lines).allSatisfy({ $0.amount == $1.amount }) {
+                let moves = recategorized.map { "\(accountName($0.accountID)) → \(accountName($1.accountID))" }.joined(separator: ", ")
+                audit("Expense", expense.id, "edit", String(localized: "Gasto reclasificado: \(input.payee) · Categoría: \(moves) (asiento \(original.number) revertido, nuevo \(replacement.number))"), changes: changes)
+            } else {
+                audit("Expense", expense.id, "edit", String(localized: "Gasto editado: \(AuditFormat.money(before.total)) → \(AuditFormat.money(draft.totalCredits)) (asiento \(original.number) revertido, nuevo \(replacement.number))"), changes: changes)
+            }
             try commit()
             return replacement
         } catch {

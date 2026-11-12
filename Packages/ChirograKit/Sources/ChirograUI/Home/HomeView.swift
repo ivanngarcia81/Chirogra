@@ -46,6 +46,8 @@ struct HomeView: View {
     #endif
     @State private var chartMonths = 6
     @State private var sheet: NewItem?
+    /// «Mover dinero» del «+» (build 40, QA Hudson H03): traspaso, pago de la tarjeta, retiro o aportación del dueño.
+    @State private var movingMoney: MoveMoneyShortcut?
     @State private var width: CGFloat = 0
     /// Sección elegida en la columna del iPad (`iPadInicio`).
     @State private var padSection: PadSection = .results
@@ -159,6 +161,7 @@ struct HomeView: View {
             }
             .editorSheetSizing()
         }
+        .sheet(item: $movingMoney) { shortcut in NavigationStack { JournalEntryEditorView(shortcut: shortcut) }.editorSheetSizing() }
         .navigationDestination(item: $openedNotice) { NoticeDestination(notice: $0) }
         #if DEBUG
         // `-qa.saldo 1` (solo Debug): abre «Pon el saldo de tu banco» de los primeros pasos.
@@ -213,6 +216,7 @@ struct HomeView: View {
             }
         case .pad:
             ToolbarItem(placement: .primaryAction) { bell }
+            ToolbarItem(placement: .primaryAction) { moveMoneyMenu }
             ToolbarItem(placement: .primaryAction) {
                 Button { write(.expense) } label: { Label("Nuevo gasto", systemImage: "wallet.bifold") }.headerButton()
             }
@@ -234,8 +238,20 @@ struct HomeView: View {
                 }
                 .headerButton()
             }
+            ToolbarItem(placement: .primaryAction) { moveMoneyMenu }
             ToolbarItem(placement: .primaryAction) { bell }
         }
+    }
+
+    /// iPad y Mac: «Mover dinero» junto a Gasto y Factura (en el iPhone va dentro del «+»).
+    private var moveMoneyMenu: some View {
+        Menu {
+            MoveMoneyMenuItems { movingMoney = $0 }
+        } label: {
+            Label("Mover dinero", systemImage: "arrow.left.arrow.right")
+        }
+        .help("Mover dinero")
+        .headerButton()
     }
 
     /// Abre un editor de la barra; en solo lectura, la pantalla de suscripción (QA del 10-nov: aquí se saltaba).
@@ -253,6 +269,9 @@ struct HomeView: View {
             Button("Factura", systemImage: "doc.badge.plus") { write(.invoice) }
             Button("Gasto", systemImage: "wallet.bifold") { write(.expense) }
             Button("Cliente", systemImage: "person.badge.plus") { write(.customer) }
+            Section("Mover dinero") {
+                MoveMoneyMenuItems { movingMoney = $0 }
+            }
         } label: { Label("Nuevo", systemImage: "plus").labelStyle(.iconOnly) }
         .headerButton()
     }

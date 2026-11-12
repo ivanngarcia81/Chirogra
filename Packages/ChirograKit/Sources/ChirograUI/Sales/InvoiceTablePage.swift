@@ -309,7 +309,9 @@ struct InvoicePaymentSheet: View {
                 ClosedPeriodDateNote(date: date)
             } footer: {
                 if mode == .partial && amount > invoice.balanceDue {
-                    Text("El monto supera el saldo de \(invoice.balanceDue.money).").foregroundStyle(Palette.negative)
+                    Text("Máximo \(invoice.balanceDue.money) (saldo pendiente).").foregroundStyle(Palette.negative)
+                } else if mode == .partial && amount <= 0 {
+                    Text("Escribe el monto cobrado: hasta \(invoice.balanceDue.money).")
                 }
             }
         }

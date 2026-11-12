@@ -326,13 +326,20 @@ struct InvoiceDetailView: View {
                         showingCreditNote = true
                     }
                 }
-                if invoice.isOpen && invoice.amountPaid == 0 && invoice.creditsApplied == 0 {
+                let canVoid = invoice.isOpen && invoice.amountPaid == 0 && invoice.creditsApplied == 0
+                if canVoid {
                     Button("Anular factura", systemImage: "xmark.circle", role: .destructive) { confirmingVoid = true }
                 }
                 if invoice.status != .void && !books.canEditIssued(invoice) {
-                    // Por qué no hay «Editar»: con cobros o créditos el asiento ya tiene otros que dependen de él.
+                    // «Editar» y «Anular» se ven desactivados con el motivo encima (QA Hudson, H21: desaparecían del
+                    // menú sin explicar por qué): con cobros o créditos el asiento ya tiene otros que dependen de él.
                     Section {
-                        Text("Con cobros o créditos no se edita: usa una nota de crédito.")
+                        Button("Editar factura", systemImage: "pencil") {}.disabled(true)
+                        if !canVoid {
+                            Button("Anular factura", systemImage: "xmark.circle") {}.disabled(true)
+                        }
+                    } header: {
+                        Text(invoice.amountPaid > 0 ? "Tiene cobros: usa una nota de crédito." : "Tiene créditos aplicados: usa una nota de crédito.")
                     }
                 }
             }
@@ -469,6 +476,17 @@ struct InvoiceDetailView: View {
                 ClosedPeriodDateNote(date: paymentDate)
                     .padding(.horizontal, Metrics.cardPadding)
                     .padding(.top, 4)
+                // Por qué el botón está gris (QA Hudson, H11: un cobro mayor que el saldo o de $0 no lo decía).
+                if paymentMode == .partial && (paymentAmount > invoice.balanceDue || paymentAmount <= 0) {
+                    Text(paymentAmount > invoice.balanceDue
+                         ? String(localized: "Máximo \(invoice.balanceDue.money) (saldo pendiente).")
+                         : String(localized: "Escribe el monto cobrado: hasta \(invoice.balanceDue.money)."))
+                        .font(.footnote)
+                        .foregroundStyle(paymentAmount > invoice.balanceDue ? Palette.negative : Palette.ink2)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, Metrics.cardPadding)
+                        .padding(.top, 4)
+                }
                 if !isWide {
                     recordButton.padding(.horizontal, Metrics.cardPadding).padding(.top, 6).padding(.bottom, 16)
                 }

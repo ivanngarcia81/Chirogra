@@ -140,6 +140,12 @@ struct OnboardingView: View {
         .onChange(of: legalName) { suggestEntityType() }
         // Otro estado, otra tasa: el total escrito era del anterior.
         .onChange(of: state) { localRate = nil; localTaxName = "" }
+        // Con el estado sin elegir, el código postal lo propone (QA Hudson, H13: 07102 no decía New Jersey).
+        .onChange(of: postalCode) {
+            guard state.isEmpty, let code = PostalState.state(for: postalCode, table: PostalTaxTables.current),
+                  StateSalesTax.forState(code) != nil else { return }
+            state = code
+        }
 
         #if os(iOS)
         .safeAreaBar(edge: .top, spacing: 0) { if canGoBack { backBar } }
@@ -325,7 +331,7 @@ struct OnboardingView: View {
                 } label: {
                     Text("Tasa de \(info.name)")
                 }
-                optionalField("Ciudad o condado", text: $localTaxName, prompt: "p. ej. Austin")
+                optionalField("Ciudad o condado", text: $localTaxName, prompt: "Si cobra su parte")
                 if !trimmedLocalName.isEmpty {
                     localRateRow(name: trimmedLocalName)
                     if localMillionths > 0, let total = totalMillionths {
@@ -371,7 +377,12 @@ struct OnboardingView: View {
     /// usuario las ve y las puede cambiar antes de crear la empresa). Si el código es de otro estado, lo dice.
     @ViewBuilder
     private var postalSuggestion: some View {
-        if PostalTaxTableLoader.status.hasTable, let zip = PostalTaxTable.normalized(postalCode), let rate = PostalTaxTables.current?.rate(for: zip) {
+        if let zip = PostalTaxTable.normalized(postalCode), let zipState = PostalState.state(for: zip, table: PostalTaxTables.current),
+           !state.isEmpty, zipState != state {
+            // Sin tabla, o con un estado que la tabla no tiene, también avisa (por los tres primeros dígitos).
+            Text("El código postal \(zip) es de \(StateSalesTax.forState(zipState)?.name ?? zipState).")
+                .font(.footnote).foregroundStyle(Palette.warning)
+        } else if PostalTaxTableLoader.status.hasTable, let zip = PostalTaxTable.normalized(postalCode), let rate = PostalTaxTables.current?.rate(for: zip) {
             if !state.isEmpty, rate.state != state {
                 Text("El código postal \(zip) es de \(StateSalesTax.forState(rate.state)?.name ?? rate.state).")
                     .font(.footnote).foregroundStyle(Palette.warning)

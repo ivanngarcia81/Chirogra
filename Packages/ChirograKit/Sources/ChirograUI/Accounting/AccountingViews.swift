@@ -345,9 +345,27 @@ struct JournalEntryEditorView: View {
         case manual
     }
 
+    /// Pagar la tarjeta (build 40, QA Hudson H03): el traspaso propone como destino la primera tarjeta de crédito.
+    private let prefersCardDestination: Bool
+    /// Desde «Mover dinero» la hoja se llama así, no «Nuevo asiento».
+    private let opensAsMoveMoney: Bool
+
     init(template: JournalTemplate? = nil) {
         _mode = State(initialValue: template.map(Mode.template))
         if let template { _memo = State(initialValue: template.defaultMemo) }
+        prefersCardDestination = false
+        opensAsMoveMoney = false
+    }
+
+    /// Desde «Mover dinero» (Inicio y la ficha de una cuenta en Banca): la plantilla con la cuenta de dinero y, en el
+    /// traspaso, el destino ya elegidos (se pueden cambiar).
+    init(shortcut: MoveMoneyShortcut) {
+        _mode = State(initialValue: .template(shortcut.template))
+        _memo = State(initialValue: shortcut.memo)
+        _templateMoney = State(initialValue: shortcut.from)
+        _templateDestination = State(initialValue: shortcut.to)
+        prefersCardDestination = shortcut.kind == .payCard
+        opensAsMoveMoney = true
     }
 
     private var template: JournalTemplate? { if case .template(let template) = mode { template } else { nil } }
@@ -355,7 +373,13 @@ struct JournalEntryEditorView: View {
     /// Cuenta de dinero de la plantilla: la elegida o, sin elegir, la primera (el banco).
     private var templateMoneyID: UUID? { templateMoney ?? moneyAccounts.first?.id }
     /// Destino del traspaso: el elegido o, sin elegir, la primera cuenta distinta del origen.
-    private var templateDestinationID: UUID? { templateDestination ?? moneyAccounts.first { $0.id != templateMoneyID }?.id }
+    private var templateDestinationID: UUID? {
+        if let templateDestination { return templateDestination }
+        if prefersCardDestination, let card = moneyAccounts.first(where: { $0.subtype == .creditCard && $0.id != templateMoneyID }) {
+            return card.id
+        }
+        return moneyAccounts.first { $0.id != templateMoneyID }?.id
+    }
     @State private var errorMessage: String?
     /// Registrar en un periodo cerrado: se pide la contraseña de cierre y se repite.
     @State private var closedPeriodRetry: ClosedPeriodRetry?
@@ -422,7 +446,7 @@ struct JournalEntryEditorView: View {
         // La hoja del Mac toma el tamaño del contenido: sin esto, la tabla de líneas quedaba en 470 pt y cortaba «Cuenta».
         .frame(minWidth: mode == .manual ? 780 : 560, minHeight: mode == .manual ? 640 : 600)
         #endif
-        .navigationTitle("Nuevo asiento")
+        .navigationTitle(opensAsMoveMoney ? "Mover dinero" : "Nuevo asiento")
         .inlineTitle()
         .discardableEditor(tracking: trackedText, token: editorToken)
         .toolbar {
@@ -468,7 +492,7 @@ struct JournalEntryEditorView: View {
 
     /// Elige plantilla o asiento a mano; el concepto propuesto cambia con la plantilla si no se había escrito otro.
     private func choose(_ newMode: Mode) {
-        let proposed = JournalTemplate.allCases.map(\.defaultMemo)
+        let proposed = JournalTemplate.allCases.map(\.defaultMemo) + [MoveMoneyShortcut.cardPaymentMemo]
         if memo.isEmpty || proposed.contains(memo) {
             if case .template(let template) = newMode { memo = template.defaultMemo } else { memo = "" }
         }
@@ -1122,6 +1146,32 @@ struct LedgerView: View {
     /// Tabla si la vista mide al menos 640 pt y el texto no es de accesibilidad.
     private var isWide: Bool { width >= 640 && !dynamicTypeSize.isAccessibilitySize }
 
+    /// Cuentas de dinero en llano (build 40, QA Hudson H24): «Entró / Salió» en el banco y la caja, «Cargo / Pago» en
+    /// la tarjeta, en vez de débitos y créditos. Con el plan para contadores, débitos y créditos como siempre.
+    private var plainWords: (debits: LocalizedStringKey, credits: LocalizedStringKey)? {
+        guard account.subtype.isMoneyAccount, SubscriptionStore.shared.plan != .accountant else { return nil }
+        return account.subtype == .creditCard ? ("Pagos", "Cargos") : ("Entró", "Salió")
+    }
+
+    /// «Débito» o «Crédito» de un movimiento, o su palabra en llano.
+    private func sideWord(debit: Bool) -> String {
+        guard plainWords != nil else { return debit ? String(localized: "Débito") : String(localized: "Crédito") }
+        if account.subtype == .creditCard { return debit ? String(localized: "Pago") : String(localized: "Cargo a la tarjeta") }
+        return debit ? String(localized: "Entró") : String(localized: "Salió")
+    }
+
+    /// Lo que lee VoiceOver de un movimiento en llano.
+    static func spokenPlainMovement(_ row: AccountLedger.Row, card: Bool) -> String {
+        let memo = row.movement.memo, date = row.movement.date.shortDate, balance = row.balance.money
+        let amount = max(row.movement.debit, row.movement.credit).money
+        switch (card, row.movement.debit > 0) {
+        case (false, true): return String(localized: "\(memo), \(date), entró \(amount), saldo \(balance)")
+        case (false, false): return String(localized: "\(memo), \(date), salió \(amount), saldo \(balance)")
+        case (true, true): return String(localized: "\(memo), \(date), pago de \(amount), debes \(balance)")
+        case (true, false): return String(localized: "\(memo), \(date), cargo de \(amount), debes \(balance)")
+        }
+    }
+
     /// Una cuenta de dinero (banco, caja) muestra en verde lo que entra, como Banca.
     private var isCashAccount: Bool { account.type == .asset && account.subtype.isMoneyAccount }
 
@@ -1148,6 +1198,10 @@ struct LedgerView: View {
         .navigationTitle(account.name)
         .modifier(LedgerTitle(inDetailColumn: inDetailColumn))
         .toolbar {
+            // Traspasos, pago de la tarjeta, retiro y aportación desde la cuenta (build 40, QA Hudson H03).
+            if account.subtype.isMoneyAccount && account.subtype != .undepositedFunds && account.isPostable {
+                ToolbarItem(placement: .primaryAction) { MoveMoneyButton(account: account).headerButton() }
+            }
             ToolbarItem(placement: .primaryAction) {
                 Button { editing = true } label: { Label("Editar cuenta", systemImage: "pencil") }
                     .help("Editar cuenta")
@@ -1187,11 +1241,18 @@ struct LedgerView: View {
                 .listRowBackground(Color.clear)
                 .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
             Section {
-                LabeledContent("Aumenta con", value: account.type.normalBalance == .debit ? String(localized: "Débitos") : String(localized: "Créditos"))
-                dateFilter
-                if filterByDate { LabeledContent("Saldo inicial", value: ledger.openingBalance.money).monospacedDigit() }
-                LabeledContent("Débitos", value: ledger.totalDebit.money).monospacedDigit()
-                LabeledContent("Créditos", value: ledger.totalCredit.money).monospacedDigit()
+                if let plain = plainWords {
+                    dateFilter
+                    if filterByDate { LabeledContent("Saldo inicial", value: ledger.openingBalance.money).monospacedDigit() }
+                    LabeledContent(plain.debits, value: ledger.totalDebit.money).monospacedDigit()
+                    LabeledContent(plain.credits, value: ledger.totalCredit.money).monospacedDigit()
+                } else {
+                    LabeledContent("Aumenta con", value: account.type.normalBalance == .debit ? String(localized: "Débitos") : String(localized: "Créditos"))
+                    dateFilter
+                    if filterByDate { LabeledContent("Saldo inicial", value: ledger.openingBalance.money).monospacedDigit() }
+                    LabeledContent("Débitos", value: ledger.totalDebit.money).monospacedDigit()
+                    LabeledContent("Créditos", value: ledger.totalCredit.money).monospacedDigit()
+                }
             } header: {
                 SectionLabel(text: String(localized: "Cuenta"))
             }
@@ -1202,8 +1263,7 @@ struct LedgerView: View {
                         VStack(alignment: .leading, spacing: 1) {
                             Text(row.movement.memo.isEmpty ? String(localized: "Asiento") : row.movement.memo).lineLimit(2)
                                 .foregroundStyle(Palette.ink)
-                            Text(row.movement.debit > 0 ? "\(row.movement.date.dayMonth) · \(String(localized: "Débito"))"
-                                                        : "\(row.movement.date.dayMonth) · \(String(localized: "Crédito"))")
+                            Text("\(row.movement.date.dayMonth) · \(sideWord(debit: row.movement.debit > 0))")
                                 .font(.footnote).foregroundStyle(Palette.ink2)
                         }
                     } trailing: {
@@ -1216,12 +1276,16 @@ struct LedgerView: View {
                     }
                     .padding(.vertical, 2)
                     .accessibilityElement(children: .combine)
-                    .accessibilityLabel(Self.spokenMovement(row))
+                    .accessibilityLabel(plainWords == nil ? Self.spokenMovement(row) : Self.spokenPlainMovement(row, card: account.subtype == .creditCard))
                 }
             } header: {
                 SectionLabel(text: String(localized: "Movimientos"))
             } footer: {
-                Text("+ aumenta el saldo de la cuenta y − lo reduce, según su naturaleza.")
+                if plainWords == nil {
+                    Text("+ aumenta el saldo de la cuenta y − lo reduce, según su naturaleza.")
+                } else if account.subtype == .creditCard {
+                    Text("+ lo que cargaste a la tarjeta (aumenta lo que debes) y − lo que pagaste.")
+                }
             }
         }
         .groupedList()

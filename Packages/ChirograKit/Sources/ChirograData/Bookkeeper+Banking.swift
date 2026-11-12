@@ -158,6 +158,19 @@ extension Bookkeeper {
         return try importStatementLines(lines, source: source.kind, into: account, applyRules: applyRules)
     }
 
+    /// Cuántos de estos movimientos se omitirían al importarlos en `account` porque ya están (mismo `externalID`,
+    /// también si se ignoró) o se repiten en el propio archivo: lo mismo que contaría `importStatementLines` como
+    /// repetidos. La vista previa lo dice antes de importar (QA Hudson, H12).
+    public func alreadyImportedCount(_ lines: [BankStatementLine], in account: Account) throws -> Int {
+        let accountID: UUID? = account.id
+        var seen = Set(try fetch(BankTransaction.self, #Predicate { $0.accountID == accountID }).map(\.externalID))
+        var repeated = 0
+        for line in BankStatementLine.assigningStableIDs(lines) {
+            if seen.contains(line.externalID) { repeated += 1 } else { seen.insert(line.externalID) }
+        }
+        return repeated
+    }
+
     /// Guarda como «por revisar» los movimientos que aún no estaban (mismo `externalID` en la misma cuenta = el mismo,
     /// también si se ignoró) y, si `applyRules`, les aplica las reglas (las automáticas los registran).
     @discardableResult

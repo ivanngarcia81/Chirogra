@@ -11,7 +11,7 @@ struct PostalCodeField: View {
     var body: some View {
         #if os(macOS)
         LabeledContent(title) {
-            TextField(title, text: $text, prompt: Text(verbatim: "78702"))
+            TextField(title, text: $text, prompt: Text("5 dígitos"))
                 .textFieldStyle(.plain)
                 .labelsHidden()
                 .foregroundStyle(Palette.ink)
@@ -19,7 +19,7 @@ struct PostalCodeField: View {
             .task { await PostalTaxTableLoader.loadIfNeeded() }
         #else
         LabeledContent(title) {
-            TextField(title, text: $text, prompt: Text(verbatim: "78702"))
+            TextField(title, text: $text, prompt: Text("5 dígitos"))
                 .multilineTextAlignment(.trailing)
                 .keyboardType(.numbersAndPunctuation)
                 .textContentType(.postalCode)

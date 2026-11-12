@@ -623,16 +623,16 @@
     },
     "%@ · registrado el %@ · %@" : {
       "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ · registrado el %2$@ · %3$@"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ · recorded on %@ · %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · registrado el %2$@ · %3$@"
           }
         }
       }
@@ -797,6 +797,22 @@
     "%@%@" : {
       "shouldTranslate" : false
     },
+    "%@, %@, cargo de %@, debes %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, %2$@, cargo de %3$@, debes %4$@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@, %@, charge of %@, you owe %@"
+          }
+        }
+      }
+    },
     "%@, %@, crédito de %@, aumenta el saldo a %@" : {
       "localizations" : {
         "en" : {
@@ -833,6 +849,54 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@, %@, debit of %@, decreases the balance to %@"
+          }
+        }
+      }
+    },
+    "%@, %@, entró %@, saldo %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, %2$@, entró %3$@, saldo %4$@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@, %@, %@ in, balance %@"
+          }
+        }
+      }
+    },
+    "%@, %@, pago de %@, debes %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, %2$@, pago de %3$@, debes %4$@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@, %@, payment of %@, you owe %@"
+          }
+        }
+      }
+    },
+    "%@, %@, salió %@, saldo %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, %2$@, salió %3$@, saldo %4$@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@, %@, %@ out, balance %@"
           }
         }
       }
@@ -1687,6 +1751,22 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "%lld en el archivo · %lld ya importados · %lld nuevos" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld en el archivo · %2$lld ya importados · %3$lld nuevos"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld in the file · %lld already imported · %lld new"
           }
         }
       }
@@ -2728,6 +2808,16 @@
         }
       }
     },
+    "+ lo que cargaste a la tarjeta (aumenta lo que debes) y − lo que pagaste." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "+ is what you charged to the card (it raises what you owe) and − is what you paid."
+          }
+        }
+      }
+    },
     "1 aviso sin leer" : {
       "localizations" : {
         "en" : {
@@ -2827,6 +2917,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "30 days"
+          }
+        }
+      }
+    },
+    "5 dígitos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "5 digits"
           }
         }
       }
@@ -5523,6 +5623,16 @@
         }
       }
     },
+    "Bloqueo de la app" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App lock"
+          }
+        }
+      }
+    },
     "Borrado" : {
       "localizations" : {
         "en" : {
@@ -6384,12 +6494,32 @@
         }
       }
     },
+    "Cargo a la tarjeta" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Card charge"
+          }
+        }
+      }
+    },
     "Cargo automático" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Autopay"
+          }
+        }
+      }
+    },
+    "Cargos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Charges"
           }
         }
       }
@@ -7344,6 +7474,7 @@
       }
     },
     "Con cobros o créditos no se edita: usa una nota de crédito." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -8941,6 +9072,7 @@
       }
     },
     "Datos y seguridad" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -11645,6 +11777,16 @@
         }
       }
     },
+    "Entró" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Money in"
+          }
+        }
+      }
+    },
     "Enviada" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -11963,6 +12105,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Enter what %@ charges: on a receipt from any store there, whatever is above the %@ for %@."
+          }
+        }
+      }
+    },
+    "Escribe el monto cobrado: hasta %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter the amount received: up to %@."
           }
         }
       }
@@ -13502,6 +13654,16 @@
         }
       }
     },
+    "Fijada" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set"
+          }
+        }
+      }
+    },
     "Fijar contraseña de cierre" : {
       "localizations" : {
         "en" : {
@@ -13956,6 +14118,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "An expense that took no money out of the bank (like depreciation): it's added back."
+          }
+        }
+      }
+    },
+    "Gasto reclasificado: %@ · Categoría: %@ (asiento %lld revertido, nuevo %lld)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Gasto reclasificado: %1$@ · Categoría: %2$@ (asiento %3$lld revertido, nuevo %4$lld)"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Expense reclassified: %@ · Category: %@ (entry %lld reversed, new %lld)"
           }
         }
       }
@@ -17305,6 +17483,16 @@
         }
       }
     },
+    "Meses cerrados" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Closed months"
+          }
+        }
+      }
+    },
     "Mi negocio" : {
       "localizations" : {
         "en" : {
@@ -17589,6 +17777,26 @@
         }
       }
     },
+    "Mover dinero" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Move money"
+          }
+        }
+      }
+    },
+    "Mover dinero entre cuentas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Move money between accounts"
+          }
+        }
+      }
+    },
     "Movimiento" : {
       "localizations" : {
         "en" : {
@@ -17833,6 +18041,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "More Options"
+          }
+        }
+      }
+    },
+    "Máximo %@ (saldo pendiente)." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maximum %@ (balance due)."
           }
         }
       }
@@ -20044,12 +20262,32 @@
         }
       }
     },
+    "Pagar esta tarjeta" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pay this card"
+          }
+        }
+      }
+    },
     "Pagar factura" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pay bill"
+          }
+        }
+      }
+    },
+    "Pagar la tarjeta" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pay the card"
           }
         }
       }
@@ -20100,6 +20338,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Payment of %@"
+          }
+        }
+      }
+    },
+    "Pago de la tarjeta" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Credit card payment"
           }
         }
       }
@@ -20476,6 +20724,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Items checked"
+          }
+        }
+      }
+    },
+    "Pasar a otra cuenta" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Move to another account"
           }
         }
       }
@@ -21764,6 +22022,16 @@
         }
       }
     },
+    "Protege los meses que ya cerraste: sin ella, cualquiera que abra la app puede registrar en ellos escribiendo un motivo. Se fija en Contabilidad › Cierre de periodo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Protects the months you already closed: without it, anyone who opens the app can record in them by entering a reason. Set it in Accounting › Period close."
+          }
+        }
+      }
+    },
     "Proveedor" : {
       "localizations" : {
         "en" : {
@@ -22097,6 +22365,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Semicolon"
+          }
+        }
+      }
+    },
+    "Puse dinero de mi bolsillo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I put in money of my own"
           }
         }
       }
@@ -24514,6 +24792,16 @@
         }
       }
     },
+    "Salió" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Money out"
+          }
+        }
+      }
+    },
     "Saltar" : {
       "localizations" : {
         "en" : {
@@ -24550,6 +24838,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "I took money out of the business for myself"
+          }
+        }
+      }
+    },
+    "Saqué dinero para mí" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I took money out for myself"
           }
         }
       }
@@ -25175,6 +25473,16 @@
         }
       }
     },
+    "Si cobra su parte" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "If it charges its share"
+          }
+        }
+      }
+    },
     "Si la descripción contiene" : {
       "localizations" : {
         "en" : {
@@ -25540,6 +25848,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No invoices yet"
+          }
+        }
+      }
+    },
+    "Sin fijar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not set"
           }
         }
       }
@@ -26890,6 +27208,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Physical or online store selling products from inventory."
+          }
+        }
+      }
+    },
+    "Tiene cobros: usa una nota de crédito." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "It has payments: use a credit memo."
+          }
+        }
+      }
+    },
+    "Tiene créditos aplicados: usa una nota de crédito." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "It has credits applied: use a credit memo."
           }
         }
       }
@@ -29873,6 +30211,7 @@
       }
     },
     "iCloud, copias y seguridad" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -29903,6 +30242,7 @@
       }
     },
     "p. ej. Austin" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {

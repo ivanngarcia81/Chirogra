@@ -148,6 +148,12 @@ private struct BankAccountDetail: View {
             .background(Palette.background)
             .navigationTitle(account.name)
             .inlineTitle()
+            // Como la ficha estrecha (`LedgerView`): traspasos, pago de la tarjeta, retiro y aportación (build 40, H03).
+            .toolbar {
+                if account.isPostable && account.subtype != .undepositedFunds {
+                    ToolbarItem(placement: .primaryAction) { MoveMoneyButton(account: account).headerButton() }
+                }
+            }
     }
 }
 

@@ -423,7 +423,12 @@ struct BankImportView: View {
             SectionLabel(text: String(localized: "Vista previa"))
         } footer: {
             if case .success(let value) = parsed {
-                Text("\(value.lines.count) movimientos en el archivo · los ya importados se omiten")
+                if repeatedCount > 0 {
+                    Text("\(value.lines.count) en el archivo · \(repeatedCount) ya importados · \(newCount) nuevos")
+                        .foregroundStyle(newCount == 0 ? Palette.warning : Palette.ink2)
+                } else {
+                    Text("\(value.lines.count) movimientos en el archivo · los ya importados se omiten")
+                }
             }
         }
     }
@@ -433,11 +438,21 @@ struct BankImportView: View {
         return 0
     }
 
-    private var importTitle: String {
-        lineCount > 0 ? String(localized: "Importar \(lineCount) movimientos") : String(localized: "Importar")
+    /// Los del archivo que ya están en la cuenta elegida (o repetidos en el archivo): se omitirían (QA Hudson, H12).
+    private var repeatedCount: Int {
+        guard let account, case .success(let value) = parsed else { return 0 }
+        return (try? Bookkeeper(context: context).alreadyImportedCount(value.lines, in: account)) ?? 0
     }
 
-    private var canImport: Bool { account != nil && lineCount > 0 && !isImporting }
+    /// Los que entrarían de verdad.
+    private var newCount: Int { max(lineCount - repeatedCount, 0) }
+
+    private var importTitle: String {
+        if lineCount > 0 && newCount == 0 { return String(localized: "Nada nuevo que importar") }
+        return newCount > 0 ? String(localized: "Importar \(newCount) movimientos") : String(localized: "Importar")
+    }
+
+    private var canImport: Bool { account != nil && newCount > 0 && !isImporting }
 
     private var accountHint: String? {
         guard case .success(let value) = parsed, let statement = value.ofx else { return nil }
