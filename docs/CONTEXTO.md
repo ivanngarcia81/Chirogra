@@ -15,7 +15,7 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
 - **`main` lleva todo** (fase 2 sin servidor unida el 9-nov, merge `6f745a4`) y está empujado. El 9-nov se borraron
   las worktrees y ramas locales de los agentes y `fase2-integracion` (todo estaba ya en `main`); en GitHub sigue
   `origin/fase2-integracion`, igual que lo unido.
-- **Rama `version-1.2`** (empujada hasta el build 37, `bcf3776`, 12-nov): la 1.2 entera y **estos documentos al día**.
+- **Rama `version-1.2`** (empujada hasta el build 38, `2cde665`, 12-nov): la 1.2 entera y **estos documentos al día**.
   `main` se quedó en la 1.1 (build 30) y con los documentos del 10-nov; la rama se une a `main` cuando salga la 1.1.
 - **Versiones en App Store Connect:**
   - **1.0 (build 11):** el 7-nov se envió a revisión con la suscripción «Chirogra monthly» y su grupo. Apple la
@@ -30,7 +30,7 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
   - **1.1.0 (builds 16 a 21, TestFlight):** la fase 2 entera. El **21** (`467cdcf`) lo prueba el usuario; el **22** (`3662619`, subido
     el 10-nov para iOS y macOS) lleva además la bienvenida en carrusel (abajo). **Toda la fase 2 va en la 1.1** (decisión del
     9-nov: no se esconde nada para 1.2/1.3), con el plan de contadores en el envío. Lista en el **build 30**.
-  - **1.2.0 (builds 31 a 37, TestFlight):** lista en el **build 37** (abajo, «C»). Se envía cuando esté aprobada la 1.1.
+  - **1.2.0 (builds 31 a 38, TestFlight):** lista en el **build 38** (arreglos de la QA de Hudson; abajo, «C»). Se envía cuando esté aprobada la 1.1.
 - **Bienvenida en carrusel (aprobada por el usuario el 10-nov en su iPhone; build 22):** opción B del canvas «Chirogra — Bienvenida»
   (https://claude.ai/artifact/PB4NmST2UPeAA3wTZFjres) en `Onboarding/WelcomeView.swift`. Sale sin empresas antes del
   alta (ajuste `welcome.seen`); «Crear mi empresa» → paso 1, que ya no lleva los datos de ejemplo ni el aviso de iCloud

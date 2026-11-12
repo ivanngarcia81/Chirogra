@@ -7,13 +7,13 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 
 - **Dos ramas, las dos empujadas:**
   - `main` llega hasta la **1.1** (build 30, `e56f45c`) y la web (`sitio/`).
-  - `version-1.2` llega hasta el **build 37** (`bcf3776`) y estos documentos al día. Hasta que se una a `main` (cuando
+  - `version-1.2` llega hasta el **build 38** (`2cde665`) y estos documentos al día. Hasta que se una a `main` (cuando
     salga la 1.1), **los documentos al día están en `version-1.2`**; los de `main` se quedaron en el 10-nov.
-- **Último build subido: 37 (1.2.0)**, para iOS y macOS (12-nov). La 1.1 sigue en el **30**.
+- **Último build subido: 38 (1.2.0)**, para iOS y macOS (12-nov). La 1.1 sigue en el **30**.
 - **1.0 (build 11):** en revisión de Apple. Cuando la aprueben, el usuario envía la **1.0.1 (build 15)**, que arregla
   iCloud en Producción.
 - **1.1.0:** lista en el **build 30**. Lleva toda la fase 2 (decisión del 9-nov) y lo hecho el 10-nov.
-- **1.2.0:** lista en el **build 37** (rama `version-1.2`, [DATOS-V5.md](DATOS-V5.md)). Esquema 5 desplegado y probado
+- **1.2.0:** lista en el **build 38** (rama `version-1.2`, [DATOS-V5.md](DATOS-V5.md)). Esquema 5 desplegado y probado
   en Producción. Textos para la tienda en [APP-STORE.md](APP-STORE.md), «Versión 1.2.0».
 
 | Build | Commit | Qué trae |
@@ -33,9 +33,18 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 | 34 | `e802c4b` | 1.2.0: «Saltar» de la bienvenida del iPhone y el iPad en cápsula de vidrio (el usuario no lo veía como texto suelto). |
 | 35 | `a89b78f` | 1.2.0: «Ocultar» / «Mostrar» en los «Primeros pasos» de Inicio también sin movimientos (`homeSetupStepsHidden`, por aparato). |
 | 36 | `3e50675` | 1.2.0: **sales tax por código postal dentro de la app**: 27,583 ZIP en 34 estados (24 con tasa de condado y ciudad, 10 solo con la del estado). Se sugiere en el alta, en Ajustes y en el cliente. `scripts/tasas/`, DATOS-V5.md. |
+| 38 | `6616919` | 1.2.0: **arreglos de la QA de Hudson** (prueba completa como empresario, contador y auditor; informe en el worktree `Chirogra-QA-Hudson`, carpeta `QA/` sin seguimiento): cierre con motivo obligatorio sin contraseña, «Registrar con fecha» del primer día abierto, «Fijar contraseña y cerrar», «Libros cerrados hasta…» en Inicio, aviso bajo las fechas cerradas y «Cambios después del cierre» (pantalla y paquete del contador); reclasificar lo conciliado sin romper la conciliación; impuesto incluido en $0; fecha al convertir estimado; vencimiento de proveedor; «Saldada: cobrado + crédito»; Total y Saldo en el Mac; alta sin tipo de negocio elegido; guía al día. 330 pruebas; 22/22 controles de Hudson. |
 | 37 | `e002ed1` | 1.2.0: filas con campo que toman el toque en toda la fila (`.fieldRow()`: descuento, Enviar, presupuesto, plantillas, monto parcial); títulos en los importes de reembolso, nota de crédito y pago de sales tax; «Base: …» en menú con letra de accesibilidad. |
 
 ## Último chat (11 y 12-nov)
+
+- **QA de Hudson y build 38 (12-nov, tarde):** prueba completa del paquete del usuario (empresario, contador, auditor)
+  con simuladores propios («QA Hudson iPhone» `C3D0BD9B`, «QA Hudson iPad» `61DAB28F`) y copia del Mac
+  `com.chirogra.qa.hudson`; informe y evidencias en `~/Documents/GitHub/Chirogra-QA-Hudson/QA/Chirogra_Hudson_2026-10/`
+  (sin commitear, a propósito). El usuario aprobó los arreglos y pidió subirlos: build 38. La reclasificación de un
+  gasto conciliado **pasa la conciliación al asiento nuevo** en vez de un asiento de reclasificación aparte (ese no
+  saldría en base de efectivo y quedaría descolgado al editar o anular). Worktree `Chirogra-arreglos` (rama
+  `arreglos/qa-hudson`, ya en `version-1.2`): se puede borrar.
 
 - **Build 36:** sales tax por código postal dentro de la app (`sales-tax-zip.json`, 27,583 ZIP en 34 estados), sacado
   de fuentes oficiales con `scripts/tasas/` (Streamlined + lectores de TX, CA, IL, FL y NY). El buscador de Texas daba

@@ -292,7 +292,7 @@ Chirogra 1.1 es nuestra actualización más grande.
 
 ## Versión 1.2.0: «What's New» y notas para la revisión
 
-Preparado el 11-nov. Se envía cuando esté aprobada la 1.1, con el **build 36** (o el último de la rama `version-1.2`).
+Preparado el 11-nov. Se envía cuando esté aprobada la 1.1, con el **build 38** (o el último de la rama `version-1.2`).
 La descripción y el texto promocional pueden quedarse como los de la 1.1. **Sin decidir:** capturas nuevas de la
 bitácora o de Dividir (las de la 1.1 siguen valiendo).
 
@@ -306,6 +306,7 @@ Chirogra 1.2 brings tools for accountants and a faster start.
 • Banking: split a transaction across several accounts, and record a reason when you exclude one
 • A new last page in the welcome tour asks whose books you keep and sets up the path for accountants
 • Skip the welcome tour, and hide Getting started on Home whenever you like
+• Closing: record late items on the first open day, or with a reason that stays in the log; see changes after close
 • Fixes and improvements on iPhone, iPad and Mac
 
 **Novedades (es)**
@@ -318,6 +319,7 @@ Chirogra 1.2 trae herramientas para contadores y un comienzo más rápido.
 • Banca: divide un movimiento en varias cuentas y anota un motivo al excluir uno
 • La última página de la bienvenida pregunta para quién llevas los libros y prepara el camino del contador
 • Salta la bienvenida y oculta los Primeros pasos de Inicio cuando quieras
+• Cierre: registra lo que llegó tarde el primer día abierto, o con un motivo que queda en la bitácora; mira los cambios después del cierre
 • Arreglos y mejoras en iPhone, iPad y Mac
 
 **Notas para la revisión de la 1.2 (App Review Information › Notes)**
