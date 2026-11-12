@@ -15,7 +15,7 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
 - **`main` lleva todo** (fase 2 sin servidor unida el 9-nov, merge `6f745a4`) y está empujado. El 9-nov se borraron
   las worktrees y ramas locales de los agentes y `fase2-integracion` (todo estaba ya en `main`); en GitHub sigue
   `origin/fase2-integracion`, igual que lo unido.
-- **Rama `version-1.2`** (empujada hasta el build 38, `2cde665`, 12-nov): la 1.2 entera y **estos documentos al día**.
+- **Rama `version-1.2`** (empujada hasta el build 39, `3d04c54`, 12-nov): la 1.2 entera y **estos documentos al día**.
   `main` se quedó en la 1.1 (build 30) y con los documentos del 10-nov; la rama se une a `main` cuando salga la 1.1.
 - **Versiones en App Store Connect:**
   - **1.0 (build 11):** el 7-nov se envió a revisión con la suscripción «Chirogra monthly» y su grupo. Apple la
@@ -30,7 +30,7 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
   - **1.1.0 (builds 16 a 21, TestFlight):** la fase 2 entera. El **21** (`467cdcf`) lo prueba el usuario; el **22** (`3662619`, subido
     el 10-nov para iOS y macOS) lleva además la bienvenida en carrusel (abajo). **Toda la fase 2 va en la 1.1** (decisión del
     9-nov: no se esconde nada para 1.2/1.3), con el plan de contadores en el envío. Lista en el **build 30**.
-  - **1.2.0 (builds 31 a 38, TestFlight):** lista en el **build 38** (arreglos de la QA de Hudson; abajo, «C»). Se envía cuando esté aprobada la 1.1.
+  - **1.2.0 (builds 31 a 39, TestFlight):** lista en el **build 39** (38: arreglos de la QA de Hudson; 39: pestañas y favoritos del iPhone; abajo, «C»). Se envía cuando esté aprobada la 1.1.
 - **Bienvenida en carrusel (aprobada por el usuario el 10-nov en su iPhone; build 22):** opción B del canvas «Chirogra — Bienvenida»
   (https://claude.ai/artifact/PB4NmST2UPeAA3wTZFjres) en `Onboarding/WelcomeView.swift`. Sale sin empresas antes del
   alta (ajuste `welcome.seen`); «Crear mi empresa» → paso 1, que ya no lleva los datos de ejemplo ni el aviso de iCloud
@@ -155,6 +155,19 @@ automáticas: no se rodea; se usa `city-rates.xlsx` (por ciudad). Pruebas: `Post
 **Build 37 (`bcf3776`, código en `e002ed1`, subido el 12-nov para iOS y macOS)**: las filas con campo que solo
 tomaban el toque sobre la cifra (`.fieldRow()`), títulos en tres importes sueltos y «Base: …» en menú con letra de
 accesibilidad (detalle arriba, en el build 33, «Hecho después»).
+**Build 39 (`3d04c54`, código en `afeb040`, subido el 12-nov para iOS y macOS)**: **pestañas y favoritos a elección en
+el iPhone** (decisiones del usuario del 12-nov: las dos cosas, Inicio fijo, por aparato). `Shell/PhoneShortcuts.swift`:
+`PhoneTool` (catálogo de herramientas: Ventas, Gastos, Banca, Todos los reportes y cada reporte, Impuestos, Tasas,
+Deducibles, Plan de cuentas, Diario, Libro mayor, Cierre, Bitácora, Empresas; lo de Ajustes se queda solo en Más) y
+`PhoneShortcuts` (ids separados por comas en `@AppStorage`: `phone.tabs`, por defecto `sales,expenses,banking`, máx. 3;
+`more.favorites`). La pestaña del `TabView` es ahora un `String` (`home`, id de la herramienta, `more`). «Más ›
+Personalizar» abre `CustomizeTabsView` y `CustomizeFavoritesView` (lista en edición como «Personalizar controles»: lo
+puesto con − y asa, el resto con +; dibujo de la barra arriba). `MoreRow(tool:)` añade el menú de pulsación larga
+(«Añadir a Favoritos», «Poner en la barra»). Rutas del panel: si Ventas o Banca no están en la barra, `follow` va a Más
+y `MoreView` empuja la pantalla, que recoge la ruta. «Balance» y «Flujo» como nombres cortos de pestaña. QA:
+`-phone.tabs journal,taxes,report.income` fija la barra al arrancar (dominio de argumentos: mientras esté, no se
+guarda lo que se cambie). **Sin comprobar:** VoiceOver de verdad en el signo menos (XCUITest lo ve como «Reordenar
+Eliminar», sin el nombre).
 9. Asientos de ajuste marcados como del contador: hecho (`EntrySource.accountantAdjustment`).
 10. Bitácora de cambios: hecho (aparato y antes/después; Contabilidad › «Bitácora de cambios»).
 11. Banca: dividir y motivo al excluir: hecho (canvas `BancaRevisar`).
@@ -214,7 +227,8 @@ accesibilidad (detalle arriba, en el build 33, «Hecho después»).
   lector se prepara al abrir la app. **Reportes:** presupuestos dentro de Reportes; el flujo de efectivo sigue la base.
 - **Diseño:** rediseño nativo según el canvas (manda el canvas salvo lo de esta lista). Botón principal en vidrio sin
   relleno (`.glass`), nada de botones morados. Pestañas del iPhone: Inicio · Ventas · Gastos · Banca · Más (Reportes e
-  Impuestos en «Más», Impuestos antes que Contabilidad). Fila elegida de la columna maestro rellena de Tinta. iPad:
+  Impuestos en «Más», Impuestos antes que Contabilidad). **Desde el 12-nov (build 39) el usuario elige las tres del
+  medio** y sus favoritos de Más (Más › Personalizar); **Inicio y Más fijos**, guardado por aparato; esa barra es la de fábrica. Fila elegida de la columna maestro rellena de Tinta. iPad:
   maestro-detalle; Mac: tabla a todo el ancho + inspector de ~300 pt (⌥⌘I), densidad de Mac (28 pt; barra lateral 220 pt
   en Mac, 280 en iPad). **Elevación «como Tamio»** (8-nov): en el Mac, suelo gris `Palette.background`, tarjetas y
   tablas blancas `Palette.surface` con filo y sombra corta (`macElevation`), inspector sin fondo propio; en el iPad
