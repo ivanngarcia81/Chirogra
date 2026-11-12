@@ -290,6 +290,57 @@ Chirogra 1.1 es nuestra actualización más grande.
 > iCloud, backups and security). All data stays on the device and in the user's private iCloud database; there is no
 > server.
 
+## Versión 1.2.0: «What's New» y notas para la revisión
+
+Preparado el 11-nov. Se envía cuando esté aprobada la 1.1, con el **build 36** (o el último de la rama `version-1.2`).
+La descripción y el texto promocional pueden quedarse como los de la 1.1. **Sin decidir:** capturas nuevas de la
+bitácora o de Dividir (las de la 1.1 siguen valiendo).
+
+**What's New (en)**
+
+Chirogra 1.2 brings tools for accountants and a faster start.
+
+• Sales tax by ZIP code: enter a ZIP code during setup, in Settings or on a customer, and Chirogra suggests the approximate combined rate (state, county and city) for 34 states
+• Change Log: see who changed what and when, on which device, including deleted items
+• Accountant adjustments: mark manual journal entries as accountant adjustments and filter the journal by them
+• Banking: split a transaction across several accounts, and record a reason when you exclude one
+• A new last page in the welcome tour asks whose books you keep and sets up the path for accountants
+• Skip the welcome tour, and hide Getting started on Home whenever you like
+• Fixes and improvements on iPhone, iPad and Mac
+
+**Novedades (es)**
+
+Chirogra 1.2 trae herramientas para contadores y un comienzo más rápido.
+
+• Sales tax por código postal: escribe un código postal en el alta, en Ajustes o en un cliente y Chirogra te sugiere la tasa combinada aproximada (estado, condado y ciudad) en 34 estados
+• Bitácora de cambios: quién cambió qué y cuándo, en qué aparato, también lo borrado
+• Ajustes del contador: marca los asientos a mano como ajustes del contador y filtra el diario por ellos
+• Banca: divide un movimiento en varias cuentas y anota un motivo al excluir uno
+• La última página de la bienvenida pregunta para quién llevas los libros y prepara el camino del contador
+• Salta la bienvenida y oculta los Primeros pasos de Inicio cuando quieras
+• Arreglos y mejoras en iPhone, iPad y Mac
+
+**Notas para la revisión de la 1.2 (App Review Information › Notes)**
+
+> Chirogra doesn't require an account. On first launch, swipe through the welcome tour (or tap Skip). On the last page,
+> "Whose books do you keep?", tap "Try with sample data" to explore a company with invoices, expenses, banking, sales
+> tax and reports, or choose "My business" and "Create my company". Choosing "My clients' books" and "Continue as an
+> Accountant" shows the Chirogra for Accountants path. The 14-day free trial starts from the subscription screen shown after setup. If the subscription
+> ends, books stay in read-only mode (view, export and back up only).
+>
+> New in 1.2:
+> - Sales tax by ZIP code: during setup (or in Settings, or on a customer), enter a ZIP code such as 78702 (Austin, TX)
+>   and the app suggests an approximate combined rate. The rate table is bundled in the app, built from public state
+>   and Streamlined Sales Tax files; no network request is made.
+> - Change Log: Accounting › Change Log (on iPhone: More › Change Log).
+> - Accountant adjustments: the "Accountant adjustment" switch on a manual journal entry, and the "Accountant" filter in
+>   the journal.
+> - Banking › To Review: "Split" divides a transaction across accounts; "Exclude" asks for a reason.
+>
+> Bank statements are imported from CSV, OFX or QFX files the user chooses; there is no bank connection. iCloud sync is
+> optional (Settings › iCloud, backups and security). All data stays on the device and in the user's private iCloud
+> database; there is no server.
+
 ## Notas para la revisión de la 1.0 (App Review)
 
 > Chirogra doesn't require an account. On first launch, tap "Try with sample data" to explore a company with invoices,

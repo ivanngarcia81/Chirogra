@@ -1,7 +1,7 @@
 # Chirogra: contexto para retomar en otro chat
 
-Estado de Chirogra al **10 de noviembre de 2026**. **Para empezar rápido, lee primero
-[RESUMEN-PARA-SEGUIR.md](RESUMEN-PARA-SEGUIR.md)** (estado, builds 22–30 y lo siguiente); luego este, entero. El diseño técnico está en
+Estado de Chirogra al **11 de noviembre de 2026**. **Para empezar rápido, lee primero
+[RESUMEN-PARA-SEGUIR.md](RESUMEN-PARA-SEGUIR.md)** (estado, builds 22–36 y lo siguiente); luego este, entero. El diseño técnico está en
 [DISEÑO.md](DISEÑO.md), el sistema visual y los argumentos de QA en [REDISEÑO-NATIVO.md](REDISEÑO-NATIVO.md) (§5), los
 datos en [DATOS-V4.md](DATOS-V4.md) (y [DATOS-V2.md](DATOS-V2.md)), la fase 2 en [PLAN-FASE2.md](PLAN-FASE2.md) y la
 ficha de la App Store en [APP-STORE.md](APP-STORE.md). Aquí van el estado, lo pendiente, las decisiones del usuario, lo
@@ -15,6 +15,8 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
 - **`main` lleva todo** (fase 2 sin servidor unida el 9-nov, merge `6f745a4`) y está empujado. El 9-nov se borraron
   las worktrees y ramas locales de los agentes y `fase2-integracion` (todo estaba ya en `main`); en GitHub sigue
   `origin/fase2-integracion`, igual que lo unido.
+- **Rama `version-1.2`** (empujada hasta el build 36, `08a6367`, 11-nov): la 1.2 entera y **estos documentos al día**.
+  `main` se quedó en la 1.1 (build 30) y con los documentos del 10-nov; la rama se une a `main` cuando salga la 1.1.
 - **Versiones en App Store Connect:**
   - **1.0 (build 11):** el 7-nov se envió a revisión con la suscripción «Chirogra monthly» y su grupo. Apple la
     **rechazó** porque la descripción no tenía el enlace a las condiciones de uso (EULA). El 9-nov el usuario la
@@ -27,7 +29,8 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
     iCloud sin pedir el alta».
   - **1.1.0 (builds 16 a 21, TestFlight):** la fase 2 entera. El **21** (`467cdcf`) lo prueba el usuario; el **22** (`3662619`, subido
     el 10-nov para iOS y macOS) lleva además la bienvenida en carrusel (abajo). **Toda la fase 2 va en la 1.1** (decisión del
-    9-nov: no se esconde nada para 1.2/1.3), con el plan de contadores en el envío.
+    9-nov: no se esconde nada para 1.2/1.3), con el plan de contadores en el envío. Lista en el **build 30**.
+  - **1.2.0 (builds 31 a 36, TestFlight):** lista en el **build 36** (abajo, «C»). Se envía cuando esté aprobada la 1.1.
 - **Bienvenida en carrusel (aprobada por el usuario el 10-nov en su iPhone; build 22):** opción B del canvas «Chirogra — Bienvenida»
   (https://claude.ai/artifact/PB4NmST2UPeAA3wTZFjres) en `Onboarding/WelcomeView.swift`. Sale sin empresas antes del
   alta (ajuste `welcome.seen`); «Crear mi empresa» → paso 1, que ya no lleva los datos de ejemplo ni el aviso de iCloud
@@ -37,7 +40,7 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
   (8-nov): sincronizan libros, clientes, empresas, banca y recibos. `/Applications/Chirogra.app` y la app del iPhone
   tienen esa compilación de prueba (Debug, entorno Production); instalar encima desde TestFlight conserva los datos.
 
-**Siguiente (orden acordado el 10-nov):**
+**Siguiente (orden acordado el 10-nov; al día el 11-nov):**
 
 *A. Ahora, mientras Apple revisa la 1.0 (todo entra en la 1.1, sin tocar el esquema de iCloud):*
 1. Usuario: build 28 probado en TestFlight el 10-nov («With receipt» bien en inglés). Falta probar el **build 30**.
@@ -67,7 +70,8 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
    fallos de la tasa o del saldo de apertura tras crear la empresa salen en un aviso de la raíz (`SetupIssue`); el
    aviso 1099 del Mac solo cuenta a los que llegan al mínimo. Ya estaban: la nota «Todo se lee en este aparato» y el
    aviso de la primera lectura del recibo (también en el Mac). **No hecho:** el permiso de red del Mac solo hace falta
-   para bajar la tabla de sales tax por código postal (`PostalTaxTableLoader.remoteURL`), y su fuente está sin decidir.
+   para bajar la tabla de sales tax por código postal (`PostalTaxTableLoader.remoteURL`). **Resuelto el 11-nov (build
+   36):** la tabla va dentro de la app y `remoteURL` sigue en `nil`, así que no hace falta.
 6. Build 24 con 4 y 5 (`d7c2e0a`), subido el 10-nov para iOS y macOS.
 6b. **QA con tres agentes (10-nov, iPhone, iPad y copia del Mac):** sin cierres; lo nuevo funciona; las cifras cuadran.
    **Build 25** (`f23f5a7`, subido el 10-nov para iOS y macOS) arregla: «+» de Inicio en solo lectura (ahora `whenWritable`); gráfica de Inicio (meses como
@@ -112,8 +116,9 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
 8. Enviar la 1.1.0 (**build 30**): capturas nuevas (carrusel y panel), notas «What's New» en/es, notas para el revisor
    y el plan de contadores en el mismo envío.
 
-*C. 1.2, sin servidor pero con cambio de esquema (desplegar a Producción y probar, ver «Lo aprendido»).* **HECHA el
-10-nov en la rama `version-1.2`, sin commitear** (detalle en [DATOS-V5.md](DATOS-V5.md)). Esquema 5 (solo añade tres
+*C. 1.2, sin servidor pero con cambio de esquema (desplegar a Producción y probar, ver «Lo aprendido»).* **HECHA en
+la rama `version-1.2`, empujada hasta el build 36** (detalle en [DATOS-V5.md](DATOS-V5.md); «What's New» y notas
+para el revisor en APP-STORE.md, «Versión 1.2.0»). Esquema 5 (solo añade tres
 textos), datos y pantallas, con 316 pruebas pasando. Vista en la copia del Mac y en el simulador del iPhone. **Esquema 5 desplegado a
 Producción el 10-nov** (creado en Development con `-qa.esquemaCloudKit 1`, que ahora sale sin abrir los libros). Commit `084a042`.
 **Probada en Producción en el Mac (10-nov):** la migración conserva todo (comprobado con una copia del respaldo) y la
@@ -130,6 +135,19 @@ motivo, Reglas, Conciliación). **Pendiente, de antes de la 1.2:** el mismo patr
 «Para» de Enviar, el presupuesto (total y meses) y otros `MoneyField` en `LabeledContent`: se pueden usar tocando la
 cifra, pero el resto de la fila no responde. Decisiones del usuario (11-nov): la bitácora se queda en el idioma del
 momento; las plantillas de asiento no se marcan como del contador; la reversión de un ajuste del contador sí.
+**Build 34 (`ea8e881`, subido el 11-nov para iOS y macOS)**: «Saltar» de la bienvenida del iPhone y el iPad en cápsula
+de vidrio (`.buttonStyle(.glass)`, `.capsule`): como texto suelto, el usuario no lo veía.
+**Build 35 (`4d667f7`, subido el 11-nov para iOS y macOS)**: «Ocultar» / «Mostrar» en los «Primeros pasos» de Inicio
+también cuando aún no hay movimientos (`@AppStorage("homeSetupStepsHidden")`, por aparato; QA
+`-homeSetupStepsHidden YES`). Antes solo salía con movimientos.
+**Build 36 (`08a6367`, subido el 11-nov para iOS y macOS)**: **sales tax por código postal dentro de la app**
+(decisión del usuario del 11-nov, DATOS-V5.md «Tasas de ciudad por código postal»). `sales-tax-zip.json` es recurso de
+`ChirograData` (27,583 ZIP, 34 estados, ~3 MB): 19 del Streamlined + TX, CA, IL, FL y NY con condado y ciudad; NJ, CT,
+MD, MA, MI, IN, KY, ME, RI y DC solo con la del estado. Sale como sugerencia «aproximada» en el alta, en Ajustes y en
+el cliente. `PostalTaxTableLoader` usa la más nueva entre la descargada y la que trae la app; `remoteURL` sigue en
+`nil`, así que **no hace falta el permiso de red del Mac**. Se regenera **cada trimestre** con `scripts/tasas/`
+(`descargar.sh` y `generar.py`) y un build nuevo. El buscador por dirección de Texas da 403 a las descargas
+automáticas: no se rodea; se usa `city-rates.xlsx` (por ciudad). Pruebas: `PostalTaxTableTests` (320 en total).
 9. Asientos de ajuste marcados como del contador: hecho (`EntrySource.accountantAdjustment`).
 10. Bitácora de cambios: hecho (aparato y antes/después; Contabilidad › «Bitácora de cambios»).
 11. Banca: dividir y motivo al excluir: hecho (canvas `BancaRevisar`).
@@ -161,7 +179,7 @@ momento; las plantillas de asiento no se marcan como del contador; la reversión
   SKU CHIROGRA-001). Suscripción `com.chirogra.app.mensual` («Chirogra monthly», grupo «Chirogra», 1 mes, 2 semanas
   gratis). Categoría, «Data Not Collected», 4+ y notas de revisión en APP-STORE.md. Capturas en el escritorio del
   usuario («Chirogra – capturas App Store»; en el Mac se captura a 1624×986 y se compone en 2880×1800).
-- **iCloud:** contenedor `iCloud.com.chirogra.app` (App ID `com.chirogra.app` con iCloud + Push). Esquema 4 en Producción.
+- **iCloud:** contenedor `iCloud.com.chirogra.app` (App ID `com.chirogra.app` con iCloud + Push). Esquema 5 en Producción (10-nov; la 1.1 usa el 4).
   En Producción quedan datos de ejemplo de las pruebas: se borran con «Empezar con mi empresa».
 - **Web:** https://chirogra.com, GitHub Pages desde `sitio/` de `main` (workflow «Sitio», se publica al empujar).
   Dominio del usuario en Cloudflare, DNS «DNS only» (4 A y 4 AAAA de GitHub Pages, `www` CNAME →
