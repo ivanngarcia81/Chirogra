@@ -1,4 +1,4 @@
-# Chirogra: resumen para empezar el siguiente chat (11-nov-2026)
+# Chirogra: resumen para empezar el siguiente chat (12-nov-2026)
 
 Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («Dónde nos quedamos» y «Siguiente»).
 **Al usuario se le habla siempre en español.**
@@ -7,13 +7,13 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 
 - **Dos ramas, las dos empujadas:**
   - `main` llega hasta la **1.1** (build 30, `e56f45c`) y la web (`sitio/`).
-  - `version-1.2` llega hasta el **build 36** (`08a6367`) y estos documentos al día. Hasta que se una a `main` (cuando
+  - `version-1.2` llega hasta el **build 37** (`bcf3776`) y estos documentos al día. Hasta que se una a `main` (cuando
     salga la 1.1), **los documentos al día están en `version-1.2`**; los de `main` se quedaron en el 10-nov.
-- **Último build subido: 36 (1.2.0)**, para iOS y macOS (11-nov). La 1.1 sigue en el **30**.
+- **Último build subido: 37 (1.2.0)**, para iOS y macOS (12-nov). La 1.1 sigue en el **30**.
 - **1.0 (build 11):** en revisión de Apple. Cuando la aprueben, el usuario envía la **1.0.1 (build 15)**, que arregla
   iCloud en Producción.
 - **1.1.0:** lista en el **build 30**. Lleva toda la fase 2 (decisión del 9-nov) y lo hecho el 10-nov.
-- **1.2.0:** lista en el **build 36** (rama `version-1.2`, [DATOS-V5.md](DATOS-V5.md)). Esquema 5 desplegado y probado
+- **1.2.0:** lista en el **build 37** (rama `version-1.2`, [DATOS-V5.md](DATOS-V5.md)). Esquema 5 desplegado y probado
   en Producción. Textos para la tienda en [APP-STORE.md](APP-STORE.md), «Versión 1.2.0».
 
 | Build | Commit | Qué trae |
@@ -33,6 +33,7 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 | 34 | `e802c4b` | 1.2.0: «Saltar» de la bienvenida del iPhone y el iPad en cápsula de vidrio (el usuario no lo veía como texto suelto). |
 | 35 | `a89b78f` | 1.2.0: «Ocultar» / «Mostrar» en los «Primeros pasos» de Inicio también sin movimientos (`homeSetupStepsHidden`, por aparato). |
 | 36 | `3e50675` | 1.2.0: **sales tax por código postal dentro de la app**: 27,583 ZIP en 34 estados (24 con tasa de condado y ciudad, 10 solo con la del estado). Se sugiere en el alta, en Ajustes y en el cliente. `scripts/tasas/`, DATOS-V5.md. |
+| 37 | `e002ed1` | 1.2.0: filas con campo que toman el toque en toda la fila (`.fieldRow()`: descuento, Enviar, presupuesto, plantillas, monto parcial); títulos en los importes de reembolso, nota de crédito y pago de sales tax; «Base: …» en menú con letra de accesibilidad. |
 
 ## Lo que le toca al usuario
 
@@ -42,8 +43,8 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 2. Plan **«Chirogra para contadores»**: **completo en App Store Connect** (10-nov), sin enviar. No pulsar «Add for
    Review» suelto: se añade al envío de la 1.1.
 3. Probar el **build 30**: con el iPhone en inglés, «Try with sample data» debe dar «Rios Design & Build».
-4. Probar el **build 36** en TestFlight: código postal en el alta (Austin 78702 → 8.25 %, Lodi 07644 → 6.625 %),
-   «Saltar», «Ocultar» en Inicio, bitácora, Dividir y el camino del contador. **Ojo:** instalar la 1.2 pasa los libros
+4. Probar el **build 37** en TestFlight: código postal en el alta (Austin 78702 → 8.25 %, Lodi 07644 → 6.625 %),
+   «Saltar», «Ocultar» en Inicio, tocar la fila (no la cifra) en el descuento de la factura y en Enviar, bitácora, Dividir y el camino del contador. **Ojo:** instalar la 1.2 pasa los libros
    de ese aparato al esquema 5 y la 1.1 ya no los abre.
 
 ## Lo siguiente
@@ -51,16 +52,16 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 1. **Envío de la 1.1.0** (cuando la 1.0 y la 1.0.1 estén aprobadas): **todo preparado el 10-nov** en
    [APP-STORE.md](APP-STORE.md) (descripción, texto promocional, «What's New» en/es, notas para el revisor) y capturas
    `00-bienvenida` y `06-panel-clientes` en el escritorio. Elegir el **build 30** y añadir el plan para contadores al envío.
-2. **Envío de la 1.2.0** (cuando la 1.1 esté aprobada): elegir el **build 36**; «What's New» y notas para el revisor
+2. **Envío de la 1.2.0** (cuando la 1.1 esté aprobada): elegir el **build 37**; «What's New» y notas para el revisor
    preparados el 11-nov en APP-STORE.md. Antes, unir `version-1.2` a `main` (la web se publica desde `main`) y decidir
    si hacen falta capturas nuevas (bitácora, Dividir).
 3. **Tasas por código postal: cada trimestre** (1 ene, 1 abr, 1 jul, 1 oct) correr `scripts/tasas/descargar.sh` y
    `generar.py` y subir un build (DATOS-V5.md). Faltan AL AK AZ CO HI ID LA MO MS NM PA SC VA.
 4. **2.0 con servidor:** Plaid (plan «Chirogra + Banco»), el contador dentro de los libros del cliente, Stripe (con Apple
    Pay y Google Pay dentro), nómina. Esperar a que la 1.1 esté en la tienda; mientras, se puede escribir el plan.
-5. **Menores sin hacer** (CONTEXTO, punto 6b y «C»): selector Devengado/Caja con letra grande, textos cortados en el
-   Mac, y los `MoneyField` dentro de `LabeledContent` (descuento de la factura, «Para» de Enviar, presupuesto) que
-   solo toman el toque sobre la cifra. La campana de Avisos y la barra del alta del iPad son del sistema.
+5. **Menores:** hechos (build 37, 12-nov; CONTEXTO, «C»): las filas con campo que solo tomaban el toque sobre
+   la cifra y el selector Devengado/Caja con letra grande. Los textos cortados del Mac eran los datos de ejemplo en
+   inglés (build 29). La campana de Avisos y la barra del alta del iPad son del sistema.
 
 ## Cómo se trabaja con este usuario
 
