@@ -292,7 +292,7 @@ Chirogra 1.1 es nuestra actualización más grande.
 
 ## Versión 1.2.0: «What's New» y notas para la revisión
 
-Preparado el 11-nov. Se envía cuando esté aprobada la 1.1, con el **build 39** (o el último de la rama `version-1.2`).
+Preparado el 11-nov. Se envía cuando esté aprobada la 1.1, con el **build 40** (o el último de la rama `version-1.2`).
 La descripción y el texto promocional pueden quedarse como los de la 1.1. **Sin decidir:** capturas nuevas de la
 bitácora o de Dividir (las de la 1.1 siguen valiendo).
 
@@ -308,6 +308,8 @@ Chirogra 1.2 brings tools for accountants and a faster start.
 • Skip the welcome tour, and hide Getting started on Home whenever you like
 • Closing: record late items on the first open day, or with a reason that stays in the log; see changes after close
 • iPhone: choose the tools in your tab bar and keep favorites at the top of More (More › Customize)
+• Move money: transfers, credit card payments and owner draws from the + on Home and from each account in Banking
+• Security now has its own page in Settings: Face ID or Touch ID lock and your closing password
 • Fixes and improvements on iPhone, iPad and Mac
 
 **Novedades (es)**
@@ -322,6 +324,8 @@ Chirogra 1.2 trae herramientas para contadores y un comienzo más rápido.
 • Salta la bienvenida y oculta los Primeros pasos de Inicio cuando quieras
 • Cierre: registra lo que llegó tarde el primer día abierto, o con un motivo que queda en la bitácora; mira los cambios después del cierre
 • iPhone: elige las herramientas de la barra de abajo y ten tus favoritas arriba en Más (Más › Personalizar)
+• Mover dinero: traspasos, pago de la tarjeta y retiros del dueño desde el «+» de Inicio y desde cada cuenta de Banca
+• Seguridad tiene su propia página en Ajustes: el bloqueo con Face ID o Touch ID y la contraseña de cierre
 • Arreglos y mejoras en iPhone, iPad y Mac
 
 **Notas para la revisión de la 1.2 (App Review Information › Notes)**
@@ -342,7 +346,7 @@ Chirogra 1.2 trae herramientas para contadores y un comienzo más rápido.
 > - Banking › To Review: "Split" divides a transaction across accounts; "Exclude" asks for a reason.
 >
 > Bank statements are imported from CSV, OFX or QFX files the user chooses; there is no bank connection. iCloud sync is
-> optional (Settings › iCloud, backups and security). All data stays on the device and in the user's private iCloud
+> optional (Settings › iCloud and backups). All data stays on the device and in the user's private iCloud
 > database; there is no server.
 
 ## Notas para la revisión de la 1.0 (App Review)

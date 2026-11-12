@@ -7,13 +7,13 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 
 - **Dos ramas, las dos empujadas:**
   - `main` llega hasta la **1.1** (build 30, `e56f45c`) y la web (`sitio/`).
-  - `version-1.2` llega hasta el **build 39** (`3d04c54`) y estos documentos al día. Hasta que se una a `main` (cuando
+  - `version-1.2` llega hasta el **build 40** y estos documentos al día. Hasta que se una a `main` (cuando
     salga la 1.1), **los documentos al día están en `version-1.2`**; los de `main` se quedaron en el 10-nov.
-- **Último build subido: 39 (1.2.0)**, para iOS y macOS (12-nov). La 1.1 sigue en el **30**.
+- **Último build subido: 40 (1.2.0)**, para iOS y macOS (12-nov). La 1.1 sigue en el **30**.
 - **1.0 (build 11):** en revisión de Apple. Cuando la aprueben, el usuario envía la **1.0.1 (build 15)**, que arregla
   iCloud en Producción.
 - **1.1.0:** lista en el **build 30**. Lleva toda la fase 2 (decisión del 9-nov) y lo hecho el 10-nov.
-- **1.2.0:** lista en el **build 39** (rama `version-1.2`, [DATOS-V5.md](DATOS-V5.md)). Esquema 5 desplegado y probado
+- **1.2.0:** lista en el **build 40** (rama `version-1.2`, [DATOS-V5.md](DATOS-V5.md)). Esquema 5 desplegado y probado
   en Producción. Textos para la tienda en [APP-STORE.md](APP-STORE.md), «Versión 1.2.0».
 
 | Build | Commit | Qué trae |
@@ -35,9 +35,17 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 | 36 | `3e50675` | 1.2.0: **sales tax por código postal dentro de la app**: 27,583 ZIP en 34 estados (24 con tasa de condado y ciudad, 10 solo con la del estado). Se sugiere en el alta, en Ajustes y en el cliente. `scripts/tasas/`, DATOS-V5.md. |
 | 38 | `6616919` | 1.2.0: **arreglos de la QA de Hudson** (prueba completa como empresario, contador y auditor; informe en el worktree `Chirogra-QA-Hudson`, carpeta `QA/` sin seguimiento): cierre con motivo obligatorio sin contraseña, «Registrar con fecha» del primer día abierto, «Fijar contraseña y cerrar», «Libros cerrados hasta…» en Inicio, aviso bajo las fechas cerradas y «Cambios después del cierre» (pantalla y paquete del contador); reclasificar lo conciliado sin romper la conciliación; impuesto incluido en $0; fecha al convertir estimado; vencimiento de proveedor; «Saldada: cobrado + crédito»; Total y Saldo en el Mac; alta sin tipo de negocio elegido; guía al día. 330 pruebas; 22/22 controles de Hudson. |
 | 39 | `afeb040` | 1.2.0: **pestañas y favoritos a elección en el iPhone** (decisión del usuario del 12-nov): «Más › Personalizar» › Pestañas (entre Inicio y Más, fijos, caben 3 herramientas a elección y en orden) y Favoritos (arriba de Más, sin límite); mantener pulsada una herramienta de Más la añade. Por aparato (`phone.tabs`, `more.favorites`). `Shell/PhoneShortcuts.swift`, guía es/en, `PhoneShortcutsTests` (335 pruebas). |
+| 40 | `a2fe01e` | 1.2.0: **Seguridad aparte de iCloud y copias** (pedido del usuario: las dos filas de Más abrían la misma pantalla) y el resto de la QA de Hudson: «Mover dinero» (traspaso, pagar la tarjeta, retiro y aportación) en el «+» de Inicio y en cada cuenta de Banca; ficha de la cuenta con «Entró / Salió»; «Máximo $X (saldo pendiente)» al cobrar; «N ya importados · M nuevos» al reimportar; el ZIP del alta propone el estado; bitácora «Categoría: A → B»; factura con cobros con «Editar» y «Anular» desactivados y el motivo. 338 pruebas. |
 | 37 | `e002ed1` | 1.2.0: filas con campo que toman el toque en toda la fila (`.fieldRow()`: descuento, Enviar, presupuesto, plantillas, monto parcial); títulos en los importes de reembolso, nota de crédito y pago de sales tax; «Base: …» en menú con letra de accesibilidad. |
 
 ## Último chat (11 y 12-nov)
+
+- **Build 40 (12-nov, noche):** el usuario preguntó si «iCloud» y «Seguridad» de Más estaban duplicados (sí: abrían
+  la misma pantalla) y pidió **separarlas de verdad** y meter en el 40 los arreglos pequeños que quedaban de Hudson
+  (H03, H11, H12, H13, H20, H21, H24). Detalle en CONTEXTO, «Build 40». Comprobado con XCUITest en simuladores
+  temporales («QA B40 iPhone/iPad», borrados al terminar) y en una copia del Mac (`com.chirogra.qa.b40`). Para la 1.3
+  quedan H04, H19, H22 y H23. Worktree `Chirogra-build40` (rama `arreglos/build-40`, ya en `version-1.2`): se puede
+  borrar.
 
 - **Pestañas y favoritos a elección y build 39 (12-nov, noche):** el usuario preguntó si el iPhone se podía
   personalizar porque las herramientas de «Más» quedan dispersas. Decidió: las dos cosas (pestañas a elección y
@@ -80,7 +88,9 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 4. Probar el **build 37** en TestFlight: código postal en el alta (Austin 78702 → 8.25 %, Lodi 07644 → 6.625 %),
    «Saltar», «Ocultar» en Inicio, tocar la fila (no la cifra) en el descuento de la factura y en Enviar, bitácora, Dividir y el camino del contador. **Ojo:** instalar la 1.2 pasa los libros
    de ese aparato al esquema 5 y la 1.1 ya no los abre.
-5. Probar el **build 39** en TestFlight (iPhone): «Más › Personalizar › Pestañas» (quitar Gastos, poner Asientos de
+5. Probar el **build 40** en TestFlight: Más › «iCloud y copias» y «Seguridad» (ya distintas), «+» de Inicio ›
+   «Pagar la tarjeta», Banca › una cuenta › ⇆, y el alta con un ZIP sin elegir estado.
+6. Probar el **build 39** en TestFlight (iPhone): «Más › Personalizar › Pestañas» (quitar Gastos, poner Asientos de
    diario o un reporte, ordenar, «Restablecer la barra»), «Favoritos», y mantener pulsada una herramienta de Más.
 
 ## Lo siguiente
@@ -88,7 +98,7 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 1. **Envío de la 1.1.0** (cuando la 1.0 y la 1.0.1 estén aprobadas): **todo preparado el 10-nov** en
    [APP-STORE.md](APP-STORE.md) (descripción, texto promocional, «What's New» en/es, notas para el revisor) y capturas
    `00-bienvenida` y `06-panel-clientes` en el escritorio. Elegir el **build 30** y añadir el plan para contadores al envío.
-2. **Envío de la 1.2.0** (cuando la 1.1 esté aprobada): elegir el **build 39**; «What's New» y notas para el revisor
+2. **Envío de la 1.2.0** (cuando la 1.1 esté aprobada): elegir el **build 40**; «What's New» y notas para el revisor
    preparados el 11-nov en APP-STORE.md. Antes, unir `version-1.2` a `main` (la web se publica desde `main`) y decidir
    si hacen falta capturas nuevas (bitácora, Dividir).
 3. **Tasas por código postal: cada trimestre** (1 ene, 1 abr, 1 jul, 1 oct) correr `scripts/tasas/descargar.sh` y

@@ -15,7 +15,7 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
 - **`main` lleva todo** (fase 2 sin servidor unida el 9-nov, merge `6f745a4`) y está empujado. El 9-nov se borraron
   las worktrees y ramas locales de los agentes y `fase2-integracion` (todo estaba ya en `main`); en GitHub sigue
   `origin/fase2-integracion`, igual que lo unido.
-- **Rama `version-1.2`** (empujada hasta el build 39, `3d04c54`, 12-nov): la 1.2 entera y **estos documentos al día**.
+- **Rama `version-1.2`** (empujada hasta el build 40, 12-nov): la 1.2 entera y **estos documentos al día**.
   `main` se quedó en la 1.1 (build 30) y con los documentos del 10-nov; la rama se une a `main` cuando salga la 1.1.
 - **Versiones en App Store Connect:**
   - **1.0 (build 11):** el 7-nov se envió a revisión con la suscripción «Chirogra monthly» y su grupo. Apple la
@@ -30,7 +30,7 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
   - **1.1.0 (builds 16 a 21, TestFlight):** la fase 2 entera. El **21** (`467cdcf`) lo prueba el usuario; el **22** (`3662619`, subido
     el 10-nov para iOS y macOS) lleva además la bienvenida en carrusel (abajo). **Toda la fase 2 va en la 1.1** (decisión del
     9-nov: no se esconde nada para 1.2/1.3), con el plan de contadores en el envío. Lista en el **build 30**.
-  - **1.2.0 (builds 31 a 39, TestFlight):** lista en el **build 39** (38: arreglos de la QA de Hudson; 39: pestañas y favoritos del iPhone; abajo, «C»). Se envía cuando esté aprobada la 1.1.
+  - **1.2.0 (builds 31 a 40, TestFlight):** lista en el **build 40** (38: arreglos de la QA de Hudson; 39: pestañas y favoritos del iPhone; 40: Seguridad aparte, «Mover dinero» y el resto de Hudson; abajo, «C»). Se envía cuando esté aprobada la 1.1.
 - **Bienvenida en carrusel (aprobada por el usuario el 10-nov en su iPhone; build 22):** opción B del canvas «Chirogra — Bienvenida»
   (https://claude.ai/artifact/PB4NmST2UPeAA3wTZFjres) en `Onboarding/WelcomeView.swift`. Sale sin empresas antes del
   alta (ajuste `welcome.seen`); «Crear mi empresa» → paso 1, que ya no lleva los datos de ejemplo ni el aviso de iCloud
@@ -168,6 +168,22 @@ y `MoreView` empuja la pantalla, que recoge la ruta. «Balance» y «Flujo» com
 `-phone.tabs journal,taxes,report.income` fija la barra al arrancar (dominio de argumentos: mientras esté, no se
 guarda lo que se cambie). **Sin comprobar:** VoiceOver de verdad en el signo menos (XCUITest lo ve como «Reordenar
 Eliminar», sin el nombre).
+**Build 40 (`201e886`, código en `a4cb5fb` y `a2fe01e`, subido el 12-nov para iOS y macOS)**: lo que quedaba de la QA de Hudson y **Seguridad separada** (el usuario
+vio que «iCloud y copias» y «Seguridad» de Más abrían la misma pantalla y pidió «separarlas de verdad»).
+`SettingsPage.security` y `SecurityView` (bloqueo con Face ID o Touch ID y si está fijada la contraseña de cierre);
+`ICloudAndBackupsView` (iCloud, suscripción, copias) sustituye a `DataAndSecurityView`; en iPad y Mac son dos páginas
+de Ajustes. **Mover dinero** (H03, `Accounting/MoveMoney.swift`): en el «+» de Inicio del iPhone, en la barra de Inicio
+del iPad y el Mac y en la ficha de cada cuenta de dinero de Banca (`LedgerView` y la tabla ancha del iPad); abre las
+plantillas de siempre con las cuentas puestas (`JournalEntryEditorView(shortcut:)`, hoja titulada «Mover dinero»;
+«Pagar la tarjeta» = traspaso con la tarjeta de destino). Ficha de la cuenta en llano (H24): «Entró / Salió» (tarjeta:
+«Pagos / Cargos»), salvo con el plan para contadores. Cobro mayor que el saldo o de $0 dice «Máximo $X (saldo
+pendiente)» (H11). La vista previa de importar dice «N ya importados · M nuevos» y no deja importar si no hay nuevos
+(H12, `alreadyImportedCount`). El ZIP del alta propone el estado (H13, `PostalState`: la tabla y, si no, los prefijos
+del USPS) y los ejemplos ya no son de Texas. La bitácora resume «Gasto reclasificado: … · Categoría: A → B» (H20). La
+factura con cobros muestra «Editar» y «Anular» desactivados con el motivo (H21). Pruebas: `Build40Tests` (338 en
+total). **Quedan para la 1.3:** H04 (elegir el mes en los reportes del iPhone), H19 (conciliaciones y antigüedad en el
+paquete del contador), H22 (accesibilidad de Cliente/Proveedor) y H23 (Gastos que no llega a reposo, mirar con
+Instruments). Las capturas de la guía `copias-es/en.jpg` aún enseñan el bloqueo dentro de iCloud.
 9. Asientos de ajuste marcados como del contador: hecho (`EntrySource.accountantAdjustment`).
 10. Bitácora de cambios: hecho (aparato y antes/después; Contabilidad › «Bitácora de cambios»).
 11. Banca: dividir y motivo al excluir: hecho (canvas `BancaRevisar`).
