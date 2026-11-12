@@ -4578,6 +4578,16 @@
         }
       }
     },
+    "Así se verá" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preview"
+          }
+        }
+      }
+    },
     "Así te enseñamos lo que necesitas desde el principio." : {
       "localizations" : {
         "en" : {
@@ -4800,6 +4810,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Add"
+          }
+        }
+      }
+    },
+    "Añadir %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add %@"
+          }
+        }
+      }
+    },
+    "Añadir a Favoritos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add to Favorites"
           }
         }
       }
@@ -5214,6 +5244,17 @@
         }
       }
     },
+    "Balance" : {
+      "comment" : "Pestaña del iPhone: balance general",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Balance sheet"
+          }
+        }
+      }
+    },
     "Balance general" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -5426,6 +5467,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Payee, category, or amount"
+          }
+        }
+      }
+    },
+    "Bitácora" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Log"
           }
         }
       }
@@ -9775,6 +9826,16 @@
         }
       }
     },
+    "Día a día" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Day to Day"
+          }
+        }
+      }
+    },
     "EIN %@" : {
       "localizations" : {
         "en" : {
@@ -10874,6 +10935,16 @@
         }
       }
     },
+    "Elige qué herramientas van en la barra de abajo y cuáles salen arriba en Más." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose which tools go in the bottom bar and which appear at the top of More."
+          }
+        }
+      }
+    },
     "Elige tu estado" : {
       "localizations" : {
         "en" : {
@@ -11488,6 +11559,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "In English"
+          }
+        }
+      }
+    },
+    "En la barra" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In the Tab Bar"
           }
         }
       }
@@ -13261,6 +13342,16 @@
         }
       }
     },
+    "Favoritos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Favorites"
+          }
+        }
+      }
+    },
     "Fecha" : {
       "localizations" : {
         "en" : {
@@ -13397,6 +13488,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dates and language"
+          }
+        }
+      }
+    },
+    "Fija" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fixed"
           }
         }
       }
@@ -13561,6 +13662,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Financing"
+          }
+        }
+      }
+    },
+    "Flujo" : {
+      "comment" : "Pestaña del iPhone: flujo de efectivo",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cash flow"
           }
         }
       }
@@ -15244,6 +15356,16 @@
         }
       }
     },
+    "Inicio y Más siempre están. Entre ellos caben %lld herramientas: arrastra para ordenarlas." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Home and More are always there. Up to %lld tools fit between them: drag to reorder."
+          }
+        }
+      }
+    },
     "Inspector" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -15342,6 +15464,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "The trial balance doesn't balance"
+          }
+        }
+      }
+    },
+    "La barra está llena" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tab Bar Is Full"
+          }
+        }
+      }
+    },
+    "La barra está llena: quita una pestaña para poner otra." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The tab bar is full: remove a tab to add another."
           }
         }
       }
@@ -17058,6 +17200,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Margin %lld%%"
+          }
+        }
+      }
+    },
+    "Mayor" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ledger"
           }
         }
       }
@@ -20635,6 +20787,26 @@
         }
       }
     },
+    "Personalizar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Customize"
+          }
+        }
+      }
+    },
+    "Pestañas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tabs"
+          }
+        }
+      }
+    },
     "Petróleo" : {
       "localizations" : {
         "en" : {
@@ -20802,6 +20974,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Fills each income and expense account with what was recorded that fiscal year, month by month, with the adjustment."
+          }
+        }
+      }
+    },
+    "Poner en la barra" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add to Tab Bar"
           }
         }
       }
@@ -22050,6 +22232,26 @@
         }
       }
     },
+    "Quitar de Favoritos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove from Favorites"
+          }
+        }
+      }
+    },
+    "Quitar de la barra" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove from Tab Bar"
+          }
+        }
+      }
+    },
     "Quitar filtro" : {
       "localizations" : {
         "en" : {
@@ -22116,6 +22318,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Remove receipt"
+          }
+        }
+      }
+    },
+    "Quitar todos los favoritos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove All Favorites"
           }
         }
       }
@@ -23213,6 +23425,16 @@
         }
       }
     },
+    "Restablecer la barra" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reset Tab Bar"
+          }
+        }
+      }
+    },
     "Restauración" : {
       "localizations" : {
         "en" : {
@@ -24155,6 +24377,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Money goes out"
+          }
+        }
+      }
+    },
+    "Salen arriba en Más, en este orden. También puedes mantener pulsada cualquier herramienta de Más para añadirla." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "They appear at the top of More, in this order. You can also touch and hold any tool in More to add it."
           }
         }
       }
@@ -26510,6 +26742,16 @@
         }
       }
     },
+    "Tasas de sales tax" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sales tax rates"
+          }
+        }
+      }
+    },
     "Tasas incluidas" : {
       "localizations" : {
         "en" : {
@@ -26847,6 +27089,16 @@
         }
       }
     },
+    "Todavía no hay favoritos." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No favorites yet."
+          }
+        }
+      }
+    },
     "Todavía no hay una empresa configurada." : {
       "localizations" : {
         "en" : {
@@ -26945,6 +27197,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "All months"
+          }
+        }
+      }
+    },
+    "Todos los reportes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All reports"
           }
         }
       }
@@ -29104,6 +29366,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Vs. previous"
+          }
+        }
+      }
+    },
+    "Vuelve a Inicio · Ventas · Gastos · Banca · Más. Lo que elijas se guarda solo en este aparato." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Goes back to Home · Sales · Expenses · Banking · More. Your choice is saved only on this device."
           }
         }
       }

@@ -46,9 +46,8 @@ enum AppSection: String, Hashable, CaseIterable, Identifiable {
     static let business: [AppSection] = [.home, .sales, .expenses, .banking, .reports]
     /// Grupo «Libros» de la barra lateral.
     static let books: [AppSection] = [.accounting, .taxes, .settings]
-    /// Pestañas del iPhone como el canvas (decisión del usuario del 2-nov): Inicio · Ventas · Gastos · Banca, y «Más»
-    /// con Reportes, Contabilidad, Impuestos y Ajustes. Cinco como máximo, para que el sistema no agrupe el resto.
-    static let phoneTabs: [AppSection] = [.home, .sales, .expenses, .banking]
+    // Pestañas del iPhone: Inicio, las que elija el usuario (por defecto Ventas · Gastos · Banca, decisión del 2-nov) y
+    // «Más». Cinco como máximo, para que el sistema no agrupe el resto (`PhoneShortcuts`).
 
     @ViewBuilder
     var destination: some View {
@@ -380,12 +379,15 @@ struct AppShell: View {
     #if DEBUG
     /// `-qa.pestana sales|expenses|banking|reports` (solo Debug): la pestaña del iPhone con la que arranca; `reports`
     /// abre Más › Estado de resultados.
-    @State private var tab: AppSection = UserDefaults.standard.string(forKey: "qa.pestana").map { $0 == "reports" ? "settings" : $0 }
-        .flatMap(AppSection.init(rawValue:)) ?? .home
+    @State private var tab: String = UserDefaults.standard.string(forKey: "qa.pestana").map { ["reports", "settings"].contains($0) ? Self.moreTab : $0 } ?? Self.homeTab
     @State private var qaOpensReports = UserDefaults.standard.string(forKey: "qa.pestana") == "reports"
     #else
-    @State private var tab: AppSection = .home
+    @State private var tab: String = Self.homeTab
     #endif
+    /// Pestañas del iPhone entre Inicio y «Más», elegidas en este aparato (`PhoneShortcuts`, «Más › Personalizar»).
+    @AppStorage(PhoneShortcuts.tabsKey) private var phoneTabsRaw = PhoneShortcuts.defaultTabsRaw
+    private static let homeTab = "home"
+    private static let moreTab = "more"
     #if DEBUG
     /// Con `-qa.seccion` (solo Debug), la página con la que arranca.
     @State private var selection: SidebarItem = QALaunch.salesItem ?? QALaunch.sidebarItem ?? .section(.home)
@@ -510,7 +512,11 @@ struct AppShell: View {
     private func follow(_ route: ClientRoute) {
         #if os(iOS)
         if sizeClass == .compact {
-            tab = route.phoneTab
+            // La pestaña de la ruta, o «Más» si el usuario la quitó de la barra (Más empuja la pantalla, `MoreView`).
+            let target = route.phoneTab
+            if target == .home { tab = Self.homeTab }
+            else if let tool = PhoneShortcuts.tabs(from: phoneTabsRaw).first(where: { $0.section == target }) { tab = tool.id }
+            else { tab = Self.moreTab }
             if route == .home { _ = router.take { $0 == .home } }
             return
         }
@@ -524,16 +530,23 @@ struct AppShell: View {
 
     private var tabView: some View {
         TabView(selection: $tab) {
-            ForEach(AppSection.phoneTabs) { section in
-                Tab(section.title, systemImage: section.systemImage, value: section) {
+            Tab(AppSection.home.title, systemImage: AppSection.home.systemImage, value: Self.homeTab) {
+                NavigationStack {
+                    // Dentro de la pila, debajo de la barra de navegación: fuera de ella tapaba el título.
+                    SyncAwareContent(title: AppSection.home.title) { HomeView() }
+                        .safeAreaInset(edge: .top, spacing: 0) { SyncErrorBanner() }
+                }
+            }
+            // Las que el usuario eligió (por defecto Ventas · Gastos · Banca, decisión del 2-nov).
+            ForEach(PhoneShortcuts.tabs(from: phoneTabsRaw)) { tool in
+                Tab(tool.tabTitle, systemImage: tool.systemImage, value: tool.id) {
                     NavigationStack {
-                        // Dentro de la pila, debajo de la barra de navegación: fuera de ella tapaba el título.
-                        SyncAwareContent(title: section.title) { section.destination }
+                        SyncAwareContent(title: tool.title) { tool.destination }
                             .safeAreaInset(edge: .top, spacing: 0) { SyncErrorBanner() }
                     }
                 }
             }
-            Tab("Más", systemImage: "ellipsis.circle", value: AppSection.settings) {
+            Tab("Más", systemImage: "ellipsis.circle", value: Self.moreTab) {
                 NavigationStack {
                     MoreView().safeAreaInset(edge: .top, spacing: 0) { SyncErrorBanner() }
                         #if DEBUG
@@ -542,6 +555,11 @@ struct AppShell: View {
                         #endif
                 }
             }
+        }
+        // Si se quita de la barra la pestaña que estaba a la vista, se queda en «Más».
+        .onChange(of: phoneTabsRaw) {
+            let ids = [Self.homeTab, Self.moreTab] + PhoneShortcuts.tabs(from: phoneTabsRaw).map(\.id)
+            if !ids.contains(tab) { tab = Self.moreTab }
         }
     }
 
@@ -766,6 +784,11 @@ struct MoreView: View {
     @State private var showingTaxes = false
     /// Panel de clientes: «Cerrar periodo…».
     @State private var showingClose = false
+    /// Panel de clientes: Ventas o Banca cuando el usuario las quitó de la barra (las empuja «Más»).
+    @State private var routedTool: PhoneTool?
+    @AppStorage(PhoneShortcuts.tabsKey) private var phoneTabsRaw = PhoneShortcuts.defaultTabsRaw
+    /// Favoritos de este aparato, arriba de todo («Más › Personalizar › Favoritos» o mantener pulsada una fila).
+    @AppStorage(PhoneShortcuts.favoritesKey) private var favoritesRaw = ""
     #if DEBUG
     /// `-qa.bitacora 1` abre la bitácora de cambios (1.2).
     @State private var showingAuditLog = UserDefaults.standard.bool(forKey: "qa.bitacora")
@@ -785,18 +808,27 @@ struct MoreView: View {
             .listRowBackground(Color.clear)
             .listRowInsets(EdgeInsets())
 
+            let favorites = PhoneShortcuts.decode(favoritesRaw)
+            if !favorites.isEmpty {
+                Section(title: "Favoritos") {
+                    ForEach(favorites) { tool in
+                        MoreRow(title: tool.title, systemImage: tool.systemImage, color: tool.color, tool: tool) { tool.destination }
+                    }
+                }
+            }
+
             if let company = companies.first {
                 Section {
                     companyRow(company)
                     // Varias empresas: la lista con lo pendiente de cada una, cambiar, añadir, archivar y borrar.
                     MoreRow(title: String(localized: "Empresas"), value: "\(allCompanies.filter { !$0.isArchived }.count)",
-                            systemImage: "building.2", color: Palette.orange) { CompaniesView() }
+                            systemImage: "building.2", color: Palette.orange, tool: .companies) { CompaniesView() }
                 }
             }
 
             Section(title: "Reportes") {
                 ForEach(ReportsView.Kind.allCases) { kind in
-                    MoreRow(title: kind.fullTitle, systemImage: kind.moreSymbol, color: kind.moreColor) { ReportsView(fixedKind: kind) }
+                    MoreRow(title: kind.fullTitle, systemImage: kind.moreSymbol, color: kind.moreColor, tool: .report(kind)) { ReportsView(fixedKind: kind) }
                 }
             }
 
@@ -804,11 +836,11 @@ struct MoreView: View {
             // fondo de «Más» no se encontraba.
             Section {
                 MoreRow(title: String(localized: "Resumen"), value: taxSubtitle, valueColor: taxOwed > 0 ? Palette.warning : Palette.ink2,
-                        systemImage: "percent", color: Palette.red) { TaxesView() }
+                        systemImage: "percent", color: Palette.red, tool: .taxes) { TaxesView() }
                 MoreRow(title: String(localized: "Tasas"), value: String(localized: "\(rates.count) activas"),
-                        systemImage: "list.number", color: Palette.pink) { TaxesView(tab: .rates) }
+                        systemImage: "list.number", color: Palette.pink, tool: .taxRates) { TaxesView(tab: .rates) }
                 // Fase 2 (canvas `Mas`): deducibles por línea del Schedule C / 1120-S (`Taxes/DeductionsView.swift`).
-                MoreRow(title: String(localized: "Deducibles"), systemImage: "dollarsign", color: Palette.green) { TaxesView(tab: .deductions) }
+                MoreRow(title: String(localized: "Deducibles"), systemImage: "dollarsign", color: Palette.green, tool: .deductions) { TaxesView(tab: .deductions) }
             } header: {
                 SectionLabel(text: String(localized: "Impuestos"))
             } footer: {
@@ -817,14 +849,14 @@ struct MoreView: View {
 
             Section(title: "Contabilidad") {
                 MoreRow(title: String(localized: "Plan de cuentas"), value: String(localized: "\(accounts.filter { !$0.isArchived }.count) cuentas"),
-                        systemImage: "list.bullet.indent", color: Palette.indigo) { ChartOfAccountsView() }
+                        systemImage: "list.bullet.indent", color: Palette.indigo, tool: .chartOfAccounts) { ChartOfAccountsView() }
                 MoreRow(title: String(localized: "Asientos de diario"), value: String(localized: "\(entriesThisMonth) este mes"),
-                        systemImage: "doc.plaintext", color: Palette.blue) { JournalListView() }
+                        systemImage: "doc.plaintext", color: Palette.blue, tool: .journal) { JournalListView() }
                 MoreRow(title: String(localized: "Libro mayor"), value: String(localized: "Por cuenta"),
-                        systemImage: "book.closed", color: Palette.teal) { LedgerAccountPickerView() }
+                        systemImage: "book.closed", color: Palette.teal, tool: .ledger) { LedgerAccountPickerView() }
                 MoreRow(title: String(localized: "Cierre de periodo"), value: closeSubtitle,
-                        systemImage: "lock", color: Palette.gray) { PeriodCloseView() }
-                MoreRow(title: String(localized: "Bitácora de cambios"), systemImage: "clock.arrow.circlepath", color: Palette.orange) { AuditLogView() }
+                        systemImage: "lock", color: Palette.gray, tool: .periodClose) { PeriodCloseView() }
+                MoreRow(title: String(localized: "Bitácora de cambios"), systemImage: "clock.arrow.circlepath", color: Palette.orange, tool: .auditLog) { AuditLogView() }
             }
 
             Section(title: "Ajustes") {
@@ -846,6 +878,21 @@ struct MoreView: View {
                         systemImage: "faceid", color: Palette.red) { DataAndSecurityView(showsSecurity: true) }
             }
 
+            #if os(iOS)
+            // Pestañas y favoritos a elección (decisión del usuario del 12-nov), guardados en este aparato.
+            Section {
+                MoreRow(title: String(localized: "Pestañas"), value: tabsSummary,
+                        systemImage: "dock.rectangle", color: Palette.brand) { CustomizeTabsView() }
+                MoreRow(title: String(localized: "Favoritos"),
+                        value: favoritesCount == 0 ? String(localized: "Ninguno") : "\(favoritesCount)",
+                        systemImage: "star.fill", color: Palette.yellow) { CustomizeFavoritesView() }
+            } header: {
+                SectionLabel(text: String(localized: "Personalizar"))
+            } footer: {
+                Text("Elige qué herramientas van en la barra de abajo y cuáles salen arriba en Más.")
+            }
+            #endif
+
             Section(title: "Ayuda") { GuideLinkRow() }
         }
         .listRowBackground(Palette.surface)
@@ -854,6 +901,9 @@ struct MoreView: View {
         .headerTitle()
         .stableDestination(isPresented: $showingTaxes) { TaxesView() }
         .stableDestination(isPresented: $showingClose) { PeriodCloseView() }
+        .stableDestination(isPresented: Binding(get: { routedTool != nil }, set: { if !$0 { routedTool = nil } })) {
+            routedTool?.destination
+        }
         #if DEBUG
         .stableDestination(isPresented: $showingAuditLog) { AuditLogView() }
         .stableDestination(isPresented: $showingJournal) { JournalListView() }
@@ -865,8 +915,19 @@ struct MoreView: View {
         }
         .onChange(of: ClientsRouter.shared.pending, initial: true) { _, route in
             if route == .accountantPackage { showingTaxes = true }
+            // Ventas o Banca fuera de la barra: «Más» empuja la pantalla y esta recoge la ruta al aparecer.
+            if let section = route?.phoneTab, let tool = [PhoneTool.sales, .banking].first(where: { $0.section == section }),
+               !PhoneShortcuts.tabs(from: phoneTabsRaw).contains(tool) {
+                routedTool = tool
+            }
         }
     }
+
+    private var tabsSummary: String {
+        PhoneShortcuts.tabs(from: phoneTabsRaw).map(\.tabTitle).joined(separator: " · ")
+    }
+
+    private var favoritesCount: Int { PhoneShortcuts.decode(favoritesRaw).count }
 
     private var entriesThisMonth: Int {
         let month = DateInterval.month(containing: .now)
@@ -942,8 +1003,12 @@ private struct MoreRow<Destination: View>: View {
     var valueColor: Color = Palette.ink2
     let systemImage: String
     let color: Color
+    /// La herramienta de la fila: mantenerla pulsada la añade a Favoritos o a la barra.
+    var tool: PhoneTool? = nil
     @ViewBuilder let destination: () -> Destination
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @AppStorage(PhoneShortcuts.favoritesKey) private var favoritesRaw = ""
+    @AppStorage(PhoneShortcuts.tabsKey) private var tabsRaw = PhoneShortcuts.defaultTabsRaw
 
     var body: some View {
         NavigationLink(destination: destination) {
@@ -962,6 +1027,32 @@ private struct MoreRow<Destination: View>: View {
             }
         }
         .accessibilityElement(children: .combine)
+        .contextMenu { if let tool { shortcutsMenu(tool) } }
+    }
+
+    /// Mantener pulsada la fila: añadirla a Favoritos o a la barra, o quitarla.
+    @ViewBuilder
+    private func shortcutsMenu(_ tool: PhoneTool) -> some View {
+        let favorites = PhoneShortcuts.decode(favoritesRaw)
+        let tabs = PhoneShortcuts.tabs(from: tabsRaw)
+        if favorites.contains(tool) {
+            Button("Quitar de Favoritos", systemImage: "star.slash") {
+                favoritesRaw = PhoneShortcuts.encode(favorites.filter { $0 != tool })
+            }
+        } else {
+            Button("Añadir a Favoritos", systemImage: "star") { favoritesRaw = PhoneShortcuts.encode(favorites + [tool]) }
+        }
+        #if os(iOS)
+        if tabs.contains(tool) {
+            Button("Quitar de la barra", systemImage: "minus.circle") {
+                tabsRaw = PhoneShortcuts.encode(tabs.filter { $0 != tool })
+            }
+        } else if tabs.count < PhoneShortcuts.maxTabs {
+            Button("Poner en la barra", systemImage: "dock.rectangle") { tabsRaw = PhoneShortcuts.encode(tabs + [tool]) }
+        } else {
+            Button("La barra está llena", systemImage: "dock.rectangle") {}.disabled(true)
+        }
+        #endif
     }
 }
 
