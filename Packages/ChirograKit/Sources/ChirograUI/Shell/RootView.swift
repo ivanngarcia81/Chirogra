@@ -872,10 +872,10 @@ struct MoreView: View {
                 }
                 MoreRow(title: String(localized: "iCloud y copias"),
                         value: iCloudSyncEnabled ? String(localized: "Activado") : String(localized: "Desactivado"),
-                        systemImage: "icloud", color: Palette.teal) { DataAndSecurityView() }
+                        systemImage: "icloud", color: Palette.teal) { ICloudAndBackupsView() }
                 MoreRow(title: String(localized: "Seguridad"),
                         value: appLockEnabled ? String(localized: "Face ID") : String(localized: "Desactivado"),
-                        systemImage: "faceid", color: Palette.red) { DataAndSecurityView(showsSecurity: true) }
+                        systemImage: "faceid", color: Palette.red) { SecurityView() }
             }
 
             #if os(iOS)

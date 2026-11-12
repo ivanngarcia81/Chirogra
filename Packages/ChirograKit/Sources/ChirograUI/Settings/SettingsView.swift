@@ -34,7 +34,9 @@ struct SettingsView: View {
 /// Páginas de Ajustes, con su icono de color como en Ajustes del sistema (canvas `MacAjustes`).
 enum SettingsPage: String, CaseIterable, Identifiable {
     // `payments` (Cobro en línea, `Sales/PayNow/PaymentSettingsView.swift`): agente de recibos y cobro, 1.1.
-    case profile, template, payments, formats, companies, data
+    // `security` (Face ID o Touch ID) se separó de `data` en el build 40: antes las dos filas de «Más» abrían la misma
+    // pantalla (pedido del usuario del 12-nov: «separarlas de verdad»).
+    case profile, template, payments, formats, companies, data, security
     var id: String { rawValue }
 
     var title: String {
@@ -44,7 +46,8 @@ enum SettingsPage: String, CaseIterable, Identifiable {
         case .payments: String(localized: "Cobro en línea")
         case .formats: String(localized: "Moneda y formatos")
         case .companies: String(localized: "Empresas")
-        case .data: String(localized: "iCloud, copias y seguridad")
+        case .data: String(localized: "iCloud y copias")
+        case .security: String(localized: "Seguridad")
         }
     }
 
@@ -56,6 +59,7 @@ enum SettingsPage: String, CaseIterable, Identifiable {
         case .formats: "dollarsign"
         case .companies: "building.2.fill"
         case .data: "icloud.fill"
+        case .security: "faceid"
         }
     }
 
@@ -67,6 +71,7 @@ enum SettingsPage: String, CaseIterable, Identifiable {
         case .formats: Palette.green
         case .companies: Palette.orange
         case .data: Palette.teal
+        case .security: Palette.red
         }
     }
 }
@@ -109,7 +114,8 @@ struct SettingsWideView: View {
                     case .payments: PaymentSettingsView(company: company, embedded: true)
                     case .formats: FormatsView(company: company, embedded: true)
                     case .companies: CompaniesView(embedded: true)
-                    case .data: DataAndSecurityView(embedded: true)
+                    case .data: ICloudAndBackupsView(embedded: true)
+                    case .security: SecurityView(embedded: true)
                     }
                 }
             }
@@ -218,7 +224,8 @@ struct SettingsLinks: View {
             link(.formats) { FormatsView(company: company) }
             link(.companies) { CompaniesView() }
         }
-        link(.data) { DataAndSecurityView() }
+        link(.data) { ICloudAndBackupsView() }
+        link(.security) { SecurityView() }
         GuideLinkRow()
     }
 
@@ -399,30 +406,15 @@ struct FormatsView: View {
     }
 }
 
-/// Datos y seguridad (canvas `AjustesDatos`): iCloud, copias de seguridad (`BackupSection`) y bloqueo, como filas con
-/// icono de color. Con los datos de ejemplo, arriba, «Empezar con mi empresa» (`SampleBooksSection`).
-struct DataAndSecurityView: View {
+/// iCloud y copias (canvas `AjustesDatos`): sincronización, suscripción y copias de seguridad (`BackupSection`), como
+/// filas con icono de color. Con los datos de ejemplo, arriba, «Empezar con mi empresa» (`SampleBooksSection`). El
+/// bloqueo con Face ID o Touch ID tiene su propia página, `SecurityView` (build 40).
+struct ICloudAndBackupsView: View {
     /// Dentro de `SettingsWideView`: el título de la ventana sigue siendo «Ajustes».
     var embedded = false
-    /// «Seguridad» de Más: baja hasta el bloqueo con Face ID (antes abría igual que «iCloud y copias», QA del 10-nov).
-    var showsSecurity = false
     @AppStorage(ChirograStore.syncEnabledKey) private var iCloudSyncEnabled = true
-    @AppStorage("appLockEnabled") private var appLockEnabled = false
-    @State private var lockUnavailable = false
 
     var body: some View {
-        ScrollViewReader { proxy in
-            form.task {
-                guard showsSecurity else { return }
-                try? await Task.sleep(for: .milliseconds(300))
-                withAnimation { proxy.scrollTo(Self.securityID, anchor: .center) }
-            }
-        }
-    }
-
-    private static let securityID = "security"
-
-    private var form: some View {
         SettingsForm {
             // Solo con los datos de ejemplo: «Empezar con mi empresa», también para quien ocultó el aviso de Inicio.
             SampleBooksSection()
@@ -449,6 +441,31 @@ struct DataAndSecurityView: View {
             }
             SubscriptionSection()
             BackupSection()
+        }
+        // Interruptores como los del canvas (en el Mac, el de casilla salía por defecto en los formularios).
+        .toggleStyle(.switch)
+        .screenBackground()
+        .modifier(TitleUnlessEmbedded(title: "iCloud y copias", embedded: embedded))
+    }
+
+    #if os(macOS)
+    private static let detailFont = Font.subheadline
+    #else
+    private static let detailFont = Font.footnote
+    #endif
+}
+
+/// Seguridad (build 40): el bloqueo con Face ID o Touch ID y dónde se protege un mes cerrado. Antes era la última
+/// sección de «Datos y seguridad», y «Seguridad» de «Más» abría esa misma pantalla bajada hasta aquí.
+struct SecurityView: View {
+    /// Dentro de `SettingsWideView`: el título de la ventana sigue siendo «Ajustes».
+    var embedded = false
+    @AppStorage("appLockEnabled") private var appLockEnabled = false
+    @State private var lockUnavailable = false
+    @ActiveCompanyQuery private var companies: [Company]
+
+    var body: some View {
+        SettingsForm {
             SettingsSection {
                 HStack(spacing: 12) {
                     IconTile(systemImage: "faceid", foreground: Palette.green)
@@ -460,9 +477,8 @@ struct DataAndSecurityView: View {
                         }
                     ))
                 }
-                .id(Self.securityID)
             } header: {
-                SectionLabel(text: String(localized: "Seguridad"))
+                SectionLabel(text: String(localized: "Bloqueo de la app"))
             } footer: {
                 if lockUnavailable {
                     Text("Para bloquear Chirogra, primero configura un código, Face ID o Touch ID en los ajustes del dispositivo.")
@@ -471,18 +487,28 @@ struct DataAndSecurityView: View {
                     Text("Chirogra se bloquea cada vez que pasa a segundo plano.")
                 }
             }
+            SettingsSection {
+                HStack(spacing: 12) {
+                    IconTile(systemImage: "lock.fill", foreground: Palette.orange)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Contraseña de cierre").foregroundStyle(Palette.ink)
+                        Text(companies.first?.hasClosingPassword == true ? String(localized: "Fijada") : String(localized: "Sin fijar"))
+                            .font(.footnote)
+                            .foregroundStyle(Palette.ink2)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .accessibilityElement(children: .combine)
+            } header: {
+                SectionLabel(text: String(localized: "Meses cerrados"))
+            } footer: {
+                Text("Protege los meses que ya cerraste: sin ella, cualquiera que abra la app puede registrar en ellos escribiendo un motivo. Se fija en Contabilidad › Cierre de periodo.")
+            }
         }
-        // Interruptores como los del canvas (en el Mac, el de casilla salía por defecto en los formularios).
         .toggleStyle(.switch)
         .screenBackground()
-        .modifier(TitleUnlessEmbedded(title: "Datos y seguridad", embedded: embedded))
+        .modifier(TitleUnlessEmbedded(title: "Seguridad", embedded: embedded))
     }
-
-    #if os(macOS)
-    private static let detailFont = Font.subheadline
-    #else
-    private static let detailFont = Font.footnote
-    #endif
 }
 
 extension EntityType {

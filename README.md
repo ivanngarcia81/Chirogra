@@ -59,7 +59,7 @@ El modelo de datos ya cumple las reglas de CloudKit, pero la capacidad de iCloud
 
 1. En Xcode, target **Chirogra** › *Signing & Capabilities*, elige tu equipo.
 2. Añade **iCloud** con **CloudKit** y el contenedor `iCloud.com.chirogra.app` (o cambia `ChirograApp.cloudKitContainer`).
-3. En la app, *Ajustes › iCloud, copias y seguridad › Sincronizar con iCloud*, y vuelve a abrirla.
+3. En la app, *Ajustes › iCloud y copias › Sincronizar con iCloud*, y vuelve a abrirla.
 
 Sin la capacidad, la app usa un almacén local aunque el interruptor esté activado.
 
