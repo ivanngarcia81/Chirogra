@@ -1097,6 +1097,7 @@ struct CustomerRefundView: View {
             }
             Section {
                 MoneyField(title: String(localized: "Importe a reembolsar"), minorUnits: $amount)
+                    .labeledField(String(localized: "Importe a reembolsar"))
                 DatePicker("Fecha", selection: $date, displayedComponents: .date)
                 AccountPicker(title: String(localized: "Pagar desde"), accounts: paymentAccounts, selection: $accountID)
             } footer: {

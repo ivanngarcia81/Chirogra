@@ -291,6 +291,7 @@ struct InvoicePaymentSheet: View {
                         Text(invoice.balanceDue.money).monospacedDigit()
                     }
                 }
+                .fieldRow()
                 Picker("Método", selection: $method) {
                     ForEach(PaymentMethod.allCases, id: \.self) { Text($0.title).tag($0) }
                 }

@@ -1276,6 +1276,7 @@ struct SalesTaxPaymentView: View {
             }
             Section {
                 MoneyField(title: String(localized: "Importe pagado"), minorUnits: $amount)
+                    .labeledField(String(localized: "Importe pagado"))
                 DatePicker("Fecha", selection: $date, displayedComponents: .date)
                 AccountPicker(title: String(localized: "Pagado desde"), accounts: accounts.filtered { $0 == .bank || $0 == .cash }, selection: $accountID)
                 TextField("Periodo o referencia (p. ej. Q3 2026)", text: $reference)

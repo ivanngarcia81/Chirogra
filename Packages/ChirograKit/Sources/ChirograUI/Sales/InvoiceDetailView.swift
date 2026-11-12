@@ -798,6 +798,7 @@ struct CreditNoteEditorView: View {
                     }
                 }
                 MoneyField(title: String(localized: "Importe a acreditar (sin impuesto)"), minorUnits: $amount)
+                    .labeledField(String(localized: "Importe a acreditar (sin impuesto)"))
                 Toggle("Incluye sales tax", isOn: $isTaxable)
                 TextField("Motivo (devolución, ajuste de precio…)", text: $reason)
                 DatePicker("Fecha", selection: $date, displayedComponents: .date)

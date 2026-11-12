@@ -83,12 +83,14 @@ struct SendDocumentView: View {
                         .multilineTextAlignment(.leading)
                         #endif
                 }
+                .fieldRow()
                 LabeledContent("Asunto") {
                     TextField("Asunto", text: $subject).labelsHidden()
                         #if os(iOS)
                         .multilineTextAlignment(.leading)
                         #endif
                 }
+                .fieldRow()
                 TextField("Mensaje", text: $message, axis: .vertical)
                     .lineLimit(3...8)
                     .accessibilityLabel("Mensaje")

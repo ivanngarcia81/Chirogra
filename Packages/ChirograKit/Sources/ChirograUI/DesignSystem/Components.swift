@@ -995,6 +995,21 @@ struct InkValueLabeledContentStyle: LabeledContentStyle {
     }
 }
 
+extension View {
+    /// Para un `LabeledContent` cuyo valor es un campo de texto (`TextField`, `MoneyField`): en iOS, el estilo del
+    /// sistema. El de la app (`InkValueLabeledContentStyle`) deja el valor en `fixedSize`, y el campo medía lo que su
+    /// guía («$0.00»): tocar el resto de la fila no le daba el foco (QA de la 1.2, 11-nov; ver también
+    /// `labeledField`). En el Mac los formularios ya usan el estilo del sistema.
+    @ViewBuilder
+    func fieldRow() -> some View {
+        #if os(iOS)
+        labeledContentStyle(.automatic)
+        #else
+        self
+        #endif
+    }
+}
+
 /// Pestañas de una pantalla (Facturas · Clientes): el control segmentado del sistema (canvas `Gastos`).
 struct UnderlineTabs<Value: Hashable>: View {
     let options: [Value]

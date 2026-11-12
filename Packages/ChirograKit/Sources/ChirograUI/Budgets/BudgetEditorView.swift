@@ -239,6 +239,7 @@ struct BudgetAccountEditor: View {
                 LabeledContent("Total anual") {
                     MoneyField(title: String(localized: "Total anual"), minorUnits: $annual).multilineTextAlignment(.trailing)
                 }
+                .fieldRow()
                 Button("Repartir en los 12 meses", systemImage: "equal.square") {
                     let shares = PostingRules.allocate(abs(annual), weights: Array(repeating: 1, count: 12))
                     amounts = shares.map { annual < 0 ? -$0 : $0 }
@@ -254,6 +255,7 @@ struct BudgetAccountEditor: View {
                     LabeledContent(month.start.formatted(.appDateTime.month(.wide).year()).sentenceCased) {
                         MoneyField(title: month.start.monthYear, minorUnits: $amounts[index]).multilineTextAlignment(.trailing)
                     }
+                    .fieldRow()
                 }
                 LabeledContent("Suma de los meses", value: total.money).fontWeight(.semibold)
             } header: {

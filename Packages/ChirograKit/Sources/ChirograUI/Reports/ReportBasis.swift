@@ -77,28 +77,22 @@ struct ReportBasisSetting: DynamicProperty {
 }
 
 /// Selector «Devengado | Caja» con su ⓘ. `compact`: un menú para la barra (iPad y Mac); si no, el segmentado del
-/// sistema a todo el ancho con el ⓘ al lado (iPhone).
+/// sistema a todo el ancho con el ⓘ al lado (iPhone), o el mismo menú con letra de accesibilidad.
 struct BasisPicker: View {
     @Binding var basis: AccountingBasis
     var compact = false
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         if compact {
-            Menu {
-                Picker("Base contable", selection: $basis) {
-                    ForEach(AccountingBasis.allCases, id: \.self) { Text($0.title).tag($0) }
-                }
-                .pickerStyle(.inline)
-            } label: {
-                HStack(spacing: 6) {
-                    Image(systemName: basis == .cash ? "banknote" : "doc.text")
-                    Text(String(localized: "Base: \(basis.title)"))
-                }
+            menu
+        } else if dynamicTypeSize.isAccessibilitySize {
+            // Con letra de accesibilidad el segmentado no crece y cortaba «Devengado»: el menú de la barra, con su ⓘ.
+            HStack(spacing: 4) {
+                menu
+                TermHelp(.accountingBasis)
             }
-            .menuIndicator(.hidden)
-            .headerButton()
-            .accessibilityLabel("Base contable")
-            .accessibilityValue(basis.title)
+            .frame(maxWidth: .infinity, alignment: .leading)
         } else {
             HStack(spacing: 4) {
                 Picker("Base contable", selection: $basis) {
@@ -109,6 +103,25 @@ struct BasisPicker: View {
                 TermHelp(.accountingBasis)
             }
         }
+    }
+
+    private var menu: some View {
+        Menu {
+            Picker("Base contable", selection: $basis) {
+                ForEach(AccountingBasis.allCases, id: \.self) { Text($0.title).tag($0) }
+            }
+            .pickerStyle(.inline)
+        } label: {
+            HStack(spacing: 6) {
+                Image(systemName: basis == .cash ? "banknote" : "doc.text")
+                Text(String(localized: "Base: \(basis.title)"))
+                    .multilineTextAlignment(.leading)
+            }
+        }
+        .menuIndicator(.hidden)
+        .headerButton()
+        .accessibilityLabel("Base contable")
+        .accessibilityValue(basis.title)
     }
 }
 

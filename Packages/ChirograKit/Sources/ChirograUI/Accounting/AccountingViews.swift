@@ -563,6 +563,7 @@ struct JournalEntryEditorView: View {
                     LabeledContent("Importe") {
                         MoneyField(title: String(localized: "Importe"), minorUnits: $templateAmount).labelsHidden().multilineTextAlignment(.trailing)
                     }
+                    .fieldRow()
                     DatePicker("Fecha", selection: $date, displayedComponents: .date)
                     TextField("Concepto", text: $memo)
                 } footer: {

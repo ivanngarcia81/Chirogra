@@ -502,6 +502,7 @@ struct InvoiceEditorView: View {
                         MoneyField(title: String(localized: "Descuento"), minorUnits: $discount)
                             .multilineTextAlignment(.trailing)
                     }
+                    .fieldRow()
                     if discount > linesSubtotal {
                         Text("El descuento no puede ser mayor que el subtotal.").font(.footnote).foregroundStyle(Palette.negative)
                     }
