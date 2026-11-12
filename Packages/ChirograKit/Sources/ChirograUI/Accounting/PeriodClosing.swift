@@ -54,52 +54,111 @@ struct ClosedPeriodRetry: Identifiable {
     let lockDate: Date
     /// La acción, con un `Bookkeeper` que ya admite fechas del periodo cerrado.
     let perform: (Bookkeeper) throws -> Void
+    /// Repetirlo con otra fecha (el primer día abierto) en vez de registrar en el periodo cerrado, que es lo habitual
+    /// en contabilidad (QA Hudson, H02). Solo donde la fecha la pone el usuario (gasto nuevo, asiento manual); `nil`
+    /// donde la fecha es la del documento o la del banco.
+    var redate: ((Date) -> Void)? = nil
+
+    /// El día siguiente al cierre.
+    var firstOpenDay: Date { Calendar.current.date(byAdding: .day, value: 1, to: lockDate) ?? lockDate }
 }
 
-/// Pide la contraseña de cierre (o, sin contraseña, una confirmación) y repite la acción con
-/// `Bookkeeper.unlockedForClosedPeriod(password:)`. Una contraseña equivocada lo dice y deja intentarlo otra vez.
+/// Pide la contraseña de cierre (o, sin contraseña, el motivo) y repite la acción con
+/// `Bookkeeper.unlockedForClosedPeriod(password:reason:)`. Si se puede, propone antes registrarlo en el primer día
+/// abierto. Una contraseña equivocada lo dice y deja intentarlo otra vez.
 private struct ClosedPeriodUnlock: ViewModifier {
     @Binding var retry: ClosedPeriodRetry?
     let onError: (String) -> Void
     @Environment(\.modelContext) private var context
     @ActiveCompanyQuery private var companies: [Company]
     @State private var password = ""
+    @State private var reason = ""
     @State private var wrongPassword = false
 
     private var hasPassword: Bool { companies.first?.hasClosingPassword ?? false }
+    private var hasReason: Bool { !reason.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
 
     func body(content: Content) -> some View {
         content
             .alert(hasPassword ? "Periodo cerrado" : "¿Registrar en un periodo cerrado?",
-                   isPresented: Binding(get: { retry != nil }, set: { if !$0 { retry = nil; password = "" } }),
+                   isPresented: Binding(get: { retry != nil }, set: { if !$0 { retry = nil; clear() } }),
                    presenting: retry) { request in
                 if hasPassword {
                     SecureField("Contraseña de cierre", text: $password)
+                } else {
+                    TextField("Motivo", text: $reason)
+                }
+                if let redate = request.redate {
+                    Button(String(localized: "Registrar con fecha \(request.firstOpenDay.shortDate)")) {
+                        clear()
+                        redate(request.firstOpenDay)
+                    }
+                }
+                if hasPassword {
                     Button("Desbloquear y registrar") { run(request) }
                 } else {
-                    Button("Registrar de todos modos") { run(request) }
+                    Button("Registrar en el periodo cerrado") { run(request) }
+                        .disabled(!hasReason)
                 }
-                Button("Cancelar", role: .cancel) { password = "" }
+                Button("Cancelar", role: .cancel) { clear() }
             } message: { request in
-                Text(hasPassword
-                     ? "Los libros están cerrados hasta el \(request.lockDate.shortDate). Escribe la contraseña de cierre para registrar con esa fecha."
-                     : "Los libros están cerrados hasta el \(request.lockDate.shortDate). Si registras con esa fecha cambiarán reportes que ya pudiste entregar. Quedará anotado.")
+                Text(Self.message(for: request, hasPassword: hasPassword))
             }
             .alert("La contraseña de cierre no es correcta.", isPresented: $wrongPassword) {
                 Button("Aceptar", role: .cancel) {}
             }
     }
 
-    private func run(_ request: ClosedPeriodRetry) {
-        let typed = password
+    static func message(for request: ClosedPeriodRetry, hasPassword: Bool) -> String {
+        let lock = request.lockDate.shortDate
+        switch (hasPassword, request.redate != nil) {
+        case (true, true):
+            return String(localized: "Los libros están cerrados hasta el \(lock). Lo habitual es registrarlo el \(request.firstOpenDay.shortDate), el primer día abierto. Para registrarlo con su fecha, escribe la contraseña de cierre.")
+        case (true, false):
+            return String(localized: "Los libros están cerrados hasta el \(lock). Escribe la contraseña de cierre para registrar con esa fecha.")
+        case (false, true):
+            return String(localized: "Los libros están cerrados hasta el \(lock). Lo habitual es registrarlo el \(request.firstOpenDay.shortDate), el primer día abierto, para no cambiar reportes que ya pudiste entregar. Para registrarlo con su fecha, escribe el motivo: quedará en el historial.")
+        case (false, false):
+            return String(localized: "Los libros están cerrados hasta el \(lock). Si registras con esa fecha cambiarán reportes que ya pudiste entregar. Escribe el motivo: quedará en el historial.")
+        }
+    }
+
+    private func clear() {
         password = ""
+        reason = ""
+    }
+
+    private func run(_ request: ClosedPeriodRetry) {
+        let typed = password, why = reason
+        clear()
         do {
-            let unlocked = try Bookkeeper(context: context).unlockedForClosedPeriod(password: hasPassword ? typed : nil)
+            let unlocked = try Bookkeeper(context: context).unlockedForClosedPeriod(password: hasPassword ? typed : nil, reason: why)
             try request.perform(unlocked)
         } catch BookkeepingError.wrongClosingPassword {
             wrongPassword = true
         } catch {
             onError(error.localizedDescription)
+        }
+    }
+}
+
+/// Debajo de una fecha: si cae en un periodo cerrado, lo dice **antes** de guardar (QA Hudson, H02: solo «Nuevo
+/// asiento» avisaba; los demás formularios lo decían al pulsar «Guardar»). Sin cierre o con la fecha abierta no ocupa
+/// sitio.
+struct ClosedPeriodDateNote: View {
+    let date: Date
+    @ActiveCompanyQuery private var companies: [Company]
+
+    var body: some View {
+        if let company = companies.first, let lock = company.lockDate,
+           Calendar.current.startOfDay(for: date) <= Calendar.current.startOfDay(for: lock) {
+            Label(company.hasClosingPassword
+                  ? String(localized: "Esta fecha cae en un periodo cerrado (hasta el \(lock.shortDate)). Al guardar te pediremos la contraseña de cierre.")
+                  : String(localized: "Esta fecha cae en un periodo cerrado (hasta el \(lock.shortDate)). Al guardar te pediremos el motivo."),
+                  systemImage: "lock.fill")
+                .font(.footnote)
+                .foregroundStyle(Palette.ink2)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 }

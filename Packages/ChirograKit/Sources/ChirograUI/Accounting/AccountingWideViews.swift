@@ -29,6 +29,10 @@ struct PeriodCloseView: View {
     @State private var password = ""
     @State private var editingPassword = false
     @State private var removingPassword = false
+    /// Cerrar sin contraseña pide confirmarlo y ofrece fijarla antes (QA Hudson, H02).
+    @State private var confirmingClose: Date?
+    /// Cerrar hasta esta fecha en cuanto se guarde la contraseña («Fijar contraseña y cerrar»).
+    @State private var closeAfterPassword: Date?
     #if os(macOS)
     /// Cierre elegido en el historial para el inspector; sin elegir, el más reciente.
     @State private var macPick: UUID?
@@ -104,7 +108,21 @@ struct PeriodCloseView: View {
             }
         }
         #endif
-        .sheet(isPresented: $editingPassword) { NavigationStack { ClosingPasswordEditor() }.editorSheetSizing() }
+        .sheet(isPresented: $editingPassword, onDismiss: closeIfPasswordWasSet) {
+            NavigationStack { ClosingPasswordEditor() }.editorSheetSizing()
+        }
+        .alert("¿Cerrar sin contraseña de cierre?",
+               isPresented: Binding(get: { confirmingClose != nil }, set: { if !$0 { confirmingClose = nil } }),
+               presenting: confirmingClose) { target in
+            Button("Fijar contraseña y cerrar") {
+                closeAfterPassword = target
+                editingPassword = true
+            }
+            Button("Cerrar sin contraseña") { close(through: target) }
+            Button("Cancelar", role: .cancel) {}
+        } message: { _ in
+            Text("Con una contraseña de cierre, solo quien la sepa podrá registrar o cambiar algo con fecha cerrada. Sin ella, se podrá hacer escribiendo el motivo, que quedará en el historial.")
+        }
         .alert(item: $reopening, password: $password, hasPassword: company?.hasClosingPassword ?? false) { request, typed in
             reopen(to: request.target, password: typed)
         }
@@ -121,6 +139,18 @@ struct PeriodCloseView: View {
     }
 
     // MARK: Acciones
+
+    /// Con contraseña, cierra; sin ella, primero ofrece fijarla.
+    private func requestClose(_ company: Company, through target: Date) {
+        if company.hasClosingPassword { close(through: target) } else { confirmingClose = target }
+    }
+
+    /// Tras «Fijar contraseña y cerrar»: si la contraseña quedó guardada, cierra; si se canceló, no hace nada.
+    private func closeIfPasswordWasSet() {
+        guard let target = closeAfterPassword else { return }
+        closeAfterPassword = nil
+        if (try? Bookkeeper(context: context).company())??.hasClosingPassword == true { close(through: target) }
+    }
 
     private func close(through target: Date) {
         do {
@@ -171,7 +201,7 @@ struct PeriodCloseView: View {
                 Section {
                     DatePicker("Nueva fecha de cierre", selection: Binding(get: { target }, set: { newDate = $0 }),
                                displayedComponents: .date)
-                    Button(closeTitle(target)) { close(through: target) }
+                    Button(closeTitle(target)) { requestClose(company, through: target) }
                         .disabled(!canClose(company, target: target))
                     if let lock = company.lockDate {
                         Button(String(localized: "Reabrir \(lock.formatted(.appDateTime.month(.wide).year()))")) { askReopenLast(lock) }
@@ -207,6 +237,23 @@ struct PeriodCloseView: View {
                 } header: {
                     SectionLabel(text: String(localized: "Historial de cierres"))
                 }
+                let changes = changesAfterClose
+                if !changes.isEmpty {
+                    Section {
+                        ForEach(changes) { change in
+                            LedgerRow(title: change.memo.isEmpty ? String(localized: "Asiento \(change.entryNumber)") : change.memo,
+                                      subtitle: changeSubtitle(change), subtitleLines: 3) {
+                                EmptyView()
+                            } trailing: {
+                                Text(change.amount.money).monospacedDigit().foregroundStyle(Palette.ink)
+                            }
+                        }
+                    } header: {
+                        SectionLabel(text: String(localized: "Cambios después del cierre"))
+                    } footer: {
+                        Text("Lo registrado con fecha de un periodo que ya estaba cerrado. También va en el paquete del contador.")
+                    }
+                }
             }
         }
         .formStyle(.grouped)
@@ -227,7 +274,7 @@ struct PeriodCloseView: View {
     private func passwordFooter(_ company: Company) -> String {
         company.hasClosingPassword
             ? String(localized: "Se pide para reabrir un periodo y para registrar algo con una fecha cerrada.")
-            : String(localized: "Opcional: con contraseña, nadie puede reabrir un periodo ni registrar con una fecha cerrada sin escribirla.")
+            : String(localized: "Opcional: con contraseña, nadie puede reabrir un periodo ni registrar con una fecha cerrada sin escribirla. Sin ella, para registrar con una fecha cerrada hay que escribir el motivo.")
     }
 
     /// Candado en índigo y «Libros cerrados hasta» con la fecha en grande.
@@ -261,6 +308,8 @@ struct PeriodCloseView: View {
                         VStack(alignment: .leading, spacing: 16) { checklistBox(checks, target: target); closeBox(company, target: target) }
                     }
                     historyBox
+                    let changes = changesAfterClose
+                    if !changes.isEmpty { changesBox(changes) }
                 }
             }
             .padding(Metrics.gutter)
@@ -451,9 +500,56 @@ struct PeriodCloseView: View {
                 .buttonStyle(.secondary)
                 .fixedSize()
         }
-        Button(closeTitle(target)) { close(through: target) }
+        Button(closeTitle(target)) { requestClose(company, through: target) }
             .buttonStyle(.primaryCompact)
             .disabled(!canClose(company, target: target))
+    }
+
+    // MARK: Cambios después del cierre (QA Hudson, H02)
+
+    /// Lo registrado en un periodo ya cerrado (`Bookkeeper.changesAfterClose`). Se recalcula al pintar: `history` cambia
+    /// con cada cierre y la pantalla se abre de nuevo tras registrar.
+    private var changesAfterClose: [PostCloseChange] {
+        _ = history.count
+        return (try? Bookkeeper(context: context).changesAfterClose()) ?? []
+    }
+
+    /// «15 oct · registrado el 12 nov · Motivo: …» (o «con la contraseña de cierre»), y quién y dónde.
+    private func changeSubtitle(_ change: PostCloseChange) -> String {
+        let why = change.reason.isEmpty ? String(localized: "con la contraseña de cierre") : String(localized: "Motivo: \(change.reason)")
+        let who = [change.actor, change.device].filter { !$0.isEmpty }.joined(separator: " · ")
+        let base = String(localized: "\(change.entryDate.shortDate) · registrado el \(change.recordedAt.shortDate) · \(why)")
+        return who.isEmpty ? base : "\(base) · \(who)"
+    }
+
+    private func changesBox(_ changes: [PostCloseChange]) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(alignment: .firstTextBaseline) {
+                Text("Cambios después del cierre").font(.cardTitle).foregroundStyle(Palette.ink).accessibilityAddTraits(.isHeader)
+                Spacer(minLength: 8)
+                Text("También va en el paquete del contador").font(.footnote).foregroundStyle(Palette.ink2)
+            }
+            .padding(.horizontal, 2)
+            VStack(spacing: 0) {
+                ForEach(Array(changes.enumerated()), id: \.element.id) { index, change in
+                    if index > 0 { Divider().padding(.leading, 12) }
+                    HStack(alignment: .firstTextBaseline, spacing: 12) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(change.memo.isEmpty ? String(localized: "Asiento \(change.entryNumber)") : change.memo)
+                                .foregroundStyle(Palette.ink)
+                            Text(changeSubtitle(change)).font(.footnote).foregroundStyle(Palette.ink2)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        Spacer(minLength: 8)
+                        Text(change.amount.money).monospacedDigit().foregroundStyle(Palette.ink)
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .accessibilityElement(children: .combine)
+                }
+            }
+            .card(padding: 0)
+        }
     }
 
     // MARK: Historial

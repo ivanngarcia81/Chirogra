@@ -128,3 +128,50 @@ extension Bookkeeper {
         return ClosingPassword.verify(password, against: company.closingPasswordHash)
     }
 }
+
+// MARK: - Cambios después del cierre (QA Hudson, H02)
+
+/// Un asiento registrado con fecha de un periodo que ya estaba cerrado cuando se registró: con el motivo (o la
+/// contraseña) con que se desbloqueó, quién y desde qué aparato. Para que el contador vea qué cambió en un mes que ya
+/// tenía entregado.
+public struct PostCloseChange: Identifiable, Sendable, Equatable {
+    public var id: UUID
+    public var entryNumber: Int
+    public var entryDate: Date
+    public var recordedAt: Date
+    public var memo: String
+    public var amount: Int64
+    /// Fecha de cierre vigente cuando se registró.
+    public var lockDate: Date
+    /// Vacío si se desbloqueó con la contraseña de cierre sin escribir motivo.
+    public var reason: String
+    public var actor: String
+    public var device: String
+}
+
+extension Bookkeeper {
+    /// Asientos registrados en un periodo cerrado, del más reciente al más antiguo. Se deduce del historial de cierres
+    /// (qué fecha de cierre había en cada momento) y de la fecha en que se creó cada asiento; el motivo sale del
+    /// desbloqueo anotado en la bitácora justo antes. Sin cambios de esquema.
+    public func changesAfterClose(from: Date? = nil, to: Date? = nil, calendar: Calendar = .current) throws -> [PostCloseChange] {
+        let history = try closingHistory().sorted { $0.date < $1.date }
+        guard !history.isEmpty else { return [] }
+        func lock(at time: Date) -> Date? { history.last { $0.date <= time }?.lockDate }
+        let action = "unlockClosedPeriod"
+        let unlocks = try fetch(AuditEvent.self, #Predicate { $0.action == action }).sorted { $0.date < $1.date }
+        var changes: [PostCloseChange] = []
+        for entry in try postedEntries() {
+            guard let lock = lock(at: entry.createdAt),
+                  calendar.startOfDay(for: entry.date) <= calendar.startOfDay(for: lock) else { continue }
+            if let from, entry.date < calendar.startOfDay(for: from) { continue }
+            if let to, calendar.startOfDay(for: entry.date) > calendar.startOfDay(for: to) { continue }
+            // El desbloqueo de ese registro: el último anotado antes del asiento (en la misma acción, segundos antes).
+            let unlock = unlocks.last { $0.date <= entry.createdAt.addingTimeInterval(1) && $0.date >= entry.createdAt.addingTimeInterval(-600) }
+            changes.append(PostCloseChange(id: entry.id, entryNumber: entry.number, entryDate: entry.date, recordedAt: entry.createdAt,
+                                           memo: entry.memo, amount: entry.totalDebits, lockDate: lock,
+                                           reason: unlock?.changeDetails ?? "", actor: unlock?.actor ?? "", device: unlock?.device ?? ""))
+        }
+        return changes.sorted { ($0.recordedAt, $0.entryNumber) > ($1.recordedAt, $1.entryNumber) }
+    }
+}
+

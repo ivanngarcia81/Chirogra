@@ -211,7 +211,7 @@ struct InvoiceDetailView: View {
                 Text(customer).font(.subheadline).foregroundStyle(Palette.ink2)
                 amount
                 StatusChip(invoice: invoice, compact: false)
-                Text(detail).font(.footnote).foregroundStyle(Palette.ink2).padding(.top, 2)
+                Text(detail).font(.footnote).foregroundStyle(Palette.ink2).multilineTextAlignment(.center).padding(.top, 2)
                 if remindedToday && invoice.isOpen { reminderNote.padding(.top, 2) }
             }
             .multilineTextAlignment(.center)
@@ -231,8 +231,14 @@ struct InvoiceDetailView: View {
 
     private var detail: String {
         switch invoice.status {
-        case .draft: String(localized: "Borrador: el asiento se registra al emitirla")
-        case .paid: String(localized: "Total cobrado \(invoice.total.money)")
+        // La fecha a la vista antes de emitir: el borrador de un estimado convertido no la enseñaba (QA Hudson, H01).
+        case .draft: String(localized: "Borrador con fecha \(invoice.issueDate.shortDate) · vence el \(invoice.dueDate.shortDate). El asiento se registra al emitirla.")
+        case .paid:
+            // Saldada en parte con notas de crédito: lo cobrado y lo acreditado por separado (QA Hudson, H09: decía
+            // «Total cobrado $2,400» con $2,000 cobrados y $400 de nota de crédito).
+            invoice.total - invoice.amountPaid > 0
+                ? String(localized: "Saldada: cobrado \(invoice.amountPaid.money) + crédito \((invoice.total - invoice.amountPaid).money)")
+                : String(localized: "Total cobrado \(invoice.total.money)")
         case .void: String(localized: "Total de \(invoice.total.money)")
         case .sent, .partiallyPaid:
             invoice.balanceDue < invoice.total
@@ -460,6 +466,9 @@ struct InvoiceDetailView: View {
                         .accessibilityAddTraits(.isButton)
                         #endif
                 }
+                ClosedPeriodDateNote(date: paymentDate)
+                    .padding(.horizontal, Metrics.cardPadding)
+                    .padding(.top, 4)
                 if !isWide {
                     recordButton.padding(.horizontal, Metrics.cardPadding).padding(.top, 6).padding(.bottom, 16)
                 }
@@ -802,6 +811,7 @@ struct CreditNoteEditorView: View {
                 Toggle("Incluye sales tax", isOn: $isTaxable)
                 TextField("Motivo (devolución, ajuste de precio…)", text: $reason)
                 DatePicker("Fecha", selection: $date, displayedComponents: .date)
+                ClosedPeriodDateNote(date: date)
             }
             Section {
                 let total = preview?.total ?? 0

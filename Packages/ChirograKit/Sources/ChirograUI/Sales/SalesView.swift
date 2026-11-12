@@ -155,7 +155,9 @@ struct InvoiceListView: View {
             case .all: true
             case .draft: invoice.status == .draft
             case .sent: invoice.status == .sent && invoice.daysOverdue() == nil
-            case .partial: invoice.status == .partiallyPaid && invoice.daysOverdue() == nil
+            // Cobrada a medias, esté vencida o no: antes la vencida solo salía en «Vencida» y el filtro decía «Pago
+            // parcial 0» con una factura cobrada a medias (QA Hudson, H17).
+            case .partial: invoice.status == .partiallyPaid
             case .overdue: invoice.daysOverdue() != nil
             case .paid: invoice.status == .paid
             }

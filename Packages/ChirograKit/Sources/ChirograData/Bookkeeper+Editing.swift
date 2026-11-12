@@ -70,8 +70,15 @@ extension Bookkeeper {
             apply(input, to: expense)
             let draft = try expenseDraft(for: expense)
             try validate(draft)
-            try reverse(original, on: original.date, memo: String(localized: "Reversión por edición: \(original.memo)"), save: false)
+            // Si el dinero no cambia (misma fecha, misma cuenta de pago, mismo importe), el banco no se ha movido: la
+            // conciliación y el emparejamiento con el extracto pasan al asiento nuevo y no hay nada que confirmar
+            // (QA Hudson, H05: cambiar solo la categoría de un gasto conciliado avisaba que la conciliación dejaría
+            // de cuadrar y dejaba dos partidas que se anulan para el siguiente extracto).
+            let moneyUnchanged = Self.sameMoneyLines(original, draft, calendar: calendar)
+            let reversal = try reverse(original, on: original.date, memo: String(localized: "Reversión por edición: \(original.memo)"),
+                                       save: false, keepingReconciliation: moneyUnchanged)
             let replacement = try post(draft, sourceDocumentID: expense.id, save: false)
+            if moneyUnchanged { try carryReconciliation(from: original, reversal: reversal, to: replacement) }
             replacement.lines?.forEach { $0.vendorID = expense.vendor?.id; $0.customerID = expense.customer?.id }
             replacement.replacesEntryID = original.id
             original.replacedByEntryID = replacement.id
@@ -84,6 +91,45 @@ extension Bookkeeper {
         } catch {
             context.rollback()
             throw error
+        }
+    }
+
+    /// Las líneas de dinero (banco, tarjeta, caja) de `entry` y `draft` coinciden en cuenta e importe, y la fecha es la
+    /// misma: el cambio solo toca las categorías (o el proveedor, el cliente, la nota).
+    static func sameMoneyLines(_ entry: JournalEntry, _ draft: JournalEntryDraft, calendar: Calendar) -> Bool {
+        guard calendar.isDate(entry.date, inSameDayAs: draft.date) else { return false }
+        let old = entry.sortedLines.filter { $0.account?.subtype.isMoneyAccount == true }
+            .map { "\($0.account?.id.uuidString ?? "")|\($0.debit)|\($0.credit)" }.sorted()
+        guard !old.isEmpty else { return false }
+        let moneyIDs = Set(entry.sortedLines.compactMap { line in line.account?.subtype.isMoneyAccount == true ? line.account?.id : nil })
+        let new = draft.lines.filter { moneyIDs.contains($0.accountID) }.map { "\($0.accountID.uuidString)|\($0.debit)|\($0.credit)" }.sorted()
+        return old == new
+    }
+
+    /// Pasa la conciliación y el emparejamiento con el extracto de las líneas de dinero de `original` a las de
+    /// `replacement`. La reversión queda conciliada en la misma conciliación, así que esa conciliación sigue sumando
+    /// lo mismo (original − reversión + nuevo = nuevo) y el siguiente extracto no trae partidas que se anulan.
+    func carryReconciliation(from original: JournalEntry, reversal: JournalEntry, to replacement: JournalEntry) throws {
+        let money = original.sortedLines.filter { $0.account?.subtype.isMoneyAccount == true }
+        var reversalLines = reversal.sortedLines, newLines = replacement.sortedLines
+        for line in money {
+            guard let accountID = line.account?.id else { continue }
+            // La reversión tiene el debe y el haber cambiados; el asiento nuevo, los mismos.
+            guard let reversed = reversalLines.firstIndex(where: { $0.account?.id == accountID && $0.debit == line.credit && $0.credit == line.debit }),
+                  let renewed = newLines.firstIndex(where: { $0.account?.id == accountID && $0.debit == line.debit && $0.credit == line.credit })
+            else { continue }
+            let reversedLine = reversalLines.remove(at: reversed), newLine = newLines.remove(at: renewed)
+            if let reconciliationID = line.reconciliationID {
+                reversedLine.reconciliationID = reconciliationID
+                reversedLine.clearedAt = line.clearedAt
+                newLine.reconciliationID = reconciliationID
+                newLine.clearedAt = line.clearedAt
+            }
+            let lineID = line.id
+            for transaction in try fetch(BankTransaction.self, #Predicate { $0.matchedLineID == lineID }) {
+                transaction.matchedEntryID = replacement.id
+                transaction.matchedLineID = newLine.id
+            }
         }
     }
 

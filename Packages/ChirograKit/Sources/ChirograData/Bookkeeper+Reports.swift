@@ -192,6 +192,19 @@ extension Bookkeeper {
         if let taxes {
             files.append(AccountantPackage.File(name: "\(taxes.form.title).csv", contents: CSVExport.taxSummary(taxes, locale: locale, calendar: calendar)))
         }
+        // Lo registrado en un mes ya cerrado, con su motivo (QA Hudson, H02): solo si hubo algo en el periodo.
+        let afterClose = try changesAfterClose(from: from, to: to, calendar: calendar)
+        if !afterClose.isEmpty {
+            files.append(AccountantPackage.File(name: String(localized: "Cambios después del cierre") + ".csv", contents: CSVExport.table(
+                header: [String(localized: "Asiento"), String(localized: "Fecha"), String(localized: "Registrado el"), String(localized: "Concepto"),
+                         String(localized: "Importe"), String(localized: "Cerrado hasta"), String(localized: "Motivo"),
+                         String(localized: "Quién"), String(localized: "Aparato")],
+                rows: afterClose.map { change in
+                    [String(change.entryNumber), CSVExport.date(change.entryDate, calendar: calendar), CSVExport.date(change.recordedAt, calendar: calendar),
+                     change.memo, CSVExport.amount(change.amount), CSVExport.date(change.lockDate, calendar: calendar),
+                     change.reason, change.actor, change.device]
+                })))
+        }
         return AccountantPackage(companyName: try company()?.name ?? "", from: from, to: to, basis: basis, incomeStatement: income,
                                  balanceSheet: balance, trialBalance: trial, cashFlow: cashFlow, taxSummary: taxes, files: files)
     }

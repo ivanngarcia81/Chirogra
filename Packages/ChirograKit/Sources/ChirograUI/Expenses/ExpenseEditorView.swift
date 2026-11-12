@@ -40,8 +40,10 @@ struct ExpenseEditorView: View {
     @State private var date = Date()
     @State private var lines: [LineDraft] = [LineDraft()]
     @State private var salesTaxIncluded: Int64 = 0
-    /// «Impuesto incluido» sigue al monto con la tasa predeterminada de la empresa hasta que el usuario lo escribe.
-    @State private var taxFollowsRate = true
+    /// «Impuesto incluido» sigue al monto con la tasa predeterminada de la empresa. Empieza apagado: el impuesto sale en
+    /// $0 y se calcula con «Calcular con …» o al leer un recibo (QA Hudson, H07: proponía el sales tax en el alquiler,
+    /// el seguro o un contratista). Escribirlo a mano lo apaga.
+    @State private var taxFollowsRate = false
     @State private var paymentAccountID: UUID?
     @State private var memo = ""
     @State private var receipts: [ReceiptFile] = []
@@ -54,10 +56,9 @@ struct ExpenseEditorView: View {
     @State private var reconciledRetry: ReconciledChangeRetry?
     @State private var editorWidth: CGFloat = 0
     @State private var loaded = false
-    /// La fecha (la nueva o la original) cae en un periodo cerrado: se pide la contraseña de cierre para seguir.
-    @State private var askingUnlock = false
-    @State private var closingPassword = ""
-    @State private var pendingAnother = false
+    /// La fecha (la nueva o la original) cae en un periodo cerrado: se pide la contraseña de cierre (o el motivo) para
+    /// seguir, o se propone el primer día abierto (`ClosedPeriodRetry`).
+    @State private var closedPeriodRetry: ClosedPeriodRetry?
     // Recibo leído (`Receipts/`): qué se leyó, de qué archivo y qué campos rellenó (para marcarlos y no pisar lo que
     // el usuario escribió).
     @State private var readingState: ReceiptReadingState = .idle
@@ -124,7 +125,6 @@ struct ExpenseEditorView: View {
     }
 
     private var paymentAccounts: [Account] { accounts.paymentAccounts }
-    private var hasClosingPassword: Bool { companies.first?.hasClosingPassword ?? false }
 
     private var tracking: String {
         let lineText = lines.map { "\($0.amount):\($0.accountID?.uuidString ?? "")" }.joined(separator: ",")
@@ -184,17 +184,7 @@ struct ExpenseEditorView: View {
             if loaded, new != estimatedTax(in: total) { taxFollowsRate = false }
         }
         .reconciledChangeConfirmation($reconciledRetry) { errorMessage = $0 }
-        .alert(hasClosingPassword ? "Periodo cerrado" : "¿Registrar en un periodo cerrado?", isPresented: $askingUnlock) {
-            if hasClosingPassword {
-                SecureField("Contraseña de cierre", text: $closingPassword)
-            }
-            Button("Registrar") { unlockAndSave() }
-            Button("Cancelar", role: .cancel) { closingPassword = "" }
-        } message: {
-            Text(hasClosingPassword
-                 ? "La fecha cae en un periodo cerrado. Escribe la contraseña de cierre para registrar el cambio; quedará en el historial."
-                 : "La fecha cae en un periodo cerrado. El cambio quedará en el historial.")
-        }
+        .closedPeriodUnlock($closedPeriodRetry) { errorMessage = $0 }
     }
 
     /// Proveedor recién elegido (o creado desde el menú): su nombre pasa a «Pagado a», que se esconde, y su
@@ -218,7 +208,8 @@ struct ExpenseEditorView: View {
             memo = input.memo
             salesTaxIncluded = input.salesTaxIncluded
             // Si lo guardado es justo lo calculado, al corregir el monto el impuesto se recalcula.
-            taxFollowsRate = input.salesTaxIncluded == estimatedTax(in: input.lines.reduce(0) { $0 + $1.amount })
+            taxFollowsRate = input.salesTaxIncluded > 0
+                && input.salesTaxIncluded == estimatedTax(in: input.lines.reduce(0) { $0 + $1.amount })
             lines = input.lines.isEmpty ? [LineDraft()] : input.lines.map { LineDraft(details: $0.details, amount: $0.amount, accountID: $0.accountID) }
         } else {
             paymentAccountID = paymentAccounts.first { $0.subtype == .bank }?.id
@@ -264,7 +255,14 @@ struct ExpenseEditorView: View {
             DatePicker(selection: $date, displayedComponents: .date) {
                 ScannedLabel(title: String(localized: "Fecha"), marked: isMarked(.date))
             }
+            ClosedPeriodDateNote(date: date)
             MoneyRow(String(localized: "Impuesto incluido"), minorUnits: $salesTaxIncluded, marked: isMarked(.tax))
+            if salesTaxIncluded == 0, total > 0, let label = defaultTaxLabel, estimatedTax(in: total) > 0 {
+                Button(String(localized: "Calcular con \(label)")) {
+                    salesTaxIncluded = estimatedTax(in: total)
+                    taxFollowsRate = true
+                }
+            }
         } header: {
             SectionLabel(text: String(localized: "Importe"))
         } footer: {
@@ -275,7 +273,7 @@ struct ExpenseEditorView: View {
             } else if salesTaxIncluded > 0 {
                 Text("Subtotal \((total - salesTaxIncluded).money) + impuesto \(salesTaxIncluded.money). Es informativo: en EE. UU. el sales tax de tus compras forma parte del gasto.")
             } else {
-                Text("En EE. UU. el sales tax de tus compras forma parte del gasto. Si el recibo lo desglosa, anótalo en «Impuesto incluido».")
+                Text("En EE. UU. el sales tax de tus compras forma parte del gasto. Si el recibo lo desglosa, anótalo en «Impuesto incluido»; el alquiler, los seguros y los servicios no suelen llevarlo.")
             }
         }
     }
@@ -582,7 +580,7 @@ struct ExpenseEditorView: View {
             lines[0].accountID = category
             filled.insert(.category)
         }
-        if let tax = reading.salesTax, taxFollowsRate || previous.contains(.tax) {
+        if let tax = reading.salesTax, taxFollowsRate || salesTaxIncluded == 0 || previous.contains(.tax) {
             taxFollowsRate = false
             salesTaxIncluded = tax
             filled.insert(.tax)
@@ -620,17 +618,6 @@ struct ExpenseEditorView: View {
         )
     }
 
-    private func unlockAndSave() {
-        do {
-            let books = try Bookkeeper(context: context).unlockedForClosedPeriod(password: hasClosingPassword ? closingPassword : nil)
-            closingPassword = ""
-            save(another: pendingAnother, using: books)
-        } catch {
-            closingPassword = ""
-            errorMessage = error.localizedDescription
-        }
-    }
-
     /// Con `another`, deja el formulario limpio para el siguiente gasto («Guardar y nuevo»).
     private func save(another: Bool = false, using override: Bookkeeper? = nil) {
         let books = override ?? Bookkeeper(context: context)
@@ -644,9 +631,14 @@ struct ExpenseEditorView: View {
             }
             created = try books.createExpense(input, post: true)
         } catch let error as BookkeepingError {
-            if case .invalidEntry(.periodLocked) = error {
-                pendingAnother = another
-                askingUnlock = true
+            if let lock = PeriodClosing.lockDate(of: error) {
+                // Un gasto nuevo se puede registrar en el primer día abierto; uno ya registrado se corrige en su fecha.
+                closedPeriodRetry = ClosedPeriodRetry(lockDate: lock, perform: { unlocked in
+                    save(another: another, using: unlocked)
+                }, redate: expense == nil ? { firstOpenDay in
+                    date = firstOpenDay
+                    save(another: another)
+                } : nil)
             } else if case .reconciledLines = error, let expense {
                 reconciledRetry = ReconciledChangeRetry { books in
                     try books.updateExpense(expense, with: input)
@@ -684,7 +676,7 @@ struct ExpenseEditorView: View {
             errorMessage = problems.joined(separator: " ")
         } else if another {
             lines = [LineDraft()]; payee = ""; vendorID = nil; customerID = nil; memo = ""; receipts = []
-            salesTaxIncluded = 0; taxFollowsRate = true; repeats = false; errorMessage = nil
+            salesTaxIncluded = 0; taxFollowsRate = false; repeats = false; errorMessage = nil
             readingState = .idle; readReceiptID = nil; scanFilled = []; initialDate = date
         } else {
             unsavedChanges?.remove(editorToken); dismiss()

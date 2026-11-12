@@ -362,7 +362,13 @@ struct HomeView: View {
         if used.count == 1, let only = used.first {
             return short ? only.maskedName : String(localized: "\(only.maskedName) · según libros")
         }
-        return short ? String(localized: "\(used.count) cuentas") : String(localized: "\(used.count) cuentas · según libros")
+        if short { return String(localized: "\(used.count) cuentas") }
+        // Las tarjetas restan: decirlo, porque el flujo de efectivo da otra cifra (sin restarlas) y parecían dos
+        // «efectivos» distintos (QA Hudson, H18).
+        let cardDebt = used.filter { $0.subtype == .creditCard }.reduce(Int64(0)) { $0 + ledger.balance(of: $1) }
+        return cardDebt > 0
+            ? String(localized: "\(used.count) cuentas · menos \(cardDebt.money) de tarjetas · según libros")
+            : String(localized: "\(used.count) cuentas · según libros")
     }
 
     /// Ingresos · Gastos · Ganancia en tres columnas (`Home`: dentro de la tarjeta de efectivo; `iPadInicio`: en su
@@ -430,6 +436,10 @@ struct HomeView: View {
             SampleBooksBanner()
                 .padding(.horizontal, Metrics.gutter)
                 .padding(.top, 8)
+
+            if let lock = companies.first?.lockDate {
+                ClosedBooksLine(lockDate: lock).padding(.horizontal, Metrics.gutter)
+            }
 
             VStack(alignment: .leading, spacing: 14) {
                 cashHeader(amountSize: 36)
@@ -869,6 +879,11 @@ struct HomeView: View {
             // Mientras los libros son los de ejemplo, a todo el ancho encima de la columna y el detalle.
             SampleBooksBanner()
                 .padding(.leading, 8).padding(.trailing, 24).padding(.bottom, 12)
+            if let lock = companies.first?.lockDate {
+                ClosedBooksLine(lockDate: lock)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.leading, 8).padding(.bottom, 4)
+            }
             HStack(alignment: .top, spacing: 0) {
                 padColumn
                     .frame(width: padColumnWidth)
@@ -1028,7 +1043,10 @@ struct HomeView: View {
 
     private var macBody: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text(companyName).font(.subheadline).foregroundStyle(Palette.ink2)
+            HStack(spacing: 16) {
+                Text(companyName).font(.subheadline).foregroundStyle(Palette.ink2)
+                if let lock = companies.first?.lockDate { ClosedBooksLine(lockDate: lock) }
+            }
             // Mientras los libros son los de ejemplo: «Empezar con mi empresa».
             SampleBooksBanner()
             if showsSetupCard { setupCard.frame(maxWidth: 760, alignment: .leading) }
@@ -1568,4 +1586,26 @@ extension Decimal {
 
 #Preview {
     NavigationStack { HomeView() }.modelContainer(SampleData.makeContainer())
+}
+
+/// «🔒 Libros cerrados hasta el 31 oct 2026» en Inicio: el cierre a la vista antes de registrar nada (QA Hudson, H02).
+/// Lleva a Cierre de periodo.
+private struct ClosedBooksLine: View {
+    let lockDate: Date
+
+    var body: some View {
+        SectionLink(item: .accounting(.close)) {
+            PeriodCloseView()
+        } label: {
+            Label(String(localized: "Libros cerrados hasta el \(lockDate.shortDate)"), systemImage: "lock.fill")
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(Palette.indigo)
+                #if os(iOS)
+                .frame(minHeight: Metrics.target)
+                #endif
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityHint(Text("Abre Cierre de periodo"))
+    }
 }

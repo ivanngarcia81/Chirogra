@@ -429,6 +429,8 @@ struct JournalEntryEditorView: View {
             ToolbarItem(placement: .confirmationAction) { Button("Registrar", action: save).disabled(!isValid).headerButton().accessibilityLabel("Registrar asiento") }
         }
         .closedPeriodUnlock($closedPeriodRetry) { errorMessage = $0 }
+        // Los importes usan el teclado decimal, que no tiene tecla para cerrarse (QA Hudson, H10).
+        .keyboardDoneButton()
         #if DEBUG
         // `-qa.asiento aportacion|retiro|traspaso|manual`: el editor con esa plantilla (y $500) o a mano.
         .task {
@@ -889,7 +891,7 @@ struct JournalEntryEditorView: View {
         if dateIsLocked {
             return hasPassword
                 ? String(localized: "La fecha cae en un periodo cerrado (hasta el \(lock.shortDate)). Al registrar te pediremos la contraseña de cierre.")
-                : String(localized: "La fecha cae en un periodo cerrado (hasta el \(lock.shortDate)). Al registrar te pediremos confirmarlo.")
+                : String(localized: "La fecha cae en un periodo cerrado (hasta el \(lock.shortDate)). Al registrar te pediremos el motivo.")
         }
         return String(localized: "El periodo está cerrado hasta el \(lock.shortDate). Para registrar con una fecha anterior te pediremos la contraseña de cierre.")
     }
@@ -901,10 +903,13 @@ struct JournalEntryEditorView: View {
             unsavedChanges?.remove(editorToken); dismiss()
         } catch {
             if let lock = PeriodClosing.lockDate(of: error) {
-                closedPeriodRetry = ClosedPeriodRetry(lockDate: lock) { unlocked in
+                closedPeriodRetry = ClosedPeriodRetry(lockDate: lock, perform: { unlocked in
                     try unlocked.post(entry)
                     unsavedChanges?.remove(editorToken); dismiss()
-                }
+                }, redate: { firstOpenDay in
+                    date = firstOpenDay
+                    save()
+                })
             } else {
                 errorMessage = error.localizedDescription
             }
@@ -1126,6 +1131,20 @@ struct LedgerView: View {
             if isWide { wideBody(ledger) } else { listBody(ledger) }
         }
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
+        .safeAreaInset(edge: .top, spacing: 0) {
+            // 3900 · Saldos de apertura: qué es y qué suele hacer el contador con ella (QA Hudson, H15: el capital
+            // inicial no salía en «Capital del dueño» y no se explicaba por qué).
+            if account.subtype == .openingBalanceEquity {
+                Label("Aquí van los saldos con que empezaste los libros. Tu contador suele pasarlos a «Capital del dueño» con un asiento al cerrar el año.",
+                      systemImage: "info.circle")
+                    .font(.footnote)
+                    .foregroundStyle(Palette.ink2)
+                    .padding(.horizontal, Metrics.gutter)
+                    .padding(.vertical, 8)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Palette.background)
+            }
+        }
         .navigationTitle(account.name)
         .modifier(LedgerTitle(inDetailColumn: inDetailColumn))
         .toolbar {

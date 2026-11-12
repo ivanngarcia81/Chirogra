@@ -76,9 +76,11 @@
     <li>Tap <strong>Continue</strong> and choose your <strong>type of business</strong>: Professional services, Retail or
     store, Construction and trades, Restaurant and food, Health and wellness, or Freelancer. Chirogra uses it to set up a
     <strong>chart of accounts</strong> that fits your business, which you can adjust later.</li>
-    <li>In the last step, enter <strong>today’s balance</strong> of the bank account you use for the business and, if you
-    have a credit card, <strong>what you owe today</strong>. That way <em>Cash on hand</em> starts with the money you
-    really have. If you don’t know it now, tap <strong>Skip for now</strong>: you can add it later from Home.</li>
+    <li>In the last step, enter the <strong>balance</strong> of the bank account you use for the business and, if you
+    have a credit card, <strong>what you owe</strong>. It suggests today’s date: if you’re starting your books on an
+    earlier date (for example, October 1 to record all of October), <strong>change the date</strong> and enter that
+    day’s balance from your statement. That way <em>Cash on hand</em> starts with the money you really have. If you
+    don’t know it now, tap <strong>Skip for now</strong>: you can add it later from Home.</li>
     <li>Tap <strong>Create company</strong>. When you finish, you can start the <strong>14-day free trial</strong>.</li>
   </ol>
   <figure class="hoja"><a href="../img/guia/saldo-inicial-en.jpg"><img src="../img/guia/saldo-inicial-en.jpg" alt="“How much money is in your business account today?” step with today’s bank balance, the date and what you owe on the credit card" width="600" height="480" loading="lazy"></a></figure>
@@ -156,6 +158,14 @@
   <p>The invoice becomes <em>Paid</em> or <em>Partial</em> and the money shows up in Banking, in the account you chose.</p>
   <p>To change how your invoices look (color, style and logo), go to <a href="#settings">Settings › Invoice Template</a>.</p>
 
+  <h3>Credit memos and refunds</h3>
+  <p>If you give the customer a discount or a refund on an invoice you already issued, don’t edit it: open the invoice
+  and, under <strong>More actions</strong>, tap <strong>Credit memo</strong> (or <strong>Credit memo or refund</strong> if
+  it’s paid). Enter the <strong>amount to credit</strong>, the <strong>reason</strong> and the date, and tap
+  <strong>Issue</strong>. The memo lowers your income and what the customer owes; if it credits more than the balance,
+  the rest stays in the customer’s favor for another invoice or a refund. When an invoice is settled with a payment and
+  a memo, its details show them separately (<em>Settled: $2,000.00 received + $400.00 credit</em>).</p>
+
   <h2 id="estimates">6. Estimates</h2>
   <p>In <strong>Sales › Estimates</strong> you prepare quotes with the same editor as invoices and send them the same
   way. When the customer accepts, use <strong>Convert to Invoice</strong>:</p>
@@ -164,8 +174,12 @@
     <li><strong>50% deposit</strong>: invoice half; the rest stays open on the estimate.</li>
     <li><strong>Choose lines</strong>: invoice the job in stages.</li>
   </ul>
+  <p>Below is the <strong>invoice date</strong>. Chirogra suggests the day the customer accepted the estimate
+  (<strong>More actions › Mark as Accepted…</strong>); change it if you invoice on another day.</p>
   <figure class="hoja"><a href="../img/guia/convertir-estimado-en.jpg"><img src="../img/guia/convertir-estimado-en.jpg" alt="“Convert to Invoice” sheet with the whole estimate, 50% deposit and choose lines options" width="470" height="532" loading="lazy"></a></figure>
-  <p class="nota">The invoice is created as a draft so you can review it before issuing it.</p>
+  <p class="nota">The invoice is created as a draft so you can review it before issuing it. The draft’s details show its
+  date and due date: check them before you tap <strong>Issue invoice</strong>, because the sale counts in that date’s
+  month.</p>
 
   <h2 id="expenses">7. Expenses and receipts</h2>
   <p>In <strong>Expenses</strong> you record what you pay on the spot: supplies, gas, software… Tap <strong>+</strong>
@@ -174,9 +188,10 @@
   <ol>
     <li><strong>Receipt:</strong> drag in a photo or a PDF, or use <strong>Choose photo</strong> / <strong>Choose
     File…</strong>. It’s stored with the expense; the IRS asks you to keep it.</li>
-    <li><strong>Amount</strong> and <strong>date</strong>. When you finish typing the amount, Chirogra works out the
-    <strong>Tax included</strong> with your company’s rate; if the receipt shows a different figure, enter it
-    yourself.</li>
+    <li><strong>Amount</strong> and <strong>date</strong>. <strong>Tax included</strong> starts at $0: it’s for your
+    information only, because in the U.S. the sales tax on your purchases is part of the expense. If the receipt breaks
+    out the tax, enter it or tap <strong>Calculate with…</strong> (your company’s rate). Rent, insurance and services
+    usually don’t have it. If you scan a receipt, Chirogra fills in the tax it finds.</li>
     <li><strong>Vendor</strong>: pick one from the list or create one with <strong>New vendor…</strong>. For a one-off
     purchase, leave it at <em>None</em> and type who you paid in <strong>Paid to</strong>.</li>
     <li><strong>Category</strong> (the expense account), the <strong>payment account</strong> (where the money came
@@ -189,7 +204,14 @@
   <ul>
     <li>The <strong>Only without receipt</strong> checkbox shows what still lacks a receipt.</li>
     <li><strong>Editing</strong> a recorded expense doesn’t erase anything: Chirogra reverses the old entry and records the
-    new one, and you’ll see it in its <strong>history</strong>.</li>
+    new one, and you’ll see it in its <strong>history</strong>. If the expense is already reconciled with the bank and
+    you only change the category (or the vendor, or the note), the reconciliation isn’t touched. If you change the
+    amount, the date or the payment account, Chirogra warns you first, because that does change what was
+    reconciled.</li>
+    <li><strong>Buying equipment</strong> (a computer, a machine, a vehicle): record it like any expense, but under
+    <strong>Category</strong> choose an account from the <em>Equipment &amp; prepaid purchases</em> group (for example,
+    1500 · Equipment). That way it’s an asset of the business, not an expense of the month; your accountant decides how
+    to depreciate it.</li>
     <li><strong>Recurring</strong> (button at the top): payments that repeat, like a subscription or rent. With
     <em>autopay</em> they’re recorded automatically on the date; without it, they wait <em>for you to confirm</em> the
     amount.</li>
@@ -197,7 +219,8 @@
 
   <h2 id="bills">8. Vendors and bills</h2>
   <p>When a vendor sends you a bill you’ll pay later, record it in <strong>Expenses › Bills to pay</strong> with
-  <strong>New vendor bill</strong>. That way you know how much you owe and when it’s due.</p>
+  <strong>New vendor bill</strong>. That way you know how much you owe and when it’s due. The due date comes from the
+  vendor’s terms and moves with the bill date; you can change it by hand.</p>
   <figure><a href="../img/guia/por-pagar-en.jpg"><img src="../img/guia/por-pagar-en.jpg" alt="Bills to pay: filters, total to pay, overdue, due this week and scheduled payments; details of a vendor bill" width="1280" height="820" loading="lazy"></a></figure>
   <ul>
     <li><strong>Record Payment…</strong> when you pay it: choose the account, method and date.</li>
@@ -217,11 +240,45 @@
   <figure><a href="../img/guia/banca-en.jpg"><img src="../img/guia/banca-en.jpg" alt="Banking: account cards with their balances, October’s transactions with deposits, withdrawals and balance, and an expense’s details in the inspector" width="1280" height="820" loading="lazy"></a></figure>
   <ul>
     <li>Transactions are created automatically when you get paid, pay bills and record expenses.</li>
-    <li><strong>New transaction</strong> lets you record an <strong>expense</strong> or a <strong>manual entry</strong>
-    (for example, a transfer between your accounts). Customer payments are recorded from the invoice.</li>
-    <li>Compare the balance with your bank’s to make sure nothing is missing. Automatic bank import and reconciliation
-    are coming later.</li>
+    <li><strong>Cash on hand</strong>, on Home, adds up cash and bank accounts and <strong>subtracts what you owe on
+    cards</strong> (it says so under the figure). That’s why it can be lower than the cash in the cash flow report,
+    which doesn’t subtract cards.</li>
   </ul>
+
+  <h3>Import your bank statement</h3>
+  <ol>
+    <li>Download the month’s statement from your bank’s website as <strong>CSV</strong> or <strong>OFX/QFX</strong>.</li>
+    <li>In Banking, open the account and tap <strong>Import Statement</strong>. Choose the file. With a CSV, Chirogra
+    guesses the columns (date, description, amount) and lets you fix them; next time it remembers them. Importing the
+    same file twice doesn’t duplicate anything.</li>
+    <li>New transactions wait in <strong>To Review</strong>. For each one, Chirogra suggests what to do:
+    <ul>
+      <li><strong>Match</strong> it with something you already recorded (a payment, an expense, a bill payment). That’s
+      the usual case if you keep your invoices and expenses up to date.</li>
+      <li><strong>Categorize</strong>: create the missing expense or income, with its category.</li>
+      <li><strong>Transfer</strong>: money between your own accounts (for example, the credit card payment).</li>
+      <li><strong>Exclude</strong>: anything that isn’t business or is a duplicate.</li>
+    </ul></li>
+    <li>With <strong>Rules</strong> you teach Chirogra to categorize what repeats (the bank fee, a subscription).</li>
+  </ol>
+
+  <h3>Reconcile</h3>
+  <p>Reconciling means checking, statement in hand, that your books and the bank agree. Tap <strong>Reconcile</strong>,
+  enter the <strong>statement date</strong> and its <strong>ending balance</strong> (for a credit card, the balance owed
+  per statement) and check off the items that appear on it. Matched items are already checked. When the difference
+  reaches $0.00, tap <strong>Finish Reconciliation</strong>. The account shows <em>Reconciled through</em> that date, and
+  the next reconciliation starts where this one ended.</p>
+
+  <h3>Move money between accounts, pay the card or take money out</h3>
+  <p>These aren’t expenses or income. If they’re on the statement, use <strong>Transfer</strong> in <em>To Review</em>. To
+  record them by hand, go to <strong>More › Accounting › Journal entries › New journal entry</strong> and choose:</p>
+  <ul>
+    <li><em>I moved money between my accounts</em>: a transfer to savings or the <strong>credit card payment</strong>
+    (from checking to the card).</li>
+    <li><em>I took money out of the business for myself</em>: an owner’s draw.</li>
+    <li><em>I put my own money into the business</em>: a contribution.</li>
+  </ul>
+  <p>You just choose the accounts, the amount and the date; Chirogra puts each amount on the right side.</p>
 
   <h2 id="taxes">10. Sales tax</h2>
   <p>In <strong>Taxes</strong> you see how much sales tax you collected this quarter, what you’ve paid, the balance due
@@ -281,9 +338,14 @@
   <figure><a href="../img/guia/cierre-en.jpg"><img src="../img/guia/cierre-en.jpg" alt="Period close: the month’s checklist, new closing date, closing password and history" width="1280" height="820" loading="lazy"></a></figure>
   <ul>
     <li>Choose the <strong>new closing date</strong> and tap the month’s <strong>Close</strong> button (for example,
-    “Close October 2026”).</li>
-    <li>Optional: with a <strong>closing password</strong> (the <strong>Set…</strong> button), nobody can reopen a period
-    or record with a closed date without typing it.</li>
+    “Close October 2026”). If you don’t have a closing password yet, Chirogra offers <strong>Set Password and
+    Close</strong> or <strong>Close without password</strong>.</li>
+    <li>With a <strong>closing password</strong>, nobody can reopen a period or record with a closed date without typing
+    it. We recommend it if someone else uses the app or you’ve already handed the month to your accountant.</li>
+    <li>If something falls in a closed month (a receipt that arrived late), Chirogra offers to <strong>Record on</strong>
+    the first open day, which is the usual practice and doesn’t change reports you already delivered. To record it with
+    its own date, type the closing password or, without one, the <strong>reason</strong>, which stays in the change
+    log.</li>
     <li>The <strong>closing history</strong> keeps every close and reopening.</li>
   </ul>
 
@@ -397,8 +459,13 @@
     <dt>Book balance</dt>
     <dd>The balance according to what you've recorded in Chirogra. It can differ from the bank if something isn't
     recorded yet or a check hasn't cleared.</dd>
-    <dt>New transaction</dt>
-    <dd>Records an expense or a move between your own accounts (for example, from savings to checking).</dd>
+    <dt>Import Statement</dt>
+    <dd>Brings your bank’s transactions in from a CSV or OFX file so you can review them in Chirogra.</dd>
+    <dt>To Review</dt>
+    <dd>Imported transactions you haven’t matched, categorized or excluded yet.</dd>
+    <dt>Reconcile</dt>
+    <dd>Checking against the statement, item by item, that your books and the bank agree, until the difference is
+    $0.00.</dd>
   </dl>
 
   <h3 id="glossary-reports">Reports</h3>
@@ -432,7 +499,7 @@
     <dd>Every transaction in one account, with the balance after each one.</dd>
     <dt>Period close</dt>
     <dd>Closes a month or year you've reviewed so nobody changes it by mistake. You can protect it with a closing
-    password.</dd>
+    password; without one, recording something with a closed date asks for a reason.</dd>
   </dl>
 
   <h3 id="glossary-taxes">Taxes</h3>

@@ -274,6 +274,7 @@
       }
     },
     "%@ partidas marcadas · se guardan al momento" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -344,6 +345,7 @@
       }
     },
     "%@ vs. presupuesto %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -464,6 +466,7 @@
       }
     },
     "%@ · base devengado" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -474,6 +477,7 @@
       }
     },
     "%@ · base devengado · %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -613,6 +617,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ · %@ left to invoice"
+          }
+        }
+      }
+    },
+    "%@ · registrado el %@ · %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · registrado el %2$@ · %3$@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · recorded on %@ · %@"
           }
         }
       }
@@ -1292,6 +1312,22 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "%lld cuentas · menos %@ de tarjetas · según libros" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld accounts · minus %@ on cards · per books"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld cuentas · menos %2$@ de tarjetas · según libros"
           }
         }
       }
@@ -2461,6 +2497,7 @@
       }
     },
     "%lld reglas" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "variations" : {
@@ -2960,6 +2997,16 @@
         }
       }
     },
+    "Abre Cierre de periodo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens Period Close"
+          }
+        }
+      }
+    },
     "Abre Impuestos" : {
       "localizations" : {
         "en" : {
@@ -3012,6 +3059,7 @@
       }
     },
     "Abre la bandeja «Por revisar»" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3084,6 +3132,7 @@
       }
     },
     "Abrir cliente" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3679,6 +3728,7 @@
       }
     },
     "Al %@ · base devengado · %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4103,6 +4153,7 @@
       }
     },
     "Aplica las reglas activas a los movimientos por revisar" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4113,6 +4164,7 @@
       }
     },
     "Aplicar ahora" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4198,6 +4250,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "These are the bills your vendors send you that you'll pay later."
+          }
+        }
+      }
+    },
+    "Aquí van los saldos con que empezaste los libros. Tu contador suele pasarlos a «Capital del dueño» con un asiento al cerrar el año." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This holds the balances you started your books with. Your accountant usually moves them to “Owner’s equity” with an entry at year-end."
           }
         }
       }
@@ -4325,6 +4387,7 @@
       }
     },
     "Arrastra la foto o el PDF del recibo a cada gasto. Paga a tus proveedores a tiempo." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4934,6 +4997,7 @@
       }
     },
     "Aún no has importado movimientos" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5109,6 +5173,7 @@
       }
     },
     "Aún no tienes reglas" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5139,6 +5204,7 @@
       }
     },
     "Baja el extracto de tu banco en CSV u OFX y arrástralo aquí: verás cada movimiento con lo que la app propone para registrarlo." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5191,6 +5257,7 @@
       }
     },
     "Banca · %lld activas" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "variations" : {
@@ -5231,6 +5298,7 @@
       }
     },
     "Banca · %lld cuentas" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "variations" : {
@@ -5271,6 +5339,7 @@
       }
     },
     "Banca · %lld por revisar" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5301,6 +5370,7 @@
       }
     },
     "Base" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5423,6 +5493,22 @@
         }
       }
     },
+    "Borrador con fecha %@ · vence el %@. El asiento se registra al emitirla." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Draft dated %@ · due %@. The entry is recorded when you issue it."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Borrador con fecha %1$@ · vence el %2$@. El asiento se registra al emitirla."
+          }
+        }
+      }
+    },
     "Borrador de factura borrado: %@" : {
       "localizations" : {
         "en" : {
@@ -5434,6 +5520,7 @@
       }
     },
     "Borrador: el asiento se registra al emitirla" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5668,6 +5755,7 @@
       }
     },
     "Buscar gastos" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5689,6 +5777,7 @@
       }
     },
     "Bájalo de la web de tu banco («Descargar movimientos» o «Exportar») o arrástralo aquí. Los movimientos que ya importaste no se repiten." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5911,6 +6000,16 @@
         }
       }
     },
+    "Calcular con %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Calculate with %@"
+          }
+        }
+      }
+    },
     "Calle, ciudad y código postal" : {
       "localizations" : {
         "en" : {
@@ -6063,6 +6162,7 @@
       }
     },
     "Cambiar varios gastos de una categoría a otra" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6109,6 +6209,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Changes"
+          }
+        }
+      }
+    },
+    "Cambios después del cierre" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Changes After Close"
           }
         }
       }
@@ -6374,7 +6484,6 @@
       }
     },
     "Cerrado hasta" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6461,6 +6570,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Close Period…"
+          }
+        }
+      }
+    },
+    "Cerrar sin contraseña" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close without password"
           }
         }
       }
@@ -7234,6 +7353,7 @@
       }
     },
     "Con recibo" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -7270,6 +7390,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "With their details saved, invoicing is just picking a name, and you see at a glance who owes you."
+          }
+        }
+      }
+    },
+    "Con una contraseña de cierre, solo quien la sepa podrá registrar o cambiar algo con fecha cerrada. Sin ella, se podrá hacer escribiendo el motivo, que quedará en el historial." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "With a closing password, only someone who knows it can record or change anything with a closed date. Without one, it can be done by entering a reason, which stays in the history."
           }
         }
       }
@@ -7456,6 +7586,7 @@
       }
     },
     "Conciliar…" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -7649,6 +7780,7 @@
       }
     },
     "Contiene" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -8202,6 +8334,7 @@
       }
     },
     "Crear regla…" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -8923,6 +9056,7 @@
       }
     },
     "Deducible %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -8963,6 +9097,7 @@
       }
     },
     "Del banco" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -9620,11 +9755,22 @@
       }
     },
     "Déjalo vacío si no usas tarjeta. Los saldos se registran como asiento de apertura contra «Saldos de apertura» (3900); lo verás en Contabilidad." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Leave it empty if you don't use a card. Balances are recorded as an opening entry against “Opening Balance Equity” (3900); you'll see it in Accounting."
+          }
+        }
+      }
+    },
+    "Déjalo vacío si no usas tarjeta. Los saldos se registran como asiento de apertura contra «Saldos de apertura» (3900); lo verás en Contabilidad. Tu contador suele pasar ese saldo a «Capital del dueño» al cerrar el año." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leave it empty if you don’t use a card. The balances are recorded as an opening entry against “Opening balance equity” (3900); you’ll see it in Accounting. Your accountant usually moves that balance to “Owner’s equity” at year-end."
           }
         }
       }
@@ -9872,6 +10018,7 @@
       }
     },
     "Editar regla…" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -10063,6 +10210,7 @@
       }
     },
     "El archivo se guarda junto al gasto tal como lo subes. Los datos del formulario se escriben a mano." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -10482,6 +10630,16 @@
         }
       }
     },
+    "El saldo de la cuenta que usas para el negocio en esa fecha. Si empiezas los libros en una fecha pasada (por ejemplo, el 1 de octubre), cambia la fecha y copia el saldo de ese día de tu extracto." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The balance of the account you use for the business on that date. If you’re starting your books on an earlier date (for example, October 1), change the date and copy that day’s balance from your statement."
+          }
+        }
+      }
+    },
     "El saldo es contrario a la naturaleza de la cuenta: puede ser una contracuenta (como la depreciación acumulada) o un registro por revisar." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -10665,6 +10823,16 @@
         }
       }
     },
+    "Elige el que más se parezca a tu negocio para ver el plan de cuentas que te prepararemos." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose the one closest to your business to see the chart of accounts we’ll set up."
+          }
+        }
+      }
+    },
     "Elige la cuenta al confirmar" : {
       "localizations" : {
         "en" : {
@@ -10737,6 +10905,7 @@
       }
     },
     "Elige un cliente para ver lo que tiene pendiente." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -10867,6 +11036,7 @@
       }
     },
     "Elige una cuenta para ver todos sus periodos." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -10987,6 +11157,7 @@
       }
     },
     "Emparejado con el banco" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -11260,11 +11431,22 @@
       }
     },
     "En EE. UU. el sales tax de tus compras forma parte del gasto. Si el recibo lo desglosa, anótalo en «Impuesto incluido»." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "In the US, sales tax on your purchases is part of the expense. If the receipt shows it, enter it in “Tax included.”"
+          }
+        }
+      }
+    },
+    "En EE. UU. el sales tax de tus compras forma parte del gasto. Si el recibo lo desglosa, anótalo en «Impuesto incluido»; el alquiler, los seguros y los servicios no suelen llevarlo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In the U.S., sales tax on your purchases is part of the expense. If the receipt breaks it out, enter it in “Tax included”; rent, insurance and services usually don’t have it."
           }
         }
       }
@@ -11300,6 +11482,7 @@
       }
     },
     "En inglés" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -11361,6 +11544,7 @@
       }
     },
     "Entra dinero" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -11702,6 +11886,16 @@
         }
       }
     },
+    "Escribe el motivo para registrar en un periodo cerrado." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter the reason to record in a closed period."
+          }
+        }
+      }
+    },
     "Escribe el porcentaje que cobras. Si cobras varias tasas (estado, condado, ciudad), puedes poner el total o crear una por cada una y juntarlas en un grupo." : {
       "localizations" : {
         "en" : {
@@ -11792,7 +11986,28 @@
         }
       }
     },
+    "Esta fecha cae en un periodo cerrado (hasta el %@). Al guardar te pediremos el motivo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This date falls in a closed period (through %@). When you save, we’ll ask for the reason."
+          }
+        }
+      }
+    },
+    "Esta fecha cae en un periodo cerrado (hasta el %@). Al guardar te pediremos la contraseña de cierre." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This date falls in a closed period (through %@). When you save, we’ll ask for the closing password."
+          }
+        }
+      }
+    },
     "Esta línea ya no tiene importes en el periodo." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -12259,6 +12474,7 @@
       }
     },
     "Excluida del formulario" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -12713,11 +12929,22 @@
       }
     },
     "Factura por etapas de la obra" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Invoice the job in stages"
+          }
+        }
+      }
+    },
+    "Factura por etapas o partes del trabajo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invoice by stages or parts of the work"
           }
         }
       }
@@ -13064,6 +13291,16 @@
         }
       }
     },
+    "Fecha de la factura" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invoice date"
+          }
+        }
+      }
+    },
     "Fecha de pago" : {
       "localizations" : {
         "en" : {
@@ -13170,6 +13407,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Set closing password"
+          }
+        }
+      }
+    },
+    "Fijar contraseña y cerrar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set Password and Close"
           }
         }
       }
@@ -13359,6 +13606,7 @@
       }
     },
     "Formulario" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -13904,6 +14152,7 @@
       }
     },
     "Guardado en %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -13944,6 +14193,7 @@
       }
     },
     "Guardar ZIP…" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -13974,6 +14224,7 @@
       }
     },
     "Guardar carpeta…" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -14423,6 +14674,7 @@
       }
     },
     "Importa un extracto CSV, OFX o QFX (también puedes arrastrarlo aquí)" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -14454,6 +14706,7 @@
       }
     },
     "Importado" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -14533,6 +14786,17 @@
         }
       }
     },
+    "Importar copia de un cliente…" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Import a Client’s Backup…"
+          }
+        }
+      }
+    },
     "Importar extracto" : {
       "localizations" : {
         "en" : {
@@ -14564,6 +14828,7 @@
       }
     },
     "Importar y conciliar" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -14574,6 +14839,7 @@
       }
     },
     "Importar y conciliar · Próximamente" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -14584,6 +14850,7 @@
       }
     },
     "Importar y conciliar, disponible en una próxima versión" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -14876,6 +15143,7 @@
       }
     },
     "Ingreso" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -14977,6 +15245,7 @@
       }
     },
     "Inspector" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -15348,11 +15617,22 @@
       }
     },
     "La fecha cae en un periodo cerrado (hasta el %@). Al registrar te pediremos confirmarlo." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "The date falls in a closed period (through %@). When you record it, you'll be asked to confirm."
+          }
+        }
+      }
+    },
+    "La fecha cae en un periodo cerrado (hasta el %@). Al registrar te pediremos el motivo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The date falls in a closed period (through %@). When you record it, we’ll ask for the reason."
           }
         }
       }
@@ -15368,6 +15648,7 @@
       }
     },
     "La fecha cae en un periodo cerrado. El cambio quedará en el historial." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -15378,6 +15659,7 @@
       }
     },
     "La fecha cae en un periodo cerrado. Escribe la contraseña de cierre para registrar el cambio; quedará en el historial." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -15468,6 +15750,7 @@
       }
     },
     "La línea sugerida sale del número de la cuenta en la plantilla. Cámbiala si tu contador la lleva a otra; el cambio se guarda en la cuenta y vale para todos los periodos." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -15968,7 +16251,18 @@
         }
       }
     },
+    "Lo que debes en esa fecha" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What you owe on that date"
+          }
+        }
+      }
+    },
     "Lo que debes hoy" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -16044,6 +16338,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Actuals from"
+          }
+        }
+      }
+    },
+    "Lo registrado con fecha de un periodo que ya estaba cerrado. También va en el paquete del contador." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What was recorded with a date in a period that was already closed. It’s also included in the accountant package."
           }
         }
       }
@@ -16257,7 +16561,50 @@
         }
       }
     },
+    "Los libros están cerrados hasta el %@. Lo habitual es registrarlo el %@, el primer día abierto, para no cambiar reportes que ya pudiste entregar. Para registrarlo con su fecha, escribe el motivo: quedará en el historial." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Books are closed through %@. The usual practice is to record it on %@, the first open day, so reports you may have already delivered don’t change. To record it with its own date, enter the reason: it stays in the history."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Los libros están cerrados hasta el %1$@. Lo habitual es registrarlo el %2$@, el primer día abierto, para no cambiar reportes que ya pudiste entregar. Para registrarlo con su fecha, escribe el motivo: quedará en el historial."
+          }
+        }
+      }
+    },
+    "Los libros están cerrados hasta el %@. Lo habitual es registrarlo el %@, el primer día abierto. Para registrarlo con su fecha, escribe la contraseña de cierre." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Books are closed through %@. The usual practice is to record it on %@, the first open day. To record it with its own date, enter the closing password."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Los libros están cerrados hasta el %1$@. Lo habitual es registrarlo el %2$@, el primer día abierto. Para registrarlo con su fecha, escribe la contraseña de cierre."
+          }
+        }
+      }
+    },
+    "Los libros están cerrados hasta el %@. Si registras con esa fecha cambiarán reportes que ya pudiste entregar. Escribe el motivo: quedará en el historial." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Books are closed through %@. Recording with that date will change reports you may have already delivered. Enter the reason: it stays in the history."
+          }
+        }
+      }
+    },
     "Los libros están cerrados hasta el %@. Si registras con esa fecha cambiarán reportes que ya pudiste entregar. Quedará anotado." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -16388,6 +16735,7 @@
       }
     },
     "Línea %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -16398,6 +16746,7 @@
       }
     },
     "Línea %@ · %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -16508,6 +16857,7 @@
       }
     },
     "Marca lo que sale en el extracto" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -16528,6 +16878,7 @@
       }
     },
     "Marcada" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -16538,6 +16889,7 @@
       }
     },
     "Marcadas que restan" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -16548,6 +16900,7 @@
       }
     },
     "Marcadas que suman" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -16558,6 +16911,7 @@
       }
     },
     "Marcado en la conciliación abierta" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -16618,6 +16972,7 @@
       }
     },
     "Marcar emparejadas" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -16809,6 +17164,7 @@
       }
     },
     "Mira tu app del banco y copia el saldo actual de la cuenta que usas para el negocio." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -17067,6 +17423,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Exemption reason"
+          }
+        }
+      }
+    },
+    "Motivo: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reason: %@"
           }
         }
       }
@@ -17390,6 +17756,7 @@
       }
     },
     "Nada pendiente." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -17400,6 +17767,7 @@
       }
     },
     "Nada por aquí todavía" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -17614,6 +17982,7 @@
       }
     },
     "Ninguna regla coincide con la búsqueda." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -17910,6 +18279,16 @@
         }
       }
     },
+    "No gravable" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not taxable"
+          }
+        }
+      }
+    },
     "No gravables" : {
       "localizations" : {
         "en" : {
@@ -18074,6 +18453,7 @@
       }
     },
     "No queda nada por revisar. Importa el próximo extracto cuando lo tengas." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -18436,6 +18816,7 @@
       }
     },
     "Nombre o texto" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -18963,11 +19344,22 @@
       }
     },
     "Opcional: con contraseña, nadie puede reabrir un periodo ni registrar con una fecha cerrada sin escribirla." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Optional: with a password, no one can reopen a period or record with a closed date without entering it."
+          }
+        }
+      }
+    },
+    "Opcional: con contraseña, nadie puede reabrir un periodo ni registrar con una fecha cerrada sin escribirla. Sin ella, para registrar con una fecha cerrada hay que escribir el motivo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Optional: with a password, no one can reopen a period or record with a closed date without entering it. Without one, recording with a closed date requires a reason."
           }
         }
       }
@@ -19003,6 +19395,7 @@
       }
     },
     "Orden: %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -19905,6 +20298,7 @@
       }
     },
     "Parte" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -20099,6 +20493,7 @@
       }
     },
     "Pendientes" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -20361,6 +20756,7 @@
       }
     },
     "Podrás traer tus movimientos en CSV u OFX, categorizarlos desde una bandeja y conciliar con el extracto del banco." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -20627,6 +21023,7 @@
       }
     },
     "Por periodo" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -21155,6 +21552,7 @@
       }
     },
     "Propuesta" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -21420,6 +21818,7 @@
       }
     },
     "Próximamente" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -21731,6 +22130,16 @@
         }
       }
     },
+    "Quién" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Who"
+          }
+        }
+      }
+    },
     "Quién cambió qué y cuándo" : {
       "localizations" : {
         "en" : {
@@ -21912,6 +22321,7 @@
       }
     },
     "Real · %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -22103,6 +22513,7 @@
       }
     },
     "Reclasificar…" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -22357,6 +22768,7 @@
       }
     },
     "Registra todos los movimientos que tienen una propuesta" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -22418,6 +22830,16 @@
         }
       }
     },
+    "Registrado el" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recorded on"
+          }
+        }
+      }
+    },
     "Registrar" : {
       "localizations" : {
         "en" : {
@@ -22468,12 +22890,33 @@
         }
       }
     },
+    "Registrar con fecha %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Record on %@"
+          }
+        }
+      }
+    },
     "Registrar de todos modos" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Record Anyway"
+          }
+        }
+      }
+    },
+    "Registrar en el periodo cerrado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Record in Closed Period"
           }
         }
       }
@@ -22564,6 +23007,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Posting in a closed period authorized"
+          }
+        }
+      }
+    },
+    "Registro en periodo cerrado autorizado. Motivo: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recording in closed period authorized. Reason: %@"
           }
         }
       }
@@ -23239,6 +23692,7 @@
       }
     },
     "Revisar…" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -23254,6 +23708,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "S corporation"
+          }
+        }
+      }
+    },
+    "Saldada: cobrado %@ + crédito %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Settled: %@ received + %@ credit"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Saldada: cobrado %1$@ + crédito %2$@"
           }
         }
       }
@@ -23361,6 +23831,7 @@
       }
     },
     "Saldo de hoy" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -23575,6 +24046,7 @@
       }
     },
     "Saldos" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -23596,6 +24068,7 @@
       }
     },
     "Saldos al %@ · %lld cuentas con movimiento" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "variations" : {
@@ -23676,6 +24149,7 @@
       }
     },
     "Sale dinero" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -23919,7 +24393,24 @@
         }
       }
     },
+    "Se creará una factura en borrador por %@ con fecha %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A draft invoice for %@ dated %@ will be created."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Se creará una factura en borrador por %1$@ con fecha %2$@."
+          }
+        }
+      }
+    },
     "Se creará una factura en borrador por %@." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -24265,6 +24756,7 @@
       }
     },
     "Selecciona un movimiento para revisarlo." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -24308,6 +24800,7 @@
       }
     },
     "Selecciona una cuenta para ver sus conciliaciones." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -24318,6 +24811,7 @@
       }
     },
     "Selecciona una factura de proveedor para ver sus detalles." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -24339,6 +24833,7 @@
       }
     },
     "Selecciona una regla para ver sus detalles." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -24859,6 +25354,7 @@
       }
     },
     "Sin gastos ni ingresos en el periodo." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -25800,6 +26296,16 @@
         }
       }
     },
+    "También va en el paquete del contador" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Also included in the accountant package"
+          }
+        }
+      }
+    },
     "Tarjeta" : {
       "localizations" : {
         "en" : {
@@ -26247,6 +26753,7 @@
       }
     },
     "Toca una cuenta para llevarla a otra línea o excluirla." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -26278,6 +26785,7 @@
       }
     },
     "Todas las cuentas" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -27487,6 +27995,7 @@
       }
     },
     "Una regla categoriza sola los movimientos que se parecen: «si la descripción contiene UBER → Transporte»." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -28579,6 +29088,7 @@
       }
     },
     "Volver a la sugerida" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -28812,11 +29322,22 @@
       }
     },
     "columna" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "column"
+          }
+        }
+      }
+    },
+    "con la contraseña de cierre" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "with the closing password"
           }
         }
       }
@@ -28904,16 +29425,16 @@
     "estimate.audit.accepted" : {
       "extractionState" : "extracted_with_value",
       "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "aceptado"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "accepted"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "aceptado"
           }
         }
       }
@@ -28921,16 +29442,16 @@
     "estimate.audit.converted" : {
       "extractionState" : "extracted_with_value",
       "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "convertido"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "converted"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "convertido"
           }
         }
       }
@@ -28938,16 +29459,16 @@
     "estimate.audit.declined" : {
       "extractionState" : "extracted_with_value",
       "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "rechazado"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "declined"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "rechazado"
           }
         }
       }
@@ -28955,16 +29476,16 @@
     "estimate.audit.draft" : {
       "extractionState" : "extracted_with_value",
       "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "borrador"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "draft"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "borrador"
           }
         }
       }
@@ -28972,16 +29493,16 @@
     "estimate.audit.expired" : {
       "extractionState" : "extracted_with_value",
       "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "vencido"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "expired"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "vencido"
           }
         }
       }
@@ -28989,16 +29510,16 @@
     "estimate.audit.sent" : {
       "extractionState" : "extracted_with_value",
       "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "enviado"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "sent"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "enviado"
           }
         }
       }
@@ -29465,12 +29986,52 @@
         }
       }
     },
+    "¿Cerrar sin contraseña de cierre?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close Without a Closing Password?"
+          }
+        }
+      }
+    },
     "¿Cobras sales tax?" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Do you collect sales tax?"
+          }
+        }
+      }
+    },
+    "¿Con cuánto dinero empiezan los libros de la empresa?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How much money do the company’s books start with?"
+          }
+        }
+      }
+    },
+    "¿Con cuánto dinero empiezan los libros de tu cliente?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How much money do your client’s books start with?"
+          }
+        }
+      }
+    },
+    "¿Con cuánto dinero empiezas tus libros?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How much money do your books start with?"
           }
         }
       }
@@ -29512,6 +30073,7 @@
       }
     },
     "¿Cuánto dinero tiene hoy la cuenta del banco de la empresa?" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -29522,6 +30084,7 @@
       }
     },
     "¿Cuánto dinero tiene hoy la cuenta del banco de tu cliente?" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -29532,6 +30095,7 @@
       }
     },
     "¿Cuánto dinero tiene hoy tu cuenta del negocio?" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -29592,6 +30156,7 @@
       }
     },
     "¿Excluir este movimiento?" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -29752,6 +30317,7 @@
       }
     },
     "Última actividad" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -29773,6 +30339,7 @@
       }
     },
     "Última conciliación" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -29813,6 +30380,7 @@
       }
     },
     "Último movimiento" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -29880,6 +30448,9 @@
         }
       }
     },
+    "✓" : {
+      "shouldTranslate" : false
+    },
     "✓ Cuadra" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -29900,20 +30471,6 @@
           }
         }
       }
-    },
-    "Importar copia de un cliente…" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Import a Client’s Backup…"
-          }
-        }
-      }
-    },
-    "✓" : {
-      "shouldTranslate" : false
     }
   },
   "version" : "1.0"

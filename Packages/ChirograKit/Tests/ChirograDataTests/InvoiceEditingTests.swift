@@ -186,8 +186,15 @@ struct InvoiceEditingTests {
         corrected.lines[0].unitPrice = 12_000
         #expect(throws: BookkeepingError.invalidEntry(.periodLocked(lockDate: day(-30)))) { try books.updateIssuedInvoice(invoice, with: corrected) }
         #expect(invoice.total == 10_000)
-        #expect(try books.unlockedForClosedPeriod(password: nil).updateIssuedInvoice(invoice, with: corrected) != nil)
+        // Sin contraseña de cierre hay que escribir el motivo (QA Hudson, H02); queda en la auditoría.
+        #expect(throws: BookkeepingError.closedPeriodReasonRequired) { try books.unlockedForClosedPeriod(password: nil) }
+        #expect(throws: BookkeepingError.closedPeriodReasonRequired) { try books.unlockedForClosedPeriod(password: nil, reason: "  ") }
+        #expect(try books.unlockedForClosedPeriod(password: nil, reason: "Precio mal escrito")
+            .updateIssuedInvoice(invoice, with: corrected) != nil)
         #expect(invoice.total == 12_000)
+        #expect(try context.fetch(FetchDescriptor<AuditEvent>()).contains {
+            $0.action == "unlockClosedPeriod" && $0.summary.contains("Precio mal escrito")
+        })
         #expect(try trialBalanced())
     }
 }

@@ -517,7 +517,7 @@ struct EstimateDetailView: View {
 
     private func convert() {
         do {
-            createdInvoice = try books.convertToInvoice(estimate, portion: conversion.portion)
+            createdInvoice = try books.convertToInvoice(estimate, portion: conversion.portion, issueDate: conversion.issueDate)
             errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription
@@ -549,6 +549,12 @@ struct EstimateConversionChoice {
     var option: Option = .all
     var percent = 50
     var lineIDs: Set<UUID> = []
+    /// Fecha de la factura: la de aceptación del estimado si cae en un periodo abierto; si no, hoy. Antes la factura
+    /// nacía siempre con la fecha de hoy y sin decirlo (QA Hudson, H01).
+    var issueDate = Date()
+    /// La última fecha propuesta: mientras `issueDate` sea esa, la propuesta sigue al estimado (por ejemplo, al marcarlo
+    /// aceptado con la pantalla abierta); si el usuario eligió otra, se respeta.
+    private var proposedIssueDate: Date?
 
     var portion: EstimateConversion {
         switch option {
@@ -561,6 +567,20 @@ struct EstimateConversionChoice {
     /// Las líneas que quedan por facturar, todas elegidas al principio.
     mutating func prepare(for estimate: Estimate) {
         if lineIDs.isEmpty { lineIDs = Set(estimate.sortedLines.filter { $0.remainingQuantity > 0 }.map(\.id)) }
+    }
+
+    /// Propone la fecha, salvo que el usuario ya haya elegido otra.
+    mutating func prepareDate(for estimate: Estimate, lockDate: Date?, calendar: Calendar = .current) {
+        guard proposedIssueDate == nil || proposedIssueDate == issueDate else { return }
+        let date = Self.proposedDate(for: estimate, lockDate: lockDate, calendar: calendar)
+        issueDate = date
+        proposedIssueDate = date
+    }
+
+    static func proposedDate(for estimate: Estimate, lockDate: Date?, now: Date = .now, calendar: Calendar = .current) -> Date {
+        guard let accepted = estimate.acceptedDate, accepted <= now else { return now }
+        if let lockDate, calendar.startOfDay(for: accepted) <= calendar.startOfDay(for: lockDate) { return now }
+        return accepted
     }
 
     func isValid(for estimate: Estimate) -> Bool {
@@ -643,7 +663,7 @@ struct EstimateConversionSection: View {
                     .padding(.trailing, Metrics.cardPadding)
                     .frame(minHeight: Metrics.target)
                 }
-                optionRow(.lines, title: String(localized: "Elegir líneas"), subtitle: String(localized: "Factura por etapas de la obra"),
+                optionRow(.lines, title: String(localized: "Elegir líneas"), subtitle: String(localized: "Factura por etapas o partes del trabajo"),
                           amount: choice.option == .lines ? amount(.lines(Array(choice.lineIDs))).money : "—")
                 if choice.option == .lines {
                     ForEach(estimate.sortedLines.filter { $0.remainingQuantity > 0 }) { line in
@@ -653,11 +673,19 @@ struct EstimateConversionSection: View {
                 }
             }
             .card(padding: 0)
-            Text("Se creará una factura en borrador por \(amount(choice.portion).money).")
+            DatePicker("Fecha de la factura", selection: $choice.issueDate, displayedComponents: .date)
+                .foregroundStyle(Palette.ink)
+                .padding(.horizontal, Metrics.cardPadding)
+                .frame(minHeight: Metrics.target)
+                .card(padding: 0)
+                .padding(.top, 12)
+            Text("Se creará una factura en borrador por \(amount(choice.portion).money) con fecha \(choice.issueDate.shortDate).")
                 .font(.footnote).foregroundStyle(Palette.ink2)
                 .padding(.horizontal, Metrics.cardPadding)
                 .padding(.top, 7)
         }
+        .onAppear { choice.prepareDate(for: estimate, lockDate: (try? books.company())??.lockDate) }
+        .onChange(of: estimate.acceptedDate) { choice.prepareDate(for: estimate, lockDate: (try? books.company())??.lockDate) }
     }
 
     /// Opción con la marca de selección a la izquierda (canvas: ✓ en Tinta), título, detalle e importe.
@@ -756,7 +784,7 @@ struct ConvertEstimateSheet: View {
 
     private func convert() {
         do {
-            let invoice = try Bookkeeper(context: context).convertToInvoice(estimate, portion: choice.portion)
+            let invoice = try Bookkeeper(context: context).convertToInvoice(estimate, portion: choice.portion, issueDate: choice.issueDate)
             onConverted(invoice)
             dismiss()
         } catch {

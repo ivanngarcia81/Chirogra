@@ -1099,6 +1099,7 @@ struct CustomerRefundView: View {
                 MoneyField(title: String(localized: "Importe a reembolsar"), minorUnits: $amount)
                     .labeledField(String(localized: "Importe a reembolsar"))
                 DatePicker("Fecha", selection: $date, displayedComponents: .date)
+                ClosedPeriodDateNote(date: date)
                 AccountPicker(title: String(localized: "Pagar desde"), accounts: paymentAccounts, selection: $accountID)
             } footer: {
                 Text("Se registra la salida de dinero del banco y se cancela ese saldo a favor en cuentas por cobrar.")

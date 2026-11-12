@@ -24,6 +24,11 @@ public enum CSVExport {
             : value
     }
 
+    /// Tabla sencilla: encabezado y filas, con las comillas que hagan falta.
+    public static func table(header: [String], rows: [[String]]) -> String {
+        lines([header] + rows)
+    }
+
     static func lines(_ rows: [[String]]) -> String {
         rows.map { $0.map(field).joined(separator: ",") }.joined(separator: "\n") + "\n"
     }

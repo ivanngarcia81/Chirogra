@@ -84,6 +84,7 @@ struct BudgetCreateView: View {
             }
         }
         .formStyle(.grouped)
+        .keyboardDoneButton()
         .screenBackground()
         .navigationTitle("Nuevo presupuesto")
         .inlineTitle()
@@ -196,6 +197,7 @@ struct BudgetEditorView: View {
             }
         }
         .formStyle(.grouped)
+        .keyboardDoneButton()
         .screenBackground()
         .navigationTitle("Editar importes")
         .inlineTitle()
@@ -263,6 +265,7 @@ struct BudgetAccountEditor: View {
             }
         }
         .formStyle(.grouped)
+        .keyboardDoneButton()
         .screenBackground()
         .navigationTitle(account.name)
         .inlineTitle()

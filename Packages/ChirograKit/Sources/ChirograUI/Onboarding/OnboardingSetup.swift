@@ -128,19 +128,19 @@ struct OpeningBalanceFields<Header: View>: View {
 
     var body: some View {
         Section {
-            moneyRow("Saldo de hoy", amount: $bank)
+            moneyRow("Saldo del banco", amount: $bank)
             DatePicker("Fecha del saldo", selection: $date, in: ...Date.now, displayedComponents: .date)
         } header: {
             header
         } footer: {
-            Text("Mira tu app del banco y copia el saldo actual de la cuenta que usas para el negocio.")
+            Text("El saldo de la cuenta que usas para el negocio en esa fecha. Si empiezas los libros en una fecha pasada (por ejemplo, el 1 de octubre), cambia la fecha y copia el saldo de ese día de tu extracto.")
         }
         Section {
-            moneyRow("Lo que debes hoy", amount: $card)
+            moneyRow("Lo que debes en esa fecha", amount: $card)
         } header: {
             SectionLabel(text: String(localized: "Tarjeta de crédito (opcional)"))
         } footer: {
-            Text("Déjalo vacío si no usas tarjeta. Los saldos se registran como asiento de apertura contra «Saldos de apertura» (3900); lo verás en Contabilidad.")
+            Text("Déjalo vacío si no usas tarjeta. Los saldos se registran como asiento de apertura contra «Saldos de apertura» (3900); lo verás en Contabilidad. Tu contador suele pasar ese saldo a «Capital del dueño» al cerrar el año.")
         }
     }
 
@@ -186,6 +186,7 @@ struct OpeningBalanceSheet: View {
             }
         }
         .formStyle(.grouped)
+        .keyboardDoneButton()
         .screenBackground()
         .navigationTitle("Saldo del banco")
         .inlineTitle()

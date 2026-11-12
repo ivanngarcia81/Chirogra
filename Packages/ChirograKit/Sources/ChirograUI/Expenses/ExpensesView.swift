@@ -688,6 +688,7 @@ struct BillEditorView: View {
                 VendorPicker(vendors: vendors, selection: $vendorID, noneTitle: "Elegir…") { use($0) }
                 TextField("Número de la factura del proveedor", text: $number)
                 DatePicker("Fecha", selection: $billDate, displayedComponents: .date)
+                ClosedPeriodDateNote(date: billDate)
                 DatePicker("Vence", selection: $dueDate, in: billDate..., displayedComponents: .date)
             } header: {
                 SectionLabel(text: String(localized: "Factura"))
@@ -721,6 +722,13 @@ struct BillEditorView: View {
             // «Nuevo proveedor…» pasa un instante por su etiqueta y vuelve a la de antes: eso no es elegir.
             guard old != VendorPicker.newVendorTag, let vendor = vendors.first(where: { $0.id == new }) else { return }
             use(vendor)
+        }
+        .onChange(of: billDate) { old, new in
+            // El vencimiento se mueve con la fecha y conserva el plazo (como en la factura de venta). Antes se quedaba
+            // en «hoy + 30» al poner una fecha pasada (QA Hudson, H14).
+            let calendar = Calendar.current
+            let days = calendar.dateComponents([.day], from: calendar.startOfDay(for: old), to: calendar.startOfDay(for: dueDate)).day ?? 0
+            dueDate = calendar.date(byAdding: .day, value: max(days, 0), to: new) ?? new
         }
     }
 
@@ -782,6 +790,7 @@ struct PayBillView: View {
             Section {
                 MoneyRow(String(localized: "Monto"), minorUnits: $amount)
                 DatePicker("Fecha de pago", selection: $date, displayedComponents: .date)
+                ClosedPeriodDateNote(date: date)
                 PaymentAccountPicker(title: String(localized: "Pagar desde"), accounts: paymentAccounts, selection: $accountID)
                 Picker("Método", selection: $method) {
                     ForEach(PaymentMethod.billMethods, id: \.self) { Text($0.title).tag($0) }

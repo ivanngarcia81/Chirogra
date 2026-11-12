@@ -469,6 +469,7 @@ struct InvoiceEditorView: View {
                     TextField("Concepto", text: $estimateTitle, prompt: Text("Concepto (opcional)"))
                 }
                 DatePicker("Fecha", selection: $issueDate, displayedComponents: .date)
+                if !isEstimate { ClosedPeriodDateNote(date: issueDate) }
                 if isEstimate {
                     validUntilPicker
                 } else {
@@ -663,7 +664,7 @@ struct InvoiceEditorView: View {
                 .frame(minHeight: Metrics.target)
                 .contentShape(Rectangle())
             Text(verbatim: "·").foregroundStyle(Palette.ink2).accessibilityHidden(true)
-            Button(line.wrappedValue.isTaxable ? String(localized: "Gravable") : String(localized: "Sin impuesto")) {
+            Button(line.wrappedValue.isTaxable ? String(localized: "Gravable") : String(localized: "No gravable")) {
                 line.wrappedValue.isTaxable.toggle()
             }
             .buttonStyle(.plain)
@@ -831,6 +832,12 @@ struct InvoiceEditorView: View {
             boxRow(String(localized: "Fecha"), first: true) {
                 DatePicker("Fecha", selection: $issueDate, displayedComponents: .date).labelsHidden()
             }
+            if !isEstimate {
+                ClosedPeriodDateNote(date: issueDate)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 12)
+                    .padding(.bottom, 8)
+            }
             if isEstimate {
                 boxRow(String(localized: "Válido hasta")) {
                     validUntilPicker.labelsHidden()
@@ -884,7 +891,7 @@ struct InvoiceEditorView: View {
                             .multilineTextAlignment(.trailing).fieldBox().frame(width: amountColumn)
                         Picker("Impuesto", selection: $line.isTaxable) {
                             Text("Gravable").tag(true)
-                            Text("Exento").tag(false)
+                            Text("No gravable").tag(false)
                         }
                         .labelsHidden()
                         .pickerStyle(.menu)

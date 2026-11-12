@@ -85,27 +85,36 @@ struct InvoiceTablePage: View {
             TableColumn("Número", value: \.tableNumber) { invoice in
                 MacCellText(text: invoice.number.isEmpty ? "—" : invoice.number)
             }
-            .width(min: 56, ideal: 64, max: 110)
+            .width(min: 64, ideal: 70, max: 110)
             TableColumn("Cliente", value: \.customerName) { invoice in
                 Text(invoice.customer?.name ?? String(localized: "Sin cliente")).lineLimit(1)
             }
-            .width(min: 100, ideal: 160)
+            .width(min: 96, ideal: 134)
             TableColumn("Emitida", value: \.issueDate) { invoice in
                 MacCellText(text: invoice.issueDate.dayMonth)
             }
-            .width(min: 52, ideal: 60, max: 100)
+            .width(min: 50, ideal: 54, max: 100)
             TableColumn("Vence", value: \.dueDate) { invoice in
                 MacCellText(text: invoice.dueDate.dayMonth, color: invoice.daysOverdue() != nil ? Palette.negative : Palette.ink2)
             }
-            .width(min: 52, ideal: 60, max: 100)
+            .width(min: 50, ideal: 54, max: 100)
             TableColumn("Estado", value: \.statusRank) { invoice in
                 MacCellStatus(chip: invoice.tableStatus)
             }
-            .width(min: 100, ideal: 130, max: 220)
-            TableColumn("Importe", value: \.tableAmount) { invoice in
+            .width(min: 96, ideal: 120, max: 200)
+            // «Total» y «Saldo» por separado: la columna «Importe» enseñaba el total y la lista del iPad el saldo, y
+            // una factura cobrada a medias parecía tener cifras distintas (QA Hudson, H17).
+            TableColumn("Total", value: \.tableAmount) { invoice in
                 Text(invoice.tableAmount.money).monospacedDigit()
             }
-            .width(min: 76, ideal: 90, max: 140)
+            .width(min: 72, ideal: 80, max: 140)
+            .alignment(.trailing)
+            TableColumn("Saldo", value: \.tableBalance) { invoice in
+                Text(invoice.status == .draft || invoice.status == .void ? "—" : invoice.balanceDue.money)
+                    .monospacedDigit()
+                    .foregroundStyle(invoice.balanceDue > 0 ? Palette.ink : Palette.ink2)
+            }
+            .width(min: 72, ideal: 80, max: 140)
             .alignment(.trailing)
         } filter: {
             MacTableFilter(title: String(localized: "Filtrar por estado"), options: InvoiceListView.Filter.allCases,
@@ -297,6 +306,7 @@ struct InvoicePaymentSheet: View {
                 }
                 AccountPicker(title: String(localized: "Depositar en"), accounts: depositAccounts, selection: $depositAccountID)
                 DatePicker("Fecha", selection: $date, displayedComponents: .date)
+                ClosedPeriodDateNote(date: date)
             } footer: {
                 if mode == .partial && amount > invoice.balanceDue {
                     Text("El monto supera el saldo de \(invoice.balanceDue.money).").foregroundStyle(Palette.negative)
@@ -348,6 +358,8 @@ extension Invoice {
     nonisolated var tableNumber: String { number.isEmpty ? "~" : number }
     /// Importe de la fila: el total, o lo que suman las líneas si es un borrador.
     nonisolated var tableAmount: Int64 { status == .draft ? draftAmount : total }
+    /// Lo que queda por cobrar (0 en borradores y anuladas, que no se deben).
+    nonisolated var tableBalance: Int64 { status == .draft || status == .void ? 0 : balanceDue }
 
     /// Orden de los estados al ordenar por «Estado»: Borrador, Enviada, Pago parcial, Vencida, Pagada, Anulada.
     nonisolated var statusRank: Int {

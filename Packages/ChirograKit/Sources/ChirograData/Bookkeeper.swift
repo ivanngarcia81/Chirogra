@@ -13,6 +13,8 @@ public enum BookkeepingError: Error, Equatable, LocalizedError {
     case overpayment(balanceDue: Int64)
     case exceedsCreditable(Int64)
     case wrongClosingPassword
+    /// Sin contraseña de cierre, registrar en un periodo cerrado pide un motivo (QA Hudson, H02).
+    case closedPeriodReasonRequired
     case duplicateAccountCode(String)
     /// La suscripción terminó: los libros se pueden ver y exportar, pero no se registra nada (`Bookkeeper.isReadOnly`).
     case readOnly
@@ -35,6 +37,7 @@ public enum BookkeepingError: Error, Equatable, LocalizedError {
         case .exceedsCreditable(let available):
             String(localized: "La nota supera lo que queda por acreditar de la factura (\(Money(minorUnits: available).formatted())).")
         case .wrongClosingPassword: String(localized: "La contraseña de cierre no es correcta.")
+        case .closedPeriodReasonRequired: String(localized: "Escribe el motivo para registrar en un periodo cerrado.")
         case .duplicateAccountCode(let code): String(localized: "Ya hay una cuenta activa con el número \(code).")
         case .readOnly: String(localized: "Tus libros están en solo lectura porque la suscripción terminó. Suscríbete para seguir registrando.")
         case .companyLimitReached(let limit):
@@ -103,16 +106,26 @@ public struct Bookkeeper {
     }
 
     /// Copia de este `Bookkeeper` que puede registrar con fecha en un periodo cerrado. Si la empresa tiene
-    /// contraseña de cierre hay que darla; si no tiene, basta con pedirlo explícitamente (DISEÑO §6.6). Queda en la auditoría.
-    public func unlockedForClosedPeriod(password: String?) throws -> Bookkeeper {
-        if let company = try company(), company.hasClosingPassword {
+    /// contraseña de cierre hay que darla; si no tiene, hay que escribir el motivo (QA Hudson, H02: antes bastaba un
+    /// toque). El motivo, si lo hay, queda en la auditoría junto con la autorización (DISEÑO §6.6).
+    public func unlockedForClosedPeriod(password: String?, reason: String = "") throws -> Bookkeeper {
+        let company = try company()
+        let reason = reason.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let company, company.hasClosingPassword {
             guard let password, ClosingPassword.verify(password, against: company.closingPasswordHash) else {
                 throw BookkeepingError.wrongClosingPassword
             }
+        } else if reason.isEmpty {
+            throw BookkeepingError.closedPeriodReasonRequired
         }
         var unlocked = self
         unlocked.allowsPostingInClosedPeriod = true
-        audit("Company", try company()?.id, "unlockClosedPeriod", String(localized: "Registro en periodo cerrado autorizado"))
+        // El motivo va también solo, en el detalle del evento, para la lista «Cambios después del cierre».
+        insert(AuditEvent(actor: actor, entityName: "Company", entityID: company?.id, action: "unlockClosedPeriod",
+                          summary: reason.isEmpty
+                              ? String(localized: "Registro en periodo cerrado autorizado")
+                              : String(localized: "Registro en periodo cerrado autorizado. Motivo: \(reason)"),
+                          device: Self.deviceName, changeDetails: reason))
         return unlocked
     }
 
@@ -272,10 +285,17 @@ public struct Bookkeeper {
     /// Revierte un asiento contabilizado con un asiento espejo (los asientos nunca se editan ni se borran).
     @discardableResult
     public func reverse(_ entry: JournalEntry, on date: Date = Date(), memo: String? = nil, save: Bool = true) throws -> JournalEntry {
+        try reverse(entry, on: date, memo: memo, save: save, keepingReconciliation: false)
+    }
+
+    /// `keepingReconciliation`: quien llama pasa la conciliación al asiento nuevo (`carryReconciliation`), así que no
+    /// hace falta confirmarlo ni anotar «Asiento conciliado cambiado».
+    func reverse(_ entry: JournalEntry, on date: Date = Date(), memo: String? = nil, save: Bool = true,
+                 keepingReconciliation: Bool) throws -> JournalEntry {
         guard entry.status == .posted, !entry.isReversed, entry.reversesEntryID == nil else {
             throw BookkeepingError.invalidState(String(localized: "Este asiento ya fue revertido o es una reversión."))
         }
-        if try hasReconciledLines(entry) {
+        if !keepingReconciliation, try hasReconciledLines(entry) {
             guard allowsChangingReconciled else { throw BookkeepingError.reconciledLines }
             audit("JournalEntry", entry.id, "changeReconciled", String(localized: "Asiento conciliado cambiado: \(entry.number)"))
         }

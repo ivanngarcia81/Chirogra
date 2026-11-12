@@ -88,7 +88,9 @@ struct OnboardingView: View {
     @State private var entityType: EntityType = .soleProprietorship
     /// El usuario eligió el tipo de empresa a mano: el nombre ya no lo cambia.
     @State private var entityTypeChosen = false
-    @State private var kind: Kind = .construction
+    /// Sin tipo elegido de antemano: antes salía «Construcción y oficios» marcado y una consultora lo aceptaba sin verlo
+    /// (QA Hudson, H08). El paso 2 no deja seguir hasta elegir uno.
+    @State private var kind: Kind?
     @State private var openingBank: Int64 = 0
     @State private var openingCard: Int64 = 0
     @State private var openingDate = Date()
@@ -161,6 +163,7 @@ struct OnboardingView: View {
         let defaults = UserDefaults.standard
         guard defaults.object(forKey: "qa.alta") != nil, displayName.isEmpty else { return }
         displayName = "Taller Uno"
+        kind = kind ?? .construction
         state = defaults.string(forKey: "qa.altaEstado") ?? state
         // `-qa.altaZip 78702` (con `-qa.tablaZip muestra`): el código postal, para ver la tasa sugerida.
         postalCode = defaults.string(forKey: "qa.altaZip") ?? postalCode
@@ -197,6 +200,9 @@ struct OnboardingView: View {
     private var canContinue: Bool {
         !displayName.trimmingCharacters(in: .whitespaces).isEmpty && !state.isEmpty && totalRateProblem == nil
     }
+
+    /// «Continuar» del paso en curso: en el 2, además, hace falta el tipo de negocio.
+    private var canAdvance: Bool { canContinue && (step != 2 || kind != nil) }
 
     /// Tasa estatal base del estado elegido, si la tiene.
     private var stateRateMillionths: Int64? { StateSalesTax.forState(state)?.rateMillionths }
@@ -448,20 +454,29 @@ struct OnboardingView: View {
             }
         }
 
-        let entries = kind.sector.template.entries
-        Section {
-            Text(suggestedAccounts(entries))
-                .font(.subheadline)
-                .foregroundStyle(Palette.ink2)
-                .fixedSize(horizontal: false, vertical: true)
-        } header: {
-            HStack(alignment: .firstTextBaseline) {
-                SectionLabel(text: String(localized: "Plan de cuentas sugerido"))
-                Spacer(minLength: 8)
-                SectionLabel(text: String(localized: "\(entries.count) cuentas"))
+        if let kind {
+            let entries = kind.sector.template.entries
+            Section {
+                Text(suggestedAccounts(entries))
+                    .font(.subheadline)
+                    .foregroundStyle(Palette.ink2)
+                    .fixedSize(horizontal: false, vertical: true)
+            } header: {
+                HStack(alignment: .firstTextBaseline) {
+                    SectionLabel(text: String(localized: "Plan de cuentas sugerido"))
+                    Spacer(minLength: 8)
+                    SectionLabel(text: String(localized: "\(entries.count) cuentas"))
+                }
+            } footer: {
+                Text("Podrás añadir, renombrar o archivar cuentas en Contabilidad.")
             }
-        } footer: {
-            Text("Podrás añadir, renombrar o archivar cuentas en Contabilidad.")
+        } else {
+            Section {
+                Text("Elige el que más se parezca a tu negocio para ver el plan de cuentas que te prepararemos.")
+                    .font(.subheadline)
+                    .foregroundStyle(Palette.ink2)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
         }
     }
 
@@ -505,8 +520,10 @@ struct OnboardingView: View {
     @ViewBuilder
     private var bankStep: some View {
         OpeningBalanceFields(bank: $openingBank, card: $openingCard, date: $openingDate) {
-            header(forAccountant ? "¿Cuánto dinero tiene hoy la cuenta del banco de tu cliente?"
-                   : addsCompany ? "¿Cuánto dinero tiene hoy la cuenta del banco de la empresa?" : "¿Cuánto dinero tiene hoy tu cuenta del negocio?",
+            // «Con cuánto empiezas», no «cuánto tiene hoy»: quien empieza los libros en una fecha pasada pone el saldo de
+            // ese día (QA Hudson, H01).
+            header(forAccountant ? "¿Con cuánto dinero empiezan los libros de tu cliente?"
+                   : addsCompany ? "¿Con cuánto dinero empiezan los libros de la empresa?" : "¿Con cuánto dinero empiezas tus libros?",
                    subtitle: forAccountant || addsCompany
                    ? "Así «Efectivo disponible» empieza con el dinero que de verdad tiene. Si ahora no lo sabes, salta este paso: podrás ponerlo desde Inicio."
                    : "Así «Efectivo disponible» empieza con el dinero que de verdad tienes. Si ahora no lo sabes, salta este paso: podrás ponerlo desde Inicio.",
@@ -567,7 +584,7 @@ struct OnboardingView: View {
             stepDots
             Button(primaryTitle, action: advance)
                 .buttonStyle(.primary)
-                .disabled(!canContinue)
+                .disabled(!canAdvance)
             if step == Self.stepCount {
                 Button("Saltar por ahora", action: skipBalances)
                     .font(.body.weight(.semibold))
@@ -616,7 +633,7 @@ struct OnboardingView: View {
             Button(primaryTitle, action: advance)
                 .buttonStyle(.primaryCompact)
                 .keyboardShortcut(.defaultAction)
-                .disabled(!canContinue)
+                .disabled(!canAdvance)
         }
         .controlSize(.regular)
         .padding(.horizontal, 24)
@@ -636,7 +653,7 @@ struct OnboardingView: View {
             let base = Bookkeeper(context: context)
             let company = try (addsCompany ? base.forNewCompany() : base).setUpCompany(
                 legalName: legalName.isEmpty ? name : legalName, displayName: name, entityType: entityType,
-                state: state, sector: kind.sector
+                state: state, sector: (kind ?? .professional).sector
             )
             company.fiscalYearStartMonth = fiscalStartMonth
             company.ein = ein.trimmingCharacters(in: .whitespaces)
