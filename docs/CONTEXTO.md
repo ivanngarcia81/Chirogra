@@ -255,7 +255,7 @@ Instruments). Las capturas de la guía `copias-es/en.jpg` aún enseñan el bloqu
   `LogoMark` dibuja la misma χ dentro de la app con `ChiGlyph` (`DesignSystem/ChiGlyph.swift`, generado del `d` de
   `04-chi.svg`: si cambia el icono, regenerarlo). La bienvenida dibuja su contorno y luego la rellena. El de la web
   (`sitio/img/icono.png`, 256 px) sale del `AppIcon.icns` de la compilación del Mac (`iconutil -c iconset`,
-  `icon_128x128@2x.png`). Las capturas de la guía `bienvenida-es/en.jpg` aún enseñan la «C» antigua.
+  `icon_128x128@2x.png`). Capturas de la guía `bienvenida-es/en.jpg` rehechas con la χ el 13-nov.
 - Gastos y Banca arrancan en el último mes con movimientos; la tarjeta de Gastos suma solo gastos. Método de pago según
   la cuenta (banco → débito/transferencia/cheque; tarjeta → tarjeta; caja → efectivo).
 - **Editar algo contabilizado = reversión + asiento nuevo** (DISEÑO §6.5). Una factura emitida sin cobros se edita así

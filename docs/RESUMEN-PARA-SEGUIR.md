@@ -42,8 +42,8 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 - **Icono nuevo y build 41 (12-nov, noche):** el usuario trajo «chirogra greek inicials.icon» (la χ cursiva) y pidió
   ponerlo, cambiar también el logo de dentro y el de la web, subir el build 41, instalarlo en sus aparatos y empujar.
   Visto en una copia del Mac (bienvenida clara y oscura, animación en varias tomas, logo pequeño de la página 2).
-  **Pendiente:** las capturas de la guía `bienvenida-es/en.jpg` aún enseñan la «C» antigua (y `copias-es/en.jpg`, el
-  bloqueo dentro de iCloud). Worktrees `Chirogra-pestanas` (con la muestra sin commitear, ya en la rama) y
+  El 13-nov se rehicieron las capturas de la guía `bienvenida-es/en.jpg` (tenían la «C» antigua). **Pendiente:**
+  `copias-es/en.jpg` aún enseñan el bloqueo dentro de iCloud. Worktrees `Chirogra-pestanas` (con la muestra sin commitear, ya en la rama) y
   `Chirogra-QA-Hudson` (informe en `QA/`): preguntar antes de borrarlos.
 - **Build 40 (12-nov, noche):** el usuario preguntó si «iCloud» y «Seguridad» de Más estaban duplicados (sí: abrían
   la misma pantalla) y pidió **separarlas de verdad** y meter en el 40 los arreglos pequeños que quedaban de Hudson
