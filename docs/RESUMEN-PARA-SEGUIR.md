@@ -1,4 +1,4 @@
-# Chirogra: resumen para empezar el siguiente chat (13-nov-2026)
+# Chirogra: resumen para empezar el siguiente chat (13-nov-2026, tarde)
 
 Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («Dónde nos quedamos» y «Siguiente»).
 **Al usuario se le habla siempre en español.**
@@ -8,6 +8,8 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 - **`main` = `version-1.2`** (unidas el 12-nov, fast-forward pedido por el usuario), empujadas. La web (`sitio/`) se
   publica desde `main`, así que ya enseña la 1.2 (guía e icono nuevo).
 - **Último build subido: 41 (1.2.0)**, para iOS y macOS (12-nov). La 1.1 sigue en el **30**.
+- **Build 42 (1.2.0) hecho y SIN COMMITEAR ni subir** (13-nov, tarde): lo borrado ya no vuelve de iCloud y «Borrar todo
+  y empezar de cero». Esperando a que el usuario diga si se commitea, se sube y se instala.
 - **1.0 (build 11):** en revisión de Apple. Cuando la aprueben, el usuario envía la **1.0.1 (build 15)**, que arregla
   iCloud en Producción.
 - **1.1.0:** lista en el **build 30**. Lleva toda la fase 2 (decisión del 9-nov) y lo hecho el 10-nov.
@@ -36,60 +38,30 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 | 39 | `afeb040` | 1.2.0: **pestañas y favoritos a elección en el iPhone** (decisión del usuario del 12-nov): «Más › Personalizar» › Pestañas (entre Inicio y Más, fijos, caben 3 herramientas a elección y en orden) y Favoritos (arriba de Más, sin límite); mantener pulsada una herramienta de Más la añade. Por aparato (`phone.tabs`, `more.favorites`). `Shell/PhoneShortcuts.swift`, guía es/en, `PhoneShortcutsTests` (335 pruebas). |
 | 40 | `a2fe01e` | 1.2.0: **Seguridad aparte de iCloud y copias** (pedido del usuario: las dos filas de Más abrían la misma pantalla) y el resto de la QA de Hudson: «Mover dinero» (traspaso, pagar la tarjeta, retiro y aportación) en el «+» de Inicio y en cada cuenta de Banca; ficha de la cuenta con «Entró / Salió»; «Máximo $X (saldo pendiente)» al cobrar; «N ya importados · M nuevos» al reimportar; el ZIP del alta propone el estado; bitácora «Categoría: A → B»; factura con cobros con «Editar» y «Anular» desactivados y el motivo. 338 pruebas. |
 | 41 | `ae9ced3` | 1.2.0: **icono nuevo, la χ cursiva** (archivo del usuario «chirogra greek inicials.icon»), también en `LogoMark` (`ChiGlyph`, sacado del SVG), en la animación de la bienvenida (contorno y luego relleno) y en la web. |
+| 42 | (sin commitear) | 1.2.0: **lo borrado no vuelve de iCloud**: cada empresa borrada se apunta en el almacén de clave-valor de iCloud (`DeletedCompanies`, permiso `ubiquity-kvstore-identifier` nuevo) y todos los aparatos la vuelven a borrar si alguien la sube otra vez; las automatizaciones esperan a la importación al abrir; **«Borrar todo y empezar de cero…»** en Ajustes › iCloud y copias (escribir BORRAR; espera a que el borrado suba). 343 pruebas. |
 
-## Último chat (12-nov noche y 13-nov)
+## Último chat (13-nov)
 
-- **Icono nuevo, la χ cursiva, y build 41.** El usuario trajo `~/Desktop/chirogra greek inicials.icon` y pidió las
-  cuatro cosas: ponerlo en la app, cambiar también el logo de dentro y el de la web, subir el build 41, instalarlo en
-  sus aparatos, y commit y empujar.
-  - `App/AppIcon.icon` = su archivo tal cual (capa visible `04-chi.svg`, el resto oculto; mismo nombre, el proyecto no
-    cambia). `LogoMark` dibuja la misma χ con `ChiGlyph` (`DesignSystem/ChiGlyph.swift`, generado del `d` de
-    `04-chi.svg`: si cambia el icono, regenerarlo, no retocarlo a mano). La bienvenida dibuja el contorno y luego lo
-    rellena. Web: `sitio/img/icono.png` y las capturas de la guía `bienvenida-es/en.jpg` (tenían la «C» antigua; ahora
-    con la χ y la fila del código postal). Visto en una copia del Mac (claro, oscuro, animación en varias tomas).
-  - **Build 41 SUBIDO** para iOS y macOS (`ad59089`). Instalado en el **iPhone** y en el **Mac** (`/Applications`).
-    **El iPad no**: estaba bloqueado (error 1016 y 4016); el usuario dijo que lo hace él después (TestFlight o pedirlo).
-  - `main` = `version-1.2`, empujadas hasta el commit de este resumen; la web, publicada.
+- **Lo borrado volvía de iCloud (13-nov, tarde).** El usuario contó que al borrar una empresa o querer empezar de cero,
+  la app lo restauraba. En la base del Mac (copia en el scratchpad) se vio que los borrados **sí llegan** por iCloud (el
+  Mac recibió el de seis empresas desde el 10-nov); lo que pasa es que otro aparato que aún tiene esos libros los vuelve
+  a subir (automatizaciones al abrir antes de recibir el borrado, encender iCloud con libros propios, o borrar los
+  datos de iCloud desde los Ajustes del sistema). El usuario eligió hacerlo en la **1.2 (build 42)**. Detalle en
+  CONTEXTO, «Build 42». No contestó qué hizo exactamente para «empezar de cero».
+  - Comprobado: 343 pruebas (5 nuevas en `DeletedCompaniesTests`), app firmada de iOS y del Mac con el permiso nuevo, y
+    en una copia del Mac (`com.chirogra.qa.borrar`, ejecutable renombrado a «ChirograQA» para System Events) la sección,
+    la confirmación (BORRAR activa el botón, en minúsculas también), el borrado y las tres hojas (`-qa.empezarDeCero
+    subiendo|listo|pendiente`). **Sin probar todavía entre dos aparatos con iCloud** (necesita instalarlo).
+- **Icono nuevo, la χ cursiva, y build 41 (12-nov noche):** `App/AppIcon.icon` = archivo del usuario; `LogoMark` con
+  `ChiGlyph` (generado del SVG: si cambia el icono, regenerarlo). Subido iOS y macOS (`ad59089`), instalado en el
+  iPhone y el Mac; **el iPad no** (lo hace el usuario).
 - **Pendiente pequeño:** las capturas de la guía `copias-es/en.jpg` aún enseñan el bloqueo dentro de «iCloud y copias»
-  (desde el build 40 está en Seguridad). Worktrees que sobran: `Chirogra-pestanas` (muestra sin commitear, ya en la
-  rama) y `Chirogra-QA-Hudson` (informe en `QA/`, sin seguimiento a propósito): preguntar antes de borrarlos.
-- Truco de capturas de la guía (13-nov): la copia del Mac con `defaultSize` de 900×1040 en `App/ChirograApp.swift`
-  (solo en la copia) y `-qa.alta 1 -qa.altaEstado TX -qa.altaCiudad Austin -qa.altaCiudadTasa 2 -qa.altaZip 78702`;
-  recorte de 600 px de ancho desde (150, 48). System Events no puede cambiar el tamaño de la ventana (sin permiso de
-  accesibilidad).
-- **Build 40 (12-nov, noche):** el usuario preguntó si «iCloud» y «Seguridad» de Más estaban duplicados (sí: abrían
-  la misma pantalla) y pidió **separarlas de verdad** y meter en el 40 los arreglos pequeños que quedaban de Hudson
-  (H03, H11, H12, H13, H20, H21, H24). Detalle en CONTEXTO, «Build 40». Comprobado con XCUITest en simuladores
-  temporales («QA B40 iPhone/iPad», borrados al terminar) y en una copia del Mac (`com.chirogra.qa.b40`). Para la 1.3
-  quedan H04, H19, H22 y H23.
-
-- **Pestañas y favoritos a elección y build 39 (12-nov, noche):** el usuario preguntó si el iPhone se podía
-  personalizar porque las herramientas de «Más» quedan dispersas. Decidió: las dos cosas (pestañas a elección y
-  favoritos), **Inicio fijo** (no se mueve ni se quita; Más tampoco) y **guardado por aparato** (sin iCloud). Muestra
-  vista en el simulador y luego build 39 en la 1.2 (eligió 1.2.0 y no una 1.3 aparte). Detalle en CONTEXTO, «Build
-  39». Comprobado con XCUITest: español, inglés, quitar y añadir pestañas, favoritos con pulsación larga, y el panel
-  del contador sin Banca en la barra (el pendiente abre la conciliación dentro de Más). El iPad no cambia.
-  Worktree `Chirogra-pestanas` (rama `muestra/pestanas`, ya en `version-1.2`): se puede borrar.
-
-- **QA de Hudson y build 38 (12-nov, tarde):** prueba completa del paquete del usuario (empresario, contador, auditor)
-  con simuladores propios («QA Hudson iPhone» `C3D0BD9B`, «QA Hudson iPad» `61DAB28F`) y copia del Mac
-  `com.chirogra.qa.hudson`; informe y evidencias en `~/Documents/GitHub/Chirogra-QA-Hudson/QA/Chirogra_Hudson_2026-10/`
-  (sin commitear, a propósito). El usuario aprobó los arreglos y pidió subirlos: build 38. La reclasificación de un
-  gasto conciliado **pasa la conciliación al asiento nuevo** en vez de un asiento de reclasificación aparte (ese no
-  saldría en base de efectivo y quedaría descolgado al editar o anular). Worktree `Chirogra-arreglos` (rama
-  `arreglos/qa-hudson`, ya en `version-1.2`): se puede borrar.
-
-- **Build 36:** sales tax por código postal dentro de la app (`sales-tax-zip.json`, 27,583 ZIP en 34 estados), sacado
-  de fuentes oficiales con `scripts/tasas/` (Streamlined + lectores de TX, CA, IL, FL y NY). El buscador de Texas daba
-  403 a las descargas automáticas: no se rodeó, se usó `city-rates.xlsx`. Subido iOS y macOS, empujado.
-- **Documentos:** RESUMEN y CONTEXTO al día; textos de la 1.2 para la tienda («What's New» en/es y notas para el
-  revisor) en APP-STORE.md, «Versión 1.2.0». En CONTEXTO quedó escrito que Apple Pay y Google Pay van dentro de Stripe
-  (2.0) y que la suscripción sigue siendo compra dentro de la app.
-- **Build 37 (el usuario eligió «Arreglos menores»):** filas con campo que toman el toque en toda la fila
-  (`.fieldRow()` en `Components.swift`), títulos en tres importes sueltos y «Base: …» en menú con letra de
-  accesibilidad. Comprobado con XCUITest en el iPad y capturas AX3 del iPhone; 320 pruebas. Subido iOS y macOS el
-  12-nov y empujado (`120c8a3`).
-- Para las pruebas se borró la app del simulador del iPad de QA (`ADB9E3BB`, solo tenía «Prueba 1.2»).
+  (desde el build 40 está en Seguridad) y ahora tampoco tienen «Empezar de cero». Worktrees que sobran:
+  `Chirogra-pestanas` y `Chirogra-QA-Hudson` (informe en `QA/`, sin seguimiento a propósito): preguntar antes de
+  borrarlos.
+- Truco de capturas de la guía: la copia del Mac con `defaultSize` de 900×1040 en `App/ChirograApp.swift` (solo en la
+  copia) y `-qa.alta 1 -qa.altaEstado TX -qa.altaCiudad Austin -qa.altaCiudadTasa 2 -qa.altaZip 78702`; recorte de
+  600 px de ancho desde (150, 48).
 - **Ofrecido y sin empezar:** escribir el plan de la 2.0 con servidor (Plaid, contador dentro de los libros, Stripe,
   nómina). Esperar a que el usuario lo pida.
 
@@ -114,7 +86,7 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 1. **Envío de la 1.1.0** (cuando la 1.0 y la 1.0.1 estén aprobadas): **todo preparado el 10-nov** en
    [APP-STORE.md](APP-STORE.md) (descripción, texto promocional, «What's New» en/es, notas para el revisor) y capturas
    `00-bienvenida` y `06-panel-clientes` en el escritorio. Elegir el **build 30** y añadir el plan para contadores al envío.
-2. **Envío de la 1.2.0** (cuando la 1.1 esté aprobada): elegir el **build 41**; «What's New» y notas para el revisor
+2. **Envío de la 1.2.0** (cuando la 1.1 esté aprobada): elegir el **build 42** cuando esté subido (si no, el 41); «What's New» y notas para el revisor
    preparados el 11-nov en APP-STORE.md. Decidir si hacen falta capturas nuevas (bitácora, Dividir, icono nuevo).
 3. **Tasas por código postal: cada trimestre** (1 ene, 1 abr, 1 jul, 1 oct) correr `scripts/tasas/descargar.sh` y
    `generar.py` y subir un build (DATOS-V5.md). Faltan AL AK AZ CO HI ID LA MO MS NM PA SC VA.

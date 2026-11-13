@@ -31,6 +31,28 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
     el 10-nov para iOS y macOS) lleva además la bienvenida en carrusel (abajo). **Toda la fase 2 va en la 1.1** (decisión del
     9-nov: no se esconde nada para 1.2/1.3), con el plan de contadores en el envío. Lista en el **build 30**.
   - **1.2.0 (builds 31 a 40, TestFlight):** lista en el **build 41** (38: arreglos de la QA de Hudson; 39: pestañas y favoritos del iPhone; 40: Seguridad aparte, «Mover dinero» y el resto de Hudson; 41: icono nuevo, la χ cursiva; abajo, «C»). Se envía cuando esté aprobada la 1.1.
+    **Build 42 hecho el 13-nov, sin commitear ni subir** (abajo, «Build 42»).
+- **Build 42 (13-nov): lo borrado no vuelve de iCloud.** El usuario vio volver empresas borradas. Los borrados sí viajan
+  (comprobado en el historial de la base del Mac), pero un aparato que aún tiene los libros los vuelve a subir y CloudKit
+  los toma por nuevos. Arreglo (`ChirograData/DeletedCompanies.swift`):
+  - Cada empresa borrada (`deleteCompany`, `eraseAll`, y la sustituida al restaurar la copia de otra) se apunta en el
+    almacén de **clave-valor de iCloud** (`NSUbiquitousKeyValueStore`, una clave `deletedCompany.<id>` por empresa; no
+    toca el esquema de CloudKit). Permiso nuevo en los dos `.entitlements`:
+    `com.apple.developer.ubiquity-kvstore-identifier = $(TeamIdentifierPrefix)$(CFBundleIdentifier)` (se firma solo).
+  - `DeletedCompanies.sweep` borra lo que quede de esas empresas (la empresa y sus registros con su `companyID`, nunca
+    los huérfanos): al abrir (`ChirograApp.init`), antes de cada pasada de `AppAutomations` (también en solo lectura) y
+    al cambiar la lista en otro aparato (`didChangeExternallyNotification`). Solo con iCloud encendido
+    (`DeletedCompanies.isEnabled`, lo fija `ChirograApp`).
+  - Al abrir y al volver al primer plano, las automatizaciones esperan a la importación de iCloud (hasta 15 s,
+    `SyncMonitor.waitForImport`): así un aparato atrasado recibe el borrado antes de escribir en esa empresa.
+  - Restaurar la copia de una empresa borrada le da **ids nuevos** (sus ids cuentan como ocupados): si no, un aparato
+    que aún la tuviera apuntada la borraría otra vez en todos.
+  - **«Borrar todo y empezar de cero…»** (`Settings/StartOver.swift`) al final de Ajustes › iCloud y copias, solo con
+    libros propios (con los de ejemplo sigue «Empezar con mi empresa»). Se confirma escribiendo BORRAR / DELETE; borra
+    con `eraseAll`, vuelve al alta y, con iCloud, una hoja espera hasta 45 s a que suba el borrado
+    (`SyncMonitor.lastExportStart`) o avisa de que se subirá con conexión. QA: `-qa.empezarDeCero 1|subiendo|listo|pendiente`.
+  - Guía es/en: «Empezar de cero» / «Start over» y su entrada del glosario. «What's New» de la 1.2 con una línea más.
+  - Medido: el barrido con 50 empresas apuntadas tarda ~0,13 s en el Mac (en disco, datos de ejemplo).
 - **Bienvenida en carrusel (aprobada por el usuario el 10-nov en su iPhone; build 22):** opción B del canvas «Chirogra — Bienvenida»
   (https://claude.ai/artifact/PB4NmST2UPeAA3wTZFjres) en `Onboarding/WelcomeView.swift`. Sale sin empresas antes del
   alta (ajuste `welcome.seen`); «Crear mi empresa» → paso 1, que ya no lleva los datos de ejemplo ni el aviso de iCloud
@@ -286,6 +308,11 @@ Instruments). Las capturas de la guía `copias-es/en.jpg` aún enseñan el bloqu
   ve con `devicectl … --console`, `DEVICECTL_CHILD_OS_ACTIVITY_DT_MODE=enable` y `-com.apple.CoreData.CloudKitDebug 3`
   (con la app de TestFlight no sale). Al cambiar el esquema, volver a ejecutar `scripts/gen-backup.py` (`BackupTests`
   lo exige).
+- **Borrar con CloudKit no basta para que no vuelva** (13-nov): cualquier aparato que aún tenga los registros y los
+  modifique o los vuelva a exportar (iCloud encendido con libros propios, zona borrada desde los Ajustes del sistema)
+  los recrea en todos. Por eso `DeletedCompanies` (build 42). Para investigar: copiar `Chirogra.store*` del contenedor
+  y mirar `ATRANSACTION`/`ACHANGE` (autor `NSCloudKitMirroringDelegate.import` = llegó de iCloud) y
+  `ANSCKRECORDMETADATA` + `ANSCKRECORDMETADATAENCODEDRECORDASSET` (CKRecord archivado y comprimido con LZFSE, `bvx2`).
 - **Un almacén por empresa en el mismo contenedor NO sirve** (comparten la zona de CloudKit y se mezclan): por eso un solo
   almacén con `companyID` en cada registro.
 - **iCloud:** el Mac tiene que registrarse para los avisos push (`ChirograAppDelegate`) o no importa hasta reabrir.

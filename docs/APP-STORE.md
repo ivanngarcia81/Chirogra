@@ -292,7 +292,7 @@ Chirogra 1.1 es nuestra actualización más grande.
 
 ## Versión 1.2.0: «What's New» y notas para la revisión
 
-Preparado el 11-nov. Se envía cuando esté aprobada la 1.1, con el **build 40** (o el último de la rama `version-1.2`).
+Preparado el 11-nov. Se envía cuando esté aprobada la 1.1, con el **build 42** (o el último de la rama `version-1.2`).
 La descripción y el texto promocional pueden quedarse como los de la 1.1. **Sin decidir:** capturas nuevas de la
 bitácora o de Dividir (las de la 1.1 siguen valiendo).
 
@@ -310,6 +310,7 @@ Chirogra 1.2 brings tools for accountants and a faster start.
 • iPhone: choose the tools in your tab bar and keep favorites at the top of More (More › Customize)
 • Move money: transfers, credit card payments and owner draws from the + on Home and from each account in Banking
 • Security now has its own page in Settings: Face ID or Touch ID lock and your closing password
+• Deleted businesses stay deleted on all your devices, and Settings › iCloud and backups can delete everything and start over
 • Fixes and improvements on iPhone, iPad and Mac
 
 **Novedades (es)**
@@ -326,6 +327,7 @@ Chirogra 1.2 trae herramientas para contadores y un comienzo más rápido.
 • iPhone: elige las herramientas de la barra de abajo y ten tus favoritas arriba en Más (Más › Personalizar)
 • Mover dinero: traspasos, pago de la tarjeta y retiros del dueño desde el «+» de Inicio y desde cada cuenta de Banca
 • Seguridad tiene su propia página en Ajustes: el bloqueo con Face ID o Touch ID y la contraseña de cierre
+• Lo que borras no vuelve en tus otros aparatos, y en Ajustes › iCloud y copias puedes borrar todo y empezar de cero
 • Arreglos y mejoras en iPhone, iPad y Mac
 
 **Notas para la revisión de la 1.2 (App Review Information › Notes)**
