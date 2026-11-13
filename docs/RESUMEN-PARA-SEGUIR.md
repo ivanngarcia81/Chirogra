@@ -7,14 +7,15 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 
 - **`main` = `version-1.2`** (unidas el 12-nov, fast-forward pedido por el usuario), empujadas. La web (`sitio/`) se
   publica desde `main`, así que ya enseña la 1.2 (guía e icono nuevo).
-- **Último build subido: 42 (1.2.0)**, para iOS y macOS (13-nov, tarde): lo borrado ya no vuelve de iCloud y «Borrar
-  todo y empezar de cero». Commits `36c85ad` y `2840279`, empujados. La 1.1 sigue en el **30**.
+- **Último build: 43 (1.2.0)** (13-nov, noche): iconos de color en la barra lateral y hoja de planes del Mac (tabla).
+  Antes, el **42** (13-nov, tarde): lo borrado ya no vuelve de iCloud y «Borrar todo y empezar de cero». La 1.1 sigue en
+  el **30**.
   Para subirlo hubo que contestar en App Store Connect el aviso del DSA de la UE (sin él, «You do not have required
   contracts»); se recomendó «not a trader / no EU».
 - **1.0 (build 11):** en revisión de Apple. Cuando la aprueben, el usuario envía la **1.0.1 (build 15)**, que arregla
   iCloud en Producción.
 - **1.1.0:** lista en el **build 30**. Lleva toda la fase 2 (decisión del 9-nov) y lo hecho el 10-nov.
-- **1.2.0:** lista en el **build 41** (rama `version-1.2`, [DATOS-V5.md](DATOS-V5.md)). Esquema 5 desplegado y probado
+- **1.2.0:** lista en el **build 43** (rama `version-1.2`, [DATOS-V5.md](DATOS-V5.md)). Esquema 5 desplegado y probado
   en Producción. Textos para la tienda en [APP-STORE.md](APP-STORE.md), «Versión 1.2.0».
 
 | Build | Commit | Qué trae |
@@ -40,9 +41,18 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 | 40 | `a2fe01e` | 1.2.0: **Seguridad aparte de iCloud y copias** (pedido del usuario: las dos filas de Más abrían la misma pantalla) y el resto de la QA de Hudson: «Mover dinero» (traspaso, pagar la tarjeta, retiro y aportación) en el «+» de Inicio y en cada cuenta de Banca; ficha de la cuenta con «Entró / Salió»; «Máximo $X (saldo pendiente)» al cobrar; «N ya importados · M nuevos» al reimportar; el ZIP del alta propone el estado; bitácora «Categoría: A → B»; factura con cobros con «Editar» y «Anular» desactivados y el motivo. 338 pruebas. |
 | 41 | `ae9ced3` | 1.2.0: **icono nuevo, la χ cursiva** (archivo del usuario «chirogra greek inicials.icon»), también en `LogoMark` (`ChiGlyph`, sacado del SVG), en la animación de la bienvenida (contorno y luego relleno) y en la web. |
 | 42 | `36c85ad` | 1.2.0: **lo borrado no vuelve de iCloud**: cada empresa borrada se apunta en el almacén de clave-valor de iCloud (`DeletedCompanies`, permiso `ubiquity-kvstore-identifier` nuevo) y todos los aparatos la vuelven a borrar si alguien la sube otra vez; las automatizaciones esperan a la importación al abrir; **«Borrar todo y empezar de cero…»** en Ajustes › iCloud y copias (escribir BORRAR; espera a que el borrado suba). 343 pruebas. |
+| 43 | `809bb88` | 1.2.0: **iconos de color en las subsecciones de la barra lateral** (Mac e iPad; decisión del usuario del 13-nov) y **hoja de planes del Mac** sin los botones de StoreKit encima del segundo plan («Restaurar compras» y «Canjear código» como enlaces, 760 de alto). |
 
 ## Último chat (13-nov)
 
+- **Build 43 (13-nov noche, `809bb88`):** (1) **iconos de color en las subsecciones de la barra lateral**
+  (decisión del usuario entre Tinta y colores, con muestra real): `SidebarItem.systemImage`/`color` en `Sidebar.swift`,
+  los de Reportes y Contabilidad son los de «Más» del iPhone; también en el iPad (compilado, no visto: en vertical la
+  barra se cierra). (2) **Hoja de planes del Mac:** StoreKit apilaba «Accept Offer», «Redeem Code» y «Restore» en la
+  franja fija de abajo y tapaban el segundo plan; ahora «Restaurar compras» y «Canjear código» son enlaces bajo el texto
+  (`macStoreLinks`), la hoja mide 760 (contadores 680) y el encabezado es más compacto. Visto con los planes reales en
+  el Mac del usuario (instalado encima, Producción). Para ver la hoja sin empresa hizo falta una compilación de un solo
+  uso con `-verPlanes` (no está en el repo): la hoja solo sale sola con una empresa en solo lectura.
 - **Lo borrado volvía de iCloud (13-nov, tarde).** El usuario contó que al borrar una empresa o querer empezar de cero,
   la app lo restauraba. En la base del Mac (copia en el scratchpad) se vio que los borrados **sí llegan** por iCloud (el
   Mac recibió el de seis empresas desde el 10-nov); lo que pasa es que otro aparato que aún tiene esos libros los vuelve
@@ -87,7 +97,7 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 1. **Envío de la 1.1.0** (cuando la 1.0 y la 1.0.1 estén aprobadas): **todo preparado el 10-nov** en
    [APP-STORE.md](APP-STORE.md) (descripción, texto promocional, «What's New» en/es, notas para el revisor) y capturas
    `00-bienvenida` y `06-panel-clientes` en el escritorio. Elegir el **build 30** y añadir el plan para contadores al envío.
-2. **Envío de la 1.2.0** (cuando la 1.1 esté aprobada): elegir el **build 42** (ya subido); «What's New» y notas para el revisor
+2. **Envío de la 1.2.0** (cuando la 1.1 esté aprobada): elegir el **build 43**; «What's New» y notas para el revisor
    preparados el 11-nov en APP-STORE.md. Decidir si hacen falta capturas nuevas (bitácora, Dividir, icono nuevo).
 3. **Tasas por código postal: cada trimestre** (1 ene, 1 abr, 1 jul, 1 oct) correr `scripts/tasas/descargar.sh` y
    `generar.py` y subir un build (DATOS-V5.md). Faltan AL AK AZ CO HI ID LA MO MS NM PA SC VA.
