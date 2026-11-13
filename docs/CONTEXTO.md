@@ -308,6 +308,12 @@ Instruments). Las capturas de la guía `copias-es/en.jpg` aún enseñan el bloqu
   ve con `devicectl … --console`, `DEVICECTL_CHILD_OS_ACTIVITY_DT_MODE=enable` y `-com.apple.CoreData.CloudKitDebug 3`
   (con la app de TestFlight no sale). Al cambiar el esquema, volver a ejecutar `scripts/gen-backup.py` (`BackupTests`
   lo exige).
+- **Dos entornos de CloudKit** (13-nov): las compilaciones instaladas desde Xcode iban a Development y TestFlight a
+  Producción; el Mac (Taller Luna, de pruebas) y el iPhone (Jupiter y Saturn) no se veían. Se apartó la base del Mac a
+  `~/Documents/Chirogra-respaldo-Mac-desarrollo-13nov` y se instaló el 42 con Producción. Ver «Instalar en los aparatos».
+- **Build 42 probado entre aparatos (13-nov):** el usuario borró Saturn LLC en el iPhone (TestFlight 42) con el Mac
+  cerrado; al abrir el Mac, el barrido la borró al arrancar (60 registros, autor la propia app, antes de la importación)
+  y a los dos minutos no había vuelto.
 - **Borrar con CloudKit no basta para que no vuelva** (13-nov): cualquier aparato que aún tenga los registros y los
   modifique o los vuelva a exportar (iCloud encendido con libros propios, zona borrada desde los Ajustes del sistema)
   los recrea en todos. Por eso `DeletedCompanies` (build 42). Para investigar: copiar `Chirogra.store*` del contenedor
@@ -408,6 +414,13 @@ las claves que lista como cambiadas en las dos ramas.
   `xcrun devicectl device uninstall app --device <UDID> com.chirogra.uitestsqa.xctrunner`. Cambia los datos del usuario.
 
 ### Instalar en los aparatos
+**Siempre con iCloud de Producción** (13-nov): una compilación firmada para desarrollo usa el entorno **Development** de
+CloudKit si no lleva `com.apple.developer.icloud-container-environment = Production`, y entonces no ve lo del iPhone con
+TestFlight. Peor: al cambiar un aparato de entorno, sus libros locales se suben al otro y lo borrado en uno no existe en
+el otro (lo que el usuario veía «volver»). Antes de compilar, en el clon:
+`/usr/libexec/PlistBuddy -c "Add :com.apple.developer.icloud-container-environment string Production" App/Chirogra-macOS.entitlements`
+(y lo mismo en `App/Chirogra.entitlements` para el iPhone). Comprobar con `codesign -d --entitlements :- <app>`.
+
 Desde un clon limpio del commit aprobado, en una carpeta temporal (`$T`):
 
 ```bash

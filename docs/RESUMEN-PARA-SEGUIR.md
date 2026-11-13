@@ -52,7 +52,7 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
   - Comprobado: 343 pruebas (5 nuevas en `DeletedCompaniesTests`), app firmada de iOS y del Mac con el permiso nuevo, y
     en una copia del Mac (`com.chirogra.qa.borrar`, ejecutable renombrado a «ChirograQA» para System Events) la sección,
     la confirmación (BORRAR activa el botón, en minúsculas también), el borrado y las tres hojas (`-qa.empezarDeCero
-    subiendo|listo|pendiente`). **Sin probar todavía entre dos aparatos con iCloud.** Subido a TestFlight (iOS y macOS).
+    subiendo|listo|pendiente`). Subido a TestFlight (iOS y macOS). **Probado entre aparatos:** Saturn LLC borrada en el iPhone desapareció del Mac al abrirlo y no volvió. Para eso hubo que pasar el Mac a iCloud de **Producción** (las instalaciones desde Xcode iban a Development; CONTEXTO, «Instalar en los aparatos»); su base anterior está en `~/Documents/Chirogra-respaldo-Mac-desarrollo-13nov`.
 - **Icono nuevo, la χ cursiva, y build 41 (12-nov noche):** `App/AppIcon.icon` = archivo del usuario; `LogoMark` con
   `ChiGlyph` (generado del SVG: si cambia el icono, regenerarlo). Subido iOS y macOS (`ad59089`), instalado en el
   iPhone y el Mac; **el iPad no** (lo hace el usuario).
