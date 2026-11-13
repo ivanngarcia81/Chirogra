@@ -1,4 +1,4 @@
-# Chirogra: resumen para empezar el siguiente chat (12-nov-2026, noche)
+# Chirogra: resumen para empezar el siguiente chat (13-nov-2026)
 
 Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («Dónde nos quedamos» y «Siguiente»).
 **Al usuario se le habla siempre en español.**
@@ -31,20 +31,32 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 | 34 | `e802c4b` | 1.2.0: «Saltar» de la bienvenida del iPhone y el iPad en cápsula de vidrio (el usuario no lo veía como texto suelto). |
 | 35 | `a89b78f` | 1.2.0: «Ocultar» / «Mostrar» en los «Primeros pasos» de Inicio también sin movimientos (`homeSetupStepsHidden`, por aparato). |
 | 36 | `3e50675` | 1.2.0: **sales tax por código postal dentro de la app**: 27,583 ZIP en 34 estados (24 con tasa de condado y ciudad, 10 solo con la del estado). Se sugiere en el alta, en Ajustes y en el cliente. `scripts/tasas/`, DATOS-V5.md. |
+| 37 | `e002ed1` | 1.2.0: filas con campo que toman el toque en toda la fila (`.fieldRow()`: descuento, Enviar, presupuesto, plantillas, monto parcial); títulos en los importes de reembolso, nota de crédito y pago de sales tax; «Base: …» en menú con letra de accesibilidad. |
 | 38 | `6616919` | 1.2.0: **arreglos de la QA de Hudson** (prueba completa como empresario, contador y auditor; informe en el worktree `Chirogra-QA-Hudson`, carpeta `QA/` sin seguimiento): cierre con motivo obligatorio sin contraseña, «Registrar con fecha» del primer día abierto, «Fijar contraseña y cerrar», «Libros cerrados hasta…» en Inicio, aviso bajo las fechas cerradas y «Cambios después del cierre» (pantalla y paquete del contador); reclasificar lo conciliado sin romper la conciliación; impuesto incluido en $0; fecha al convertir estimado; vencimiento de proveedor; «Saldada: cobrado + crédito»; Total y Saldo en el Mac; alta sin tipo de negocio elegido; guía al día. 330 pruebas; 22/22 controles de Hudson. |
 | 39 | `afeb040` | 1.2.0: **pestañas y favoritos a elección en el iPhone** (decisión del usuario del 12-nov): «Más › Personalizar» › Pestañas (entre Inicio y Más, fijos, caben 3 herramientas a elección y en orden) y Favoritos (arriba de Más, sin límite); mantener pulsada una herramienta de Más la añade. Por aparato (`phone.tabs`, `more.favorites`). `Shell/PhoneShortcuts.swift`, guía es/en, `PhoneShortcutsTests` (335 pruebas). |
 | 40 | `a2fe01e` | 1.2.0: **Seguridad aparte de iCloud y copias** (pedido del usuario: las dos filas de Más abrían la misma pantalla) y el resto de la QA de Hudson: «Mover dinero» (traspaso, pagar la tarjeta, retiro y aportación) en el «+» de Inicio y en cada cuenta de Banca; ficha de la cuenta con «Entró / Salió»; «Máximo $X (saldo pendiente)» al cobrar; «N ya importados · M nuevos» al reimportar; el ZIP del alta propone el estado; bitácora «Categoría: A → B»; factura con cobros con «Editar» y «Anular» desactivados y el motivo. 338 pruebas. |
 | 41 | `ae9ced3` | 1.2.0: **icono nuevo, la χ cursiva** (archivo del usuario «chirogra greek inicials.icon»), también en `LogoMark` (`ChiGlyph`, sacado del SVG), en la animación de la bienvenida (contorno y luego relleno) y en la web. |
-| 37 | `e002ed1` | 1.2.0: filas con campo que toman el toque en toda la fila (`.fieldRow()`: descuento, Enviar, presupuesto, plantillas, monto parcial); títulos en los importes de reembolso, nota de crédito y pago de sales tax; «Base: …» en menú con letra de accesibilidad. |
 
-## Último chat (11 y 12-nov)
+## Último chat (12-nov noche y 13-nov)
 
-- **Icono nuevo y build 41 (12-nov, noche):** el usuario trajo «chirogra greek inicials.icon» (la χ cursiva) y pidió
-  ponerlo, cambiar también el logo de dentro y el de la web, subir el build 41, instalarlo en sus aparatos y empujar.
-  Visto en una copia del Mac (bienvenida clara y oscura, animación en varias tomas, logo pequeño de la página 2).
-  El 13-nov se rehicieron las capturas de la guía `bienvenida-es/en.jpg` (tenían la «C» antigua). **Pendiente:**
-  `copias-es/en.jpg` aún enseñan el bloqueo dentro de iCloud. Worktrees `Chirogra-pestanas` (con la muestra sin commitear, ya en la rama) y
-  `Chirogra-QA-Hudson` (informe en `QA/`): preguntar antes de borrarlos.
+- **Icono nuevo, la χ cursiva, y build 41.** El usuario trajo `~/Desktop/chirogra greek inicials.icon` y pidió las
+  cuatro cosas: ponerlo en la app, cambiar también el logo de dentro y el de la web, subir el build 41, instalarlo en
+  sus aparatos, y commit y empujar.
+  - `App/AppIcon.icon` = su archivo tal cual (capa visible `04-chi.svg`, el resto oculto; mismo nombre, el proyecto no
+    cambia). `LogoMark` dibuja la misma χ con `ChiGlyph` (`DesignSystem/ChiGlyph.swift`, generado del `d` de
+    `04-chi.svg`: si cambia el icono, regenerarlo, no retocarlo a mano). La bienvenida dibuja el contorno y luego lo
+    rellena. Web: `sitio/img/icono.png` y las capturas de la guía `bienvenida-es/en.jpg` (tenían la «C» antigua; ahora
+    con la χ y la fila del código postal). Visto en una copia del Mac (claro, oscuro, animación en varias tomas).
+  - **Build 41 SUBIDO** para iOS y macOS (`ad59089`). Instalado en el **iPhone** y en el **Mac** (`/Applications`).
+    **El iPad no**: estaba bloqueado (error 1016 y 4016); el usuario dijo que lo hace él después (TestFlight o pedirlo).
+  - `main` = `version-1.2`, empujadas hasta el commit de este resumen; la web, publicada.
+- **Pendiente pequeño:** las capturas de la guía `copias-es/en.jpg` aún enseñan el bloqueo dentro de «iCloud y copias»
+  (desde el build 40 está en Seguridad). Worktrees que sobran: `Chirogra-pestanas` (muestra sin commitear, ya en la
+  rama) y `Chirogra-QA-Hudson` (informe en `QA/`, sin seguimiento a propósito): preguntar antes de borrarlos.
+- Truco de capturas de la guía (13-nov): la copia del Mac con `defaultSize` de 900×1040 en `App/ChirograApp.swift`
+  (solo en la copia) y `-qa.alta 1 -qa.altaEstado TX -qa.altaCiudad Austin -qa.altaCiudadTasa 2 -qa.altaZip 78702`;
+  recorte de 600 px de ancho desde (150, 48). System Events no puede cambiar el tamaño de la ventana (sin permiso de
+  accesibilidad).
 - **Build 40 (12-nov, noche):** el usuario preguntó si «iCloud» y «Seguridad» de Más estaban duplicados (sí: abrían
   la misma pantalla) y pidió **separarlas de verdad** y meter en el 40 los arreglos pequeños que quedaban de Hudson
   (H03, H11, H12, H13, H20, H21, H24). Detalle en CONTEXTO, «Build 40». Comprobado con XCUITest en simuladores
@@ -92,7 +104,7 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 4. Probar el **build 37** en TestFlight: código postal en el alta (Austin 78702 → 8.25 %, Lodi 07644 → 6.625 %),
    «Saltar», «Ocultar» en Inicio, tocar la fila (no la cifra) en el descuento de la factura y en Enviar, bitácora, Dividir y el camino del contador. **Ojo:** instalar la 1.2 pasa los libros
    de ese aparato al esquema 5 y la 1.1 ya no los abre.
-5. Probar el **build 41** en TestFlight (icono nuevo y logo de la bienvenida) y lo del **40**: Más › «iCloud y copias» y «Seguridad» (ya distintas), «+» de Inicio ›
+5. Instalar el **build 41** en el iPad (él lo hace después) y probarlo en TestFlight (icono nuevo y logo de la bienvenida) y lo del **40**: Más › «iCloud y copias» y «Seguridad» (ya distintas), «+» de Inicio ›
    «Pagar la tarjeta», Banca › una cuenta › ⇆, y el alta con un ZIP sin elegir estado.
 6. Probar el **build 39** en TestFlight (iPhone): «Más › Personalizar › Pestañas» (quitar Gastos, poner Asientos de
    diario o un reporte, ordenar, «Restablecer la barra»), «Favoritos», y mantener pulsada una herramienta de Más.
