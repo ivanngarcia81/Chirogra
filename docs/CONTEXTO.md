@@ -32,7 +32,7 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
     9-nov: no se esconde nada para 1.2/1.3), con el plan de contadores en el envío. Lista en el **build 30**.
   - **1.2.0 (builds 31 a 40, TestFlight):** lista en el **build 41** (38: arreglos de la QA de Hudson; 39: pestañas y favoritos del iPhone; 40: Seguridad aparte, «Mover dinero» y el resto de Hudson; 41: icono nuevo, la χ cursiva; abajo, «C»). Se envía cuando esté aprobada la 1.1.
     **Build 42 subido el 13-nov para iOS y macOS** (`36c85ad`; abajo, «Build 42»).
-    **Build 43 (13-nov, noche, `809bb88`):** iconos de color en las subsecciones de la barra lateral (Mac e iPad,
+    **Build 43 subido el 13-nov (noche) para iOS y macOS** (`809bb88`): iconos de color en las subsecciones de la barra lateral (Mac e iPad,
     `SidebarItem.systemImage`/`color`; decisión del usuario entre Tinta y colores) y la hoja de planes del Mac:
     «Restaurar compras» y «Canjear código» como enlaces bajo el texto (`macStoreLinks`; StoreKit los apilaba en la franja
     fija de abajo y tapaban el segundo plan), 760 de alto (contadores 680). La hoja solo se abre sola con una empresa en

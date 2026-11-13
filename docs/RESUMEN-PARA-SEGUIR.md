@@ -7,7 +7,7 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 
 - **`main` = `version-1.2`** (unidas el 12-nov, fast-forward pedido por el usuario), empujadas. La web (`sitio/`) se
   publica desde `main`, así que ya enseña la 1.2 (guía e icono nuevo).
-- **Último build: 43 (1.2.0)** (13-nov, noche): iconos de color en la barra lateral y hoja de planes del Mac (tabla).
+- **Último build subido: 43 (1.2.0)**, para iOS y macOS (13-nov, noche): iconos de color en la barra lateral y hoja de planes del Mac (tabla).
   Antes, el **42** (13-nov, tarde): lo borrado ya no vuelve de iCloud y «Borrar todo y empezar de cero». La 1.1 sigue en
   el **30**.
   Para subirlo hubo que contestar en App Store Connect el aviso del DSA de la UE (sin él, «You do not have required
