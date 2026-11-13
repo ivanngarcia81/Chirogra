@@ -11136,6 +11136,16 @@
         }
       }
     },
+    "Elige las fechas del periodo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose the period dates"
+          }
+        }
+      }
+    },
     "Elige otro mes o registra un gasto nuevo." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -29884,6 +29894,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Back to Suggested"
+          }
+        }
+      }
+    },
+    "Volver al actual" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Back to Current"
+          }
+        }
+      }
+    },
+    "Volver al periodo actual" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Back to Current Period"
           }
         }
       }
