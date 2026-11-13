@@ -40,6 +40,13 @@ struct ChirograApp: App {
         let wantsSync = ChirograStore.resolveSyncPreference()
         do {
             container = try ChirograStore.makeContainer(cloudKitContainer: wantsSync ? Self.cloudKitContainer : nil)
+            // Empresas borradas en cualquier aparato (`DeletedCompanies`, almacén de clave-valor de iCloud): solo con iCloud.
+            DeletedCompanies.isEnabled = wantsSync
+            if wantsSync {
+                NSUbiquitousKeyValueStore.default.synchronize()
+                // Antes de dibujar nada: lo que un aparato atrasado volvió a subir de una empresa borrada no llega a verse.
+                _ = try? DeletedCompanies.sweep(in: container.mainContext)
+            }
         } catch {
             // Sin la capacidad de iCloud firmada, CloudKit no está disponible: se abre el almacén local.
             do {

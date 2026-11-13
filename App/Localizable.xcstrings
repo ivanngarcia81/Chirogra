@@ -5333,6 +5333,16 @@
         }
       }
     },
+    "BORRAR" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DELETE"
+          }
+        }
+      }
+    },
     "Baja el extracto de tu banco en CSV u OFX y arrástralo aquí: verás cada movimiento con lo que la app propone para registrarlo." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -5633,12 +5643,42 @@
         }
       }
     },
+    "Borra todas tus empresas con sus libros y vuelve al alta. Para borrar una sola, usa Empresas." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deletes all your businesses and their books and takes you back to setup. To delete just one, use Businesses."
+          }
+        }
+      }
+    },
+    "Borra todas tus empresas con sus libros, también en iCloud y en tus otros aparatos, y vuelve al alta. Para borrar una sola, usa Empresas." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deletes all your businesses and their books, also from iCloud and your other devices, and takes you back to setup. To delete just one, use Businesses."
+          }
+        }
+      }
+    },
     "Borrado" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Deleted"
+          }
+        }
+      }
+    },
+    "Borrado en este aparato" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deleted on this device"
           }
         }
       }
@@ -5735,6 +5775,16 @@
         }
       }
     },
+    "Borrando en iCloud…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deleting from iCloud…"
+          }
+        }
+      }
+    },
     "Borrar" : {
       "localizations" : {
         "en" : {
@@ -5821,6 +5871,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Delete Rule"
+          }
+        }
+      }
+    },
+    "Borrar todo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete everything"
+          }
+        }
+      }
+    },
+    "Borrar todo y empezar de cero…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete everything and start over…"
           }
         }
       }
@@ -9279,6 +9349,16 @@
         }
       }
     },
+    "Deja la app abierta un momento: el borrado está subiendo a iCloud para que tus otros aparatos también lo borren." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keep the app open for a moment: the deletion is uploading to iCloud so your other devices delete it too."
+          }
+        }
+      }
+    },
     "Del banco" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -11440,6 +11520,16 @@
         }
       }
     },
+    "Empezar de cero" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start over"
+          }
+        }
+      }
+    },
     "Empieza tu prueba gratis de 14 días para registrar. Puedes ver tus libros y sacar copias." : {
       "localizations" : {
         "en" : {
@@ -12095,6 +12185,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Scan Receipt"
+          }
+        }
+      }
+    },
+    "Escribe %@ para confirmar." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Type %@ to confirm."
           }
         }
       }
@@ -16501,6 +16601,16 @@
         }
       }
     },
+    "Listo: se borró también en iCloud" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Done: also deleted from iCloud"
+          }
+        }
+      }
+    },
     "Llamar" : {
       "localizations" : {
         "en" : {
@@ -18924,6 +19034,16 @@
         }
       }
     },
+    "No se pudo borrar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn’t delete"
+          }
+        }
+      }
+    },
     "No se pudo cambiar 1:" : {
       "localizations" : {
         "en" : {
@@ -19010,6 +19130,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Your identity couldn't be verified."
+          }
+        }
+      }
+    },
+    "No se puede deshacer: si quieres conservar algo, crea antes una copia de cada empresa." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This can’t be undone: to keep anything, back up each business first."
           }
         }
       }
@@ -24882,6 +25012,16 @@
         }
       }
     },
+    "Se borra «%@» con sus clientes, proveedores, facturas, gastos, asientos, recibos y ajustes." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” is deleted with its customers, vendors, invoices, expenses, journal entries, receipts and settings."
+          }
+        }
+      }
+    },
     "Se borran sus clientes, proveedores, facturas, gastos, asientos, recibos y ajustes. No se puede deshacer." : {
       "localizations" : {
         "en" : {
@@ -24898,6 +25038,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Its amounts are deleted. Your books don't change."
+          }
+        }
+      }
+    },
+    "Se borran todas tus empresas (%@) con sus clientes, proveedores, facturas, gastos, asientos, recibos y ajustes." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All your businesses (%@) are deleted with their customers, vendors, invoices, expenses, journal entries, receipts and settings."
           }
         }
       }
@@ -27447,6 +27597,16 @@
         }
       }
     },
+    "Todavía no se pudo subir a iCloud (¿sin conexión?). Se subirá solo en cuanto haya conexión con la app abierta, y tus otros aparatos lo borrarán aunque lo tuvieran guardado." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "It couldn’t be uploaded to iCloud yet (no connection?). It uploads on its own as soon as there’s a connection with the app open, and your other devices will delete it even if they had it saved."
+          }
+        }
+      }
+    },
     "Todo" : {
       "localizations" : {
         "en" : {
@@ -28390,6 +28550,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Your checks are saved as you go: you can leave and continue later."
+          }
+        }
+      }
+    },
+    "Tus otros aparatos lo borran en cuanto abran Chirogra con conexión. Ya puedes crear tu empresa." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your other devices delete it as soon as they open Chirogra with a connection. You can now set up your company."
           }
         }
       }
@@ -30564,6 +30734,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Delete Sample Data?"
+          }
+        }
+      }
+    },
+    "¿Borrar todos tus libros?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete all your books?"
           }
         }
       }

@@ -28,6 +28,27 @@ final class SyncMonitor {
 
     private static let importedKey = "iCloudFirstImportDone"
 
+    /// Importaciones de iCloud terminadas bien en esta sesión (`waitForImport`).
+    @ObservationIgnored private var importsDone = 0
+
+    /// Inicio de la última subida a iCloud que terminó bien: lo que se guardó antes de esa fecha ya está en iCloud
+    /// («Borrar todo y empezar de cero» espera a una que empiece después del borrado).
+    @ObservationIgnored private(set) var lastExportStart: Date?
+
+    /// Espera a que termine la siguiente importación de iCloud (lo que otros aparatos cambiaron mientras este estaba
+    /// cerrado), hasta `timeout`, o a que falle. Sin iCloud en este aparato vuelve enseguida. Las automatizaciones la
+    /// esperan al abrir y al volver al primer plano: así un aparato atrasado recibe primero el borrado de una empresa y
+    /// no escribe en ella (lo que escribía volvía a subir y la empresa «volvía», 13-nov).
+    func waitForImport(timeout: Duration = .seconds(15)) async {
+        guard DeletedCompanies.isEnabled, Self.forced == nil else { return }
+        let start = importsDone
+        let clock = ContinuousClock()
+        let deadline = clock.now + timeout
+        while importsDone == start, !isFailed, clock.now < deadline {
+            try? await Task.sleep(for: .milliseconds(250))
+        }
+    }
+
     /// Solo en Debug, para QA sin iCloud: lanzar con `-ChirograForceSync loading` (esqueleto «Sincronizando con iCloud»,
     /// también con empresa) o `-ChirograForceSync error` (franja de sin conexión). En Release no existe.
     #if DEBUG
@@ -91,6 +112,8 @@ final class SyncMonitor {
             let date = event.endDate ?? .now
             lastSync = date
             state = .synced(date)
+            if event.type == .import { importsDone += 1 }
+            if event.type == .export { lastExportStart = event.startDate }
             if event.type == .import && !hasImported {
                 hasImported = true
                 UserDefaults.standard.set(true, forKey: Self.importedKey)
@@ -123,17 +146,24 @@ private struct CloudSyncMonitor: ViewModifier {
                     }
                 }
             }
-            // Al abrir (también si el Mac la abre en segundo plano) y cada vez que vuelve al primer plano.
-            .task { AppAutomations.run(container: context.container) }
+            // Al abrir (también si el Mac la abre en segundo plano) y cada vez que vuelve al primer plano, después de traer
+            // lo que cambió en iCloud mientras tanto.
+            .task { AppAutomations.run(container: context.container, waitingForImport: true) }
             .onChange(of: scenePhase) { _, phase in
-                if phase == .active { AppAutomations.run(container: context.container) }
+                if phase == .active { AppAutomations.run(container: context.container, waitingForImport: true) }
+            }
+            // Otro aparato borró una empresa (`DeletedCompanies`): se borra aquí lo que quede de ella.
+            .onReceive(NotificationCenter.default.publisher(for: NSUbiquitousKeyValueStore.didChangeExternallyNotification).receive(on: RunLoop.main)) { _ in
+                AppAutomations.sweepDeletedCompanies(container: context.container)
             }
     }
 }
 
 /// Automatizaciones de la app (DATOS-V2 §1–2): `runAutomations()` genera los recurrentes que tocan hasta hoy y registra
 /// los pagos con cargo automático; `resolveRecurringDuplicates()` repara repeticiones duplicadas tras sincronizar. Antes,
+/// `DeletedCompanies.sweep` borra lo que quede de las empresas borradas en otro aparato (también en solo lectura) y
 /// `adoptOrphanRecords()` da la empresa principal a lo que llegó sin empresa. Corren para cada empresa sin archivar.
+/// Al abrir y al volver al primer plano esperan antes a la importación de iCloud (`SyncMonitor.waitForImport`).
 ///
 /// No bloquean la interfaz: corren en una tarea de prioridad baja cuando la pantalla ya está dibujada, cada vez con un
 /// `ModelContext` propio (no el de las pantallas: así nunca guardan ni deshacen lo que el usuario tiene a medias) y lo
@@ -152,9 +182,13 @@ enum AppAutomations {
     private static var running = false
     private static var pendingResolve = false
 
-    static func run(container: ModelContainer, resolvingDuplicates: Bool = false) {
-        // En solo lectura no se genera ni se cobra nada (los recurrentes se ponen al día al renovar).
-        guard !SyncMonitor.shared.isFirstImport, !Bookkeeper.isReadOnly else { return }
+    static func run(container: ModelContainer, resolvingDuplicates: Bool = false, waitingForImport: Bool = false) {
+        guard !SyncMonitor.shared.isFirstImport else { return }
+        // En solo lectura no se genera ni se cobra nada (los recurrentes se ponen al día al renovar), pero se barre.
+        guard !Bookkeeper.isReadOnly else {
+            sweepDeletedCompanies(container: container)
+            return
+        }
         if running {
             if resolvingDuplicates { pendingResolve = true }
             return
@@ -165,7 +199,11 @@ enum AppAutomations {
         Task(priority: .utility) {
             // Que la pantalla se dibuje antes.
             try? await Task.sleep(for: .milliseconds(400))
-            let base = Bookkeeper(context: ModelContext(container))
+            if waitingForImport { await SyncMonitor.shared.waitForImport() }
+            let context = ModelContext(container)
+            let base = Bookkeeper(context: context)
+            // Lo que quede de las empresas borradas (otro aparato atrasado pudo volver a subirlo), antes de escribir nada.
+            _ = try? DeletedCompanies.sweep(in: context)
             // Lo que llegó sin empresa (de un aparato con la 1.0.x, o de una pantalla) pasa a ser de la principal para
             // siempre (DATOS-V4 §1). Al abrir y tras cada importación de iCloud, antes de las automatizaciones.
             _ = try? base.adoptOrphanRecords()
@@ -189,6 +227,11 @@ enum AppAutomations {
             running = false
             if pendingResolve { run(container: container, resolvingDuplicates: true) }
         }
+    }
+
+    /// Solo el barrido de las empresas borradas (`DeletedCompanies`), con un contexto propio.
+    static func sweepDeletedCompanies(container: ModelContainer) {
+        _ = try? DeletedCompanies.sweep(in: ModelContext(container))
     }
 
     static func afterSync(container: ModelContainer) {

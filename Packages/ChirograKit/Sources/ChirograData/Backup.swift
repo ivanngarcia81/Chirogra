@@ -120,7 +120,11 @@ public enum BackupArchive {
         }
         let primary = try CompanyOwnership.primaryCompanyID(in: context)
         let replacedScope = replaced.map { BackupScope(companyID: $0, includeOrphans: $0 == primary) }
-        let prepared = try prepare(json, keepingIDsUnlessIn: try existingIDs(in: context, excluding: replacedScope))
+        // Las empresas borradas (`DeletedCompanies`) cuentan como ids ocupados: la copia de una empresa borrada entra con
+        // ids nuevos, o un aparato que aún la tuviera apuntada la borraría otra vez en todos.
+        var taken = try existingIDs(in: context, excluding: replacedScope)
+        taken.formUnion(DeletedCompanies.recordedIDs.map(\.uuidString))
+        let prepared = try prepare(json, keepingIDsUnlessIn: taken)
         let file: BackupFile
         do {
             file = try JSONDecoder().decode(BackupFile.self, from: prepared.json)
@@ -143,6 +147,8 @@ public enum BackupArchive {
             context.rollback()
             throw error
         }
+        // La empresa sustituida, si la copia era de otra, ya no existe: que ningún aparato la vuelva a subir.
+        if let replaced, replaced != prepared.companyID { DeletedCompanies.record([replaced]) }
         ActiveCompany.id = prepared.companyID
         return RestoreResult(info: file.info, companyID: prepared.companyID, renumbered: prepared.renumbered)
     }
@@ -253,6 +259,7 @@ public enum BackupArchive {
     /// falla no cambia nada. Lo usa «Empezar con mi empresa» para quitar los datos de ejemplo (`SampleData.discard`).
     @MainActor
     public static func eraseAll(in context: ModelContext) throws {
+        let companyIDs = try context.fetch(FetchDescriptor<Company>()).map(\.id)
         do {
             for type in BackupPayload.modelTypes { try deleteAll(type, in: context) }
             try context.save()
@@ -260,6 +267,9 @@ public enum BackupArchive {
             context.rollback()
             throw error
         }
+        // Que ningún aparato atrasado las vuelva a subir (`DeletedCompanies`).
+        DeletedCompanies.record(companyIDs)
+        ActiveCompany.id = nil
     }
 
     /// Marca para borrar la empresa de `scope` y todos sus registros, sin guardar.

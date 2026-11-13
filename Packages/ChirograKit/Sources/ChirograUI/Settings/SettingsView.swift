@@ -407,7 +407,8 @@ struct FormatsView: View {
 }
 
 /// iCloud y copias (canvas `AjustesDatos`): sincronización, suscripción y copias de seguridad (`BackupSection`), como
-/// filas con icono de color. Con los datos de ejemplo, arriba, «Empezar con mi empresa» (`SampleBooksSection`). El
+/// filas con icono de color. Con los datos de ejemplo, arriba, «Empezar con mi empresa» (`SampleBooksSection`); con
+/// libros propios, abajo, «Borrar todo y empezar de cero» (`StartOverSection`). El
 /// bloqueo con Face ID o Touch ID tiene su propia página, `SecurityView` (build 40).
 struct ICloudAndBackupsView: View {
     /// Dentro de `SettingsWideView`: el título de la ventana sigue siendo «Ajustes».
@@ -441,6 +442,8 @@ struct ICloudAndBackupsView: View {
             }
             SubscriptionSection()
             BackupSection()
+            // «Borrar todo y empezar de cero» (build 42), abajo del todo. Con los de ejemplo, «Empezar con mi empresa» arriba.
+            StartOverSection()
         }
         // Interruptores como los del canvas (en el Mac, el de casilla salía por defecto en los formularios).
         .toggleStyle(.switch)

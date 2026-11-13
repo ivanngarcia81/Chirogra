@@ -218,6 +218,11 @@ public struct ChirograRootView: View {
             Self.qaLoadedSample = true
             #endif
         }
+        // «Borrar todo y empezar de cero» (Ajustes › iCloud y copias): igual que arriba, sin empresas sale el alta.
+        .startOverFlow {
+            paywallShownOnce = false
+            skipsSyncWait = true
+        }
         .task { subscription.start() }
         // La primera lectura de un recibo tras instalar tarda (el sistema prepara su modelo de texto): se adelanta en segundo
         // plano poco después de abrir, para que al escanear ya esté listo (decisión del usuario, 8-nov).

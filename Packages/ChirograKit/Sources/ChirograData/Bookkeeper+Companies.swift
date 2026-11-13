@@ -304,6 +304,8 @@ extension Bookkeeper {
             context.rollback()
             throw error
         }
+        // Que ningún aparato atrasado la vuelva a subir (`DeletedCompanies`).
+        DeletedCompanies.record([id])
         if ActiveCompany.id == id { ActiveCompany.id = try companies().first?.id }
     }
 
