@@ -23863,6 +23863,16 @@
         }
       }
     },
+    "Restaurando…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restoring…"
+          }
+        }
+      }
+    },
     "Restaurante y comida" : {
       "localizations" : {
         "en" : {
@@ -23889,6 +23899,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Restore as New Business"
+          }
+        }
+      }
+    },
+    "Restaurar compras" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restore Purchases"
           }
         }
       }

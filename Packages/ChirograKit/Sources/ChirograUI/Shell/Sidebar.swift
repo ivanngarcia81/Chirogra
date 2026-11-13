@@ -71,6 +71,55 @@ enum SidebarItem: Hashable {
         }
     }
 
+    /// Icono de la subsección en la barra lateral. Los de Reportes y Contabilidad son los de «Más» del iPhone; los demás,
+    /// distintos del de su sección para que se distingan.
+    var systemImage: String {
+        switch self {
+        case .section(let section): section.systemImage
+        case .sales(.invoices): "dollarsign.circle"
+        case .sales(.estimates): "doc.badge.clock"
+        case .sales(.customers): "person.2"
+        case .expenses(.expenses): "cart"
+        case .expenses(.vendors): "shippingbox"
+        case .expenses(.bills): "calendar.badge.clock"
+        case .expenses(.recurring): "repeat"
+        case .report(let kind): kind.moreSymbol
+        case .accounting(.chart): "list.bullet.indent"
+        case .accounting(.journal): "doc.plaintext"
+        case .accounting(.ledger): "book.closed"
+        case .accounting(.close): "lock"
+        case .accounting(.auditLog): "clock.arrow.circlepath"
+        case .banking(.accounts): "creditcard"
+        case .banking(.inbox): "tray"
+        case .banking(.rules): "wand.and.stars"
+        case .banking(.reconcile): "checkmark.seal"
+        }
+    }
+
+    /// Color del icono de la subsección (el de «Más» del iPhone en Reportes y Contabilidad).
+    var color: Color {
+        switch self {
+        case .section: Palette.brand
+        case .sales(.invoices): Palette.green
+        case .sales(.estimates): Palette.orange
+        case .sales(.customers): Palette.blue
+        case .expenses(.expenses): Palette.red
+        case .expenses(.vendors): Palette.orange
+        case .expenses(.bills): Palette.purple
+        case .expenses(.recurring): Palette.teal
+        case .report(let kind): kind.moreColor
+        case .accounting(.chart): Palette.indigo
+        case .accounting(.journal): Palette.blue
+        case .accounting(.ledger): Palette.teal
+        case .accounting(.close): Palette.gray
+        case .accounting(.auditLog): Palette.orange
+        case .banking(.accounts): Palette.teal
+        case .banking(.inbox): Palette.orange
+        case .banking(.rules): Palette.indigo
+        case .banking(.reconcile): Palette.green
+        }
+    }
+
     /// Subsecciones de una sección, en el orden del canvas `Sidebar`; vacío si no tiene.
     static func subsections(of section: AppSection) -> [(title: String, item: SidebarItem)] {
         switch section {
@@ -89,7 +138,8 @@ enum SidebarItem: Hashable {
 }
 
 /// Barra lateral de iPad y Mac (canvas `Sidebar`): búsqueda, grupos «Negocio» y «Libros» con los iconos en Tinta, las
-/// subsecciones de la sección abierta sangradas debajo de ella, y la empresa al pie con el estado de iCloud.
+/// subsecciones de la sección abierta sangradas debajo de ella con iconos de color (13-nov), y la empresa al pie con el
+/// estado de iCloud.
 /// iPad: título «Chirogra» de 28 bold, filas de 46 pt y la elegida rellena de Tinta con texto blanco. Mac: filas de
 /// 28 pt sobre el material del sistema y la elegida en el gris de relleno (`fill2`), como las barras del sistema.
 struct Sidebar: View {
@@ -101,6 +151,7 @@ struct Sidebar: View {
     @AppStorage(ChirograStore.syncEnabledKey) private var iCloudSyncEnabled = true
     @State private var sync = SyncMonitor.shared
     @ScaledMetric(relativeTo: .body) private var iconWidth: CGFloat = Self.iconSide
+    @ScaledMetric(relativeTo: .body) private var subIconWidth: CGFloat = Self.subIconSide
 
     /// Estado de iCloud al pie: sincronizando, sin conexión o sincronizado (`MacCargando`, `MacError`).
     private var syncText: String {
@@ -280,7 +331,8 @@ struct Sidebar: View {
         .accessibilityValue(hasSubsections ? (isOpen ? Text("Abierta") : Text("Cerrada")) : Text(verbatim: ""))
     }
 
-    /// Subsección de la sección abierta: sangrada, sin icono; la abierta marcada como las secciones.
+    /// Subsección de la sección abierta: sangrada bajo el nombre de su sección, con su icono de color (decisión del
+    /// usuario del 13-nov, entre Tinta y colores: los colores de «Más» del iPhone); la abierta marcada como las secciones.
     private func subRow(_ title: String, item: SidebarItem) -> some View {
         let isActive = query.isEmpty && selection == item
         return Button {
@@ -288,7 +340,13 @@ struct Sidebar: View {
             selection = item
         } label: {
             // Hasta dos líneas en vez de encogerse: «Balanza de comprobación» quedaba más pequeña que las demás.
-            HStack(spacing: 6) {
+            HStack(spacing: Self.subIconGap) {
+                Image(systemName: item.systemImage)
+                    .font(Self.subIconFont)
+                    .dynamicTypeSize(...DynamicTypeSize.xxLarge)
+                    .foregroundStyle(isActive && Self.fillsSelection ? Palette.onBrandFill : item.color)
+                    .frame(width: min(subIconWidth, Self.subIconSide * 1.3))
+                    .accessibilityHidden(true)
                 Text(title)
                     .lineLimit(2)
                     .fixedSize(horizontal: false, vertical: true)
@@ -324,7 +382,11 @@ struct Sidebar: View {
     private static let subRowHeight: CGFloat = Metrics.target
     private static let rowRadius: CGFloat = 7
     private static let rowPadding: CGFloat = 8
-    private static let subIndent: CGFloat = 34
+    // El icono de la subsección empieza un poco antes que el nombre de su sección.
+    private static let subIndent: CGFloat = 28
+    private static let subIconSide: CGFloat = 16
+    private static let subIconFont = Font.callout
+    private static let subIconGap: CGFloat = 6
     private static let iconGap: CGFloat = 8
     private static let iconSide: CGFloat = 18
     private static let iconFont = Font.body
@@ -339,7 +401,10 @@ struct Sidebar: View {
     private static let subRowHeight: CGFloat = 44
     private static let rowRadius: CGFloat = 12
     private static let rowPadding: CGFloat = 12
-    private static let subIndent: CGFloat = 48
+    private static let subIndent: CGFloat = 40
+    private static let subIconSide: CGFloat = 22
+    private static let subIconFont = Font.body
+    private static let subIconGap: CGFloat = 10
     private static let iconGap: CGFloat = 14
     private static let iconSide: CGFloat = 26
     private static let iconFont = Font.title3

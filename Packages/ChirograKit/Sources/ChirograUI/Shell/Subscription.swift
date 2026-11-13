@@ -187,6 +187,10 @@ struct PaywallView: View {
     var focus: SubscriptionStore.PaywallFocus = .all
     @Environment(\.dismiss) private var dismiss
     private let store = SubscriptionStore.shared
+    #if os(macOS)
+    @State private var redeeming = false
+    @State private var restoring = false
+    #endif
 
     private var hasStandardPlan: Bool {
         if case .subscribed = store.status { return store.plan == .standard }
@@ -200,7 +204,7 @@ struct PaywallView: View {
     var body: some View {
         Group {
             SubscriptionStoreView(productIDs: productIDs) {
-                VStack(spacing: 14) {
+                VStack(spacing: Self.headerSpacing) {
                     // El plan general lleva el logotipo (la χ del icono); antes, un libro del sistema (build 21).
                     if focus == .accountant {
                         Image(systemName: "building.2.fill")
@@ -208,7 +212,7 @@ struct PaywallView: View {
                             .foregroundStyle(Palette.brand)
                             .accessibilityHidden(true)
                     } else {
-                        LogoMark(size: 64).accessibilityHidden(true)
+                        LogoMark(size: Self.logoSize).accessibilityHidden(true)
                     }
                     if focus == .accountant {
                         Text("Chirogra para contadores").font(.largeTitle.bold()).foregroundStyle(Palette.ink)
@@ -232,6 +236,8 @@ struct PaywallView: View {
                         Text("Chirogra").font(.largeTitle.bold()).foregroundStyle(Palette.ink)
                         Text("Tus libros completos en tu iPhone, iPad y Mac: facturas, gastos, sales tax y reportes, privados en tu cuenta.")
                             .font(.body).multilineTextAlignment(.center).foregroundStyle(Palette.ink2)
+                            // Entero: con los dos planes a la vista sin desplazar, el Mac lo dejaba en una línea con «…».
+                            .fixedSize(horizontal: false, vertical: true)
                         VStack(alignment: .leading, spacing: 8) {
                             feature("checkmark.seal", "14 días gratis; cancela cuando quieras")
                             feature("doc.text", "Facturas, estimados y cobros")
@@ -241,6 +247,9 @@ struct PaywallView: View {
                         }
                         .padding(.top, 4)
                     }
+                    #if os(macOS)
+                    macStoreLinks
+                    #endif
                 }
                 .padding(.horizontal, 24)
                 .padding(.vertical, 12)
@@ -250,23 +259,74 @@ struct PaywallView: View {
                 .environment(\.locale, .appText)
             }
             .subscriptionStoreButtonLabel(.multiline)
+            #if os(macOS)
+            // En el Mac, StoreKit apila estos dos botones con el de suscribirse en la franja fija de abajo y tapaban la
+            // tarjeta del segundo plan (13-nov): van como enlaces bajo el texto (`macStoreLinks`).
+            .storeButton(.hidden, for: .restorePurchases, .redeemCode)
+            #else
             .storeButton(.visible, for: .restorePurchases)
             // «Canjear código»: los códigos de oferta de App Store Connect (regalar la suscripción, decisión del 8-nov).
             .storeButton(.visible, for: .redeemCode)
+            #endif
             .subscriptionStorePolicyDestination(url: ChirograLinks.termsOfUse, for: .termsOfService)
             .modifier(PrivacyPolicyLink())
             .onInAppPurchaseCompletion { _, _ in
                 await store.refresh()
-                let done = focus == .accountant ? store.plan == .accountant : !store.isReadOnly
-                if done { dismiss() }
+                if isDone { dismiss() }
             }
         }
         #if os(macOS)
+        .offerCodeRedemption(isPresented: $redeeming) { _ in
+            Task {
+                await store.refresh()
+                if isDone { dismiss() }
+            }
+        }
+        #endif
+        #if os(macOS)
         // Con un alto máximo: sin él, la hoja pedía ~1200 pt y al salir sola al abrir la app estiraba la ventana más allá
-        // de la pantalla (QA del 10-nov). El contenido de la tienda se desplaza.
-        .frame(minWidth: 480, idealWidth: 520, minHeight: 560, idealHeight: 680, maxHeight: 760)
+        // de la pantalla (QA del 10-nov). El contenido de la tienda se desplaza. 760 de alto (antes 680) y el encabezado
+        // más compacto: así los dos planes se ven enteros encima del botón de suscribirse (13-nov). La de contadores,
+        // con un solo plan, cabe en 680.
+        .frame(minWidth: 480, idealWidth: 520, minHeight: 560, idealHeight: focus == .accountant ? 680 : 760, maxHeight: 760)
         #endif
     }
+
+    #if os(macOS)
+    private static let headerSpacing: CGFloat = 10
+    private static let logoSize: CGFloat = 52
+    #else
+    private static let headerSpacing: CGFloat = 14
+    private static let logoSize: CGFloat = 64
+    #endif
+
+    /// Ya tiene lo que se le ofrecía: con el plan para contadores a la vista, ese plan; si no, cualquier suscripción.
+    private var isDone: Bool { focus == .accountant ? store.plan == .accountant : !store.isReadOnly }
+
+    #if os(macOS)
+    /// «Restaurar compras» y «Canjear código» del Mac, como enlaces bajo el texto.
+    private var macStoreLinks: some View {
+        HStack(spacing: 18) {
+            Button(restoring ? "Restaurando…" : "Restaurar compras") { restore() }
+                .disabled(restoring)
+            // Los códigos de oferta de App Store Connect (regalar la suscripción, decisión del 8-nov).
+            Button("Canjear código") { redeeming = true }
+        }
+        .buttonStyle(.link)
+        .font(.subheadline)
+        .padding(.top, 4)
+    }
+
+    private func restore() {
+        restoring = true
+        Task {
+            try? await AppStore.sync()
+            await store.refresh()
+            restoring = false
+            if isDone { dismiss() }
+        }
+    }
+    #endif
 
     private func feature(_ systemImage: String, _ text: LocalizedStringKey) -> some View {
         Label { Text(text).foregroundStyle(Palette.ink) } icon: { Image(systemName: systemImage).foregroundStyle(Palette.brand) }
