@@ -8,7 +8,7 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 - **`main` = `version-1.2`** (unidas el 12-nov, fast-forward pedido por el usuario), empujadas. La web (`sitio/`) se
   publica desde `main`, así que ya enseña la 1.2 (guía e icono nuevo).
 - **Último build subido: 42 (1.2.0)**, para iOS y macOS (13-nov, tarde): lo borrado ya no vuelve de iCloud y «Borrar
-  todo y empezar de cero». Commits `36c85ad` y `2840279` en `version-1.2`, **sin empujar**. La 1.1 sigue en el **30**.
+  todo y empezar de cero». Commits `36c85ad` y `2840279`, empujados. La 1.1 sigue en el **30**.
   Para subirlo hubo que contestar en App Store Connect el aviso del DSA de la UE (sin él, «You do not have required
   contracts»); se recomendó «not a trader / no EU».
 - **1.0 (build 11):** en revisión de Apple. Cuando la aprueben, el usuario envía la **1.0.1 (build 15)**, que arregla
@@ -57,9 +57,9 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
   `ChiGlyph` (generado del SVG: si cambia el icono, regenerarlo). Subido iOS y macOS (`ad59089`), instalado en el
   iPhone y el Mac; **el iPad no** (lo hace el usuario).
 - **Pendiente pequeño:** las capturas de la guía `copias-es/en.jpg` aún enseñan el bloqueo dentro de «iCloud y copias»
-  (desde el build 40 está en Seguridad) y ahora tampoco tienen «Empezar de cero». Worktrees que sobran:
-  `Chirogra-pestanas` y `Chirogra-QA-Hudson` (informe en `QA/`, sin seguimiento a propósito): preguntar antes de
-  borrarlos.
+  (desde el build 40 está en Seguridad) y ahora tampoco tienen «Empezar de cero». Los worktrees `Chirogra-pestanas` y
+  `Chirogra-QA-Hudson` se borraron el 13-nov (pedido del usuario); el detalle de H04/H19/H22/H23 para la 1.3 quedó en
+  CONTEXTO.
 - Truco de capturas de la guía: la copia del Mac con `defaultSize` de 900×1040 en `App/ChirograApp.swift` (solo en la
   copia) y `-qa.alta 1 -qa.altaEstado TX -qa.altaCiudad Austin -qa.altaCiudadTasa 2 -qa.altaZip 78702`; recorte de
   600 px de ancho desde (150, 48).
@@ -87,7 +87,7 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 1. **Envío de la 1.1.0** (cuando la 1.0 y la 1.0.1 estén aprobadas): **todo preparado el 10-nov** en
    [APP-STORE.md](APP-STORE.md) (descripción, texto promocional, «What's New» en/es, notas para el revisor) y capturas
    `00-bienvenida` y `06-panel-clientes` en el escritorio. Elegir el **build 30** y añadir el plan para contadores al envío.
-2. **Envío de la 1.2.0** (cuando la 1.1 esté aprobada): elegir el **build 42** cuando esté subido (si no, el 41); «What's New» y notas para el revisor
+2. **Envío de la 1.2.0** (cuando la 1.1 esté aprobada): elegir el **build 42** (ya subido); «What's New» y notas para el revisor
    preparados el 11-nov en APP-STORE.md. Decidir si hacen falta capturas nuevas (bitácora, Dividir, icono nuevo).
 3. **Tasas por código postal: cada trimestre** (1 ene, 1 abr, 1 jul, 1 oct) correr `scripts/tasas/descargar.sh` y
    `generar.py` y subir un build (DATOS-V5.md). Faltan AL AK AZ CO HI ID LA MO MS NM PA SC VA.

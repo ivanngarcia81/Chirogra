@@ -206,6 +206,18 @@ factura con cobros muestra «Editar» y «Anular» desactivados con el motivo (H
 total). **Quedan para la 1.3:** H04 (elegir el mes en los reportes del iPhone), H19 (conciliaciones y antigüedad en el
 paquete del contador), H22 (accesibilidad de Cliente/Proveedor) y H23 (Gastos que no llega a reposo, mirar con
 Instruments). Las capturas de la guía `copias-es/en.jpg` aún enseñan el bloqueo dentro de iCloud.
+   Detalle de esos cuatro (el informe de Hudson y su worktree se borraron el 13-nov):
+   - **H04** (contador, iPhone): Resultados solo ofrece «Mes / Trimestre / Año» del periodo actual (el mes anterior
+     sale solo como columna de comparación) y Sales tax enseña el mes en curso sin selector. El balance sí tiene «Al»
+     con fecha y el Mac deja elegir fechas y trimestres. Propuesta: flechas ‹ › de periodo o el selector del Mac.
+   - **H19** (contador): el paquete del contador no trae la conciliación bancaria ni la antigüedad de CxC/CxP, y el CSV
+     de resultados no lleva los códigos de cuenta (el del balance sí). Propuesta: «Conciliaciones.csv/pdf» y las dos
+     antigüedades.
+   - **H22** (accesibilidad): los campos Cliente y Proveedor solo tienen texto de ejemplo, sin etiqueta; en el iPad el
+     botón de impuesto de la línea se lee «Impuesto, Impuesto, línea 1». Propuesta: etiquetas de accesibilidad propias.
+   - **H23** (sin confirmar): la pantalla de Gastos no llega a «reposo» para XCUITest («App animations complete
+     notification not received», ~60 s por toque); posible animación continua. Revisar con Instruments si algo se
+     redibuja sin parar (batería).
 9. Asientos de ajuste marcados como del contador: hecho (`EntrySource.accountantAdjustment`).
 10. Bitácora de cambios: hecho (aparato y antes/después; Contabilidad › «Bitácora de cambios»).
 11. Banca: dividir y motivo al excluir: hecho (canvas `BancaRevisar`).
