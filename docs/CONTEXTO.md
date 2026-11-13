@@ -31,7 +31,7 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
     el 10-nov para iOS y macOS) lleva además la bienvenida en carrusel (abajo). **Toda la fase 2 va en la 1.1** (decisión del
     9-nov: no se esconde nada para 1.2/1.3), con el plan de contadores en el envío. Lista en el **build 30**.
   - **1.2.0 (builds 31 a 40, TestFlight):** lista en el **build 41** (38: arreglos de la QA de Hudson; 39: pestañas y favoritos del iPhone; 40: Seguridad aparte, «Mover dinero» y el resto de Hudson; 41: icono nuevo, la χ cursiva; abajo, «C»). Se envía cuando esté aprobada la 1.1.
-    **Build 42 hecho el 13-nov, sin commitear ni subir** (abajo, «Build 42»).
+    **Build 42 subido el 13-nov para iOS y macOS** (`36c85ad`; abajo, «Build 42»).
 - **Build 42 (13-nov): lo borrado no vuelve de iCloud.** El usuario vio volver empresas borradas. Los borrados sí viajan
   (comprobado en el historial de la base del Mac), pero un aparato que aún tiene los libros los vuelve a subir y CloudKit
   los toma por nuevos. Arreglo (`ChirograData/DeletedCompanies.swift`):

@@ -7,9 +7,10 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 
 - **`main` = `version-1.2`** (unidas el 12-nov, fast-forward pedido por el usuario), empujadas. La web (`sitio/`) se
   publica desde `main`, así que ya enseña la 1.2 (guía e icono nuevo).
-- **Último build subido: 41 (1.2.0)**, para iOS y macOS (12-nov). La 1.1 sigue en el **30**.
-- **Build 42 (1.2.0) hecho y SIN COMMITEAR ni subir** (13-nov, tarde): lo borrado ya no vuelve de iCloud y «Borrar todo
-  y empezar de cero». Esperando a que el usuario diga si se commitea, se sube y se instala.
+- **Último build subido: 42 (1.2.0)**, para iOS y macOS (13-nov, tarde): lo borrado ya no vuelve de iCloud y «Borrar
+  todo y empezar de cero». Commits `36c85ad` y `2840279` en `version-1.2`, **sin empujar**. La 1.1 sigue en el **30**.
+  Para subirlo hubo que contestar en App Store Connect el aviso del DSA de la UE (sin él, «You do not have required
+  contracts»); se recomendó «not a trader / no EU».
 - **1.0 (build 11):** en revisión de Apple. Cuando la aprueben, el usuario envía la **1.0.1 (build 15)**, que arregla
   iCloud en Producción.
 - **1.1.0:** lista en el **build 30**. Lleva toda la fase 2 (decisión del 9-nov) y lo hecho el 10-nov.
@@ -38,7 +39,7 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 | 39 | `afeb040` | 1.2.0: **pestañas y favoritos a elección en el iPhone** (decisión del usuario del 12-nov): «Más › Personalizar» › Pestañas (entre Inicio y Más, fijos, caben 3 herramientas a elección y en orden) y Favoritos (arriba de Más, sin límite); mantener pulsada una herramienta de Más la añade. Por aparato (`phone.tabs`, `more.favorites`). `Shell/PhoneShortcuts.swift`, guía es/en, `PhoneShortcutsTests` (335 pruebas). |
 | 40 | `a2fe01e` | 1.2.0: **Seguridad aparte de iCloud y copias** (pedido del usuario: las dos filas de Más abrían la misma pantalla) y el resto de la QA de Hudson: «Mover dinero» (traspaso, pagar la tarjeta, retiro y aportación) en el «+» de Inicio y en cada cuenta de Banca; ficha de la cuenta con «Entró / Salió»; «Máximo $X (saldo pendiente)» al cobrar; «N ya importados · M nuevos» al reimportar; el ZIP del alta propone el estado; bitácora «Categoría: A → B»; factura con cobros con «Editar» y «Anular» desactivados y el motivo. 338 pruebas. |
 | 41 | `ae9ced3` | 1.2.0: **icono nuevo, la χ cursiva** (archivo del usuario «chirogra greek inicials.icon»), también en `LogoMark` (`ChiGlyph`, sacado del SVG), en la animación de la bienvenida (contorno y luego relleno) y en la web. |
-| 42 | (sin commitear) | 1.2.0: **lo borrado no vuelve de iCloud**: cada empresa borrada se apunta en el almacén de clave-valor de iCloud (`DeletedCompanies`, permiso `ubiquity-kvstore-identifier` nuevo) y todos los aparatos la vuelven a borrar si alguien la sube otra vez; las automatizaciones esperan a la importación al abrir; **«Borrar todo y empezar de cero…»** en Ajustes › iCloud y copias (escribir BORRAR; espera a que el borrado suba). 343 pruebas. |
+| 42 | `36c85ad` | 1.2.0: **lo borrado no vuelve de iCloud**: cada empresa borrada se apunta en el almacén de clave-valor de iCloud (`DeletedCompanies`, permiso `ubiquity-kvstore-identifier` nuevo) y todos los aparatos la vuelven a borrar si alguien la sube otra vez; las automatizaciones esperan a la importación al abrir; **«Borrar todo y empezar de cero…»** en Ajustes › iCloud y copias (escribir BORRAR; espera a que el borrado suba). 343 pruebas. |
 
 ## Último chat (13-nov)
 
@@ -51,7 +52,7 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
   - Comprobado: 343 pruebas (5 nuevas en `DeletedCompaniesTests`), app firmada de iOS y del Mac con el permiso nuevo, y
     en una copia del Mac (`com.chirogra.qa.borrar`, ejecutable renombrado a «ChirograQA» para System Events) la sección,
     la confirmación (BORRAR activa el botón, en minúsculas también), el borrado y las tres hojas (`-qa.empezarDeCero
-    subiendo|listo|pendiente`). **Sin probar todavía entre dos aparatos con iCloud** (necesita instalarlo).
+    subiendo|listo|pendiente`). **Sin probar todavía entre dos aparatos con iCloud.** Subido a TestFlight (iOS y macOS).
 - **Icono nuevo, la χ cursiva, y build 41 (12-nov noche):** `App/AppIcon.icon` = archivo del usuario; `LogoMark` con
   `ChiGlyph` (generado del SVG: si cambia el icono, regenerarlo). Subido iOS y macOS (`ad59089`), instalado en el
   iPhone y el Mac; **el iPad no** (lo hace el usuario).
