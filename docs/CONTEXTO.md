@@ -250,8 +250,12 @@ Instruments). Las capturas de la guía `copias-es/en.jpg` aún enseñan el bloqu
   tablas blancas `Palette.surface` con filo y sombra corta (`macElevation`), inspector sin fondo propio; en el iPad
   `padElevation` y las listas maestro en `Palette.masterColumn`. Ajustes del Mac con tarjetas propias
   (`Settings/SettingsCards.swift`).
-- **Ícono:** la χ (build 20, `App/AppIcon.icon`); `LogoMark` dibuja la misma χ dentro de la app. El de la web
-  (`sitio/img/icono.png`, 256 px) sale del `AppIcon.icns` de la compilación del Mac (`iconutil -c iconset`).
+- **Ícono:** la χ cursiva (12-nov, build 41; archivo del usuario «chirogra greek inicials.icon» copiado tal cual a
+  `App/AppIcon.icon`, capa visible `04-chi.svg`; las demás quedan ocultas). Antes, la χ redonda con punto (build 20).
+  `LogoMark` dibuja la misma χ dentro de la app con `ChiGlyph` (`DesignSystem/ChiGlyph.swift`, generado del `d` de
+  `04-chi.svg`: si cambia el icono, regenerarlo). La bienvenida dibuja su contorno y luego la rellena. El de la web
+  (`sitio/img/icono.png`, 256 px) sale del `AppIcon.icns` de la compilación del Mac (`iconutil -c iconset`,
+  `icon_128x128@2x.png`). Las capturas de la guía `bienvenida-es/en.jpg` aún enseñan la «C» antigua.
 - Gastos y Banca arrancan en el último mes con movimientos; la tarjeta de Gastos suma solo gastos. Método de pago según
   la cuenta (banco → débito/transferencia/cheque; tarjeta → tarjeta; caja → efectivo).
 - **Editar algo contabilizado = reversión + asiento nuevo** (DISEÑO §6.5). Una factura emitida sin cobros se edita así

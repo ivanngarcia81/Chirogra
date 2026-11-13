@@ -1557,42 +1557,27 @@ struct TermHelp: View {
     }
 }
 
-/// Logotipo de Chirogra: el icono de la app (`App/AppIcon.icon`, build 20) en pequeño, con el degradado de índigo,
-/// la χ blanca de trazo redondo y el punto de azafrán. Antes era la «C» abierta del canvas `Main`, que quedó vieja al
-/// cambiar el icono (prueba del build 20: alta, «Sincronizando con iCloud» y bloqueo).
+/// Logotipo de Chirogra: el icono de la app (`App/AppIcon.icon`) en pequeño, con el degradado de índigo y la χ
+/// cursiva (`ChiGlyph`, icono del 12-nov; antes, la χ de trazo redondo con el punto de azafrán del build 20).
 struct LogoMark: View {
     var size: CGFloat = 28
 
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: size * 0.225, style: .continuous).fill(Palette.logoFill)
-            ChiStrokes()
-                .stroke(Palette.logoMark, style: StrokeStyle(lineWidth: size * 104 / 1024, lineCap: .round, lineJoin: .round))
-            // El punto, como en `04-punto 2.svg`: centro (540, 250) y radio 40 sobre 1024.
-            Circle().fill(Palette.accent)
-                .frame(width: size * 80 / 1024, height: size * 80 / 1024)
-                .position(x: size * 540 / 1024, y: size * 250 / 1024)
+            ChiGlyph().fill(Palette.logoMark.opacity(Self.glyphFillOpacity))
+            ChiGlyph().stroke(Palette.logoMark.opacity(0.9), lineWidth: Self.glyphLineWidth(size: size))
         }
         .frame(width: size, height: size)
         .accessibilityElement()
         .accessibilityLabel("Chirogra")
     }
-}
 
-/// Los dos trazos de la χ del icono (`chi-trazos-editables 2.svg`), en un lienzo de 1024 escalado al tamaño pedido.
-nonisolated private struct ChiStrokes: Shape {
-    func path(in rect: CGRect) -> Path {
-        func p(_ x: CGFloat, _ y: CGFloat) -> CGPoint {
-            CGPoint(x: rect.minX + rect.width * x / 1024, y: rect.minY + rect.height * y / 1024)
-        }
-        var path = Path()
-        path.move(to: p(292, 298))
-        path.addCurve(to: p(512, 512), control1: p(392, 280), control2: p(440, 360))
-        path.addCurve(to: p(732, 722), control1: p(584, 664), control2: p(632, 740))
-        path.move(to: p(320, 740))
-        path.addLine(to: p(704, 284))
-        return path
-    }
+    /// Relleno de la χ: en el icono es el 50 %, que con el vidrio se ve más claro; sin vidrio, 60 %.
+    static let glyphFillOpacity = 0.6
+
+    /// Filo de la χ: 6.2 sobre 1024 como en el icono, sin bajar de medio punto en los tamaños pequeños.
+    static func glyphLineWidth(size: CGFloat) -> CGFloat { max(size * 6.2 / 1024, 0.5) }
 }
 
 // MARK: - Campos

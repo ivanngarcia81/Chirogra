@@ -522,50 +522,20 @@ private struct LogoDrawing: View {
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: size * 0.225, style: .continuous).fill(Palette.logoFill)
-            ChiStroke(part: .curve)
+            // El contorno de la χ se dibuja y después se rellena, como el icono (`LogoMark`).
+            ChiGlyph()
+                .fill(Palette.logoMark.opacity(shown ? LogoMark.glyphFillOpacity : 0))
+                .animation(reduceMotion ? nil : .easeOut(duration: 0.5).delay(1.0), value: shown)
+            ChiGlyph()
                 .trim(from: 0, to: shown ? 1 : 0)
-                .stroke(Palette.logoMark, style: stroke)
-                .animation(reduceMotion ? nil : .easeOut(duration: 0.9).delay(0.15), value: shown)
-            ChiStroke(part: .line)
-                .trim(from: 0, to: shown ? 1 : 0)
-                .stroke(Palette.logoMark, style: stroke)
-                .animation(reduceMotion ? nil : .easeOut(duration: 0.9).delay(0.45), value: shown)
-            Circle().fill(Palette.accent)
-                .frame(width: size * 80 / 1024, height: size * 80 / 1024)
-                .pop(shown, delay: 0.8, reduceMotion: reduceMotion)
-                .position(x: size * 540 / 1024, y: size * 250 / 1024)
+                .stroke(Palette.logoMark.opacity(0.9),
+                        style: StrokeStyle(lineWidth: max(LogoMark.glyphLineWidth(size: size), 1.5), lineCap: .round, lineJoin: .round))
+                .animation(reduceMotion ? nil : .easeInOut(duration: 1.1).delay(0.15), value: shown)
         }
         .frame(width: size, height: size)
         .pop(shown, delay: 0, reduceMotion: reduceMotion)
         .accessibilityElement()
         .accessibilityLabel(Text(verbatim: "Chirogra"))
-    }
-
-    private var stroke: StrokeStyle {
-        StrokeStyle(lineWidth: size * 104 / 1024, lineCap: .round, lineJoin: .round)
-    }
-}
-
-/// Uno de los dos trazos de la χ (los mismos de `LogoMark`), para dibujarlos por separado.
-nonisolated private struct ChiStroke: Shape {
-    enum Part { case curve, line }
-    let part: Part
-
-    func path(in rect: CGRect) -> Path {
-        func p(_ x: CGFloat, _ y: CGFloat) -> CGPoint {
-            CGPoint(x: rect.minX + rect.width * x / 1024, y: rect.minY + rect.height * y / 1024)
-        }
-        var path = Path()
-        switch part {
-        case .curve:
-            path.move(to: p(292, 298))
-            path.addCurve(to: p(512, 512), control1: p(392, 280), control2: p(440, 360))
-            path.addCurve(to: p(732, 722), control1: p(584, 664), control2: p(632, 740))
-        case .line:
-            path.move(to: p(320, 740))
-            path.addLine(to: p(704, 284))
-        }
-        return path
     }
 }
 

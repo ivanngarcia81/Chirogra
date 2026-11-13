@@ -28,16 +28,29 @@
               }
             }
           ],
+          "hidden" : true,
           "image-name" : "chi-trazos-editables 2.svg",
           "name" : "chi-trazos-editables 2"
         },
         {
+          "hidden" : true,
           "image-name" : "04-punto 2.svg",
           "name" : "04-punto 2"
         },
         {
+          "hidden" : true,
           "image-name" : "03-chi 2.svg",
           "name" : "03-chi 2"
+        },
+        {
+          "image-name" : "04-chi.svg",
+          "name" : "04-chi"
+        },
+        {
+          "glass" : true,
+          "hidden" : true,
+          "image-name" : "03-chi.svg",
+          "name" : "03-chi"
         },
         {
           "hidden" : true,
