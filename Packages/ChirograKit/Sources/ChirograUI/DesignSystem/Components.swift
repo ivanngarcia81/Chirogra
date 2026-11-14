@@ -1593,6 +1593,8 @@ struct MoneyField: View {
         // Con cero, el campo va vacío y «$0.00» es solo la guía: si el texto era «$0.00», lo escrito se pegaba detrás
         // («$0.00500» → $0.01, 2-nov).
         TextField(title, value: decimal, format: .currency(code: "USD"), prompt: Text(prompt ?? Int64(0).money))
+            // El título como etiqueta: sin ella VoiceOver solo leía la guía («$0.00») y no qué importe era (QA Hudson, H22).
+            .accessibilityLabel(Text(title))
             .monospacedDigit()
             #if os(iOS)
             .keyboardType(.decimalPad)

@@ -6594,6 +6594,16 @@
         }
       }
     },
+    "Cargo de la persona de contacto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contact person's title"
+          }
+        }
+      }
+    },
     "Cargos" : {
       "localizations" : {
         "en" : {
@@ -19354,6 +19364,16 @@
         }
       }
     },
+    "Nombre de la persona de contacto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contact person's name"
+          }
+        }
+      }
+    },
     "Nombre de quien lo aceptó" : {
       "localizations" : {
         "en" : {
@@ -21885,6 +21905,16 @@
         }
       }
     },
+    "Precio, línea %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Price, line %lld"
+          }
+        }
+      }
+    },
     "Precios con impuesto incluido" : {
       "localizations" : {
         "en" : {
@@ -22093,6 +22123,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Product or service"
+          }
+        }
+      }
+    },
+    "Producto o servicio, línea %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Product or service, line %lld"
           }
         }
       }
