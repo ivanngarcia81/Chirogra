@@ -208,21 +208,22 @@ pendiente)» (H11). La vista previa de importar dice «N ya importados · M nuev
 (H12, `alreadyImportedCount`). El ZIP del alta propone el estado (H13, `PostalState`: la tabla y, si no, los prefijos
 del USPS) y los ejemplos ya no son de Texas. La bitácora resume «Gasto reclasificado: … · Categoría: A → B» (H20). La
 factura con cobros muestra «Editar» y «Anular» desactivados con el motivo (H21). Pruebas: `Build40Tests` (338 en
-total). **Quedan para la 1.3:** H04 (elegir el mes en los reportes del iPhone), H19 (conciliaciones y antigüedad en el
-paquete del contador), H22 (accesibilidad de Cliente/Proveedor) y H23 (Gastos que no llega a reposo, mirar con
-Instruments). Las capturas de la guía `copias-es/en.jpg` aún enseñan el bloqueo dentro de iCloud.
-   Detalle de esos cuatro (el informe de Hudson y su worktree se borraron el 13-nov):
-   - **H04** (contador, iPhone): Resultados solo ofrece «Mes / Trimestre / Año» del periodo actual (el mes anterior
-     sale solo como columna de comparación) y Sales tax enseña el mes en curso sin selector. El balance sí tiene «Al»
-     con fecha y el Mac deja elegir fechas y trimestres. Propuesta: flechas ‹ › de periodo o el selector del Mac.
-   - **H19** (contador): el paquete del contador no trae la conciliación bancaria ni la antigüedad de CxC/CxP, y el CSV
-     de resultados no lleva los códigos de cuenta (el del balance sí). Propuesta: «Conciliaciones.csv/pdf» y las dos
-     antigüedades.
-   - **H22** (accesibilidad): los campos Cliente y Proveedor solo tienen texto de ejemplo, sin etiqueta; en el iPad el
-     botón de impuesto de la línea se lee «Impuesto, Impuesto, línea 1». Propuesta: etiquetas de accesibilidad propias.
-   - **H23** (sin confirmar): la pantalla de Gastos no llega a «reposo» para XCUITest («App animations complete
-     notification not received», ~60 s por toque); posible animación continua. Revisar con Instruments si algo se
-     redibuja sin parar (batería).
+total). Las capturas de la guía `copias-es/en.jpg` aún enseñan el bloqueo dentro de iCloud.
+   **1.3.0 (rama `version-1.3`, 13-nov noche, build 44):** lo que quedaba de la QA de Hudson.
+   - **H04** (`7825510`): en el iPhone, «‹ Octubre de 2026 ›» bajo Mes · Trimestre · Año en Resultados, Flujo y Sales
+     tax; las flechas cambian de periodo (la derecha se apaga en el actual) y tocar el nombre abre «Desde / Hasta»
+     (decisión del usuario entre flechas y selector de fechas, con muestra). `periodOffset` en `ReportsView`;
+     `-qa.periodoAtras N`, `-qa.periodoFechas 1`.
+   - **H19** (`9ea88eb`): el paquete del contador trae «Antigüedad por cobrar/pagar» y «Conciliaciones» (CSV y PDF, con
+     las partidas sin conciliar en página aparte); `ReconciliationReport` (ChirograCore) y
+     `Bookkeeper.reconciliationReport`. La antigüedad sale con el saldo que había a la fecha (el de hoy más lo cobrado o
+     pagado después), también en el reporte de Antigüedad con «Al» pasado; en un periodo sin terminar, el paquete corta
+     en hoy. El CSV de resultados lleva el código de cuenta.
+   - **H22** (`79e8272`): etiquetas de VoiceOver en las fichas de cliente y proveedor; en la factura del iPad «Impuesto,
+     línea 1» con su valor, el impuesto con la tasa elegida, producto y precio con su línea; `MoneyField` usa su título
+     como etiqueta. Comprobado con el árbol de accesibilidad en los simuladores.
+   - **H23: no se reproduce** (13-nov): CPU en reposo 0,0 % en Gastos (igual que Inicio, Ventas y Banca) y con XCUITest
+     cada toque en Gastos, Por pagar y Recurrentes tarda 1–2 s, como en las demás pestañas. Sin cambios.
 9. Asientos de ajuste marcados como del contador: hecho (`EntrySource.accountantAdjustment`).
 10. Bitácora de cambios: hecho (aparato y antes/después; Contabilidad › «Bitácora de cambios»).
 11. Banca: dividir y motivo al excluir: hecho (canvas `BancaRevisar`).

@@ -42,9 +42,13 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 | 41 | `ae9ced3` | 1.2.0: **icono nuevo, la χ cursiva** (archivo del usuario «chirogra greek inicials.icon»), también en `LogoMark` (`ChiGlyph`, sacado del SVG), en la animación de la bienvenida (contorno y luego relleno) y en la web. |
 | 42 | `36c85ad` | 1.2.0: **lo borrado no vuelve de iCloud**: cada empresa borrada se apunta en el almacén de clave-valor de iCloud (`DeletedCompanies`, permiso `ubiquity-kvstore-identifier` nuevo) y todos los aparatos la vuelven a borrar si alguien la sube otra vez; las automatizaciones esperan a la importación al abrir; **«Borrar todo y empezar de cero…»** en Ajustes › iCloud y copias (escribir BORRAR; espera a que el borrado suba). 343 pruebas. |
 | 43 | `809bb88` | 1.2.0: **iconos de color en las subsecciones de la barra lateral** (Mac e iPad; decisión del usuario del 13-nov) y **hoja de planes del Mac** sin los botones de StoreKit encima del segundo plan («Restaurar compras» y «Canjear código» como enlaces, 760 de alto). |
+| 44 | `7825510`…`79e8272` | **1.3.0** (rama `version-1.3`): H04 (flechas de periodo en los reportes del iPhone), H19 (antigüedad y conciliaciones en el paquete del contador) y H22 (etiquetas de VoiceOver). |
 
 ## Último chat (13-nov)
 
+- **1.3.0 (13-nov noche), rama `version-1.3` (empujada; `main` sigue en la 1.2):** H04, H19 y H22 hechos; H23 no se
+  reproduce (sin cambios). **Build 44 (1.3.0)**. Detalle en CONTEXTO, «1.3.0». La 1.3 se envía después de la 1.2 (que
+  sigue en el build 43). Falta el «What's New» de la 1.3 en APP-STORE.md.
 - **Build 43 (13-nov noche, `809bb88`):** (1) **iconos de color en las subsecciones de la barra lateral**
   (decisión del usuario entre Tinta y colores, con muestra real): `SidebarItem.systemImage`/`color` en `Sidebar.swift`,
   los de Reportes y Contabilidad son los de «Más» del iPhone; también en el iPad (compilado, no visto: en vertical la
