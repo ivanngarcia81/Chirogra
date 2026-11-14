@@ -208,7 +208,7 @@ pendiente)» (H11). La vista previa de importar dice «N ya importados · M nuev
 (H12, `alreadyImportedCount`). El ZIP del alta propone el estado (H13, `PostalState`: la tabla y, si no, los prefijos
 del USPS) y los ejemplos ya no son de Texas. La bitácora resume «Gasto reclasificado: … · Categoría: A → B» (H20). La
 factura con cobros muestra «Editar» y «Anular» desactivados con el motivo (H21). Pruebas: `Build40Tests` (338 en
-total). Las capturas de la guía `copias-es/en.jpg` aún enseñan el bloqueo dentro de iCloud.
+total).
    **1.3.0 (rama `version-1.3`, 13-nov noche, build 44 subido iOS y macOS):** lo que quedaba de la QA de Hudson.
    - **H04** (`7825510`): en el iPhone, «‹ Octubre de 2026 ›» bajo Mes · Trimestre · Año en Resultados, Flujo y Sales
      tax; las flechas cambian de periodo (la derecha se apaga en el actual) y tocar el nombre abre «Desde / Hasta»

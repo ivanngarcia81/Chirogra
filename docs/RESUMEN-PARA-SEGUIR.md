@@ -48,7 +48,8 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 
 - **1.3.0 (13-nov noche), rama `version-1.3` (empujada; `main` sigue en la 1.2):** H04, H19 y H22 hechos; H23 no se
   reproduce (sin cambios). **Build 44 (1.3.0) subido a TestFlight (iOS y macOS, 13-nov noche).** Detalle en CONTEXTO, «1.3.0». La 1.3 se envía después de la 1.2 (que
-  sigue en el build 43). Falta el «What's New» de la 1.3 en APP-STORE.md.
+  sigue en el build 43). «What's New» y notas de la 1.3 en APP-STORE.md; guía es/en al día (flechas del iPhone, paquete del
+  contador) y capturas `copias-es/en.jpg` rehechas (se publican al unir `version-1.3` a `main`).
 - **Build 43 (13-nov noche, `809bb88`):** (1) **iconos de color en las subsecciones de la barra lateral**
   (decisión del usuario entre Tinta y colores, con muestra real): `SidebarItem.systemImage`/`color` en `Sidebar.swift`,
   los de Reportes y Contabilidad son los de «Más» del iPhone; también en el iPad (compilado, no visto: en vertical la
@@ -70,8 +71,7 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 - **Icono nuevo, la χ cursiva, y build 41 (12-nov noche):** `App/AppIcon.icon` = archivo del usuario; `LogoMark` con
   `ChiGlyph` (generado del SVG: si cambia el icono, regenerarlo). Subido iOS y macOS (`ad59089`), instalado en el
   iPhone y el Mac; **el iPad no** (lo hace el usuario).
-- **Pendiente pequeño:** las capturas de la guía `copias-es/en.jpg` aún enseñan el bloqueo dentro de «iCloud y copias»
-  (desde el build 40 está en Seguridad) y ahora tampoco tienen «Empezar de cero». Los worktrees `Chirogra-pestanas` y
+- Los worktrees `Chirogra-pestanas` y
   `Chirogra-QA-Hudson` se borraron el 13-nov (pedido del usuario); el detalle de H04/H19/H22/H23 para la 1.3 quedó en
   CONTEXTO.
 - Truco de capturas de la guía: la copia del Mac con `defaultSize` de 900×1040 en `App/ChirograApp.swift` (solo en la
