@@ -47,7 +47,7 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 ## Último chat (13-nov)
 
 - **1.3.0 (13-nov noche), rama `version-1.3` (empujada; `main` sigue en la 1.2):** H04, H19 y H22 hechos; H23 no se
-  reproduce (sin cambios). **Build 44 (1.3.0)**. Detalle en CONTEXTO, «1.3.0». La 1.3 se envía después de la 1.2 (que
+  reproduce (sin cambios). **Build 44 (1.3.0) subido a TestFlight (iOS y macOS, 13-nov noche).** Detalle en CONTEXTO, «1.3.0». La 1.3 se envía después de la 1.2 (que
   sigue en el build 43). Falta el «What's New» de la 1.3 en APP-STORE.md.
 - **Build 43 (13-nov noche, `809bb88`):** (1) **iconos de color en las subsecciones de la barra lateral**
   (decisión del usuario entre Tinta y colores, con muestra real): `SidebarItem.systemImage`/`color` en `Sidebar.swift`,
