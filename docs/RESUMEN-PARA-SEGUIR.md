@@ -47,6 +47,11 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 
 ## Último chat (13-nov)
 
+- **Icono χρ (14-nov), rama `version-1.3`, commiteado y empujado el 14-nov:** el `AppIcon.icon` nuevo del usuario (χ blanca, ρ azafrán),
+  `LogoMark` y la bienvenida con `ChiGlyph` + `RhoGlyph`, icono de la web y capturas `bienvenida-es/en.jpg` rehechas.
+  Instalado en el iPhone y el Mac (Producción). **Build 45 (1.3.0) SUBIDO a TestFlight (iOS y macOS, 14-nov)**, compilado
+  desde la carpeta sin commitear (número 45 en `project.yml` y pbxproj). Detalle en CONTEXTO, «Ícono».
+
 - **Plan de la 2.0 (13-nov):** [PLAN-2.0.md](PLAN-2.0.md), con las decisiones del usuario (híbrido, Supabase aparte,
   Plaid solo lectura con Statements, el contador gratis por iCloud, Stripe sin comisión, nómina base + por empleado,
   todo junto, solo EE. UU.). Para Plaid, equipo nuevo «Chirogra» (no el de Tamio). Sin código hasta que la 1.3 esté en

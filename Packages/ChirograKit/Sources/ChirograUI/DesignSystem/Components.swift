@@ -1557,27 +1557,28 @@ struct TermHelp: View {
     }
 }
 
-/// Logotipo de Chirogra: el icono de la app (`App/AppIcon.icon`) en pequeño, con el degradado de índigo y la χ
-/// cursiva (`ChiGlyph`, icono del 12-nov; antes, la χ de trazo redondo con el punto de azafrán del build 20).
+/// Logotipo de Chirogra: el icono de la app (`App/AppIcon.icon`) en pequeño, con el degradado de índigo, la χ blanca
+/// y la ρ azafrán (`ChiGlyph`/`RhoGlyph`, icono χρ del 14-nov; antes, la χ cursiva sola del 12-nov).
 struct LogoMark: View {
     var size: CGFloat = 28
 
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: size * 0.225, style: .continuous).fill(Palette.logoFill)
-            ChiGlyph().fill(Palette.logoMark.opacity(Self.glyphFillOpacity))
-            ChiGlyph().stroke(Palette.logoMark.opacity(0.9), lineWidth: Self.glyphLineWidth(size: size))
+            ChiGlyph().fill(Palette.logoMark)
+            RhoGlyph().fill(Palette.logoRho)
+            // El brillo de arriba del icono: blanco al 20 % que se apaga a media altura.
+            LinearGradient(stops: [.init(color: .white.opacity(0.2), location: 0), .init(color: .white.opacity(0), location: 0.45)],
+                           startPoint: .top, endPoint: .bottom)
+                .clipShape(RoundedRectangle(cornerRadius: size * 0.225, style: .continuous))
         }
         .frame(width: size, height: size)
         .accessibilityElement()
         .accessibilityLabel("Chirogra")
     }
 
-    /// Relleno de la χ: en el icono es el 50 %, que con el vidrio se ve más claro; sin vidrio, 60 %.
-    static let glyphFillOpacity = 0.6
-
-    /// Filo de la χ: 6.2 sobre 1024 como en el icono, sin bajar de medio punto en los tamaños pequeños.
-    static func glyphLineWidth(size: CGFloat) -> CGFloat { max(size * 6.2 / 1024, 0.5) }
+    /// Filo con que la bienvenida dibuja las letras antes de rellenarlas, sin bajar de 1.5 pt.
+    static func glyphLineWidth(size: CGFloat) -> CGFloat { max(size * 6.2 / 1024, 1.5) }
 }
 
 // MARK: - Campos

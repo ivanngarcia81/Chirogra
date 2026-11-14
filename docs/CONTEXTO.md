@@ -300,12 +300,17 @@ tabla del principio. Se programa cuando la 1.3 esté en la tienda.
   tablas blancas `Palette.surface` con filo y sombra corta (`macElevation`), inspector sin fondo propio; en el iPad
   `padElevation` y las listas maestro en `Palette.masterColumn`. Ajustes del Mac con tarjetas propias
   (`Settings/SettingsCards.swift`).
-- **Ícono:** la χ cursiva (12-nov, build 41; archivo del usuario «chirogra greek inicials.icon» copiado tal cual a
-  `App/AppIcon.icon`, capa visible `04-chi.svg`; las demás quedan ocultas). Antes, la χ redonda con punto (build 20).
-  `LogoMark` dibuja la misma χ dentro de la app con `ChiGlyph` (`DesignSystem/ChiGlyph.swift`, generado del `d` de
-  `04-chi.svg`: si cambia el icono, regenerarlo). La bienvenida dibuja su contorno y luego la rellena. El de la web
-  (`sitio/img/icono.png`, 256 px) sale del `AppIcon.icns` de la compilación del Mac (`iconutil -c iconset`,
-  `icon_128x128@2x.png`). Capturas de la guía `bienvenida-es/en.jpg` rehechas con la χ el 13-nov.
+- **Ícono:** **χρ** (14-nov, rama `version-1.3`, **build 45** subido iOS y macOS): χ blanca y ρ azafrán (`#F2B33D`) sobre el
+  degradado índigo; archivo del usuario `AppIcon.icon` copiado tal cual a `App/AppIcon.icon`, una sola capa
+  `chirogra-N-icono.svg` con fondo, letras y brillo. Antes, la χ cursiva sola (12-nov, build 41) y la χ redonda con punto
+  (build 20). `LogoMark` dibuja lo mismo dentro de la app con `ChiGlyph` y `RhoGlyph` (`DesignSystem/ChiGlyph.swift`,
+  generado de los dos `<path>` del SVG: si cambia el icono, regenerarlo, no retocarlo a mano) y `Palette.logoRho`. La
+  bienvenida dibuja el contorno de la χ, luego el de la ρ, y las rellena. El de la web (`sitio/img/icono.png`, 256 px)
+  sale del `AppIcon.icns` de la compilación del Mac (`iconutil -c iconset`, `icon_128x128@2x.png`). Capturas de la guía
+  `bienvenida-es/en.jpg` rehechas con la χρ el 14-nov (ventana de 900×1040 fijada con `defaults write
+  com.chirogra.qa.<nombre> "NSWindow Frame SwiftUI.WindowGroup<ChirograUI.ChirograRootView>-1-AppWindow-1"
+  "300 0 900 1040 0 0 1920 1050 "`, porque `defaultSize` solo no bastó). Instalado en el iPhone y el Mac
+  (Producción) el 14-nov; el iPad no.
 - Gastos y Banca arrancan en el último mes con movimientos; la tarjeta de Gastos suma solo gastos. Método de pago según
   la cuenta (banco → débito/transferencia/cheque; tarjeta → tarjeta; caja → efectivo).
 - **Editar algo contabilizado = reversión + asiento nuevo** (DISEÑO §6.5). Una factura emitida sin cobros se edita así
