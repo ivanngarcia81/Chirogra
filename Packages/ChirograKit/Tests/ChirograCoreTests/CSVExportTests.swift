@@ -69,9 +69,9 @@ struct CSVExportTests {
         let empty = ReportBuilder.incomeStatement(accounts: accounts, lines: [], from: day(1), to: day(31))
         let csv = CSVExport.incomeStatement(current, previous: empty, calendar: calendar)
         #expect(csv.contains("Periodo,2026-10-01,2026-10-31"))
-        #expect(csv.contains("Cuenta,Actual,Anterior"))
-        #expect(csv.contains("\"  Ventas, servicios\",1250.50,0.00"))
-        #expect(csv.contains("Ganancia neta,50.50,0.00"))
+        #expect(csv.contains("Código,Cuenta,Actual,Anterior"))
+        #expect(csv.contains("  4000,\"Ventas, servicios\",1250.50,0.00"))
+        #expect(csv.contains("Ganancia neta,,50.50,0.00"))
     }
 
     @Test("El comparativo incluye cuentas que solo tienen saldo en el periodo anterior")
@@ -79,7 +79,7 @@ struct CSVExportTests {
         let current = ReportBuilder.incomeStatement(accounts: accounts, lines: [], from: day(1), to: day(31))
         let previous = ReportBuilder.incomeStatement(accounts: accounts, lines: lines, from: day(1), to: day(31))
         let csv = CSVExport.incomeStatement(current, previous: previous, calendar: calendar)
-        #expect(csv.contains("  Alquiler,0.00,1200.00"))
+        #expect(csv.contains("  6400,Alquiler,0.00,1200.00"))
     }
 
     @Test("El libro mayor exporta saldo inicial, movimientos con saldo acumulado y saldo final")

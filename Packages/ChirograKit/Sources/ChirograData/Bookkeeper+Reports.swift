@@ -163,13 +163,19 @@ public struct AccountantPackage {
     public var cashFlow: CashFlowStatement
     /// Deducibles por línea del formulario de la empresa (`nil` si su tipo de empresa no tiene formulario en Chirogra).
     public var taxSummary: TaxFormSummary?
+    /// Antigüedad de lo que deben los clientes y de lo que se debe a proveedores, al final del periodo (H19).
+    public var receivables: AgingReport
+    public var payables: AgingReport
+    /// Conciliaciones bancarias al final del periodo (H19).
+    public var reconciliations: ReconciliationReport
     public var files: [File]
 }
 
 extension Bookkeeper {
 
     /// Paquete para el contador: estado de resultados, balance general y balanza (en la base pedida), flujo de efectivo,
-    /// deducibles por línea del formulario y los CSV de todo eso más el diario.
+    /// deducibles por línea del formulario, antigüedad por cobrar y por pagar y conciliaciones bancarias (H19), y los
+    /// CSV de todo eso más el diario.
     public func accountantPackage(from: Date, to: Date, basis: AccountingBasis = .accrual, locale: Locale = .current,
                                   calendar: Calendar = .current) throws -> AccountantPackage {
         let accounts = try ledgerAccounts()
@@ -181,6 +187,11 @@ extension Bookkeeper {
         let cashFlow = try cashFlowStatement(from: from, to: to)
         let year = calendar.component(.year, from: to)
         let taxes = try taxForm().map { try taxSummary(from: from, to: to, basis: basis, form: $0, year: year) }
+        // Al final del periodo o, si aún no termina, hoy: a una fecha futura todo saldría vencido.
+        let cut = min(to, Date())
+        let receivables = try receivablesAging(asOf: cut, calendar: calendar)
+        let payables = try payablesAging(asOf: cut, calendar: calendar)
+        let reconciliations = try reconciliationReport(from: from, to: cut, calendar: calendar)
         var files = [
             AccountantPackage.File(name: String(localized: "Estado de resultados") + ".csv", contents: CSVExport.incomeStatement(income, calendar: calendar)),
             AccountantPackage.File(name: String(localized: "Balance general") + ".csv", contents: CSVExport.balanceSheet(balance, calendar: calendar)),
@@ -188,6 +199,14 @@ extension Bookkeeper {
             AccountantPackage.File(name: String(localized: "Flujo de efectivo") + ".csv", contents: CSVExport.cashFlow(cashFlow, calendar: calendar)),
             AccountantPackage.File(name: String(localized: "Diario") + ".csv",
                                    contents: CSVExport.journal(try journalExportRows(from: from, to: to), calendar: calendar)),
+            AccountantPackage.File(name: String(localized: "Antigüedad por cobrar") + ".csv",
+                                   contents: CSVExport.aging(receivables, title: String(localized: "Antigüedad de cuentas por cobrar"),
+                                                             partyTitle: String(localized: "Cliente"), calendar: calendar)),
+            AccountantPackage.File(name: String(localized: "Antigüedad por pagar") + ".csv",
+                                   contents: CSVExport.aging(payables, title: String(localized: "Antigüedad de cuentas por pagar"),
+                                                             partyTitle: String(localized: "Proveedor"), calendar: calendar)),
+            AccountantPackage.File(name: String(localized: "Conciliaciones") + ".csv",
+                                   contents: CSVExport.reconciliations(reconciliations, calendar: calendar)),
         ]
         if let taxes {
             files.append(AccountantPackage.File(name: "\(taxes.form.title).csv", contents: CSVExport.taxSummary(taxes, locale: locale, calendar: calendar)))
@@ -206,6 +225,7 @@ extension Bookkeeper {
                 })))
         }
         return AccountantPackage(companyName: try company()?.name ?? "", from: from, to: to, basis: basis, incomeStatement: income,
-                                 balanceSheet: balance, trialBalance: trial, cashFlow: cashFlow, taxSummary: taxes, files: files)
+                                 balanceSheet: balance, trialBalance: trial, cashFlow: cashFlow, taxSummary: taxes,
+                                 receivables: receivables, payables: payables, reconciliations: reconciliations, files: files)
     }
 }

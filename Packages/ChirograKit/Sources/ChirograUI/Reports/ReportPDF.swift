@@ -147,7 +147,9 @@ private struct ReportPDFPage: View {
         switch document.columns.count {
         case 0, 1, 2: 104
         case 3: 92
-        default: 74
+        case 4, 5: 74
+        // Antigüedad (corriente, cuatro tramos y total): deja sitio al nombre del cliente.
+        default: 62
         }
     }
 
@@ -305,6 +307,51 @@ extension ReportDocument {
             list.append(Row(label: "", style: .spacer))
         }
         return ReportDocument(title: String(localized: "Flujo de efectivo"), subtitle: subtitle, columns: columns, rows: list)
+    }
+
+    /// Antigüedad por cobrar o por pagar: una fila por cliente o proveedor con los tramos y el total (H19).
+    static func aging(_ report: AgingReport, title: String, subtitle: String) -> ReportDocument {
+        let buckets = AgingReport.Bucket.allCases
+        func cells(_ amount: (AgingReport.Bucket) -> Int64, total: Int64) -> [String] {
+            buckets.map { amount($0) == 0 ? "" : amount($0).money } + [total.money]
+        }
+        var list = report.rows.map { row in Row(label: row.party, values: cells({ row.amounts[$0] ?? 0 }, total: row.total)) }
+        if list.isEmpty { list.append(Row(label: String(localized: "Nada pendiente a esta fecha."), style: .note)) }
+        list.append(Row(label: String(localized: "Total"), values: cells({ report.total(for: $0) }, total: report.total), style: .grand))
+        return ReportDocument(title: title, subtitle: subtitle,
+                              columns: [String(localized: "Al día"), "1–30", "31–60", "61–90", "90+", String(localized: "Total")], rows: list)
+    }
+
+    /// Conciliaciones bancarias: por cuenta, el último extracto conciliado, su saldo, el saldo en libros y lo que queda
+    /// sin conciliar; y, si hay, las partidas sin conciliar por cuenta en un reporte aparte (con una sola columna, para que
+    /// el concepto se lea entero) (H19).
+    static func reconciliations(_ report: ReconciliationReport, subtitle: String) -> [ReportDocument] {
+        var list: [Row] = report.accounts.map { row in
+            Row(label: "\(row.code) · \(row.name)",
+                values: [row.lastStatementDate?.shortDate ?? "—", row.lastStatementBalance?.money ?? "—", row.bookBalance.money,
+                         row.unclearedCount == 0 ? "" : row.unclearedTotal.money])
+        }
+        if list.isEmpty { list.append(Row(label: String(localized: "Sin cuentas de banco ni tarjetas."), style: .note)) }
+        let inProgress = report.accounts.filter(\.inProgress).map(\.name)
+        if !inProgress.isEmpty {
+            list.append(Row(label: String(localized: "Con una conciliación en curso: \(inProgress.joined(separator: ", "))"), style: .note))
+        }
+        var documents = [ReportDocument(title: String(localized: "Conciliaciones bancarias"), subtitle: subtitle,
+                                        columns: [String(localized: "Último extracto"), String(localized: "Saldo extracto"),
+                                                  String(localized: "Saldo en libros"), String(localized: "Sin conciliar")], rows: list)]
+        guard !report.uncleared.isEmpty else { return documents }
+        var items: [Row] = []
+        for account in report.accounts where account.unclearedCount > 0 {
+            if !items.isEmpty { items.append(Row(label: "", style: .spacer)) }
+            items.append(Row(label: "\(account.code) · \(account.name)", style: .heading))
+            items += report.uncleared.filter { $0.code == account.code && $0.name == account.name }.map { item in
+                Row(label: "\(item.date.shortDate) · #\(item.entryNumber) · \(item.memo)", values: [item.amount.money], indent: 1)
+            }
+            items.append(Row(label: String(localized: "Total sin conciliar"), values: [account.unclearedTotal.money], style: .total))
+        }
+        documents.append(ReportDocument(title: String(localized: "Partidas sin conciliar"), subtitle: subtitle,
+                                        columns: [String(localized: "Importe")], rows: items))
+        return documents
     }
 
     static func taxSummary(_ report: TaxFormSummary, subtitle: String, locale: Locale = .appText) -> ReportDocument {

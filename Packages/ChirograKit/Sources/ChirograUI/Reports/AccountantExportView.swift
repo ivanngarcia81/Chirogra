@@ -9,7 +9,8 @@ import UniformTypeIdentifiers
 // Se abre desde Reportes («Exportar» de la barra), desde Impuestos › Deducibles (canvas `Impuestos`, `MacImpuestos`) y
 // desde el inspector del flujo de efectivo en el Mac. Se elige el periodo y la base; el paquete
 // (`Bookkeeper.accountantPackage`) sale en una carpeta con «Reportes.pdf» (portada, estado de resultados, balance,
-// balanza, flujo de efectivo y deducibles) y los CSV (los mismos más el diario), y en un ZIP de esa carpeta. En iOS se
+// balanza, flujo de efectivo, deducibles, antigüedad por cobrar y por pagar y conciliaciones) y los CSV (los mismos más
+// el diario), y en un ZIP de esa carpeta. En iOS se
 // comparte el ZIP con el panel del sistema; en el Mac se guarda el ZIP o la carpeta donde el usuario diga.
 
 /// Periodo del paquete.
@@ -87,6 +88,11 @@ enum AccountantPackageWriter {
         if let taxes = package.taxSummary {
             documents.append(.taxSummary(taxes, subtitle: "\(range) · \(basis)"))
         }
+        // H19: lo que deben los clientes, lo que se debe a proveedores y las conciliaciones, al final del periodo.
+        let asOf = String(localized: "Al \(package.reconciliations.asOf.shortDate) · \(currency)")
+        documents.append(.aging(package.receivables, title: String(localized: "Antigüedad por cobrar"), subtitle: asOf))
+        documents.append(.aging(package.payables, title: String(localized: "Antigüedad por pagar"), subtitle: asOf))
+        documents += ReportDocument.reconciliations(package.reconciliations, subtitle: asOf)
         return documents
     }
 
