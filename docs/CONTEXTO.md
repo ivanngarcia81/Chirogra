@@ -23,6 +23,10 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
     **reenvió** con el **build 11** (en revisión esa noche): descripción completa con «Privacy Policy: …» y «Terms of Use: …» al final (en/es,
     iOS y macOS; texto en APP-STORE.md) y «Chirogra monthly» en el envío; **el plan de contadores NO va en la 1.0**.
     El aviso «Newer Build Available» es normal: se pulsa Submit.
+  - **Decisión del 13-nov: cuando Apple apruebe la 1.0 se envía directo la 1.3** (su último build, probado antes en
+    TestFlight), sin pasar por la 1.0.1, la 1.1 ni la 1.2: el build de la 1.3 ya lo lleva todo. Hace falta un «What's
+    New» que junte 1.1 + 1.2 + 1.3 (se prepara entonces) y el plan de contadores en el envío. Lo de abajo sobre la
+    1.0.1, la 1.1 y la 1.2 queda como referencia.
   - **1.0.1 (build 15): enviarla en cuanto Apple apruebe la 1.0.** El build 11 tiene el fallo de iCloud en Producción
     (no sincroniza nada; ver «Lo aprendido») y el 15 lo arregla. Crear la versión 1.0.1 (iOS y macOS), elegir el build
     15, notas: «La app del Mac recibe al momento los cambios de tus otros aparatos; un aparato nuevo trae tus libros de
@@ -138,10 +142,9 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
    debajo del otro. En inglés se partía en tres líneas en el iPad y se cortaba en el Mac. Capturas 05-impuestos (en) rehechas.
 
 *B. Cuando Apple apruebe la 1.0:*
-7. Usuario: enviar la 1.0.1 (build 15). Sin decidir: saltársela y enviar directo la 1.1 (el build 30 ya lleva el
-   arreglo de iCloud); preguntarle cuando aprueben la 1.0.
-8. Enviar la 1.1.0 (**build 30**): capturas nuevas (carrusel y panel), notas «What's New» en/es, notas para el revisor
-   y el plan de contadores en el mismo envío.
+7. **Decidido el 13-nov:** enviar directo la 1.3 (su último build, probado en TestFlight) con un «What's New» que
+   junte 1.1, 1.2 y 1.3 y el plan de contadores en el envío. No se envían la 1.0.1, la 1.1 ni la 1.2.
+8. Capturas: las de la 1.1 (carrusel y panel) y las que hagan falta de la 1.2 y la 1.3; notas para el revisor juntas.
 
 *C. 1.2, sin servidor pero con cambio de esquema (desplegar a Producción y probar, ver «Lo aprendido»).* **HECHA en
 la rama `version-1.2`, empujada hasta el build 37** (detalle en [DATOS-V5.md](DATOS-V5.md); «What's New» y notas
@@ -228,12 +231,19 @@ total).
 10. Bitácora de cambios: hecho (aparato y antes/después; Contabilidad › «Bitácora de cambios»).
 11. Banca: dividir y motivo al excluir: hecho (canvas `BancaRevisar`).
 
-*D. 2.0, con servidor (Supabase, proyecto aparte; PLAN-FASE2.md «Después: con servidor»):*
-12. Plaid (plan «Chirogra + Banco»; entra a la bandeja «Por revisar» como otra `BankTransactionSource`). Cambia la
-    promesa de privacidad: texto de la bienvenida, política y etiqueta de la tienda.
-13. El contador dentro de los libros del cliente: usuarios y permisos, preguntas al cliente sobre movimientos.
-14. Stripe Connect (cobro por enlace en la factura), sales tax exacto por dirección.
-15. Nómina con un proveedor embebido (Gusto Embedded o Check), plan más alto.
+*D. 2.0, con servidor:* **plan escrito el 13-nov en [PLAN-2.0.md](PLAN-2.0.md)**, con las decisiones del usuario en la
+tabla del principio. Se programa cuando la 1.3 esté en la tienda.
+12. **Híbrido:** los libros siguen en iCloud; Supabase (proyecto aparte del de Tamio) guarda los tokens, las
+    invitaciones y un buzón que la app recoge y escribe en los libros.
+13. **Plaid solo lectura** (Transactions, Balance y Statements desde el inicio). **Equipo nuevo «Chirogra» en el panel
+    de Plaid**, no el de Tamio (claves, cobro, nombre y logo propios), con su acceso a producción, Statements pedido
+    aparte y el registro OAuth con los bancos grandes; las respuestas del cuestionario de Tamio sirven de base.
+14. **El contador entra gratis desde la app** compartiendo la empresa por iCloud (CKShare), con permisos que elige el
+    cliente (ver, ver y preguntar, editar). Lo primero es una prueba de concepto: SwiftData no comparte.
+15. **Stripe Connect** sin comisión de Chirogra; **nómina** con Gusto Embedded o Check (base + por empleado). Todo sale
+    junto en la 2.0; plan «Chirogra + Banco» con el precio según los costos. Solo EE. UU.
+16. **Trámites que el usuario puede empezar ya:** Plaid (equipo, producción, Statements), cotizaciones de Gusto
+    Embedded y Check, perfil de plataforma en Stripe Connect.
 
 *Fijo cada año:* actualizar el mínimo del 1099-NEC (`Form1099.swift`, `inflationAdjusted`).
 
@@ -247,7 +257,7 @@ total).
   logo desde Fotos; un cargo automático que se cobre solo al vencer; registrar y revertir un asiento en pantalla en el
   Mac; si el botón de idioma del alta abre la página de Chirogra en Ajustes o la raíz.
 - **No construido a propósito (espera al servidor):** Plaid, Stripe Connect, sales tax exacto por dirección, usuarios y
-  permisos, «Vista por el cliente», nómina (PLAN-FASE2.md, «Después: con servidor»).
+  permisos, «Vista por el cliente», nómina ([PLAN-2.0.md](PLAN-2.0.md)).
 
 ## Estado de las cuentas y servicios
 

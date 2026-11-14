@@ -12,8 +12,9 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
   el **30**.
   Para subirlo hubo que contestar en App Store Connect el aviso del DSA de la UE (sin él, «You do not have required
   contracts»); se recomendó «not a trader / no EU».
-- **1.0 (build 11):** en revisión de Apple. Cuando la aprueben, el usuario envía la **1.0.1 (build 15)**, que arregla
-  iCloud en Producción.
+- **1.0 (build 11):** en revisión de Apple («Waiting for Review» varios días al 13-nov). **Decidido el 13-nov:** cuando
+  la aprueben se envía **directo la 1.3** (su último build), sin la 1.0.1, la 1.1 ni la 1.2, con un «What's New» que
+  junte las tres.
 - **1.1.0:** lista en el **build 30**. Lleva toda la fase 2 (decisión del 9-nov) y lo hecho el 10-nov.
 - **1.2.0:** lista en el **build 43** (rama `version-1.2`, [DATOS-V5.md](DATOS-V5.md)). Esquema 5 desplegado y probado
   en Producción. Textos para la tienda en [APP-STORE.md](APP-STORE.md), «Versión 1.2.0».
@@ -46,6 +47,10 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 
 ## Último chat (13-nov)
 
+- **Plan de la 2.0 (13-nov):** [PLAN-2.0.md](PLAN-2.0.md), con las decisiones del usuario (híbrido, Supabase aparte,
+  Plaid solo lectura con Statements, el contador gratis por iCloud, Stripe sin comisión, nómina base + por empleado,
+  todo junto, solo EE. UU.). Para Plaid, equipo nuevo «Chirogra» (no el de Tamio). Sin código hasta que la 1.3 esté en
+  la tienda.
 - **1.3.0 (13-nov noche), rama `version-1.3` (empujada; `main` sigue en la 1.2):** H04, H19 y H22 hechos; H23 no se
   reproduce (sin cambios). **Build 44 (1.3.0) subido a TestFlight (iOS y macOS, 13-nov noche).** Detalle en CONTEXTO, «1.3.0». La 1.3 se envía después de la 1.2 (que
   sigue en el build 43). «What's New» y notas de la 1.3 en APP-STORE.md; guía es/en al día (flechas del iPhone, paquete del
@@ -77,8 +82,7 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 - Truco de capturas de la guía: la copia del Mac con `defaultSize` de 900×1040 en `App/ChirograApp.swift` (solo en la
   copia) y `-qa.alta 1 -qa.altaEstado TX -qa.altaCiudad Austin -qa.altaCiudadTasa 2 -qa.altaZip 78702`; recorte de
   600 px de ancho desde (150, 48).
-- **Ofrecido y sin empezar:** escribir el plan de la 2.0 con servidor (Plaid, contador dentro de los libros, Stripe,
-  nómina). Esperar a que el usuario lo pida.
+- **Plan de la 2.0 escrito** (13-nov): [PLAN-2.0.md](PLAN-2.0.md).
 
 ## Lo que le toca al usuario
 
@@ -98,15 +102,16 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 
 ## Lo siguiente
 
-1. **Envío de la 1.1.0** (cuando la 1.0 y la 1.0.1 estén aprobadas): **todo preparado el 10-nov** en
-   [APP-STORE.md](APP-STORE.md) (descripción, texto promocional, «What's New» en/es, notas para el revisor) y capturas
-   `00-bienvenida` y `06-panel-clientes` en el escritorio. Elegir el **build 30** y añadir el plan para contadores al envío.
-2. **Envío de la 1.2.0** (cuando la 1.1 esté aprobada): elegir el **build 43**; «What's New» y notas para el revisor
-   preparados el 11-nov en APP-STORE.md. Decidir si hacen falta capturas nuevas (bitácora, Dividir, icono nuevo).
+1. **Cuando aprueben la 1.0: enviar directo la 1.3** (decisión del 13-nov), con su último build. Preparar entonces un
+   «What's New» que junte 1.1, 1.2 y 1.3 (las tres partes están en [APP-STORE.md](APP-STORE.md)), las notas para el
+   revisor juntas, el plan para contadores en el envío y las capturas (`00-bienvenida` y `06-panel-clientes` en el
+   escritorio, y las que falten).
+2. **Probar en TestFlight el último build de la 1.3** antes de enviarla.
 3. **Tasas por código postal: cada trimestre** (1 ene, 1 abr, 1 jul, 1 oct) correr `scripts/tasas/descargar.sh` y
    `generar.py` y subir un build (DATOS-V5.md). Faltan AL AK AZ CO HI ID LA MO MS NM PA SC VA.
-4. **2.0 con servidor:** Plaid (plan «Chirogra + Banco»), el contador dentro de los libros del cliente, Stripe (con Apple
-   Pay y Google Pay dentro), nómina. Esperar a que la 1.1 esté en la tienda; mientras, se puede escribir el plan.
+4. **2.0 con servidor:** plan en [PLAN-2.0.md](PLAN-2.0.md). Ya se pueden hacer los trámites (equipo «Chirogra» en
+   Plaid con producción y Statements, cotizaciones de Gusto Embedded y Check, perfil en Stripe Connect); el código
+   empieza cuando la 1.3 esté en la tienda.
 5. **Menores:** hechos (build 37, 12-nov; CONTEXTO, «C»): las filas con campo que solo tomaban el toque sobre
    la cifra y el selector Devengado/Caja con letra grande. Los textos cortados del Mac eran los datos de ejemplo en
    inglés (build 29). La campana de Avisos y la barra del alta del iPad son del sistema.
