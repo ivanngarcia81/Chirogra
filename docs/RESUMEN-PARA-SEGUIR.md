@@ -44,8 +44,14 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 | 42 | `36c85ad` | 1.2.0: **lo borrado no vuelve de iCloud**: cada empresa borrada se apunta en el almacén de clave-valor de iCloud (`DeletedCompanies`, permiso `ubiquity-kvstore-identifier` nuevo) y todos los aparatos la vuelven a borrar si alguien la sube otra vez; las automatizaciones esperan a la importación al abrir; **«Borrar todo y empezar de cero…»** en Ajustes › iCloud y copias (escribir BORRAR; espera a que el borrado suba). 343 pruebas. |
 | 43 | `809bb88` | 1.2.0: **iconos de color en las subsecciones de la barra lateral** (Mac e iPad; decisión del usuario del 13-nov) y **hoja de planes del Mac** sin los botones de StoreKit encima del segundo plan («Restaurar compras» y «Canjear código» como enlaces, 760 de alto). |
 | 44 | `7825510`…`79e8272` | **1.3.0** (rama `version-1.3`): H04 (flechas de periodo en los reportes del iPhone), H19 (antigüedad y conciliaciones en el paquete del contador) y H22 (etiquetas de VoiceOver). |
+| 45 | `55add7e` | 1.3.0: icono χρ (χ blanca, ρ azafrán) en la app, la bienvenida y la web. |
+| 46 | `786f6fa` | 1.3.0: la tabla de Clientes del iPad ya no pinta su fondo blanco (`.scrollContentBackground(.hidden)`): va sobre el gris de la pantalla y se distingue de la barra lateral (pedido del 15-nov). |
 
 ## Último chat (13-nov)
+
+- **Build 46 (1.3.0, 15-nov) SUBIDO a TestFlight (iOS y macOS)**, `786f6fa` empujado en `version-1.3`: tabla de Clientes
+  del iPad sobre el gris de la pantalla en vez de blanca (el usuario la veía del mismo color que la barra lateral).
+  Visto en el simulador del iPad en claro y oscuro. No instalado en los aparatos.
 
 - **Icono χρ (14-nov), rama `version-1.3`, commiteado y empujado el 14-nov:** el `AppIcon.icon` nuevo del usuario (χ blanca, ρ azafrán),
   `LogoMark` y la bienvenida con `ChiGlyph` + `RhoGlyph`, icono de la web y capturas `bienvenida-es/en.jpg` rehechas.
