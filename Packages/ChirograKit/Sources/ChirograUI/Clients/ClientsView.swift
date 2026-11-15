@@ -562,6 +562,11 @@ struct ClientsView: View {
             if let id = ids.first, let client = clients.first(where: { $0.id == id }) { open(client) }
         }
         .overlay { emptyState }
+        #if os(iOS)
+        // iPad: sin el blanco propio de la tabla, que se confundía con la barra lateral (pedido del 15-nov); las filas
+        // van sobre el gris de la pantalla (`Palette.background`), como el filtro de arriba.
+        .scrollContentBackground(.hidden)
+        #endif
     }
 
     private func notice(icon: String, color: Color, title: String, message: String) -> some View {
