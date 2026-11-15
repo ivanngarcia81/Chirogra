@@ -23,6 +23,10 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
     **reenvió** con el **build 11** (en revisión esa noche): descripción completa con «Privacy Policy: …» y «Terms of Use: …» al final (en/es,
     iOS y macOS; texto en APP-STORE.md) y «Chirogra monthly» en el envío; **el plan de contadores NO va en la 1.0**.
     El aviso «Newer Build Available» es normal: se pulsa Submit.
+  - **Decisión del 13-nov: cuando Apple apruebe la 1.0 se envía directo la 1.3** (su último build, probado antes en
+    TestFlight), sin pasar por la 1.0.1, la 1.1 ni la 1.2: el build de la 1.3 ya lo lleva todo. Hace falta un «What's
+    New» que junte 1.1 + 1.2 + 1.3 (se prepara entonces) y el plan de contadores en el envío. Lo de abajo sobre la
+    1.0.1, la 1.1 y la 1.2 queda como referencia.
   - **1.0.1 (build 15): enviarla en cuanto Apple apruebe la 1.0.** El build 11 tiene el fallo de iCloud en Producción
     (no sincroniza nada; ver «Lo aprendido») y el 15 lo arregla. Crear la versión 1.0.1 (iOS y macOS), elegir el build
     15, notas: «La app del Mac recibe al momento los cambios de tus otros aparatos; un aparato nuevo trae tus libros de
@@ -32,6 +36,8 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
     9-nov: no se esconde nada para 1.2/1.3), con el plan de contadores en el envío. Lista en el **build 30**.
   - **1.2.0 (builds 31 a 40, TestFlight):** lista en el **build 41** (38: arreglos de la QA de Hudson; 39: pestañas y favoritos del iPhone; 40: Seguridad aparte, «Mover dinero» y el resto de Hudson; 41: icono nuevo, la χ cursiva; abajo, «C»). Se envía cuando esté aprobada la 1.1.
     **Build 42 subido el 13-nov para iOS y macOS** (`36c85ad`; abajo, «Build 42»).
+    **1.3.0: build 46 subido el 15-nov para iOS y macOS** (`786f6fa`, rama `version-1.3`): la tabla de Clientes del iPad
+    sin fondo blanco propio (`.scrollContentBackground(.hidden)` en `ClientsView.table`), sobre `Palette.background`.
     **Build 43 subido el 13-nov (noche) para iOS y macOS** (`809bb88`): iconos de color en las subsecciones de la barra lateral (Mac e iPad,
     `SidebarItem.systemImage`/`color`; decisión del usuario entre Tinta y colores) y la hoja de planes del Mac:
     «Restaurar compras» y «Canjear código» como enlaces bajo el texto (`macStoreLinks`; StoreKit los apilaba en la franja
@@ -138,10 +144,9 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
    debajo del otro. En inglés se partía en tres líneas en el iPad y se cortaba en el Mac. Capturas 05-impuestos (en) rehechas.
 
 *B. Cuando Apple apruebe la 1.0:*
-7. Usuario: enviar la 1.0.1 (build 15). Sin decidir: saltársela y enviar directo la 1.1 (el build 30 ya lleva el
-   arreglo de iCloud); preguntarle cuando aprueben la 1.0.
-8. Enviar la 1.1.0 (**build 30**): capturas nuevas (carrusel y panel), notas «What's New» en/es, notas para el revisor
-   y el plan de contadores en el mismo envío.
+7. **Decidido el 13-nov:** enviar directo la 1.3 (su último build, probado en TestFlight) con un «What's New» que
+   junte 1.1, 1.2 y 1.3 y el plan de contadores en el envío. No se envían la 1.0.1, la 1.1 ni la 1.2.
+8. Capturas: las de la 1.1 (carrusel y panel) y las que hagan falta de la 1.2 y la 1.3; notas para el revisor juntas.
 
 *C. 1.2, sin servidor pero con cambio de esquema (desplegar a Producción y probar, ver «Lo aprendido»).* **HECHA en
 la rama `version-1.2`, empujada hasta el build 37** (detalle en [DATOS-V5.md](DATOS-V5.md); «What's New» y notas
@@ -208,31 +213,39 @@ pendiente)» (H11). La vista previa de importar dice «N ya importados · M nuev
 (H12, `alreadyImportedCount`). El ZIP del alta propone el estado (H13, `PostalState`: la tabla y, si no, los prefijos
 del USPS) y los ejemplos ya no son de Texas. La bitácora resume «Gasto reclasificado: … · Categoría: A → B» (H20). La
 factura con cobros muestra «Editar» y «Anular» desactivados con el motivo (H21). Pruebas: `Build40Tests` (338 en
-total). **Quedan para la 1.3:** H04 (elegir el mes en los reportes del iPhone), H19 (conciliaciones y antigüedad en el
-paquete del contador), H22 (accesibilidad de Cliente/Proveedor) y H23 (Gastos que no llega a reposo, mirar con
-Instruments). Las capturas de la guía `copias-es/en.jpg` aún enseñan el bloqueo dentro de iCloud.
-   Detalle de esos cuatro (el informe de Hudson y su worktree se borraron el 13-nov):
-   - **H04** (contador, iPhone): Resultados solo ofrece «Mes / Trimestre / Año» del periodo actual (el mes anterior
-     sale solo como columna de comparación) y Sales tax enseña el mes en curso sin selector. El balance sí tiene «Al»
-     con fecha y el Mac deja elegir fechas y trimestres. Propuesta: flechas ‹ › de periodo o el selector del Mac.
-   - **H19** (contador): el paquete del contador no trae la conciliación bancaria ni la antigüedad de CxC/CxP, y el CSV
-     de resultados no lleva los códigos de cuenta (el del balance sí). Propuesta: «Conciliaciones.csv/pdf» y las dos
-     antigüedades.
-   - **H22** (accesibilidad): los campos Cliente y Proveedor solo tienen texto de ejemplo, sin etiqueta; en el iPad el
-     botón de impuesto de la línea se lee «Impuesto, Impuesto, línea 1». Propuesta: etiquetas de accesibilidad propias.
-   - **H23** (sin confirmar): la pantalla de Gastos no llega a «reposo» para XCUITest («App animations complete
-     notification not received», ~60 s por toque); posible animación continua. Revisar con Instruments si algo se
-     redibuja sin parar (batería).
+total).
+   **1.3.0 (rama `version-1.3`, 13-nov noche, build 44 subido iOS y macOS):** lo que quedaba de la QA de Hudson.
+   - **H04** (`7825510`): en el iPhone, «‹ Octubre de 2026 ›» bajo Mes · Trimestre · Año en Resultados, Flujo y Sales
+     tax; las flechas cambian de periodo (la derecha se apaga en el actual) y tocar el nombre abre «Desde / Hasta»
+     (decisión del usuario entre flechas y selector de fechas, con muestra). `periodOffset` en `ReportsView`;
+     `-qa.periodoAtras N`, `-qa.periodoFechas 1`.
+   - **H19** (`9ea88eb`): el paquete del contador trae «Antigüedad por cobrar/pagar» y «Conciliaciones» (CSV y PDF, con
+     las partidas sin conciliar en página aparte); `ReconciliationReport` (ChirograCore) y
+     `Bookkeeper.reconciliationReport`. La antigüedad sale con el saldo que había a la fecha (el de hoy más lo cobrado o
+     pagado después), también en el reporte de Antigüedad con «Al» pasado; en un periodo sin terminar, el paquete corta
+     en hoy. El CSV de resultados lleva el código de cuenta.
+   - **H22** (`79e8272`): etiquetas de VoiceOver en las fichas de cliente y proveedor; en la factura del iPad «Impuesto,
+     línea 1» con su valor, el impuesto con la tasa elegida, producto y precio con su línea; `MoneyField` usa su título
+     como etiqueta. Comprobado con el árbol de accesibilidad en los simuladores.
+   - **H23: no se reproduce** (13-nov): CPU en reposo 0,0 % en Gastos (igual que Inicio, Ventas y Banca) y con XCUITest
+     cada toque en Gastos, Por pagar y Recurrentes tarda 1–2 s, como en las demás pestañas. Sin cambios.
 9. Asientos de ajuste marcados como del contador: hecho (`EntrySource.accountantAdjustment`).
 10. Bitácora de cambios: hecho (aparato y antes/después; Contabilidad › «Bitácora de cambios»).
 11. Banca: dividir y motivo al excluir: hecho (canvas `BancaRevisar`).
 
-*D. 2.0, con servidor (Supabase, proyecto aparte; PLAN-FASE2.md «Después: con servidor»):*
-12. Plaid (plan «Chirogra + Banco»; entra a la bandeja «Por revisar» como otra `BankTransactionSource`). Cambia la
-    promesa de privacidad: texto de la bienvenida, política y etiqueta de la tienda.
-13. El contador dentro de los libros del cliente: usuarios y permisos, preguntas al cliente sobre movimientos.
-14. Stripe Connect (cobro por enlace en la factura), sales tax exacto por dirección.
-15. Nómina con un proveedor embebido (Gusto Embedded o Check), plan más alto.
+*D. 2.0, con servidor:* **plan escrito el 13-nov en [PLAN-2.0.md](PLAN-2.0.md)**, con las decisiones del usuario en la
+tabla del principio. Se programa cuando la 1.3 esté en la tienda.
+12. **Híbrido:** los libros siguen en iCloud; Supabase (proyecto aparte del de Tamio) guarda los tokens, las
+    invitaciones y un buzón que la app recoge y escribe en los libros.
+13. **Plaid solo lectura** (Transactions, Balance y Statements desde el inicio). **Equipo nuevo «Chirogra» en el panel
+    de Plaid**, no el de Tamio (claves, cobro, nombre y logo propios), con su acceso a producción, Statements pedido
+    aparte y el registro OAuth con los bancos grandes; las respuestas del cuestionario de Tamio sirven de base.
+14. **El contador entra gratis desde la app** compartiendo la empresa por iCloud (CKShare), con permisos que elige el
+    cliente (ver, ver y preguntar, editar). Lo primero es una prueba de concepto: SwiftData no comparte.
+15. **Stripe Connect** sin comisión de Chirogra; **nómina** con Gusto Embedded o Check (base + por empleado). Todo sale
+    junto en la 2.0; plan «Chirogra + Banco» con el precio según los costos. Solo EE. UU.
+16. **Trámites que el usuario puede empezar ya:** Plaid (equipo, producción, Statements), cotizaciones de Gusto
+    Embedded y Check, perfil de plataforma en Stripe Connect.
 
 *Fijo cada año:* actualizar el mínimo del 1099-NEC (`Form1099.swift`, `inflationAdjusted`).
 
@@ -246,7 +259,7 @@ Instruments). Las capturas de la guía `copias-es/en.jpg` aún enseñan el bloqu
   logo desde Fotos; un cargo automático que se cobre solo al vencer; registrar y revertir un asiento en pantalla en el
   Mac; si el botón de idioma del alta abre la página de Chirogra en Ajustes o la raíz.
 - **No construido a propósito (espera al servidor):** Plaid, Stripe Connect, sales tax exacto por dirección, usuarios y
-  permisos, «Vista por el cliente», nómina (PLAN-FASE2.md, «Después: con servidor»).
+  permisos, «Vista por el cliente», nómina ([PLAN-2.0.md](PLAN-2.0.md)).
 
 ## Estado de las cuentas y servicios
 
@@ -289,12 +302,17 @@ Instruments). Las capturas de la guía `copias-es/en.jpg` aún enseñan el bloqu
   tablas blancas `Palette.surface` con filo y sombra corta (`macElevation`), inspector sin fondo propio; en el iPad
   `padElevation` y las listas maestro en `Palette.masterColumn`. Ajustes del Mac con tarjetas propias
   (`Settings/SettingsCards.swift`).
-- **Ícono:** la χ cursiva (12-nov, build 41; archivo del usuario «chirogra greek inicials.icon» copiado tal cual a
-  `App/AppIcon.icon`, capa visible `04-chi.svg`; las demás quedan ocultas). Antes, la χ redonda con punto (build 20).
-  `LogoMark` dibuja la misma χ dentro de la app con `ChiGlyph` (`DesignSystem/ChiGlyph.swift`, generado del `d` de
-  `04-chi.svg`: si cambia el icono, regenerarlo). La bienvenida dibuja su contorno y luego la rellena. El de la web
-  (`sitio/img/icono.png`, 256 px) sale del `AppIcon.icns` de la compilación del Mac (`iconutil -c iconset`,
-  `icon_128x128@2x.png`). Capturas de la guía `bienvenida-es/en.jpg` rehechas con la χ el 13-nov.
+- **Ícono:** **χρ** (14-nov, rama `version-1.3`, **build 45** subido iOS y macOS): χ blanca y ρ azafrán (`#F2B33D`) sobre el
+  degradado índigo; archivo del usuario `AppIcon.icon` copiado tal cual a `App/AppIcon.icon`, una sola capa
+  `chirogra-N-icono.svg` con fondo, letras y brillo. Antes, la χ cursiva sola (12-nov, build 41) y la χ redonda con punto
+  (build 20). `LogoMark` dibuja lo mismo dentro de la app con `ChiGlyph` y `RhoGlyph` (`DesignSystem/ChiGlyph.swift`,
+  generado de los dos `<path>` del SVG: si cambia el icono, regenerarlo, no retocarlo a mano) y `Palette.logoRho`. La
+  bienvenida dibuja el contorno de la χ, luego el de la ρ, y las rellena. El de la web (`sitio/img/icono.png`, 256 px)
+  sale del `AppIcon.icns` de la compilación del Mac (`iconutil -c iconset`, `icon_128x128@2x.png`). Capturas de la guía
+  `bienvenida-es/en.jpg` rehechas con la χρ el 14-nov (ventana de 900×1040 fijada con `defaults write
+  com.chirogra.qa.<nombre> "NSWindow Frame SwiftUI.WindowGroup<ChirograUI.ChirograRootView>-1-AppWindow-1"
+  "300 0 900 1040 0 0 1920 1050 "`, porque `defaultSize` solo no bastó). Instalado en el iPhone y el Mac
+  (Producción) el 14-nov; el iPad no.
 - Gastos y Banca arrancan en el último mes con movimientos; la tarjeta de Gastos suma solo gastos. Método de pago según
   la cuenta (banco → débito/transferencia/cheque; tarjeta → tarjeta; caja → efectivo).
 - **Editar algo contabilizado = reversión + asiento nuevo** (DISEÑO §6.5). Una factura emitida sin cobros se edita así

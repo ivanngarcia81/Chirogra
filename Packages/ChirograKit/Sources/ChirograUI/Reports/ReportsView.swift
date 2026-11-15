@@ -119,6 +119,9 @@ struct ReportsView: View {
     @State private var period: Period = .month
     #endif
     @State private var compare = true
+    /// Periodos hacia atrás desde el que contiene hoy (H04, 1.3): 0 el actual, −1 el anterior… Al cambiar entre Mes,
+    /// Trimestre y Año vuelve a 0.
+    @State private var periodOffset = Self.qaPeriodOffset
     @State private var customStart = Period.month.interval().start
     @State private var customEnd = Period.month.interval().end.addingTimeInterval(-1)
     @State private var editingRange = false
@@ -238,6 +241,14 @@ struct ReportsView: View {
         #endif
         .toolbar { toolbar }
         .sheet(isPresented: $editingRange) { rangeEditor }
+        .onChange(of: period) { _, newValue in if newValue != .custom { periodOffset = 0 } }
+        #if DEBUG
+        .task {
+            guard UserDefaults.standard.bool(forKey: "qa.periodoFechas") else { return }
+            try? await Task.sleep(for: .seconds(1))
+            editingRange = true
+        }
+        #endif
         .sheet(isPresented: $creatingInvoice) { NavigationStack { InvoiceEditorView() }.editorSheetSizing() }
         .sheet(isPresented: $exportingPackage) { NavigationStack { AccountantExportView(initialInterval: interval()) }.editorSheetSizing() }
         #if DEBUG
@@ -378,6 +389,12 @@ struct ReportsView: View {
             Form {
                 DatePicker("Desde", selection: start, displayedComponents: .date)
                 DatePicker("Hasta", selection: end, displayedComponents: .date)
+                if isAwayFromCurrent {
+                    Button(String(localized: "Volver al periodo actual")) {
+                        backToCurrent()
+                        editingRange = false
+                    }
+                }
             }
             .formStyle(.grouped)
             .navigationTitle("Fechas del periodo")
@@ -441,7 +458,7 @@ struct ReportsView: View {
 
     /// Periodo mostrado, o el anterior de igual duración (`offset: -1`).
     private func interval(offset: Int = 0) -> DateInterval {
-        guard period == .custom else { return period.interval(offset: offset) }
+        guard period == .custom else { return period.interval(offset: offset + periodOffset) }
         let calendar = Calendar.current
         let start = calendar.startOfDay(for: min(customStart, customEnd))
         let end = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: max(customStart, customEnd))) ?? start
@@ -594,6 +611,7 @@ struct ReportsView: View {
         let current = incomeStatement(interval())
         let previous = incomeStatement(interval(offset: -1))
         periodPicker.padding(.top, 4)
+        phonePeriodNavigator
         phoneBasis
         RowGroup(macBorder: true) {
             Toggle(String(localized: "Comparar con \(previousName)"), isOn: $compare).tint(Palette.green)
@@ -682,6 +700,81 @@ struct ReportsView: View {
         .accessibilityElement(children: .combine)
     }
 
+    private static var qaPeriodOffset: Int {
+        #if DEBUG
+        // `-qa.periodoAtras N`: abre N periodos atrás (solo Debug).
+        -UserDefaults.standard.integer(forKey: "qa.periodoAtras")
+        #else
+        0
+        #endif
+    }
+
+    /// No es el periodo que contiene hoy: un rango elegido o uno pasado.
+    private var isAwayFromCurrent: Bool { period == .custom || periodOffset != 0 }
+
+    /// Vuelve al periodo que contiene hoy (en un rango elegido, al mes).
+    private func backToCurrent() {
+        if period == .custom { period = .month }
+        periodOffset = 0
+    }
+
+    /// Cambiar de periodo en el iPhone (H04, decisión del usuario del 13-nov): «‹ Octubre de 2026 ›» bajo Mes ·
+    /// Trimestre · Año. Las flechas van de un periodo al anterior o al siguiente (la de la derecha se apaga en el actual);
+    /// tocar el nombre abre «Desde / Hasta» para un rango cualquiera, como «Elegir fechas…» del Mac.
+    private var phonePeriodNavigator: some View {
+        RowGroup(macBorder: true) {
+            HStack(spacing: 0) {
+                Button { stepPeriod(-1) } label: {
+                    Image(systemName: "chevron.left").font(.body.weight(.semibold))
+                        .frame(width: Metrics.target, height: Metrics.target)
+                        .contentShape(Rectangle())
+                }
+                .accessibilityLabel(String(localized: "Periodo anterior"))
+                VStack(spacing: 0) {
+                    Button { editingRange = true } label: {
+                        HStack(spacing: 6) {
+                            Text(period == .custom ? rangeLabel : periodName(offset: 0).sentenceCased)
+                                .font(.body.weight(.semibold)).foregroundStyle(Palette.ink)
+                                .lineLimit(1).minimumScaleFactor(0.8)
+                            Image(systemName: "calendar").font(.footnote).foregroundStyle(Palette.brand)
+                                .accessibilityHidden(true)
+                        }
+                        .frame(maxWidth: .infinity, minHeight: Metrics.target)
+                        .contentShape(Rectangle())
+                    }
+                    .accessibilityLabel(period == .custom ? rangeLabel : periodName(offset: 0))
+                    .accessibilityHint(Text("Elige las fechas del periodo"))
+                    if isAwayFromCurrent {
+                        Button(String(localized: "Volver al actual")) { backToCurrent() }
+                            .font(.footnote).foregroundStyle(Palette.brand)
+                            .frame(maxWidth: .infinity, minHeight: 28)
+                            .contentShape(Rectangle())
+                            .padding(.bottom, 4)
+                    }
+                }
+                Button { stepPeriod(1) } label: {
+                    Image(systemName: "chevron.right").font(.body.weight(.semibold))
+                        .frame(width: Metrics.target, height: Metrics.target)
+                        .contentShape(Rectangle())
+                }
+                .disabled(period != .custom && periodOffset >= 0)
+                .accessibilityLabel(String(localized: "Periodo siguiente"))
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(Palette.brand)
+            .padding(.horizontal, 4)
+        }
+        .padding(.top, 10)
+    }
+
+    /// Un periodo atrás o adelante; en un rango elegido, el rango de igual duración.
+    private func stepPeriod(_ step: Int) {
+        guard period == .custom else { periodOffset = min(0, periodOffset + step); return }
+        let next = interval(offset: step)
+        customStart = next.start
+        customEnd = next.end.addingTimeInterval(-1)
+    }
+
     /// «Devengado | Caja» con su ⓘ, debajo del periodo o de la fecha de corte.
     private var phoneBasis: some View {
         BasisPicker(basis: $basis).padding(.top, 10)
@@ -724,6 +817,7 @@ struct ReportsView: View {
     private var phoneCashFlow: some View {
         let report = cashFlowStatement(interval())
         periodPicker.padding(.top, 4)
+        phonePeriodNavigator
         phoneBasis
         RowGroup(macBorder: true) {
             Toggle(String(localized: "Comparar con \(previousName)"), isOn: $compare).tint(Palette.green)
@@ -886,6 +980,7 @@ struct ReportsView: View {
     private var phoneSalesTax: some View {
         let report = salesTaxReport
         periodPicker.padding(.top, 4)
+        phonePeriodNavigator
         VStack(alignment: .leading, spacing: 2) {
             Text("Impuesto cobrado · \(periodName(offset: 0))").font(.subheadline).foregroundStyle(Palette.ink2)
             Text(report.totalTax.money).font(.amount(36)).foregroundStyle(Palette.ink).lineLimit(1).minimumScaleFactor(0.5)

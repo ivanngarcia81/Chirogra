@@ -125,6 +125,53 @@ extension Bookkeeper {
         try saveOrRollback()
     }
 
+    /// Estado de las conciliaciones a una fecha, para el paquete del contador (QA Hudson, H19). Cuentas: las de banco y
+    /// tarjeta sin archivar y cualquier otra que tenga conciliaciones. Sin conciliar: las líneas contabilizadas hasta la
+    /// fecha que no quedaron marcadas en una conciliación terminada con extracto hasta esa fecha.
+    public func reconciliationReport(from: Date, to: Date, calendar: Calendar = .current) throws -> ReconciliationReport {
+        let limit = Self.endOfDay(to, calendar)
+        let start = calendar.startOfDay(for: from)
+        let all = try reconciliations()
+        let reconciledIDs = Set(all.map(\.accountID))
+        let accounts = try fetch(Account.self)
+            .filter { account in
+                (!account.isArchived && [.bank, .creditCard].contains(account.subtype)) || reconciledIDs.contains(account.id)
+            }
+            .sorted { ($0.code, $0.name) < ($1.code, $1.name) }
+        var rows: [ReconciliationReport.AccountRow] = []
+        var completed: [ReconciliationReport.Completed] = []
+        var uncleared: [ReconciliationReport.Uncleared] = []
+        for account in accounts {
+            let mine = all.filter { $0.accountID == account.id }
+            let done = mine.filter { $0.isCompleted && $0.statementDate <= limit }
+            let doneIDs = Set(done.map(\.id))
+            let last = done.max { $0.statementDate < $1.statementDate }
+            var book: Int64 = 0
+            var pending: [ReconciliationReport.Uncleared] = []
+            for line in account.lines ?? [] {
+                guard let entry = line.entry, entry.status == .posted, entry.date <= limit else { continue }
+                let effect = account.type.naturalBalance(debit: line.debit, credit: line.credit)
+                book += effect
+                if line.reconciliationID.map({ !doneIDs.contains($0) }) ?? true {
+                    pending.append(.init(code: account.code, name: account.name, date: entry.date, entryNumber: entry.number,
+                                         memo: entry.memo, amount: effect))
+                }
+            }
+            pending.sort { ($0.date, $0.entryNumber) < ($1.date, $1.entryNumber) }
+            rows.append(.init(code: account.code, name: account.name, lastStatementDate: last?.statementDate,
+                              lastStatementBalance: last?.statementEndingBalance, bookBalance: book, unclearedCount: pending.count,
+                              unclearedTotal: pending.reduce(0) { $0 + $1.amount }, inProgress: mine.contains { !$0.isCompleted }))
+            uncleared += pending
+            for item in done.filter({ $0.statementDate >= start }).sorted(by: { $0.statementDate < $1.statementDate }) {
+                let count = (account.lines ?? []).filter { $0.reconciliationID == item.id }.count
+                completed.append(.init(code: account.code, name: account.name, statementDate: item.statementDate,
+                                       beginningBalance: item.beginningBalance, endingBalance: item.statementEndingBalance,
+                                       clearedCount: count, closedAt: item.closedAt))
+            }
+        }
+        return ReconciliationReport(from: from, asOf: to, accounts: rows, completed: completed, uncleared: uncleared)
+    }
+
     /// Saldo inicial, marcadas y diferencia.
     public func summary(of reconciliation: Reconciliation) throws -> ReconciliationSummary {
         guard let account = try account(id: reconciliation.accountID) else { throw BookkeepingError.unknownAccount }

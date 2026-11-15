@@ -76,6 +76,8 @@ Un solo esquema 4 para todo lo de esta tabla (una migración, un despliegue).
 
 ## Después: con servidor (no entra en este plan)
 
+**El plan completo y las decisiones del 13-nov están en [PLAN-2.0.md](PLAN-2.0.md)**; lo de abajo es lo de antes.
+
 Cuando se empiece el servidor propio (recomendado: Supabase, como Tamio, en un proyecto aparte; sin decidir):
 - Conexión con el banco por **Plaid** (otra fuente de `BankTransactionSource`; plan «Chirogra + Banco»).
 - Cobro con **Stripe Connect** (un enlace por factura; el cobro se registra solo).

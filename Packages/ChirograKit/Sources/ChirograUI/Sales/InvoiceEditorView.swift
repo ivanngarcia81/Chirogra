@@ -403,7 +403,8 @@ struct InvoiceEditorView: View {
                 Text("Añadir tasa…").tag(Optional(Self.addTaxRateTag))
             }
         }
-        .accessibilityLabel("Impuesto sobre ventas")
+        // Sin `accessibilityLabel`: se sumaba al título («Impuesto, Impuesto sobre ventas») en vez de la tasa elegida
+        // (QA Hudson, H22). Así se lee «Impuesto, Austin, TX · 8.25%».
         .sheet(isPresented: $addingTaxRate) {
             NavigationStack { TaxRateEditorView { taxGroupID = $0.id } }.editorSheetSizing()
         }
@@ -883,21 +884,27 @@ struct InvoiceEditorView: View {
                         // del iPad (760 pt) y se cortaba por los lados.
                         VStack(alignment: .leading, spacing: 0) {
                             TextField("Producto o servicio", text: $line.details).fieldBox()
+                                .accessibilityLabel("Producto o servicio, línea \(index + 1)")
                             incomeAccountMenu($line.incomeAccountID).font(.footnote)
                         }
                         .frame(minWidth: 140, maxWidth: .infinity)
                         QuantityStepper(quantity: $line.quantity, valueInside: true).frame(width: Self.quantityColumn, alignment: .trailing)
-                        MoneyField(title: String(localized: "Precio"), minorUnits: $line.unitPrice)
+                        MoneyField(title: String(localized: "Precio, línea \(index + 1)"), minorUnits: $line.unitPrice)
                             .multilineTextAlignment(.trailing).fieldBox().frame(width: amountColumn)
-                        Picker("Impuesto", selection: $line.isTaxable) {
+                        // Sin título: con él, VoiceOver lo anteponía a la etiqueta («Impuesto, Impuesto, línea 1») y no
+                        // decía si era gravable (QA Hudson, H22).
+                        Picker(selection: $line.isTaxable) {
                             Text("Gravable").tag(true)
                             Text("No gravable").tag(false)
+                        } label: {
+                            EmptyView()
                         }
                         .labelsHidden()
                         .pickerStyle(.menu)
                         .fixedSize()
                         .frame(width: Self.taxColumn, alignment: .leading)
                         .accessibilityLabel("Impuesto, línea \(index + 1)")
+                        .accessibilityValue(line.isTaxable ? Text("Gravable") : Text("No gravable"))
                         Text(line.amount.money).fontWeight(.semibold).frame(width: amountColumn, alignment: .trailing)
                         Button { lines.remove(at: index) } label: {
                             Image(systemName: "xmark.circle.fill").frame(width: 24, height: Metrics.target)
@@ -933,6 +940,7 @@ struct InvoiceEditorView: View {
             VStack(alignment: .leading, spacing: 6) {
                 Text("Mensaje para el cliente").foregroundStyle(Palette.ink)
                 TextField("Notas y términos", text: $customerMessage, axis: .vertical)
+                    .accessibilityLabel("Mensaje para el cliente")
                     .lineLimit(3...)
                     .fieldBox()
             }

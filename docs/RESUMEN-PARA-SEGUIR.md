@@ -12,8 +12,9 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
   el **30**.
   Para subirlo hubo que contestar en App Store Connect el aviso del DSA de la UE (sin él, «You do not have required
   contracts»); se recomendó «not a trader / no EU».
-- **1.0 (build 11):** en revisión de Apple. Cuando la aprueben, el usuario envía la **1.0.1 (build 15)**, que arregla
-  iCloud en Producción.
+- **1.0 (build 11):** en revisión de Apple («Waiting for Review» varios días al 13-nov). **Decidido el 13-nov:** cuando
+  la aprueben se envía **directo la 1.3** (su último build), sin la 1.0.1, la 1.1 ni la 1.2, con un «What's New» que
+  junte las tres.
 - **1.1.0:** lista en el **build 30**. Lleva toda la fase 2 (decisión del 9-nov) y lo hecho el 10-nov.
 - **1.2.0:** lista en el **build 43** (rama `version-1.2`, [DATOS-V5.md](DATOS-V5.md)). Esquema 5 desplegado y probado
   en Producción. Textos para la tienda en [APP-STORE.md](APP-STORE.md), «Versión 1.2.0».
@@ -42,9 +43,29 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 | 41 | `ae9ced3` | 1.2.0: **icono nuevo, la χ cursiva** (archivo del usuario «chirogra greek inicials.icon»), también en `LogoMark` (`ChiGlyph`, sacado del SVG), en la animación de la bienvenida (contorno y luego relleno) y en la web. |
 | 42 | `36c85ad` | 1.2.0: **lo borrado no vuelve de iCloud**: cada empresa borrada se apunta en el almacén de clave-valor de iCloud (`DeletedCompanies`, permiso `ubiquity-kvstore-identifier` nuevo) y todos los aparatos la vuelven a borrar si alguien la sube otra vez; las automatizaciones esperan a la importación al abrir; **«Borrar todo y empezar de cero…»** en Ajustes › iCloud y copias (escribir BORRAR; espera a que el borrado suba). 343 pruebas. |
 | 43 | `809bb88` | 1.2.0: **iconos de color en las subsecciones de la barra lateral** (Mac e iPad; decisión del usuario del 13-nov) y **hoja de planes del Mac** sin los botones de StoreKit encima del segundo plan («Restaurar compras» y «Canjear código» como enlaces, 760 de alto). |
+| 44 | `7825510`…`79e8272` | **1.3.0** (rama `version-1.3`): H04 (flechas de periodo en los reportes del iPhone), H19 (antigüedad y conciliaciones en el paquete del contador) y H22 (etiquetas de VoiceOver). |
+| 45 | `55add7e` | 1.3.0: icono χρ (χ blanca, ρ azafrán) en la app, la bienvenida y la web. |
+| 46 | `786f6fa` | 1.3.0: la tabla de Clientes del iPad ya no pinta su fondo blanco (`.scrollContentBackground(.hidden)`): va sobre el gris de la pantalla y se distingue de la barra lateral (pedido del 15-nov). |
 
 ## Último chat (13-nov)
 
+- **Build 46 (1.3.0, 15-nov) SUBIDO a TestFlight (iOS y macOS)**, `786f6fa` empujado en `version-1.3`: tabla de Clientes
+  del iPad sobre el gris de la pantalla en vez de blanca (el usuario la veía del mismo color que la barra lateral).
+  Visto en el simulador del iPad en claro y oscuro. No instalado en los aparatos.
+
+- **Icono χρ (14-nov), rama `version-1.3`, commiteado y empujado el 14-nov:** el `AppIcon.icon` nuevo del usuario (χ blanca, ρ azafrán),
+  `LogoMark` y la bienvenida con `ChiGlyph` + `RhoGlyph`, icono de la web y capturas `bienvenida-es/en.jpg` rehechas.
+  Instalado en el iPhone y el Mac (Producción). **Build 45 (1.3.0) SUBIDO a TestFlight (iOS y macOS, 14-nov)**, compilado
+  desde la carpeta sin commitear (número 45 en `project.yml` y pbxproj). Detalle en CONTEXTO, «Ícono».
+
+- **Plan de la 2.0 (13-nov):** [PLAN-2.0.md](PLAN-2.0.md), con las decisiones del usuario (híbrido, Supabase aparte,
+  Plaid solo lectura con Statements, el contador gratis por iCloud, Stripe sin comisión, nómina base + por empleado,
+  todo junto, solo EE. UU.). Para Plaid, equipo nuevo «Chirogra» (no el de Tamio). Sin código hasta que la 1.3 esté en
+  la tienda.
+- **1.3.0 (13-nov noche), rama `version-1.3` (empujada; `main` sigue en la 1.2):** H04, H19 y H22 hechos; H23 no se
+  reproduce (sin cambios). **Build 44 (1.3.0) subido a TestFlight (iOS y macOS, 13-nov noche).** Detalle en CONTEXTO, «1.3.0». La 1.3 se envía después de la 1.2 (que
+  sigue en el build 43). «What's New» y notas de la 1.3 en APP-STORE.md; guía es/en al día (flechas del iPhone, paquete del
+  contador) y capturas `copias-es/en.jpg` rehechas (se publican al unir `version-1.3` a `main`).
 - **Build 43 (13-nov noche, `809bb88`):** (1) **iconos de color en las subsecciones de la barra lateral**
   (decisión del usuario entre Tinta y colores, con muestra real): `SidebarItem.systemImage`/`color` en `Sidebar.swift`,
   los de Reportes y Contabilidad son los de «Más» del iPhone; también en el iPad (compilado, no visto: en vertical la
@@ -66,15 +87,13 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 - **Icono nuevo, la χ cursiva, y build 41 (12-nov noche):** `App/AppIcon.icon` = archivo del usuario; `LogoMark` con
   `ChiGlyph` (generado del SVG: si cambia el icono, regenerarlo). Subido iOS y macOS (`ad59089`), instalado en el
   iPhone y el Mac; **el iPad no** (lo hace el usuario).
-- **Pendiente pequeño:** las capturas de la guía `copias-es/en.jpg` aún enseñan el bloqueo dentro de «iCloud y copias»
-  (desde el build 40 está en Seguridad) y ahora tampoco tienen «Empezar de cero». Los worktrees `Chirogra-pestanas` y
+- Los worktrees `Chirogra-pestanas` y
   `Chirogra-QA-Hudson` se borraron el 13-nov (pedido del usuario); el detalle de H04/H19/H22/H23 para la 1.3 quedó en
   CONTEXTO.
 - Truco de capturas de la guía: la copia del Mac con `defaultSize` de 900×1040 en `App/ChirograApp.swift` (solo en la
   copia) y `-qa.alta 1 -qa.altaEstado TX -qa.altaCiudad Austin -qa.altaCiudadTasa 2 -qa.altaZip 78702`; recorte de
   600 px de ancho desde (150, 48).
-- **Ofrecido y sin empezar:** escribir el plan de la 2.0 con servidor (Plaid, contador dentro de los libros, Stripe,
-  nómina). Esperar a que el usuario lo pida.
+- **Plan de la 2.0 escrito** (13-nov): [PLAN-2.0.md](PLAN-2.0.md).
 
 ## Lo que le toca al usuario
 
@@ -94,15 +113,16 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 
 ## Lo siguiente
 
-1. **Envío de la 1.1.0** (cuando la 1.0 y la 1.0.1 estén aprobadas): **todo preparado el 10-nov** en
-   [APP-STORE.md](APP-STORE.md) (descripción, texto promocional, «What's New» en/es, notas para el revisor) y capturas
-   `00-bienvenida` y `06-panel-clientes` en el escritorio. Elegir el **build 30** y añadir el plan para contadores al envío.
-2. **Envío de la 1.2.0** (cuando la 1.1 esté aprobada): elegir el **build 43**; «What's New» y notas para el revisor
-   preparados el 11-nov en APP-STORE.md. Decidir si hacen falta capturas nuevas (bitácora, Dividir, icono nuevo).
+1. **Cuando aprueben la 1.0: enviar directo la 1.3** (decisión del 13-nov), con su último build. Preparar entonces un
+   «What's New» que junte 1.1, 1.2 y 1.3 (las tres partes están en [APP-STORE.md](APP-STORE.md)), las notas para el
+   revisor juntas, el plan para contadores en el envío y las capturas (`00-bienvenida` y `06-panel-clientes` en el
+   escritorio, y las que falten).
+2. **Probar en TestFlight el último build de la 1.3** antes de enviarla.
 3. **Tasas por código postal: cada trimestre** (1 ene, 1 abr, 1 jul, 1 oct) correr `scripts/tasas/descargar.sh` y
    `generar.py` y subir un build (DATOS-V5.md). Faltan AL AK AZ CO HI ID LA MO MS NM PA SC VA.
-4. **2.0 con servidor:** Plaid (plan «Chirogra + Banco»), el contador dentro de los libros del cliente, Stripe (con Apple
-   Pay y Google Pay dentro), nómina. Esperar a que la 1.1 esté en la tienda; mientras, se puede escribir el plan.
+4. **2.0 con servidor:** plan en [PLAN-2.0.md](PLAN-2.0.md). Ya se pueden hacer los trámites (equipo «Chirogra» en
+   Plaid con producción y Statements, cotizaciones de Gusto Embedded y Check, perfil en Stripe Connect); el código
+   empieza cuando la 1.3 esté en la tienda.
 5. **Menores:** hechos (build 37, 12-nov; CONTEXTO, «C»): las filas con campo que solo tomaban el toque sobre
    la cifra y el selector Devengado/Caja con letra grande. Los textos cortados del Mac eran los datos de ejemplo en
    inglés (build 29). La campana de Avisos y la barra del alta del iPad son del sistema.

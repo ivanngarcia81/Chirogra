@@ -290,9 +290,53 @@ Chirogra 1.1 es nuestra actualización más grande.
 > iCloud, backups and security). All data stays on the device and in the user's private iCloud database; there is no
 > server.
 
+## Versión 1.3.0: «What's New» y notas para la revisión
+
+Preparado el 13-nov. Se envía cuando esté aprobada la 1.2, con el **build 44** (o el último de la rama `version-1.3`).
+La descripción, el texto promocional y las capturas pueden quedarse como los de la 1.2.
+
+**What's New (en)**
+
+Chirogra 1.3 makes past periods and your accountant's package easier.
+
+• iPhone reports: move to the previous or next month, quarter or year with the arrows, or tap the period to choose any dates
+• Accountant package: now includes A/R and A/P aging and your bank reconciliations, with the uncleared items for each account
+• Aging reports show the balances as of the date you choose
+• The income statement CSV includes account codes
+• VoiceOver: clearer labels on customer and vendor forms and on invoice lines
+• Fixes and improvements on iPhone, iPad and Mac
+
+**Novedades (es)**
+
+Chirogra 1.3 te facilita los periodos pasados y el paquete para tu contador.
+
+• Reportes del iPhone: pasa al mes, trimestre o año anterior o siguiente con las flechas, o toca el periodo para elegir las fechas que quieras
+• Paquete para el contador: ahora trae la antigüedad por cobrar y por pagar y tus conciliaciones bancarias, con las partidas sin conciliar de cada cuenta
+• La antigüedad muestra los saldos a la fecha que elijas
+• El CSV del estado de resultados lleva los códigos de cuenta
+• VoiceOver: etiquetas más claras en las fichas de clientes y proveedores y en las líneas de la factura
+• Arreglos y mejoras en iPhone, iPad y Mac
+
+**Notas para la revisión de la 1.3 (App Review Information › Notes)**
+
+> Chirogra doesn't require an account. On first launch, swipe through the welcome tour (or tap Skip). On the last page,
+> "Whose books do you keep?", tap "Try with sample data" to explore a company with invoices, expenses, banking, sales
+> tax and reports. The 14-day free trial starts from the subscription screen shown after setup. If the subscription
+> ends, books stay in read-only mode (view, export and back up only).
+>
+> New in 1.3:
+> - iPhone: Reports (More › Reports, or the Reports tab if added) › Income Statement, Cash Flow or Sales Tax: use the
+>   ‹ › arrows under Month · Quarter · Year to change the period, or tap the period name to pick dates.
+> - Export › "Export for My Accountant…" now adds A/R aging, A/P aging and bank reconciliations (PDF and CSV).
+>
+> Bank statements are imported from CSV, OFX or QFX files the user chooses; there is no bank connection. iCloud sync is
+> optional (Settings › iCloud and backups). All data stays on the device and in the user's private iCloud
+> database; there is no server.
+
 ## Versión 1.2.0: «What's New» y notas para la revisión
 
-Preparado el 11-nov. Se envía cuando esté aprobada la 1.1, con el **build 42** (o el último de la rama `version-1.2`).
+Preparado el 11-nov. Se envía cuando esté aprobada la 1.1, con el **build 43** (el último de la rama `version-1.2`;
+los builds 44 en adelante son de la 1.3).
 La descripción y el texto promocional pueden quedarse como los de la 1.1. **Sin decidir:** capturas nuevas de la
 bitácora o de Dividir (las de la 1.1 siguen valiendo).
 
@@ -311,6 +355,7 @@ Chirogra 1.2 brings tools for accountants and a faster start.
 • Move money: transfers, credit card payments and owner draws from the + on Home and from each account in Banking
 • Security now has its own page in Settings: Face ID or Touch ID lock and your closing password
 • Deleted businesses stay deleted on all your devices, and Settings › iCloud and backups can delete everything and start over
+• Mac and iPad: every page in the sidebar has its own icon
 • Fixes and improvements on iPhone, iPad and Mac
 
 **Novedades (es)**
@@ -328,6 +373,7 @@ Chirogra 1.2 trae herramientas para contadores y un comienzo más rápido.
 • Mover dinero: traspasos, pago de la tarjeta y retiros del dueño desde el «+» de Inicio y desde cada cuenta de Banca
 • Seguridad tiene su propia página en Ajustes: el bloqueo con Face ID o Touch ID y la contraseña de cierre
 • Lo que borras no vuelve en tus otros aparatos, y en Ajustes › iCloud y copias puedes borrar todo y empezar de cero
+• Mac y iPad: cada página de la barra lateral tiene su icono
 • Arreglos y mejoras en iPhone, iPad y Mac
 
 **Notas para la revisión de la 1.2 (App Review Information › Notes)**

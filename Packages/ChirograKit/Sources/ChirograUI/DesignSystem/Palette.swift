@@ -127,10 +127,11 @@ public enum Palette {
     public static let monogram = LinearGradient(colors: [Color(light: 0xA3A3A8, dark: 0xA3A3A8), Color(light: 0x86868B, dark: 0x86868B)],
                                                 startPoint: .top, endPoint: .bottom)
 
-    /// Logotipo (el icono de la app, build 21): degradado de índigo, χ blanca y punto azafrán, igual en claro y oscuro.
+    /// Logotipo (el icono χρ de la app, 14-nov): degradado de índigo, χ blanca y ρ azafrán, igual en claro y oscuro.
     public static let logoFill = LinearGradient(colors: [Color(light: 0x5A60F0, dark: 0x5A60F0), Color(light: 0x3A3FD1, dark: 0x3A3FD1)],
                                                 startPoint: .top, endPoint: .bottom)
     public static let logoMark = Color.white
+    public static let logoRho = Color(light: 0xF2B33D, dark: 0xF2B33D)
 }
 
 /// Medidas del canvas: márgenes, separaciones y radios.

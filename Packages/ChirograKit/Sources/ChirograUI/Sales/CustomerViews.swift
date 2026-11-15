@@ -971,26 +971,34 @@ struct CustomerEditorView: View {
     var body: some View {
         Form {
             Section {
+                // Con etiqueta de accesibilidad: en un `Form` de iOS el título solo es el texto de ejemplo y VoiceOver no
+                // decía qué campo era una vez escrito (QA Hudson, H22).
                 TextField("Nombre o empresa", text: $name)
+                    .accessibilityLabel("Nombre o empresa")
                 TextField("Correo", text: $email)
+                    .accessibilityLabel("Correo")
                     .textContentType(.emailAddress)
                     #if os(iOS)
                     .keyboardType(.emailAddress)
                     .textInputAutocapitalization(.never)
                     #endif
                 TextField("Teléfono", text: $phone)
+                    .accessibilityLabel("Teléfono")
                     #if os(iOS)
                     .textContentType(.telephoneNumber)
                     .keyboardType(.phonePad)
                     #endif
                 TextField("Dirección de facturación", text: $billingAddress, axis: .vertical)
+                    .accessibilityLabel("Dirección de facturación")
                 PostalCodeField(text: $postalCode, title: "Código postal de entrega")
             }
             // Canvas `ClienteFicha` · Contacto: «Laura Méndez · Gerente».
             Section {
                 TextField("Nombre", text: $contactName, prompt: Text("Nombre de la persona"))
+                    .accessibilityLabel("Nombre de la persona de contacto")
                     .textContentType(.name)
                 TextField("Cargo", text: $contactTitle, prompt: Text("Cargo (opcional)"))
+                    .accessibilityLabel("Cargo de la persona de contacto")
                     .textContentType(.jobTitle)
             } header: {
                 SectionLabel(text: String(localized: "Persona de contacto"))
@@ -1000,6 +1008,7 @@ struct CustomerEditorView: View {
             // «Facturación» y no «Cobro»: en inglés «Cobro» es «Payment received» (el asiento) y aquí no pegaba (8-nov).
             Section(title: "Facturación") {
                 TextField("ID fiscal", text: $taxID, prompt: Text("ID fiscal (opcional)"))
+                    .accessibilityLabel("ID fiscal")
                 Picker("Condiciones de pago", selection: $terms) {
                     Text("Al recibir").tag(0)
                     Text("Neto 15").tag(15)
@@ -1011,7 +1020,10 @@ struct CustomerEditorView: View {
                     ForEach(taxGroups) { Text($0.name).tag(Optional($0.id)) }
                 }
                 Toggle("Exento de sales tax", isOn: $isTaxExempt)
-                if isTaxExempt { TextField("Motivo (reventa, sin fines de lucro…)", text: $exemptionReason) }
+                if isTaxExempt {
+                    TextField("Motivo (reventa, sin fines de lucro…)", text: $exemptionReason)
+                        .accessibilityLabel("Motivo de la exención")
+                }
                 // Sales tax por código postal (`Sales/PostalTax/`): la tasa de una venta a este cliente.
                 if !isTaxExempt, PostalTaxTable.normalized(postalCode) != nil {
                     PostalTaxSuggestionView(postalCode: postalCode, customer: draftForTax) { id in

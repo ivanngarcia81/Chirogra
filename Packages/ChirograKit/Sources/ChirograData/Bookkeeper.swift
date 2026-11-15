@@ -729,19 +729,35 @@ public struct Bookkeeper {
 
     // MARK: - Antigüedad
 
-    /// Antigüedad de cuentas por cobrar: facturas emitidas con saldo, por cliente.
+    /// Antigüedad de cuentas por cobrar: facturas emitidas con saldo, por cliente, con el saldo que tenían a esa fecha
+    /// (QA Hudson, H19): el de hoy más lo cobrado o acreditado después. Las emitidas después no cuentan.
     public func receivablesAging(asOf date: Date = Date(), calendar: Calendar = .current) throws -> AgingReport {
-        let items = try fetch(Invoice.self).filter { $0.isOpen && $0.balanceDue != 0 }.map {
-            AgingReport.OpenItem(party: $0.customer?.name ?? String(localized: "Sin cliente"), document: $0.number, dueDate: $0.dueDate, balance: $0.balanceDue)
-        }
+        let limit = Self.endOfDay(date, calendar)
+        let items = try fetch(Invoice.self).filter { $0.status != .draft && $0.status != .void && $0.issueDate <= limit }
+            .compactMap { invoice -> AgingReport.OpenItem? in
+                let paidLater = (invoice.paymentApplications ?? []).filter { ($0.payment?.date ?? .distantPast) > limit }
+                    .reduce(0) { $0 + $1.amount }
+                let creditedLater = (invoice.creditApplications ?? []).filter { $0.date > limit }.reduce(0) { $0 + $1.amount }
+                let balance = invoice.balanceDue + paidLater + creditedLater
+                guard balance > 0 else { return nil }
+                return AgingReport.OpenItem(party: invoice.customer?.name ?? String(localized: "Sin cliente"), document: invoice.number,
+                                            dueDate: invoice.dueDate, balance: balance)
+            }
         return ReportBuilder.aging(items: items, asOf: date, calendar: calendar)
     }
 
-    /// Antigüedad de cuentas por pagar: facturas de proveedor registradas con saldo, por proveedor.
+    /// Antigüedad de cuentas por pagar: facturas de proveedor registradas con saldo, por proveedor, con el saldo que
+    /// tenían a esa fecha (el de hoy más lo pagado después). Las de fecha posterior no cuentan.
     public func payablesAging(asOf date: Date = Date(), calendar: Calendar = .current) throws -> AgingReport {
-        let items = try fetch(Bill.self).filter { $0.isOpen && $0.journalEntryID != nil && $0.balanceDue != 0 }.map {
-            AgingReport.OpenItem(party: $0.vendor?.name ?? String(localized: "Sin proveedor"), document: $0.vendorNumber, dueDate: $0.dueDate, balance: $0.balanceDue)
-        }
+        let limit = Self.endOfDay(date, calendar)
+        let items = try fetch(Bill.self).filter { $0.status != .void && $0.journalEntryID != nil && $0.billDate <= limit }
+            .compactMap { bill -> AgingReport.OpenItem? in
+                let paidLater = (bill.payments ?? []).filter { $0.date > limit }.reduce(0) { $0 + $1.amount }
+                let balance = bill.balanceDue + paidLater
+                guard balance > 0 else { return nil }
+                return AgingReport.OpenItem(party: bill.vendor?.name ?? String(localized: "Sin proveedor"), document: bill.vendorNumber,
+                                            dueDate: bill.dueDate, balance: balance)
+            }
         return ReportBuilder.aging(items: items, asOf: date, calendar: calendar)
     }
 

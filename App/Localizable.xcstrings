@@ -3817,6 +3817,16 @@
         }
       }
     },
+    "Al %@ · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "As of %@ · %@"
+          }
+        }
+      }
+    },
     "Al %@ · %@ · %@" : {
       "localizations" : {
         "en" : {
@@ -6584,6 +6594,16 @@
         }
       }
     },
+    "Cargo de la persona de contacto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contact person's title"
+          }
+        }
+      }
+    },
     "Cargos" : {
       "localizations" : {
         "en" : {
@@ -7646,6 +7666,16 @@
         }
       }
     },
+    "Con una conciliación en curso: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "With a reconciliation in progress: %@"
+          }
+        }
+      }
+    },
     "Con una contraseña de cierre, solo quien la sepa podrá registrar o cambiar algo con fecha cerrada. Sin ella, se podrá hacer escribiendo el motivo, que quedará en el historial." : {
       "localizations" : {
         "en" : {
@@ -7737,6 +7767,26 @@
         }
       }
     },
+    "Conciliaciones bancarias" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bank Reconciliations"
+          }
+        }
+      }
+    },
+    "Conciliaciones terminadas en el periodo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reconciliations Completed in the Period"
+          }
+        }
+      }
+    },
     "Conciliación" : {
       "localizations" : {
         "en" : {
@@ -7763,6 +7813,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Reconciliation discarded"
+          }
+        }
+      }
+    },
+    "Conciliación en curso" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reconciliation in progress"
           }
         }
       }
@@ -11132,6 +11192,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Choose the account and amount for each line."
+          }
+        }
+      }
+    },
+    "Elige las fechas del periodo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose the period dates"
           }
         }
       }
@@ -15311,6 +15381,16 @@
         }
       }
     },
+    "Importe sin conciliar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uncleared Amount"
+          }
+        }
+      }
+    },
     "Importe total" : {
       "localizations" : {
         "en" : {
@@ -18235,6 +18315,16 @@
         }
       }
     },
+    "Nada pendiente a esta fecha." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing outstanding as of this date."
+          }
+        }
+      }
+    },
     "Nada pendiente." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -19274,6 +19364,16 @@
         }
       }
     },
+    "Nombre de la persona de contacto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contact person's name"
+          }
+        }
+      }
+    },
     "Nombre de quien lo aceptó" : {
       "localizations" : {
         "en" : {
@@ -19695,6 +19795,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Never"
+          }
+        }
+      }
+    },
+    "Nunca conciliada" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Never reconciled"
           }
         }
       }
@@ -20848,12 +20958,42 @@
         }
       }
     },
+    "Partidas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Items"
+          }
+        }
+      }
+    },
     "Partidas marcadas" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Items checked"
+          }
+        }
+      }
+    },
+    "Partidas sin conciliar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uncleared Items"
+          }
+        }
+      }
+    },
+    "Partidas sin conciliar al %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uncleared items as of %@"
           }
         }
       }
@@ -21765,6 +21905,16 @@
         }
       }
     },
+    "Precio, línea %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Price, line %lld"
+          }
+        }
+      }
+    },
     "Precios con impuesto incluido" : {
       "localizations" : {
         "en" : {
@@ -21973,6 +22123,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Product or service"
+          }
+        }
+      }
+    },
+    "Producto o servicio, línea %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Product or service, line %lld"
           }
         }
       }
@@ -24521,6 +24681,16 @@
         }
       }
     },
+    "Saldo del extracto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Statement Balance"
+          }
+        }
+      }
+    },
     "Saldo después" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -24579,6 +24749,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Book balance · %@ · %@"
+          }
+        }
+      }
+    },
+    "Saldo extracto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Statement Balance"
           }
         }
       }
@@ -25934,6 +26114,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No bank accounts"
+          }
+        }
+      }
+    },
+    "Sin cuentas de banco ni tarjetas." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No bank or credit card accounts."
           }
         }
       }
@@ -27352,6 +27542,16 @@
         }
       }
     },
+    "Terminada el" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Completed On"
+          }
+        }
+      }
+    },
     "Terminada · %@" : {
       "localizations" : {
         "en" : {
@@ -28048,6 +28248,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Total payable"
+          }
+        }
+      }
+    },
+    "Total sin conciliar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total Uncleared"
           }
         }
       }
@@ -29888,6 +30098,26 @@
         }
       }
     },
+    "Volver al actual" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Back to Current"
+          }
+        }
+      }
+    },
+    "Volver al periodo actual" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Back to Current Period"
+          }
+        }
+      }
+    },
     "Vs. anterior" : {
       "localizations" : {
         "en" : {
@@ -31187,6 +31417,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Last sync"
+          }
+        }
+      }
+    },
+    "Último extracto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last Statement"
           }
         }
       }

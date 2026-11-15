@@ -228,10 +228,63 @@ struct PhaseTwoReportsTests {
         #expect(package.incomeStatement.totalIncome == 20_000)
         #expect(package.balanceSheet.isBalanced && package.trialBalance.isBalanced && package.cashFlow.isReconciled)
         #expect(package.taxSummary?.total(of: "1") == 20_000)
-        #expect(package.files.count == 6)
+        #expect(package.files.count == 9)   // + antigüedad por cobrar y por pagar y conciliaciones (H19)
         #expect(package.files.allSatisfy { $0.name.hasSuffix(".csv") && !$0.data.isEmpty })
         let journal = try #require(package.files.first { $0.contents.contains("F-1001") })
         #expect(journal.contents.split(separator: "\n").count == 1 + 4)   // cabecera + 2 asientos de 2 líneas
+    }
+
+    @Test("H19: antigüedad con el saldo que había al final del periodo, no el de hoy")
+    func agingAsOfPeriodEnd() throws {
+        let checking = try account("1010")
+        let invoice = try issue(amount: 50_000, on: day(-40))           // vence el mismo día
+        try books.recordPayment(for: invoice, amount: 30_000, date: day(-5), depositAccount: checking)
+        _ = try issue(amount: 9_000, on: day(-3))                        // emitida después del corte
+        let cut = try books.receivablesAging(asOf: day(-10))
+        #expect(cut.total == 50_000 && cut.total(for: .days1to30) == 50_000)
+        let now = try books.receivablesAging(asOf: today)
+        #expect(now.total == 20_000 + 9_000)
+
+        let vendor = Vendor(name: "Maderas")
+        books.insert(vendor)
+        let bill = Bill(vendor: vendor, vendorNumber: "B-1", billDate: day(-50))
+        books.insert(bill)
+        let line = BillLine(details: "Madera", amount: 40_000, accountID: try account("5000").id)
+        line.bill = bill
+        books.insert(line)
+        try books.record(bill)
+        try books.pay(bill, amount: 40_000, date: day(-5), from: checking)
+        #expect(try books.payablesAging(asOf: day(-10)).total == 40_000)
+        #expect(try books.payablesAging(asOf: today).total == 0)
+    }
+
+    @Test("H19: conciliaciones al final del periodo con lo que queda sin conciliar")
+    func reconciliationReport() throws {
+        let checking = try account("1010")
+        try books.recordOpeningBalances(bank: 500_000, on: day(-40))
+        _ = try books.createExpense(ExpenseInput(date: day(-20), payee: "Renta", paymentAccountID: checking.id,
+                                                 lines: [.init(amount: 120_000, accountID: try account("6400").id)]))
+        _ = try books.createExpense(ExpenseInput(date: day(-8), payee: "Cheque sin cobrar", paymentAccountID: checking.id,
+                                                 lines: [.init(amount: 4_500, accountID: try account("6500").id)]))
+        let session = try books.startReconciliation(for: checking, statementDate: day(-15), endingBalance: 380_000)
+        try books.setCleared(try books.reconciliationLines(session), true, in: session)
+        try books.completeReconciliation(session)
+
+        let report = try books.reconciliationReport(from: day(-30), to: day(-1))
+        let row = try #require(report.accounts.first { $0.code == "1010" })
+        #expect(row.lastStatementBalance == 380_000 && row.bookBalance == 375_500)
+        #expect(row.unclearedCount == 1 && row.unclearedTotal == -4_500 && !row.inProgress)
+        #expect(report.completed.count == 1 && report.completed[0].clearedCount == 2)
+        #expect(report.uncleared.map(\.memo).allSatisfy { $0.contains("Cheque sin cobrar") })
+        // Antes del extracto: aún no estaba conciliada y todo queda sin conciliar.
+        let before = try books.reconciliationReport(from: day(-60), to: day(-18))
+        let early = try #require(before.accounts.first { $0.code == "1010" })
+        #expect(early.lastStatementDate == nil && early.unclearedCount == 2 && early.bookBalance == 380_000)
+
+        let csv = CSVExport.reconciliations(report)
+        #expect(csv.hasPrefix("Conciliaciones bancarias\n"))
+        #expect(csv.contains("Código,Cuenta,Último extracto,Saldo del extracto,Saldo en libros,Partidas sin conciliar,Importe sin conciliar,Estado"))
+        #expect(csv.contains(",3800.00,3755.00,1,-45.00,"))
     }
 
     @Test("Sales tax por código postal: sugiere con origen o destino y crea el grupo si falta")

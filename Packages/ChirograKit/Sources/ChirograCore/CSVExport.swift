@@ -34,7 +34,9 @@ public enum CSVExport {
     }
 
     public static func incomeStatement(_ report: IncomeStatement, previous: IncomeStatement? = nil, calendar: Calendar = .current) -> String {
-        let header = previous == nil ? [String(localized: "Cuenta"), String(localized: "Importe")] : [String(localized: "Cuenta"), String(localized: "Actual"), String(localized: "Anterior")]
+        // Con el código de cada cuenta, como el balance y la balanza (QA Hudson, H19).
+        let header = [String(localized: "Código"), String(localized: "Cuenta")]
+            + (previous == nil ? [String(localized: "Importe")] : [String(localized: "Actual"), String(localized: "Anterior")])
         func values(_ current: Int64, _ prior: Int64?) -> [String] {
             previous == nil ? [amount(current)] : [amount(current), amount(prior ?? 0)]
         }
@@ -46,9 +48,9 @@ public enum CSVExport {
                 guard let account = all.first(where: { $0.account.id == id })?.account else { continue }
                 let current = rows.first { $0.account.id == id }?.amount ?? 0
                 let prior = prior?.first { $0.account.id == id }?.amount
-                result.append(["  \(account.name)"] + values(current, prior))
+                result.append(["  \(account.code)", account.name] + values(current, prior))
             }
-            result.append([total.0] + values(total.1, total.2))
+            result.append([total.0, ""] + values(total.1, total.2))
             return result
         }
 
@@ -56,9 +58,9 @@ public enum CSVExport {
         rows += section(String(localized: "Ingresos"), report.income, previous?.income, total: (String(localized: "Total ingresos"), report.totalIncome, previous?.totalIncome))
         rows += section(String(localized: "Costo de ventas"), report.costOfGoodsSold, previous?.costOfGoodsSold,
                         total: (String(localized: "Total costo de ventas"), report.totalCostOfGoodsSold, previous?.totalCostOfGoodsSold))
-        rows.append([String(localized: "Utilidad bruta")] + values(report.grossProfit, previous?.grossProfit))
+        rows.append([String(localized: "Utilidad bruta"), ""] + values(report.grossProfit, previous?.grossProfit))
         rows += section(String(localized: "Gastos"), report.expenses, previous?.expenses, total: (String(localized: "Total gastos"), report.totalExpenses, previous?.totalExpenses))
-        rows.append([String(localized: "Ganancia neta")] + values(report.netIncome, previous?.netIncome))
+        rows.append([String(localized: "Ganancia neta"), ""] + values(report.netIncome, previous?.netIncome))
         return lines(rows)
     }
 

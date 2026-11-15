@@ -927,12 +927,16 @@ struct VendorEditorView: View {
         Form {
             if let errorMessage { ErrorBanner(message: errorMessage) }
             Section {
+                // Con etiqueta de accesibilidad: en un `Form` de iOS el título solo es el texto de ejemplo (QA Hudson, H22).
                 TextField("Nombre o empresa", text: $name)
+                    .accessibilityLabel("Nombre o empresa")
                 TextField("Correo", text: $email)
+                    .accessibilityLabel("Correo")
                     #if os(iOS)
                     .keyboardType(.emailAddress).textInputAutocapitalization(.never)
                     #endif
                 TextField("Teléfono", text: $phone)
+                    .accessibilityLabel("Teléfono")
                     #if os(iOS)
                     .keyboardType(.phonePad)
                     #endif
@@ -956,7 +960,9 @@ struct VendorEditorView: View {
             }
             Section {
                 Toggle("Sujeto a 1099", isOn: $is1099)
-                if is1099 { TextField("Últimos 4 dígitos del TIN", text: $tinLast4) }
+                if is1099 {
+                    TextField("Últimos 4 dígitos del TIN", text: $tinLast4).accessibilityLabel("Últimos 4 dígitos del TIN")
+                }
                 Toggle("W-9 recibido", isOn: $w9Received.animation())
                 if w9Received {
                     DatePicker("Recibido el", selection: $w9Date, displayedComponents: .date)
