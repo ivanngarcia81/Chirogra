@@ -5,6 +5,8 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 
 ## Estado
 
+- **15-nov: `main` = `version-1.3`** (merge `d083f0c`, build 46, pedido del usuario), empujadas; la web ya enseña la
+  guía de la 1.3 (comprobado en chirogra.com). Lo de abajo sobre «`main` = `version-1.2`» es anterior.
 - **`main` = `version-1.2`** (unidas el 12-nov, fast-forward pedido por el usuario), empujadas. La web (`sitio/`) se
   publica desde `main`, así que ya enseña la 1.2 (guía e icono nuevo).
 - **Último build subido: 43 (1.2.0)**, para iOS y macOS (13-nov, noche): iconos de color en la barra lateral y hoja de planes del Mac (tabla).

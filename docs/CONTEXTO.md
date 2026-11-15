@@ -12,6 +12,7 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
 
 ## Dónde nos quedamos (empieza aquí)
 
+- **15-nov: `main` = `version-1.3`** (merge `d083f0c`, con el build 46), empujadas; web publicada con la guía de la 1.3.
 - **`main` lleva todo** (fase 2 sin servidor unida el 9-nov, merge `6f745a4`) y está empujado. El 9-nov se borraron
   las worktrees y ramas locales de los agentes y `fase2-integracion` (todo estaba ya en `main`); en GitHub sigue
   `origin/fase2-integracion`, igual que lo unido.
