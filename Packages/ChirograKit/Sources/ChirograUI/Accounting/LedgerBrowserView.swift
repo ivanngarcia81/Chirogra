@@ -1,6 +1,5 @@
 import ChirograCore
 import ChirograData
-import SwiftData
 import SwiftUI
 
 /// Libro mayor en iPad y Mac (canvas `MacLibroMayor`): la cuenta y el periodo en la barra, el resumen del periodo

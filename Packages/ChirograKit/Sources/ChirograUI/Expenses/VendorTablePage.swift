@@ -1,7 +1,6 @@
 #if os(macOS)
 import ChirograCore
 import ChirograData
-import SwiftData
 import SwiftUI
 
 /// Mac: Proveedores como tabla + inspector (canvas `MacProveedores`). Arriba el segmentado Todos · Con saldo · 1099 con

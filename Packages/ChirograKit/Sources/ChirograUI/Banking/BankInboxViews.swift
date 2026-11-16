@@ -255,9 +255,7 @@ struct BankInboxScreen: View {
         .inlineTitle()
         .sheet(item: $reviewing) { BankReviewSheet(start: $0).editorSheetSizing() }
         .bankExclusionDialog($excluding) { target, reason in act { try Bookkeeper(context: modelContext).ignore(target, reason: reason) } }
-        .alert("No se pudo completar", isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
-            Button("Aceptar", role: .cancel) {}
-        } message: { Text(errorMessage ?? "") }
+        .failureAlert($errorMessage)
     }
 
     private func act(_ body: () throws -> Void) {
@@ -952,9 +950,7 @@ struct BankInboxMasterList: View {
         }
         .sheet(isPresented: $importing) { NavigationStack { BankImportView(preferredAccountID: accountID) }.editorSheetSizing() }
         .bankExclusionDialog($excluding) { target, reason in act { try Bookkeeper(context: modelContext).ignore(target, reason: reason) } }
-        .alert("No se pudo completar", isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
-            Button("Aceptar", role: .cancel) {}
-        } message: { Text(errorMessage ?? "") }
+        .failureAlert($errorMessage)
         .onChange(of: focus.requested) { _, id in
             guard let id else { return }
             selection = id

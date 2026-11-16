@@ -239,11 +239,7 @@ struct ReconciliationView: View {
         .inlineTitle()
         #endif
         .onAppear(perform: prepare)
-        .alert("No se pudo completar", isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
-            Button("Aceptar", role: .cancel) {}
-        } message: {
-            Text(errorMessage ?? "")
-        }
+        .failureAlert($errorMessage)
         .confirmationDialog("¿Cancelar la conciliación?", isPresented: $confirmingCancel, titleVisibility: .visible) {
             Button("Cancelar conciliación", role: .destructive) { run { try books.cancelReconciliation($0) } }
             Button("Seguir conciliando", role: .cancel) {}

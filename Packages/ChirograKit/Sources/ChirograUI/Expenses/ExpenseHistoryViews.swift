@@ -1,6 +1,5 @@
 import ChirograCore
 import ChirograData
-import SwiftData
 import SwiftUI
 
 /// Estado de un gasto que se muestra junto al importe (lo normal, contabilizado, no lleva estado).

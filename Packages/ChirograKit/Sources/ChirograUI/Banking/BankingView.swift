@@ -105,9 +105,7 @@ struct BankingView: View {
             }
         }
         .stableDestination(isPresented: $qaRules) { BankRulesView() }
-        .alert("No se pudo completar", isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
-            Button("Aceptar", role: .cancel) {}
-        } message: { Text(errorMessage ?? "") }
+        .failureAlert($errorMessage)
         #if DEBUG
         .task {
             try? await Task.sleep(for: .seconds(1))

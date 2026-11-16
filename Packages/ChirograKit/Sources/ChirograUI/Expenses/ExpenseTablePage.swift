@@ -226,12 +226,7 @@ struct ExpenseTablePage: View {
             }
             attachingTo = nil
         }
-        .confirmationDialog("¿Quitar este recibo?", isPresented: Binding(get: { removing != nil }, set: { if !$0 { removing = nil } }),
-                            titleVisibility: .visible, presenting: removing) { attachment in
-            Button("Quitar \(attachment.filename)", role: .destructive) { remove(attachment) }
-        } message: { _ in
-            Text("El gasto y su asiento no cambian; solo se borra el archivo adjunto.")
-        }
+        .receiptRemovalDialog($removing, remove: remove)
         .quickLookPreview($previewURL, in: previewURLs)
         #if DEBUG
         .task { await runQAActions() }

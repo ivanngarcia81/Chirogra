@@ -85,14 +85,6 @@ struct BudgetsView: View {
         return dynamicTypeSize < .accessibility3 && (width == 0 || width >= 600)
     }
 
-    private var isMac: Bool {
-        #if os(macOS)
-        true
-        #else
-        false
-        #endif
-    }
-
     // MARK: Página
 
     var body: some View {

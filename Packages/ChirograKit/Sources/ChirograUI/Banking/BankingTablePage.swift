@@ -1,7 +1,6 @@
 #if os(macOS)
 import ChirograCore
 import ChirograData
-import SwiftData
 import SwiftUI
 
 /// Mac: Banca como tabla + inspector (canvas `BancaCuentas`). Arriba, las cuentas de dinero como tarjetas que se eligen

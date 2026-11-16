@@ -145,11 +145,7 @@ struct ClientsView: View {
         } message: { _ in
             Text(deleteMessage)
         }
-        .alert("No se pudo completar", isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
-            Button("Aceptar", role: .cancel) {}
-        } message: {
-            Text(errorMessage ?? "")
-        }
+        .failureAlert($errorMessage)
         .fileExporter(isPresented: Binding(get: { backup != nil }, set: { if !$0 { backup = nil } }),
                       document: backup, contentType: .chirograBackup,
                       defaultFilename: BackupArchive.suggestedFilename(companyName: backupName)) { result in

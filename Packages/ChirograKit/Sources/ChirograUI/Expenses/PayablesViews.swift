@@ -62,6 +62,24 @@ extension Bill {
     }
 }
 
+/// La factura arriba de «Programar pago» y «Pagar factura»: proveedor, número, vencimiento y saldo.
+struct BillSummarySection: View {
+    let bill: Bill
+
+    var body: some View {
+        Section {
+            LabeledContent("Proveedor", value: bill.vendor?.name ?? "—")
+            if !bill.vendorNumber.isEmpty { LabeledContent("Número", value: bill.vendorNumber) }
+            LabeledContent("Vence") {
+                Text(bill.dueDate.shortDate).foregroundStyle(bill.isOverdue ? Palette.negative : Palette.ink2)
+            }
+            LabeledContent("Saldo", value: bill.balanceDue.money).monospacedDigit()
+        } header: {
+            SectionLabel(text: String(localized: "Factura"))
+        }
+    }
+}
+
 // MARK: - Programar pago
 
 /// Programar (o cambiar) el pago de una factura por pagar (canvas `ProveedorFicha`: «Pagar desde», «Fecha de pago»,
@@ -85,16 +103,7 @@ struct SchedulePaymentView: View {
     var body: some View {
         Form {
             if let errorMessage { ErrorBanner(message: errorMessage) }
-            Section {
-                LabeledContent("Proveedor", value: bill.vendor?.name ?? "—")
-                if !bill.vendorNumber.isEmpty { LabeledContent("Número", value: bill.vendorNumber) }
-                LabeledContent("Vence") {
-                    Text(bill.dueDate.shortDate).foregroundStyle(bill.isOverdue ? Palette.negative : Palette.ink2)
-                }
-                LabeledContent("Saldo", value: bill.balanceDue.money).monospacedDigit()
-            } header: {
-                SectionLabel(text: String(localized: "Factura"))
-            }
+            BillSummarySection(bill: bill)
             Section {
                 PaymentAccountPicker(title: String(localized: "Pagar desde"), accounts: paymentAccounts, selection: $accountID)
                 DatePicker("Fecha de pago", selection: $date, displayedComponents: .date)
