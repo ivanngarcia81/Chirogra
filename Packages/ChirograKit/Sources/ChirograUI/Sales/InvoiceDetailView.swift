@@ -382,7 +382,7 @@ struct InvoiceDetailView: View {
                           invoice.status == .paid))
         }
         return VStack(alignment: .leading, spacing: 0) {
-            sectionLabel(String(localized: "Actividad"))
+            DetailSectionLabel(text: String(localized: "Actividad"))
             VStack(spacing: 0) {
                 ForEach(steps.indices, id: \.self) { index in
                     let step = steps[index]
@@ -416,7 +416,7 @@ struct InvoiceDetailView: View {
 
     private var paymentSection: some View {
         VStack(alignment: .leading, spacing: 0) {
-            sectionLabel(String(localized: "Registrar pago"))
+            DetailSectionLabel(text: String(localized: "Registrar pago"))
             InlineTip(tip: RecordPaymentTip()).padding(.bottom, 8)
             VStack(spacing: 0) {
                 FilterPicker(title: String(localized: "Tipo de pago"), options: PaymentMode.allCases, selection: $paymentMode, label: \.localizedTitle)
@@ -543,18 +543,9 @@ struct InvoiceDetailView: View {
 
     // MARK: Líneas, totales y créditos
 
-    /// Encabezado de grupo del canvas («Registrar pago», «Actividad»): `.footnote` gris, alineado con el texto.
-    private func sectionLabel(_ text: String) -> some View {
-        SectionLabel(text: text)
-            .accessibilityAddTraits(.isHeader)
-            .padding(.horizontal, Metrics.cardPadding)
-            .padding(.top, 22)
-            .padding(.bottom, 7)
-    }
-
     private var linesSection: some View {
         VStack(alignment: .leading, spacing: 0) {
-            sectionLabel(String(localized: "Productos y servicios"))
+            DetailSectionLabel(text: String(localized: "Productos y servicios"))
             VStack(spacing: 0) {
                 ForEach(Array(invoice.sortedLines.enumerated()), id: \.element.id) { index, line in
                     if index > 0 { Divider().padding(.leading, Metrics.cardPadding) }
@@ -620,7 +611,7 @@ struct InvoiceDetailView: View {
         let applications = (invoice.creditApplications ?? []).sorted { $0.date < $1.date }
         if !notes.isEmpty {
             VStack(alignment: .leading, spacing: 0) {
-                sectionLabel(String(localized: "Notas de crédito de esta factura"))
+                DetailSectionLabel(text: String(localized: "Notas de crédito de esta factura"))
                 VStack(spacing: 0) {
                     ForEach(Array(notes.enumerated()), id: \.element.id) { index, note in
                         if index > 0 { Divider().padding(.leading, Metrics.cardPadding) }
@@ -648,7 +639,7 @@ struct InvoiceDetailView: View {
         }
         if !applications.isEmpty {
             VStack(alignment: .leading, spacing: 0) {
-                sectionLabel(String(localized: "Créditos aplicados"))
+                DetailSectionLabel(text: String(localized: "Créditos aplicados"))
                 VStack(spacing: 0) {
                     ForEach(Array(applications.enumerated()), id: \.element.id) { index, application in
                         if index > 0 { Divider().padding(.leading, Metrics.cardPadding) }
@@ -887,5 +878,19 @@ private struct DetailTitle: ViewModifier {
     let shown: Bool
     func body(content: Content) -> some View {
         if shown { content.navigationTitle(title).inlineTitle() } else { content }
+    }
+}
+
+/// Encabezado de grupo del canvas en los detalles de factura y de estimado («Registrar pago», «Actividad»,
+/// «Conceptos»): `.footnote` gris, alineado con el texto de las tarjetas.
+struct DetailSectionLabel: View {
+    let text: String
+
+    var body: some View {
+        SectionLabel(text: text)
+            .accessibilityAddTraits(.isHeader)
+            .padding(.horizontal, Metrics.cardPadding)
+            .padding(.top, 22)
+            .padding(.bottom, 7)
     }
 }

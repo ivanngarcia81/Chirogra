@@ -209,6 +209,7 @@ struct ReportsView: View {
     private var companyName: String {
         companies.first.map { $0.displayName.isEmpty ? $0.legalName : $0.displayName } ?? ""
     }
+    private var currencyCode: String { companies.first?.currencyCode ?? "USD" }
 
     var body: some View {
         // Presupuestos: su propia página (lista de presupuestos, editor y real contra presupuesto).
@@ -411,7 +412,7 @@ struct ReportsView: View {
 
     private var subtitle: String {
         switch kind {
-        case .income, .balance, .cashFlow: String(localized: "\(companyName) · \(basisText) · \(companies.first?.currencyCode ?? "USD")")
+        case .income, .balance, .cashFlow: String(localized: "\(companyName) · \(basisText) · \(currencyCode)")
         case .trial: String(localized: "Saldos al \(asOf.shortDate) · \(trialBalanceReport.rows.count) cuentas con movimiento · \(basisText)")
         case .receivables: String(localized: "Facturas de clientes abiertas · \(lateTotal(receivablesReport).money) vencido")
         case .payables: String(localized: "Facturas de proveedores abiertas · \(lateTotal(payablesReport).money) vencido")
@@ -421,6 +422,14 @@ struct ReportsView: View {
     }
 
     private func lateTotal(_ report: AgingReport) -> Int64 { report.total - report.total(for: .current) }
+
+    /// Rango de los estados en el documento del Mac y el PDF: «Octubre de 2026 · devengado · USD» o, con fecha de
+    /// corte, «Al 31 oct 2026 · devengado · USD».
+    private var periodRange: String { String(localized: "\(rangeTitle) · \(basisText) · \(currencyCode)") }
+    private var asOfRange: String { String(localized: "Al \(asOf.shortDate) · \(basisText) · \(currencyCode)") }
+
+    /// Número del trimestre (1 a 4) de una fecha.
+    private func quarterNumber(_ date: Date) -> Int { (Calendar.current.component(.month, from: date) - 1) / 3 + 1 }
 
     /// «Octubre de 2026», «T4 2026 (oct–dic)» o «1 ene – 31 dic 2026».
     private var rangeTitle: String {
@@ -436,7 +445,7 @@ struct ReportsView: View {
         let start = interval(offset: offset).start
         switch period {
         case .month, .custom: return start.monthYear
-        case .quarter: return String(localized: "T\((Calendar.current.component(.month, from: start) - 1) / 3 + 1) \(start.formatted(.appDateTime.year()))")
+        case .quarter: return quarterTitle(of: start)
         case .year: return start.formatted(.appDateTime.year())
         }
     }
@@ -446,7 +455,7 @@ struct ReportsView: View {
         let start = interval(offset: -1).start
         switch period {
         case .month, .custom: return start.formatted(.appDateTime.month(.wide))
-        case .quarter: return String(localized: "T\((Calendar.current.component(.month, from: start) - 1) / 3 + 1)")
+        case .quarter: return String(localized: "T\(quarterNumber(start))")
         case .year: return start.formatted(.appDateTime.year())
         }
     }
@@ -473,7 +482,7 @@ struct ReportsView: View {
         let year = start.formatted(.appDateTime.year())
         switch period {
         case .month: return short ? start.shortMonth.sentenceCased : "\(start.shortMonth.sentenceCased) \(year)"
-        case .quarter: return String(localized: "T\((Calendar.current.component(.month, from: start) - 1) / 3 + 1) \(year)")
+        case .quarter: return quarterTitle(of: start)
         case .year: return year
         case .custom: return offset == 0 ? String(localized: "Actual") : String(localized: "Anterior")
         }
@@ -493,6 +502,8 @@ struct ReportsView: View {
         /// Clave propia (flujo de efectivo: la misma cuenta puede salir en dos secciones).
         var key: String? = nil
         var id: String { key ?? account.map(\.id.uuidString) ?? "\(name)-\(style)" }
+        /// Peso de la fila en las listas del iPhone y del iPad (el documento del Mac usa el suyo).
+        var listWeight: Font.Weight { switch style { case .line: .regular; case .total: .semibold; case .result, .grand: .bold } }
     }
 
     private struct Block: Identifiable {
@@ -610,6 +621,14 @@ struct ReportsView: View {
     private var phoneIncome: some View {
         let current = incomeStatement(interval())
         let previous = incomeStatement(interval(offset: -1))
+        phoneStatementControls
+        netIncomeCard(current, previous).padding(.top, 16)
+        ForEach(incomeBlocks) { block in phoneBlock(block) }
+    }
+
+    /// Mes · Trimestre · Año, el periodo, la base y «Comparar con septiembre» de Resultados y Flujo de efectivo.
+    @ViewBuilder
+    private var phoneStatementControls: some View {
         periodPicker.padding(.top, 4)
         phonePeriodNavigator
         phoneBasis
@@ -618,8 +637,6 @@ struct ReportsView: View {
                 .padding(.horizontal, 16).frame(minHeight: Metrics.target).padding(.vertical, 4)
         }
         .padding(.top, 12)
-        netIncomeCard(current, previous).padding(.top, 16)
-        ForEach(incomeBlocks) { block in phoneBlock(block) }
     }
 
     private func netIncomeCard(_ current: IncomeStatement, _ previous: IncomeStatement) -> some View {
@@ -668,7 +685,7 @@ struct ReportsView: View {
     @ViewBuilder
     private func phoneBlock(_ block: Block) -> some View {
         if let title = block.title {
-            SectionLabel(text: title).padding(.horizontal, Metrics.gutter).padding(.top, 22).padding(.bottom, 7)
+            phoneSectionLabel(title)
         }
         RowGroup(macBorder: true) {
             // Solo el total: el grupo no tuvo movimientos.
@@ -682,7 +699,7 @@ struct ReportsView: View {
     }
 
     private func phoneLine(_ line: Line) -> some View {
-        let weight: Font.Weight = switch line.style { case .line: .regular; case .total: .semibold; case .result, .grand: .bold }
+        let weight = line.listWeight
         let amountColor = line.style == .grand && kind == .income && line.amount != 0 ? (line.amount > 0 ? Palette.positive : Palette.negative) : Palette.ink
         return AdaptiveRow {
             Text(line.name).fontWeight(weight).foregroundStyle(Palette.ink)
@@ -694,10 +711,12 @@ struct ReportsView: View {
                 }
             }
         }
-        .monospacedDigit()
-        .padding(.horizontal, 16).padding(.vertical, 8)
-        .frame(maxWidth: .infinity, minHeight: Metrics.target, alignment: .leading)
-        .accessibilityElement(children: .combine)
+        .phoneReportRow()
+    }
+
+    /// Encabezado de un grupo del iPhone (`.footnote` gris, alineado con el texto de las filas).
+    private func phoneSectionLabel(_ text: String) -> some View {
+        SectionLabel(text: text).padding(.horizontal, Metrics.gutter).padding(.top, 22).padding(.bottom, 7)
     }
 
     private static var qaPeriodOffset: Int {
@@ -798,32 +817,29 @@ struct ReportsView: View {
 
     /// Cifra grande con la variación del efectivo del periodo y, debajo, el efectivo al inicio y al final.
     private func cashFlowCard(_ report: CashFlowStatement) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
+        phoneFigureCard {
             Text("Variación del efectivo · \(periodName(offset: 0))").font(.subheadline).foregroundStyle(Palette.ink2)
             Text(signedMoney(report.netCashChange)).font(.amount(36)).foregroundStyle(Palette.ink).lineLimit(1).minimumScaleFactor(0.5)
             Text("Al inicio \(report.beginningCash.money) · al final \(report.endingCash.money)")
                 .font(.footnote).foregroundStyle(Palette.ink2)
-            balanceStatus(report.isReconciled, text: report.isReconciled ? String(localized: "Cuadra con caja y bancos")
-                          : String(localized: "No cuadra con caja y bancos"))
+            cashStatus(report)
                 .padding(.top, 6)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(18)
-        .background(Palette.surface, in: RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous))
-        .accessibilityElement(children: .combine)
+    }
+
+    /// Cifra grande del iPhone en su tarjeta: leyenda, importe y notas, leídos como un solo elemento.
+    private func phoneFigureCard<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 2) { content() }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(18)
+            .background(Palette.surface, in: RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous))
+            .accessibilityElement(children: .combine)
     }
 
     @ViewBuilder
     private var phoneCashFlow: some View {
         let report = cashFlowStatement(interval())
-        periodPicker.padding(.top, 4)
-        phonePeriodNavigator
-        phoneBasis
-        RowGroup(macBorder: true) {
-            Toggle(String(localized: "Comparar con \(previousName)"), isOn: $compare).tint(Palette.green)
-                .padding(.horizontal, 16).frame(minHeight: Metrics.target).padding(.vertical, 4)
-        }
-        .padding(.top, 12)
+        phoneStatementControls
         cashFlowCard(report).padding(.top, 16)
         ForEach(cashFlowBlocks) { phoneBlock($0) }
         Text("Parte de la ganancia neta y quita lo que no movió dinero: lo que te deben, lo que debes, equipo y préstamos.")
@@ -883,12 +899,18 @@ struct ReportsView: View {
         .foregroundStyle(balanced ? Palette.positive : Palette.negative)
     }
 
+    /// El flujo de efectivo frente al saldo de caja y bancos.
+    private func cashStatus(_ report: CashFlowStatement) -> some View {
+        balanceStatus(report.isReconciled, text: report.isReconciled ? String(localized: "Cuadra con caja y bancos")
+                      : String(localized: "No cuadra con caja y bancos"))
+    }
+
     @ViewBuilder
     private var phoneTrial: some View {
         let report = trialBalanceReport
         phoneAsOf
         phoneBasis
-        SectionLabel(text: String(localized: "Cuentas")).padding(.horizontal, Metrics.gutter).padding(.top, 22).padding(.bottom, 7)
+        phoneSectionLabel(String(localized: "Cuentas"))
         RowGroup(macBorder: true) {
             if report.rows.isEmpty { phoneLine(Line(name: String(localized: "Sin movimientos"), amount: 0)) }
             ForEach(report.rows) { row in
@@ -903,9 +925,7 @@ struct ReportsView: View {
                         Text(row.debit == 0 ? String(localized: "Crédito") : String(localized: "Débito")).font(.footnote).foregroundStyle(Palette.ink2)
                     }
                 }
-                .monospacedDigit()
-                .padding(.horizontal, 16).padding(.vertical, 8).frame(maxWidth: .infinity, minHeight: Metrics.target, alignment: .leading)
-                .accessibilityElement(children: .combine)
+                .phoneReportRow()
             }
         }
         RowGroup(macBorder: true) {
@@ -933,7 +953,7 @@ struct ReportsView: View {
     @ViewBuilder
     private func phoneAging(_ report: AgingReport, empty: String) -> some View {
         phoneAsOf
-        SectionLabel(text: String(localized: "Por antigüedad")).padding(.horizontal, Metrics.gutter).padding(.top, 22).padding(.bottom, 7)
+        phoneSectionLabel(String(localized: "Por antigüedad"))
         RowGroup(macBorder: true) {
             ForEach(AgingReport.Bucket.allCases, id: \.self) { bucket in
                 let amount = report.total(for: bucket)
@@ -942,14 +962,11 @@ struct ReportsView: View {
                 } trailing: {
                     Text(amount.money).foregroundStyle(bucket != .current && amount > 0 ? Palette.negative : Palette.ink)
                 }
-                .monospacedDigit()
-                .padding(.horizontal, 16).padding(.vertical, 8).frame(maxWidth: .infinity, minHeight: Metrics.target, alignment: .leading)
-                .accessibilityElement(children: .combine)
+                .phoneReportRow()
             }
             phoneLine(Line(name: String(localized: "Total abierto"), amount: report.total, style: .total))
         }
-        SectionLabel(text: kind == .receivables ? String(localized: "Clientes") : String(localized: "Proveedores"))
-            .padding(.horizontal, Metrics.gutter).padding(.top, 22).padding(.bottom, 7)
+        phoneSectionLabel(kind == .receivables ? String(localized: "Clientes") : String(localized: "Proveedores"))
         RowGroup(macBorder: true) {
             if report.rows.isEmpty {
                 Text(empty).font(.subheadline).foregroundStyle(Palette.ink2)
@@ -981,24 +998,20 @@ struct ReportsView: View {
         let report = salesTaxReport
         periodPicker.padding(.top, 4)
         phonePeriodNavigator
-        VStack(alignment: .leading, spacing: 2) {
+        phoneFigureCard {
             Text("Impuesto cobrado · \(periodName(offset: 0))").font(.subheadline).foregroundStyle(Palette.ink2)
             Text(report.totalTax.money).font(.amount(36)).foregroundStyle(Palette.ink).lineLimit(1).minimumScaleFactor(0.5)
             Text("\(report.from.shortDate) – \(report.to.shortDate)").font(.footnote).foregroundStyle(Palette.ink2)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(18)
-        .background(Palette.surface, in: RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous))
-        .accessibilityElement(children: .combine)
         .padding(.top, 16)
-        SectionLabel(text: String(localized: "Ventas")).padding(.horizontal, Metrics.gutter).padding(.top, 22).padding(.bottom, 7)
+        phoneSectionLabel(String(localized: "Ventas"))
         RowGroup(macBorder: true) {
             phoneLine(Line(name: String(localized: "Gravables"), amount: report.taxableSales))
             phoneLine(Line(name: String(localized: "No gravables"), amount: report.nonTaxableSales))
             phoneLine(Line(name: String(localized: "Exentas (clientes exentos)"), amount: report.exemptSales))
             phoneLine(Line(name: String(localized: "Ventas totales"), amount: report.totalSales, style: .total))
         }
-        SectionLabel(text: String(localized: "Por tasa")).padding(.horizontal, Metrics.gutter).padding(.top, 22).padding(.bottom, 7)
+        phoneSectionLabel(String(localized: "Por tasa"))
         RowGroup(macBorder: true) {
             if report.rows.isEmpty {
                 Text("Sin impuesto cobrado en el periodo.").foregroundStyle(Palette.ink2)
@@ -1013,9 +1026,7 @@ struct ReportsView: View {
                 } trailing: {
                     Text(row.tax.money).foregroundStyle(Palette.ink)
                 }
-                .monospacedDigit()
-                .padding(.horizontal, 16).padding(.vertical, 8).frame(maxWidth: .infinity, minHeight: Metrics.target, alignment: .leading)
-                .accessibilityElement(children: .combine)
+                .phoneReportRow()
             }
         }
     }
@@ -1057,13 +1068,9 @@ struct ReportsView: View {
         wideSubtitle
         if isMac {
             kpiRow(incomeKPIs(current, previous))
-            statementDocument(title: Kind.income.fullTitle, range: String(localized: "\(rangeTitle) · \(basisText) · \(companies.first?.currencyCode ?? "USD")"),
-                              blocks: incomeBlocks, columns: incomeColumns)
+            statementDocument(title: Kind.income.fullTitle, range: periodRange, blocks: incomeBlocks, columns: incomeColumns)
         } else {
-            RowGroup(macBorder: true) {
-                Toggle("Comparar con periodo anterior", isOn: $compare).tint(Palette.green)
-                    .padding(.horizontal, 16).frame(minHeight: 52)
-            }
+            wideCompareToggle
             statementGroups(blocks: incomeBlocks, columns: incomeColumns).padding(.top, 14)
         }
     }
@@ -1084,23 +1091,25 @@ struct ReportsView: View {
                     footColor: report.isReconciled ? Palette.ink2 : Palette.negative),
         ])
         if isMac {
-            statementDocument(title: Kind.cashFlow.fullTitle,
-                              range: String(localized: "\(rangeTitle) · \(basisText) · \(companies.first?.currencyCode ?? "USD")"),
-                              blocks: cashFlowBlocks, columns: incomeColumns)
+            statementDocument(title: Kind.cashFlow.fullTitle, range: periodRange, blocks: cashFlowBlocks, columns: incomeColumns)
         } else {
-            RowGroup(macBorder: true) {
-                Toggle("Comparar con periodo anterior", isOn: $compare).tint(Palette.green)
-                    .padding(.horizontal, 16).frame(minHeight: 52)
-            }
+            wideCompareToggle
             statementGroups(blocks: cashFlowBlocks, columns: incomeColumns).padding(.top, 14)
         }
         HStack(spacing: 8) {
-            balanceStatus(report.isReconciled, text: report.isReconciled ? String(localized: "Cuadra con caja y bancos")
-                          : String(localized: "No cuadra con caja y bancos"))
+            cashStatus(report)
             Text("Método indirecto: parte de la ganancia neta y quita lo que no movió dinero.")
                 .font(.footnote).foregroundStyle(Palette.ink2)
         }
         .padding(.horizontal, 2).padding(.top, 10)
+    }
+
+    /// «Comparar con periodo anterior» de Resultados y Flujo de efectivo en el iPad.
+    private var wideCompareToggle: some View {
+        RowGroup(macBorder: true) {
+            Toggle("Comparar con periodo anterior", isOn: $compare).tint(Palette.green)
+                .padding(.horizontal, 16).frame(minHeight: 52)
+        }
     }
 
     private func incomeKPIs(_ current: IncomeStatement, _ previous: IncomeStatement) -> [KPIItem] {
@@ -1153,13 +1162,18 @@ struct ReportsView: View {
         return columns
     }
 
+    /// «Cuenta» y los títulos de las columnas de importes.
+    private func columnHeader(_ columns: [AmountColumn]) -> some View {
+        HStack(spacing: 0) {
+            Text("Cuenta").frame(maxWidth: .infinity, alignment: .leading)
+            ForEach(columns) { Text($0.title).lineLimit(1).frame(width: $0.width, alignment: .trailing).padding(.leading, 8) }
+        }
+    }
+
     /// `iPadPyG`: cabecera de columnas fuera de las tarjetas y cada grupo con su encabezado y su celda de radio 24.
     private func statementGroups(blocks: [Block], columns: [AmountColumn]) -> some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack(spacing: 0) {
-                Text("Cuenta").frame(maxWidth: .infinity, alignment: .leading)
-                ForEach(columns) { Text($0.title).lineLimit(1).frame(width: $0.width, alignment: .trailing).padding(.leading, 8) }
-            }
+            columnHeader(columns)
             .font(.footnote).foregroundStyle(Palette.ink2)
             .padding(.horizontal, 16).padding(.bottom, 2)
             .accessibilityHidden(true)
@@ -1171,7 +1185,7 @@ struct ReportsView: View {
                 }
                 RowGroup(macBorder: true) {
                     ForEach(block.lines) { line in
-                        let weight: Font.Weight = switch line.style { case .line: .regular; case .total: .semibold; case .result, .grand: .bold }
+                        let weight = line.listWeight
                         HStack(spacing: 0) {
                             Text(line.name).fontWeight(weight).foregroundStyle(Palette.ink).lineLimit(2)
                                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -1211,10 +1225,7 @@ struct ReportsView: View {
             .accessibilityElement(children: .combine)
             .accessibilityAddTraits(.isHeader)
 
-            HStack(spacing: 0) {
-                Text("Cuenta").frame(maxWidth: .infinity, alignment: .leading)
-                ForEach(columns) { Text($0.title).lineLimit(1).frame(width: $0.width, alignment: .trailing).padding(.leading, 8) }
-            }
+            columnHeader(columns)
             .font(.label).foregroundStyle(Palette.ink2)
             .padding(.horizontal, 8)
             .frame(minHeight: 26)
@@ -1312,9 +1323,7 @@ struct ReportsView: View {
             },
         ]
         if isMac {
-            statementDocument(title: Kind.balance.fullTitle,
-                              range: String(localized: "Al \(asOf.shortDate) · \(basisText) · \(companies.first?.currencyCode ?? "USD")"),
-                              blocks: balanceBlocks, columns: columns)
+            statementDocument(title: Kind.balance.fullTitle, range: asOfRange, blocks: balanceBlocks, columns: columns)
         } else {
             statementGroups(blocks: balanceBlocks, columns: columns)
         }
@@ -1530,8 +1539,12 @@ struct ReportsView: View {
     }
 
     private func quarterTitle(_ offset: Int) -> String {
-        let start = Period.quarter.interval(offset: offset).start
-        return String(localized: "T\((Calendar.current.component(.month, from: start) - 1) / 3 + 1) \(start.formatted(.appDateTime.year()))")
+        quarterTitle(of: Period.quarter.interval(offset: offset).start)
+    }
+
+    /// «T4 2026»: el trimestre que empieza en `start`.
+    private func quarterTitle(of start: Date) -> String {
+        String(localized: "T\(quarterNumber(start)) \(start.formatted(.appDateTime.year()))")
     }
 
     private var quarterPicker: some View {
@@ -1634,10 +1647,8 @@ struct ReportsView: View {
     /// Filas que se pueden elegir, en el orden del reporte (la primera es la elegida si no hay otra).
     private var macRowKeys: [String] {
         switch kind {
-        case .income: incomeBlocks(comparing: true).flatMap(\.lines).map(\.id)
-        case .balance: balanceBlocks.flatMap(\.lines).map(\.id)
+        case .income, .balance, .cashFlow: macStatementLines.map(\.id)
         case .trial: trialBalanceReport.rows.map(\.account.id.uuidString)
-        case .cashFlow: cashFlowBlocks(comparing: true).flatMap(\.lines).map(\.id)
         case .receivables: receivablesReport.rows.map { "party:\($0.party)" }
         case .payables: payablesReport.rows.map { "party:\($0.party)" }
         case .salesTax: salesTaxQuarterRows.map(\.key)
@@ -1665,19 +1676,30 @@ struct ReportsView: View {
     private var macInspectorTitle: String {
         guard let key = macSelectedKey else { return kind.fullTitle }
         switch kind {
-        case .income: return incomeBlocks(comparing: true).flatMap(\.lines).first { $0.id == key }?.name ?? kind.fullTitle
-        case .balance: return balanceBlocks.flatMap(\.lines).first { $0.id == key }?.name ?? kind.fullTitle
+        case .income, .balance, .cashFlow: return macStatementLines.first { $0.id == key }?.name ?? kind.fullTitle
         case .trial: return trialBalanceReport.rows.first { $0.account.id.uuidString == key }?.account.name ?? kind.fullTitle
-        case .cashFlow: return cashFlowBlocks(comparing: true).flatMap(\.lines).first { $0.id == key }?.name ?? kind.fullTitle
         case .budget: return kind.fullTitle
         case .receivables, .payables: return String(key.dropFirst("party:".count))
         case .salesTax: return salesTaxQuarterRows.first { $0.key == key }?.name ?? kind.fullTitle
         }
     }
 
-    /// Cuenta del libro de una fila del reporte (para «Ver en el libro mayor»).
-    private func bookAccount(_ id: UUID?) -> Account? {
-        id.flatMap { id in accounts.first { $0.id == id } }
+    /// Filas de los estados (resultados, balance y flujo) como las ve el inspector: comparando siempre.
+    private var macStatementLines: [Line] {
+        switch kind {
+        case .income: incomeBlocks(comparing: true).flatMap(\.lines)
+        case .balance: balanceBlocks.flatMap(\.lines)
+        case .cashFlow: cashFlowBlocks(comparing: true).flatMap(\.lines)
+        case .trial, .receivables, .payables, .salesTax, .budget: []
+        }
+    }
+
+    /// «Ver en el libro mayor» de la cuenta del libro de una fila del reporte, si la tiene.
+    @ViewBuilder
+    private func ledgerButton(_ id: UUID?) -> some View {
+        if let account = id.flatMap({ id in accounts.first { $0.id == id } }) {
+            Button("Ver en el libro mayor") { openedAccount = account }.buttonStyle(.primary)
+        }
     }
 
     /// «Cuenta», «Total de sección», «Subtotal» (utilidad bruta), «Resultado» (los del ejercicio en el balance) o el del
@@ -1716,25 +1738,15 @@ struct ReportsView: View {
     private var macInspectorActions: some View {
         if let key = macSelectedKey {
             switch kind {
-            case .income:
-                if let account = bookAccount(incomeBlocks(comparing: true).flatMap(\.lines).first { $0.id == key }?.account?.id) {
-                    Button("Ver en el libro mayor") { openedAccount = account }.buttonStyle(.primary)
-                }
-            case .balance:
-                if let account = bookAccount(balanceBlocks.flatMap(\.lines).first { $0.id == key }?.account?.id) {
-                    Button("Ver en el libro mayor") { openedAccount = account }.buttonStyle(.primary)
-                }
+            case .income, .balance:
+                ledgerButton(macStatementLines.first { $0.id == key }?.account?.id)
             case .cashFlow:
-                if let account = bookAccount(cashFlowBlocks(comparing: true).flatMap(\.lines).first { $0.id == key }?.account?.id) {
-                    Button("Ver en el libro mayor") { openedAccount = account }.buttonStyle(.primary)
-                }
+                ledgerButton(macStatementLines.first { $0.id == key }?.account?.id)
                 Button("Exportar para mi contador…") { exportingPackage = true }.buttonStyle(.secondary)
             case .budget:
                 EmptyView()
             case .trial:
-                if let account = bookAccount(UUID(uuidString: key)) {
-                    Button("Ver en el libro mayor") { openedAccount = account }.buttonStyle(.primary)
-                }
+                ledgerButton(UUID(uuidString: key))
                 SectionLink(item: .accounting(.chart)) { ChartOfAccountsView() } label: { Text("Plan de cuentas") }
                     .buttonStyle(.secondary)
             case .receivables:
@@ -1774,8 +1786,7 @@ struct ReportsView: View {
     /// `MacPyG`: la fila con el periodo, su variación frente al anterior, la comparación y su peso en los ingresos.
     @ViewBuilder
     private func incomeInspector(_ key: String) -> some View {
-        let lines = incomeBlocks(comparing: true).flatMap(\.lines)
-        if let line = lines.first(where: { $0.id == key }) {
+        if let line = macStatementLines.first(where: { $0.id == key }) {
             let previous = line.previous ?? 0
             let delta = line.amount - previous
             let percent = percentChange(line.amount, previous)
@@ -1787,11 +1798,7 @@ struct ReportsView: View {
                     .foregroundStyle(color(for: delta, line.trend))
             }
             MacInspectorSection(title: String(localized: "Comparación")) {
-                MacCompareBars(current: (columnTitle(offset: 0), line.amount), previous: (columnTitle(offset: -1), previous))
-                    .padding(.vertical, 6)
-                MacInspectorRow(columnTitle(offset: 0), value: line.amount.money)
-                MacInspectorRow(columnTitle(offset: -1), value: previous.money)
-                MacInspectorRow(String(localized: "Variación"), value: signedMoney(delta), color: color(for: delta, line.trend))
+                comparisonRows(line)
                 MacInspectorRow(String(localized: "Porcentaje"), value: percent ?? "—", color: color(for: delta, line.trend))
             }
             MacInspectorSection(title: String(localized: "Proporción")) {
@@ -1802,24 +1809,28 @@ struct ReportsView: View {
         }
     }
 
+    /// Barras, periodo, anterior y variación de una fila de resultados o del flujo (en el flujo todas suben bien).
+    @ViewBuilder
+    private func comparisonRows(_ line: Line) -> some View {
+        let previous = line.previous ?? 0
+        let delta = line.amount - previous
+        MacCompareBars(current: (columnTitle(offset: 0), line.amount), previous: (columnTitle(offset: -1), previous))
+            .padding(.vertical, 6)
+        MacInspectorRow(columnTitle(offset: 0), value: line.amount.money)
+        MacInspectorRow(columnTitle(offset: -1), value: previous.money)
+        MacInspectorRow(String(localized: "Variación"), value: signedMoney(delta), color: color(for: delta, line.trend))
+    }
+
     /// Flujo de efectivo: la fila en el periodo frente al anterior y qué significa.
     @ViewBuilder
     private func cashFlowInspector(_ key: String) -> some View {
-        if let line = cashFlowBlocks(comparing: true).flatMap(\.lines).first(where: { $0.id == key }) {
-            let previous = line.previous ?? 0
-            let delta = line.amount - previous
+        if let line = macStatementLines.first(where: { $0.id == key }) {
             MacReportFigure(caption: "\(lineKindTitle(line, grand: String(localized: "Resultado"))) · \(periodName(offset: 0))",
                             amount: line.amount.money) {
                 Text(line.amount >= 0 ? String(localized: "Entra dinero") : String(localized: "Sale dinero"))
                     .foregroundStyle(Palette.ink2)
             }
-            MacInspectorSection(title: String(localized: "Comparación")) {
-                MacCompareBars(current: (columnTitle(offset: 0), line.amount), previous: (columnTitle(offset: -1), previous))
-                    .padding(.vertical, 6)
-                MacInspectorRow(columnTitle(offset: 0), value: line.amount.money)
-                MacInspectorRow(columnTitle(offset: -1), value: previous.money)
-                MacInspectorRow(String(localized: "Variación"), value: signedMoney(delta), color: color(for: delta, .upIsGood))
-            }
+            MacInspectorSection(title: String(localized: "Comparación")) { comparisonRows(line) }
             MacInspectorSection(title: String(localized: "Base")) {
                 MacInspectorRow(String(localized: "Base contable"), value: basis.title)
             }
@@ -2055,20 +2066,18 @@ struct ReportsView: View {
 
     /// El reporte como documento para el PDF (los estados; la antigüedad y el sales tax se exportan en CSV).
     private var pdfDocument: ReportDocument? {
-        let currency = companies.first?.currencyCode ?? "USD"
         let columns = [columnTitle(offset: 0)] + (compare ? [columnTitle(offset: -1)] : [])
-        let range = String(localized: "\(rangeTitle) · \(basisText) · \(currency)")
         switch kind {
         case .income:
             return .incomeStatement(incomeStatement(interval()), previous: compare ? incomeStatement(interval(offset: -1)) : nil,
-                                    columns: columns, subtitle: range)
+                                    columns: columns, subtitle: periodRange)
         case .balance:
-            return .balanceSheet(balanceSheetReport, subtitle: String(localized: "Al \(asOf.shortDate) · \(basisText) · \(currency)"))
+            return .balanceSheet(balanceSheetReport, subtitle: asOfRange)
         case .trial:
-            return .trialBalance(trialBalanceReport, subtitle: String(localized: "Al \(asOf.shortDate) · \(basisText) · \(currency)"))
+            return .trialBalance(trialBalanceReport, subtitle: asOfRange)
         case .cashFlow:
             return .cashFlow(cashFlowStatement(interval()), previous: compare ? cashFlowStatement(interval(offset: -1)) : nil,
-                             columns: columns, subtitle: range)
+                             columns: columns, subtitle: periodRange)
         case .receivables, .payables, .salesTax, .budget:
             return nil
         }
@@ -2076,6 +2085,17 @@ struct ReportsView: View {
 }
 
 // MARK: - Piezas
+
+private extension View {
+    /// Medidas de una fila de los reportes del iPhone: cifras tabulares, 16 × 8 de margen, 44 pt de alto y un solo
+    /// elemento de accesibilidad.
+    func phoneReportRow() -> some View {
+        monospacedDigit()
+            .padding(.horizontal, 16).padding(.vertical, 8)
+            .frame(maxWidth: .infinity, minHeight: Metrics.target, alignment: .leading)
+            .accessibilityElement(children: .combine)
+    }
+}
 
 /// Barras del periodo (Tinta) frente al anterior (gris) por concepto (`ReportePyG`), con guías y escala a la derecha.
 private struct ComparisonBars: View {

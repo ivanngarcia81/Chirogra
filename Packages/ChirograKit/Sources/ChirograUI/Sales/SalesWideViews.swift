@@ -1,6 +1,5 @@
 import ChirograCore
 import ChirograData
-import SwiftData
 import SwiftUI
 
 extension Customer {

@@ -1,7 +1,6 @@
 #if os(iOS)
 import ChirograCore
 import ChirograData
-import SwiftData
 import SwiftUI
 
 /// Filtro de la columna maestro de estimados (los `rawValue` son las etiquetas en español del catálogo).

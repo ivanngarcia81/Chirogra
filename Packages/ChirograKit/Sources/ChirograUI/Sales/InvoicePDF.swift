@@ -85,8 +85,6 @@ struct SalesDocument {
         }
     }
 
-    var hasTaxableLines: Bool { lines.contains(where: \.isTaxable) }
-
     init(invoice: Invoice) {
         kind = .invoice
         number = invoice.number
@@ -585,6 +583,22 @@ struct DocumentPageThumbnail: View {
 // MARK: - Vista previa
 
 /// Vista previa de una factura (también un borrador desde el editor).
+/// «Para <cliente>» y el importe, a la izquierda de la barra inferior de la vista previa y de «Enviar».
+struct DocumentRecipientSummary: View {
+    let document: SalesDocument
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text("Para \(document.customerName.isEmpty ? String(localized: "Sin cliente") : document.customerName)")
+                .font(.footnote).foregroundStyle(Palette.ink2).lineLimit(1)
+            Text(document.amount.money).font(.headline).monospacedDigit().foregroundStyle(Palette.ink)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.leading, 14)
+        .accessibilityElement(children: .combine)
+    }
+}
+
 struct InvoicePreviewView: View {
     let invoice: Invoice
     let company: Company?
@@ -632,14 +646,7 @@ struct DocumentPreviewView: View {
         }
         .background(Palette.background)
         .bottomActionBar {
-            VStack(alignment: .leading, spacing: 0) {
-                Text("Para \(document.customerName.isEmpty ? String(localized: "Sin cliente") : document.customerName)")
-                    .font(.footnote).foregroundStyle(Palette.ink2).lineLimit(1)
-                Text(document.amount.money).font(.headline).monospacedDigit().foregroundStyle(Palette.ink)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.leading, 14)
-            .accessibilityElement(children: .combine)
+            DocumentRecipientSummary(document: document)
             if let pdf {
                 ShareLink(item: pdf, subject: Text(pdf.filename), preview: SharePreview(pdf.filename)) {
                     Label("Compartir", systemImage: "square.and.arrow.up")

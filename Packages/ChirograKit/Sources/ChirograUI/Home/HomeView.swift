@@ -662,10 +662,7 @@ struct HomeView: View {
             if pickerOnTop && title == nil { legend }
         }
         .padding(.horizontal, 16).padding(.top, 14).padding(.bottom, 16)
-        .background(Palette.surface, in: RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous))
-        #if os(macOS)
-        .overlay(RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous).strokeBorder(Palette.separator, lineWidth: 0.5))
-        #endif
+        .homeCard()
     }
 
     private var monthsPicker: some View {
@@ -833,10 +830,7 @@ struct HomeView: View {
     /// La fila del sales tax como tarjeta (iPhone y Mac).
     private var salesTaxCard: some View {
         salesTaxRow
-            .background(Palette.surface, in: RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous))
-            #if os(macOS)
-            .overlay(RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous).strokeBorder(Palette.separator, lineWidth: 0.5))
-            #endif
+            .homeCard()
     }
 
     // MARK: Por pagar
@@ -1481,10 +1475,7 @@ struct HomeView: View {
                 stepRow(step)
             }
         }
-        .background(Palette.surface, in: RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous))
-        #if os(macOS)
-        .overlay(RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous).strokeBorder(Palette.separator, lineWidth: 0.5))
-        #endif
+        .homeCard()
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Primeros pasos")
     }
@@ -1553,6 +1544,16 @@ private struct StepAccessibility: ViewModifier {
 }
 
 // MARK: - Filas del canvas
+
+private extension View {
+    /// Tarjeta de Inicio: la celda de radio 24 y, en el Mac, su filete de 0,5 pt.
+    func homeCard() -> some View {
+        background(Palette.surface, in: RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous))
+            #if os(macOS)
+            .overlay(RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous).strokeBorder(Palette.separator, lineWidth: 0.5))
+            #endif
+    }
+}
 
 /// Fila del canvas `Home`: icono opcional, título `.body` y subtítulo `.footnote` gris, importe a la derecha y chevron.
 /// Con letra de accesibilidad, todo en columna.
