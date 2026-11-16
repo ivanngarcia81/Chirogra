@@ -874,9 +874,7 @@ public struct Bookkeeper {
 
     func saveOrRollback() throws {
         do {
-            try ensureWritable()
-            stampInsertedModels()
-            try context.save()
+            try commit()
         } catch {
             context.rollback()
             throw error

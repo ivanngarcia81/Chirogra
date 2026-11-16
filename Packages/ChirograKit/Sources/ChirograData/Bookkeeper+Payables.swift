@@ -1,6 +1,5 @@
 import ChirograCore
 import Foundation
-import SwiftData
 
 /// Resultado de registrar pagos programados: los que se registraron y los que no se pudieron (con el motivo).
 public struct ScheduledPaymentRun {

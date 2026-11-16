@@ -1,4 +1,3 @@
-import ChirograCore
 import Foundation
 
 // Enumeraciones que los modelos guardan como texto (`…Raw`). Viven fuera de los esquemas: los esquemas congelados
