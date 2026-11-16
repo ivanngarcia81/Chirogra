@@ -1,25 +1,20 @@
-# Chirogra: resumen para empezar el siguiente chat (13-nov-2026, tarde)
+# Chirogra: resumen para empezar el siguiente chat (15-nov-2026)
 
 Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («Dónde nos quedamos» y «Siguiente»).
 **Al usuario se le habla siempre en español.**
 
 ## Estado
 
-- **15-nov: `main` = `version-1.3`** (merge `d083f0c`, build 46, pedido del usuario), empujadas; la web ya enseña la
-  guía de la 1.3 (comprobado en chirogra.com). Lo de abajo sobre «`main` = `version-1.2`» es anterior.
-- **`main` = `version-1.2`** (unidas el 12-nov, fast-forward pedido por el usuario), empujadas. La web (`sitio/`) se
-  publica desde `main`, así que ya enseña la 1.2 (guía e icono nuevo).
-- **Último build subido: 43 (1.2.0)**, para iOS y macOS (13-nov, noche): iconos de color en la barra lateral y hoja de planes del Mac (tabla).
-  Antes, el **42** (13-nov, tarde): lo borrado ya no vuelve de iCloud y «Borrar todo y empezar de cero». La 1.1 sigue en
-  el **30**.
-  Para subirlo hubo que contestar en App Store Connect el aviso del DSA de la UE (sin él, «You do not have required
-  contracts»); se recomendó «not a trader / no EU».
-- **1.0 (build 11):** en revisión de Apple («Waiting for Review» varios días al 13-nov). **Decidido el 13-nov:** cuando
-  la aprueben se envía **directo la 1.3** (su último build), sin la 1.0.1, la 1.1 ni la 1.2, con un «What's New» que
-  junte las tres.
-- **1.1.0:** lista en el **build 30**. Lleva toda la fase 2 (decisión del 9-nov) y lo hecho el 10-nov.
-- **1.2.0:** lista en el **build 43** (rama `version-1.2`, [DATOS-V5.md](DATOS-V5.md)). Esquema 5 desplegado y probado
-  en Producción. Textos para la tienda en [APP-STORE.md](APP-STORE.md), «Versión 1.2.0».
+- **Ramas:** `main` = `version-1.3` (merge `d083f0c` del 15-nov, más `1eb280f` y `db519c1`), todo empujado y la carpeta
+  limpia. La web (`sitio/`) se publica desde `main` y ya enseña la 1.3 y el icono χρ (comprobado en chirogra.com).
+- **Último build: 46 (1.3.0)**, subido a TestFlight para iOS y macOS el 15-nov. El 45 (icono χρ) se subió el 14-nov.
+- **En App Store Connect:** la **1.0 (build 11)** espera la revisión. **Decidido el 13-nov:** cuando la aprueben se envía
+  **directo la 1.3** con su último build, sin la 1.0.1, la 1.1 ni la 1.2, con un «What's New» que junte las tres. El plan
+  «Chirogra para contadores» está completo en App Store Connect y va en ese envío (no pulsar «Add for Review» suelto).
+- **Aparatos del usuario:** iPhone y Mac con el código del 45 (icono χρ, instalado el 14-nov desde Xcode con iCloud de
+  Producción). El 46 no está instalado en ninguno. El iPad sigue sin instalar desde el 41 (lo hace él; no insistir).
+- **Plan de la 2.0:** escrito en [PLAN-2.0.md](PLAN-2.0.md) (commit `0f16d46`); el código empieza cuando la 1.3 esté en la
+  tienda.
 
 | Build | Commit | Qué trae |
 |---|---|---|
@@ -49,85 +44,47 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 | 45 | `55add7e` | 1.3.0: icono χρ (χ blanca, ρ azafrán) en la app, la bienvenida y la web. |
 | 46 | `786f6fa` | 1.3.0: la tabla de Clientes del iPad ya no pinta su fondo blanco (`.scrollContentBackground(.hidden)`): va sobre el gris de la pantalla y se distingue de la barra lateral (pedido del 15-nov). |
 
-## Último chat (13-nov)
+## Último chat (14 y 15-nov)
 
-- **Build 46 (1.3.0, 15-nov) SUBIDO a TestFlight (iOS y macOS)**, `786f6fa` empujado en `version-1.3`: tabla de Clientes
-  del iPad sobre el gris de la pantalla en vez de blanca (el usuario la veía del mismo color que la barra lateral).
-  Visto en el simulador del iPad en claro y oscuro. No instalado en los aparatos.
-
-- **Icono χρ (14-nov), rama `version-1.3`, commiteado y empujado el 14-nov:** el `AppIcon.icon` nuevo del usuario (χ blanca, ρ azafrán),
-  `LogoMark` y la bienvenida con `ChiGlyph` + `RhoGlyph`, icono de la web y capturas `bienvenida-es/en.jpg` rehechas.
-  Instalado en el iPhone y el Mac (Producción). **Build 45 (1.3.0) SUBIDO a TestFlight (iOS y macOS, 14-nov)**, compilado
-  desde la carpeta sin commitear (número 45 en `project.yml` y pbxproj). Detalle en CONTEXTO, «Ícono».
-
-- **Plan de la 2.0 (13-nov):** [PLAN-2.0.md](PLAN-2.0.md), con las decisiones del usuario (híbrido, Supabase aparte,
-  Plaid solo lectura con Statements, el contador gratis por iCloud, Stripe sin comisión, nómina base + por empleado,
-  todo junto, solo EE. UU.). Para Plaid, equipo nuevo «Chirogra» (no el de Tamio). Sin código hasta que la 1.3 esté en
-  la tienda.
-- **1.3.0 (13-nov noche), rama `version-1.3` (empujada; `main` sigue en la 1.2):** H04, H19 y H22 hechos; H23 no se
-  reproduce (sin cambios). **Build 44 (1.3.0) subido a TestFlight (iOS y macOS, 13-nov noche).** Detalle en CONTEXTO, «1.3.0». La 1.3 se envía después de la 1.2 (que
-  sigue en el build 43). «What's New» y notas de la 1.3 en APP-STORE.md; guía es/en al día (flechas del iPhone, paquete del
-  contador) y capturas `copias-es/en.jpg` rehechas (se publican al unir `version-1.3` a `main`).
-- **Build 43 (13-nov noche, `809bb88`):** (1) **iconos de color en las subsecciones de la barra lateral**
-  (decisión del usuario entre Tinta y colores, con muestra real): `SidebarItem.systemImage`/`color` en `Sidebar.swift`,
-  los de Reportes y Contabilidad son los de «Más» del iPhone; también en el iPad (compilado, no visto: en vertical la
-  barra se cierra). (2) **Hoja de planes del Mac:** StoreKit apilaba «Accept Offer», «Redeem Code» y «Restore» en la
-  franja fija de abajo y tapaban el segundo plan; ahora «Restaurar compras» y «Canjear código» son enlaces bajo el texto
-  (`macStoreLinks`), la hoja mide 760 (contadores 680) y el encabezado es más compacto. Visto con los planes reales en
-  el Mac del usuario (instalado encima, Producción). Para ver la hoja sin empresa hizo falta una compilación de un solo
-  uso con `-verPlanes` (no está en el repo): la hoja solo sale sola con una empresa en solo lectura.
-- **Lo borrado volvía de iCloud (13-nov, tarde).** El usuario contó que al borrar una empresa o querer empezar de cero,
-  la app lo restauraba. En la base del Mac (copia en el scratchpad) se vio que los borrados **sí llegan** por iCloud (el
-  Mac recibió el de seis empresas desde el 10-nov); lo que pasa es que otro aparato que aún tiene esos libros los vuelve
-  a subir (automatizaciones al abrir antes de recibir el borrado, encender iCloud con libros propios, o borrar los
-  datos de iCloud desde los Ajustes del sistema). El usuario eligió hacerlo en la **1.2 (build 42)**. Detalle en
-  CONTEXTO, «Build 42». No contestó qué hizo exactamente para «empezar de cero».
-  - Comprobado: 343 pruebas (5 nuevas en `DeletedCompaniesTests`), app firmada de iOS y del Mac con el permiso nuevo, y
-    en una copia del Mac (`com.chirogra.qa.borrar`, ejecutable renombrado a «ChirograQA» para System Events) la sección,
-    la confirmación (BORRAR activa el botón, en minúsculas también), el borrado y las tres hojas (`-qa.empezarDeCero
-    subiendo|listo|pendiente`). Subido a TestFlight (iOS y macOS). **Probado entre aparatos:** Saturn LLC borrada en el iPhone desapareció del Mac al abrirlo y no volvió. Para eso hubo que pasar el Mac a iCloud de **Producción** (las instalaciones desde Xcode iban a Development; CONTEXTO, «Instalar en los aparatos»); su base anterior está en `~/Documents/Chirogra-respaldo-Mac-desarrollo-13nov`.
-- **Icono nuevo, la χ cursiva, y build 41 (12-nov noche):** `App/AppIcon.icon` = archivo del usuario; `LogoMark` con
-  `ChiGlyph` (generado del SVG: si cambia el icono, regenerarlo). Subido iOS y macOS (`ad59089`), instalado en el
-  iPhone y el Mac; **el iPad no** (lo hace el usuario).
-- Los worktrees `Chirogra-pestanas` y
-  `Chirogra-QA-Hudson` se borraron el 13-nov (pedido del usuario); el detalle de H04/H19/H22/H23 para la 1.3 quedó en
-  CONTEXTO.
-- Truco de capturas de la guía: la copia del Mac con `defaultSize` de 900×1040 en `App/ChirograApp.swift` (solo en la
-  copia) y `-qa.alta 1 -qa.altaEstado TX -qa.altaCiudad Austin -qa.altaCiudadTasa 2 -qa.altaZip 78702`; recorte de
-  600 px de ancho desde (150, 48).
-- **Plan de la 2.0 escrito** (13-nov): [PLAN-2.0.md](PLAN-2.0.md).
+- **Icono χρ (build 45, `55add7e`, 14-nov):** el `AppIcon.icon` del usuario (χ blanca y ρ azafrán `#F2B33D` sobre el
+  degradado índigo) copiado tal cual a `App/AppIcon.icon`. Dentro de la app, `LogoMark` dibuja lo mismo con `ChiGlyph`
+  y `RhoGlyph` (`DesignSystem/ChiGlyph.swift`, generados de los dos `<path>` del SVG: si cambia el icono, regenerarlos)
+  y `Palette.logoRho`. La bienvenida dibuja el contorno de la χ, luego el de la ρ, y las rellena. También el icono de la
+  web y las capturas `bienvenida-es/en.jpg` de la guía. Detalle en CONTEXTO, «Ícono».
+- **Build 46 (`786f6fa`, 15-nov):** la tabla de Clientes del iPad ya no pinta su fondo blanco y va sobre el gris de la
+  pantalla, distinta de la barra lateral (el usuario las veía del mismo color). Visto en el simulador del iPad, claro y
+  oscuro.
+- **Ojo para el siguiente chat:** el 14 y el 15-nov trabajaron dos chats a la vez en `version-1.3`. Antes de tocar nada,
+  `git fetch` y `git log origin/version-1.3 origin/main` para ver qué hizo el otro.
+- **Truco de capturas de la guía en el Mac:** `defaultSize` no bastó para la ventana de 900×1040. Fijarla con
+  `defaults write com.chirogra.qa.<nombre> "NSWindow Frame SwiftUI.WindowGroup<ChirograUI.ChirograRootView>-1-AppWindow-1"
+  "300 0 900 1040 0 0 1920 1050 "` y arrancar con `-qa.alta 1 -qa.altaEstado TX -qa.altaCiudad Austin
+  -qa.altaCiudadTasa 2 -qa.altaZip 78702`; recorte de 600 px de ancho desde (150, 48), 936 de alto en español y 918 en
+  inglés.
 
 ## Lo que le toca al usuario
 
-1. Esperar la aprobación de la 1.0 y enviar la 1.0.1 (build 15). **Sin decidir (10-nov):** saltarse la 1.0.1 y enviar
-   directo la 1.1 (el build 30 ya trae el arreglo de iCloud del 15): ahorra una revisión, pero la 1.1 es más grande y
-   puede tardar más. Preguntarle al usuario cuando aprueben la 1.0.
-2. Plan **«Chirogra para contadores»**: **completo en App Store Connect** (10-nov), sin enviar. No pulsar «Add for
-   Review» suelto: se añade al envío de la 1.1.
-3. Probar el **build 30**: con el iPhone en inglés, «Try with sample data» debe dar «Rios Design & Build».
-4. Probar el **build 37** en TestFlight: código postal en el alta (Austin 78702 → 8.25 %, Lodi 07644 → 6.625 %),
-   «Saltar», «Ocultar» en Inicio, tocar la fila (no la cifra) en el descuento de la factura y en Enviar, bitácora, Dividir y el camino del contador. **Ojo:** instalar la 1.2 pasa los libros
-   de ese aparato al esquema 5 y la 1.1 ya no los abre.
-5. Instalar el **build 41** en el iPad (él lo hace después) y probarlo en TestFlight (icono nuevo y logo de la bienvenida) y lo del **40**: Más › «iCloud y copias» y «Seguridad» (ya distintas), «+» de Inicio ›
-   «Pagar la tarjeta», Banca › una cuenta › ⇆, y el alta con un ZIP sin elegir estado.
-6. Probar el **build 39** en TestFlight (iPhone): «Más › Personalizar › Pestañas» (quitar Gastos, poner Asientos de
-   diario o un reporte, ordenar, «Restablecer la barra»), «Favoritos», y mantener pulsada una herramienta de Más.
+1. **Probar el build 46 en TestFlight** (iPhone, iPad y Mac): el icono χρ, el logo y la animación de la bienvenida, y la
+   tabla de Clientes del iPad. De paso, lo de las versiones anteriores que no haya probado: código postal en el alta
+   (Austin 78702 → 8.25 %), pestañas y favoritos del iPhone (Más › Personalizar), «Seguridad» aparte de «iCloud y
+   copias», «Mover dinero», «Borrar todo y empezar de cero». **Ojo:** la 1.2 y la 1.3 pasan los libros del aparato al
+   esquema 5 y la 1.1 ya no los abre.
+2. **Instalar en el iPad** cuando quiera (desde TestFlight o pidiéndolo).
+3. **Avisar cuando Apple apruebe la 1.0**, para preparar el envío de la 1.3.
 
 ## Lo siguiente
 
 1. **Cuando aprueben la 1.0: enviar directo la 1.3** (decisión del 13-nov), con su último build. Preparar entonces un
    «What's New» que junte 1.1, 1.2 y 1.3 (las tres partes están en [APP-STORE.md](APP-STORE.md)), las notas para el
    revisor juntas, el plan para contadores en el envío y las capturas (`00-bienvenida` y `06-panel-clientes` en el
-   escritorio, y las que falten).
+   escritorio, y las que falten). **Revisar que las capturas enseñen el logo χρ:** las hechas antes del 14-nov
+   llevan la χ sola.
 2. **Probar en TestFlight el último build de la 1.3** antes de enviarla.
 3. **Tasas por código postal: cada trimestre** (1 ene, 1 abr, 1 jul, 1 oct) correr `scripts/tasas/descargar.sh` y
    `generar.py` y subir un build (DATOS-V5.md). Faltan AL AK AZ CO HI ID LA MO MS NM PA SC VA.
 4. **2.0 con servidor:** plan en [PLAN-2.0.md](PLAN-2.0.md). Ya se pueden hacer los trámites (equipo «Chirogra» en
    Plaid con producción y Statements, cotizaciones de Gusto Embedded y Check, perfil en Stripe Connect); el código
    empieza cuando la 1.3 esté en la tienda.
-5. **Menores:** hechos (build 37, 12-nov; CONTEXTO, «C»): las filas con campo que solo tomaban el toque sobre
-   la cifra y el selector Devengado/Caja con letra grande. Los textos cortados del Mac eran los datos de ejemplo en
-   inglés (build 29). La campana de Avisos y la barra del alta del iPad son del sistema.
 
 ## Cómo se trabaja con este usuario
 

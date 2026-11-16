@@ -1,7 +1,7 @@
 # Chirogra: contexto para retomar en otro chat
 
-Estado de Chirogra al **13 de noviembre de 2026**. **Para empezar rápido, lee primero
-[RESUMEN-PARA-SEGUIR.md](RESUMEN-PARA-SEGUIR.md)** (estado, builds 22–37 y lo siguiente); luego este, entero. El diseño técnico está en
+Estado de Chirogra al **15 de noviembre de 2026**. **Para empezar rápido, lee primero
+[RESUMEN-PARA-SEGUIR.md](RESUMEN-PARA-SEGUIR.md)** (estado, tabla de builds y lo siguiente); luego este, entero. El diseño técnico está en
 [DISEÑO.md](DISEÑO.md), el sistema visual y los argumentos de QA en [REDISEÑO-NATIVO.md](REDISEÑO-NATIVO.md) (§5), los
 datos en [DATOS-V4.md](DATOS-V4.md) (y [DATOS-V2.md](DATOS-V2.md)), la fase 2 en [PLAN-FASE2.md](PLAN-FASE2.md) y la
 ficha de la App Store en [APP-STORE.md](APP-STORE.md). Aquí van el estado, lo pendiente, las decisiones del usuario, lo
@@ -12,12 +12,22 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
 
 ## Dónde nos quedamos (empieza aquí)
 
-- **15-nov: `main` = `version-1.3`** (merge `d083f0c`, con el build 46), empujadas; web publicada con la guía de la 1.3.
+**Resumen al 15-nov** (lo de debajo es el detalle y la historia):
+- `main` = `version-1.3` (merge `d083f0c`), empujadas, carpeta limpia; la web ya enseña la 1.3 y el icono χρ.
+- **Último build: 46 (1.3.0)**, subido iOS y macOS el 15-nov (tabla de Clientes del iPad sobre gris). **45** (14-nov):
+  icono χρ (abajo, «Ícono» en «Decisiones del usuario»).
+- La **1.0 (build 11)** espera la revisión; al aprobarla, **directo la 1.3** con un «What's New» de 1.1 + 1.2 + 1.3 y el
+  plan de contadores en el envío.
+- iPhone y Mac del usuario con el código del 45 (Producción); el 46 sin instalar; el iPad sin instalar desde el 41.
+- Plan de la 2.0 en [PLAN-2.0.md](PLAN-2.0.md); código cuando la 1.3 esté en la tienda.
+- El 14 y el 15-nov dos chats trabajaron a la vez en `version-1.3`: antes de tocar nada, `git fetch` y mirar
+  `git log origin/version-1.3 origin/main`.
+
 - **`main` lleva todo** (fase 2 sin servidor unida el 9-nov, merge `6f745a4`) y está empujado. El 9-nov se borraron
   las worktrees y ramas locales de los agentes y `fase2-integracion` (todo estaba ya en `main`); en GitHub sigue
   `origin/fase2-integracion`, igual que lo unido.
-- **Rama `version-1.2`** (empujada hasta el build 41, 12-nov): la 1.2 entera y estos documentos. **`main` es igual**
-  (unidas el 12-nov a petición del usuario); la 1.1 está en el commit `e56f45c` (build 30).
+- **Rama `version-1.2`**: la 1.2 entera (último build 43); ya está dentro de `main` y de `version-1.3`. La 1.1 está
+  en el commit `e56f45c` (build 30).
 - **Versiones en App Store Connect:**
   - **1.0 (build 11):** el 7-nov se envió a revisión con la suscripción «Chirogra monthly» y su grupo. Apple la
     **rechazó** porque la descripción no tenía el enlace a las condiciones de uso (EULA). El 9-nov el usuario la
