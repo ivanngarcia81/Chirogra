@@ -1,6 +1,3 @@
-import ChirograCore
-import ChirograData
-import SwiftData
 import SwiftUI
 
 // Mac: tabla + inspector (decisión del usuario del 2-nov). En el Mac, las páginas de lista son como el canvas

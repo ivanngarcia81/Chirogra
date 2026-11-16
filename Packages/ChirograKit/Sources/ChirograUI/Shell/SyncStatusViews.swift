@@ -57,9 +57,6 @@ final class SyncMonitor {
     static let forced: String? = nil
     #endif
 
-    /// El esqueleto forzado se muestra aunque ya haya empresa.
-    static var forcesLoading: Bool { forced == "loading" }
-
     init() {
         switch Self.forced {
         case "loading": state = .syncing; hasImported = false

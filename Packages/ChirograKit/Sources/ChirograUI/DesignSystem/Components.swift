@@ -11,10 +11,6 @@ extension Int64 {
     var moneyWhole: String {
         Self.minusSign(Money(minorUnits: self).decimalValue.formatted(.currency(code: "USD").precision(.fractionLength(0))))
     }
-    /// Centavos → "1,250.00": columnas de importes del iPhone, donde el "$" de cada fila quitaba sitio al nombre.
-    var amountOnly: String {
-        Self.minusSign(Money(minorUnits: self).decimalValue.formatted(.number.precision(.fractionLength(2))))
-    }
 
     /// El signo menos tipográfico («−$293.14»), el mismo que ya usaban los movimientos y los descuentos: el formato del
     /// sistema pone el guion («-$293.14») y en una misma pantalla salían los dos (QA del 10-nov).
@@ -304,22 +300,16 @@ extension Font {
 
 // MARK: - Superficies
 
-extension EnvironmentValues {
-    /// Las tarjetas ocupan todo el alto disponible: dos tarjetas lado a lado miden lo mismo (canvas `MacInicio`).
-    @Entry var cardFillsHeight = false
-}
-
 /// Tarjeta: la celda de una lista agrupada (radio 24, `secondarySystemGroupedBackground`); en el Mac, la caja del
 /// canvas (fondo alterno, borde fino de `separator`, radio 12).
 struct CardModifier: ViewModifier {
     var padding: CGFloat = Metrics.cardPadding
-    @Environment(\.cardFillsHeight) private var fillsHeight
 
     func body(content: Content) -> some View {
         let shape = RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous)
         content
             .padding(padding)
-            .frame(maxWidth: .infinity, maxHeight: fillsHeight ? .infinity : nil, alignment: .topLeading)
+            .frame(maxWidth: .infinity, alignment: .topLeading)
             .background(Palette.surface, in: shape)
             #if os(macOS)
             .macElevation(cornerRadius: Metrics.cardRadius)
@@ -609,34 +599,6 @@ extension StatusChip {
 
 // MARK: - Filtros
 
-/// Chip de filtro o de tipo de reporte: cápsula con el relleno del sistema; la elegida, rellena de Tinta con el texto
-/// blanco. Área táctil de 44 pt (28 en el Mac) y rasgo de seleccionado. En pantallas nuevas, mejor `FilterPicker`
-/// (segmentado del sistema) o `FilterMenu` (botón de filtro de la barra), que son los del canvas.
-struct FilterChip: View {
-    let title: String
-    var count: Int? = nil
-    let isSelected: Bool
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: 4) {
-                Text(title).fontWeight(.semibold)
-                if let count { Text("\(count)").foregroundStyle(isSelected ? Palette.onBrandFill.opacity(0.85) : Palette.ink2) }
-            }
-            .font(.subheadline)
-            .padding(.horizontal, 14)
-            .frame(minHeight: Metrics.target)
-            .foregroundStyle(isSelected ? Palette.onBrandFill : Palette.ink)
-            .background(isSelected ? Palette.brandFill : Palette.surface2, in: Capsule())
-            .contentShape(Capsule())
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel(count.map { "\(title), \($0)" } ?? title)
-        .accessibilityAddTraits(isSelected ? .isSelected : [])
-    }
-}
-
 /// Filtro de una opción entre varias (canvas `Gastos`, `iPadVentas`, `ReportePyG`): el control segmentado del sistema
 /// si caben (hasta cuatro opciones y sin texto de accesibilidad); si no, un menú desplegable con la opción elegida.
 struct FilterPicker<Option: Hashable>: View {
@@ -737,13 +699,9 @@ struct RowGroup<Content: View>: View {
 }
 
 /// Monograma de cliente o proveedor, como en Contactos: iniciales blancas en un círculo con el degradado gris del
-/// sistema (canvas `Clientes`, `FacturaNueva`). `foreground`, `background` y `round` ya no cambian nada: se conservan
-/// para no tocar las pantallas.
+/// sistema (canvas `Clientes`, `FacturaNueva`).
 struct InitialsTile: View {
     let text: String
-    var foreground: Color = Palette.brand
-    var background: Color = Palette.brandWash
-    var round = false
 
     var body: some View {
         Monogram(initials: text, side: Metrics.avatar, fontScale: 0.38, relativeTo: .subheadline)
@@ -785,11 +743,10 @@ struct Monogram: View {
 
 /// Icono de fila como en Ajustes (canvas `Mas`, `Gastos`, `Home` · Cuentas): símbolo blanco en un cuadrado redondeado
 /// relleno de color (30 pt, radio 8; 22 pt en el Mac). `foreground` es el color del cuadrado: un color del sistema
-/// (`Palette.blue`, `.orange`…) o el de un estado; `background` ya no se dibuja.
+/// (`Palette.blue`, `.orange`…) o el de un estado.
 struct IconTile: View {
     let systemImage: String
     var foreground: Color = Palette.brand
-    var background: Color = Palette.brandWash
     @ScaledMetric(relativeTo: .body) private var side = Metrics.iconTile
 
     var body: some View {
@@ -1010,23 +967,6 @@ extension View {
     }
 }
 
-/// Pestañas de una pantalla (Facturas · Clientes): el control segmentado del sistema (canvas `Gastos`).
-struct UnderlineTabs<Value: Hashable>: View {
-    let options: [Value]
-    @Binding var selection: Value
-    let title: (Value) -> String
-
-    var body: some View {
-        Picker(String(localized: "Sección"), selection: $selection) {
-            ForEach(options, id: \.self) { Text(title($0)).tag($0) }
-        }
-        .pickerStyle(.segmented)
-        .labelsHidden()
-        .padding(.horizontal, Metrics.gutter)
-        .padding(.vertical, 6)
-    }
-}
-
 /// Acciones fijas abajo (canvas `FacturaNueva`, `FacturaEnviar`): una barra de vidrio que flota sobre el contenido,
 /// con los botones uno al lado del otro; con tamaños de accesibilidad, uno debajo del otro.
 struct BottomActionBar<Content: View>: View {
@@ -1054,16 +994,12 @@ extension View {
 
 // MARK: - Fichas (canvas `ClienteFicha`, `ProveedorFicha`)
 
-/// Cabecera de ficha, como en Contactos: monograma grande (84 pt; 64 en el Mac) o icono en un círculo de color,
-/// nombre en `.title` bold y detalle gris, centrados. `round` ya no cambia nada.
+/// Cabecera de ficha, como en Contactos: monograma grande (84 pt; 64 en el Mac), nombre en `.title` bold y detalle
+/// gris, centrados.
 struct ProfileHeader: View {
-    var initials: String? = nil
-    var systemImage: String? = nil
+    let initials: String
     let name: String
     let detail: String
-    var round = false
-    var foreground: Color = Palette.brand
-    var background: Color = Palette.brandWash
     #if os(macOS)
     @ScaledMetric(relativeTo: .title) private var side: CGFloat = 64
     #else
@@ -1072,22 +1008,12 @@ struct ProfileHeader: View {
 
     var body: some View {
         VStack(spacing: 4) {
-            Group {
-                if let systemImage {
-                    Image(systemName: systemImage)
-                        .font(.system(size: side * 0.42, weight: .medium))
-                        .frame(width: side, height: side)
-                        .foregroundStyle(.white)
-                        .background(foreground == Palette.brand ? Palette.brandFill : foreground, in: Circle())
-                } else {
-                    Text(initials ?? "")
-                        .font(.system(size: side * 0.4, weight: .semibold))
-                        .frame(width: side, height: side)
-                        .foregroundStyle(.white)
-                        .background(Palette.monogram, in: Circle())
-                }
-            }
-            .accessibilityHidden(true)
+            Text(initials)
+                .font(.system(size: side * 0.4, weight: .semibold))
+                .frame(width: side, height: side)
+                .foregroundStyle(.white)
+                .background(Palette.monogram, in: Circle())
+                .accessibilityHidden(true)
             Text(name).font(.title.weight(.bold)).foregroundStyle(Palette.ink).lineLimit(2).minimumScaleFactor(0.8)
                 .padding(.top, 8)
                 .accessibilityAddTraits(.isHeader)
@@ -1129,21 +1055,6 @@ struct ProfileAction: View {
     }
 }
 
-/// Cifra pequeña de ficha (canvas `ProveedorFicha`): etiqueta gris y valor semibold.
-struct MiniStat: View {
-    let title: String
-    let value: String
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 1) {
-            Text(title).font(.footnote).foregroundStyle(Palette.ink2).lineLimit(1).minimumScaleFactor(0.8)
-            Text(value).font(.headline).foregroundStyle(Palette.ink).monospacedDigit().lineLimit(1).minimumScaleFactor(0.7)
-        }
-        .card(padding: 12)
-        .accessibilityElement(children: .combine)
-    }
-}
-
 /// Acción rápida de Inicio (canvas `Home`: Factura · Gasto · Escanear · Cliente): círculo de 58 pt con el símbolo en
 /// Tinta y el nombre debajo; la destacada, rellena de Tinta con el símbolo blanco.
 struct QuickAction: View {
@@ -1177,12 +1088,6 @@ extension View {
     func headerButton() -> some View {
         tint(Palette.ink)
     }
-
-    /// Botón de vidrio compacto dentro de filas y tarjetas (por ejemplo «Pagar» en una tabla): el `.glass` del sistema
-    /// con el texto en tinta, como los de la cabecera.
-    func glassActionButton() -> some View {
-        buttonStyle(.glass).tint(Palette.ink).fontWeight(.semibold)
-    }
 }
 
 private struct HeaderTitle: ViewModifier {
@@ -1215,14 +1120,12 @@ struct AddButton: View {
     }
 }
 
-/// Cifra clave de iPad y Mac (canvas `MacInicio`, `MacVentas`): etiqueta, importe y pie. `isBrand` ya no cambia nada:
-/// el canvas no rellena ninguna tarjeta de marca.
+/// Cifra clave de iPad y Mac (canvas `MacInicio`, `MacVentas`): etiqueta, importe y pie.
 struct KPIItem: Identifiable {
     let title: String
     let value: String
     var foot: String? = nil
     var footColor: Color = Palette.ink2
-    var isBrand = false
     var id: String { title }
 }
 
@@ -1276,61 +1179,13 @@ struct KPIGrid: View {
     }
 }
 
-/// Cifra de un resumen de tres columnas (canvas `Home`: Ingresos · Gastos · Ganancia): etiqueta gris, importe
-/// semibold y una nota de color («▲ 12%»).
-struct KPITile: View {
-    let title: String
-    let value: String
-    var note: String? = nil
-    var noteColor: Color = Palette.ink2
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(title).font(.footnote).foregroundStyle(Palette.ink2)
-            Text(value).font(.headline).monospacedDigit().foregroundStyle(Palette.ink).minimumScaleFactor(0.7).lineLimit(2)
-            // Una línea, como en el canvas («↑ 12% vs. sep»); se encoge un poco antes de cortarse.
-            if let note { Text(note).font(.footnote).foregroundStyle(noteColor).lineLimit(1).minimumScaleFactor(0.75) }
-        }
-        .card(padding: 12)
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(title)
-        .accessibilityValue([value, note.map(Self.spoken)].compactMap { $0 }.joined(separator: ", "))
-    }
-
+/// Notas de variación de un resumen de cifras (canvas `Home`: Ingresos · Gastos · Ganancia, «▲ 12%»). La vista de
+/// la cifra ya no existe (Inicio dibuja la suya); queda la lectura para VoiceOver.
+enum KPITile {
     /// Las flechas de variación se leen como palabras («sube», «baja»), no como símbolos.
     static func spoken(_ note: String) -> String {
         note.replacingOccurrences(of: "↑", with: String(localized: "sube")).replacingOccurrences(of: "↓", with: String(localized: "baja"))
             .replacingOccurrences(of: "▲", with: String(localized: "sube")).replacingOccurrences(of: "▼", with: String(localized: "baja"))
-    }
-}
-
-/// Cifra destacada (canvas `Home` · Efectivo disponible, `ReportePyG` · Ganancia neta): una tarjeta del sistema con la
-/// etiqueta gris, la cifra grande y, debajo, la variación de color y el detalle. Sin relleno de marca.
-struct HeroCard: View {
-    let title: String
-    let value: String
-    var detail: String? = nil
-    /// Variación junto a la cifra («+34% vs. sep»): verde si sube, roja si baja.
-    var badge: String? = nil
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(title).font(.subheadline).foregroundStyle(Palette.ink2)
-            Text(value).font(.amount(36)).foregroundStyle(Palette.ink).minimumScaleFactor(0.6).lineLimit(2)
-            if let badge {
-                Text(badge).font(.footnote.weight(.semibold)).foregroundStyle(Self.isDecrease(badge) ? Palette.negative : Palette.positive)
-            }
-            if let detail {
-                Text(detail).font(.footnote).foregroundStyle(Palette.ink2)
-            }
-        }
-        .card(padding: 18)
-        .accessibilityElement(children: .combine)
-    }
-
-    private static func isDecrease(_ text: String) -> Bool {
-        guard let first = text.trimmingCharacters(in: .whitespaces).first else { return false }
-        return "-−↓▼".contains(first)
     }
 }
 

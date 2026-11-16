@@ -83,7 +83,7 @@ struct BackupSection: View {
     }
 
     private var companyName: String {
-        companies.first.map { $0.displayName.isEmpty ? $0.legalName : $0.displayName } ?? ""
+        companies.first?.shownName ?? ""
     }
 
     private static var appVersion: String {

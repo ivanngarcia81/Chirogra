@@ -11,7 +11,7 @@ import AppKit
 /// semánticos del sistema (label, secondaryLabel, systemGroupedBackground, separator, rellenos y colores de sistema),
 /// así el modo oscuro y «Aumentar contraste» salen del sistema. Las vistas usan solo estos tokens, nunca valores sueltos.
 ///
-/// Los nombres antiguos (`brandWash`, `ink3`, `outflow`, `…Wash`) se conservan para que las pantallas sigan compilando
+/// Los nombres antiguos (`brandWash`, `…Wash`) se conservan para que las pantallas sigan compilando
 /// mientras se rehacen; apuntan al color del canvas más cercano.
 public enum Palette {
     // MARK: Acento (Tinta)
@@ -25,28 +25,20 @@ public enum Palette {
     public static let onBrandFill = Color.white
     /// Tinta tenue (canvas `--tintw`): selección suave, fondos de iconos.
     public static let brandWash = Color(light: 0x3A3FD1, lightAlpha: 0.12, dark: 0x9A9EFF, darkAlpha: 0.18)
-    /// Texto sobre `brand` (solo tarjetas antiguas rellenas de marca: el canvas actual ya no las usa).
-    public static let onBrand = Color(light: 0xFFFFFF, dark: 0x0D0E18)
 
     /// Azafrán: solo el punto del logotipo.
     public static let accent = Color(light: 0xF2B33D, dark: 0xF2B33D)
-    public static let onAccent = Color(light: 0x2A1C00, dark: 0x2A1C00)
 
     // MARK: Significados (Main · «Color de acento y colores del sistema»)
 
     /// Ingresos en gráficas: el acento.
     public static let income = brand
-    /// Gastos en gráficas y categorías: systemOrange.
-    public static let expense = orange
     /// Barras de gastos de las gráficas.
     public static let expenseBar = orange
     /// Icono de cuenta bancaria: systemBlue.
     public static let bankAccount = blue
     /// Icono de tarjeta de crédito: systemIndigo.
     public static let creditCard = indigo
-    /// Salidas de dinero: el canvas las escribe en `label` (solo las entradas van en verde).
-    public static let outflow = ink
-    public static let outflowWash = surface2
 
     // MARK: Fondos y superficies
 
@@ -89,8 +81,6 @@ public enum Palette {
     /// Texto secundario (canvas `--ink2`: #6C6C70 · #98989F). Es `secondaryLabel` opaco: cumple AA (≥ 4.5:1) sobre el
     /// fondo y las celdas en claro y en oscuro; el `secondaryLabel` translúcido del sistema no llega en texto pequeño.
     public static let ink2 = Color(light: 0x6C6C70, dark: 0x98989F)
-    /// Igual que `ink2`: el canvas solo tiene dos niveles de texto.
-    public static let ink3 = ink2
     /// Chevron y anillos decorativos (canvas `--chev`), nunca texto.
     public static let chevron = Color(light: 0xBABABF, dark: 0x5C5C61)
 
@@ -143,7 +133,6 @@ public enum Metrics {
     /// Margen lateral de iPhone e iPad: 16 pt; los títulos de sección van a 16 pt más (32 desde el borde).
     public static let gutter: CGFloat = 16
     #endif
-    public static let cardSpacing: CGFloat = 12
     public static let cardPadding: CGFloat = 16
     #if os(macOS)
     /// Cajas del Mac: radio 12 (tablas: 8).
@@ -154,7 +143,6 @@ public enum Metrics {
     public static let cardRadius: CGFloat = 24
     public static let tableRadius: CGFloat = 24
     #endif
-    public static let heroRadius: CGFloat = cardRadius
     #if os(macOS)
     /// En el Mac, botones, filas y chips con la densidad de sus controles (canvas: botones de 28, filas de 28,
     /// cabeceras de 26): con 44 pt el Plan de cuentas mostraba la mitad de filas y la app parecía de iPhone.
@@ -177,8 +165,6 @@ public enum Metrics {
     /// Buscador y campos con fondo: radio 12.
     public static let fieldRadius: CGFloat = 12
     #endif
-    /// Los botones son cápsulas: el radio es la mitad del alto.
-    public static let buttonRadius: CGFloat = buttonHeight / 2
     /// Alto mínimo de una fila de dos líneas (canvas: 60 pt en iPhone e iPad).
     #if os(macOS)
     public static let rowHeight: CGFloat = 28
