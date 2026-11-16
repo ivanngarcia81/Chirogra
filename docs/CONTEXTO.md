@@ -13,12 +13,16 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
 ## Dónde nos quedamos (empieza aquí)
 
 **Resumen al 16-nov** (lo de debajo es el detalle y la historia):
+- **16-nov tarde: builds 47 y 48 subidos** (iOS y macOS) tras dos tests de Userbrain: el alta ya no se vacía al volver a
+  la app (47); precio de la factura del iPhone en su fila, «Guardar borrador» con texto e Inicio con cifras en color
+  (48). El usuario **está probando el 48**. **Build 49 anotado:** avisar antes de emitir una factura de $0, más lo que
+  digan los testers del 48. Detalle en RESUMEN, «Último chat» y «Lo siguiente».
+- `version-1.3` en `f99bd71` y `main` en `c5f687d`, las dos empujadas el 16-nov.
 - **16-nov: limpieza con 5 agentes** (código muerto, duplicados, 170 textos sin uso del catálogo) unida a `version-1.3`
   y `main`, sin cambios de comportamiento (346 pruebas, 25 pantallas del Mac iguales píxel a píxel), más el orden
   estable de las tasas en Reportes › Sales tax. Detalle en RESUMEN, «Último chat». Sin build nuevo.
-- `main` = `version-1.3` (merge `d083f0c`), empujadas, carpeta limpia; la web ya enseña la 1.3 y el icono χρ.
-- **Último build: 46 (1.3.0)**, subido iOS y macOS el 15-nov (tabla de Clientes del iPad sobre gris). **45** (14-nov):
-  icono χρ (abajo, «Ícono» en «Decisiones del usuario»).
+- **Último build: 48 (1.3.0)**, subido el 16-nov. **46** (15-nov): tabla de Clientes del iPad sobre gris. **45**
+  (14-nov): icono χρ (abajo, «Ícono» en «Decisiones del usuario»).
 - La **1.0 (build 11)** espera la revisión; al aprobarla, **directo la 1.3** con un «What's New» de 1.1 + 1.2 + 1.3 y el
   plan de contadores en el envío.
 - iPhone y Mac del usuario con el código del 45 (Producción); el 46 sin instalar; el iPad sin instalar desde el 41.

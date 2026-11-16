@@ -5,9 +5,11 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 
 ## Estado
 
-- **Ramas:** `main` = `version-1.3` (merge `d083f0c` del 15-nov, más `1eb280f` y `db519c1`), todo empujado y la carpeta
-  limpia. La web (`sitio/`) se publica desde `main` y ya enseña la 1.3 y el icono χρ (comprobado en chirogra.com).
-- **Último build: 46 (1.3.0)**, subido a TestFlight para iOS y macOS el 15-nov. El 45 (icono χρ) se subió el 14-nov.
+- **Ramas:** `version-1.3` en `f99bd71` (builds 47 y 48) y `main` en `c5f687d` (limpieza del 16-nov; sin los dos
+  commits de los builds, que no tocan la web). Las dos empujadas el 16-nov y la carpeta limpia. La web (`sitio/`) se
+  publica desde `main`.
+- **Último build: 48 (1.3.0)**, subido a TestFlight para iOS y macOS el 16-nov. **El usuario lo está probando** y lo usa
+  para los testers de Userbrain. El 47 también se subió el 16-nov.
 - **En App Store Connect:** la **1.0 (build 11)** espera la revisión. **Decidido el 13-nov:** cuando la aprueben se envía
   **directo la 1.3** con su último build, sin la 1.0.1, la 1.1 ni la 1.2, con un «What's New» que junte las tres. El plan
   «Chirogra para contadores» está completo en App Store Connect y va en ese envío (no pulsar «Add for Review» suelto).
@@ -43,8 +45,30 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 | 44 | `7825510`…`79e8272` | **1.3.0** (rama `version-1.3`): H04 (flechas de periodo en los reportes del iPhone), H19 (antigüedad y conciliaciones en el paquete del contador) y H22 (etiquetas de VoiceOver). |
 | 45 | `55add7e` | 1.3.0: icono χρ (χ blanca, ρ azafrán) en la app, la bienvenida y la web. |
 | 46 | `786f6fa` | 1.3.0: la tabla de Clientes del iPad ya no pinta su fondo blanco (`.scrollContentBackground(.hidden)`): va sobre el gris de la pantalla y se distingue de la barra lateral (pedido del 15-nov). |
+| 47 | `1f96a17` | 1.3.0: **el alta ya no se vacía al salir y volver a la app** (test de Userbrain): `RootView` solo enseña la pantalla de espera de iCloud en la primera importación (`sync.isFirstImport`, antes `isSyncing`, que volvía a ser cierto cada vez que la app volvía al primer plano). |
+| 48 | `f99bd71` | 1.3.0: tras el 2.º test de Userbrain: en la factura del iPhone el **precio en su propia fila** (campo con borde) y tocar «Total de la línea» lleva al precio; **«Guardar borrador» con texto** en vez del ✓; **Inicio con cifras en color** (ingresos verde, gastos rojo, ganancia color de marca o rojo si es negativa; también la gráfica y el Mac), «Ganancia del mes» / «Profit this month» y «Sales tax you owe». 346 pruebas. |
 
-## Último chat (16-nov): auditoría y limpieza con 5 agentes
+## Último chat (16-nov, tarde): testers de Userbrain y builds 47 y 48
+
+- **Testers externos:** el usuario usa **Userbrain** (testers pagados que graban la pantalla y hablan) y TestFlight
+  externo con enlace público (lo crea él en App Store Connect). Se le dieron el texto de «What to Test», una tarea
+  única para Userbrain y la frase del paso 1 («A simple bookkeeping app for US small businesses to track sales,
+  expenses, invoices, and sales tax on iPhone, iPad, and Mac.»).
+- **Dos tests vistos (los dos con el build 34).** En el resumen de Userbrain son CS (1.º) y TH (2.º):
+  - El alta se vaciaba al salir de la app → **arreglado en el 47** (solo se ve con iCloud real: comprobarlo en TestFlight).
+  - La hoja de suscripción asustó al 1.º («It's trying to charge me»), que abandonó. El 2.º siguió tras leer «You will
+    not be charged» porque la tarea de Userbrain ya lo explicaba.
+  - No encontraba dónde poner el precio de la factura; creía que no se podía guardar sin enviar; calculaba la ganancia
+    restando en Banca → **arreglado en el 48** (opción C elegida por el usuario tras ver capturas; la variante de
+    recuadros grandes descartada).
+  - Pidió asteriscos en los campos obligatorios → **decidido no ponerlos por ahora**: la app ya marca «Opcional». Si
+    más testers se pierden, una línea «Falta: …» bajo Continuar.
+  - Otros del resumen de Userbrain sin cambio: tipos de negocio que no encajan con algunos sectores (un solo
+    comentario) y datos inventados en el alta (normal en un test).
+- **Pendientes de decisión del usuario:** si la suscripción deja usar la app un tiempo antes de pedirla (hoy sale al
+  crear la empresa, con prueba de 14 días).
+
+## Chat anterior (16-nov, mañana): auditoría y limpieza con 5 agentes
 
 - Pedido del usuario: quitar código muerto, duplicados, archivos y recursos sin uso **sin cambiar nada de lo que hace
   la app**. Cinco agentes en worktrees (Core+Data; tres de ChirograUI por carpetas; recursos/docs/scripts), un revisor
@@ -62,7 +86,7 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 - Docs que se ven desactualizados (sin tocar): `README.md` (conciliación y recibos como pendientes, iCloud),
   `DISEÑO.md` («nada implementado»), y `REDISEÑO-NATIVO.md`/`DISEÑO.md` nombran tokens ya borrados.
 
-## Chat anterior (14 y 15-nov)
+## Chat de antes (14 y 15-nov)
 
 - **Icono χρ (build 45, `55add7e`, 14-nov):** el `AppIcon.icon` del usuario (χ blanca y ρ azafrán `#F2B33D` sobre el
   degradado índigo) copiado tal cual a `App/AppIcon.icon`. Dentro de la app, `LogoMark` dibuja lo mismo con `ChiGlyph`
@@ -82,8 +106,9 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 
 ## Lo que le toca al usuario
 
-1. **Probar el build 46 en TestFlight** (iPhone, iPad y Mac): el icono χρ, el logo y la animación de la bienvenida, y la
-   tabla de Clientes del iPad. De paso, lo de las versiones anteriores que no haya probado: código postal en el alta
+1. **Probar el build 48 en TestFlight** (lo está haciendo): el alta al salir y volver (47), la factura del iPhone,
+   «Save draft» e Inicio en color (48); y más testers de Userbrain con el 48. Además: el icono χρ, la animación de la
+   bienvenida y la tabla de Clientes del iPad (45 y 46). De paso, lo de las versiones anteriores que no haya probado: código postal en el alta
    (Austin 78702 → 8.25 %), pestañas y favoritos del iPhone (Más › Personalizar), «Seguridad» aparte de «iCloud y
    copias», «Mover dinero», «Borrar todo y empezar de cero». **Ojo:** la 1.2 y la 1.3 pasan los libros del aparato al
    esquema 5 y la 1.1 ya no los abre.
@@ -92,6 +117,11 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 
 ## Lo siguiente
 
+0. **Build 49 (anotado el 16-nov, esperar a lo que digan los testers del 48):**
+   - **Avisar antes de emitir una factura de $0** («This invoice total is $0.00. Issue anyway?»): el 2.º tester emitió
+     una de $0 sin darse cuenta y tuvo que duplicarla.
+   - Lo que salga de los nuevos tests de Userbrain con el 48.
+   - Si el usuario lo decide: la suscripción después de un tiempo de uso, no al crear la empresa.
 1. **Cuando aprueben la 1.0: enviar directo la 1.3** (decisión del 13-nov), con su último build. Preparar entonces un
    «What's New» que junte 1.1, 1.2 y 1.3 (las tres partes están en [APP-STORE.md](APP-STORE.md)), las notas para el
    revisor juntas, el plan para contadores en el envío y las capturas (`00-bienvenida` y `06-panel-clientes` en el
