@@ -777,16 +777,7 @@ struct PayBillView: View {
     var body: some View {
         Form {
             if let errorMessage { ErrorBanner(message: errorMessage) }
-            Section {
-                LabeledContent("Proveedor", value: bill.vendor?.name ?? "—")
-                if !bill.vendorNumber.isEmpty { LabeledContent("Número", value: bill.vendorNumber) }
-                LabeledContent("Vence") {
-                    Text(bill.dueDate.shortDate).foregroundStyle(bill.isOverdue ? Palette.negative : Palette.ink2)
-                }
-                LabeledContent("Saldo", value: bill.balanceDue.money).monospacedDigit()
-            } header: {
-                SectionLabel(text: String(localized: "Factura"))
-            }
+            BillSummarySection(bill: bill)
             Section {
                 MoneyRow(String(localized: "Monto"), minorUnits: $amount)
                 DatePicker("Fecha de pago", selection: $date, displayedComponents: .date)
@@ -1046,12 +1037,6 @@ private struct W9PickerButtons: View {
     var body: some View {
         Button("Adjuntar copia del W-9 (PDF o foto)", systemImage: "doc.badge.plus") { importing = true }
             .frame(minHeight: Metrics.target)
-            .fileImporter(isPresented: $importing, allowedContentTypes: [.pdf, .image]) { result in
-                guard case .success(let url) = result else { return }
-                let scoped = url.startAccessingSecurityScopedResource()
-                defer { if scoped { url.stopAccessingSecurityScopedResource() } }
-                guard let file = try? ReceiptFile(url: url, fallback: .data) else { return }
-                onPick(file)
-            }
+            .receiptFileImporter(isPresented: $importing, onPick: onPick)
     }
 }

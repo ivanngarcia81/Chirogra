@@ -30,6 +30,29 @@ nonisolated struct ReceiptFile: Identifiable, Transferable {
     }
 }
 
+extension View {
+    /// Elegir un PDF o una imagen del disco (recibo o copia del W-9) y entregarlo como `ReceiptFile`.
+    func receiptFileImporter(isPresented: Binding<Bool>, onPick: @escaping (ReceiptFile) -> Void) -> some View {
+        fileImporter(isPresented: isPresented, allowedContentTypes: [.pdf, .image]) { result in
+            guard case .success(let url) = result else { return }
+            let scoped = url.startAccessingSecurityScopedResource()
+            defer { if scoped { url.stopAccessingSecurityScopedResource() } }
+            guard let file = try? ReceiptFile(url: url, fallback: .data) else { return }
+            onPick(file)
+        }
+    }
+
+    /// «¿Quitar este recibo?» mientras `attachment` tenga uno (detalle del gasto e inspector del Mac).
+    func receiptRemovalDialog(_ attachment: Binding<Attachment?>, remove: @escaping (Attachment) -> Void) -> some View {
+        confirmationDialog("¿Quitar este recibo?", isPresented: Binding(get: { attachment.wrappedValue != nil }, set: { if !$0 { attachment.wrappedValue = nil } }),
+                            titleVisibility: .visible, presenting: attachment.wrappedValue) { target in
+            Button("Quitar \(target.filename)", role: .destructive) { remove(target) }
+        } message: { _ in
+            Text("El gasto y su asiento no cambian; solo se borra el archivo adjunto.")
+        }
+    }
+}
+
 /// Botones para adjuntar un recibo: escanearlo con la cámara (iPhone y iPad, `DocumentScannerView`), foto de la
 /// fototeca o archivo (imagen o PDF). En «Nuevo gasto», el recibo elegido se lee y rellena el formulario
 /// (`Receipts/ReceiptReader.swift`).
@@ -67,13 +90,7 @@ struct ReceiptPickerButtons: View {
             }
         }
         Button(short ? String(localized: "Elegir archivo…") : String(localized: "Adjuntar archivo (PDF o imagen)"), systemImage: "doc.badge.plus") { importing = true }
-            .fileImporter(isPresented: $importing, allowedContentTypes: [.pdf, .image]) { result in
-                guard case .success(let url) = result else { return }
-                let scoped = url.startAccessingSecurityScopedResource()
-                defer { if scoped { url.stopAccessingSecurityScopedResource() } }
-                guard let file = try? ReceiptFile(url: url, fallback: .data) else { return }
-                onPick(file)
-            }
+            .receiptFileImporter(isPresented: $importing, onPick: onPick)
     }
 }
 
@@ -219,12 +236,7 @@ struct ExpenseDetailView: View {
             files.forEach(attach)
             return !files.isEmpty
         } isTargeted: { isTargeted = $0 }
-        .confirmationDialog("¿Quitar este recibo?", isPresented: Binding(get: { removing != nil }, set: { if !$0 { removing = nil } }),
-                            titleVisibility: .visible, presenting: removing) { attachment in
-            Button("Quitar \(attachment.filename)", role: .destructive) { remove(attachment) }
-        } message: { _ in
-            Text("El gasto y su asiento no cambian; solo se borra el archivo adjunto.")
-        }
+        .receiptRemovalDialog($removing, remove: remove)
     }
 
     /// Icono de la categoría, beneficiario y cifra (canvas: cuadrado de 36 pt, nombre semibold e importe de 24 bold).

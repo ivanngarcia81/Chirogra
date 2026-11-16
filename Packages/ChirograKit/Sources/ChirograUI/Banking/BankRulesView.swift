@@ -56,9 +56,7 @@ struct BankRulesView: View {
             .alert("Reglas aplicadas", isPresented: Binding(get: { message != nil }, set: { if !$0 { message = nil } })) {
                 Button("Aceptar", role: .cancel) {}
             } message: { Text(message ?? "") }
-            .alert("No se pudo completar", isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
-                Button("Aceptar", role: .cancel) {}
-            } message: { Text(errorMessage ?? "") }
+            .failureAlert($errorMessage)
             #if DEBUG
             .task {
                 try? await Task.sleep(for: .seconds(1))

@@ -1,5 +1,4 @@
 import ChirograData
-import SwiftData
 import SwiftUI
 
 // MARK: - Panel de clientes: navegación (docs/PANEL-CLIENTES.md, canvas «Chirogra — Panel de clientes»)

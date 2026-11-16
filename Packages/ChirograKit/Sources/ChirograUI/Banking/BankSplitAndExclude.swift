@@ -169,6 +169,15 @@ extension View {
             Text("No se incluirá en tus libros. Puedes devolverlo a la bandeja desde el filtro «Excluidos».")
         }
     }
+
+    /// «No se pudo completar» con el mensaje, mientras `message` tenga algo (Banca y Clientes); al cerrarla, lo vacía.
+    func failureAlert(_ message: Binding<String?>) -> some View {
+        alert("No se pudo completar", isPresented: Binding(get: { message.wrappedValue != nil }, set: { if !$0 { message.wrappedValue = nil } })) {
+            Button("Aceptar", role: .cancel) {}
+        } message: {
+            Text(message.wrappedValue ?? "")
+        }
+    }
 }
 
 extension BankTransaction {

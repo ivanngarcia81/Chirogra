@@ -18,7 +18,6 @@ struct BankInboxTablePage: View {
     @CompanyQuery(sort: \Account.code) private var accounts: [Account]
     @CompanyQuery private var invoices: [Invoice]
     @CompanyQuery private var bills: [Bill]
-    @CompanyQuery(sort: \Vendor.name) private var vendors: [Vendor]
     @State private var filter: BankInboxFilter = .pending
     @State private var accountID: UUID?
     @State private var query = ""
@@ -113,9 +112,7 @@ struct BankInboxTablePage: View {
         .sheet(item: $ruleDraft) { request in
             NavigationStack { BankRuleEditorView(draft: request.input) }.editorSheetSizing()
         }
-        .alert("No se pudo completar", isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
-            Button("Aceptar", role: .cancel) {}
-        } message: { Text(errorMessage ?? "") }
+        .failureAlert($errorMessage)
         #if DEBUG
         .task {
             try? await Task.sleep(for: .seconds(1))
