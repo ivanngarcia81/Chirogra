@@ -170,8 +170,10 @@ public struct ChirograRootView: View {
             // Primero la empresa activa (también sin empresas: así `CompanySession` no se queda con una borrada).
             let companyKey = CompanySession.key(companyScope)
             // Con iCloud, en un dispositivo nuevo los libros tardan en llegar: no se pide crear la empresa
-            // mientras se importan (`MacCargando`).
-            if sync.isSyncing && !skipsSyncWait && companies.isEmpty {
+            // mientras se importan (`MacCargando`). Solo en la primera importación: iCloud vuelve a sincronizar cada vez
+            // que la app vuelve al primer plano, y cambiar a esta pantalla rehacía el alta vacía (se perdía lo escrito al
+            // salir un momento de la app; test de usuario del 16-nov).
+            if sync.isFirstImport && !skipsSyncWait && companies.isEmpty {
                 SyncLoadingView { skipsSyncWait = true }
             } else if companies.isEmpty && !welcomeSeen {
                 // La primera vez: la bienvenida en carrusel, y de ahí al alta o a los datos de ejemplo.
