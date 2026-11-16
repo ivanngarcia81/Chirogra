@@ -46,20 +46,7 @@ public enum SalesTaxCalculator {
         guard !components.isEmpty else { return [] }
         let combinedRate = components.reduce(0) { $0 + $1.rateMillionths }
         let total = (base * combinedRate).dividedRoundingHalfAwayFromZero(by: millionth)
-
-        var amounts = components.map { component in
-            TaxComponentAmount(
-                component: component,
-                taxableBase: base,
-                amount: (base * component.rateMillionths).dividedRoundingHalfAwayFromZero(by: millionth)
-            )
-        }
-
-        let residual = total - amounts.reduce(0) { $0 + $1.amount }
-        if residual != 0, let largest = amounts.indices.max(by: { amounts[$0].component.rateMillionths < amounts[$1].component.rateMillionths }) {
-            amounts[largest].amount += residual
-        }
-        return amounts
+        return split(total, onBase: base, components: components)
     }
 
     public static func totalTax(onTaxableBase base: Int64, components: [TaxComponent]) -> Int64 {
@@ -75,8 +62,12 @@ public enum SalesTaxCalculator {
         let combinedRate = components.reduce(0) { $0 + $1.rateMillionths }
         guard gross > 0, combinedRate > 0 else { return (gross, []) }
         let base = (gross * millionth).dividedRoundingHalfAwayFromZero(by: millionth + combinedRate)
-        let totalTax = gross - base
+        return (base, split(gross - base, onBase: base, components: components))
+    }
 
+    /// Impuesto de cada componente sobre `base`, redondeado por separado, con el residuo hasta `total` en el
+    /// componente de mayor tasa: la suma del desglose es siempre `total`.
+    private static func split(_ total: Int64, onBase base: Int64, components: [TaxComponent]) -> [TaxComponentAmount] {
         var amounts = components.map { component in
             TaxComponentAmount(
                 component: component,
@@ -84,10 +75,10 @@ public enum SalesTaxCalculator {
                 amount: (base * component.rateMillionths).dividedRoundingHalfAwayFromZero(by: millionth)
             )
         }
-        let residual = totalTax - amounts.reduce(0) { $0 + $1.amount }
+        let residual = total - amounts.reduce(0) { $0 + $1.amount }
         if residual != 0, let largest = amounts.indices.max(by: { amounts[$0].component.rateMillionths < amounts[$1].component.rateMillionths }) {
             amounts[largest].amount += residual
         }
-        return (base, amounts)
+        return amounts
     }
 }

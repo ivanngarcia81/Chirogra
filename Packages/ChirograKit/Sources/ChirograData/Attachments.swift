@@ -1,6 +1,5 @@
 import Foundation
 import ImageIO
-import SwiftData
 import UniformTypeIdentifiers
 
 /// Preparación de recibos adjuntos (DISEÑO §4.5): las fotos se reducen y se guardan en JPEG;
@@ -24,6 +23,22 @@ public enum AttachmentProcessing {
         if contentType.conforms(to: .pdf) {
             return Prepared(data: data, contentType: UTType.pdf.identifier, filename: filename)
         }
+        return try reencoded(data, filename: filename, contentType: contentType, maxPixelSize: maxPixelSize, as: .jpeg,
+                             properties: [kCGImageDestinationLossyCompressionQuality: jpegQuality] as CFDictionary,
+                             fallbackName: "recibo", fileExtension: "jpg")
+    }
+
+    /// Logo de la empresa: imagen reducida a `logoMaxPixelSize` y guardada en PNG (conserva la transparencia).
+    public static let logoMaxPixelSize = 512
+
+    public static func prepareLogo(_ data: Data, filename: String, contentType: UTType) throws -> Prepared {
+        try reencoded(data, filename: filename, contentType: contentType, maxPixelSize: logoMaxPixelSize, as: .png,
+                      properties: nil, fallbackName: "logo", fileExtension: "png")
+    }
+
+    /// Reduce una imagen a `maxPixelSize` (respetando su orientación) y la guarda en el formato `type`.
+    private static func reencoded(_ data: Data, filename: String, contentType: UTType, maxPixelSize: Int, as type: UTType,
+                                  properties: CFDictionary?, fallbackName: String, fileExtension: String) throws -> Prepared {
         guard contentType.conforms(to: .image) else { throw Failure.unsupportedType }
         guard let source = CGImageSourceCreateWithData(data as CFData, nil),
               let image = CGImageSourceCreateThumbnailAtIndex(source, 0, [
@@ -32,37 +47,14 @@ public enum AttachmentProcessing {
                   kCGImageSourceThumbnailMaxPixelSize: maxPixelSize,
               ] as CFDictionary)
         else { throw Failure.unreadableImage }
-
         let output = NSMutableData()
-        guard let destination = CGImageDestinationCreateWithData(output, UTType.jpeg.identifier as CFString, 1, nil) else {
+        guard let destination = CGImageDestinationCreateWithData(output, type.identifier as CFString, 1, nil) else {
             throw Failure.unreadableImage
         }
-        CGImageDestinationAddImage(destination, image, [kCGImageDestinationLossyCompressionQuality: jpegQuality] as CFDictionary)
+        CGImageDestinationAddImage(destination, image, properties)
         guard CGImageDestinationFinalize(destination) else { throw Failure.unreadableImage }
         let base = (filename as NSString).deletingPathExtension
-        return Prepared(data: output as Data, contentType: UTType.jpeg.identifier, filename: "\(base.isEmpty ? "recibo" : base).jpg")
-    }
-
-    /// Logo de la empresa: imagen reducida a `logoMaxPixelSize` y guardada en PNG (conserva la transparencia).
-    public static let logoMaxPixelSize = 512
-
-    public static func prepareLogo(_ data: Data, filename: String, contentType: UTType) throws -> Prepared {
-        guard contentType.conforms(to: .image) else { throw Failure.unsupportedType }
-        guard let source = CGImageSourceCreateWithData(data as CFData, nil),
-              let image = CGImageSourceCreateThumbnailAtIndex(source, 0, [
-                  kCGImageSourceCreateThumbnailFromImageAlways: true,
-                  kCGImageSourceCreateThumbnailWithTransform: true,
-                  kCGImageSourceThumbnailMaxPixelSize: logoMaxPixelSize,
-              ] as CFDictionary)
-        else { throw Failure.unreadableImage }
-        let output = NSMutableData()
-        guard let destination = CGImageDestinationCreateWithData(output, UTType.png.identifier as CFString, 1, nil) else {
-            throw Failure.unreadableImage
-        }
-        CGImageDestinationAddImage(destination, image, nil)
-        guard CGImageDestinationFinalize(destination) else { throw Failure.unreadableImage }
-        let base = (filename as NSString).deletingPathExtension
-        return Prepared(data: output as Data, contentType: UTType.png.identifier, filename: "\(base.isEmpty ? "logo" : base).png")
+        return Prepared(data: output as Data, contentType: type.identifier, filename: "\(base.isEmpty ? fallbackName : base).\(fileExtension)")
     }
 }
 

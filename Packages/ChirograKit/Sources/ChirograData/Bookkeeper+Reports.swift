@@ -1,6 +1,5 @@
 import ChirograCore
 import Foundation
-import SwiftData
 
 // MARK: - Reportes de la fase 2: base caja y flujo de efectivo (DISEÑO §4.7, docs/DATOS-V4.md §4)
 

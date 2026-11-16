@@ -40,11 +40,6 @@ public struct AuditChanges: Sendable, Equatable {
         }
     }
 
-    public mutating func flag(_ label: String, _ before: Bool, _ after: Bool) {
-        guard before != after else { return }
-        field(label, Self.yesNo(before), Self.yesNo(after))
-    }
-
     /// Un valor suelto (lo que tenía algo que se borró, el motivo de una exclusión…). Vacío no se anota.
     public mutating func value(_ label: String, _ value: String) {
         let text = value.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -265,11 +260,10 @@ extension AuditSnapshot {
 extension Bookkeeper {
     /// Anota el alta (`before == nil`) o la edición de un cliente, proveedor o artículo guardado por una pantalla.
     public func logSave(_ subject: AuditSubject, id: UUID, name: String, before: AuditSnapshot?, after: AuditSnapshot) {
-        switch (subject, before) {
-        case (_, nil):
-            logChange(subject, id: id, action: .create, summary: Self.createdTitle(subject, name), changes: after.values)
-        case (_, let before?):
+        if let before {
             logChange(subject, id: id, action: .update, summary: Self.editedTitle(subject, name), changes: before.changes(to: after))
+        } else {
+            logChange(subject, id: id, action: .create, summary: Self.createdTitle(subject, name), changes: after.values)
         }
     }
 

@@ -46,8 +46,6 @@ public struct Money: Hashable, Sendable, Codable, Comparable {
         Decimal(minorUnits) / Decimal(currency.minorUnitsPerMajor)
     }
 
-    public var isZero: Bool { minorUnits == 0 }
-
     public func formatted(locale: Locale = .current) -> String {
         decimalValue.formatted(.currency(code: currency.code).locale(locale))
     }

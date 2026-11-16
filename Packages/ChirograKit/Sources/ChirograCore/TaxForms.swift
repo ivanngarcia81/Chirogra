@@ -69,8 +69,6 @@ public struct TaxFormLine: Hashable, Sendable, Identifiable {
 public enum TaxFormCatalog {
     /// Valor de `Account.taxFormLineRaw` para excluir una cuenta (no deducible o no va en el formulario).
     public static let none = "none"
-    /// Años con catálogo.
-    public static let supportedYears = [2025, 2026]
 
     public static func lines(for form: TaxForm, year: Int = 2025) -> [TaxFormLine] {
         // 2026: el mismo catálogo que 2025 hasta que salga el formulario definitivo.

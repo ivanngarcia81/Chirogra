@@ -1,6 +1,5 @@
 import ChirograCore
 import Foundation
-import SwiftData
 
 // MARK: - Presupuestos (PLAN-FASE2 §6, docs/DATOS-V4.md §3)
 //

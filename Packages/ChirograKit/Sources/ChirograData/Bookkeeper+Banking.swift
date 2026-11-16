@@ -28,7 +28,6 @@ public struct BankRuleRun {
     public var failures: [(transaction: BankTransaction, error: Error)] = []
 }
 
-/// Lo que se creó al registrar un movimiento desde la bandeja.
 /// Una parte de un movimiento dividido (`Bookkeeper.categorize(_:splitInto:)`): cuenta, importe (positivo) y nota.
 public struct BankSplitPart: Sendable, Equatable, Identifiable {
     public var id = UUID()
@@ -47,6 +46,7 @@ public struct BankSplitPart: Sendable, Equatable, Identifiable {
     }
 }
 
+/// Lo que se creó al registrar un movimiento desde la bandeja.
 public enum BankCategorization {
     /// Gasto contabilizado (salida a una cuenta de gasto, costo…).
     case expense(Expense)
