@@ -8259,12 +8259,12 @@
         }
       }
     },
-    "Cuando registres ventas y gastos, aparecerán tu efectivo, tus ingresos del mes y lo que te deben." : {
+    "Cuando registres ventas y gastos, aquí verás tu efectivo, tu ganancia del mes y el sales tax que debes." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Once you record sales and expenses, you’ll see your cash, this month’s income, and what you’re owed."
+            "value" : "Once you record sales and expenses, you’ll see your cash, this month’s profit, and the sales tax you owe right here."
           }
         }
       }
@@ -23564,7 +23564,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sales tax payable"
+            "value" : "Sales tax you owe"
           }
         }
       }

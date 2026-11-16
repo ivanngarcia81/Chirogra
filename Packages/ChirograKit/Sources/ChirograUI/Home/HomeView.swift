@@ -367,6 +367,9 @@ struct HomeView: View {
 
     private enum MonthStyle { case short, long }
 
+    /// La ganancia en el color de la marca; la pérdida, en rojo.
+    private var profitColor: Color { thisMonth.netIncome < 0 ? Palette.negative : Palette.brand }
+
     private var margin: String? {
         thisMonth.totalIncome > 0 ? String(localized: "Margen \(thisMonth.netIncome * 100 / thisMonth.totalIncome)%") : nil
     }
@@ -395,10 +398,13 @@ struct HomeView: View {
     private func resultColumns(large: Bool) -> some View {
         let income = change(thisMonth.totalIncome, lastMonth.totalIncome, higherIsBetter: true, monthStyle: large ? .short : nil)
         let spent = change(monthExpenses, previousExpenses, higherIsBetter: false, monthStyle: large ? .short : nil)
-        let items: [(String, Int64, String?, Color)] = [
-            (String(localized: "Ingresos"), thisMonth.totalIncome, income?.text, income?.color ?? Palette.ink2),
-            (String(localized: "Gastos"), monthExpenses, spent?.text, spent?.color ?? Palette.ink2),
-            (large ? String(localized: "Ganancia neta") : String(localized: "Ganancia"), thisMonth.netIncome, margin, Palette.ink2),
+        // Cada cifra con su color (decisión del usuario, 16-nov, tras un test de usuario que no encontraba la ganancia):
+        // ingresos en verde, gastos en rojo y la ganancia en el color de la marca (en rojo si es pérdida).
+        let items: [(String, Int64, String?, Color, Color)] = [
+            (String(localized: "Ingresos"), thisMonth.totalIncome, income?.text, income?.color ?? Palette.ink2, Palette.positive),
+            (String(localized: "Gastos"), monthExpenses, spent?.text, spent?.color ?? Palette.ink2, Palette.negative),
+            (large ? String(localized: "Ganancia neta") : String(localized: "Ganancia del mes"), thisMonth.netIncome, margin,
+             Palette.ink2, profitColor),
         ]
         let stacked = dynamicTypeSize.isAccessibilitySize
         let stack = stacked ? AnyLayout(VStackLayout(alignment: .leading, spacing: 12))
@@ -413,7 +419,7 @@ struct HomeView: View {
                         Text(item.0).font(large ? .subheadline : .footnote).foregroundStyle(Palette.ink2)
                         Text(large ? item.1.money : item.1.moneyWhole)
                             .font(large ? .amount(24) : .headline).monospacedDigit()
-                            .foregroundStyle(Palette.ink).lineLimit(1).minimumScaleFactor(0.6)
+                            .foregroundStyle(item.4).lineLimit(1).minimumScaleFactor(0.6)
                         if let note = item.2 {
                             Text(note).font(.footnote).foregroundStyle(item.3).lineLimit(1).minimumScaleFactor(0.75)
                         }
@@ -631,7 +637,7 @@ struct HomeView: View {
                     .offset(x: point.isIncome ? -(barWidth / 2 + 1) : barWidth / 2 + 1)
                     .clipShape(UnevenRoundedRectangle(topLeadingRadius: 3, topTrailingRadius: 3))
             }
-            .chartForegroundStyleScale([String(localized: "Ingresos"): Palette.income, String(localized: "Gastos"): Palette.expenseBar])
+            .chartForegroundStyleScale([String(localized: "Ingresos"): Palette.positive, String(localized: "Gastos"): Palette.negative])
             .chartLegend(.hidden)
             .chartXAxis {
                 AxisMarks(values: points.filter(\.isIncome).map(\.key)) { value in
@@ -673,8 +679,8 @@ struct HomeView: View {
 
     private var legend: some View {
         HStack(spacing: 16) {
-            legendItem(String(localized: "Ingresos"), Palette.income)
-            legendItem(String(localized: "Gastos"), Palette.expenseBar)
+            legendItem(String(localized: "Ingresos"), Palette.positive)
+            legendItem(String(localized: "Gastos"), Palette.negative)
         }
         .font(.footnote)
         .foregroundStyle(Palette.ink2)
@@ -1048,9 +1054,11 @@ struct HomeView: View {
         let spent = change(monthExpenses, previousExpenses, higherIsBetter: false, monthStyle: .long)
         return [
             KPIItem(title: String(localized: "Efectivo disponible"), value: ledger.availableCash.money, foot: accountsDetail),
-            KPIItem(title: String(localized: "Ingresos del mes"), value: thisMonth.totalIncome.money, foot: income?.text, footColor: income?.color ?? Palette.ink2),
-            KPIItem(title: String(localized: "Gastos del mes"), value: monthExpenses.money, foot: spent?.text, footColor: spent?.color ?? Palette.ink2),
-            KPIItem(title: String(localized: "Ganancia neta"), value: thisMonth.netIncome.money, foot: margin),
+            KPIItem(title: String(localized: "Ingresos del mes"), value: thisMonth.totalIncome.money, foot: income?.text, footColor: income?.color ?? Palette.ink2,
+                    valueColor: Palette.positive),
+            KPIItem(title: String(localized: "Gastos del mes"), value: monthExpenses.money, foot: spent?.text, footColor: spent?.color ?? Palette.ink2,
+                    valueColor: Palette.negative),
+            KPIItem(title: String(localized: "Ganancia neta"), value: thisMonth.netIncome.money, foot: margin, valueColor: profitColor),
         ]
     }
 
@@ -1391,7 +1399,7 @@ struct HomeView: View {
                 Text("Aquí verás cómo va tu negocio")
                     .font(.title2.weight(.bold)).foregroundStyle(Palette.ink)
                     .accessibilityAddTraits(.isHeader)
-                Text("Cuando registres ventas y gastos, aparecerán tu efectivo, tus ingresos del mes y lo que te deben.")
+                Text("Cuando registres ventas y gastos, aquí verás tu efectivo, tu ganancia del mes y el sales tax que debes.")
                     .font(.subheadline).foregroundStyle(Palette.ink2)
                     .frame(maxWidth: 300)
                 Button("Crear tu primera factura") { write(.invoice) }

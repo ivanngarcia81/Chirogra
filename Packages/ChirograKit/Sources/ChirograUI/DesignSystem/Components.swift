@@ -1125,6 +1125,8 @@ struct KPIItem: Identifiable {
     let value: String
     var foot: String? = nil
     var footColor: Color = Palette.ink2
+    /// Color de la cifra (Inicio: ingresos en verde, gastos en rojo, ganancia en el de la marca).
+    var valueColor: Color = Palette.ink
     var id: String { title }
 }
 
@@ -1163,7 +1165,7 @@ struct KPIGrid: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(item.title).font(Self.titleFont).foregroundStyle(Palette.ink2).lineLimit(1)
                     Text(item.value).font(.amount(large ? Self.largeAmount : 22)).minimumScaleFactor(0.6).lineLimit(1)
-                        .foregroundStyle(Palette.ink)
+                        .foregroundStyle(item.valueColor)
                     // Siempre una línea de pie, aunque esté vacía, para que todas las tarjetas midan lo mismo.
                     Text(item.foot ?? " ").font(Self.footFont).lineLimit(1)
                         .foregroundStyle(item.footColor)

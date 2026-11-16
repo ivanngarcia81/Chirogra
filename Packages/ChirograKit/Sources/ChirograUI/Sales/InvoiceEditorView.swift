@@ -66,6 +66,8 @@ struct InvoiceEditorView: View {
     @State private var estimateTitle = ""
     /// Precios con impuesto incluido: el del borrador o estimado que se edita; `nil` = el de la empresa.
     @State private var pricesIncludeTax: Bool?
+    /// Línea cuyo precio se está escribiendo (tocar el total de la línea lleva aquí).
+    @FocusState private var focusedPrice: UUID?
     @State private var errorMessage: String?
     @State private var savedInvoice: Invoice?
     @State private var savedEstimate: Estimate?
@@ -225,13 +227,14 @@ struct InvoiceEditorView: View {
                 }
             }
             #else
-            // Canvas `FacturaNueva`: «✓» a la derecha. De vidrio sin relleno (decisión del usuario, 2-nov): en
+            // «Guardar borrador» con texto a la derecha (antes solo «✓»: en un test de usuario del 16-nov no se reconoció y
+            // creyó que no se podía guardar sin enviar). De vidrio sin relleno (decisión del usuario, 2-nov): en
             // `.confirmationAction` el sistema lo rellenaba con el color del texto (un círculo negro).
             if !isWide {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(action: saveDraft) {
                         Label(isEditingIssued ? "Guardar cambios" : isEstimate ? "Guardar estimado" : "Guardar borrador",
-                              systemImage: "checkmark").labelStyle(.iconOnly)
+                              systemImage: "checkmark").labelStyle(.titleOnly).fontWeight(.semibold)
                     }
                     .disabled(isEditingIssued ? !canIssue : customerID == nil)
                     .headerButton()
@@ -614,57 +617,61 @@ struct InvoiceEditorView: View {
         return dynamicTypeSize < .accessibility4
     }
 
-    /// Línea del formulario estrecho, en el orden que pidió el usuario (7-nov): descripción con precio y «Gravable»;
-    /// debajo, cantidad y cuenta de ingreso; y al final el total de la línea (antes iba arriba, junto a la descripción,
-    /// y se confundía con el precio).
+    /// Línea del formulario estrecho: descripción; «Precio» en su propia fila con una caja grande (16-nov; antes iba
+    /// junto a la descripción y no se encontraba); cantidad y «Gravable»; cuenta de ingreso; y al final el total de la
+    /// línea, que al tocarlo lleva al precio (antes iba arriba y se confundía con el precio, 7-nov).
     private func lineRow(_ line: Binding<LineDraft>) -> some View {
         VStack(alignment: .leading, spacing: 6) {
-            ViewThatFits(in: .horizontal) {
-                HStack(alignment: .center, spacing: 8) {
-                    TextField("Descripción", text: line.details, axis: .vertical)
-                        .frame(minWidth: 96, maxWidth: .infinity, alignment: .leading)
-                    priceAndTax(line)
-                }
-                VStack(alignment: .leading, spacing: 6) {
-                    TextField("Descripción", text: line.details, axis: .vertical)
-                    priceAndTax(line)
-                }
+            TextField("Descripción", text: line.details, axis: .vertical)
+            // El precio en su propia fila, con su rótulo y una caja grande (test de usuario del 16-nov: no encontraba
+            // dónde escribir el importe y tocaba el total de la línea).
+            HStack(spacing: 8) {
+                Text("Precio").foregroundStyle(Palette.ink).accessibilityHidden(true)
+                Spacer(minLength: 8)
+                MoneyField(title: String(localized: "Precio"), minorUnits: line.unitPrice)
+                    .focused($focusedPrice, equals: line.wrappedValue.id)
+                    .multilineTextAlignment(.trailing)
+                    .font(.body.weight(.semibold))
+                    .foregroundStyle(Palette.ink)
+                    .padding(.horizontal, 12)
+                    .frame(minWidth: 140, minHeight: 40)
+                    .fixedSize(horizontal: true, vertical: false)
+                    .background(Palette.surface2, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .strokeBorder(focusedPrice == line.wrappedValue.id ? Palette.brand : Palette.ink2.opacity(0.25), lineWidth: 1))
+                    .contentShape(Rectangle())
+                    .onTapGesture { focusedPrice = line.wrappedValue.id }
             }
+            .frame(minHeight: Metrics.target)
             ViewThatFits(in: .horizontal) {
                 HStack(spacing: 8) {
                     QuantityStepper(quantity: line.quantity)
                     Spacer(minLength: 4)
-                    incomeAccountMenu(line.incomeAccountID).font(.footnote)
+                    taxableToggle(line)
                 }
                 VStack(alignment: .leading, spacing: 6) {
                     QuantityStepper(quantity: line.quantity)
-                    incomeAccountMenu(line.incomeAccountID).font(.footnote)
+                    taxableToggle(line)
                 }
             }
-            HStack(alignment: .firstTextBaseline) {
-                Text("Total de la línea").font(.footnote).foregroundStyle(Palette.ink2)
-                Spacer()
-                Text(line.wrappedValue.amount.money).monospacedDigit().fontWeight(.semibold).foregroundStyle(Palette.ink)
+            incomeAccountMenu(line.incomeAccountID).font(.footnote)
+            // Tocar el total lleva al precio: es donde se cambia el importe.
+            Button { focusedPrice = line.wrappedValue.id } label: {
+                HStack(alignment: .firstTextBaseline) {
+                    Text("Total de la línea").font(.footnote).foregroundStyle(Palette.ink2)
+                    Spacer()
+                    Text(line.wrappedValue.amount.money).monospacedDigit().fontWeight(.semibold).foregroundStyle(Palette.ink)
+                }
+                .contentShape(Rectangle())
             }
+            .buttonStyle(.plain)
             .accessibilityElement(children: .combine)
         }
         .padding(.vertical, 4)
     }
 
-    private func priceAndTax(_ line: Binding<LineDraft>) -> some View {
+    private func taxableToggle(_ line: Binding<LineDraft>) -> some View {
         HStack(spacing: 6) {
-            // El precio en su caja, con «Precio» de guía mientras está vacío: con solo «$0.00» en gris no se distinguía
-            // del importe de la línea (a la derecha) ni se veía que se podía escribir (recorrido «cliente nuevo», 5-nov).
-            // Con una etiqueta delante ya no cabía la cantidad en la misma fila. Área de toque de 44 pt.
-            MoneyField(title: String(localized: "Precio"), minorUnits: line.unitPrice, prompt: String(localized: "Precio"))
-                .foregroundStyle(Palette.ink)
-                .fixedSize()
-                .padding(.horizontal, 8)
-                .frame(minWidth: 64, minHeight: 30)
-                .background(Palette.surface2, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
-                .frame(minHeight: Metrics.target)
-                .contentShape(Rectangle())
-            Text(verbatim: "·").foregroundStyle(Palette.ink2).accessibilityHidden(true)
             Button(line.wrappedValue.isTaxable ? String(localized: "Gravable") : String(localized: "No gravable")) {
                 line.wrappedValue.isTaxable.toggle()
             }
