@@ -81,8 +81,18 @@ extension ReportBuilder {
             totalSales: inRange.reduce(0) { $0 + $1.netSales },
             taxableSales: inRange.filter { !$0.isExempt }.reduce(0) { $0 + $1.taxableBase },
             exemptSales: inRange.filter(\.isExempt).reduce(0) { $0 + $1.netSales },
-            rows: order.compactMap { rows[$0] }
+            rows: stableOrder(order.compactMap { rows[$0] })
         )
+    }
+
+    /// Las líneas de impuesto de una factura son una relación de SwiftData, que no guarda orden: sin esto las filas
+    /// salían en otro orden en cada arranque. Mismo criterio que `stableOrder` de las tasas (ChirograData): primero la
+    /// mayor (la estatal) y, entre iguales, por nombre; si aun así empatan, en el orden en que aparecieron.
+    static func stableOrder(_ rows: [SalesTaxSummary.RateRow]) -> [SalesTaxSummary.RateRow] {
+        rows.enumerated().sorted { a, b in
+            (b.element.rateMillionths, a.element.name.lowercased(), a.offset)
+                < (a.element.rateMillionths, b.element.name.lowercased(), b.offset)
+        }.map(\.element)
     }
 }
 

@@ -35,6 +35,21 @@ struct SalesTaxSummaryTests {
         #expect(report.totalTax == 2_475)
         #expect(CSVExport.salesTaxSummary(report).contains("Total impuesto,,,24.75"))
     }
+
+    @Test("Las filas salen en orden estable (la mayor y luego por nombre), lleguen como lleguen las tasas")
+    func stableRowOrder() {
+        let mta = UUID()
+        func doc(_ taxes: [SalesTaxDocument.Tax]) -> SalesTaxDocument {
+            SalesTaxDocument(date: day(5), netSales: 10_000, taxableBase: 10_000, isExempt: false, taxes: taxes)
+        }
+        let tx = SalesTaxDocument.Tax(rateID: texas, name: "Texas", rateMillionths: 62_500, taxableBase: 10_000, amount: 625)
+        let au = SalesTaxDocument.Tax(rateID: austin, name: "Austin", rateMillionths: 10_000, taxableBase: 10_000, amount: 100)
+        let mt = SalesTaxDocument.Tax(rateID: mta, name: "Austin MTA", rateMillionths: 10_000, taxableBase: 10_000, amount: 100)
+        for taxes in [[mt, tx, au], [au, mt, tx], [tx, au, mt], [mt, au, tx]] {
+            let report = ReportBuilder.salesTaxSummary(documents: [doc(taxes)], from: day(1), to: day(31))
+            #expect(report.rows.map(\.name) == ["Texas", "Austin", "Austin MTA"])
+        }
+    }
 }
 
 @Suite("Posición de sales tax")
