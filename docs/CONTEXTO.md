@@ -1,6 +1,6 @@
 # Chirogra: contexto para retomar en otro chat
 
-Estado de Chirogra al **15 de noviembre de 2026**. **Para empezar rápido, lee primero
+Estado de Chirogra al **16 de noviembre de 2026**. **Para empezar rápido, lee primero
 [RESUMEN-PARA-SEGUIR.md](RESUMEN-PARA-SEGUIR.md)** (estado, tabla de builds y lo siguiente); luego este, entero. El diseño técnico está en
 [DISEÑO.md](DISEÑO.md), el sistema visual y los argumentos de QA en [REDISEÑO-NATIVO.md](REDISEÑO-NATIVO.md) (§5), los
 datos en [DATOS-V4.md](DATOS-V4.md) (y [DATOS-V2.md](DATOS-V2.md)), la fase 2 en [PLAN-FASE2.md](PLAN-FASE2.md) y la
@@ -12,7 +12,10 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
 
 ## Dónde nos quedamos (empieza aquí)
 
-**Resumen al 15-nov** (lo de debajo es el detalle y la historia):
+**Resumen al 16-nov** (lo de debajo es el detalle y la historia):
+- **16-nov: limpieza con 5 agentes** (código muerto, duplicados, 170 textos sin uso del catálogo) unida a `version-1.3`
+  y `main`, sin cambios de comportamiento (346 pruebas, 25 pantallas del Mac iguales píxel a píxel), más el orden
+  estable de las tasas en Reportes › Sales tax. Detalle en RESUMEN, «Último chat». Sin build nuevo.
 - `main` = `version-1.3` (merge `d083f0c`), empujadas, carpeta limpia; la web ya enseña la 1.3 y el icono χρ.
 - **Último build: 46 (1.3.0)**, subido iOS y macOS el 15-nov (tabla de Clientes del iPad sobre gris). **45** (14-nov):
   icono χρ (abajo, «Ícono» en «Decisiones del usuario»).

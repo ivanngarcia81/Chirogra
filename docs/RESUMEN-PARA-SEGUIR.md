@@ -1,4 +1,4 @@
-# Chirogra: resumen para empezar el siguiente chat (15-nov-2026)
+# Chirogra: resumen para empezar el siguiente chat (16-nov-2026)
 
 Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («Dónde nos quedamos» y «Siguiente»).
 **Al usuario se le habla siempre en español.**
@@ -44,7 +44,25 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 | 45 | `55add7e` | 1.3.0: icono χρ (χ blanca, ρ azafrán) en la app, la bienvenida y la web. |
 | 46 | `786f6fa` | 1.3.0: la tabla de Clientes del iPad ya no pinta su fondo blanco (`.scrollContentBackground(.hidden)`): va sobre el gris de la pantalla y se distingue de la barra lateral (pedido del 15-nov). |
 
-## Último chat (14 y 15-nov)
+## Último chat (16-nov): auditoría y limpieza con 5 agentes
+
+- Pedido del usuario: quitar código muerto, duplicados, archivos y recursos sin uso **sin cambiar nada de lo que hace
+  la app**. Cinco agentes en worktrees (Core+Data; tres de ChirograUI por carpetas; recursos/docs/scripts), un revisor
+  independiente del diff y unificaciones entre carpetas del coordinador. Rama `limpieza-auditoria`, unida a
+  `version-1.3` y `main` (sin build nuevo: lo de la 1.3 ya subido es el 46).
+- Quitado: 170 textos del catálogo sin uso (las otras 271 «stale» son textos solo del Mac, **no borrarlas**:
+  `sync-strings.sh` solo compila iOS), `scripts/sales-tax-zip.py` (lo sustituyó `scripts/tasas/`), componentes y
+  colores sin uso (`FilterChip`, `UnderlineTabs`, `MiniStat`, `HeroCard`, `FlowLayout`, `onBrand`, `outflow`…),
+  `Company.shownName` (= `Company.name`), `StatusChip.background` (no se dibujaba). Unificados: `failureAlert`,
+  `receiptFileImporter`, `receiptRemovalDialog`, `BillSummarySection`, `BillFilter.matches`, ayudantes de Reportes,
+  reparto prorrateado y desglose de sales tax en Core. −268 líneas Swift, catálogo 762 → 709 KB, app iOS −88 KB.
+- Comprobado: 346 pruebas, iOS y macOS compilan, 25 pantallas del Mac iguales píxel a píxel antes y después.
+- **Arreglo de paso (aprobado por el usuario):** Reportes › Sales tax sacaba las tasas en otro orden en cada arranque
+  (líneas de impuesto = relación sin orden); ahora `ReportBuilder.salesTaxSummary` las ordena como `stableOrder`.
+- Docs que se ven desactualizados (sin tocar): `README.md` (conciliación y recibos como pendientes, iCloud),
+  `DISEÑO.md` («nada implementado»), y `REDISEÑO-NATIVO.md`/`DISEÑO.md` nombran tokens ya borrados.
+
+## Chat anterior (14 y 15-nov)
 
 - **Icono χρ (build 45, `55add7e`, 14-nov):** el `AppIcon.icon` del usuario (χ blanca y ρ azafrán `#F2B33D` sobre el
   degradado índigo) copiado tal cual a `App/AppIcon.icon`. Dentro de la app, `LogoMark` dibuja lo mismo con `ChiGlyph`
