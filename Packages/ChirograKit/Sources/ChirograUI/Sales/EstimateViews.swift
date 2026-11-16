@@ -229,7 +229,6 @@ struct EstimateDetailView: View {
     #if os(iOS)
     @LayoutSizeClass private var sizeClass
     #endif
-    @ActiveCompanyQuery private var companies: [Company]
     @State private var editing = false
     @State private var sending = false
     @State private var accepting = false
@@ -329,18 +328,10 @@ struct EstimateDetailView: View {
         .accessibilityElement(children: .combine)
     }
 
-    private func sectionLabel(_ text: String) -> some View {
-        SectionLabel(text: text)
-            .accessibilityAddTraits(.isHeader)
-            .padding(.horizontal, Metrics.cardPadding)
-            .padding(.top, 22)
-            .padding(.bottom, 7)
-    }
-
     /// Conceptos: descripción y «40 × $58.00» debajo; importe a la derecha.
     private var linesSection: some View {
         VStack(alignment: .leading, spacing: 0) {
-            sectionLabel(String(localized: "Conceptos"))
+            DetailSectionLabel(text: String(localized: "Conceptos"))
             VStack(spacing: 0) {
                 ForEach(Array(estimate.sortedLines.enumerated()), id: \.element.id) { index, line in
                     if index > 0 { Divider().padding(.leading, Metrics.cardPadding) }
@@ -403,7 +394,7 @@ struct EstimateDetailView: View {
     /// Canvas: «Factura F-1050 creada como borrador» con el detalle del anticipo; «Revisar y enviar» la abre.
     private func createdSection(_ invoice: Invoice) -> some View {
         VStack(alignment: .leading, spacing: 0) {
-            sectionLabel(String(localized: "Factura"))
+            DetailSectionLabel(text: String(localized: "Factura"))
             Button { openedInvoice = invoice } label: {
                 HStack(spacing: 12) {
                     IconTile(systemImage: "checkmark", foreground: Palette.green)
@@ -442,7 +433,7 @@ struct EstimateDetailView: View {
         let invoices = invoices.filter { $0.id != createdInvoice?.id }
         if !invoices.isEmpty {
             VStack(alignment: .leading, spacing: 0) {
-                sectionLabel(String(localized: "Facturas de este estimado"))
+                DetailSectionLabel(text: String(localized: "Facturas de este estimado"))
                 VStack(spacing: 0) {
                     ForEach(Array(invoices.enumerated()), id: \.element.id) { index, invoice in
                         if index > 0 { Divider().padding(.leading, Metrics.cardPadding) }
@@ -465,7 +456,7 @@ struct EstimateDetailView: View {
 
     private var messageSection: some View {
         VStack(alignment: .leading, spacing: 0) {
-            sectionLabel(String(localized: "Mensaje para el cliente"))
+            DetailSectionLabel(text: String(localized: "Mensaje para el cliente"))
             Text(estimate.customerMessage).foregroundStyle(Palette.ink)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .card()

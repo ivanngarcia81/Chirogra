@@ -128,14 +128,7 @@ struct SendDocumentView: View {
         .frame(minWidth: 520, idealWidth: 600, minHeight: 620, idealHeight: 760)
         #else
         .bottomActionBar {
-            VStack(alignment: .leading, spacing: 0) {
-                Text("Para \(document.customerName.isEmpty ? String(localized: "Sin cliente") : document.customerName)")
-                    .font(.footnote).foregroundStyle(Palette.ink2).lineLimit(1)
-                Text(document.amount.money).font(.headline).monospacedDigit().foregroundStyle(Palette.ink)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.leading, 14)
-            .accessibilityElement(children: .combine)
+            DocumentRecipientSummary(document: document)
             Button(action: send) { Label("Enviar", systemImage: "paperplane") }
                 .buttonStyle(.primaryCompact)
                 .disabled(!canSend)

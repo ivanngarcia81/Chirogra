@@ -1,7 +1,6 @@
 #if os(macOS)
 import ChirograCore
 import ChirograData
-import SwiftData
 import SwiftUI
 
 /// Mac: Clientes como tabla + inspector (canvas `MacClientes`). Arriba el segmentado Todos · Con saldo · Vencidos y la
