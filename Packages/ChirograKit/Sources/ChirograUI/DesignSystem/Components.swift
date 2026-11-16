@@ -520,11 +520,10 @@ struct StatusDot: View {
 
 /// Estado de un documento como en el canvas: un punto del color del sistema y el texto en su color accesible
 /// («● Vencida · 8 días»), sin cápsula. `compact` es el de las filas (`.footnote`); el otro, el de una ficha
-/// (`.subheadline` semibold). `background` ya no se dibuja: se conserva para no tocar las pantallas.
+/// (`.subheadline` semibold).
 struct StatusChip: View {
     let text: String
     let foreground: Color
-    let background: Color
     var compact = false
     /// Color del punto (por defecto, el del texto).
     var dot: Color? = nil
@@ -574,25 +573,25 @@ extension StatusChip {
     /// Vencida · N días (rojo), Pagada (verde) y Anulada (gris).
     init(invoice: Invoice, compact: Bool = true) {
         if let days = invoice.daysOverdue() {
-            self.init(text: String(localized: "Vencida · \(days) días"), foreground: Palette.negative, background: Palette.negativeWash,
+            self.init(text: String(localized: "Vencida · \(days) días"), foreground: Palette.negative,
                       compact: compact, dot: Palette.red)
             return
         }
         switch invoice.status {
-        case .draft: self.init(text: String(localized: "Borrador"), foreground: Palette.ink2, background: Palette.surface2, compact: compact, dot: Palette.gray)
-        case .sent: self.init(text: invoice.sentStatusTitle, foreground: Palette.ink2, background: Palette.surface2, compact: compact, dot: Palette.blue)
-        case .partiallyPaid: self.init(text: String(localized: "Pago parcial"), foreground: Palette.warning, background: Palette.warningWash, compact: compact, dot: Palette.orange)
-        case .paid: self.init(text: String(localized: "Pagada"), foreground: Palette.positive, background: Palette.positiveWash, compact: compact, dot: Palette.green)
-        case .void: self.init(text: String(localized: "Anulada"), foreground: Palette.ink2, background: Palette.surface2, compact: compact, dot: Palette.gray)
+        case .draft: self.init(text: String(localized: "Borrador"), foreground: Palette.ink2, compact: compact, dot: Palette.gray)
+        case .sent: self.init(text: invoice.sentStatusTitle, foreground: Palette.ink2, compact: compact, dot: Palette.blue)
+        case .partiallyPaid: self.init(text: String(localized: "Pago parcial"), foreground: Palette.warning, compact: compact, dot: Palette.orange)
+        case .paid: self.init(text: String(localized: "Pagada"), foreground: Palette.positive, compact: compact, dot: Palette.green)
+        case .void: self.init(text: String(localized: "Anulada"), foreground: Palette.ink2, compact: compact, dot: Palette.gray)
         }
     }
 
     init(bill: Bill, compact: Bool = true) {
         switch bill.status {
-        case .open: self.init(text: String(localized: "Por pagar"), foreground: Palette.ink2, background: Palette.surface2, compact: compact, dot: Palette.blue)
-        case .partiallyPaid: self.init(text: String(localized: "Pago parcial"), foreground: Palette.warning, background: Palette.warningWash, compact: compact, dot: Palette.orange)
-        case .paid: self.init(text: String(localized: "Pagada"), foreground: Palette.positive, background: Palette.positiveWash, compact: compact, dot: Palette.green)
-        case .void: self.init(text: String(localized: "Anulada"), foreground: Palette.ink2, background: Palette.surface2, compact: compact, dot: Palette.gray)
+        case .open: self.init(text: String(localized: "Por pagar"), foreground: Palette.ink2, compact: compact, dot: Palette.blue)
+        case .partiallyPaid: self.init(text: String(localized: "Pago parcial"), foreground: Palette.warning, compact: compact, dot: Palette.orange)
+        case .paid: self.init(text: String(localized: "Pagada"), foreground: Palette.positive, compact: compact, dot: Palette.green)
+        case .void: self.init(text: String(localized: "Anulada"), foreground: Palette.ink2, compact: compact, dot: Palette.gray)
         }
     }
 }

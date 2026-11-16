@@ -25,13 +25,13 @@ extension StatusChip {
     init(billWithAge bill: Bill, compact: Bool = true, short: Bool = false) {
         if bill.isOpen, bill.autoPay {
             self.init(text: short ? String(localized: "Cargo automático") : String(localized: "Recurrente · cargo automático"),
-                      foreground: Palette.info, background: .clear, compact: compact, dot: Palette.teal)
+                      foreground: Palette.info, compact: compact, dot: Palette.teal)
         } else if bill.isScheduled, let date = bill.scheduledPaymentDate {
             self.init(text: short ? String(localized: "Programada") : String(localized: "Programada · \(date.dayMonth)"),
-                      foreground: bill.isScheduleLate ? Palette.negative : Palette.brand, background: .clear,
+                      foreground: bill.isScheduleLate ? Palette.negative : Palette.brand,
                       compact: compact, dot: bill.isScheduleLate ? Palette.red : Palette.indigo)
         } else if let days = bill.daysOverdue {
-            self.init(text: String(localized: "Vencida · \(days) días"), foreground: Palette.negative, background: Palette.negativeWash,
+            self.init(text: String(localized: "Vencida · \(days) días"), foreground: Palette.negative,
                       compact: compact, dot: Palette.red)
         } else {
             self.init(bill: bill, compact: compact)

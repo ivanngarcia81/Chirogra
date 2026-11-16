@@ -234,14 +234,14 @@ extension Customer {
     /// Estado de la fila (canvas `MacClientes`): «● Vencido» en rojo, «● Al día» en verde o «● Sin saldo» en gris.
     var tableStatus: StatusChip {
         if tableOverdue > 0 {
-            return StatusChip(text: String(localized: "Vencido"), foreground: Palette.negative, background: .clear,
+            return StatusChip(text: String(localized: "Vencido"), foreground: Palette.negative,
                               compact: true, dot: Palette.red)
         }
         if openBalance > 0 {
-            return StatusChip(text: String(localized: "Al día"), foreground: Palette.positive, background: .clear,
+            return StatusChip(text: String(localized: "Al día"), foreground: Palette.positive,
                               compact: true, dot: Palette.green)
         }
-        return StatusChip(text: String(localized: "Sin saldo"), foreground: Palette.ink2, background: .clear,
+        return StatusChip(text: String(localized: "Sin saldo"), foreground: Palette.ink2,
                           compact: true, dot: Palette.gray)
     }
 }

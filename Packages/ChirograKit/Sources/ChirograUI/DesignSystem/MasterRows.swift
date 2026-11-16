@@ -34,7 +34,7 @@ struct MasterStatus: View {
 
     var body: some View {
         if isSelected {
-            StatusChip(text: chip.text, foreground: Palette.onBrandFill, background: .clear, compact: true, dot: Palette.onBrandFill)
+            StatusChip(text: chip.text, foreground: Palette.onBrandFill, compact: true, dot: Palette.onBrandFill)
         } else {
             chip
         }

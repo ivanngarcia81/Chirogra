@@ -22,9 +22,9 @@ enum ExpenseStatus {
 
     func chip(compact: Bool = true) -> StatusChip {
         switch self {
-        case .pending: StatusChip(text: title, foreground: Palette.warning, background: .clear, compact: compact, dot: Palette.orange)
-        case .void: StatusChip(text: title, foreground: Palette.ink2, background: .clear, compact: compact, dot: Palette.gray)
-        case .edited: StatusChip(text: title, foreground: Palette.info, background: .clear, compact: compact, dot: Palette.teal)
+        case .pending: StatusChip(text: title, foreground: Palette.warning, compact: compact, dot: Palette.orange)
+        case .void: StatusChip(text: title, foreground: Palette.ink2, compact: compact, dot: Palette.gray)
+        case .edited: StatusChip(text: title, foreground: Palette.info, compact: compact, dot: Palette.teal)
         }
     }
 }

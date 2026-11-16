@@ -120,7 +120,7 @@ struct BankRulesView: View {
             IconTile(systemImage: "bolt", foreground: rule.isActive ? Palette.purple : Palette.gray)
         } trailing: {
             VStack(alignment: .trailing, spacing: 2) {
-                StatusChip(text: rule.stateTitle, foreground: rule.isActive ? Palette.ink2 : Palette.ink2, background: .clear, compact: true, dot: rule.stateColor)
+                StatusChip(text: rule.stateTitle, foreground: rule.isActive ? Palette.ink2 : Palette.ink2, compact: true, dot: rule.stateColor)
                 Text("Prioridad \(rule.priority)").font(.footnote).foregroundStyle(Palette.ink2)
             }
         }
@@ -152,7 +152,7 @@ struct BankRulesView: View {
             TableColumn("Prioridad", value: \.priority) { Text(verbatim: "\($0.priority)").monospacedDigit() }.width(min: 56, ideal: 62, max: 80)
                 .alignment(.trailing)
             TableColumn("Estado", value: \.stateTitle) { row in
-                MacCellStatus(chip: StatusChip(text: row.stateTitle, foreground: Palette.ink2, background: .clear, compact: true, dot: row.stateColor))
+                MacCellStatus(chip: StatusChip(text: row.stateTitle, foreground: Palette.ink2, compact: true, dot: row.stateColor))
             }
             .width(min: 80, ideal: 90)
         } filter: {
@@ -160,7 +160,7 @@ struct BankRulesView: View {
         } inspector: { row in
             let rule = row.rule
             MacInspectorSummary(title: rule.name, amount: rule.matchText) {
-                StatusChip(text: rule.stateTitle, foreground: Palette.ink2, background: .clear, compact: true, dot: rule.stateColor)
+                StatusChip(text: rule.stateTitle, foreground: Palette.ink2, compact: true, dot: rule.stateColor)
             }
             MacInspectorSection(title: String(localized: "Detalles")) {
                 MacInspectorRow(String(localized: "Si la descripción contiene"), value: rule.matchText)

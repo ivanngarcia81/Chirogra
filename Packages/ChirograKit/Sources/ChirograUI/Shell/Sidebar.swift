@@ -194,7 +194,7 @@ struct Sidebar: View {
                 // de la empresa abierta, para que se vea de quién son las secciones de debajo.
                 if ClientsRouter.isAvailable(companies: selectorCompanies) {
                     sectionRow(.clients).padding(.top, 6)
-                    group(companies.first?.shownName ?? String(localized: "Negocio"), sections: AppSection.business)
+                    group(companies.first?.name ?? String(localized: "Negocio"), sections: AppSection.business)
                 } else {
                     group(String(localized: "Negocio"), sections: AppSection.business)
                 }
@@ -421,7 +421,7 @@ struct Sidebar: View {
     @ViewBuilder
     private var companyCard: some View {
         if let company = companies.first {
-            let name = company.shownName
+            let name = company.name
             Menu {
                 CompanyMenuItems(companies: selectorCompanies)
                 Section {

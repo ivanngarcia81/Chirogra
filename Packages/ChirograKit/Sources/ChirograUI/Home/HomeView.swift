@@ -279,7 +279,7 @@ struct HomeView: View {
     /// Monograma de la empresa (canvas: el de la cuenta), que abre los ajustes.
     private func companyButton(_ company: Company) -> some View {
         NavigationLink { SettingsView() } label: {
-            Text(Initials.from(company.displayName.isEmpty ? company.legalName : company.displayName))
+            Text(Initials.from(company.name))
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundStyle(.white)
                 .frame(width: 36, height: 36)

@@ -40,7 +40,7 @@ extension Estimate {
         case .expired: (Palette.warning, Palette.orange)
         case .converted: (Palette.info, Palette.blue)
         }
-        return StatusChip(text: statusTitle, foreground: text, background: .clear, compact: compact, dot: dot)
+        return StatusChip(text: statusTitle, foreground: text, compact: compact, dot: dot)
     }
 
     /// Se puede editar: ni convertido ni con facturas (lo impide `saveEstimate`).

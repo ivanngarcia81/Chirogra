@@ -954,7 +954,7 @@ struct MoreView: View {
 
     /// Fila de la empresa (canvas: monograma de 56 pt, nombre de 20 semibold y un detalle gris), que abre su perfil.
     private func companyRow(_ company: Company) -> some View {
-        let name = company.shownName
+        let name = company.name
         let detail = company.legalName.isEmpty || company.legalName == name ? company.entityType.title : company.legalName
         return NavigationLink { CompanyProfileView(company: company) } label: {
             HStack(spacing: 14) {

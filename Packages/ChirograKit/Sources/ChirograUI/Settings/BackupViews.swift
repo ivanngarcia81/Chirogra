@@ -83,7 +83,7 @@ struct BackupSection: View {
     }
 
     private var companyName: String {
-        companies.first?.shownName ?? ""
+        companies.first?.name ?? ""
     }
 
     private static var appVersion: String {

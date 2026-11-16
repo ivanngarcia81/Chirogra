@@ -38,7 +38,7 @@ struct IfSampleBooks<Content: View>: View {
 
     var body: some View {
         if SampleData.isSample(companies: companies, sampleCreations: sampleCreations), let company = companies.first {
-            content(company.shownName)
+            content(company.name)
         }
     }
 }
@@ -210,7 +210,7 @@ private struct SampleBooksConfirmation: ViewModifier {
         return active
     }
 
-    private var companyName: String { activeSample?.shownName ?? companies.first?.shownName ?? "" }
+    private var companyName: String { activeSample?.name ?? companies.first?.name ?? "" }
 
     func body(content: Content) -> some View {
         content

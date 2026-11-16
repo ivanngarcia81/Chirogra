@@ -269,11 +269,11 @@ struct JournalEntryRow: View {
             VStack(alignment: dynamicTypeSize.amountAlignment, spacing: 3) {
                 Text(entry.totalDebits.money).monospacedDigit().foregroundStyle(Palette.ink)
                 if entry.source == .accountantAdjustment {
-                    StatusChip(text: String(localized: "Del contador"), foreground: Palette.info, background: Palette.infoWash, compact: true, dot: Palette.info)
+                    StatusChip(text: String(localized: "Del contador"), foreground: Palette.info, compact: true, dot: Palette.info)
                 }
                 if entry.isReversed || entry.reversesEntryID != nil {
                     StatusChip(text: entry.isReversed ? String(localized: "Revertido") : String(localized: "Reversión"),
-                               foreground: Palette.ink2, background: Palette.surface2, compact: true, dot: Palette.gray)
+                               foreground: Palette.ink2, compact: true, dot: Palette.gray)
                 }
             }
         }
@@ -995,7 +995,7 @@ struct JournalEntryDetailView: View {
                     Text(entry.totalDebits.money).font(.amount(40)).foregroundStyle(Palette.ink).lineLimit(1).minimumScaleFactor(0.6)
                     if entry.isReversed || entry.reversesEntryID != nil {
                         StatusChip(text: entry.isReversed ? String(localized: "Revertido") : String(localized: "Reversión"),
-                                   foreground: Palette.ink2, background: Palette.surface2, dot: Palette.gray)
+                                   foreground: Palette.ink2, dot: Palette.gray)
                     }
                 }
                 .accessibilityElement(children: .combine)

@@ -68,11 +68,6 @@ struct ActiveCompanyQuery: DynamicProperty {
     }
 }
 
-extension Company {
-    /// Nombre para el selector y las listas: el comercial o, si no hay, la razón social.
-    var shownName: String { displayName.isEmpty ? legalName : displayName }
-}
-
 extension Array where Element == Company {
     /// En el orden del selector (`sortOrder` y después la más antigua), como `Bookkeeper.companies()`.
     var inSelectorOrder: [Company] {

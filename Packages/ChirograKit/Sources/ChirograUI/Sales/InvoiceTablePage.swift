@@ -379,7 +379,7 @@ extension Invoice {
     var tableStatus: StatusChip {
         if status == .partiallyPaid && daysOverdue() == nil {
             return StatusChip(text: String(localized: "Parcial · \(balanceDue.money) pend."), foreground: Palette.warning,
-                              background: .clear, compact: true, dot: Palette.orange)
+                              compact: true, dot: Palette.orange)
         }
         return StatusChip(invoice: self)
     }

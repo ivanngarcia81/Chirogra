@@ -232,10 +232,10 @@ extension JournalEntry {
     /// Estado de la fila: punto + texto, como las facturas.
     var tableStatus: StatusChip {
         switch tableStatusRank {
-        case 0: StatusChip(text: String(localized: "Borrador"), foreground: Palette.ink2, background: .clear, compact: true, dot: Palette.orange)
-        case 3: StatusChip(text: String(localized: "Revertido"), foreground: Palette.ink2, background: .clear, compact: true, dot: Palette.gray)
-        case 2: StatusChip(text: String(localized: "Reversión"), foreground: Palette.ink2, background: .clear, compact: true, dot: Palette.gray)
-        default: StatusChip(text: String(localized: "Contabilizado"), foreground: Palette.ink2, background: .clear, compact: true, dot: Palette.green)
+        case 0: StatusChip(text: String(localized: "Borrador"), foreground: Palette.ink2, compact: true, dot: Palette.orange)
+        case 3: StatusChip(text: String(localized: "Revertido"), foreground: Palette.ink2, compact: true, dot: Palette.gray)
+        case 2: StatusChip(text: String(localized: "Reversión"), foreground: Palette.ink2, compact: true, dot: Palette.gray)
+        default: StatusChip(text: String(localized: "Contabilizado"), foreground: Palette.ink2, compact: true, dot: Palette.green)
         }
     }
 }

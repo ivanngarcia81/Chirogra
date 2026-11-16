@@ -419,7 +419,7 @@ private struct BankMovementInspector: View {
         }
         MacInspectorSection(title: String(localized: "Conciliación")) {
             MacInspectorRow(label: String(localized: "Estado")) {
-                StatusChip(text: status.text, foreground: Palette.ink2, background: .clear, compact: true, dot: status.color)
+                StatusChip(text: status.text, foreground: Palette.ink2, compact: true, dot: status.color)
             }
         }
     }

@@ -326,7 +326,7 @@ struct PeriodCloseView: View {
                 statusHeader(company, compact: false)
                 Spacer(minLength: 8)
                 StatusChip(text: pending == 0 ? String(localized: "\(month) listo para cerrar") : String(localized: "\(month) tiene pendientes"),
-                           foreground: pending == 0 ? Palette.positive : Palette.warning, background: .clear, compact: true,
+                           foreground: pending == 0 ? Palette.positive : Palette.warning, compact: true,
                            dot: pending == 0 ? Palette.green : Palette.orange)
             }
             if let lock = company.lockDate {

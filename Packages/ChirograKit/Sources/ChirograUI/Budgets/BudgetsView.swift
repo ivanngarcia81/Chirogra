@@ -271,7 +271,7 @@ struct BudgetsView: View {
                 Label("CSV (hoja de cálculo)", systemImage: "tablecells")
             }
             ShareLink(item: LazyReportPDF(name: budget?.name ?? String(localized: "Presupuesto"), documents: [pdfDocument(report)],
-                                          companyName: companies.first?.shownName ?? ""),
+                                          companyName: companies.first?.name ?? ""),
                       preview: SharePreview((budget?.name ?? "") + ".pdf")) {
                 Label("PDF", systemImage: "doc.richtext")
             }

@@ -70,6 +70,20 @@ enum VendorFilter: String, CaseIterable, Identifiable {
 enum BillFilter: String, CaseIterable, Identifiable {
     case open = "Por pagar", overdue = "Vencidas", thisWeek = "Esta semana", scheduled = "Programadas", paid = "Pagadas"
     var id: String { rawValue }
+
+    /// Fin de «Esta semana»: dentro de siete días, contando desde hoy.
+    static var weekEnd: Date { Calendar.current.date(byAdding: .day, value: 7, to: Calendar.current.startOfDay(for: .now)) ?? .now }
+
+    /// Si la factura entra en este filtro (lista del iPad y tabla del Mac).
+    func matches(_ bill: Bill) -> Bool {
+        switch self {
+        case .open: bill.isOpen
+        case .overdue: bill.isOverdue
+        case .thisWeek: bill.isOpen && !bill.isOverdue && bill.dueDate < Self.weekEnd
+        case .scheduled: bill.isScheduled
+        case .paid: bill.status == .paid
+        }
+    }
 }
 
 /// Lo que crea «+ Movimiento» en Banca: un gasto, un asiento con plantilla (build 4) o a mano.
@@ -434,10 +448,10 @@ private struct CustomerMasterList: View {
                 MasterRow(title: customer.name, amount: customer.openBalance.money,
                           subtitle: customer.email.isEmpty ? customer.phone : customer.email) {
                     if late > 0 {
-                        MasterStatus(chip: StatusChip(text: String(localized: "Vencido"), foreground: Palette.negative, background: .clear,
+                        MasterStatus(chip: StatusChip(text: String(localized: "Vencido"), foreground: Palette.negative,
                                                       compact: true, dot: Palette.red))
                     } else if customer.openBalance > 0 {
-                        MasterStatus(chip: StatusChip(text: String(localized: "Al día"), foreground: Palette.positive, background: .clear,
+                        MasterStatus(chip: StatusChip(text: String(localized: "Al día"), foreground: Palette.positive,
                                                       compact: true, dot: Palette.green))
                     }
                 }
@@ -606,20 +620,8 @@ private struct BillMasterList: View {
     @State private var payingBatch = false
     @Environment(\.modelContext) private var context
 
-    private var weekEnd: Date { Calendar.current.date(byAdding: .day, value: 7, to: Calendar.current.startOfDay(for: .now)) ?? .now }
-
-    private func inFilter(_ bill: Bill, _ filter: BillFilter) -> Bool {
-        switch filter {
-        case .open: bill.isOpen
-        case .overdue: bill.isOverdue
-        case .thisWeek: bill.isOpen && !bill.isOverdue && bill.dueDate < weekEnd
-        case .scheduled: bill.isScheduled
-        case .paid: bill.status == .paid
-        }
-    }
-
     private var filtered: [Bill] {
-        bills.filter { inFilter($0, filter) && (!isSelecting || $0.isOpen) && matches(query, $0.vendor?.name ?? "", $0.vendorNumber, $0.total.money) }
+        bills.filter { filter.matches($0) && (!isSelecting || $0.isOpen) && matches(query, $0.vendor?.name ?? "", $0.vendorNumber, $0.total.money) }
     }
 
     private var checkedBills: [Bill] { bills.filter { checked.contains($0.id) && $0.isOpen } }
@@ -656,7 +658,7 @@ private struct BillMasterList: View {
         .masterList(String(localized: "Facturas por pagar"), query: $query, prompt: "Proveedor, número o monto")
         .masterFilter {
             MasterFilterBar(options: BillFilter.allCases, selection: $filter) { option in
-                bills.filter { inFilter($0, option) }.count
+                bills.filter { option.matches($0) }.count
             }
         }
         .toolbar {
@@ -784,10 +786,10 @@ private struct JournalMasterList: View {
                           subtitle: "#\(entry.number) · \(entry.date.shortDate) · \(entry.source.title)") {
                     if entry.source == .accountantAdjustment {
                         MasterStatus(chip: StatusChip(text: String(localized: "Del contador"), foreground: Palette.info,
-                                                      background: .clear, compact: true, dot: Palette.info))
+                                                      compact: true, dot: Palette.info))
                     } else if entry.isReversed || entry.reversesEntryID != nil {
                         MasterStatus(chip: StatusChip(text: entry.isReversed ? String(localized: "Revertido") : String(localized: "Reversión"),
-                                                      foreground: Palette.ink2, background: .clear, compact: true, dot: Palette.gray))
+                                                      foreground: Palette.ink2, compact: true, dot: Palette.gray))
                     }
                 }
                 .masterRow(entry.id, selection: selection)

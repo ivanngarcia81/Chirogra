@@ -95,7 +95,6 @@ public enum Palette {
     /// «Vista», información.
     public static let info = Color(light: 0x0064A0, dark: 0x64D2FF)
     /// Fondos tenues de estado (avisos de error, celdas marcadas). El canvas ya no pone los estados en cápsulas.
-    public static let positiveWash = green.opacity(0.14)
     public static let negativeWash = red.opacity(0.12)
     public static let warningWash = orange.opacity(0.14)
     public static let infoWash = teal.opacity(0.14)

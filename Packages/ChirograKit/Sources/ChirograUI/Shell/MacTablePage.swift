@@ -430,7 +430,7 @@ struct MacCellStatus: View {
 
     var body: some View {
         if prominence == .increased {
-            StatusChip(text: chip.text, foreground: .white, background: .clear, compact: true, dot: .white)
+            StatusChip(text: chip.text, foreground: .white, compact: true, dot: .white)
         } else {
             chip
         }

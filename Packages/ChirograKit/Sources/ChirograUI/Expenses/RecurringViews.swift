@@ -189,11 +189,11 @@ struct RecurringTemplateRow: View {
             VStack(alignment: dynamicTypeSize.amountAlignment, spacing: 3) {
                 Text(template.total.money).monospacedDigit().foregroundStyle(Palette.ink)
                 if !template.isActive {
-                    StatusChip(text: String(localized: "En pausa"), foreground: Palette.ink2, background: .clear, compact: true, dot: Palette.gray)
+                    StatusChip(text: String(localized: "En pausa"), foreground: Palette.ink2, compact: true, dot: Palette.gray)
                 } else if template.autoCharge {
-                    StatusChip(text: String(localized: "Automático"), foreground: Palette.info, background: .clear, compact: true, dot: Palette.teal)
+                    StatusChip(text: String(localized: "Automático"), foreground: Palette.info, compact: true, dot: Palette.teal)
                 } else {
-                    StatusChip(text: String(localized: "Manual"), foreground: Palette.ink2, background: .clear, compact: true, dot: Palette.orange)
+                    StatusChip(text: String(localized: "Manual"), foreground: Palette.ink2, compact: true, dot: Palette.orange)
                 }
             }
         }

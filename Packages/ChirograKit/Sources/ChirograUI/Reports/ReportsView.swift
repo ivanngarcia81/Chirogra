@@ -207,7 +207,7 @@ struct ReportsView: View {
     private var margin: CGFloat { isPhone ? Metrics.gutter : 20 }
     private var contentWidth: CGFloat { max(0, width - 2 * margin) }
     private var companyName: String {
-        companies.first.map { $0.displayName.isEmpty ? $0.legalName : $0.displayName } ?? ""
+        companies.first?.name ?? ""
     }
     private var currencyCode: String { companies.first?.currencyCode ?? "USD" }
 

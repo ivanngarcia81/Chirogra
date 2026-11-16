@@ -31,18 +31,6 @@ struct BillTablePage: View {
     @State private var payingBatch = false
     @Environment(\.modelContext) private var context
 
-    private var weekEnd: Date { Calendar.current.date(byAdding: .day, value: 7, to: Calendar.current.startOfDay(for: .now)) ?? .now }
-
-    private func inFilter(_ bill: Bill, _ filter: BillFilter) -> Bool {
-        switch filter {
-        case .open: bill.isOpen
-        case .overdue: bill.isOverdue
-        case .thisWeek: bill.isOpen && !bill.isOverdue && bill.dueDate < weekEnd
-        case .scheduled: bill.isScheduled
-        case .paid: bill.status == .paid
-        }
-    }
-
     private var checkedBills: [Bill] { bills.filter { checked.contains($0.id) && $0.isOpen } }
 
     private func isChecked(_ bill: Bill) -> Binding<Bool> {
@@ -54,7 +42,7 @@ struct BillTablePage: View {
     private var filtered: [Bill] {
         let text = query.trimmingCharacters(in: .whitespaces)
         return bills.filter { bill in
-            (inFilter(bill, filter) || paidHere.contains(bill.id) || bill.id == payingBill?.id) && (text.isEmpty
+            (filter.matches(bill) || paidHere.contains(bill.id) || bill.id == payingBill?.id) && (text.isEmpty
                 || bill.payableVendorName.localizedStandardContains(text)
                 || bill.vendorNumber.localizedStandardContains(text)
                 || bill.concept.localizedStandardContains(text)
@@ -70,7 +58,7 @@ struct BillTablePage: View {
     private var kpis: [KPIItem] {
         let open = bills.filter(\.isOpen)
         let overdue = open.filter(\.isOverdue)
-        let week = open.filter { !$0.isOverdue && $0.dueDate < weekEnd }
+        let week = open.filter { !$0.isOverdue && $0.dueDate < BillFilter.weekEnd }
         let scheduled = open.filter(\.isScheduled).sorted { ($0.scheduledPaymentDate ?? .distantFuture) < ($1.scheduledPaymentDate ?? .distantFuture) }
         return [
             KPIItem(title: String(localized: "Total por pagar"), value: open.reduce(0) { $0 + $1.balanceDue }.money),
@@ -167,7 +155,7 @@ struct BillTablePage: View {
         } filter: {
             MacTableFilter(title: String(localized: "Filtrar por estado"), options: BillFilter.allCases,
                            selection: $filter, label: \.localizedTitle) { option in
-                bills.filter { inFilter($0, option) }.count
+                bills.filter { option.matches($0) }.count
             }
             // Pago en lote (canvas `MacPorPagar`: al pie; aquí arriba de la tabla para no cruzar el inspector).
             if !checkedBills.isEmpty {

@@ -167,7 +167,7 @@ struct CompanyMenuItems: View {
         SettingsSection {
             Picker(selection: Binding(get: { active }, set: { if let id = $0 { CompanyHub.shared.select(id) } })) {
                 ForEach(shown) { company in
-                    Text(company.shownName).tag(Optional(company.id))
+                    Text(company.name).tag(Optional(company.id))
                 }
             } label: {
                 Text("Empresa")
@@ -258,7 +258,7 @@ struct CompaniesView: View {
             }
         }
         .task(id: companies.map { "\($0.id)\($0.isArchived)" }) { reload() }
-        .alert(deleting.map { String(localized: "¿Borrar «\($0.shownName)» y todos sus libros?") } ?? "",
+        .alert(deleting.map { String(localized: "¿Borrar «\($0.name)» y todos sus libros?") } ?? "",
                isPresented: Binding(get: { deleting != nil }, set: { if !$0 { deleting = nil } }),
                presenting: deleting) { company in
             Button("Crear una copia antes…") { makeBackup(of: company) }
@@ -281,13 +281,13 @@ struct CompaniesView: View {
         return HStack(spacing: 12) {
             Button { choose(company) } label: {
                 HStack(spacing: 12) {
-                    CompanyMonogram(name: company.shownName, side: Self.monogramSide)
+                    CompanyMonogram(name: company.name, side: Self.monogramSide)
                     VStack(alignment: .leading, spacing: 2) {
                         // Con letra de accesibilidad, «Ejemplo» debajo: al lado dejaba el nombre en «Río s…» (QA del 10-nov).
                         let layout = dynamicTypeSize.isAccessibilitySize ? AnyLayout(VStackLayout(alignment: .leading, spacing: 2))
                             : AnyLayout(HStackLayout(spacing: 6))
                         layout {
-                            Text(company.shownName).font(.body.weight(.semibold)).foregroundStyle(Palette.ink)
+                            Text(company.name).font(.body.weight(.semibold)).foregroundStyle(Palette.ink)
                                 .layoutPriority(1)
                             if sampleIDs.contains(company.id) {
                                 Text("Ejemplo").font(.caption.weight(.semibold)).foregroundStyle(Palette.orange)
@@ -340,7 +340,7 @@ struct CompaniesView: View {
         .menuIndicator(.hidden)
         .buttonStyle(.plain)
         .fixedSize()
-        .accessibilityLabel(Text("Acciones de \(company.shownName)"))
+        .accessibilityLabel(Text("Acciones de \(company.name)"))
     }
 
     @ViewBuilder
@@ -455,7 +455,7 @@ struct CompaniesView: View {
     private func makeBackup(of company: Company) {
         do {
             let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
-            backupName = company.shownName
+            backupName = company.name
             backup = BackupDocument(data: try BackupArchive.make(from: context, companyID: company.id, appVersion: version))
             errorMessage = nil
         } catch {

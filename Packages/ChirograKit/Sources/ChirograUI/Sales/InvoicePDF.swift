@@ -582,7 +582,6 @@ struct DocumentPageThumbnail: View {
 
 // MARK: - Vista previa
 
-/// Vista previa de una factura (también un borrador desde el editor).
 /// «Para <cliente>» y el importe, a la izquierda de la barra inferior de la vista previa y de «Enviar».
 struct DocumentRecipientSummary: View {
     let document: SalesDocument
@@ -599,6 +598,7 @@ struct DocumentRecipientSummary: View {
     }
 }
 
+/// Vista previa de una factura (también un borrador desde el editor).
 struct InvoicePreviewView: View {
     let invoice: Invoice
     let company: Company?

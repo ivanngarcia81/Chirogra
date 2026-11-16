@@ -56,7 +56,7 @@ struct BankInboxTablePage: View {
             TableColumn("Descripción", value: \.title) { Text($0.title).lineLimit(1) }.width(min: 120, ideal: 170)
             TableColumn("Cuenta", value: \.accountName) { MacCellText(text: $0.accountName) }.width(min: 50, ideal: 64, max: 180)
             TableColumn(filter == .pending ? "Propuesta" : "Estado", value: \.statusText) { row in
-                MacCellStatus(chip: StatusChip(text: row.statusText, foreground: row.statusColor, background: .clear, compact: true, dot: row.dot))
+                MacCellStatus(chip: StatusChip(text: row.statusText, foreground: row.statusColor, compact: true, dot: row.dot))
             }
             .width(min: 110, ideal: 150)
             TableColumn("Importe", value: \.amount) { row in
@@ -255,7 +255,7 @@ private struct BankInboxInspector: View {
         }
         MacInspectorSection(title: String(localized: "Estado")) {
             MacInspectorRow(label: String(localized: "Estado")) {
-                StatusChip(text: transaction.statusTitle, foreground: Palette.ink2, background: .clear, compact: true, dot: transaction.statusDot)
+                StatusChip(text: transaction.statusTitle, foreground: Palette.ink2, compact: true, dot: transaction.statusDot)
             }
             if let reviewed = transaction.reviewedAt { MacInspectorRow(String(localized: "Revisado"), value: reviewed.shortDate) }
         }

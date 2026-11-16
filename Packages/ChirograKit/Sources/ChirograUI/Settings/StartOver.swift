@@ -126,7 +126,7 @@ private struct StartOverFlow: ViewModifier {
     }
 
     private var message: String {
-        let names = companies.map(\.shownName).sorted().formatted(.list(type: .and))
+        let names = companies.map(\.name).sorted().formatted(.list(type: .and))
         let what = companies.count == 1
             ? String(localized: "Se borra «\(names)» con sus clientes, proveedores, facturas, gastos, asientos, recibos y ajustes.")
             : String(localized: "Se borran todas tus empresas (\(names)) con sus clientes, proveedores, facturas, gastos, asientos, recibos y ajustes.")
