@@ -421,7 +421,7 @@ struct Sidebar: View {
     @ViewBuilder
     private var companyCard: some View {
         if let company = companies.first {
-            let name = company.displayName.isEmpty ? company.legalName : company.displayName
+            let name = company.shownName
             Menu {
                 CompanyMenuItems(companies: selectorCompanies)
                 Section {

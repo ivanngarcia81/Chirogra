@@ -38,7 +38,7 @@ struct IfSampleBooks<Content: View>: View {
 
     var body: some View {
         if SampleData.isSample(companies: companies, sampleCreations: sampleCreations), let company = companies.first {
-            content(company.displayName.isEmpty ? company.legalName : company.displayName)
+            content(company.shownName)
         }
     }
 }

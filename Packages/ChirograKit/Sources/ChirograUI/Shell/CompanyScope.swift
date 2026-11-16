@@ -1,5 +1,4 @@
 import ChirograData
-import Foundation
 import SwiftData
 import SwiftUI
 
