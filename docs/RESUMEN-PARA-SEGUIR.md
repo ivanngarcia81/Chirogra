@@ -8,7 +8,7 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 - **Ramas:** `version-1.3` en `f99bd71` (builds 47 y 48) y `main` en `c5f687d` (limpieza del 16-nov; sin los dos
   commits de los builds, que no tocan la web). Las dos empujadas el 16-nov y la carpeta limpia. La web (`sitio/`) se
   publica desde `main`.
-- **Último build: 48 (1.3.0)**, subido a TestFlight para iOS y macOS el 16-nov. **El usuario lo está probando** y lo usa
+- **Último build: 49 (1.3.0)**, subido a TestFlight para iOS y macOS el 16-nov (noche). Antes, el 48, subido el 16-nov. **El usuario lo está probando** y lo usa
   para los testers de Userbrain. El 47 también se subió el 16-nov.
 - **En App Store Connect:** la **1.0 (build 11)** espera la revisión. **Decidido el 13-nov:** cuando la aprueben se envía
   **directo la 1.3** con su último build, sin la 1.0.1, la 1.1 ni la 1.2, con un «What's New» que junte las tres. El plan
@@ -47,6 +47,7 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 | 46 | `786f6fa` | 1.3.0: la tabla de Clientes del iPad ya no pinta su fondo blanco (`.scrollContentBackground(.hidden)`): va sobre el gris de la pantalla y se distingue de la barra lateral (pedido del 15-nov). |
 | 47 | `1f96a17` | 1.3.0: **el alta ya no se vacía al salir y volver a la app** (test de Userbrain): `RootView` solo enseña la pantalla de espera de iCloud en la primera importación (`sync.isFirstImport`, antes `isSyncing`, que volvía a ser cierto cada vez que la app volvía al primer plano). |
 | 48 | `f99bd71` | 1.3.0: tras el 2.º test de Userbrain: en la factura del iPhone el **precio en su propia fila** (campo con borde) y tocar «Total de la línea» lleva al precio; **«Guardar borrador» con texto** en vez del ✓; **Inicio con cifras en color** (ingresos verde, gastos rojo, ganancia color de marca o rojo si es negativa; también la gráfica y el Mac), «Ganancia del mes» / «Profit this month» y «Sales tax you owe». 346 pruebas. |
+| 49 | `292f269` | 1.3.0: arreglos de los testers de Userbrain: 7 días de uso libre, confirmación de factura de $0, «Para guardar, falta: …», franja de iCloud con 20 s de gracia, pista para personalizar la barra, «Se pronuncia «Kairogra»». 346 pruebas. |
 
 ## Último chat (16-nov, tarde): testers de Userbrain y builds 47 y 48
 
@@ -117,7 +118,7 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 
 ## Lo siguiente
 
-0. **Build 49: HECHO en `version-1.3` (16-nov noche), SIN COMMITEAR NI SUBIR.** Decisiones del usuario: 7 días de uso
+0. **Build 49: SUBIDO a TestFlight iOS y macOS (16-nov noche), commit `292f269` en `version-1.3`, sin empujar.** Decisiones del usuario: 7 días de uso
    libre, consejo para personalizar la barra (no cambiar las pestañas de entrada), pronunciación en bienvenida, tienda,
    web y tarea de Userbrain. Lo hecho:
    - **Uso libre de 7 días** (`SubscriptionStore.freeUseDays`): quien nunca se ha suscrito registra sin hoja de planes
@@ -137,7 +138,7 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
    - **«Se pronuncia «Kairogra»»** bajo el nombre en la bienvenida (en inglés «Pronounced “KY-roh-grah”»), en la web
      (`sitio/`, se publica al empujar `main`) y en la descripción de la tienda (APP-STORE.md, para el envío de la 1.3).
    - Comprobado: 346 pruebas, catálogo sin textos por traducir, capturas del simulador del iPhone (bienvenida, alta,
-     uso libre, pista de Más, gasto incompleto, fin del uso libre); macOS compila. Falta: commit y subir el build 49.
+     uso libre, pista de Más, gasto incompleto, fin del uso libre); macOS compila. Lo siguiente: que el usuario lo pruebe y más testers de Userbrain con el 49.
    Lo que dijeron los testers (para el registro):
    - **Avisar antes de emitir una factura de $0** («This invoice total is $0.00. Issue anyway?»): el 2.º tester emitió
      una de $0 sin darse cuenta y tuvo que duplicarla.
