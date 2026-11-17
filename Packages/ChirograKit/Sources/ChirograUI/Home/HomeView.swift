@@ -133,10 +133,10 @@ struct HomeView: View {
     var body: some View {
         Group {
             if isFirstUse {
-                ScrollView { firstUse }
+                RecorridoScrollView { firstUse }
             } else {
                 switch layout {
-                case .phone: ScrollView { phoneBody }
+                case .phone: RecorridoScrollView { phoneBody }
                 case .pad: padBody
                 case .mac: ScrollView { macBody }
                 }
@@ -473,6 +473,8 @@ struct HomeView: View {
             }
             .padding(18)
             .background(Palette.surface, in: RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous))
+            .recorridoObjetivo("home.summary")
+            .id("home.summary")
             .padding(.horizontal, Metrics.gutter)
             .padding(.top, 8)
             .accessibilityElement(children: .contain)
@@ -485,6 +487,8 @@ struct HomeView: View {
             }
 
             quickActions
+                .recorridoObjetivo("home.quick")
+                .id("home.quick")
                 .padding(.horizontal, Metrics.gutter)
                 .padding(.top, 20)
 
@@ -1432,6 +1436,8 @@ struct HomeView: View {
                         .accessibilityLabel(setupStepsHidden ? "Mostrar primeros pasos" : "Ocultar primeros pasos")
                 }
             }
+            .recorridoObjetivo("home.firstSteps")
+            .id("home.firstSteps")
             .padding(.horizontal, Metrics.gutter)
             .padding(.top, 26).padding(.bottom, 8)
 

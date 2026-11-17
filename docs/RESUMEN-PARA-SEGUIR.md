@@ -119,7 +119,23 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 
 ## Lo siguiente
 
-0. **Build 50: SUBIDO iOS+Mac a TestFlight (17-nov, `9f32335`), `version-1.3` y `main` EMPUJADAS (web con «Kairogra»).** Tras el 5.º tester de Userbrain
+0. **Build 51: recorrido de la primera vez, en `version-1.3` (17-nov), SUBIDO iOS+Mac a TestFlight** (sin empujar). El usuario vio que otras apps enseñan cada pantalla la
+   primera vez; se hizo una muestra, Claude Design dibujó 3 estilos (canvas «Chirogra — First-run tour»,
+   claude.ai/artifact/NYauYUc8B2M7zu1mir9yYP) y el usuario eligió la **A «Foco»** y dijo «Hazlo».
+   - `DesignSystem/Recorrido.swift`: la primera vez que se abre cada pestaña del iPhone (Inicio 4 pasos con «Primeros
+     pasos» si la empresa es nueva, Ventas 5, Gastos 4, Banca 3, Más 3) se oscurece la pantalla, se ilumina una parte
+     y una tarjeta con flecha la explica. «Saltar» o el último paso lo dan por visto (UserDefaults + iCloud KVS).
+     Tiempos de la ficha del canvas; anillo que late 2 veces; Reducir movimiento = fundido; VoiceOver: foco en la
+     tarjeta, tocar fuera no avanza, escape cierra; letra grande: «Paso 2 de 5» y botones apilados, y la tarjeta
+     siempre cabe en la pantalla. Los botones de la barra se buscan en UIKit por su nombre de accesibilidad (`ax:`).
+   - «Más › Ayuda › Ver el recorrido otra vez» (`repetirTodo`). Se quitó `CustomizeTabsTip` (lo enseña el recorrido
+     de Más); `TaxesTip` y `RecurringTip` salen después del recorrido de su pestaña.
+   - QA: `-qa.recorrido reset` lo borra; con otros `-qa.*` y sin `-qa.recorrido` no sale (capturas de la tienda).
+   - Comprobado en el simulador (español e inglés, empresa de ejemplo y nueva, letra grande, oscuro, repetir desde
+     Más); 346 pruebas; iOS y macOS compilan; 39 textos nuevos traducidos. Capturas y vídeo en
+     `~/Desktop/Chirogra-capturas-51`. Reducir movimiento y VoiceOver están programados pero no probados en un aparato.
+
+0b. **Build 50: SUBIDO iOS+Mac a TestFlight (17-nov, `9f32335`), `version-1.3` y `main` EMPUJADAS (web con «Kairogra»).** Tras el 5.º tester de Userbrain
    (el primero con el 49; le dio 6–7 sobre 10) y las capturas del usuario del aviso de iCloud, que les salía a todos:
    - **Aviso de iCloud:** franja de una línea con «×» que se cierra en todas las pestañas (`SyncMonitor.dismissBanner`);
      antes de enseñar un fallo se pregunta a CloudKit por la cuenta (`accountStatus`): sin cuenta (o iCloud apagado para

@@ -201,7 +201,7 @@ struct InvoiceListView: View {
         List {
             if let sectionMenu {
                 // Pegado al título: sin el espacio entre grupos.
-                Section { sectionMenu.sectionMenuRow() }.compactSectionSpacing(0)
+                Section { sectionMenu.recorridoObjetivo("sales.menu").sectionMenuRow() }.compactSectionSpacing(0)
             }
             if filtered.isEmpty {
                 emptyState
@@ -211,6 +211,7 @@ struct InvoiceListView: View {
                 Section {
                     ForEach(filtered) { invoice in
                         NavigationLink { InvoiceDetailView(invoice: invoice) } label: { InvoiceRow(invoice: invoice) }
+                            .recorridoObjetivo(invoice.id == filtered.first?.id ? "sales.firstRow" : "sales.row")
                     }
                 } header: {
                     summary
@@ -233,6 +234,7 @@ struct InvoiceListView: View {
             Text(verbatim: receivable.money).font(.headline).foregroundStyle(Palette.ink)
         }
         .accessibilityElement(children: .combine)
+        .recorridoObjetivo("sales.receivable")
         return ViewThatFits(in: .horizontal) {
             HStack(alignment: .firstTextBaseline) {
                 count.fixedSize()

@@ -44,6 +44,7 @@ struct BankingView: View {
                     NavigationLink { LedgerView(account: account) } label: {
                         accountRow(account, balance: ledger.cashBalance(of: account))
                     }
+                    .recorridoObjetivo(account.id == shown.first?.id ? "banking.account" : "banking.row")
                 }
             } header: {
                 HStack(spacing: 0) {

@@ -398,6 +398,8 @@ struct AppShell: View {
     #else
     @State private var tab: String = Self.homeTab
     #endif
+    /// Recorrido guiado de la primera vez en cada pestaña del iPhone (`Recorrido`).
+    @State private var recorrido = Recorrido()
     /// Pestañas del iPhone entre Inicio y «Más», elegidas en este aparato (`PhoneShortcuts`, «Más › Personalizar»).
     @AppStorage(PhoneShortcuts.tabsKey) private var phoneTabsRaw = PhoneShortcuts.defaultTabsRaw
     private static let homeTab = "home"
@@ -542,7 +544,17 @@ struct AppShell: View {
         }
     }
 
+    /// Las pestañas con el recorrido de la primera vez encima (oscurece también la barra de abajo).
     private var tabView: some View {
+        tabViewBase
+            .environment(recorrido)
+            .overlay { RecorridoOverlay().environment(recorrido) }
+            .onChange(of: tab, initial: true) {
+                recorrido.empezarSiHaceFalta(RecorridoID(tab: tab))
+            }
+    }
+
+    private var tabViewBase: some View {
         TabView(selection: $tab) {
             Tab(AppSection.home.title, systemImage: AppSection.home.systemImage, value: Self.homeTab) {
                 NavigationStack {
@@ -796,12 +808,6 @@ struct MoreView: View {
     @AppStorage("appLockEnabled") private var appLockEnabled = false
     /// «Abrir Impuestos» de la pista de arriba.
     @State private var showingTaxes = false
-    @State private var showingCustomizeTabs = false
-    /// Las dos pistas de arriba de Más, de una en una: primero la de la barra, luego la de Impuestos.
-    @State private var moreTips = TipGroup(.ordered) {
-        CustomizeTabsTip()
-        TaxesTip()
-    }
     /// Panel de clientes: «Cerrar periodo…».
     @State private var showingClose = false
     /// Panel de clientes: Ventas o Banca cuando el usuario las quitó de la barra (las empuja «Más»).
@@ -816,120 +822,137 @@ struct MoreView: View {
     @State private var showingJournal = UserDefaults.standard.bool(forKey: "qa.diario")
     #endif
 
+    /// El recorrido de la primera vez baja hasta lo que ilumina («Pestañas») y se repite desde Ayuda.
+    @Environment(Recorrido.self) private var recorrido: Recorrido?
+
     var body: some View {
-        List {
-            // Pistas de una sola vez, de una en una: la barra se puede cambiar; Impuestos queda abajo, después de Reportes.
-            Section {
-                if let tip = moreTips.currentTip as? CustomizeTabsTip {
-                    InlineTip(tip: tip) { _ in
-                        tip.invalidate(reason: .actionPerformed)
-                        showingCustomizeTabs = true
-                    }
-                } else if let tip = moreTips.currentTip as? TaxesTip {
-                    InlineTip(tip: tip) { _ in
-                        tip.invalidate(reason: .actionPerformed)
-                        showingTaxes = true
-                    }
-                }
-            }
-            .listRowBackground(Color.clear)
-            .listRowInsets(EdgeInsets())
-
-            let favorites = PhoneShortcuts.decode(favoritesRaw)
-            if !favorites.isEmpty {
-                Section(title: "Favoritos") {
-                    ForEach(favorites) { tool in
-                        MoreRow(title: tool.title, systemImage: tool.systemImage, color: tool.color, tool: tool) { tool.destination }
-                    }
-                }
-            }
-
-            if let company = companies.first {
+        ScrollViewReader { proxy in
+            List {
+                // Pista de una sola vez: Impuestos queda abajo, después de Reportes. (Lo de personalizar la barra lo enseña
+                // el recorrido de la primera vez, `RecorridoID.more`.)
                 Section {
-                    companyRow(company)
-                    // Varias empresas: la lista con lo pendiente de cada una, cambiar, añadir, archivar y borrar.
-                    MoreRow(title: String(localized: "Empresas"), value: "\(allCompanies.filter { !$0.isArchived }.count)",
-                            systemImage: "building.2", color: Palette.orange, tool: .companies) { CompaniesView() }
-                }
-            }
-
-            Section(title: "Reportes") {
-                ForEach(ReportsView.Kind.allCases) { kind in
-                    MoreRow(title: kind.fullTitle, systemImage: kind.moreSymbol, color: kind.moreColor, tool: .report(kind)) { ReportsView(fixedKind: kind) }
-                }
-            }
-
-            // Impuestos antes que Contabilidad (decisión del usuario, 6-nov): el sales tax es de todos los meses y al
-            // fondo de «Más» no se encontraba.
-            Section {
-                MoreRow(title: String(localized: "Resumen"), value: taxSubtitle, valueColor: taxOwed > 0 ? Palette.warning : Palette.ink2,
-                        systemImage: "percent", color: Palette.red, tool: .taxes) { TaxesView() }
-                MoreRow(title: String(localized: "Tasas"), value: String(localized: "\(rates.count) activas"),
-                        systemImage: "list.number", color: Palette.pink, tool: .taxRates) { TaxesView(tab: .rates) }
-                // Fase 2 (canvas `Mas`): deducibles por línea del Schedule C / 1120-S (`Taxes/DeductionsView.swift`).
-                MoreRow(title: String(localized: "Deducibles"), systemImage: "dollarsign", color: Palette.green, tool: .deductions) { TaxesView(tab: .deductions) }
-            } header: {
-                SectionLabel(text: String(localized: "Impuestos"))
-            } footer: {
-                Text("Tasas y declaración del sales tax: lo que cobras a tus clientes y le pagas al estado.")
-            }
-
-            Section(title: "Contabilidad") {
-                MoreRow(title: String(localized: "Plan de cuentas"), value: String(localized: "\(accounts.filter { !$0.isArchived }.count) cuentas"),
-                        systemImage: "list.bullet.indent", color: Palette.indigo, tool: .chartOfAccounts) { ChartOfAccountsView() }
-                MoreRow(title: String(localized: "Asientos de diario"), value: String(localized: "\(entriesThisMonth) este mes"),
-                        systemImage: "doc.plaintext", color: Palette.blue, tool: .journal) { JournalListView() }
-                MoreRow(title: String(localized: "Libro mayor"), value: String(localized: "Por cuenta"),
-                        systemImage: "book.closed", color: Palette.teal, tool: .ledger) { LedgerAccountPickerView() }
-                MoreRow(title: String(localized: "Cierre de periodo"), value: closeSubtitle,
-                        systemImage: "lock", color: Palette.gray, tool: .periodClose) { PeriodCloseView() }
-                MoreRow(title: String(localized: "Bitácora de cambios"), systemImage: "clock.arrow.circlepath", color: Palette.orange, tool: .auditLog) { AuditLogView() }
-            }
-
-            Section(title: "Ajustes") {
-                if let company = companies.first {
-                    MoreRow(title: String(localized: "Perfil de la empresa"), systemImage: "building.2", color: Palette.gray) {
-                        CompanyProfileView(company: company)
+                    if recorrido?.vistos.contains(.more) ?? true {
+                        InlineTip(tip: TaxesTip()) { _ in
+                            TaxesTip().invalidate(reason: .actionPerformed)
+                            showingTaxes = true
+                        }
                     }
-                    // Canvas `AjustesPlantilla` (se abre desde «Más»).
-                    MoreRow(title: String(localized: "Plantilla de factura"), value: company.invoiceAccent?.title,
-                            systemImage: "doc.richtext", color: Palette.indigo) { InvoiceTemplateView(company: company) }
-                    MoreRow(title: String(localized: "Moneda y formatos"), value: company.currencyCode,
-                            systemImage: "dollarsign", color: Palette.green) { FormatsView(company: company) }
                 }
-                MoreRow(title: String(localized: "iCloud y copias"),
-                        value: iCloudSyncEnabled ? String(localized: "Activado") : String(localized: "Desactivado"),
-                        systemImage: "icloud", color: Palette.teal) { ICloudAndBackupsView() }
-                MoreRow(title: String(localized: "Seguridad"),
-                        value: appLockEnabled ? String(localized: "Face ID") : String(localized: "Desactivado"),
-                        systemImage: "faceid", color: Palette.red) { SecurityView() }
-            }
+                .listRowBackground(Color.clear)
+                .listRowInsets(EdgeInsets())
 
-            #if os(iOS)
-            // Pestañas y favoritos a elección (decisión del usuario del 12-nov), guardados en este aparato.
-            Section {
-                MoreRow(title: String(localized: "Pestañas"), value: tabsSummary,
-                        systemImage: "dock.rectangle", color: Palette.brand) { CustomizeTabsView() }
-                MoreRow(title: String(localized: "Favoritos"),
-                        value: favoritesCount == 0 ? String(localized: "Ninguno") : "\(favoritesCount)",
-                        systemImage: "star.fill", color: Palette.yellow) { CustomizeFavoritesView() }
-            } header: {
-                SectionLabel(text: String(localized: "Personalizar"))
-            } footer: {
-                Text("Elige qué herramientas van en la barra de abajo y cuáles salen arriba en Más.")
-            }
-            #endif
+                let favorites = PhoneShortcuts.decode(favoritesRaw)
+                if !favorites.isEmpty {
+                    Section(title: "Favoritos") {
+                        ForEach(favorites) { tool in
+                            MoreRow(title: tool.title, systemImage: tool.systemImage, color: tool.color, tool: tool) { tool.destination }
+                        }
+                    }
+                }
 
-            Section(title: "Ayuda") { GuideLinkRow() }
+                if let company = companies.first {
+                    Section {
+                        companyRow(company)
+                        // Varias empresas: la lista con lo pendiente de cada una, cambiar, añadir, archivar y borrar.
+                        MoreRow(title: String(localized: "Empresas"), value: "\(allCompanies.filter { !$0.isArchived }.count)",
+                                systemImage: "building.2", color: Palette.orange, tool: .companies) { CompaniesView() }
+                    }
+                }
+
+                Section(title: "Reportes") {
+                    ForEach(ReportsView.Kind.allCases) { kind in
+                        MoreRow(title: kind.fullTitle, systemImage: kind.moreSymbol, color: kind.moreColor, tool: .report(kind)) { ReportsView(fixedKind: kind) }
+                            .recorridoObjetivo(kind == ReportsView.Kind.allCases.first ? "more.reports" : "more.report")
+                            .id(kind == ReportsView.Kind.allCases.first ? "more.reports" : kind.id)
+                    }
+                }
+
+                // Impuestos antes que Contabilidad (decisión del usuario, 6-nov): el sales tax es de todos los meses y al
+                // fondo de «Más» no se encontraba.
+                Section {
+                    MoreRow(title: String(localized: "Resumen"), value: taxSubtitle, valueColor: taxOwed > 0 ? Palette.warning : Palette.ink2,
+                            systemImage: "percent", color: Palette.red, tool: .taxes) { TaxesView() }
+                    MoreRow(title: String(localized: "Tasas"), value: String(localized: "\(rates.count) activas"),
+                            systemImage: "list.number", color: Palette.pink, tool: .taxRates) { TaxesView(tab: .rates) }
+                    // Fase 2 (canvas `Mas`): deducibles por línea del Schedule C / 1120-S (`Taxes/DeductionsView.swift`).
+                    MoreRow(title: String(localized: "Deducibles"), systemImage: "dollarsign", color: Palette.green, tool: .deductions) { TaxesView(tab: .deductions) }
+                } header: {
+                    SectionLabel(text: String(localized: "Impuestos"))
+                } footer: {
+                    Text("Tasas y declaración del sales tax: lo que cobras a tus clientes y le pagas al estado.")
+                }
+
+                Section(title: "Contabilidad") {
+                    MoreRow(title: String(localized: "Plan de cuentas"), value: String(localized: "\(accounts.filter { !$0.isArchived }.count) cuentas"),
+                            systemImage: "list.bullet.indent", color: Palette.indigo, tool: .chartOfAccounts) { ChartOfAccountsView() }
+                    MoreRow(title: String(localized: "Asientos de diario"), value: String(localized: "\(entriesThisMonth) este mes"),
+                            systemImage: "doc.plaintext", color: Palette.blue, tool: .journal) { JournalListView() }
+                    MoreRow(title: String(localized: "Libro mayor"), value: String(localized: "Por cuenta"),
+                            systemImage: "book.closed", color: Palette.teal, tool: .ledger) { LedgerAccountPickerView() }
+                    MoreRow(title: String(localized: "Cierre de periodo"), value: closeSubtitle,
+                            systemImage: "lock", color: Palette.gray, tool: .periodClose) { PeriodCloseView() }
+                    MoreRow(title: String(localized: "Bitácora de cambios"), systemImage: "clock.arrow.circlepath", color: Palette.orange, tool: .auditLog) { AuditLogView() }
+                }
+
+                Section(title: "Ajustes") {
+                    if let company = companies.first {
+                        MoreRow(title: String(localized: "Perfil de la empresa"), systemImage: "building.2", color: Palette.gray) {
+                            CompanyProfileView(company: company)
+                        }
+                        // Canvas `AjustesPlantilla` (se abre desde «Más»).
+                        MoreRow(title: String(localized: "Plantilla de factura"), value: company.invoiceAccent?.title,
+                                systemImage: "doc.richtext", color: Palette.indigo) { InvoiceTemplateView(company: company) }
+                        MoreRow(title: String(localized: "Moneda y formatos"), value: company.currencyCode,
+                                systemImage: "dollarsign", color: Palette.green) { FormatsView(company: company) }
+                    }
+                    MoreRow(title: String(localized: "iCloud y copias"),
+                            value: iCloudSyncEnabled ? String(localized: "Activado") : String(localized: "Desactivado"),
+                            systemImage: "icloud", color: Palette.teal) { ICloudAndBackupsView() }
+                    MoreRow(title: String(localized: "Seguridad"),
+                            value: appLockEnabled ? String(localized: "Face ID") : String(localized: "Desactivado"),
+                            systemImage: "faceid", color: Palette.red) { SecurityView() }
+                }
+
+                #if os(iOS)
+                // Pestañas y favoritos a elección (decisión del usuario del 12-nov), guardados en este aparato.
+                Section {
+                    MoreRow(title: String(localized: "Pestañas"), value: tabsSummary,
+                            systemImage: "dock.rectangle", color: Palette.brand) { CustomizeTabsView() }
+                        .recorridoObjetivo("more.tabs")
+                        .id("more.tabs")
+                    MoreRow(title: String(localized: "Favoritos"),
+                            value: favoritesCount == 0 ? String(localized: "Ninguno") : "\(favoritesCount)",
+                            systemImage: "star.fill", color: Palette.yellow) { CustomizeFavoritesView() }
+                } header: {
+                    SectionLabel(text: String(localized: "Personalizar"))
+                } footer: {
+                    Text("Elige qué herramientas van en la barra de abajo y cuáles salen arriba en Más.")
+                }
+                #endif
+
+                Section(title: "Ayuda") {
+                    GuideLinkRow()
+                    if let recorrido {
+                        // Vuelve a enseñar el recorrido de cada pestaña la próxima vez que se abra (y el de Más, ya).
+                        Button { recorrido.repetirTodo(desde: .more) } label: {
+                            HStack(spacing: 12) {
+                                IconTile(systemImage: "hand.point.up.left", foreground: Palette.brand)
+                                Text("Ver el recorrido otra vez").foregroundStyle(Palette.ink)
+                                Spacer(minLength: 8)
+                            }
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+            }
+            .listRowBackground(Palette.surface)
+            .siguiendoRecorrido(proxy)
         }
-        .listRowBackground(Palette.surface)
         .screenBackground()
         .navigationTitle("Más")
         .headerTitle()
         .stableDestination(isPresented: $showingTaxes) { TaxesView() }
-        #if os(iOS)
-        .stableDestination(isPresented: $showingCustomizeTabs) { CustomizeTabsView() }
-        #endif
         .stableDestination(isPresented: $showingClose) { PeriodCloseView() }
         .stableDestination(isPresented: Binding(get: { routedTool != nil }, set: { if !$0 { routedTool = nil } })) {
             routedTool?.destination

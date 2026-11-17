@@ -139,6 +139,7 @@ struct ExpensesSegmentRow: View {
         Section {
             FilterPicker(title: String(localized: "Sección"), options: [.expenses, .bills, .recurring], selection: $selection) { $0.localizedTitle }
                 .labelsHidden()
+                .recorridoObjetivo("expenses.segment")
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .listRowInsets(EdgeInsets())
                 .listRowBackground(Color.clear)
@@ -204,6 +205,7 @@ struct ExpenseListView: View {
     @State private var errorMessage: String?
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.modelContext) private var context
+    @Environment(Recorrido.self) private var recorrido: Recorrido?
 
     private func category(_ expense: Expense) -> Account? {
         let id = expense.sortedLines.first?.accountID
@@ -222,11 +224,13 @@ struct ExpenseListView: View {
             if let section {
                 ExpensesSegmentRow(selection: section)
                 #if os(iOS)
-                // Recurrentes: cuando ya hay algún gasto, una vez (abre la sección).
+                // Recurrentes: cuando ya hay algún gasto, una vez (abre la sección), y después del recorrido de Gastos.
                 Section {
-                    InlineTip(tip: RecurringTip()) { _ in
-                        RecurringTip().invalidate(reason: .actionPerformed)
-                        section.wrappedValue = .recurring
+                    if recorrido?.vistos.contains(.expenses) ?? true {
+                        InlineTip(tip: RecurringTip()) { _ in
+                            RecurringTip().invalidate(reason: .actionPerformed)
+                            section.wrappedValue = .recurring
+                        }
                     }
                 }
                 .listRowBackground(Color.clear)
@@ -235,7 +239,7 @@ struct ExpenseListView: View {
             }
 
             Section {
-                monthCard
+                monthCard.recorridoObjetivo("expenses.month")
             } header: {
                 ListGroupHeader(title: cardMonth.start.formatted(.appDateTime.month(.wide)).sentenceCased) {
                     Text("Por categoría").font(.subheadline).foregroundStyle(Palette.ink2)

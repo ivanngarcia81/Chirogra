@@ -2995,6 +2995,16 @@
         }
       }
     },
+    "Abre la factura y toca «Marcar como pagada»." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open the invoice and tap “Mark as Paid.”"
+          }
+        }
+      }
+    },
     "Abre «Revisar transacción»" : {
       "localizations" : {
         "en" : {
@@ -3779,6 +3789,16 @@
         }
       }
     },
+    "Anota un gasto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Record an expense"
+          }
+        }
+      }
+    },
     "Anotar mi primer gasto" : {
       "localizations" : {
         "en" : {
@@ -4103,12 +4123,52 @@
         }
       }
     },
+    "Aquí anotas todo lo que pagas por el negocio." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keep track of everything you pay for the business."
+          }
+        }
+      }
+    },
+    "Aquí cambias entre tus facturas, los presupuestos y tu lista de clientes." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Switch between your invoices, estimates and customer list."
+          }
+        }
+      }
+    },
     "Aquí guardas a las personas y empresas a las que les vendes." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "This is where you keep the people and companies you sell to."
+          }
+        }
+      }
+    },
+    "Aquí le cobras a tus clientes y ves quién te debe." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bill your customers and see who owes you."
+          }
+        }
+      }
+    },
+    "Aquí te avisamos de facturas vencidas y pagos por hacer." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Overdue invoices and upcoming payments show up here."
           }
         }
       }
@@ -4432,6 +4492,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "That way you know what you really earn, and your receipts are handy at tax time."
+          }
+        }
+      }
+    },
+    "Así se reparte por categoría lo que gastaste este mes." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How this month's spending splits by category."
           }
         }
       }
@@ -5155,6 +5225,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Banking · %lld to review"
+          }
+        }
+      }
+    },
+    "Banca: tus cuentas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Banking: your accounts"
           }
         }
       }
@@ -7972,6 +8052,26 @@
         }
       }
     },
+    "Crea una factura" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create an invoice"
+          }
+        }
+      }
+    },
+    "Crea una factura, un gasto o un cliente con un toque." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create an invoice, an expense or a customer in one tap."
+          }
+        }
+      }
+    },
     "Creada" : {
       "localizations" : {
         "en" : {
@@ -8517,6 +8617,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "How much money each account has based on what you record. Tap one to see its transactions."
+          }
+        }
+      }
+    },
+    "Cuánto tiene cada cuenta. Tócala para ver sus movimientos." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How much each account holds. Tap one to see its transactions."
           }
         }
       }
@@ -10010,6 +10120,26 @@
         }
       }
     },
+    "El dinero de cada cuenta y lo que llega del banco." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The money in each account and what comes in from the bank."
+          }
+        }
+      }
+    },
+    "El dinero que tienes y cómo va el mes, de un vistazo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your cash and how the month is going, at a glance."
+          }
+        }
+      }
+    },
     "El dinero va directo a tu cuenta de ese servicio; Chirogra no lo toca. Cuando te paguen, registra el cobro en la factura con «Registrar pago»." : {
       "localizations" : {
         "en" : {
@@ -10343,6 +10473,16 @@
         }
       }
     },
+    "El total que tus clientes todavía no te han pagado." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The total your customers haven't paid yet."
+          }
+        }
+      }
+    },
     "Elegir archivo CSV, OFX o QFX…" : {
       "localizations" : {
         "en" : {
@@ -10530,6 +10670,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Choose which tools go in the bottom bar and which appear at the top of More."
+          }
+        }
+      }
+    },
+    "Elige qué herramientas van en la barra de abajo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose which tools go in the bottom bar."
           }
         }
       }
@@ -11170,6 +11320,16 @@
         }
       }
     },
+    "Entendido" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Got It"
+          }
+        }
+      }
+    },
     "Entra dinero" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -11740,6 +11900,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Profit and loss, balance sheet and sales tax by period, ready to export."
+          }
+        }
+      }
+    },
+    "Estado de resultados, balance y más, listos para tu contador." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Profit & loss, balance sheet and more, ready for your accountant."
           }
         }
       }
@@ -12689,6 +12859,16 @@
         }
       }
     },
+    "Facturas de proveedores que aún debes, y lo que se repite cada mes, como la renta." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vendor bills you still owe, and what repeats every month, like rent."
+          }
+        }
+      }
+    },
     "Facturas nuevas" : {
       "localizations" : {
         "en" : {
@@ -12735,6 +12915,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Overdue invoices"
+          }
+        }
+      }
+    },
+    "Facturas, estimados y clientes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invoices, estimates and customers"
           }
         }
       }
@@ -13630,6 +13820,16 @@
         }
       }
     },
+    "Gastos: lo que pagas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Expenses: money going out"
+          }
+        }
+      }
+    },
     "Gracias por su preferencia." : {
       "localizations" : {
         "en" : {
@@ -14221,6 +14421,16 @@
         }
       }
     },
+    "Importa el extracto y Chirogra te propone cómo anotar cada movimiento." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Import your statement and Chirogra suggests how to record each transaction."
+          }
+        }
+      }
+    },
     "Importa un extracto CSV, OFX o QFX (también puedes arrastrarlo aquí)" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -14742,6 +14952,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Home and More are always there. Up to %lld tools fit between them: drag to reorder."
+          }
+        }
+      }
+    },
+    "Inicio: tu negocio hoy" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Home: your business today"
           }
         }
       }
@@ -15696,6 +15916,16 @@
         }
       }
     },
+    "Lo más rápido" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quick actions"
+          }
+        }
+      }
+    },
     "Lo necesitas para facturarle; guarda su correo y sus condiciones de pago." : {
       "localizations" : {
         "en" : {
@@ -15726,6 +15956,16 @@
         }
       }
     },
+    "Lo que entró, lo que pagaste y lo que ganaste este mes." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What came in, what you paid and what you made this month."
+          }
+        }
+      }
+    },
     "Lo que hay en la cuenta según lo que has registrado en Chirogra. Puede no ser igual al banco si falta algún movimiento por anotar." : {
       "localizations" : {
         "en" : {
@@ -15752,6 +15992,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "What's left to invoice"
+          }
+        }
+      }
+    },
+    "Lo que te deben" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What you're owed"
           }
         }
       }
@@ -17142,6 +17392,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "More Options"
+          }
+        }
+      }
+    },
+    "Más: todo lo demás" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "More: everything else"
           }
         }
       }
@@ -20146,16 +20406,6 @@
         }
       }
     },
-    "Personalizar la barra" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Customize Tab Bar"
-          }
-        }
-      }
-    },
     "Pestañas" : {
       "localizations" : {
         "en" : {
@@ -20286,16 +20536,6 @@
         }
       }
     },
-    "Pon a mano lo que más usas" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Keep what you use most at hand"
-          }
-        }
-      }
-    },
     "Pon cuánto esperas vender y gastar cada mes, y compáralo con lo real. Puedes empezar vacío, copiando otro o con lo real del año pasado." : {
       "localizations" : {
         "en" : {
@@ -20342,6 +20582,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Add to Tab Bar"
+          }
+        }
+      }
+    },
+    "Ponla a tu gusto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Make it yours"
           }
         }
       }
@@ -20526,6 +20776,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Due this week"
+          }
+        }
+      }
+    },
+    "Por pagar y Recurrentes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Payables and Recurring"
           }
         }
       }
@@ -22636,12 +22896,12 @@
         }
       }
     },
-    "Reportes, el diario, el presupuesto…: elige hasta 3 herramientas para la barra de abajo. También puedes mantener pulsada una herramienta de esta lista." : {
+    "Reportes, impuestos, contabilidad y ajustes." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Reports, journal entries, budgets…: choose up to 3 tools for the tab bar. You can also touch and hold a tool in this list."
+            "value" : "Reports, taxes, accounting and settings."
           }
         }
       }
@@ -24523,6 +24783,26 @@
         }
       }
     },
+    "Sigue esta lista para dejar tu empresa lista." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Follow this list to get your business set up."
+          }
+        }
+      }
+    },
+    "Siguiente" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next"
+          }
+        }
+      }
+    },
     "Siguiente cierre" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -26127,12 +26407,32 @@
         }
       }
     },
+    "Toca + cada vez que pagues algo. Puedes añadir la foto del recibo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap + each time you pay for something. You can add a photo of the receipt."
+          }
+        }
+      }
+    },
     "Toca + para cobrarle a un cliente. Chirogra te avisa cuando vence y anota el pago cuando llegue." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tap + to bill a customer. Chirogra reminds you when it's due and records the payment when it arrives."
+          }
+        }
+      }
+    },
+    "Toca + para cobrarle a un cliente. Se la mandas por correo o mensaje." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap + to bill a customer. Send it by email or text."
           }
         }
       }
@@ -26724,6 +27024,16 @@
         }
       }
     },
+    "Trae tu banco" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bring in your bank"
+          }
+        }
+      }
+    },
     "Transferencia" : {
       "localizations" : {
         "en" : {
@@ -26852,6 +27162,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Your iCloud Is Full"
+          }
+        }
+      }
+    },
+    "Tu mes de un vistazo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your month at a glance"
+          }
+        }
+      }
+    },
+    "Tu mes en cifras" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your month in numbers"
           }
         }
       }
@@ -27317,6 +27647,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Your reports build themselves"
+          }
+        }
+      }
+    },
+    "Tus saldos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your balances"
           }
         }
       }
@@ -28145,6 +28485,16 @@
         }
       }
     },
+    "Ventas: lo que te pagan" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sales: money coming in"
+          }
+        }
+      }
+    },
     "Ver asiento" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -28185,6 +28535,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "View Customer"
+          }
+        }
+      }
+    },
+    "Ver el recorrido otra vez" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show the Tour Again"
           }
         }
       }
