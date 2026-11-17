@@ -733,16 +733,16 @@
     },
     "%@, %@, cargo de %@, debes %@" : {
       "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@, %2$@, cargo de %3$@, debes %4$@"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@, %@, charge of %@, you owe %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, %2$@, cargo de %3$@, debes %4$@"
           }
         }
       }
@@ -789,48 +789,48 @@
     },
     "%@, %@, entró %@, saldo %@" : {
       "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@, %2$@, entró %3$@, saldo %4$@"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@, %@, %@ in, balance %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, %2$@, entró %3$@, saldo %4$@"
           }
         }
       }
     },
     "%@, %@, pago de %@, debes %@" : {
       "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@, %2$@, pago de %3$@, debes %4$@"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@, %@, payment of %@, you owe %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, %2$@, pago de %3$@, debes %4$@"
           }
         }
       }
     },
     "%@, %@, salió %@, saldo %@" : {
       "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@, %2$@, salió %3$@, saldo %4$@"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@, %@, %@ out, balance %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, %2$@, salió %3$@, saldo %4$@"
           }
         }
       }
@@ -1669,16 +1669,16 @@
     },
     "%lld en el archivo · %lld ya importados · %lld nuevos" : {
       "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$lld en el archivo · %2$lld ya importados · %3$lld nuevos"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld in the file · %lld already imported · %lld new"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld en el archivo · %2$lld ya importados · %3$lld nuevos"
           }
         }
       }
@@ -10313,6 +10313,16 @@
         }
       }
     },
+    "El total de la factura es %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This invoice total is %@"
+          }
+        }
+      }
+    },
     "Elegir archivo CSV, OFX o QFX…" : {
       "localizations" : {
         "en" : {
@@ -10762,6 +10772,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Issue"
+          }
+        }
+      }
+    },
+    "Emitir de todos modos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Issue Anyway"
           }
         }
       }
@@ -12729,6 +12749,16 @@
         }
       }
     },
+    "Falta información" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Missing Information"
+          }
+        }
+      }
+    },
     "Falta la cuenta de sistema «%@»." : {
       "localizations" : {
         "en" : {
@@ -13387,16 +13417,16 @@
     },
     "Gasto reclasificado: %@ · Categoría: %@ (asiento %lld revertido, nuevo %lld)" : {
       "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Gasto reclasificado: %1$@ · Categoría: %2$@ (asiento %3$lld revertido, nuevo %4$lld)"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Expense reclassified: %@ · Category: %@ (entry %lld reversed, new %lld)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Gasto reclasificado: %1$@ · Categoría: %2$@ (asiento %3$lld revertido, nuevo %4$lld)"
           }
         }
       }
@@ -19585,6 +19615,16 @@
         }
       }
     },
+    "Para continuar, falta: %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To continue, add %@."
+          }
+        }
+      }
+    },
     "Para convertirlo en factura usa «Convertir en factura»." : {
       "localizations" : {
         "en" : {
@@ -19601,6 +19641,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Splitting a transaction takes at least two parts."
+          }
+        }
+      }
+    },
+    "Para guardar, falta: %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To save, add %@."
           }
         }
       }
@@ -19631,6 +19681,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "To get a copy, add the company email in Settings › Company Profile."
+          }
+        }
+      }
+    },
+    "Para registrar, empieza tu prueba gratis de 14 días con «Probar gratis». Hoy no se te cobra nada." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To record, start your 14-day free trial with “Try free.” You won’t be charged today."
           }
         }
       }
@@ -20055,6 +20115,16 @@
         }
       }
     },
+    "Personalizar la barra" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Customize Tab Bar"
+          }
+        }
+      }
+    },
     "Pestañas" : {
       "localizations" : {
         "en" : {
@@ -20181,6 +20251,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "You can still start with your company from Settings › iCloud, backups and security."
+          }
+        }
+      }
+    },
+    "Pon a mano lo que más usas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keep what you use most at hand"
           }
         }
       }
@@ -22495,6 +22575,16 @@
         }
       }
     },
+    "Reportes, el diario, el presupuesto…: elige hasta 3 herramientas para la barra de abajo. También puedes mantener pulsada una herramienta de esta lista." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reports, journal entries, budgets…: choose up to 3 tools for the tab bar. You can also touch and hold a tool in this list."
+          }
+        }
+      }
+    },
     "Reportes.pdf" : {
       "localizations" : {
         "en" : {
@@ -22567,6 +22657,7 @@
       }
     },
     "Restaurando…" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -22607,6 +22698,7 @@
       }
     },
     "Restaurar compras" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -22868,6 +22960,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Review sales tax"
+          }
+        }
+      }
+    },
+    "Revisa el precio de las líneas. Una factura emitida no se borra: solo se anula." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check the line prices. An issued invoice can’t be deleted, only voided."
           }
         }
       }
@@ -23832,6 +23934,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Required to reopen a period and to record something with a closed date."
+          }
+        }
+      }
+    },
+    "Se pronuncia «Kairogra»" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pronounced “KY-roh-grah”"
           }
         }
       }
@@ -26782,6 +26894,16 @@
         }
       }
     },
+    "Tus %lld días de uso libre terminaron. Sigue con 14 días gratis más; hoy no se te cobra nada." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your %lld days of free use are over. Keep going with 14 more free days; you won’t be charged today."
+          }
+        }
+      }
+    },
     "Tus asientos quedan marcados y se pueden filtrar." : {
       "localizations" : {
         "en" : {
@@ -26978,6 +27100,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Your books are read-only because your subscription ended. Subscribe to keep recording."
+          }
+        }
+      }
+    },
+    "Tus libros se guardan en este dispositivo. Inicia sesión en iCloud en Ajustes para tenerlos en todos tus aparatos." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your books are saved on this device. Sign in to iCloud in Settings to have them on all your devices."
+          }
+        }
+      }
+    },
+    "Tus libros se guardan en este dispositivo. Inicia sesión en iCloud en los ajustes del sistema para tenerlos en todos tus aparatos." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your books are saved on this device. Sign in to iCloud in System Settings to have them on all your devices."
           }
         }
       }
@@ -27375,6 +27517,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Use it on new invoices"
+          }
+        }
+      }
+    },
+    "Uso libre: queda 1 día · después, prueba gratis de 14 días" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Free use: 1 day left · then a 14-day free trial"
+          }
+        }
+      }
+    },
+    "Uso libre: quedan %lld días · después, prueba gratis de 14 días" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Free use: %lld days left · then a 14-day free trial"
           }
         }
       }
@@ -28532,6 +28694,86 @@
         }
       }
     },
+    "el cliente" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "the customer"
+          }
+        }
+      }
+    },
+    "el estado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "the state"
+          }
+        }
+      }
+    },
+    "el monto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "the amount"
+          }
+        }
+      }
+    },
+    "el método de pago" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "the payment method"
+          }
+        }
+      }
+    },
+    "el nombre de la empresa" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "the company name"
+          }
+        }
+      }
+    },
+    "el precio de al menos una línea" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "a price on at least one line"
+          }
+        }
+      }
+    },
+    "el proveedor (o «Pagado a»)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "the vendor (or “Paid to”)"
+          }
+        }
+      }
+    },
+    "el tipo de negocio" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "the type of business"
+          }
+        }
+      }
+    },
     "esta categoría" : {
       "localizations" : {
         "en" : {
@@ -28710,12 +28952,32 @@
         }
       }
     },
+    "iCloud no está activado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud Is Off"
+          }
+        }
+      }
+    },
     "iCloud y copias" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "iCloud and backups"
+          }
+        }
+      }
+    },
+    "la categoría" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "the category"
           }
         }
       }
@@ -29490,9 +29752,6 @@
           }
         }
       }
-    },
-    "✓" : {
-      "shouldTranslate" : false
     },
     "✓ acepta lo que propone la app. Toca un movimiento para elegir otra categoría, emparejarlo o excluirlo." : {
       "localizations" : {

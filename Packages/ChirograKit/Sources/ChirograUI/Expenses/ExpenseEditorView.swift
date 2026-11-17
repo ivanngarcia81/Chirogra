@@ -52,6 +52,8 @@ struct ExpenseEditorView: View {
     @State private var frequency: RecurrenceFrequency = .monthly
     @State private var autoCharge = true
     @State private var errorMessage: String?
+    /// «Para guardar, falta: …» al pulsar Guardar con el gasto incompleto.
+    @State private var missingMessage: String?
     /// Banca 1.2: corregir un gasto conciliado pide confirmación (`ReconciledChange`).
     @State private var reconciledRetry: ReconciledChangeRetry?
     @State private var editorWidth: CGFloat = 0
@@ -124,6 +126,29 @@ struct ExpenseEditorView: View {
             && effectiveTax >= 0 && effectiveTax < total
     }
 
+    /// Lo que falta para guardar, con el nombre del campo tal como sale en el formulario.
+    private var missingFields: [String] {
+        var missing: [String] = []
+        if total <= 0 || lines.contains(where: { $0.amount <= 0 }) { missing.append(String(localized: "el monto")) }
+        if lines.contains(where: { $0.accountID == nil }) { missing.append(String(localized: "la categoría")) }
+        if payee.trimmingCharacters(in: .whitespaces).isEmpty && vendorID == nil {
+            missing.append(String(localized: "el proveedor (o «Pagado a»)"))
+        }
+        if paymentAccountID == nil { missing.append(String(localized: "el método de pago")) }
+        return missing
+    }
+
+    /// Guardar: si falta algo, lo dice en vez de no hacer nada (el botón ya no se desactiva).
+    private func attemptSave(another: Bool = false) {
+        if let message = MissingFields.toSave(missingFields) {
+            missingMessage = message
+        } else if !canSave {
+            missingMessage = String(localized: "El impuesto incluido debe ser menor que el monto.")
+        } else {
+            save(another: another)
+        }
+    }
+
     private var paymentAccounts: [Account] { accounts.paymentAccounts }
 
     private var tracking: String {
@@ -144,20 +169,20 @@ struct ExpenseEditorView: View {
             // Una hoja del Mac solo muestra «Cancelar» y la acción de confirmar (con Return); «Guardar y nuevo» va en
             // el contenido.
             ToolbarItem(placement: .confirmationAction) {
-                Button(isEditing ? "Guardar cambios" : "Guardar gasto") { save() }.disabled(!canSave)
+                Button(isEditing ? "Guardar cambios" : "Guardar gasto") { attemptSave() }
             }
             #else
             if isWide {
                 ToolbarItem(placement: .primaryAction) {
-                    Button("Guardar y nuevo") { save(another: true) }.disabled(!canSave).headerButton()
+                    Button("Guardar y nuevo") { attemptSave(another: true) }.headerButton()
                 }
                 ToolbarSpacer(.fixed, placement: .primaryAction)
                 ToolbarItem(placement: .primaryAction) {
-                    Button("Guardar gasto") { save() }.disabled(!canSave).headerButton()
+                    Button("Guardar gasto") { attemptSave() }.headerButton()
                 }
             } else {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Guardar") { save() }.disabled(!canSave).headerButton()
+                    Button("Guardar") { attemptSave() }.headerButton()
                 }
             }
             #endif
@@ -167,6 +192,7 @@ struct ExpenseEditorView: View {
             guard loaded, old != VendorPicker.newVendorTag, new != VendorPicker.newVendorTag else { return }
             if let vendor = vendors.first(where: { $0.id == new }) { use(vendor) }
         }
+        .missingFieldsAlert($missingMessage)
         .onAppear(perform: load)
         .onChange(of: receipts.map(\.id)) { _, _ in readNewReceiptIfNeeded() }
         .sheet(isPresented: $creatingScannedVendor) {
@@ -441,8 +467,7 @@ struct ExpenseEditorView: View {
                     }
                     ReceiptDropPanel(receipts: $receipts)
                     #if os(macOS)
-                    Button("Guardar y nuevo") { save(another: true) }
-                        .disabled(!canSave)
+                    Button("Guardar y nuevo") { attemptSave(another: true) }
                     #endif
                 }
                 .padding(Metrics.gutter)

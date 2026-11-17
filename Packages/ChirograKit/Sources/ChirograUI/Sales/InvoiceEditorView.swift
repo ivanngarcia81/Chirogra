@@ -75,6 +75,10 @@ struct InvoiceEditorView: View {
     @State private var showingNewCustomer = false
     @State private var previewing: Invoice?
     @State private var confirmingCancel = false
+    /// «El total de la factura es $0.00»: se pregunta antes de emitir.
+    @State private var confirmingZeroIssue = false
+    /// «Para guardar, falta: …» al pulsar la acción principal con la factura incompleta.
+    @State private var missingMessage: String?
     @State private var confirmingDiscardChanges = false
     /// Lo que había al abrir el editor, para saber si hay cambios sin guardar.
     @State private var baseline: String?
@@ -220,7 +224,7 @@ struct InvoiceEditorView: View {
             // «Vista previa» y «Guardar borrador» van en el contenido.
             ToolbarItem(placement: .confirmationAction) {
                 if isWide {
-                    Button(primaryTitle, action: primaryAction).disabled(!canIssue)
+                    Button(primaryTitle, action: attemptPrimary)
                 } else {
                     Button("Guardar", action: saveDraft).disabled(isEditingIssued ? !canIssue : customerID == nil)
                         .accessibilityLabel(isEditingIssued ? "Guardar cambios" : isEstimate ? "Guardar estimado" : "Guardar borrador")
@@ -250,7 +254,7 @@ struct InvoiceEditorView: View {
                     ToolbarSpacer(.fixed, placement: .primaryAction)
                 }
                 ToolbarItem(placement: .primaryAction) {
-                    Button(primaryTitle, action: primaryAction).disabled(!canIssue).headerButton()
+                    Button(primaryTitle, action: attemptPrimary).headerButton()
                 }
             }
             #endif
@@ -287,6 +291,8 @@ struct InvoiceEditorView: View {
         #endif
         // Con un aviso de «Cancelar» abierto o cerrándose, su acción aún puede retirar el editor
         // (ver `UnsavedChanges.confirmation`).
+        .confirmsZeroTotalIssue($confirmingZeroIssue) { issue(allowZeroTotal: true) }
+        .missingFieldsAlert($missingMessage)
         .onChange(of: confirmingCancel || confirmingDiscardChanges) { _, open in unsavedChanges?.confirmation(isOpen: open) }
         .onChange(of: customerID) {
             if skipCustomerDefaults { skipCustomerDefaults = false; return }
@@ -568,16 +574,15 @@ struct InvoiceEditorView: View {
                 if !isEditingIssued {
                     Button("Vista previa", action: showPreview).buttonStyle(.secondary).disabled(!canIssue)
                 }
-                Button(primaryTitle, action: primaryAction).buttonStyle(.primary).disabled(!canIssue)
+                Button(primaryTitle, action: attemptPrimary).buttonStyle(.primary)
             } else {
                 // La vista previa sale del PDF guardado: al corregir una emitida mostraría la versión de antes.
                 if !isEditingIssued {
                     Button("Vista previa", action: showPreview).buttonStyle(FillCapsuleButtonStyle(fullWidth: false)).disabled(!canIssue)
                 }
-                Button(action: primaryAction) { Text(isEstimate || isEditingIssued ? "Guardar" : "Emitir") }
+                Button(action: attemptPrimary) { Text(isEstimate || isEditingIssued ? "Guardar" : "Emitir") }
                     .buttonStyle(.primaryCompact)
                     .accessibilityLabel(primaryTitle)
-                    .disabled(!canIssue)
             }
         }
     }
@@ -1069,6 +1074,19 @@ struct InvoiceEditorView: View {
         return estimate
     }
 
+    /// Lo que falta para emitir o guardar, con el nombre del campo.
+    private var missingFields: [String] {
+        var missing: [String] = []
+        if customerID == nil { missing.append(String(localized: "el cliente")) }
+        if validLines.isEmpty { missing.append(String(localized: "el precio de al menos una línea")) }
+        return missing
+    }
+
+    /// La acción principal: si falta algo, lo dice en vez de no hacer nada (el botón ya no se desactiva).
+    private func attemptPrimary() {
+        if let message = MissingFields.toSave(missingFields) { missingMessage = message } else { primaryAction() }
+    }
+
     /// «Emitir factura» o «Guardar estimado».
     private func primaryAction() {
         if isEditingIssued { saveIssuedChanges() } else if isEstimate { saveDraft() } else { issue() }
@@ -1133,10 +1151,14 @@ struct InvoiceEditorView: View {
         }
     }
 
-    private func issue() {
+    private func issue(allowZeroTotal: Bool = false) {
         do {
             // Si un intento anterior falló, el borrador se reescribe con las correcciones antes de emitir.
             let invoice = try persistDraft()
+            if invoice.total == 0 && !allowZeroTotal {
+                confirmingZeroIssue = true
+                return
+            }
             try books.issue(invoice)
             errorMessage = nil
             // Ya no hay nada sin guardar; el editor se cierra al responder «Factura … emitida».

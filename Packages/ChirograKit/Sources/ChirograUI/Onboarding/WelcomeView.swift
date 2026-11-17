@@ -413,6 +413,10 @@ private struct WelcomePage: View {
                     Text(verbatim: "Chirogra")
                         .font(.system(size: isRegular && !Self.isMac ? 48 : 40, weight: .bold))
                         .foregroundStyle(Palette.ink)
+                    // Del griego χειρόγραφον: dos testers de Userbrain no supieron leerlo (16-nov).
+                    Text("Se pronuncia «Kairogra»")
+                        .font(.subheadline)
+                        .foregroundStyle(Palette.ink2)
                 }
                 .accessibilityElement(children: .combine)
                 .accessibilityAddTraits(.isHeader)

@@ -26,7 +26,7 @@ Bookkeeping for small business
 New: bank import and reconciliation, receipt scanning, cash flow and budgets, and a plan for accountants with unlimited businesses. Try it free for 14 days.
 
 **Description** (4000 máx.)
-Chirogra is complete bookkeeping for your small business, built for iPhone, iPad and Mac. Send invoices, record expenses, track sales tax and get the reports your accountant needs, without spreadsheets.
+Chirogra (pronounced “KY-roh-grah”) is complete bookkeeping for your small business, built for iPhone, iPad and Mac. Send invoices, record expenses, track sales tax and get the reports your accountant needs, without spreadsheets.
 
 INVOICES AND ESTIMATES
 • Professional invoices with your logo, colors and sales tax
@@ -103,7 +103,7 @@ Contabilidad para tu negocio
 Novedad: importa y concilia el banco, escanea recibos, flujo de efectivo y presupuestos, y un plan para contadores con empresas sin límite. Pruébala gratis 14 días.
 
 **Descripción** (4000 máx.)
-Chirogra es la contabilidad completa de tu pequeño negocio, hecha para iPhone, iPad y Mac. Envía facturas, registra gastos, lleva el sales tax y obtén los reportes que tu contador necesita, sin hojas de cálculo.
+Chirogra (se pronuncia «Kairogra») es la contabilidad completa de tu pequeño negocio, hecha para iPhone, iPad y Mac. Envía facturas, registra gastos, lleva el sales tax y obtén los reportes que tu contador necesita, sin hojas de cálculo.
 
 FACTURAS Y ESTIMADOS
 • Facturas profesionales con tu logo, tus colores y sales tax

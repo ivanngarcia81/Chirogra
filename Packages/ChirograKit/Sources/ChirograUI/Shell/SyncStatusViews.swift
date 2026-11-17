@@ -30,6 +30,14 @@ final class SyncMonitor {
 
     /// Importaciones de iCloud terminadas bien en esta sesión (`waitForImport`).
     @ObservationIgnored private var importsDone = 0
+    /// Eventos de sincronización que fallaron en esta sesión (`waitForImport` deja de esperar al primero).
+    @ObservationIgnored private var failuresSeen = 0
+
+    /// Un fallo solo se enseña si en este tiempo no llega un evento que termine bien. CloudKit reintenta solo muchos
+    /// errores pasajeros (zona ocupada, fallo parcial al crear la zona la primera vez, límite de peticiones…): el 4.º
+    /// tester de Userbrain (16-nov) vio «We couldn't sync your data» nada más abrir la app por uno de esos.
+    static let failureGrace: Duration = .seconds(20)
+    @ObservationIgnored private var pendingFailure: Task<Void, Never>?
 
     /// Inicio de la última subida a iCloud que terminó bien: lo que se guardó antes de esa fecha ya está en iCloud
     /// («Borrar todo y empezar de cero» espera a una que empiece después del borrado).
@@ -42,9 +50,10 @@ final class SyncMonitor {
     func waitForImport(timeout: Duration = .seconds(15)) async {
         guard DeletedCompanies.isEnabled, Self.forced == nil else { return }
         let start = importsDone
+        let failures = failuresSeen
         let clock = ContinuousClock()
         let deadline = clock.now + timeout
-        while importsDone == start, !isFailed, clock.now < deadline {
+        while importsDone == start, failuresSeen == failures, !isFailed, clock.now < deadline {
             try? await Task.sleep(for: .milliseconds(250))
         }
     }
@@ -103,9 +112,25 @@ final class SyncMonitor {
         } else if let error = event.error {
             let ckError = error as? CKError
             let network = [.networkUnavailable, .networkFailure, .serviceUnavailable, .requestRateLimited].contains(ckError?.code)
-            state = .failed(code: ckError.map { "CKError.\($0.code)" } ?? (error as NSError).domain, network: network)
+            let failed = State.failed(code: ckError.map { "CKError.\($0.code)" } ?? (error as NSError).domain, network: network)
             hasFailed = true
+            failuresSeen += 1
+            // Sin cuenta de iCloud no hay reintento que valga: se dice enseguida (con su propio texto en la franja).
+            if ckError?.code == .notAuthenticated {
+                pendingFailure?.cancel()
+                pendingFailure = nil
+                state = failed
+            } else if pendingFailure == nil {
+                pendingFailure = Task { @MainActor [weak self] in
+                    try? await Task.sleep(for: Self.failureGrace)
+                    guard let self, !Task.isCancelled else { return }
+                    self.pendingFailure = nil
+                    self.state = failed
+                }
+            }
         } else {
+            pendingFailure?.cancel()
+            pendingFailure = nil
             let date = event.endDate ?? .now
             lastSync = date
             state = .synced(date)
@@ -494,10 +519,13 @@ struct SyncErrorBanner: View {
             HStack(alignment: .top, spacing: 12) {
                 IconTile(systemImage: "icloud.slash", foreground: Palette.gray)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(network ? String(localized: "Sin conexión") : String(localized: "No pudimos sincronizar"))
+                    Text(Self.isNoAccount(code) ? String(localized: "iCloud no está activado")
+                         : network ? String(localized: "Sin conexión") : String(localized: "No pudimos sincronizar"))
                         .font(.body.weight(.semibold))
                     // En `ink` y no en gris: sobre el naranja tenue el gris no llega a 4,5:1.
-                    Text("Tus cambios se guardan en este dispositivo y se sincronizan después.")
+                    Text(Self.isNoAccount(code)
+                         ? String(localized: "Tus libros se guardan en este dispositivo. Inicia sesión en iCloud en Ajustes para tenerlos en todos tus aparatos.")
+                         : String(localized: "Tus cambios se guardan en este dispositivo y se sincronizan después."))
                         .font(.footnote)
                         .fixedSize(horizontal: false, vertical: true)
                     // Con texto de accesibilidad, uno debajo del otro: lado a lado se partían en sílabas («De-tails»).
@@ -544,6 +572,9 @@ struct SyncErrorBanner: View {
         Button("Detalles") { showingDetails = true }.fixedSize().frame(minHeight: Metrics.target)
     }
 
+    /// Sin cuenta de iCloud en el aparato (`CKError.notAuthenticated`): texto propio, no «no pudimos sincronizar».
+    static func isNoAccount(_ code: String) -> Bool { code == "CKError.notAuthenticated" }
+
     /// Tarjeta de `MacError`: icono, «No pudimos sincronizar tus datos», el porqué, los datos de la sincronización y
     /// «Reintentar» (principal) sobre «Seguir sin conexión» (secundario).
     private func details(code: String, network: Bool) -> some View {
@@ -553,10 +584,13 @@ struct SyncErrorBanner: View {
                 .symbolRenderingMode(.multicolor)
                 .foregroundStyle(Palette.orange)
                 .accessibilityHidden(true)
-            Text("No pudimos sincronizar tus datos").font(Self.titleFont).multilineTextAlignment(.center)
+            Text(Self.isNoAccount(code) ? String(localized: "iCloud no está activado") : String(localized: "No pudimos sincronizar tus datos"))
+                .font(Self.titleFont).multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
                 .accessibilityAddTraits(.isHeader)
-            Text(network ? String(localized: "Tus cambios están a salvo en este dispositivo y se enviarán solos cuando vuelva la conexión. Revisa tu red.")
+            Text(Self.isNoAccount(code)
+                 ? String(localized: "Tus libros se guardan en este dispositivo. Inicia sesión en iCloud en los ajustes del sistema para tenerlos en todos tus aparatos.")
+                 : network ? String(localized: "Tus cambios están a salvo en este dispositivo y se enviarán solos cuando vuelva la conexión. Revisa tu red.")
                          : String(localized: "Tus cambios están a salvo en este dispositivo. Revisa tu sesión de iCloud en los ajustes del sistema."))
                 .font(Self.messageFont).foregroundStyle(Palette.ink).multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)

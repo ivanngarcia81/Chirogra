@@ -1495,6 +1495,38 @@ struct ErrorBanner: View {
     }
 }
 
+// MARK: - Lo que falta para guardar
+
+/// «Para guardar, falta: el monto y el proveedor.» Testers de Userbrain (16-nov): con el botón de guardar desactivado
+/// no veían por qué no se guardaba. En el gasto y la factura el botón queda activo y, si falta algo, lo dice
+/// (`missingFieldsAlert`); en el alta va como línea bajo «Continuar».
+enum MissingFields {
+    /// Une los campos con comas e «y» en el idioma de la app.
+    static func joined(_ fields: [String]) -> String {
+        fields.formatted(.list(type: .and).locale(.appText))
+    }
+
+    static func toSave(_ fields: [String]) -> String? {
+        fields.isEmpty ? nil : String(localized: "Para guardar, falta: \(joined(fields)).")
+    }
+
+    static func toContinue(_ fields: [String]) -> String? {
+        fields.isEmpty ? nil : String(localized: "Para continuar, falta: \(joined(fields)).")
+    }
+}
+
+extension View {
+    /// Aviso con lo que falta para guardar (`MissingFields`); se cierra con «Aceptar».
+    func missingFieldsAlert(_ message: Binding<String?>) -> some View {
+        alert("Falta información", isPresented: Binding(get: { message.wrappedValue != nil },
+                                                        set: { if !$0 { message.wrappedValue = nil } })) {
+            Button("Aceptar", role: .cancel) {}
+        } message: {
+            Text(message.wrappedValue ?? "")
+        }
+    }
+}
+
 // MARK: - Teclado
 
 public extension View {

@@ -1501,7 +1501,9 @@ struct HomeView: View {
                 .buttonStyle(.plain)
                 .modifier(StepAccessibility(done: step.done))
         case .sheet(let item) where enabled:
-            Button { sheet = item } label: { stepLabel(step, enabled: true) }
+            // Como el «+»: en solo lectura, la pantalla de suscripción (3.er tester de Userbrain, 16-nov: el saldo del banco
+            // se abría y al guardar salía «tu suscripción terminó» sin haberse suscrito nunca).
+            Button { write(item) } label: { stepLabel(step, enabled: true) }
                 .buttonStyle(.plain)
                 .modifier(StepAccessibility(done: step.done))
         default:

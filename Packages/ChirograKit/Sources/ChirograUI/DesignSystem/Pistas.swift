@@ -12,7 +12,10 @@ import TipKit
 //   barra (probado en el simulador del iPhone 17; en el iPad sí sale), y el estado vacío ya ofrece el botón para empezar.
 // - `RecordPaymentTip`: recuadro dentro de «Registrar pago» en el detalle de una factura abierta.
 // - `RecurringTip`: recuadro en Gastos cuando ya hay algún gasto, con un botón que abre Recurrentes.
-// - `TaxesTip`: recuadro arriba de «Más» del iPhone, con un botón que abre Impuestos.
+// - `CustomizeTabsTip`: recuadro arriba de «Más» del iPhone, con un botón que abre Personalizar › Pestañas (testers de
+//   Userbrain, 16-nov: uno no encontraba Reportes y otra no sabía que la barra se puede cambiar).
+// - `TaxesTip`: recuadro arriba de «Más» del iPhone, con un botón que abre Impuestos. Sale después de
+//   `CustomizeTabsTip` (`TipGroup` ordenado: una pista cada vez).
 
 /// Arranque de TipKit. Se llama una vez desde `ChirograApp.init`.
 ///
@@ -91,6 +94,16 @@ struct RecurringTip: Tip {
     var image: Image? { Image(systemName: "arrow.trianglehead.2.clockwise") }
     var rules: [Rule] { #Rule(Self.$hasExpenses) { $0 == true } }
     var actions: [Action] { [Action(id: "abrir", title: String(localized: "Abrir Recurrentes"))] }
+}
+
+/// La barra de abajo del iPhone se elige en «Más › Personalizar › Pestañas».
+struct CustomizeTabsTip: Tip {
+    var title: Text { Text("Pon a mano lo que más usas") }
+    var message: Text? {
+        Text("Reportes, el diario, el presupuesto…: elige hasta 3 herramientas para la barra de abajo. También puedes mantener pulsada una herramienta de esta lista.")
+    }
+    var image: Image? { Image(systemName: "dock.rectangle") }
+    var actions: [Action] { [Action(id: "abrir", title: String(localized: "Personalizar la barra"))] }
 }
 
 /// Impuestos en «Más» del iPhone: el grupo queda abajo, después de Reportes y Contabilidad.

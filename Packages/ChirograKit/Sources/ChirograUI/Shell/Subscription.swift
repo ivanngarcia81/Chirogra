@@ -11,8 +11,12 @@ import SwiftUI
 /// Los precios los pone App Store Connect, no el código. La misma suscripción vale en iPhone, iPad y Mac (mismo
 /// identificador de app). El plan fija `Bookkeeper.companyLimit` (las archivadas cuentan, decisión del 8-nov).
 ///
-/// Sin suscripción (la prueba terminó o nunca empezó; `canStartTrial` distingue los avisos) los libros quedan en
-/// **solo lectura** (`Bookkeeper.isReadOnly`):
+/// **Uso libre** (decisión del usuario del 16-nov, tras los testers de Userbrain: 3 de 4 se atascaron con la hoja de
+/// planes al empezar): quien nunca se ha suscrito (`canStartTrial`) registra sin pedírsele nada durante
+/// `freeUseDays` días desde su primera empresa; después se le ofrece la prueba gratis de 14 días.
+///
+/// Sin suscripción (la prueba terminó, o nunca empezó y el uso libre ya pasó; `canStartTrial` distingue los avisos)
+/// los libros quedan en **solo lectura** (`Bookkeeper.isReadOnly`):
 /// se ven, se exportan y se sacan copias de seguridad, pero no se registra nada nuevo. Mientras el producto no exista en
 /// App Store Connect (`notConfigured`: antes de publicar, en las copias de prueba) no se bloquea nada, tampoco el número de
 /// empresas. Con el plan normal a la venta y el de contadores todavía no, el límite es 1 (decisión del usuario, 8-nov).
@@ -63,7 +67,58 @@ final class SubscriptionStore {
     var paywallFocus: PaywallFocus = .all
     @ObservationIgnored private var updates: Task<Void, Never>?
 
-    var isReadOnly: Bool { status == .lapsed }
+    /// Días de uso libre antes de pedir la suscripción a quien nunca se ha suscrito.
+    static let freeUseDays = 7
+    /// Inicio del uso libre en `UserDefaults` y en el almacén de clave-valor de iCloud (así reinstalar o estrenar otro
+    /// aparato no lo reinicia).
+    private static let freeUseStartKey = "freeUse.start"
+    /// Inicio del uso libre: la fecha de la primera empresa (la más antigua que se haya visto en cualquier aparato).
+    /// `nil` hasta que hay una empresa.
+    private(set) var freeUseStart: Date?
+    /// «Hoy» para el uso libre; la raíz lo renueva al volver la app al primer plano (`refreshClock`).
+    private(set) var now = Date()
+
+    /// Último día del uso libre (`nil` sin empresa todavía).
+    var freeUseEnds: Date? {
+        freeUseStart.flatMap { Calendar.current.date(byAdding: .day, value: Self.freeUseDays, to: $0) }
+    }
+
+    /// Sin suscripción pero en los días de uso libre: se registra como con ella.
+    var isInFreeUse: Bool {
+        guard status == .lapsed, canStartTrial else { return false }
+        guard let freeUseEnds else { return true }
+        return now < freeUseEnds
+    }
+
+    /// Días de uso libre que quedan (redondeando hacia arriba: el último día cuenta como 1).
+    var freeUseDaysLeft: Int {
+        guard let freeUseEnds else { return Self.freeUseDays }
+        return max(0, Int((freeUseEnds.timeIntervalSince(now) / 86_400).rounded(.up)))
+    }
+
+    var isReadOnly: Bool { status == .lapsed && !isInFreeUse }
+
+    /// Apunta la fecha de la primera empresa como inicio del uso libre, quedándose con la más antigua de esta, la
+    /// guardada en el aparato y la de iCloud (otro aparato pudo empezar antes).
+    func noteFirstCompany(createdAt: Date) {
+        guard !qaFixedFreeUse else { return }
+        let cloud = NSUbiquitousKeyValueStore.default
+        var start = createdAt
+        if let stored = cloud.object(forKey: Self.freeUseStartKey) as? Date { start = min(start, stored) }
+        if let stored = UserDefaults.standard.object(forKey: Self.freeUseStartKey) as? Date { start = min(start, stored) }
+        if let freeUseStart { start = min(start, freeUseStart) }
+        if freeUseStart != start { freeUseStart = start }
+        if (cloud.object(forKey: Self.freeUseStartKey) as? Date) != start { cloud.set(start, forKey: Self.freeUseStartKey) }
+        UserDefaults.standard.set(start, forKey: Self.freeUseStartKey)
+    }
+
+    /// `-qa.suscripcion nueva|libre` fija el inicio del uso libre: no se mezcla con el guardado de otras pruebas.
+    @ObservationIgnored private var qaFixedFreeUse = false
+
+    /// Renueva «hoy» (al volver al primer plano): el uso libre puede haber terminado mientras la app estaba abierta.
+    func refreshClock() {
+        now = Date()
+    }
 
     /// El plan para contadores está a la venta (existe en App Store Connect): se puede ofrecer al llegar al límite.
     var sellsAccountantPlan: Bool {
@@ -105,7 +160,16 @@ final class SubscriptionStore {
             qaStatus = .subscribed(isTrial: false, expires: Calendar.current.date(byAdding: .month, value: 1, to: .now))
             plan = .accountant
         case "vencida": qaStatus = .lapsed
-        case "nueva": qaStatus = .lapsed; canStartTrial = true
+        case "nueva":
+            // Nunca suscrito y con el uso libre ya pasado: solo lectura con «Probar gratis».
+            qaStatus = .lapsed; canStartTrial = true
+            freeUseStart = Calendar.current.date(byAdding: .day, value: -(Self.freeUseDays + 1), to: .now)
+            qaFixedFreeUse = true
+        case "libre":
+            // Nunca suscrito y en el segundo de los días de uso libre.
+            qaStatus = .lapsed; canStartTrial = true
+            freeUseStart = Calendar.current.date(byAdding: .day, value: -1, to: .now)
+            qaFixedFreeUse = true
         default: qaStatus = nil
         }
         if let qaStatus {
@@ -162,7 +226,8 @@ final class SubscriptionStore {
         }
     }
 
-    /// Hace `action` si se puede registrar; si los libros están en solo lectura, abre la pantalla de suscripción.
+    /// Hace `action` si se puede registrar; si los libros están en solo lectura, abre la pantalla de suscripción (con el
+    /// uso libre se registra).
     func whenWritable(_ action: () -> Void) {
         if isReadOnly { showsPaywall = true } else { action() }
     }
@@ -234,6 +299,12 @@ struct PaywallView: View {
                         .padding(.top, 4)
                     } else {
                         Text("Chirogra").font(.largeTitle.bold()).foregroundStyle(Palette.ink)
+                        if store.canStartTrial && store.freeUseStart != nil && store.isReadOnly {
+                            // Al terminar el uso libre (decisión del 16-nov): que se entienda por qué sale ahora.
+                            Text("Tus \(SubscriptionStore.freeUseDays) días de uso libre terminaron. Sigue con 14 días gratis más; hoy no se te cobra nada.")
+                                .font(.body.weight(.semibold)).multilineTextAlignment(.center).foregroundStyle(Palette.ink)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
                         Text("Tus libros completos en tu iPhone, iPad y Mac: facturas, gastos, sales tax y reportes, privados en tu cuenta.")
                             .font(.body).multilineTextAlignment(.center).foregroundStyle(Palette.ink2)
                             // Entero: con los dos planes a la vista sin desplazar, el Mac lo dejaba en una línea con «…».
@@ -418,7 +489,7 @@ struct SubscriptionSection: View {
                         Text(statusText).font(.footnote).foregroundStyle(store.isReadOnly ? Palette.warning : Palette.ink2)
                     }
                     Spacer(minLength: 8)
-                    if store.isReadOnly {
+                    if store.isReadOnly || store.isInFreeUse {
                         Button(store.canStartTrial ? "Probar gratis" : "Ver planes") { store.showsPaywall = true }
                     } else {
                         Button("Administrar") { manage() }
@@ -456,6 +527,11 @@ struct SubscriptionSection: View {
             let day = expires?.shortDate ?? ""
             return isTrial ? String(localized: "Prueba gratis hasta el \(day)") : String(localized: "Activa · se renueva el \(day)")
         case .lapsed:
+            if store.isInFreeUse {
+                return store.freeUseDaysLeft == 1
+                    ? String(localized: "Uso libre: queda 1 día · después, prueba gratis de 14 días")
+                    : String(localized: "Uso libre: quedan \(store.freeUseDaysLeft) días · después, prueba gratis de 14 días")
+            }
             return store.canStartTrial ? String(localized: "Prueba gratis de 14 días sin empezar · solo lectura")
                                        : String(localized: "Sin suscripción · solo lectura")
         case .unknown, .notConfigured: return ""

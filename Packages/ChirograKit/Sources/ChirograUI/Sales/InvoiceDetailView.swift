@@ -29,6 +29,8 @@ struct InvoiceDetailView: View {
     @State private var editingDraft = false
     @State private var duplicate: Invoice?
     @State private var confirmingVoid = false
+    /// «El total de la factura es $0.00»: se pregunta antes de emitir.
+    @State private var confirmingZeroIssue = false
     @State private var confirmingDelete = false
     @State private var errorMessage: String?
     /// Banca 1.2: anular algo conciliado pide confirmación (`ReconciledChange`).
@@ -155,6 +157,7 @@ struct InvoiceDetailView: View {
         }
         .offerToSendIssued($justIssued)
         .reconciledChangeConfirmation($reconciledRetry) { errorMessage = $0 }
+        .confirmsZeroTotalIssue($confirmingZeroIssue, issueAnyway: issueNow)
         .confirmationDialog("¿Anular la factura?", isPresented: $confirmingVoid, titleVisibility: .visible) {
             Button("Anular", role: .destructive, action: void)
         } message: {
@@ -663,6 +666,10 @@ struct InvoiceDetailView: View {
     // MARK: Operaciones
 
     private func issue() {
+        if invoice.total == 0 { confirmingZeroIssue = true } else { issueNow() }
+    }
+
+    private func issueNow() {
         do {
             try books.issue(invoice)
             errorMessage = nil

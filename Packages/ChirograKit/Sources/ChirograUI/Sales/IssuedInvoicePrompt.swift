@@ -54,3 +54,28 @@ extension View {
         modifier(IssuedInvoicePrompt(invoice: invoice, onFinish: onFinish))
     }
 }
+
+/// Antes de emitir una factura de $0: «El total de la factura es $0.00» con «Emitir de todos modos» y «Cancelar»
+/// (2.º tester de Userbrain, 16-nov: emitió una de $0 sin darse cuenta y tuvo que duplicarla). Lo usan las tres
+/// pantallas que emiten: el editor, el detalle del borrador y la tabla de facturas del Mac.
+private struct ZeroTotalIssueConfirmation: ViewModifier {
+    @Binding var isPresented: Bool
+    let issueAnyway: () -> Void
+
+    func body(content: Content) -> some View {
+        content
+            .alert("El total de la factura es \(Int64(0).money)", isPresented: $isPresented) {
+                Button("Emitir de todos modos", action: issueAnyway)
+                Button("Cancelar", role: .cancel) {}
+            } message: {
+                Text("Revisa el precio de las líneas. Una factura emitida no se borra: solo se anula.")
+            }
+    }
+}
+
+extension View {
+    /// Pregunta antes de emitir una factura cuyo total es $0 (`ZeroTotalIssueConfirmation`).
+    func confirmsZeroTotalIssue(_ isPresented: Binding<Bool>, issueAnyway: @escaping () -> Void) -> some View {
+        modifier(ZeroTotalIssueConfirmation(isPresented: isPresented, issueAnyway: issueAnyway))
+    }
+}

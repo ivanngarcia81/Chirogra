@@ -189,10 +189,26 @@ struct CustomizeTabsView: View {
     private var tabs: [PhoneTool] { PhoneShortcuts.tabs(from: raw) }
     private var isFull: Bool { tabs.count >= PhoneShortcuts.maxTabs }
 
+    /// Fila de «Así se verá»: al añadir una herramienta la lista sube hasta aquí (4.º tester de Userbrain, 16-nov: la
+    /// fila añadida desaparecía de la vista y parecía que no había cambiado nada).
+    private static let previewID = "tabs.preview"
+
     var body: some View {
+        ScrollViewReader { proxy in
+            list
+                .sensoryFeedback(.impact(weight: .light), trigger: tabs.count)
+                .onChange(of: tabs.count) { old, new in
+                    guard new > old else { return }
+                    withAnimation { proxy.scrollTo(Self.previewID, anchor: .top) }
+                }
+        }
+    }
+
+    private var list: some View {
         List {
             Section {
                 TabBarPreview(tools: tabs)
+                    .id(Self.previewID)
                     .listRowInsets(EdgeInsets(top: 12, leading: 12, bottom: 12, trailing: 12))
             } header: {
                 SectionLabel(text: String(localized: "Así se verá"))

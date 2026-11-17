@@ -39,7 +39,10 @@ public enum BookkeepingError: Error, Equatable, LocalizedError {
         case .wrongClosingPassword: String(localized: "La contraseña de cierre no es correcta.")
         case .closedPeriodReasonRequired: String(localized: "Escribe el motivo para registrar en un periodo cerrado.")
         case .duplicateAccountCode(let code): String(localized: "Ya hay una cuenta activa con el número \(code).")
-        case .readOnly: String(localized: "Tus libros están en solo lectura porque la suscripción terminó. Suscríbete para seguir registrando.")
+        // Quien nunca se ha suscrito no ve «terminó» (3.er tester de Userbrain, 16-nov): se le invita a la prueba.
+        case .readOnly: Bookkeeper.readOnlyCanStartTrial
+            ? String(localized: "Para registrar, empieza tu prueba gratis de 14 días con «Probar gratis». Hoy no se te cobra nada.")
+            : String(localized: "Tus libros están en solo lectura porque la suscripción terminó. Suscríbete para seguir registrando.")
         case .companyLimitReached(let limit):
             limit == 1 ? String(localized: "Tu plan incluye una empresa. Con el plan para contadores llevas todas las que quieras.")
                 : String(localized: "Tu plan incluye hasta \(limit) empresas. Archiva una para añadir otra.")
@@ -860,6 +863,8 @@ public struct Bookkeeper {
     /// Libros en solo lectura: la app lo activa cuando la suscripción terminó (`SubscriptionStore`). Se pueden ver,
     /// exportar y sacar copias, pero ningún servicio de `Bookkeeper` guarda. Las pruebas lo dejan en `false`.
     public static var isReadOnly = false
+    /// En solo lectura, la cuenta nunca se ha suscrito (puede empezar la prueba gratis): cambia el texto del error.
+    nonisolated(unsafe) public static var readOnlyCanStartTrial = false
 
     func ensureWritable() throws {
         if Self.isReadOnly { throw BookkeepingError.readOnly }

@@ -239,8 +239,13 @@ public struct ChirograRootView: View {
             applyQACompanies()
         }
         #endif
+        // El uso libre (7 días sin pedir la suscripción) cuenta desde la primera empresa.
+        .onChange(of: companies.map(\.createdAt).min(), initial: true) { _, first in
+            if let first { subscription.noteFirstCompany(createdAt: first) }
+        }
         .onChange(of: subscription.isReadOnly && !companies.isEmpty, initial: true) { _, readOnly in
             Bookkeeper.isReadOnly = readOnly
+            Bookkeeper.readOnlyCanStartTrial = subscription.canStartTrial
             // Al crear la empresa sin suscripción, o al abrir la app con la suscripción vencida, una vez.
             if readOnly && !paywallShownOnce {
                 paywallShownOnce = true
@@ -288,6 +293,8 @@ public struct ChirograRootView: View {
         #endif
         .onChange(of: scenePhase, initial: true) { _, phase in
             lock.isActive = phase == .active
+            // El uso libre puede haber terminado con la app abierta en segundo plano.
+            if phase == .active { subscription.refreshClock() }
             // Al pasar a segundo plano se vuelve a bloquear; al volver se pide Face ID otra vez.
             if phase == .background { lock.isUnlocked = false }
         }
@@ -789,6 +796,12 @@ struct MoreView: View {
     @AppStorage("appLockEnabled") private var appLockEnabled = false
     /// «Abrir Impuestos» de la pista de arriba.
     @State private var showingTaxes = false
+    @State private var showingCustomizeTabs = false
+    /// Las dos pistas de arriba de Más, de una en una: primero la de la barra, luego la de Impuestos.
+    @State private var moreTips = TipGroup(.ordered) {
+        CustomizeTabsTip()
+        TaxesTip()
+    }
     /// Panel de clientes: «Cerrar periodo…».
     @State private var showingClose = false
     /// Panel de clientes: Ventas o Banca cuando el usuario las quitó de la barra (las empuja «Más»).
@@ -805,11 +818,18 @@ struct MoreView: View {
 
     var body: some View {
         List {
-            // Pista de una sola vez: Impuestos queda abajo, después de Reportes.
+            // Pistas de una sola vez, de una en una: la barra se puede cambiar; Impuestos queda abajo, después de Reportes.
             Section {
-                InlineTip(tip: TaxesTip()) { _ in
-                    TaxesTip().invalidate(reason: .actionPerformed)
-                    showingTaxes = true
+                if let tip = moreTips.currentTip as? CustomizeTabsTip {
+                    InlineTip(tip: tip) { _ in
+                        tip.invalidate(reason: .actionPerformed)
+                        showingCustomizeTabs = true
+                    }
+                } else if let tip = moreTips.currentTip as? TaxesTip {
+                    InlineTip(tip: tip) { _ in
+                        tip.invalidate(reason: .actionPerformed)
+                        showingTaxes = true
+                    }
                 }
             }
             .listRowBackground(Color.clear)
@@ -907,6 +927,9 @@ struct MoreView: View {
         .navigationTitle("Más")
         .headerTitle()
         .stableDestination(isPresented: $showingTaxes) { TaxesView() }
+        #if os(iOS)
+        .stableDestination(isPresented: $showingCustomizeTabs) { CustomizeTabsView() }
+        #endif
         .stableDestination(isPresented: $showingClose) { PeriodCloseView() }
         .stableDestination(isPresented: Binding(get: { routedTool != nil }, set: { if !$0 { routedTool = nil } })) {
             routedTool?.destination

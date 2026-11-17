@@ -320,6 +320,8 @@ tabla del principio. Se programa cuando la 1.3 esté en la tienda.
   tablas blancas `Palette.surface` con filo y sombra corta (`macElevation`), inspector sin fondo propio; en el iPad
   `padElevation` y las listas maestro en `Palette.masterColumn`. Ajustes del Mac con tarjetas propias
   (`Settings/SettingsCards.swift`).
+- **Pronunciación del nombre** (16-nov): **«Kairogra»**, porque es griego (χειρόγραφον). Dos testers de Userbrain no
+  supieron cómo leerlo («Chiro…», «KyraGra», «TriRobra»).
 - **Ícono:** **χρ** (14-nov, rama `version-1.3`, **build 45** subido iOS y macOS): χ blanca y ρ azafrán (`#F2B33D`) sobre el
   degradado índigo; archivo del usuario `AppIcon.icon` copiado tal cual a `App/AppIcon.icon`, una sola capa
   `chirogra-N-icono.svg` con fondo, letras y brillo. Antes, la χ cursiva sola (12-nov, build 41) y la χ redonda con punto

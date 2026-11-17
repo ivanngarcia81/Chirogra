@@ -29,6 +29,8 @@ struct InvoiceTablePage: View {
     @State private var errorMessage: String?
     /// Recién emitida desde el inspector: «Factura F-1001 emitida · Enviar a…».
     @State private var justIssued: Invoice?
+    /// Factura de $0 a punto de emitirse: se pregunta antes.
+    @State private var zeroTotalInvoice: Invoice?
 
     private var filtered: [Invoice] {
         let text = query.trimmingCharacters(in: .whitespaces)
@@ -137,6 +139,9 @@ struct InvoiceTablePage: View {
         }
         .sheet(item: $editing) { invoice in NavigationStack { InvoiceEditorView(editing: invoice) }.editorSheetSizing() }
         .offerToSendIssued($justIssued)
+        .confirmsZeroTotalIssue(Binding(get: { zeroTotalInvoice != nil }, set: { if !$0 { zeroTotalInvoice = nil } })) {
+            if let invoice = zeroTotalInvoice { issueNow(invoice) }
+        }
         .navigationDestination(item: $openedInvoice) { InvoiceDetailView(invoice: $0) }
         .navigationDestination(item: $openedCustomer) { CustomerDetailView(customer: $0) }
         #if DEBUG
@@ -200,6 +205,10 @@ struct InvoiceTablePage: View {
     }
 
     private func issue(_ invoice: Invoice) {
+        if invoice.total == 0 { zeroTotalInvoice = invoice } else { issueNow(invoice) }
+    }
+
+    private func issueNow(_ invoice: Invoice) {
         do {
             try Bookkeeper(context: context).issue(invoice)
             errorMessage = nil

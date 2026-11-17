@@ -117,10 +117,66 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 
 ## Lo siguiente
 
-0. **Build 49 (anotado el 16-nov, esperar a lo que digan los testers del 48):**
+0. **Build 49: HECHO en `version-1.3` (16-nov noche), SIN COMMITEAR NI SUBIR.** Decisiones del usuario: 7 días de uso
+   libre, consejo para personalizar la barra (no cambiar las pestañas de entrada), pronunciación en bienvenida, tienda,
+   web y tarea de Userbrain. Lo hecho:
+   - **Uso libre de 7 días** (`SubscriptionStore.freeUseDays`): quien nunca se ha suscrito registra sin hoja de planes
+     desde su primera empresa (fecha más antigua de los libros, guardada también en el almacén de clave-valor de
+     iCloud, `freeUse.start`); después, solo lectura y la hoja dice «Tus 7 días de uso libre terminaron…». Ajustes
+     enseña «Uso libre: quedan N días». QA: `-qa.suscripcion libre|nueva`.
+   - Los «Primeros pasos» de Inicio pasan por `whenWritable` (por ahí le salió el error al 3.er tester); el error de
+     solo lectura ya no dice «terminó» a quien nunca se suscribió (`Bookkeeper.readOnlyCanStartTrial`).
+   - **Factura de $0:** «El total de la factura es $0.00» con «Emitir de todos modos» en el editor, el detalle y la
+     tabla del Mac (`confirmsZeroTotalIssue`).
+   - **Lo que falta:** gasto y factura con el botón siempre activo y aviso «Para guardar, falta: …»
+     (`MissingFields`); en el alta, la línea «Para continuar, falta: …» bajo el botón.
+   - **iCloud:** la franja de error solo sale si el fallo dura 20 s sin un evento bueno (`SyncMonitor.failureGrace`);
+     sin cuenta de iCloud, enseguida y con texto propio («iCloud no está activado»).
+   - **Barra del iPhone:** pista `CustomizeTabsTip` arriba de Más (en `TipGroup` con la de Impuestos, de una en una);
+     en Personalizar › Pestañas, al añadir, la lista sube a «Así se verá» y vibra.
+   - **«Se pronuncia «Kairogra»»** bajo el nombre en la bienvenida (en inglés «Pronounced “KY-roh-grah”»), en la web
+     (`sitio/`, se publica al empujar `main`) y en la descripción de la tienda (APP-STORE.md, para el envío de la 1.3).
+   - Comprobado: 346 pruebas, catálogo sin textos por traducir, capturas del simulador del iPhone (bienvenida, alta,
+     uso libre, pista de Más, gasto incompleto, fin del uso libre); macOS compila. Falta: commit y subir el build 49.
+   Lo que dijeron los testers (para el registro):
    - **Avisar antes de emitir una factura de $0** («This invoice total is $0.00. Issue anyway?»): el 2.º tester emitió
      una de $0 sin darse cuenta y tuvo que duplicarla.
-   - Lo que salga de los nuevos tests de Userbrain con el 48.
+   - **Avisar antes de emitir una factura de $0** («This invoice total is $0.00. Issue anyway?»): el 2.º tester emitió
+     una de $0 sin darse cuenta y tuvo que duplicarla.
+   - Lo que salga de los nuevos tests de Userbrain con el 48. **El usuario quiere esperar a más testers y arreglarlo
+     todo de una vez** (16-nov). Lo del **3.er tester** (con el 48; factura, gasto y pestañas le resultaron fáciles):
+     - **Suscripción (3 de 3 testers tropiezan):** cerró la hoja de planes, al poner el saldo del banco en el alta le
+       salió el error «Your books are read-only because your subscription ended» (sin haberse suscrito nunca: el texto
+       de `BookkeepingError.readOnly` en `Bookkeeper.swift` no mira `canStartTrial`, y sale como alerta de error en vez
+       de abrir la hoja de planes) y tuvo que suscribirse para seguir. Le confundió «Restore» y buscó un código.
+       Propuesto: que guardar sin suscripción abra la hoja con «Empieza tu prueba gratis» (eso va seguro), y decidir
+       si se deja registrar unos días antes de pedirla. Sin build: decir en la tarea de Userbrain que TestFlight no cobra.
+     - **Reportes lejos** (tuvo que ir a Más y bajar): propuesto Ventas, Gastos y Reportes como pestañas de entrada
+       (hoy Ventas, Gastos y Banca, `PhoneShortcuts.defaultTabs`), o Reportes como favorito arriba de Más.
+     - Comentarios sueltos: el aspecto «más vibrante» y le costó pronunciar «Chirogra». El asistente con IA quedó
+       en PLAN-2.0.md, «Ideas por estudiar».
+     Lo del **4.º tester** (con el 48, datos de ejemplo; empezó la prueba gratis sin problema tras leer «You will not
+     be charged»; Inicio en color le bastó para ver cómo iba el negocio; factura, gasto y pestañas fáciles):
+     - **«We couldn't sync your data» nada más empezar.** `SyncMonitor.apply` (`SyncStatusViews.swift`) pone la franja
+       con cualquier error de un evento de CloudKit, también los pasajeros que CloudKit reintenta solo. No se sabe el
+       código. Propuesto: no enseñarla por errores que se reintentan solos salvo que duren, y un texto propio si no hay
+       cuenta de iCloud.
+     - **«It doesn't look like it changed it for me»** al cambiar Banca por Presupuesto contra real. **Comprobado en el
+       simulador (16-nov): la barra sí cambia al momento** (sale «Budget»). Lo que confunde: la fila añadida desaparece
+       de la vista (sube a «En la barra», fuera de pantalla) y en la barra el nombre es otro, más corto. Propuesto:
+       al añadir, subir la lista hasta «En la barra» y una vibración.
+     - **Campos obligatorios: segunda persona perdida** (en el gasto no sabía por qué no guardaba hasta poner el
+       proveedor). Era la condición acordada para poner la línea «Falta: …» bajo el botón.
+     - Le costó encontrar cómo registrar el cobro de la factura (al final lo vio en la factura: «user error»).
+     - Segunda persona que querría más de 3 pestañas (sin darle importancia).
+     - Idea: **citas o agenda con los clientes**, «todo en un solo sitio», como el programa que usa en su negocio.
+     - Otra vez le costó pronunciar el nombre («KyraGra», «TriRobra»). **Se pronuncia «Kairogra»** (decisión del
+       16-nov, en CONTEXTO); falta decidir dónde decirlo (tarea de Userbrain, bienvenida, tienda, web).
+   - **1.4 con agenda y asistente con IA (decidido el 16-nov):** plan en [PLAN-1.4.md](PLAN-1.4.md). Rama
+     `version-1.4` aparte; asistente con Claude a través de un servidor Supabase «chirogra» (base del de la 2.0);
+     agenda con citas, cita → factura, recordatorios y Calendario. Lo primero: los trámites del usuario (clave de
+     Anthropic, proyecto de Supabase) y el canvas de diseño. Decidido: 100 preguntas al mes, citas que se repiten
+     desde el principio y el modelo (Opus 5.5 o Sonnet 5.5) tras medir en la QA.
    - Si el usuario lo decide: la suscripción después de un tiempo de uso, no al crear la empresa.
 1. **Cuando aprueben la 1.0: enviar directo la 1.3** (decisión del 13-nov), con su último build. Preparar entonces un
    «What's New» que junte 1.1, 1.2 y 1.3 (las tres partes están en [APP-STORE.md](APP-STORE.md)), las notas para el

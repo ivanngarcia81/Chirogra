@@ -210,6 +210,16 @@ struct OnboardingView: View {
     /// «Continuar» del paso en curso: en el 2, además, hace falta el tipo de negocio.
     private var canAdvance: Bool { canContinue && (step != 2 || kind != nil) }
 
+    /// «Para continuar, falta: …» bajo el botón (decisión del usuario: si más testers se perdían con lo obligatorio; dos
+    /// de Userbrain se perdieron, 16-nov). La tasa que pasa del 20 % ya tiene su aviso junto al campo.
+    private var missingNote: String? {
+        var missing: [String] = []
+        if displayName.trimmingCharacters(in: .whitespaces).isEmpty { missing.append(String(localized: "el nombre de la empresa")) }
+        if state.isEmpty { missing.append(String(localized: "el estado")) }
+        if step == 2 && kind == nil { missing.append(String(localized: "el tipo de negocio")) }
+        return MissingFields.toContinue(missing)
+    }
+
     /// Tasa estatal base del estado elegido, si la tiene.
     private var stateRateMillionths: Int64? { StateSalesTax.forState(state)?.rateMillionths }
 
@@ -596,6 +606,10 @@ struct OnboardingView: View {
             Button(primaryTitle, action: advance)
                 .buttonStyle(.primary)
                 .disabled(!canAdvance)
+            if let missingNote {
+                Text(missingNote).font(.footnote).foregroundStyle(Palette.ink2)
+                    .multilineTextAlignment(.center).fixedSize(horizontal: false, vertical: true)
+            }
             if step == Self.stepCount {
                 Button("Saltar por ahora", action: skipBalances)
                     .font(.body.weight(.semibold))
@@ -635,6 +649,9 @@ struct OnboardingView: View {
         HStack(spacing: 12) {
             stepDots
             Spacer(minLength: 12)
+            if let missingNote {
+                Text(missingNote).font(.callout).foregroundStyle(Palette.ink2).lineLimit(2)
+            }
             if step == Self.stepCount {
                 Button("Saltar por ahora", action: skipBalances).buttonStyle(.link)
             }
