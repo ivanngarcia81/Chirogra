@@ -2903,6 +2903,16 @@
         }
       }
     },
+    "Abre Ajustes e inicia sesión de nuevo. Mientras, tus libros se guardan en este aparato." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Settings and sign in again. Meanwhile, your books are saved on this device."
+          }
+        }
+      }
+    },
     "Abre Ajustes para cambiarlo" : {
       "localizations" : {
         "en" : {
@@ -3241,6 +3251,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Active"
+          }
+        }
+      }
+    },
+    "Activa iCloud para Chirogra en Ajustes si quieres tenerlos en tus otros aparatos." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turn on iCloud for Chirogra in Settings to have them on your other devices."
           }
         }
       }
@@ -16363,6 +16383,16 @@
         }
       }
     },
+    "Marcar como pagada · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mark as Paid · %@"
+          }
+        }
+      }
+    },
     "Marcar como rechazado" : {
       "localizations" : {
         "en" : {
@@ -17862,6 +17892,7 @@
       }
     },
     "No pudimos sincronizar tus datos" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -22305,6 +22336,16 @@
         }
       }
     },
+    "Registrar cobro de %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Record Payment of %@"
+          }
+        }
+      }
+    },
     "Registrar cobro y siguiente" : {
       "localizations" : {
         "en" : {
@@ -22331,6 +22372,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Record in Closed Period"
+          }
+        }
+      }
+    },
+    "Registrar gasto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Record Expense"
           }
         }
       }
@@ -22391,6 +22442,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Record automatically, skipping the inbox"
+          }
+        }
+      }
+    },
+    "Registrar un gasto pagado con esta cuenta" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Record an expense paid from this account"
           }
         }
       }
@@ -22990,6 +23051,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Review the marked details before saving: nothing is recorded until you tap “Save”."
+          }
+        }
+      }
+    },
+    "Revisa tu cuenta de iCloud" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check Your iCloud Account"
           }
         }
       }
@@ -23802,6 +23873,7 @@
       }
     },
     "Se borran todos los datos de ejemplo de «%@»: clientes, facturas, gastos, asientos y ajustes. Después creas tu empresa desde cero." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -26774,6 +26846,16 @@
         }
       }
     },
+    "Tu iCloud está lleno" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your iCloud Is Full"
+          }
+        }
+      }
+    },
     "Tu plan es para una empresa y la de ejemplo ya la ocupa. Bórrala con «Empezar con mi empresa» y crea la tuya." : {
       "localizations" : {
         "en" : {
@@ -26915,6 +26997,7 @@
       }
     },
     "Tus cambios están a salvo en este dispositivo y se enviarán solos cuando vuelva la conexión. Revisa tu red." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -26925,6 +27008,7 @@
       }
     },
     "Tus cambios están a salvo en este dispositivo. Revisa tu sesión de iCloud en los ajustes del sistema." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -26934,7 +27018,28 @@
         }
       }
     },
+    "Tus cambios se guardan en este aparato y se envían al volver la conexión." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your changes are saved on this device and will be sent when you’re back online."
+          }
+        }
+      }
+    },
+    "Tus cambios se guardan en este aparato y se sincronizan después." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your changes are saved on this device and will sync later."
+          }
+        }
+      }
+    },
     "Tus cambios se guardan en este dispositivo y se sincronizan después." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -27104,7 +27209,18 @@
         }
       }
     },
+    "Tus libros se guardan en este aparato" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your Books Are Saved on This Device"
+          }
+        }
+      }
+    },
     "Tus libros se guardan en este dispositivo. Inicia sesión en iCloud en Ajustes para tenerlos en todos tus aparatos." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -27115,6 +27231,7 @@
       }
     },
     "Tus libros se guardan en este dispositivo. Inicia sesión en iCloud en los ajustes del sistema para tenerlos en todos tus aparatos." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -27130,6 +27247,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Your books are kept in US dollars (USD). Your state determines the sales tax you charge; it’s required."
+          }
+        }
+      }
+    },
+    "Tus libros siguen en este aparato. Libera espacio en iCloud para que se sincronicen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your books are still on this device. Free up iCloud space so they can sync."
           }
         }
       }
@@ -28953,6 +29080,7 @@
       }
     },
     "iCloud no está activado" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -29149,6 +29277,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "“%@” is a made-up company for trying out Chirogra. Whenever you’re ready, delete it and create your own."
+          }
+        }
+      }
+    },
+    "«%@» es una empresa inventada para probar la app. Se borra con sus datos de ejemplo y luego creas la tuya. No se borra nada tuyo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” is a made-up company for trying the app. It’s deleted with its sample data, and then you create yours. Nothing of yours is deleted."
           }
         }
       }

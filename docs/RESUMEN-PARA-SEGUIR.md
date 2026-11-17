@@ -118,6 +118,22 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 
 ## Lo siguiente
 
+0. **Build 50: HECHO en `version-1.3` (16-nov, madrugada), SIN COMMITEAR NI SUBIR.** Tras el 5.º tester de Userbrain
+   (el primero con el 49; le dio 6–7 sobre 10) y las capturas del usuario del aviso de iCloud, que les salía a todos:
+   - **Aviso de iCloud:** franja de una línea con «×» que se cierra en todas las pestañas (`SyncMonitor.dismissBanner`);
+     antes de enseñar un fallo se pregunta a CloudKit por la cuenta (`accountStatus`): sin cuenta (o iCloud apagado para
+     Chirogra) sale como nota azul «Tus libros se guardan en este aparato», que se cierra para siempre; textos propios
+     para iCloud lleno y cuenta por revisar; «Detalles» con dominio y número del error (`failureCode`). Sospecha: los
+     testers no tienen iCloud para la app (sin cuenta llega `NSCocoaErrorDomain 134400`, que el 49 no reconocía). Sin
+     comprobar en un aparato real: pendiente que el usuario instale el 49/50 en su iPad. QA: `-ChirograForceSync
+     sinCuenta|fallo`.
+   - **Cobro:** «Marcar como pagada · $X» (parcial: «Registrar cobro de $X»); tocar «Pago · Pendiente» o «Pagada» en
+     Actividad lleva al botón (el tester tocaba esos círculos). El cobro funcionaba: reproducido en el simulador.
+   - **Precio de la factura:** la barra del teclado (la de «Listo») tapaba la fila del precio y los toques se perdían
+     (visto en el simulador); escribiendo la descripción, la barra lleva «Precio», que pasa el foco al precio.
+   - «Registrar gasto» en la ficha de una cuenta de Banca (`RecordExpenseButton`), con esa cuenta de pago.
+   - «Por cobrar $X» en grande en Ventas; texto de borrar los datos de ejemplo: «No se borra nada tuyo».
+   - Comprobado: 346 pruebas, iOS y macOS compilan, catálogo traducido, capturas en ~/Desktop/Chirogra-capturas-50.
 0. **Build 49: SUBIDO a TestFlight iOS y macOS (16-nov noche), commit `292f269` en `version-1.3`, sin empujar.** Decisiones del usuario: 7 días de uso
    libre, consejo para personalizar la barra (no cambiar las pestañas de entrada), pronunciación en bienvenida, tienda,
    web y tarea de Userbrain. Lo hecho:

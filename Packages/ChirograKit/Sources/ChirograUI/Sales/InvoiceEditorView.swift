@@ -68,6 +68,9 @@ struct InvoiceEditorView: View {
     @State private var pricesIncludeTax: Bool?
     /// Línea cuyo precio se está escribiendo (tocar el total de la línea lleva aquí).
     @FocusState private var focusedPrice: UUID?
+    /// Descripción con el teclado abierto: al tocar el precio hay que soltarla primero, o el foco no pasaba al precio y
+    /// se seguía escribiendo en la descripción (5.º tester de Userbrain, 16-nov; reproducido en el simulador).
+    @FocusState private var focusedDescription: UUID?
     @State private var errorMessage: String?
     @State private var savedInvoice: Invoice?
     @State private var savedEstimate: Estimate?
@@ -550,6 +553,17 @@ struct InvoiceEditorView: View {
         // El teclado lleva «Listo» y se cierra al desplazar.
         .keyboardDoneButton()
         #if os(iOS)
+        // Escribiendo la descripción, «Precio» en la barra del teclado lleva al precio de esa línea: la barra del teclado
+        // tapa la fila del precio, justo encima, y tocarla no hacía nada (5.º tester de Userbrain, 16-nov; visto en el
+        // simulador: los toques caían en la franja de la barra).
+        .toolbar {
+            ToolbarItem(placement: .keyboard) {
+                if let id = focusedDescription {
+                    Button("Precio", systemImage: "dollarsign") { focusPrice(of: id) }
+                        .labelStyle(.titleAndIcon)
+                }
+            }
+        }
         // Con el teclado a la vista la barra de abajo tapaba la línea que se edita (el precio, con el teclado numérico,
         // que no tiene tecla para cerrarse): se oculta mientras se escribe.
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in keyboardShown = true }
@@ -628,6 +642,7 @@ struct InvoiceEditorView: View {
     private func lineRow(_ line: Binding<LineDraft>) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             TextField("Descripción", text: line.details, axis: .vertical)
+                .focused($focusedDescription, equals: line.wrappedValue.id)
             // El precio en su propia fila, con su rótulo y una caja grande (test de usuario del 16-nov: no encontraba
             // dónde escribir el importe y tocaba el total de la línea).
             HStack(spacing: 8) {
@@ -645,7 +660,7 @@ struct InvoiceEditorView: View {
                     .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous)
                         .strokeBorder(focusedPrice == line.wrappedValue.id ? Palette.brand : Palette.ink2.opacity(0.25), lineWidth: 1))
                     .contentShape(Rectangle())
-                    .onTapGesture { focusedPrice = line.wrappedValue.id }
+                    .onTapGesture { focusPrice(of: line.wrappedValue.id) }
             }
             .frame(minHeight: Metrics.target)
             ViewThatFits(in: .horizontal) {
@@ -661,7 +676,7 @@ struct InvoiceEditorView: View {
             }
             incomeAccountMenu(line.incomeAccountID).font(.footnote)
             // Tocar el total lleva al precio: es donde se cambia el importe.
-            Button { focusedPrice = line.wrappedValue.id } label: {
+            Button { focusPrice(of: line.wrappedValue.id) } label: {
                 HStack(alignment: .firstTextBaseline) {
                     Text("Total de la línea").font(.footnote).foregroundStyle(Palette.ink2)
                     Spacer()
@@ -673,6 +688,12 @@ struct InvoiceEditorView: View {
             .accessibilityElement(children: .combine)
         }
         .padding(.vertical, 4)
+    }
+
+    /// Lleva el teclado al precio de la línea, soltando antes la descripción si la tenía.
+    private func focusPrice(of id: UUID) {
+        focusedDescription = nil
+        focusedPrice = id
     }
 
     private func taxableToggle(_ line: Binding<LineDraft>) -> some View {

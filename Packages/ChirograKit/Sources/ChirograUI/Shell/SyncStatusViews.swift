@@ -39,6 +39,59 @@ final class SyncMonitor {
     static let failureGrace: Duration = .seconds(20)
     @ObservationIgnored private var pendingFailure: Task<Void, Never>?
 
+    /// Código de `State.failed` cuando el aparato no tiene cuenta de iCloud (o iCloud está apagado para Chirogra). Sin
+    /// cuenta, el contenedor no avisa con `CKError.notAuthenticated` sino con un error de Core Data (testers de Userbrain,
+    /// 16-nov: a todos les salía «We couldn't sync»): se pregunta a CloudKit por la cuenta antes de enseñar el fallo.
+    static let noAccountCode = "iCloud.noAccount"
+    static let quotaCode = "CKError.quotaExceeded"
+    static let accountUnavailableCode = "CKError.accountTemporarilyUnavailable"
+
+    /// La franja se cerró con «×»: no vuelve en esta sesión, en ninguna pestaña.
+    var bannerDismissed = false
+    private static let noAccountNoticeKey = "sync.noAccountNoticeDismissed"
+    /// La nota de «sin cuenta de iCloud» se cerró una vez: no vuelve en este aparato.
+    var noAccountNoticeDismissed = UserDefaults.standard.bool(forKey: SyncMonitor.noAccountNoticeKey) {
+        didSet { UserDefaults.standard.set(noAccountNoticeDismissed, forKey: Self.noAccountNoticeKey) }
+    }
+
+    /// Hay un fallo que enseñar y no se ha cerrado.
+    var showsBanner: Bool {
+        guard case let .failed(code, _) = state else { return false }
+        return SyncErrorBanner.isNoAccount(code) ? !noAccountNoticeDismissed : !bannerDismissed
+    }
+
+    /// «×» de la franja: la de sin cuenta no vuelve nunca en este aparato; las demás, no en esta sesión.
+    func dismissBanner() {
+        if case let .failed(code, _) = state, SyncErrorBanner.isNoAccount(code) {
+            noAccountNoticeDismissed = true
+        } else {
+            bannerDismissed = true
+        }
+    }
+
+    /// Detalle técnico del error: el nombre de los códigos que tienen texto propio, y si no, dominio y número
+    /// («NSCocoaErrorDomain 134400»), para que una captura de «Detalles» diga exactamente qué pasó.
+    static func failureCode(for error: Error) -> String {
+        if let ckError = error as? CKError {
+            var codes = [ckError.code]
+            if ckError.code == .partialFailure, let partial = ckError.partialErrorsByItemID?.values {
+                codes += partial.compactMap { ($0 as? CKError)?.code }
+            }
+            if codes.contains(.quotaExceeded) { return quotaCode }
+            if codes.contains(.notAuthenticated) { return noAccountCode }
+            if codes.contains(.accountTemporarilyUnavailable) { return accountUnavailableCode }
+            return "CKErrorDomain \(ckError.code.rawValue)"
+        }
+        let error = error as NSError
+        return "\(error.domain) \(error.code)"
+    }
+
+    /// El aparato no tiene una cuenta de iCloud que Chirogra pueda usar.
+    static func lacksAccount() async -> Bool {
+        guard let status = try? await CKContainer.default().accountStatus() else { return false }
+        return status == .noAccount || status == .restricted
+    }
+
     /// Inicio de la última subida a iCloud que terminó bien: lo que se guardó antes de esa fecha ya está en iCloud
     /// («Borrar todo y empezar de cero» espera a una que empiece después del borrado).
     @ObservationIgnored private(set) var lastExportStart: Date?
@@ -59,7 +112,8 @@ final class SyncMonitor {
     }
 
     /// Solo en Debug, para QA sin iCloud: lanzar con `-ChirograForceSync loading` (esqueleto «Sincronizando con iCloud»,
-    /// también con empresa) o `-ChirograForceSync error` (franja de sin conexión). En Release no existe.
+    /// también con empresa), `-ChirograForceSync error` (franja de sin conexión), `sinCuenta` (nota de sin cuenta de
+    /// iCloud) o `fallo` (otro error). En Release no existe.
     #if DEBUG
     static let forced = UserDefaults.standard.string(forKey: "ChirograForceSync")
     #else
@@ -69,6 +123,12 @@ final class SyncMonitor {
     init() {
         switch Self.forced {
         case "loading": state = .syncing; hasImported = false
+        case "sinCuenta":
+            state = .failed(code: Self.noAccountCode, network: false)
+            hasFailed = true
+        case "fallo":
+            state = .failed(code: "NSCocoaErrorDomain 134407", network: false)
+            hasFailed = true
         case "error":
             state = .failed(code: "CKError.networkUnavailable", network: true)
             hasFailed = true
@@ -112,20 +172,18 @@ final class SyncMonitor {
         } else if let error = event.error {
             let ckError = error as? CKError
             let network = [.networkUnavailable, .networkFailure, .serviceUnavailable, .requestRateLimited].contains(ckError?.code)
-            let failed = State.failed(code: ckError.map { "CKError.\($0.code)" } ?? (error as NSError).domain, network: network)
+            let failed = State.failed(code: Self.failureCode(for: error), network: network)
             hasFailed = true
             failuresSeen += 1
-            // Sin cuenta de iCloud no hay reintento que valga: se dice enseguida (con su propio texto en la franja).
-            if ckError?.code == .notAuthenticated {
-                pendingFailure?.cancel()
-                pendingFailure = nil
-                state = failed
-            } else if pendingFailure == nil {
+            // Sin cuenta de iCloud no hay reintento que valga: se dice enseguida, como nota y no como error. Lo demás,
+            // solo si dura (`failureGrace`).
+            if pendingFailure == nil {
                 pendingFailure = Task { @MainActor [weak self] in
-                    try? await Task.sleep(for: Self.failureGrace)
+                    let noAccount = await Self.lacksAccount()
+                    if !noAccount { try? await Task.sleep(for: Self.failureGrace) }
                     guard let self, !Task.isCancelled else { return }
                     self.pendingFailure = nil
-                    self.state = failed
+                    self.state = noAccount ? .failed(code: Self.noAccountCode, network: false) : failed
                 }
             }
         } else {
@@ -500,7 +558,7 @@ struct SyncErrorBanner: View {
 
     var body: some View {
         #if os(macOS)
-        if case let .failed(code, network) = monitor.state, !monitor.continuesOffline {
+        if case let .failed(code, network) = monitor.state, !monitor.continuesOffline, !Self.isNoAccount(code) {
             details(code: code, network: network)
                 .background(Palette.background, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
                 .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).strokeBorder(Palette.separator, lineWidth: 0.5))
@@ -513,43 +571,47 @@ struct SyncErrorBanner: View {
         #endif
     }
 
+    /// Franja de una línea con «×» (testers de Userbrain, 16-nov: la tarjeta grande, sin forma de quitarla, tapaba el
+    /// contenido de cada pestaña). Tocarla abre «Detalles», con «Reintentar» y el detalle técnico; la «×» la cierra en
+    /// todas las pestañas (`SyncMonitor.dismissBanner`).
     @ViewBuilder
     private var banner: some View {
-        if case let .failed(code, network) = monitor.state, !dismissed {
-            HStack(alignment: .top, spacing: 12) {
-                IconTile(systemImage: "icloud.slash", foreground: Palette.gray)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(Self.isNoAccount(code) ? String(localized: "iCloud no está activado")
-                         : network ? String(localized: "Sin conexión") : String(localized: "No pudimos sincronizar"))
-                        .font(.body.weight(.semibold))
+        if case let .failed(code, network) = monitor.state, monitor.showsBanner {
+            let text = Self.texts(code: code, network: network)
+            HStack(spacing: 10) {
+                Image(systemName: Self.isNoAccount(code) ? "icloud" : "icloud.slash")
+                    .font(.body.weight(.semibold))
+                    .foregroundStyle(Self.isNoAccount(code) ? Palette.brand : Palette.warning)
+                    .accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(text.title).font(.subheadline.weight(.semibold))
                     // En `ink` y no en gris: sobre el naranja tenue el gris no llega a 4,5:1.
-                    Text(Self.isNoAccount(code)
-                         ? String(localized: "Tus libros se guardan en este dispositivo. Inicia sesión en iCloud en Ajustes para tenerlos en todos tus aparatos.")
-                         : String(localized: "Tus cambios se guardan en este dispositivo y se sincronizan después."))
-                        .font(.footnote)
-                        .fixedSize(horizontal: false, vertical: true)
-                    // Con texto de accesibilidad, uno debajo del otro: lado a lado se partían en sílabas («De-tails»).
-                    ViewThatFits(in: .horizontal) {
-                        HStack(spacing: 20) { retryLink; detailsLink }
-                        VStack(alignment: .leading, spacing: 4) { retryLink; detailsLink }
-                    }
-                    .font(.body)
-                    .buttonStyle(.borderless)
-                    // El `foregroundStyle` del aviso pasaba a los botones: sin esto salían en `ink`, no en Tinta.
-                    .foregroundStyle(Palette.brand)
-                    .frame(minHeight: Metrics.target)
+                    Text(text.message).font(.footnote).lineLimit(2)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
+                Button { monitor.dismissBanner() } label: {
+                    Image(systemName: "xmark")
+                        .font(.footnote.weight(.bold))
+                        .foregroundStyle(Palette.ink2)
+                        .frame(width: Metrics.target, height: Metrics.target)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Cerrar")
             }
             .foregroundStyle(Palette.ink)
-            .padding(.horizontal, 16).padding(.top, 12).padding(.bottom, 2)
+            .padding(.leading, 12).padding(.vertical, 2)
             .background {
-                RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous)
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
                     .fill(Palette.surface)
-                    .overlay(RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous).fill(Palette.warningWash))
+                    .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .fill(Self.isNoAccount(code) ? Color.clear : Palette.warningWash))
             }
+            .contentShape(Rectangle())
+            .onTapGesture { showingDetails = true }
             .accessibilityElement(children: .contain)
-            .padding(.horizontal, margin).padding(.top, 8)
+            .accessibilityAction(named: Text("Detalles")) { showingDetails = true }
+            .padding(.horizontal, margin).padding(.top, 6)
             #if os(iOS)
             // En iOS, hoja centrada: la tarjeta de cristal del popover quedaba sobre la franja y su título apenas se leía.
             .sheet(isPresented: $showingDetails) {
@@ -564,16 +626,29 @@ struct SyncErrorBanner: View {
         }
     }
 
-    private var retryLink: some View {
-        Button("Reintentar") { monitor.retry() }.fixedSize().frame(minHeight: Metrics.target)
-    }
+    /// Sin cuenta de iCloud que Chirogra pueda usar: texto propio y como nota, no como error.
+    static func isNoAccount(_ code: String) -> Bool { code == SyncMonitor.noAccountCode }
 
-    private var detailsLink: some View {
-        Button("Detalles") { showingDetails = true }.fixedSize().frame(minHeight: Metrics.target)
+    /// Título y mensaje de cada fallo.
+    static func texts(code: String, network: Bool) -> (title: String, message: String) {
+        switch code {
+        case SyncMonitor.noAccountCode:
+            (String(localized: "Tus libros se guardan en este aparato"),
+             String(localized: "Activa iCloud para Chirogra en Ajustes si quieres tenerlos en tus otros aparatos."))
+        case SyncMonitor.quotaCode:
+            (String(localized: "Tu iCloud está lleno"),
+             String(localized: "Tus libros siguen en este aparato. Libera espacio en iCloud para que se sincronicen."))
+        case SyncMonitor.accountUnavailableCode:
+            (String(localized: "Revisa tu cuenta de iCloud"),
+             String(localized: "Abre Ajustes e inicia sesión de nuevo. Mientras, tus libros se guardan en este aparato."))
+        default:
+            network
+                ? (String(localized: "Sin conexión"),
+                   String(localized: "Tus cambios se guardan en este aparato y se envían al volver la conexión."))
+                : (String(localized: "No pudimos sincronizar"),
+                   String(localized: "Tus cambios se guardan en este aparato y se sincronizan después."))
+        }
     }
-
-    /// Sin cuenta de iCloud en el aparato (`CKError.notAuthenticated`): texto propio, no «no pudimos sincronizar».
-    static func isNoAccount(_ code: String) -> Bool { code == "CKError.notAuthenticated" }
 
     /// Tarjeta de `MacError`: icono, «No pudimos sincronizar tus datos», el porqué, los datos de la sincronización y
     /// «Reintentar» (principal) sobre «Seguir sin conexión» (secundario).
@@ -584,14 +659,12 @@ struct SyncErrorBanner: View {
                 .symbolRenderingMode(.multicolor)
                 .foregroundStyle(Palette.orange)
                 .accessibilityHidden(true)
-            Text(Self.isNoAccount(code) ? String(localized: "iCloud no está activado") : String(localized: "No pudimos sincronizar tus datos"))
+            let text = Self.texts(code: code, network: network)
+            Text(text.title)
                 .font(Self.titleFont).multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
                 .accessibilityAddTraits(.isHeader)
-            Text(Self.isNoAccount(code)
-                 ? String(localized: "Tus libros se guardan en este dispositivo. Inicia sesión en iCloud en los ajustes del sistema para tenerlos en todos tus aparatos.")
-                 : network ? String(localized: "Tus cambios están a salvo en este dispositivo y se enviarán solos cuando vuelva la conexión. Revisa tu red.")
-                         : String(localized: "Tus cambios están a salvo en este dispositivo. Revisa tu sesión de iCloud en los ajustes del sistema."))
+            Text(text.message)
                 .font(Self.messageFont).foregroundStyle(Palette.ink).multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
             VStack(spacing: 0) {
@@ -688,14 +761,23 @@ struct SyncOfflineStrip: View {
     @State private var monitor = SyncMonitor.shared
 
     var body: some View {
-        if monitor.isFailed, monitor.continuesOffline {
+        if case let .failed(code, network) = monitor.state, monitor.showsBanner,
+           monitor.continuesOffline || SyncErrorBanner.isNoAccount(code) {
             HStack(spacing: 10) {
-                Image(systemName: "icloud.slash").foregroundStyle(Palette.warning).accessibilityHidden(true)
-                Text("Sin conexión con iCloud. Estás trabajando con los datos guardados en este dispositivo.")
+                Image(systemName: SyncErrorBanner.isNoAccount(code) ? "icloud" : "icloud.slash")
+                    .foregroundStyle(SyncErrorBanner.isNoAccount(code) ? Palette.brand : Palette.warning)
+                    .accessibilityHidden(true)
+                let text = SyncErrorBanner.texts(code: code, network: network)
+                Text("\(text.title). \(text.message)")
                     .frame(maxWidth: .infinity, alignment: .leading)
-                Button("Reintentar") { monitor.retry() }
-                    .buttonStyle(.bordered)
-                    .controlSize(.small)
+                if !SyncErrorBanner.isNoAccount(code) {
+                    Button("Reintentar") { monitor.retry() }
+                        .buttonStyle(.bordered)
+                        .controlSize(.small)
+                }
+                Button { monitor.dismissBanner() } label: { Image(systemName: "xmark") }
+                    .buttonStyle(.borderless)
+                    .accessibilityLabel("Cerrar")
             }
             .font(.body)
             .padding(.leading, 12).padding(.trailing, 8).padding(.vertical, 6)

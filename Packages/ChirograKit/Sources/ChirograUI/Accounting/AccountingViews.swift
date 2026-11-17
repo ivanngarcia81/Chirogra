@@ -1200,6 +1200,7 @@ struct LedgerView: View {
         .toolbar {
             // Traspasos, pago de la tarjeta, retiro y aportación desde la cuenta (build 40, QA Hudson H03).
             if account.subtype.isMoneyAccount && account.subtype != .undepositedFunds && account.isPostable {
+                ToolbarItem(placement: .primaryAction) { RecordExpenseButton(account: account).headerButton() }
                 ToolbarItem(placement: .primaryAction) { MoveMoneyButton(account: account).headerButton() }
             }
             ToolbarItem(placement: .primaryAction) {

@@ -245,7 +245,8 @@ private struct SampleBooksConfirmation: ViewModifier {
 
     private var message: String {
         let what = isSample
-            ? String(localized: "Se borran todos los datos de ejemplo de «\(companyName)»: clientes, facturas, gastos, asientos y ajustes. Después creas tu empresa desde cero.")
+            // «No se borra nada tuyo»: al 5.º tester de Userbrain (16-nov) «se borran todos los datos» le asustó.
+            ? String(localized: "«\(companyName)» es una empresa inventada para probar la app. Se borra con sus datos de ejemplo y luego creas la tuya. No se borra nada tuyo.")
             : String(localized: "Se borra la empresa de ejemplo «\(companyName)» con sus clientes, facturas, gastos y asientos. Tus otras empresas no se tocan.")
         let scope = iCloudSyncEnabled ? " " + String(localized: "También se borran en tus otros aparatos con iCloud.") : ""
         return what + scope

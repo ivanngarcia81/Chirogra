@@ -227,9 +227,14 @@ struct InvoiceListView: View {
     private var summary: some View {
         let count = filter == .all ? Text("\(filtered.count) facturas")   // singular y plural en el catálogo
             : Text("\(filtered.count) facturas") + Text(verbatim: " · ") + Text(filter.localizedTitle)
-        let total = Text("Por cobrar \(receivable.money)")
+        // La cifra en grande y en `ink` (5.º tester de Userbrain, 16-nov: buscaba cuánto le deben y no vio la línea gris).
+        let total = HStack(alignment: .firstTextBaseline, spacing: 6) {
+            Text("Por cobrar")
+            Text(verbatim: receivable.money).font(.headline).foregroundStyle(Palette.ink)
+        }
+        .accessibilityElement(children: .combine)
         return ViewThatFits(in: .horizontal) {
-            HStack {
+            HStack(alignment: .firstTextBaseline) {
                 count.fixedSize()
                 Spacer(minLength: 8)
                 total.fixedSize()

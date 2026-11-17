@@ -46,6 +46,8 @@ struct InvoiceDetailView: View {
         var id: String { rawValue }
     }
     @State private var paymentMode: PaymentMode = .total
+    /// Cambia para subir (o bajar) hasta «Marcar como pagada».
+    @State private var recordJump = 0
     @State private var paymentAmount: Int64 = 0
     @State private var paymentDate = Date()
     @State private var depositAccountID: UUID?
@@ -106,6 +108,11 @@ struct InvoiceDetailView: View {
             // (recorrido «cliente nuevo», 5-nov). Ahora lleva «Listo», se cierra al desplazar y, al escribir el monto,
             // la pantalla sube hasta el botón.
             .keyboardDoneButton()
+            // «Pago · Pendiente» y «Pagada» de Actividad llevan al botón de registrar (5.º tester de Userbrain, 16-nov:
+            // tocaba esos círculos creyendo que marcaban la factura como pagada y no pasaba nada).
+            .onChange(of: recordJump) { _, _ in
+                withAnimation { proxy.scrollTo(Self.recordButtonID, anchor: .center) }
+            }
             .onChange(of: amountFocused) { _, focused in
                 guard focused else { return }
                 Task {
@@ -390,6 +397,7 @@ struct InvoiceDetailView: View {
                 ForEach(steps.indices, id: \.self) { index in
                     let step = steps[index]
                     if index > 0 { Divider().padding(.leading, Metrics.cardPadding + 34) }
+                    let action = activityAction(for: step.title, done: step.done)
                     HStack(spacing: 12) {
                         ActivityMark(done: step.done)
                         AdaptiveRow {
@@ -400,18 +408,38 @@ struct InvoiceDetailView: View {
                                 }
                             }
                         } trailing: {
-                            Text(step.value).foregroundStyle(Palette.ink2).monospacedDigit()
+                            HStack(spacing: 6) {
+                                Text(step.value).foregroundStyle(Palette.ink2).monospacedDigit()
+                                if action != nil {
+                                    Image(systemName: "chevron.right").font(.footnote.weight(.semibold))
+                                        .foregroundStyle(Palette.ink2).accessibilityHidden(true)
+                                }
+                            }
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     .padding(.horizontal, Metrics.cardPadding)
                     .padding(.vertical, 6)
                     .frame(minHeight: Metrics.target)
+                    .contentShape(Rectangle())
+                    .onTapGesture { action?() }
                     .accessibilityElement(children: .combine)
                     .accessibilityValue(step.done ? Text("Hecho") : Text("Pendiente"))
+                    .accessibilityAddTraits(action != nil ? .isButton : [])
                 }
             }
             .card(padding: 0)
+        }
+    }
+
+    /// Lo que hace tocar un paso pendiente de Actividad: «Pago» y «Pagada» llevan a «Marcar como pagada»; «Enviar al
+    /// cliente» abre el envío.
+    private func activityAction(for title: String, done: Bool) -> (() -> Void)? {
+        guard !done, invoice.isOpen else { return nil }
+        switch title {
+        case String(localized: "Pago"), String(localized: "Pagada"): return { recordJump += 1 }
+        case String(localized: "Enviar al cliente"): return { sending = true }
+        default: return nil
         }
     }
 
@@ -503,7 +531,11 @@ struct InvoiceDetailView: View {
     private static let recordButtonID = "registrarPago"
 
     private var recordButton: some View {
-        Button("Registrar \(amountToRecord.money)", action: recordPayment)
+        // «Marcar como pagada» dice lo que el usuario busca (5.º tester: «Did I get paid? … I can click paid»); con un
+        // cobro parcial, «Registrar cobro de $X».
+        Button(paymentMode == .total ? String(localized: "Marcar como pagada · \(amountToRecord.money)")
+                                     : String(localized: "Registrar cobro de \(amountToRecord.money)"),
+               systemImage: "checkmark.circle", action: recordPayment)
             .buttonStyle(.primary)
             .disabled(amountToRecord <= 0 || amountToRecord > invoice.balanceDue || depositAccountID == nil)
             .id(Self.recordButtonID)

@@ -16,6 +16,8 @@ struct ExpenseEditorView: View {
     var preselectedVendor: Vendor? = nil
     /// Recibo recién escaneado (Gastos › «Escanear recibo»): se adjunta y se lee al abrir.
     var initialReceipt: ReceiptFile? = nil
+    /// Desde la ficha de una cuenta en Banca («Registrar gasto»): la cuenta con que se pagó.
+    var paymentAccount: Account? = nil
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     @Environment(\.unsavedChanges) private var unsavedChanges
@@ -238,7 +240,7 @@ struct ExpenseEditorView: View {
                 && input.salesTaxIncluded == estimatedTax(in: input.lines.reduce(0) { $0 + $1.amount })
             lines = input.lines.isEmpty ? [LineDraft()] : input.lines.map { LineDraft(details: $0.details, amount: $0.amount, accountID: $0.accountID) }
         } else {
-            paymentAccountID = paymentAccounts.first { $0.subtype == .bank }?.id
+            paymentAccountID = paymentAccount?.id ?? paymentAccounts.first { $0.subtype == .bank }?.id
             initialDate = date
             ReceiptTextRecognizer.warmUp()
             if let initialReceipt, receipts.isEmpty { receipts.append(initialReceipt) }

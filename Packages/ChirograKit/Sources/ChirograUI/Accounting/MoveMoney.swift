@@ -66,6 +66,23 @@ struct MoveMoneyMenuItems: View {
     }
 }
 
+/// «Registrar gasto» en la barra de la ficha de una cuenta de dinero (Banca): el gasto con esa cuenta como la de pago.
+/// El 5.º tester de Userbrain (16-nov) fue a Banca › tarjeta para anotar una compra y no encontraba cómo.
+struct RecordExpenseButton: View {
+    let account: Account
+    @State private var showing = false
+
+    var body: some View {
+        Button { SubscriptionStore.shared.whenWritable { showing = true } } label: {
+            Label("Registrar gasto", systemImage: "wallet.bifold")
+        }
+        .help("Registrar un gasto pagado con esta cuenta")
+        .sheet(isPresented: $showing) {
+            NavigationStack { ExpenseEditorView(paymentAccount: account) }.editorSheetSizing()
+        }
+    }
+}
+
 /// «Mover dinero» en la barra de la ficha de una cuenta de dinero (Banca), con su hoja.
 struct MoveMoneyButton: View {
     let account: Account
