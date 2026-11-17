@@ -48,6 +48,7 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 | 47 | `1f96a17` | 1.3.0: **el alta ya no se vacía al salir y volver a la app** (test de Userbrain): `RootView` solo enseña la pantalla de espera de iCloud en la primera importación (`sync.isFirstImport`, antes `isSyncing`, que volvía a ser cierto cada vez que la app volvía al primer plano). |
 | 48 | `f99bd71` | 1.3.0: tras el 2.º test de Userbrain: en la factura del iPhone el **precio en su propia fila** (campo con borde) y tocar «Total de la línea» lleva al precio; **«Guardar borrador» con texto** en vez del ✓; **Inicio con cifras en color** (ingresos verde, gastos rojo, ganancia color de marca o rojo si es negativa; también la gráfica y el Mac), «Ganancia del mes» / «Profit this month» y «Sales tax you owe». 346 pruebas. |
 | 49 | `292f269` | 1.3.0: arreglos de los testers de Userbrain: 7 días de uso libre, confirmación de factura de $0, «Para guardar, falta: …», franja de iCloud con 20 s de gracia, pista para personalizar la barra, «Se pronuncia «Kairogra»». 346 pruebas. |
+| 50 | `9f32335` | 1.3.0: aviso de iCloud en una línea con «×» (sin cuenta, nota azul que no vuelve; «Detalles» con el código), «Marcar como pagada · $X», botón «Precio» en la barra del teclado, «Registrar gasto» en la ficha de la cuenta, «Por cobrar» en grande. 346 pruebas. |
 
 ## Último chat (16-nov, tarde): testers de Userbrain y builds 47 y 48
 
@@ -118,7 +119,7 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 
 ## Lo siguiente
 
-0. **Build 50: HECHO en `version-1.3` (16-nov, madrugada), SIN COMMITEAR NI SUBIR.** Tras el 5.º tester de Userbrain
+0. **Build 50: SUBIDO iOS+Mac a TestFlight (17-nov, `9f32335`), `version-1.3` y `main` EMPUJADAS (web con «Kairogra»).** Tras el 5.º tester de Userbrain
    (el primero con el 49; le dio 6–7 sobre 10) y las capturas del usuario del aviso de iCloud, que les salía a todos:
    - **Aviso de iCloud:** franja de una línea con «×» que se cierra en todas las pestañas (`SyncMonitor.dismissBanner`);
      antes de enseñar un fallo se pregunta a CloudKit por la cuenta (`accountStatus`): sin cuenta (o iCloud apagado para
