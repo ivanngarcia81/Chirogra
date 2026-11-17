@@ -128,7 +128,9 @@ iCloud** (CKShare): el cliente invita, el contador acepta con su Apple ID y ve e
   conectes (banco, Stripe, nómina) y lo borra al pasarlo a tus libros.
 - **Plaid** exige su texto de consentimiento antes de Link. **Nómina** también tiene sus términos.
 
-## 6. Esquema 6 de CloudKit (solo añadir)
+## 6. Esquema 7 de CloudKit (solo añadir)
+
+El 6 lo usa la 1.4 para la agenda (`Appointment`, [PLAN-1.4.md](PLAN-1.4.md)); lo de aquí va en el 7.
 
 Las reglas de PLAN-FASE2 siguen: solo añadir, nunca renombrar ni reutilizar, probar en Producción antes de publicar.
 
@@ -148,8 +150,8 @@ Las reglas de PLAN-FASE2 siguen: solo añadir, nunca renombrar ni reutilizar, pr
    solicitudes y cotizaciones a Gusto Embedded y Check; productos nuevos en App Store Connect («Chirogra + Banco» y
    escalones de nómina, en el grupo «Chirogra»).
 1. **Prueba de concepto de compartir por iCloud** (punto 3). Va primero porque es lo más arriesgado y puede cambiar el
-   esquema 6.
-2. **Base del servidor:** proyecto Supabase, Iniciar sesión con Apple, verificación del plan, buzón y su recogida en la
+   esquema 7.
+2. **Base del servidor:** el proyecto Supabase ya existe desde la 1.4 (asistente); se añaden Iniciar sesión con Apple, verificación del plan, buzón y su recogida en la
    app, rama `version-2.0`.
 3. **Plaid** (movimientos, saldos, extractos).
 4. **Stripe** (enlace en la factura, registro del cobro, cuenta puente).
@@ -185,3 +187,8 @@ cuando lleguen las cotizaciones.
    tabla por código postal de la 1.2?
 5. **Cobro de la nómina:** escalones dentro de la app, o pago fuera si las reglas de Apple lo permiten.
 6. **Buzón:** ¿se borra al confirmar o se guarda unos días (para reintentar si un aparato falla)?
+
+## Adelantado a la 1.4
+
+- **Asistente con IA (Claude) y el proyecto de Supabase «chirogra»** (decisión del 16-nov): van en la 1.4 junto con la
+  agenda, y ese servidor es la base del de la 2.0. Detalle en [PLAN-1.4.md](PLAN-1.4.md).
