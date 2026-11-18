@@ -1,22 +1,25 @@
-# Chirogra: resumen para empezar el siguiente chat (16-nov-2026)
+# Chirogra: resumen para empezar el siguiente chat (18-nov-2026)
 
 Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («Dónde nos quedamos» y «Siguiente»).
 **Al usuario se le habla siempre en español.**
 
 ## Estado
 
-- **Ramas:** `version-1.3` en `f99bd71` (builds 47 y 48) y `main` en `c5f687d` (limpieza del 16-nov; sin los dos
-  commits de los builds, que no tocan la web). Las dos empujadas el 16-nov y la carpeta limpia. La web (`sitio/`) se
-  publica desde `main`.
-- **Último build: 49 (1.3.0)**, subido a TestFlight para iOS y macOS el 16-nov (noche). Antes, el 48, subido el 16-nov. **El usuario lo está probando** y lo usa
-  para los testers de Userbrain. El 47 también se subió el 16-nov.
+- **Ramas:** `version-1.3` empujada el 18-nov (builds 50, 51 y 52 y sus docs). `main` en `83b1db4` (build 50 y la web
+  con «Kairogra»), empujada el 17-nov; los builds 51 y 52 no tocan la web, así que `main` no hace falta moverla. La web
+  (`sitio/`) se publica desde `main`.
+- **Último build: 52 (1.3.0)**, subido a TestFlight para iOS y macOS el 18-nov (`5643a27`). Antes: 51 (recorrido de la
+  primera vez, 17-nov) y 50 (17-nov). Los testers externos (Userbrain, Beta Family) entran con el enlace público
+  https://testflight.apple.com/join/RGwqqUyw: **el usuario tiene que asignar el 52 a ese grupo** cuando Apple lo procese.
 - **En App Store Connect:** la **1.0 (build 11)** espera la revisión. **Decidido el 13-nov:** cuando la aprueben se envía
   **directo la 1.3** con su último build, sin la 1.0.1, la 1.1 ni la 1.2, con un «What's New» que junte las tres. El plan
   «Chirogra para contadores» está completo en App Store Connect y va en ese envío (no pulsar «Add for Review» suelto).
-- **Aparatos del usuario:** iPhone y Mac con el código del 45 (icono χρ, instalado el 14-nov desde Xcode con iCloud de
-  Producción). El 46 no está instalado en ninguno. El iPad sigue sin instalar desde el 41 (lo hace él; no insistir).
-- **Plan de la 2.0:** escrito en [PLAN-2.0.md](PLAN-2.0.md) (commit `0f16d46`); el código empieza cuando la 1.3 esté en la
-  tienda.
+  El 17-nov la web de App Store Connect le fallaba al usuario (sin apps, «News Request», lo sacaba al entrar); la página
+  de estado de Apple no marcaba nada y las subidas funcionaban: era la sesión de Safari (pestaña privada / borrar datos).
+- **Aparatos del usuario:** iPhone y Mac con el código del 45 instalado desde Xcode; desde entonces prueba con TestFlight.
+  El iPad, desde TestFlight cuando quiera (no insistir).
+- **Plan de la 1.4** (agenda + asistente con Claude) en [PLAN-1.4.md](PLAN-1.4.md); **plan de la 2.0** en
+  [PLAN-2.0.md](PLAN-2.0.md).
 
 | Build | Commit | Qué trae |
 |---|---|---|
@@ -52,7 +55,33 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 | 51 | `4d84399` | 1.3.0: recorrido de la primera vez en cada pestaña del iPhone (estilo A «Foco» de Claude Design), «Ver el recorrido otra vez» en Más › Ayuda; fuera la pista de personalizar la barra. 346 pruebas. |
 | 52 | `5643a27` | 1.3.0: tras un tester de Beta Family: al borrar los datos de ejemplo el recorrido vuelve a salir con la empresa propia; «Sin cuenta ni contraseña: tus libros se quedan en tus aparatos y en tu iCloud.» en la última página de la bienvenida. 346 pruebas. |
 
-## Último chat (16-nov, tarde): testers de Userbrain y builds 47 y 48
+## Último chat (17 y 18-nov): builds 50, 51 y 52, recorrido y testers
+
+- **Builds subidos (iOS y macOS):** 50 (`9f32335`, aviso de iCloud, cobro, precio), 51 (`4d84399`, recorrido de la
+  primera vez en cada pestaña del iPhone, estilo A «Foco» de Claude Design) y 52 (`5643a27`, tras un tester de Beta
+  Family). Detalle de cada uno en «Lo siguiente», puntos 0, 0a y 0b. 346 pruebas en todos.
+- **Build 52:** al borrar los datos de ejemplo se olvidan los recorridos vistos (el tester vio el recorrido con la
+  empresa inventada y pedía «el tutorial para mi propio negocio»); y en la última página de la bienvenida, «Sin cuenta
+  ni contraseña: tus libros se quedan en tus aparatos y en tu iCloud.» (pedía «entrar con Apple o Google o como
+  invitado»: no sabía que no hay cuenta; «como invitado» ya es «Probar con datos de ejemplo»).
+- **Testers:** Userbrain (graban la pantalla y hablan), **Beta Family** (formulario con «About the app» y «What to
+  test»; tarea del 52 en inglés y español con 3 tareas y 5 preguntas) y **UXtweak** (solo imágenes: se recomendó
+  *First Click Test*, sin moderar, con 6 tareas sobre las capturas `01-inicio`, `02-ventas`, `03-gastos` de la tienda,
+  copiadas a `~/Desktop/Chirogra-UXtweak`). Los comentarios de errores llegan por «Compartir comentarios beta» de
+  TestFlight (captura → miniatura) y se leen en App Store Connect › TestFlight › Comentarios.
+- **Redes:** se le dieron textos para invitar a probar con el enlace de TestFlight (Instagram/Facebook, X/Threads e
+  inglés) y el logo a 1024 px en `~/Desktop/Chirogra-logo` (redondeado con fondo transparente y cuadrado para perfil,
+  sacados de `App/AppIcon.icon/Assets/chirogra-N-icono.svg`).
+- **Balance de los testers (pregunta del usuario):** del 47 al 52 casi todo salió de ellos: el alta que se vaciaba
+  (fallo real), el error de iCloud sin cuenta, la suscripción que asustaba (3 de 3), el precio de la factura, la factura
+  de $0, la pronunciación y el recorrido en la empresa propia. Límites: pocos (unos 6 + 1), casi todo primera impresión
+  y no siempre dueños de negocio. Recomendado: esperar lo que digan del 52 antes de más cambios y buscar 2 o 3 negocios
+  reales que la usen unas semanas.
+- **Ojo al subir:** `xcodegen` quita `com.apple.developer.ubiquity-kvstore-identifier` de `App/Chirogra.entitlements`
+  (no está en `project.yml`). En el clon de subida, después de `xcodegen`, `git checkout App/Chirogra.entitlements`, o
+  los recorridos vistos no se guardan en iCloud.
+
+## Chats anteriores (16-nov, tarde): testers de Userbrain y builds 47 y 48
 
 - **Testers externos:** el usuario usa **Userbrain** (testers pagados que graban la pantalla y hablan) y TestFlight
   externo con enlace público (lo crea él en App Store Connect). Se le dieron el texto de «What to Test», una tarea
@@ -110,18 +139,19 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 
 ## Lo que le toca al usuario
 
-1. **Probar el build 48 en TestFlight** (lo está haciendo): el alta al salir y volver (47), la factura del iPhone,
-   «Save draft» e Inicio en color (48); y más testers de Userbrain con el 48. Además: el icono χρ, la animación de la
-   bienvenida y la tabla de Clientes del iPad (45 y 46). De paso, lo de las versiones anteriores que no haya probado: código postal en el alta
-   (Austin 78702 → 8.25 %), pestañas y favoritos del iPhone (Más › Personalizar), «Seguridad» aparte de «iCloud y
-   copias», «Mover dinero», «Borrar todo y empezar de cero». **Ojo:** la 1.2 y la 1.3 pasan los libros del aparato al
-   esquema 5 y la 1.1 ya no los abre.
-2. **Instalar en el iPad** cuando quiera (desde TestFlight o pidiéndolo).
-3. **Avisar cuando Apple apruebe la 1.0**, para preparar el envío de la 1.3.
+1. **Asignar el build 52** al grupo de testers externos del enlace público cuando Apple lo procese, y mandar más
+   testers (Beta Family, Userbrain, UXtweak) con él. Traer aquí lo que digan.
+2. **Probar el 52 en TestFlight:** el recorrido de cada pestaña, «Más › Ayuda › Ver el recorrido otra vez», y borrar los
+   datos de ejemplo y crear su empresa (el recorrido tiene que volver). Si puede, con Reducir movimiento y VoiceOver,
+   que no se han probado en un aparato.
+3. **Instalar en el iPad** cuando quiera y, si sale el aviso de iCloud, mandar captura de «Detalles».
+4. **Para la 1.4:** la clave de Anthropic y el proyecto de Supabase «chirogra» los pone él en los secretos (no crearlos
+   ni buscarlos). Pregunta abierta: si la suscripción cuesta más con el asistente.
+5. **Avisar cuando Apple apruebe la 1.0**, para preparar el envío de la 1.3.
 
 ## Lo siguiente
 
-0. **Build 52: SUBIDO iOS+Mac a TestFlight (18-nov, `5643a27`, sin empujar).** Un tester de Beta Family vio el recorrido con la empresa de ejemplo y pidió «el tutorial para mi propio negocio» y «entrar con Apple o Google o como invitado». Arreglos: (1) al borrar los datos de ejemplo (`SampleBooks.discard`, caso `isSample`) se llama a `Recorrido.olvidarTodo()` y la empresa propia vuelve a ver el recorrido (con varias empresas reales no se toca); (2) en `AudiencePage` (última página, donde cae «Saltar») una línea con candado: «Sin cuenta ni contraseña…» / «No account or password…». Probado en el simulador (UITestsQA `Build52QA`, sin commitear): ejemplo → recorrido visto → no se repite → borrar → empresa nueva → sale otra vez. Ojo: `xcodegen` quita `ubiquity-kvstore-identifier` de `App/Chirogra.entitlements`; en la copia de subida se restauró con `git checkout`.
+0. **Build 52: SUBIDO iOS+Mac a TestFlight (18-nov, `5643a27`), `version-1.3` EMPUJADA.** Un tester de Beta Family vio el recorrido con la empresa de ejemplo y pidió «el tutorial para mi propio negocio» y «entrar con Apple o Google o como invitado». Arreglos: (1) al borrar los datos de ejemplo (`SampleBooks.discard`, caso `isSample`) se llama a `Recorrido.olvidarTodo()` y la empresa propia vuelve a ver el recorrido (con varias empresas reales no se toca); (2) en `AudiencePage` (última página, donde cae «Saltar») una línea con candado: «Sin cuenta ni contraseña…» / «No account or password…». Probado en el simulador (UITestsQA `Build52QA`, sin commitear): ejemplo → recorrido visto → no se repite → borrar → empresa nueva → sale otra vez. Ojo: `xcodegen` quita `ubiquity-kvstore-identifier` de `App/Chirogra.entitlements`; en la copia de subida se restauró con `git checkout`.
 
 0a. **Build 51: recorrido de la primera vez, en `version-1.3` (17-nov), SUBIDO iOS+Mac a TestFlight** (EMPUJADO en `3ce3df8`). El usuario vio que otras apps enseñan cada pantalla la
    primera vez; se hizo una muestra, Claude Design dibujó 3 estilos (canvas «Chirogra — First-run tour»,

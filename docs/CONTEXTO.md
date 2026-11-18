@@ -1,6 +1,6 @@
 # Chirogra: contexto para retomar en otro chat
 
-Estado de Chirogra al **16 de noviembre de 2026**. **Para empezar rápido, lee primero
+Estado de Chirogra al **18 de noviembre de 2026**. **Para empezar rápido, lee primero
 [RESUMEN-PARA-SEGUIR.md](RESUMEN-PARA-SEGUIR.md)** (estado, tabla de builds y lo siguiente); luego este, entero. El diseño técnico está en
 [DISEÑO.md](DISEÑO.md), el sistema visual y los argumentos de QA en [REDISEÑO-NATIVO.md](REDISEÑO-NATIVO.md) (§5), los
 datos en [DATOS-V4.md](DATOS-V4.md) (y [DATOS-V2.md](DATOS-V2.md)), la fase 2 en [PLAN-FASE2.md](PLAN-FASE2.md) y la
@@ -12,7 +12,17 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
 
 ## Dónde nos quedamos (empieza aquí)
 
-**Resumen al 16-nov** (lo de debajo es el detalle y la historia):
+**Resumen al 18-nov** (lo de debajo es el detalle y la historia):
+- **Último build: 52 (1.3.0)**, subido iOS y macOS el 18-nov (`5643a27`): el recorrido vuelve a salir al borrar los
+  datos de ejemplo y la bienvenida dice «Sin cuenta ni contraseña». **51** (17-nov): recorrido de la primera vez en cada
+  pestaña del iPhone (`DesignSystem/Recorrido.swift`). **50** (17-nov): aviso de iCloud, cobro y precio de la factura.
+  Detalle en RESUMEN, «Último chat» y «Lo siguiente».
+- `version-1.3` empujada el 18-nov; `main` en `83b1db4` (web con «Kairogra»), sin cambios desde el 17-nov.
+- Testers: Userbrain, Beta Family y UXtweak con el enlace público de TestFlight; el usuario asigna cada build al grupo.
+- **Ojo al subir:** `xcodegen` quita la clave `ubiquity-kvstore-identifier` de `App/Chirogra.entitlements`; restaurarla
+  con `git checkout` en el clon de subida (abajo, «Proyecto, subidas y aparatos»).
+
+**Resumen al 16-nov:**
 - **16-nov tarde: builds 47 y 48 subidos** (iOS y macOS) tras dos tests de Userbrain: el alta ya no se vacía al volver a
   la app (47); precio de la factura del iPhone en su fila, «Guardar borrador» con texto e Inicio con cifras en color
   (48). El usuario **está probando el 48**. **Build 49 anotado:** avisar antes de emitir una factura de $0, más lo que
@@ -436,6 +446,9 @@ las claves que lista como cambiadas en las dos ramas.
   `DEVELOPMENT_TEAM=4N9XEU7F4P -allowProvisioningUpdates`) y `xcodebuild -exportArchive -exportOptionsPlist <plist>
   -allowProvisioningUpdates` con `method` `app-store-connect`, `destination` `upload`, `teamID` 4N9XEU7F4P,
   `signingStyle` `automatic`. Usa la cuenta del usuario en Xcode. El usuario prefiere que se suba directamente.
+- **Entitlements y xcodegen:** `project.yml` no lleva `com.apple.developer.ubiquity-kvstore-identifier` (lo usan los
+  recorridos vistos y el uso libre); `xcodegen` lo quita de `App/Chirogra.entitlements`. En el clon de subida, después
+  de `xcodegen`, `git checkout App/Chirogra.entitlements` (build 52, 18-nov).
 - **StoreKit:** `App/Chirogra.storekit` en el esquema de Xcode: al ejecutar desde Xcode se compra de prueba. Fuera de
   Xcode, o con otro bundle id, la pantalla dice «Subscription Unavailable» (normal).
 - Equipo de firma `4N9XEU7F4P`, bundle id `com.chirogra.app`. iPhone 17 Pro Max `00008150-0005793E3EC0401C`; iPad Pro
