@@ -164,7 +164,9 @@ final class Recorrido {
         UserDefaults.standard.bool(forKey: id.seenKey) || NSUbiquitousKeyValueStore.default.bool(forKey: id.seenKey)
     }
 
-    private static func olvidarTodo() {
+    /// También al borrar los datos de ejemplo («Empezar con mi empresa»): quien exploró la empresa inventada vuelve a
+    /// ver el recorrido con la suya, que es cuando más le sirve (tester de Beta Family, 18-nov).
+    static func olvidarTodo() {
         for id in RecorridoID.allCases {
             UserDefaults.standard.removeObject(forKey: id.seenKey)
             NSUbiquitousKeyValueStore.default.removeObject(forKey: id.seenKey)

@@ -256,6 +256,8 @@ private struct SampleBooksConfirmation: ViewModifier {
         do {
             if isSample {
                 try SampleData.discard(from: context)
+                // Sin empresas vuelve el alta y luego un `AppShell` nuevo, que lee los vistos otra vez.
+                Recorrido.olvidarTodo()
             } else if let activeSample {
                 // Hay empresas reales: se borra solo la de ejemplo y la activa pasa a la siguiente.
                 try Bookkeeper(context: context).deleteCompany(activeSample)

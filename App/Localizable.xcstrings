@@ -24965,6 +24965,16 @@
         }
       }
     },
+    "Sin cuenta ni contraseña: tus libros se quedan en tus aparatos y en tu iCloud." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No account or password. Your books stay on your devices and in your iCloud."
+          }
+        }
+      }
+    },
     "Sin cuenta, sin anuncios y sin rastreo. Tus libros viven en tus aparatos y, si quieres, en tu iCloud." : {
       "localizations" : {
         "en" : {

@@ -83,6 +83,14 @@ struct AudiencePage: View {
                     ForEach(WelcomeAudience.allCases) { option in card(option) }
                 }
                 .padding(.top, 24)
+                // Aquí cae todo el que toca «Saltar»: un tester de Beta Family (18-nov) pedía «entrar con Apple o Google»
+                // creyendo que habría que registrarse para la suscripción.
+                Label("Sin cuenta ni contraseña: tus libros se quedan en tus aparatos y en tu iCloud.", systemImage: "lock.fill")
+                    .font(.footnote)
+                    .foregroundStyle(Palette.ink2)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.top, 14)
                 if let otherDevice {
                     Button(action: otherDevice) {
                         Label("¿Ya usas Chirogra en otro aparato?", systemImage: "icloud")
