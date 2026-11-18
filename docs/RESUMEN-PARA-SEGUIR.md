@@ -50,6 +50,7 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 | 49 | `292f269` | 1.3.0: arreglos de los testers de Userbrain: 7 días de uso libre, confirmación de factura de $0, «Para guardar, falta: …», franja de iCloud con 20 s de gracia, pista para personalizar la barra, «Se pronuncia «Kairogra»». 346 pruebas. |
 | 50 | `9f32335` | 1.3.0: aviso de iCloud en una línea con «×» (sin cuenta, nota azul que no vuelve; «Detalles» con el código), «Marcar como pagada · $X», botón «Precio» en la barra del teclado, «Registrar gasto» en la ficha de la cuenta, «Por cobrar» en grande. 346 pruebas. |
 | 51 | `4d84399` | 1.3.0: recorrido de la primera vez en cada pestaña del iPhone (estilo A «Foco» de Claude Design), «Ver el recorrido otra vez» en Más › Ayuda; fuera la pista de personalizar la barra. 346 pruebas. |
+| 52 | `5643a27` | 1.3.0: tras un tester de Beta Family: al borrar los datos de ejemplo el recorrido vuelve a salir con la empresa propia; «Sin cuenta ni contraseña: tus libros se quedan en tus aparatos y en tu iCloud.» en la última página de la bienvenida. 346 pruebas. |
 
 ## Último chat (16-nov, tarde): testers de Userbrain y builds 47 y 48
 
@@ -120,7 +121,9 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 
 ## Lo siguiente
 
-0. **Build 51: recorrido de la primera vez, en `version-1.3` (17-nov), SUBIDO iOS+Mac a TestFlight** (sin empujar). El usuario vio que otras apps enseñan cada pantalla la
+0. **Build 52: SUBIDO iOS+Mac a TestFlight (18-nov, `5643a27`, sin empujar).** Un tester de Beta Family vio el recorrido con la empresa de ejemplo y pidió «el tutorial para mi propio negocio» y «entrar con Apple o Google o como invitado». Arreglos: (1) al borrar los datos de ejemplo (`SampleBooks.discard`, caso `isSample`) se llama a `Recorrido.olvidarTodo()` y la empresa propia vuelve a ver el recorrido (con varias empresas reales no se toca); (2) en `AudiencePage` (última página, donde cae «Saltar») una línea con candado: «Sin cuenta ni contraseña…» / «No account or password…». Probado en el simulador (UITestsQA `Build52QA`, sin commitear): ejemplo → recorrido visto → no se repite → borrar → empresa nueva → sale otra vez. Ojo: `xcodegen` quita `ubiquity-kvstore-identifier` de `App/Chirogra.entitlements`; en la copia de subida se restauró con `git checkout`.
+
+0a. **Build 51: recorrido de la primera vez, en `version-1.3` (17-nov), SUBIDO iOS+Mac a TestFlight** (EMPUJADO en `3ce3df8`). El usuario vio que otras apps enseñan cada pantalla la
    primera vez; se hizo una muestra, Claude Design dibujó 3 estilos (canvas «Chirogra — First-run tour»,
    claude.ai/artifact/NYauYUc8B2M7zu1mir9yYP) y el usuario eligió la **A «Foco»** y dijo «Hazlo».
    - `DesignSystem/Recorrido.swift`: la primera vez que se abre cada pestaña del iPhone (Inicio 4 pasos con «Primeros
