@@ -1,4 +1,4 @@
-# Chirogra: resumen para empezar el siguiente chat (18-nov-2026)
+# Chirogra: resumen para empezar el siguiente chat (18-nov-2026, build 53)
 
 Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («Dónde nos quedamos» y «Siguiente»).
 **Al usuario se le habla siempre en español.**
@@ -8,9 +8,9 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 - **Ramas:** `version-1.3` empujada el 18-nov (builds 50, 51 y 52 y sus docs). `main` en `83b1db4` (build 50 y la web
   con «Kairogra»), empujada el 17-nov; los builds 51 y 52 no tocan la web, así que `main` no hace falta moverla. La web
   (`sitio/`) se publica desde `main`.
-- **Último build: 52 (1.3.0)**, subido a TestFlight para iOS y macOS el 18-nov (`5643a27`). Antes: 51 (recorrido de la
-  primera vez, 17-nov) y 50 (17-nov). Los testers externos (Userbrain, Beta Family) entran con el enlace público
-  https://testflight.apple.com/join/RGwqqUyw: **el usuario tiene que asignar el 52 a ese grupo** cuando Apple lo procese.
+- **Último build: 53 (1.3.0)**, subido a TestFlight para iOS y macOS el 18-nov (`a5f6468`). Antes: 52 (18-nov), 51
+  (recorrido de la primera vez, 17-nov) y 50 (17-nov). Los testers externos (Userbrain, Beta Family) entran con el enlace público
+  https://testflight.apple.com/join/RGwqqUyw: **el usuario tiene que asignar el 53 a ese grupo** cuando Apple lo procese.
 - **En App Store Connect:** la **1.0 (build 11)** espera la revisión. **Decidido el 13-nov:** cuando la aprueben se envía
   **directo la 1.3** con su último build, sin la 1.0.1, la 1.1 ni la 1.2, con un «What's New» que junte las tres. El plan
   «Chirogra para contadores» está completo en App Store Connect y va en ese envío (no pulsar «Add for Review» suelto).
@@ -54,6 +54,7 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 | 50 | `9f32335` | 1.3.0: aviso de iCloud en una línea con «×» (sin cuenta, nota azul que no vuelve; «Detalles» con el código), «Marcar como pagada · $X», botón «Precio» en la barra del teclado, «Registrar gasto» en la ficha de la cuenta, «Por cobrar» en grande. 346 pruebas. |
 | 51 | `4d84399` | 1.3.0: recorrido de la primera vez en cada pestaña del iPhone (estilo A «Foco» de Claude Design), «Ver el recorrido otra vez» en Más › Ayuda; fuera la pista de personalizar la barra. 346 pruebas. |
 | 52 | `5643a27` | 1.3.0: tras un tester de Beta Family: al borrar los datos de ejemplo el recorrido vuelve a salir con la empresa propia; «Sin cuenta ni contraseña: tus libros se quedan en tus aparatos y en tu iCloud.» en la última página de la bienvenida. 346 pruebas. |
+| 53 | `a5f6468` | 1.3.0: tras Yurii S. (tester de pago de Beta Family; iPhone 16e, iOS 26.7.1, letra XL, región de Ucrania, oscuro): en Ventas, si «1 570,00 US$ of 2 570 US$» no cabe junto al cliente, «of …» baja a su línea (salía «M…»); «Ver el recorrido otra vez» lleva a Inicio; defensa del hueco del teclado sin teclado (`ignoringStaleKeyboardSpace`; lista cortada y barra de Total a media pantalla, no reproducido). 346 pruebas. |
 
 ## Último chat (17 y 18-nov): builds 50, 51 y 52, recorrido y testers
 
@@ -139,7 +140,7 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 
 ## Lo que le toca al usuario
 
-1. **Asignar el build 52** al grupo de testers externos del enlace público cuando Apple lo procese, y mandar más
+1. **Asignar el build 53** al grupo de testers externos del enlace público cuando Apple lo procese, y mandar más
    testers (Beta Family, Userbrain, UXtweak) con él. Traer aquí lo que digan.
 2. **Probar el 52 en TestFlight:** el recorrido de cada pestaña, «Más › Ayuda › Ver el recorrido otra vez», y borrar los
    datos de ejemplo y crear su empresa (el recorrido tiene que volver). Si puede, con Reducir movimiento y VoiceOver,
@@ -150,6 +151,8 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 5. **Avisar cuando Apple apruebe la 1.0**, para preparar el envío de la 1.3.
 
 ## Lo siguiente
+
+0. **Build 53: SUBIDO iOS+Mac a TestFlight (18-nov, `a5f6468`), `version-1.3` EMPUJADA.** Informe de Beta Family de Yurii S. (pago; el mismo del 52, ahora con el 51): 4/5, facilidad 3/5. (1) Fila de factura pagada a medias ilegible con formato europeo y letra XL → `InvoiceRow` con `ViewThatFits` («of $X» en su línea) y subtítulo en 2 líneas. (2) «Ver el recorrido otra vez» empezaba por Más («vi solo el final») → `Recorrido.pedidoInicio`, `RootView` va a Inicio. (3) Sus capturas: lista de Ventas cortada al 60 % y barra de Total/Issue flotando a la altura del teclado, sin teclado a la vista; NO reproducido en el simulador (16e, iOS 26.5, XL, uk_UA, oscuro, buscador, precio). Defensa: `ignoringStaleKeyboardSpace` en las pestañas y `ignoresSafeArea(.keyboard)` sin `keyboardWillShow` en el editor y `bottomBarHiddenWithKeyboard`. Preguntarle si usa teclado de otra app, Bluetooth o dictado. Dijo además: recorrido «too short» (querría todos los botones; no alargarlo), la usaría en ucraniano. Simulador de QA nuevo «Chirogra QA 16e» (`44631678`). Los testers gratis de Beta Family no contestan las preguntas metidas dentro de una tarea: cada pregunta, aparte. UXtweak gratis: una sola tarea (First Click sobre `03-gastos-en.png`, alquiler mensual → «Recurring»).
 
 0. **Build 52: SUBIDO iOS+Mac a TestFlight (18-nov, `5643a27`), `version-1.3` EMPUJADA.** Un tester de Beta Family vio el recorrido con la empresa de ejemplo y pidió «el tutorial para mi propio negocio» y «entrar con Apple o Google o como invitado». Arreglos: (1) al borrar los datos de ejemplo (`SampleBooks.discard`, caso `isSample`) se llama a `Recorrido.olvidarTodo()` y la empresa propia vuelve a ver el recorrido (con varias empresas reales no se toca); (2) en `AudiencePage` (última página, donde cae «Saltar») una línea con candado: «Sin cuenta ni contraseña…» / «No account or password…». Probado en el simulador (UITestsQA `Build52QA`, sin commitear): ejemplo → recorrido visto → no se repite → borrar → empresa nueva → sale otra vez. Ojo: `xcodegen` quita `ubiquity-kvstore-identifier` de `App/Chirogra.entitlements`; en la copia de subida se restauró con `git checkout`.
 
@@ -207,8 +210,6 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
    - Comprobado: 346 pruebas, catálogo sin textos por traducir, capturas del simulador del iPhone (bienvenida, alta,
      uso libre, pista de Más, gasto incompleto, fin del uso libre); macOS compila. Lo siguiente: que el usuario lo pruebe y más testers de Userbrain con el 49.
    Lo que dijeron los testers (para el registro):
-   - **Avisar antes de emitir una factura de $0** («This invoice total is $0.00. Issue anyway?»): el 2.º tester emitió
-     una de $0 sin darse cuenta y tuvo que duplicarla.
    - **Avisar antes de emitir una factura de $0** («This invoice total is $0.00. Issue anyway?»): el 2.º tester emitió
      una de $0 sin darse cuenta y tuvo que duplicarla.
    - Lo que salga de los nuevos tests de Userbrain con el 48. **El usuario quiere esperar a más testers y arreglarlo
