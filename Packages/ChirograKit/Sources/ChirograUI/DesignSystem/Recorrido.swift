@@ -173,12 +173,16 @@ final class Recorrido {
         }
     }
 
-    /// «Ver el recorrido otra vez»: cada pestaña lo vuelve a enseñar al abrirla; la de ahora, enseguida.
-    func repetirTodo(desde id: RecorridoID) {
+    /// Sube con «Ver el recorrido otra vez»: `RootView` lleva a Inicio, que empieza el recorrido.
+    private(set) var pedidoInicio = 0
+
+    /// «Ver el recorrido otra vez»: desde el principio, en Inicio (empezar por el de Más, que es el último, hacía creer
+    /// que solo salía el final; tester de Beta Family, 18-nov). Las demás pestañas lo vuelven a enseñar al abrirlas.
+    func repetirTodo() {
         guard activo == nil else { return }
         Self.olvidarTodo()
         vistos = []
-        empezarSiHaceFalta(id)
+        pedidoInicio += 1
     }
 
     /// Al entrar en una pestaña: si no se ha visto, espera a que la pantalla se coloque y empieza.

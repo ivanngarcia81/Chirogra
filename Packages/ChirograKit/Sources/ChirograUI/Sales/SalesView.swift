@@ -280,11 +280,29 @@ struct InvoiceRow: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
-        LedgerRow(title: invoice.customer?.name ?? String(localized: "Sin cliente"), subtitle: subtitle) {
+        if invoice.status == .partiallyPaid && !dynamicTypeSize.isAccessibilitySize {
+            // «1 570,00 US$ of 2 570 US$» (formato europeo y letra XL) dejaba el cliente en «M…» y el tester no
+            // encontraba la factura (Beta Family, 18-nov). Si no cabe entero en una línea, «de $X» baja a la suya.
+            ViewThatFits(in: .horizontal) {
+                row(splitTotal: false)
+                row(splitTotal: true)
+            }
+        } else {
+            row(splitTotal: false)
+        }
+    }
+
+    private func row(splitTotal: Bool) -> some View {
+        LedgerRow(title: invoice.customer?.name ?? String(localized: "Sin cliente"), subtitle: subtitle, subtitleLines: 2) {
             EmptyView()
         } trailing: {
             VStack(alignment: dynamicTypeSize.amountAlignment, spacing: 1) {
-                Text(amount).font(.body).monospacedDigit().foregroundStyle(Palette.ink)
+                if splitTotal {
+                    Text(verbatim: invoice.balanceDue.money).font(.body).monospacedDigit().foregroundStyle(Palette.ink)
+                    Text("de \(invoice.total.moneyWhole)").font(.footnote).monospacedDigit().foregroundStyle(Palette.ink2)
+                } else {
+                    Text(amount).font(.body).monospacedDigit().foregroundStyle(Palette.ink)
+                }
                 StatusChip(invoice: invoice)
             }
         }

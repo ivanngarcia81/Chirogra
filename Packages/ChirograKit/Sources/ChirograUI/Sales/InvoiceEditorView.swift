@@ -570,6 +570,11 @@ struct InvoiceEditorView: View {
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in keyboardShown = false }
         #endif
         .modifier(HiddenWhile(hidden: keyboardShown) { bottomBar })
+        #if os(iOS)
+        // Sin teclado, la barra va abajo aunque el sistema deje reservado su sitio (flotaba a media pantalla y tapaba
+        // «Condiciones»; tester de Beta Family, 18-nov). `ignoringStaleKeyboardSpace`, con el `keyboardShown` de aquí.
+        .ignoresSafeArea(keyboardShown ? [] : .keyboard, edges: .bottom)
+        #endif
     }
 
     /// Canvas `FacturaNueva`: barra de vidrio con el total, «Vista previa» y la acción principal.

@@ -552,6 +552,13 @@ struct AppShell: View {
             .onChange(of: tab, initial: true) {
                 recorrido.empezarSiHaceFalta(RecorridoID(tab: tab))
             }
+            // «Ver el recorrido otra vez» (en Más): a Inicio, que lo empieza al cambiar de pestaña.
+            .onChange(of: recorrido.pedidoInicio) {
+                if tab == Self.homeTab { recorrido.empezarSiHaceFalta(.home) } else { tab = Self.homeTab }
+            }
+            // Si el sistema deja reservado el sitio del teclado sin teclado a la vista, la lista de Ventas se cortaba a
+            // media pantalla (tester de Beta Family, 18-nov, iOS 26.7.1; no reproducido en el simulador).
+            .ignoringStaleKeyboardSpace()
     }
 
     private var tabViewBase: some View {
@@ -933,8 +940,8 @@ struct MoreView: View {
                 Section(title: "Ayuda") {
                     GuideLinkRow()
                     if let recorrido {
-                        // Vuelve a enseñar el recorrido de cada pestaña la próxima vez que se abra (y el de Más, ya).
-                        Button { recorrido.repetirTodo(desde: .more) } label: {
+                        // Vuelve a Inicio con su recorrido; las demás pestañas lo enseñan otra vez al abrirlas.
+                        Button { recorrido.repetirTodo() } label: {
                             HStack(spacing: 12) {
                                 IconTile(systemImage: "hand.point.up.left", foreground: Palette.brand)
                                 Text("Ver el recorrido otra vez").foregroundStyle(Palette.ink)
