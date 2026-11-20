@@ -1,4 +1,4 @@
-# Chirogra: resumen para empezar el siguiente chat (20-nov-2026, build 54)
+# Chirogra: resumen para empezar el siguiente chat (20-nov-2026, build 55)
 
 Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («Dónde nos quedamos» y «Siguiente»).
 **Al usuario se le habla siempre en español.**
@@ -8,9 +8,9 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 - **Ramas:** `version-1.3` empujada el 18-nov (builds 50, 51 y 52 y sus docs). `main` en `83b1db4` (build 50 y la web
   con «Kairogra»), empujada el 17-nov; los builds 51 y 52 no tocan la web, así que `main` no hace falta moverla. La web
   (`sitio/`) se publica desde `main`.
-- **Último build: 54 (1.3.0)**, subido a TestFlight para iOS y macOS el 20-nov (`801e8c3`, sin empujar). Antes: 53 (18-nov), 52 (18-nov), 51
+- **Último build: 55 (1.3.0)**, subido a TestFlight para iOS y macOS el 20-nov (`216d429`). Antes: 54 (20-nov), 53 (18-nov), 52 (18-nov), 51
   (recorrido de la primera vez, 17-nov) y 50 (17-nov). Los testers externos (Userbrain, Beta Family) entran con el enlace público
-  https://testflight.apple.com/join/RGwqqUyw: **el usuario tiene que asignar el 54 a ese grupo** cuando Apple lo procese.
+  https://testflight.apple.com/join/RGwqqUyw: **el usuario tiene que asignar el 55 a ese grupo** cuando Apple lo procese.
 - **En App Store Connect:** la **1.0 (build 11)** espera la revisión. **Decidido el 13-nov:** cuando la aprueben se envía
   **directo la 1.3** con su último build, sin la 1.0.1, la 1.1 ni la 1.2, con un «What's New» que junte las tres. El plan
   «Chirogra para contadores» está completo en App Store Connect y va en ese envío (no pulsar «Add for Review» suelto).
@@ -56,7 +56,7 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 | 52 | `5643a27` | 1.3.0: tras un tester de Beta Family: al borrar los datos de ejemplo el recorrido vuelve a salir con la empresa propia; «Sin cuenta ni contraseña: tus libros se quedan en tus aparatos y en tu iCloud.» en la última página de la bienvenida. 346 pruebas. |
 | 53 | `a5f6468` | 1.3.0: tras Yurii S. (tester de pago de Beta Family; iPhone 16e, iOS 26.7.1, letra XL, región de Ucrania, oscuro): en Ventas, si «1 570,00 US$ of 2 570 US$» no cabe junto al cliente, «of …» baja a su línea (salía «M…»); «Ver el recorrido otra vez» lleva a Inicio; defensa del hueco del teclado sin teclado (`ignoringStaleKeyboardSpace`; lista cortada y barra de Total a media pantalla, no reproducido). 346 pruebas. |
 | 54 | `801e8c3` | 1.3.0: **«Tutorial completo»** en Más › Ayuda (cada pantalla del iPhone explica todos sus botones la primera vez; el corto no cambia); **iOS 27**: los pasos que iluminan botones de la barra de arriba ya no se saltan (`marcoEnVentana` mira `accessibilityElements`); en Inicio el recorrido ilumina el título del grupo con su tarjeta (iPhone 13 mini, Jiga T. de Beta Family). 177 + 75 pruebas. |
-| 55 | (este) | 1.3.0: tras Yurii S. (Beta Family, build 54; iPhone 16e, formato de Ucrania, oscuro): **campos de dinero** que se editan sin la moneda (`MoneyField`: «10,99» al escribir, «10,99 US$» al salir; antes lo tecleado se pegaba tras «US$» y el importe no cambiaba: «10,99 US$80», «1,00 US$896253»; en EE. UU. «$510.99»); lee coma o punto decimal; **difuminado** (`.ultraThinMaterial`) en la primera tarjeta de cada recorrido, la que no ilumina nada. 177 + 75 + 87 pruebas (`ScreenSmokeTests` ya se caía en el 54: `ImageRenderer`, «no current update to enqueue action to»). |
+| 55 | `216d429` | 1.3.0: tras Yurii S. (Beta Family, build 54; iPhone 16e, formato de Ucrania, oscuro): **campos de dinero** que se editan sin la moneda (`MoneyField`: «10,99» al escribir, «10,99 US$» al salir; antes lo tecleado se pegaba tras «US$» y el importe no cambiaba: «10,99 US$80», «1,00 US$896253»; en EE. UU. «$510.99»); lee coma o punto decimal; **difuminado** (`.ultraThinMaterial`) en la primera tarjeta de cada recorrido, la que no ilumina nada. 177 + 75 + 87 pruebas (`ScreenSmokeTests` ya se caía en el 54: `ImageRenderer`, «no current update to enqueue action to»). |
 
 ## Último chat (17 y 18-nov): builds 50, 51 y 52, recorrido y testers
 
@@ -154,7 +154,23 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 
 ## Lo siguiente
 
-0. **Build 54: SUBIDO iOS+Mac a TestFlight (20-nov, `801e8c3`, sin empujar): «Tutorial completo»**, arreglo de iOS 27
+0. **Build 55: SUBIDO iOS+Mac a TestFlight (20-nov, `216d429`).** Informe de Beta Family de Yurii S. con el 54 (pago;
+   iPhone 16e, iOS 26.7.1, formato de Ucrania, oscuro; 4/5, recomendación 4/5, **facilidad 2/5**). Test con 4 tareas
+   y 5 preguntas (texto en inglés y español dado en el chat; «About the app» y «What to test» tienen que ser distintos).
+   (1) **Campos de dinero:** al volver a un campo con importe, lo tecleado se pegaba detrás de «US$» («10,99 US$80» en el
+   descuento, «1,00 US$896253» en «Tax included»; reproducido en el 54: el importe no cambiaba, y en EE. UU. «$510.99»).
+   Arreglo en `MoneyField`: al editar, solo el número («10,99»); al salir, con la moneda; lee coma o punto decimal
+   (`MoneyField.minorUnits(from:locale:)`, pruebas en `MoneyFieldTests`). Sin `onAppear` (las pruebas con
+   `ImageRenderer` se caían). Probado en el simulador (precio, descuento, impuesto incluido; uk_UA y en_US).
+   (2) Pidió **difuminado** al empezar el tutorial completo: la primera tarjeta de cada recorrido (sin nada iluminado)
+   lleva `.ultraThinMaterial` debajo del velo; visto en oscuro y claro. (3) Sin cambio: en la tarea 4 hizo una
+   **factura** de $40 en vez de un gasto y dio su total como «impuesto que debo» (vigilar si otro se confunde igual);
+   lo más difícil, cobrar el resto de una factura pagada a medias; pide vídeo tutorial con un caso real y ajustes de
+   otros países (Ucrania). Recordatorio de pago: «easy»; tarjetas que tapan: no; tutorial completo: «about right».
+   **Pendiente aparte:** `ScreenSmokeTests` se cae en este Xcode (`ImageRenderer`, «no current update to enqueue action
+   to») ya con el 54; las demás pruebas de UI pasan con `--skip ScreenSmokeTests`.
+
+0. **Build 54: SUBIDO iOS+Mac a TestFlight (20-nov, `801e8c3`, EMPUJADO): «Tutorial completo»**, arreglo de iOS 27
    y títulos de Inicio a la vista. Pedido del tester Yurii S. («too short», quería todos los botones),
    decidido así por el usuario: el recorrido corto de la primera vez **no cambia**; en **Más › Ayuda** hay un
    interruptor «Tutorial completo» que, al encenderlo, lleva a Inicio y empieza, y desde ahí **cada pantalla explica todos
