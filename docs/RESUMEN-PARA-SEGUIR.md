@@ -1,4 +1,4 @@
-# Chirogra: resumen para empezar el siguiente chat (18-nov-2026, build 53)
+# Chirogra: resumen para empezar el siguiente chat (20-nov-2026, build 54)
 
 Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («Dónde nos quedamos» y «Siguiente»).
 **Al usuario se le habla siempre en español.**
@@ -8,9 +8,9 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 - **Ramas:** `version-1.3` empujada el 18-nov (builds 50, 51 y 52 y sus docs). `main` en `83b1db4` (build 50 y la web
   con «Kairogra»), empujada el 17-nov; los builds 51 y 52 no tocan la web, así que `main` no hace falta moverla. La web
   (`sitio/`) se publica desde `main`.
-- **Último build: 53 (1.3.0)**, subido a TestFlight para iOS y macOS el 18-nov (`a5f6468`). Antes: 52 (18-nov), 51
+- **Último build: 54 (1.3.0)**, subido a TestFlight para iOS y macOS el 20-nov (`801e8c3`, sin empujar). Antes: 53 (18-nov), 52 (18-nov), 51
   (recorrido de la primera vez, 17-nov) y 50 (17-nov). Los testers externos (Userbrain, Beta Family) entran con el enlace público
-  https://testflight.apple.com/join/RGwqqUyw: **el usuario tiene que asignar el 53 a ese grupo** cuando Apple lo procese.
+  https://testflight.apple.com/join/RGwqqUyw: **el usuario tiene que asignar el 54 a ese grupo** cuando Apple lo procese.
 - **En App Store Connect:** la **1.0 (build 11)** espera la revisión. **Decidido el 13-nov:** cuando la aprueben se envía
   **directo la 1.3** con su último build, sin la 1.0.1, la 1.1 ni la 1.2, con un «What's New» que junte las tres. El plan
   «Chirogra para contadores» está completo en App Store Connect y va en ese envío (no pulsar «Add for Review» suelto).
@@ -55,6 +55,7 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 | 51 | `4d84399` | 1.3.0: recorrido de la primera vez en cada pestaña del iPhone (estilo A «Foco» de Claude Design), «Ver el recorrido otra vez» en Más › Ayuda; fuera la pista de personalizar la barra. 346 pruebas. |
 | 52 | `5643a27` | 1.3.0: tras un tester de Beta Family: al borrar los datos de ejemplo el recorrido vuelve a salir con la empresa propia; «Sin cuenta ni contraseña: tus libros se quedan en tus aparatos y en tu iCloud.» en la última página de la bienvenida. 346 pruebas. |
 | 53 | `a5f6468` | 1.3.0: tras Yurii S. (tester de pago de Beta Family; iPhone 16e, iOS 26.7.1, letra XL, región de Ucrania, oscuro): en Ventas, si «1 570,00 US$ of 2 570 US$» no cabe junto al cliente, «of …» baja a su línea (salía «M…»); «Ver el recorrido otra vez» lleva a Inicio; defensa del hueco del teclado sin teclado (`ignoringStaleKeyboardSpace`; lista cortada y barra de Total a media pantalla, no reproducido). 346 pruebas. |
+| 54 | `801e8c3` | 1.3.0: **«Tutorial completo»** en Más › Ayuda (cada pantalla del iPhone explica todos sus botones la primera vez; el corto no cambia); **iOS 27**: los pasos que iluminan botones de la barra de arriba ya no se saltan (`marcoEnVentana` mira `accessibilityElements`); en Inicio el recorrido ilumina el título del grupo con su tarjeta (iPhone 13 mini, Jiga T. de Beta Family). 177 + 75 pruebas. |
 
 ## Último chat (17 y 18-nov): builds 50, 51 y 52, recorrido y testers
 
@@ -140,7 +141,7 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 
 ## Lo que le toca al usuario
 
-1. **Asignar el build 53** al grupo de testers externos del enlace público cuando Apple lo procese, y mandar más
+1. **Asignar el build 54** al grupo de testers externos del enlace público cuando Apple lo procese, y mandar más
    testers (Beta Family, Userbrain, UXtweak) con él. Traer aquí lo que digan.
 2. **Probar el 52 en TestFlight:** el recorrido de cada pestaña, «Más › Ayuda › Ver el recorrido otra vez», y borrar los
    datos de ejemplo y crear su empresa (el recorrido tiene que volver). Si puede, con Reducir movimiento y VoiceOver,
@@ -151,6 +152,37 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 5. **Avisar cuando Apple apruebe la 1.0**, para preparar el envío de la 1.3.
 
 ## Lo siguiente
+
+0. **Build 54: SUBIDO iOS+Mac a TestFlight (20-nov, `801e8c3`, sin empujar): «Tutorial completo»**, arreglo de iOS 27
+   y títulos de Inicio a la vista. Pedido del tester Yurii S. («too short», quería todos los botones),
+   decidido así por el usuario: el recorrido corto de la primera vez **no cambia**; en **Más › Ayuda** hay un
+   interruptor «Tutorial completo» que, al encenderlo, lleva a Inicio y empieza, y desde ahí **cada pantalla explica todos
+   sus botones la primera vez que se abre** (solo iPhone, como el corto). Pantallas: las 5 pestañas (Inicio 12 pasos)
+   más factura, estimado, editor de factura/estimado, editor de gasto, reportes e impuestos. Código:
+   `DesignSystem/RecorridoAFondo.swift` (los pasos), `Recorrido` (`aFondo`, `activarAFondo`, `fondoKey` solo local,
+   `recorridoPantalla(_:)`, `recorridoEnHoja()` puesto en `editorSheetSizing` para que el velo tape la barra de la hoja,
+   `recorridoDesplazable()`, marcos que se borran al desaparecer la vista). «Ver el recorrido otra vez» lo apaga (es el
+   corto). Con más de 7 pasos el indicador es «3 de 12» (los puntos partían «Siguiente» en tres líneas). 101 textos
+   nuevos con su inglés en `Localizable.xcstrings`. Probado en el simulador «Chirogra QA 16e» con `-qa.recorrido afondo`
+   (UITestsQA `AFondoQA` en la copia, sin commitear): Inicio 12, Ventas 6, factura 6, editor 7, Gastos 6, gasto 8,
+   Banca 5, Más 8, reporte 5, impuestos 5, estimado 6; el corto sigue igual (Inicio 4, Más 3) y el interruptor lleva a
+   Inicio con sus 12. «Escanear recibo» solo sale en un iPhone de verdad (el simulador no tiene escáner). Arreglos de
+   paso: los marcos se vuelven a medir al reaparecer la vista (al volver a una pestaña no se medían y Inicio se quedaba
+   en 4 pasos) y lo «a la vista» se mide con el alto de la ventana (el del velo era 81 pt menor y saltaba «Ayuda» y
+   «Recibo»). `-qa.recorrido reset` apaga también el tutorial completo. Tests del paquete: 177 + 75, ninguno falla.
+   **20-nov, también para el 54:** informe de Beta Family de Jiga T. (pago; iPhone 13 mini, **iOS 27.0**; 5/5,
+   facilidad 5/5): los recorridos le ayudaron y la duración bien; «some tour messages covered parts of the screen» (3
+   veces); lo más difícil, el alta y factura/cobro («several details»); pide explicar mejor los cálculos de impuestos,
+   reportes más detallados, recibos más fáciles y recordatorios de pago. Reproducido en simuladores nuevos «Chirogra QA
+   13 mini» (`7E4B8334`, iOS 27.0) y «Chirogra QA 16e iOS27» (`7E1E106C`): **en iOS 27 los pasos de botones de la barra
+   de arriba buscados por `ax:` desaparecían** (Banca «Trae tu banco», Guardar del gasto…): la etiqueta ya no está en
+   la vista de UIKit sino en un elemento de accesibilidad dentro de `UIKitBarItemHost`. Arreglado en
+   `Recorrido.marcoEnVentana` (mira también `accessibilityElements` y su `accessibilityFrame`); comprobado en iOS 27 y
+   26.5 (Banca 3 / 5, gasto 8). Lo de «tapar» en el 13 mini: la tarjeta queda pegada encima de lo iluminado y tapa el
+   título de su sección (Taxes, Receivables / See all, To pay). **Arreglado (opción A, elegida por el usuario):** en
+   Inicio del iPhone, `HomeView.group(_:recorrido:content:trailing:)` junta título y tarjeta y el recorrido ilumina los
+   dos (`home.salesTax`, `home.chart`, `home.receivables`, `home.payables`, `home.accounts`); el aspecto de Inicio no
+   cambia. Visto en el 13 mini (antes y después en el scratchpad de ese chat); macOS compila; 177 + 75 pruebas.
 
 0. **Build 53: SUBIDO iOS+Mac a TestFlight (18-nov, `a5f6468`), `version-1.3` EMPUJADA.** Informe de Beta Family de Yurii S. (pago; el mismo del 52, ahora con el 51): 4/5, facilidad 3/5. (1) Fila de factura pagada a medias ilegible con formato europeo y letra XL → `InvoiceRow` con `ViewThatFits` («of $X» en su línea) y subtítulo en 2 líneas. (2) «Ver el recorrido otra vez» empezaba por Más («vi solo el final») → `Recorrido.pedidoInicio`, `RootView` va a Inicio. (3) Sus capturas: lista de Ventas cortada al 60 % y barra de Total/Issue flotando a la altura del teclado, sin teclado a la vista; NO reproducido en el simulador (16e, iOS 26.5, XL, uk_UA, oscuro, buscador, precio). Defensa: `ignoringStaleKeyboardSpace` en las pestañas y `ignoresSafeArea(.keyboard)` sin `keyboardWillShow` en el editor y `bottomBarHiddenWithKeyboard`. Preguntarle si usa teclado de otra app, Bluetooth o dictado. Dijo además: recorrido «too short» (querría todos los botones; no alargarlo), la usaría en ucraniano. Simulador de QA nuevo «Chirogra QA 16e» (`44631678`). Los testers gratis de Beta Family no contestan las preguntas metidas dentro de una tarea: cada pregunta, aparte. UXtweak gratis: una sola tarea (First Click sobre `03-gastos-en.png`, alquiler mensual → «Recurring»).
 
