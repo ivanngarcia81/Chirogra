@@ -247,11 +247,12 @@ struct ExpenseListView: View {
             }
 
             Section {
-                dueThisWeekRow
+                dueThisWeekRow.recorridoObjetivo("expenses.due").id("expenses.due")
                 NavigationLink { ExpensesView(fixedSegment: .vendors) } label: {
                     Label { Text("Proveedores") } icon: { IconTile(systemImage: "truck.box", foreground: Palette.purple) }
                         .labelStyle(TileLabelStyle())
                 }
+                .recorridoObjetivo("expenses.vendors").id("expenses.vendors")
             }
 
             if !pending.isEmpty {
@@ -287,6 +288,7 @@ struct ExpenseListView: View {
             }
         }
         .groupedList()
+        .recorridoDesplazable()
         .screenBackground()
         .task(id: expenses.isEmpty) { RecurringTip.hasExpenses = !expenses.isEmpty }
     }

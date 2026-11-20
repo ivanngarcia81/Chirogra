@@ -61,9 +61,11 @@ struct BankingView: View {
                 NavigationLink { ReconciliationHubView() } label: {
                     shortcut("Conciliar", systemImage: "checklist", color: Palette.teal, value: nil)
                 }
+                .recorridoObjetivo("banking.reconcile").id("banking.reconcile")
                 NavigationLink { BankRulesView() } label: {
                     shortcut("Reglas", systemImage: "bolt", color: Palette.purple, value: String(localized: "\(rules.count) activas"))
                 }
+                .recorridoObjetivo("banking.rules").id("banking.rules")
                 NavigationLink { BankInboxScreen(initialFilter: .reviewed) } label: {
                     shortcut("Movimientos revisados", systemImage: "tray.full", color: Palette.gray, value: nil)
                 }
@@ -77,6 +79,7 @@ struct BankingView: View {
             if pending.isEmpty { inboxSection(context: context, names: names) }
         }
         .groupedList()
+        .recorridoDesplazable()
         .screenBackground()
         .navigationTitle("Banca")
         .navigationSubtitle(String(localized: "\(shown.count) cuentas · \(Date.now.monthYear)"))

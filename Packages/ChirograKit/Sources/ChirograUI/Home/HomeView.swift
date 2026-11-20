@@ -455,6 +455,7 @@ struct HomeView: View {
     private var phoneBody: some View {
         VStack(alignment: .leading, spacing: 0) {
             periodMenu(compact: true, prefix: companyName)
+                .recorridoObjetivo("home.period")
                 .padding(.horizontal, Metrics.gutter)
 
             // Mientras los libros son los de ejemplo: «Empezar con mi empresa».
@@ -493,39 +494,44 @@ struct HomeView: View {
                 .padding(.top, 20)
 
             if showsSalesTax {
-                groupTitle(String(localized: "Impuestos"))
-                salesTaxCard
-                    .padding(.horizontal, Metrics.gutter)
+                group(String(localized: "Impuestos"), recorrido: "home.salesTax") { salesTaxCard }
             }
 
-            groupTitle(String(localized: "Ingresos y gastos"))
-            chartCard(height: dynamicTypeSize.isAccessibilitySize ? 220 : 150, barWidth: chartMonths == 6 ? 15 : 8,
-                      pickerOnTop: true)
-                .padding(.horizontal, Metrics.gutter)
+            group(String(localized: "Ingresos y gastos"), recorrido: "home.chart") {
+                chartCard(height: dynamicTypeSize.isAccessibilitySize ? 220 : 150, barWidth: chartMonths == 6 ? 15 : 8,
+                          pickerOnTop: true)
+            }
 
-            groupTitle(String(localized: "Por cobrar")) { seeAllInvoices }
-            receivablesCard(limit: 3)
-                .padding(.horizontal, Metrics.gutter)
+            group(String(localized: "Por cobrar"), recorrido: "home.receivables") {
+                receivablesCard(limit: 3)
+            } trailing: { seeAllInvoices }
 
-            groupTitle(String(localized: "Por pagar · 14 días")) { seeAllBills }
-            payablesCard
-                .padding(.horizontal, Metrics.gutter)
+            group(String(localized: "Por pagar · 14 días"), recorrido: "home.payables") {
+                payablesCard
+            } trailing: { seeAllBills }
 
-            groupTitle(String(localized: "Cuentas")) { bankingLink }
-            accountsCard
-                .padding(.horizontal, Metrics.gutter)
+            group(String(localized: "Cuentas"), recorrido: "home.accounts") {
+                accountsCard
+            } trailing: { bankingLink }
         }
         .padding(.bottom, 24)
         .frame(maxWidth: 720)
         .frame(maxWidth: .infinity)
     }
 
-    /// Título de grupo fuera de la tarjeta (`SectionHeader`), a 32 pt del borde como en el canvas.
-    private func groupTitle(_ title: String, @ViewBuilder trailing: () -> some View = { EmptyView() }) -> some View {
-        SectionHeader(title: title, trailing: trailing)
-            .padding(.horizontal, Metrics.gutter)
-            .padding(.top, 26)
-            .padding(.bottom, 8)
+    /// Grupo de Inicio: título fuera de la tarjeta (`SectionHeader`, a 32 pt del borde como en el canvas) y la tarjeta.
+    /// El recorrido ilumina los dos juntos: si solo iluminaba la tarjeta, en pantallas pequeñas (iPhone 13 mini) su
+    /// globo quedaba encima y tapaba el título («Taxes», «Receivables · See all»; tester de Beta Family, 20-nov).
+    private func group(_ title: String, recorrido: String, @ViewBuilder content: () -> some View,
+                       @ViewBuilder trailing: () -> some View = { EmptyView() }) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            SectionHeader(title: title, trailing: trailing)
+                .padding(.bottom, 8)
+            content()
+        }
+        .recorridoObjetivo(recorrido).id(recorrido)
+        .padding(.horizontal, Metrics.gutter)
+        .padding(.top, 26)
     }
 
     private var seeAllInvoices: some View {

@@ -92,12 +92,13 @@ private struct EditorSheetSizing: ViewModifier {
     }
 
     func body(content: Content) -> some View {
+        // El «Tutorial completo» explica también los editores: su velo va encima de la barra de la hoja.
         if dynamicTypeSize.isAccessibilitySize {
-            content.presentationSizing(.page)
+            content.recorridoEnHoja().presentationSizing(.page)
         } else if isPad {
-            content.presentationSizing(EditorPageSizing())
+            content.recorridoEnHoja().presentationSizing(EditorPageSizing())
         } else {
-            content
+            content.recorridoEnHoja()
         }
     }
 }

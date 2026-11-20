@@ -182,6 +182,7 @@ struct InvoiceEditorView: View {
         #if os(iOS)
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
         #endif
+        .recorridoPantalla(.invoiceEditor)
         .sheet(item: $previewing) { invoice in
             NavigationStack { InvoicePreviewView(invoice: invoice, company: companies.first) }.editorSheetSizing()
         }
@@ -470,6 +471,7 @@ struct InvoiceEditorView: View {
                 .buttonStyle(.plain)
                 .accessibilityLabel("Cliente")
                 .accessibilityValue(customer?.name ?? String(localized: "Sin elegir"))
+                .recorridoObjetivo("editor.customer")
                 if let customer, customer.isTaxExempt {
                     Label("Cliente exento de sales tax", systemImage: "checkmark.seal").foregroundStyle(Palette.positive)
                 }
@@ -477,7 +479,7 @@ struct InvoiceEditorView: View {
 
             // Número · Fecha · Términos como filas del formulario; el vencimiento, en el pie.
             Section {
-                LabeledContent("Número", value: documentNumber)
+                LabeledContent("Número", value: documentNumber).recorridoObjetivo("editor.dates")
                 if isEstimate {
                     TextField("Concepto", text: $estimateTitle, prompt: Text("Concepto (opcional)"))
                 }
@@ -505,11 +507,12 @@ struct InvoiceEditorView: View {
                         Image(systemName: "plus.circle.fill").symbolRenderingMode(.palette).foregroundStyle(.white, Palette.green)
                     }
                 }
+                .recorridoObjetivo("editor.addLine").id("editor.addLine")
             }
 
             Section {
                 LabeledContent("Subtotal", value: linesSubtotal.money)
-                taxPicker
+                taxPicker.recorridoObjetivo("editor.tax").id("editor.tax")
                 LabeledContent(taxRowTitle, value: (preview?.totalTax ?? 0).money)
                 if showingDiscount || discount > 0 {
                     LabeledContent("Descuento") {
@@ -549,6 +552,7 @@ struct InvoiceEditorView: View {
             }
         }
         .formStyle(.grouped)
+        .recorridoDesplazable()
         .screenBackground()
         // El teclado lleva «Listo» y se cierra al desplazar.
         .keyboardDoneButton()
@@ -569,7 +573,7 @@ struct InvoiceEditorView: View {
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in keyboardShown = true }
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in keyboardShown = false }
         #endif
-        .modifier(HiddenWhile(hidden: keyboardShown) { bottomBar })
+        .modifier(HiddenWhile(hidden: keyboardShown) { bottomBar.recorridoObjetivo("editor.bar") })
         #if os(iOS)
         // Sin teclado, la barra va abajo aunque el sistema deje reservado su sitio (flotaba a media pantalla y tapaba
         // «Condiciones»; tester de Beta Family, 18-nov). `ignoringStaleKeyboardSpace`, con el `keyboardShown` de aquí.

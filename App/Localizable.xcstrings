@@ -30270,6 +30270,1016 @@
           }
         }
       }
+    },
+    "Tutorial completo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Full Tutorial"
+          }
+        }
+      }
+    },
+    "Cada pantalla que abras te explicará todos sus botones, una sola vez. Empezamos por Inicio, el resumen de tu negocio." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Every screen you open will explain all its buttons, just once. Let's start with Home, the summary of your business."
+          }
+        }
+      }
+    },
+    "Empresa y mes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Business and month"
+          }
+        }
+      }
+    },
+    "Toca aquí para ver otro mes o, si llevas varias empresas, cambiar de una a otra." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap here to see another month or, if you keep the books for several businesses, switch between them."
+          }
+        }
+      }
+    },
+    "Arriba, el dinero que tienes en tus cuentas. Debajo, lo que entró, lo que pagaste y lo que ganaste en el mes." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "At the top, the money in your accounts. Below, what came in, what you paid and what you made this month."
+          }
+        }
+      }
+    },
+    "Lo que falta para dejar tu empresa lista. Cada paso te lleva a donde se hace." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What's left to get your business ready. Each step takes you where it's done."
+          }
+        }
+      }
+    },
+    "Factura, gasto o cliente nuevo con un toque, sin cambiar de pestaña." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A new invoice, expense or customer in one tap, without changing tabs."
+          }
+        }
+      }
+    },
+    "El impuesto que cobraste a tus clientes y le debes al estado este trimestre." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The tax you collected from your customers and owe the state this quarter."
+          }
+        }
+      }
+    },
+    "Cómo van los últimos meses, mes a mes." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How the last few months went, month by month."
+          }
+        }
+      }
+    },
+    "Las facturas que te deben, las vencidas primero. Toca una para cobrarla o mandar un recordatorio." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invoices you're owed, overdue ones first. Tap one to record a payment or send a reminder."
+          }
+        }
+      }
+    },
+    "Lo que debes a tus proveedores en los próximos 14 días." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What you owe your vendors in the next 14 days."
+          }
+        }
+      }
+    },
+    "El saldo de cada banco y tarjeta. Toca una para ver sus movimientos." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The balance of each bank account and card. Tap one to see its transactions."
+          }
+        }
+      }
+    },
+    "El botón +" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The + button"
+          }
+        }
+      }
+    },
+    "Crea una factura, un gasto o un cliente, o mueve dinero entre tus cuentas." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create an invoice, an expense or a customer, or move money between your accounts."
+          }
+        }
+      }
+    },
+    "Facturas vencidas, pagos por hacer y todo lo que necesita tu atención." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Overdue invoices, payments to make and everything that needs your attention."
+          }
+        }
+      }
+    },
+    "Sigue explorando" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keep exploring"
+          }
+        }
+      }
+    },
+    "Abre las demás pestañas, una factura o un gasto: cada pantalla te explicará lo suyo la primera vez." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open the other tabs, an invoice or an expense: each screen will explain itself the first time."
+          }
+        }
+      }
+    },
+    "Tus facturas, tus estimados y tus clientes, en un solo sitio." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your invoices, estimates and customers, all in one place."
+          }
+        }
+      }
+    },
+    "Toca aquí para cambiar de lista. Un estimado es un presupuesto: si el cliente dice que sí, lo conviertes en factura." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap here to switch lists. An estimate is a quote: if the customer says yes, you turn it into an invoice."
+          }
+        }
+      }
+    },
+    "Muestra solo las vencidas, las pagadas, los borradores…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show only overdue, paid, drafts…"
+          }
+        }
+      }
+    },
+    "En Estimados, el mismo botón crea un estimado, y en Clientes, un cliente." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In Estimates, the same button creates an estimate, and in Customers, a customer."
+          }
+        }
+      }
+    },
+    "El total que tus clientes todavía no te han pagado. Con un filtro o una búsqueda, solo de esas facturas." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The total your customers still haven't paid you. With a filter or a search, only for those invoices."
+          }
+        }
+      }
+    },
+    "Cada factura" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Each invoice"
+          }
+        }
+      }
+    },
+    "Cliente, total y estado. Ábrela para cobrarla, mandarla o ver su historial." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Customer, total and status. Open it to record a payment, send it or see its history."
+          }
+        }
+      }
+    },
+    "Todo lo que pagas por el negocio, con sus recibos." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Everything you pay for the business, with its receipts."
+          }
+        }
+      }
+    },
+    "Cuánto, a quién y de qué categoría. Puedes añadir la foto del recibo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How much, to whom and what category. You can add a photo of the receipt."
+          }
+        }
+      }
+    },
+    "Escanea un recibo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scan a receipt"
+          }
+        }
+      }
+    },
+    "Hazle una foto y Chirogra lee el importe, la fecha y el proveedor por ti." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Take a photo and Chirogra reads the amount, date and vendor for you."
+          }
+        }
+      }
+    },
+    "Gastos, por pagar y recurrentes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Expenses, payables and recurring"
+          }
+        }
+      }
+    },
+    "Por pagar son las facturas de proveedores que aún debes. Recurrentes, lo que se repite, como la renta." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Payables are vendor bills you still owe. Recurring is what repeats, like rent."
+          }
+        }
+      }
+    },
+    "Tu mes por categoría" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your month by category"
+          }
+        }
+      }
+    },
+    "En qué se te va el dinero este mes." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Where your money goes this month."
+          }
+        }
+      }
+    },
+    "Facturas de proveedores que vencen en 7 días. Toca para verlas y pagarlas." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vendor bills due in the next 7 days. Tap to see and pay them."
+          }
+        }
+      }
+    },
+    "A quién le compras, con lo que le has pagado y lo que le debes." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Who you buy from, with what you've paid and what you owe them."
+          }
+        }
+      }
+    },
+    "El saldo según lo que registras. Toca una cuenta para ver sus movimientos." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The balance from what you record. Tap an account to see its transactions."
+          }
+        }
+      }
+    },
+    "Compara tu cuenta con el extracto del banco, movimiento por movimiento, hasta que cuadren." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compare your account with the bank statement, line by line, until they match."
+          }
+        }
+      }
+    },
+    "Dile a Chirogra cómo anotar los movimientos que se repiten y lo hará solo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tell Chirogra how to record transactions that repeat and it will do it for you."
+          }
+        }
+      }
+    },
+    "Descarga el extracto de tu banco en CSV u OFX e impórtalo aquí." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Download your bank statement as CSV or OFX and import it here."
+          }
+        }
+      }
+    },
+    "Tu empresa" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your business"
+          }
+        }
+      }
+    },
+    "Nombre, logo y datos fiscales. En Empresas cambias de una a otra o añades otra." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Name, logo and tax details. In Businesses you switch between them or add another."
+          }
+        }
+      }
+    },
+    "Estado de resultados, balance, flujo de efectivo y más, en PDF o CSV para tu contador." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Profit and loss, balance sheet, cash flow and more, as PDF or CSV for your accountant."
+          }
+        }
+      }
+    },
+    "Cuánto sales tax debes, tus tasas y los gastos que puedes deducir." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How much sales tax you owe, your rates and the expenses you can deduct."
+          }
+        }
+      }
+    },
+    "El plan de cuentas, los asientos y el cierre del mes, para ti o para tu contador." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chart of accounts, journal entries and month-end close, for you or your accountant."
+          }
+        }
+      }
+    },
+    "La plantilla de tus facturas, la moneda, la copia en iCloud y Face ID." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your invoice template, currency, iCloud backup and Face ID."
+          }
+        }
+      }
+    },
+    "La guía, el recorrido corto y este tutorial completo, que apagas aquí cuando quieras." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The guide, the short tour and this full tutorial, which you can turn off here anytime."
+          }
+        }
+      }
+    },
+    "Una factura por dentro" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inside an invoice"
+          }
+        }
+      }
+    },
+    "Lo que te deben, su estado y todo lo que puedes hacer con ella." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What you're owed, its status and everything you can do with it."
+          }
+        }
+      }
+    },
+    "Saldo y estado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Balance and status"
+          }
+        }
+      }
+    },
+    "Cuánto falta por cobrar, si está vencida y cuándo vence." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How much is left to collect, whether it's overdue and when it's due."
+          }
+        }
+      }
+    },
+    "Un borrador no cuenta en tus libros hasta que lo emites. Después ya se puede enviar y cobrar." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A draft doesn't count in your books until you issue it. Then you can send it and get paid."
+          }
+        }
+      }
+    },
+    "Mándasela al cliente por correo o mensaje, con el PDF." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send it to your customer by email or message, with the PDF."
+          }
+        }
+      }
+    },
+    "Editar, PDF y recordatorio" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit, PDF and reminder"
+          }
+        }
+      }
+    },
+    "Corrige la factura, comparte el PDF o recuérdale al cliente que te pague." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fix the invoice, share the PDF or remind the customer to pay you."
+          }
+        }
+      }
+    },
+    "Cuando te paguen: si fue todo o una parte, cómo te pagaron y a qué cuenta entró el dinero." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "When you get paid: all of it or part, how they paid and which account the money went into."
+          }
+        }
+      }
+    },
+    "Cuándo se emitió, se envió y se pagó." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "When it was issued, sent and paid."
+          }
+        }
+      }
+    },
+    "Duplicarla, hacer una nota de crédito o anularla." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Duplicate it, issue a credit note or void it."
+          }
+        }
+      }
+    },
+    "Un estimado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "An estimate"
+          }
+        }
+      }
+    },
+    "Un presupuesto para tu cliente. No cuenta en tus libros hasta que lo conviertes en factura." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A quote for your customer. It doesn't count in your books until you convert it to an invoice."
+          }
+        }
+      }
+    },
+    "Total y estado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total and status"
+          }
+        }
+      }
+    },
+    "Si está enviado, aceptado o rechazado, y hasta cuándo vale." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Whether it's sent, accepted or declined, and how long it's valid."
+          }
+        }
+      }
+    },
+    "Cuánto facturar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How much to invoice"
+          }
+        }
+      }
+    },
+    "Factura todo de una vez, o solo un anticipo o una parte." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invoice everything at once, or just a deposit or some of the lines."
+          }
+        }
+      }
+    },
+    "Cuando el cliente dice que sí, toca aquí y se crea la factura." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "When the customer says yes, tap here and the invoice is created."
+          }
+        }
+      }
+    },
+    "Mándale el estimado al cliente en PDF." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send the estimate to your customer as a PDF."
+          }
+        }
+      }
+    },
+    "Márcalo como aceptado o rechazado, o mira el PDF." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mark it accepted or declined, or view the PDF."
+          }
+        }
+      }
+    },
+    "Factura o estimado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invoice or estimate"
+          }
+        }
+      }
+    },
+    "El cliente, lo que le cobras y el total. Te explico cada parte." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The customer, what you charge and the total. Here's each part."
+          }
+        }
+      }
+    },
+    "Elige un cliente, o crea uno nuevo desde aquí mismo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose a customer, or create a new one right here."
+          }
+        }
+      }
+    },
+    "Número y fechas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Number and dates"
+          }
+        }
+      }
+    },
+    "El número va solo. Elige la fecha y en cuántos días te tienen que pagar." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The number is automatic. Choose the date and how many days they have to pay you."
+          }
+        }
+      }
+    },
+    "Añade cada cosa que cobras, con su cantidad y su precio." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add each thing you charge for, with its quantity and price."
+          }
+        }
+      }
+    },
+    "El sales tax de tu zona. Elige «Ninguno» si lo que vendes no paga impuesto." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The sales tax for your area. Choose “None” if what you sell isn't taxable."
+          }
+        }
+      }
+    },
+    "Vista previa y emitir" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preview and issue"
+          }
+        }
+      }
+    },
+    "Mira el PDF antes de mandarlo. Al emitirla, la factura cuenta en tus libros y ya la puedes enviar." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "See the PDF before you send it. Once issued, the invoice counts in your books and you can send it."
+          }
+        }
+      }
+    },
+    "Guardar sin emitir" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save without issuing"
+          }
+        }
+      }
+    },
+    "¿No has terminado? Guárdala como borrador y emítela después." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not done yet? Save it as a draft and issue it later."
+          }
+        }
+      }
+    },
+    "Un gasto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "An expense"
+          }
+        }
+      }
+    },
+    "Lo que pagaste, a quién y por qué. Te explico cada parte." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What you paid, to whom and why. Here's each part."
+          }
+        }
+      }
+    },
+    "Cuánto pagaste. Debajo, la fecha y el impuesto si el recibo lo trae." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How much you paid. Below, the date and the tax if the receipt shows it."
+          }
+        }
+      }
+    },
+    "A quién le pagaste" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Who you paid"
+          }
+        }
+      }
+    },
+    "Elige un proveedor o escribe el nombre de la tienda." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose a vendor or type the store's name."
+          }
+        }
+      }
+    },
+    "En qué se gastó: material, gasolina, renta… Así salen bien tus reportes y tus impuestos." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What it was for: supplies, gas, rent… This keeps your reports and taxes right."
+          }
+        }
+      }
+    },
+    "Con qué cuenta o tarjeta pagaste. Su saldo baja solo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Which account or card you paid with. Its balance goes down by itself."
+          }
+        }
+      }
+    },
+    "Si se repite, como la renta, actívalo y Chirogra lo anota solo cada mes." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "If it repeats, like rent, turn this on and Chirogra records it for you every month."
+          }
+        }
+      }
+    },
+    "Añade la foto o el PDF del recibo y Chirogra lee el importe por ti." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add a photo or PDF of the receipt and Chirogra reads the amount for you."
+          }
+        }
+      }
+    },
+    "Listo: el gasto queda anotado en tus libros." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Done: the expense is recorded in your books."
+          }
+        }
+      }
+    },
+    "Un reporte" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A report"
+          }
+        }
+      }
+    },
+    "Cómo va tu negocio en números. Te explico cómo cambiarlo y compartirlo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How your business is doing, in numbers. Here's how to change it and share it."
+          }
+        }
+      }
+    },
+    "Mes, trimestre o año. Debajo, las flechas para ir hacia atrás." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Month, quarter or year. Below, the arrows to go back in time."
+          }
+        }
+      }
+    },
+    "Devengado o caja" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accrual or cash"
+          }
+        }
+      }
+    },
+    "Devengado cuenta una venta al facturarla; caja, cuando te la pagan. La ⓘ lo explica." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accrual counts a sale when you invoice it; cash, when you get paid. The ⓘ explains it."
+          }
+        }
+      }
+    },
+    "Lo que ganaste: ingresos menos gastos, comparado con el periodo anterior." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What you made: income minus expenses, compared with the previous period."
+          }
+        }
+      }
+    },
+    "El reporte en PDF o CSV, o el paquete completo para tu contador." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The report as PDF or CSV, or the full package for your accountant."
+          }
+        }
+      }
+    },
+    "El sales tax que cobras a tus clientes y luego le pagas al estado." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The sales tax you collect from customers and then pay to the state."
+          }
+        }
+      }
+    },
+    "El sales tax se declara por trimestre. Toca para ver otro." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sales tax is filed by quarter. Tap to see another one."
+          }
+        }
+      }
+    },
+    "Resumen, tasas y deducibles" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Summary, rates and deductions"
+          }
+        }
+      }
+    },
+    "Las tasas que cobras y los gastos que puedes deducir de tus impuestos." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The rates you charge and the expenses you can deduct from your taxes."
+          }
+        }
+      }
+    },
+    "Lo que debes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What you owe"
+          }
+        }
+      }
+    },
+    "El sales tax cobrado que aún no has pagado, y cuándo vence la declaración." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sales tax you've collected but not paid yet, and when the return is due."
+          }
+        }
+      }
+    },
+    "Cuando le pagues al estado, anótalo aquí y la deuda baja." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "When you pay the state, record it here and what you owe goes down."
+          }
+        }
+      }
+    },
+    "Con el tutorial completo, cada pantalla te explica todos sus botones la primera vez que la abres." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "With the full tutorial, every screen explains all its buttons the first time you open it."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

@@ -17,6 +17,17 @@ import SwiftUI
 
 enum RecorridoID: String, CaseIterable {
     case home, sales, expenses, banking, more
+    /// Pantallas que solo se explican con el «Tutorial completo» (`RecorridoAFondo.swift`).
+    case invoiceDetail, estimateDetail, invoiceEditor, expenseEditor, reports, taxes
+
+    /// Las 5 pestañas, que tienen también el recorrido corto de la primera vez.
+    var esPestana: Bool { [.home, .sales, .expenses, .banking, .more].contains(self) }
+
+    /// Se abre en una hoja (los editores): la dibuja el velo de la hoja, no el de las pestañas.
+    var enHoja: Bool { self == .invoiceEditor || self == .expenseEditor }
+
+    /// El corto en las pestañas; con el «Tutorial completo», el largo (en las demás pantallas, solo ese).
+    func pasos(aFondo: Bool) -> [Paso] { aFondo ? pasosAFondo : esPestana ? pasos : [] }
 
     struct Paso {
         /// Lo que se ilumina; `nil` = presentación de la pestaña, centrada. `ax:` = un botón de la barra de
@@ -110,10 +121,13 @@ enum RecorridoID: String, CaseIterable {
                  mensaje: String(localized: "Elige qué herramientas van en la barra de abajo."),
                  desplazar: true, enLista: true),
         ]
+        default: []
         }
     }
 
     var seenKey: String { "recorrido.visto.\(rawValue)" }
+    /// Visto con el «Tutorial completo» (solo en este aparato: se activa en cada uno).
+    var fondoKey: String { "recorrido.fondo.\(rawValue)" }
 
     /// La pestaña del iPhone que lo enseña.
     init?(tab: String) {
@@ -146,18 +160,55 @@ final class Recorrido {
     /// «Reducir movimiento» y el alto de la pantalla (los pone `RecorridoOverlay`).
     var reduceMotion = false
     var altoPantalla: CGFloat = 0
+    /// Lo que tapa abajo: la barra de pestañas (100) o, en una hoja, solo el borde (34). Con 110, la última fila de un
+    /// editor («Recibo») nunca contaba como a la vista y se saltaba.
+    var margenAbajo: CGFloat = 100
     private var cambiando = false
     /// Capturas y pruebas con argumentos `-qa.*`: sin recorrido, salvo con `-qa.recorrido`.
     private var desactivado = false
 
+    /// «Más › Ayuda › Tutorial completo»: cada pantalla explica todos sus botones la primera vez que se abre (tester de
+    /// Beta Family, 18-nov: «too short»). No sale solo; el recorrido corto de la primera vez no cambia.
+    private(set) var aFondo = UserDefaults.standard.bool(forKey: Recorrido.aFondoKey)
+    /// El recorrido a la vista es el del «Tutorial completo».
+    private(set) var activoAFondo = false
+    private static let aFondoKey = "recorrido.aFondo"
+
     init() {
         #if DEBUG
         let defaults = UserDefaults.standard
-        if defaults.string(forKey: "qa.recorrido") == "reset" { Self.olvidarTodo() }
+        if defaults.string(forKey: "qa.recorrido") == "reset" {
+            Self.olvidarTodo()
+            defaults.set(false, forKey: Self.aFondoKey)
+            aFondo = false
+        }
+        // `-qa.recorrido afondo`: el «Tutorial completo» desde el principio, sin pantallas vistas.
+        if defaults.string(forKey: "qa.recorrido") == "afondo" {
+            Self.olvidarAFondo()
+            aFondo = true
+        }
         let usaQA = ProcessInfo.processInfo.arguments.contains { $0.hasPrefix("-qa.") }
         desactivado = usaQA && defaults.object(forKey: "qa.recorrido") == nil
         #endif
         vistos = Set(RecorridoID.allCases.filter { desactivado || Self.visto($0) })
+    }
+
+    private static func olvidarAFondo() {
+        for id in RecorridoID.allCases { UserDefaults.standard.removeObject(forKey: id.fondoKey) }
+    }
+
+    /// Enciende el «Tutorial completo» desde el principio: lleva a Inicio, que lo empieza.
+    func activarAFondo() {
+        guard activo == nil else { return }
+        Self.olvidarAFondo()
+        aFondo = true
+        UserDefaults.standard.set(true, forKey: Self.aFondoKey)
+        pedidoInicio += 1
+    }
+
+    func apagarAFondo() {
+        aFondo = false
+        UserDefaults.standard.set(false, forKey: Self.aFondoKey)
     }
 
     private static func visto(_ id: RecorridoID) -> Bool {
@@ -182,23 +233,33 @@ final class Recorrido {
         guard activo == nil else { return }
         Self.olvidarTodo()
         vistos = []
+        apagarAFondo()   // «otra vez» es el corto
         pedidoInicio += 1
     }
 
     /// Al entrar en una pestaña: si no se ha visto, espera a que la pantalla se coloque y empieza.
     func empezarSiHaceFalta(_ id: RecorridoID?) {
-        guard let id, activo == nil, !desactivado, !Self.visto(id) else { return }
+        guard let id, activo == nil, !desactivado else { return }
+        let fondo = aFondo
+        if fondo {
+            guard !UserDefaults.standard.bool(forKey: id.fondoKey) else { return }
+        } else {
+            guard id.esPestana, !Self.visto(id) else { return }
+        }
         Task {
             try? await Task.sleep(for: .milliseconds(500))
             guard activo == nil else { return }
+            let todos = id.pasos(aFondo: fondo)
             #if os(iOS)
-            for objetivo in id.pasos.compactMap(\.objetivo) where objetivo.hasPrefix("ax:") {
+            for objetivo in todos.compactMap(\.objetivo) where objetivo.hasPrefix("ax:") {
                 marcos[objetivo] = Self.marcoEnVentana(etiqueta: String(objetivo.dropFirst(3)))
             }
             #endif
             // Solo los pasos cuyo objetivo está a la vista (sin facturas no hay «Por cobrar», por ejemplo); los que
             // están más abajo se buscan al llegar.
-            pasos = id.pasos.filter { $0.objetivo == nil || $0.enLista || tieneMarco($0) }
+            pasos = todos.filter { $0.objetivo == nil || $0.enLista || tieneMarco($0) }
+            guard !pasos.isEmpty else { return }
+            activoAFondo = fondo
             paso = 0
             tarjetaVisible = false
             withAnimation(.easeOut(duration: 0.25)) { activo = id }
@@ -212,13 +273,13 @@ final class Recorrido {
     /// Entero en la pantalla, sin la barra de navegación de arriba ni la de pestañas de abajo.
     private func aLaVista(_ paso: RecorridoID.Paso) -> Bool {
         guard let objetivo = paso.objetivo, let marco = marcos[objetivo], marco.width > 0, altoPantalla > 0 else { return false }
-        return marco.minY >= 100 && marco.maxY <= altoPantalla - 110
+        return marco.minY >= 100 && marco.maxY <= altoPantalla - margenAbajo
     }
 
     /// Al menos una parte en la pantalla (con letra grande, la tarjeta de Inicio no cabe entera).
     private func asoma(_ paso: RecorridoID.Paso) -> Bool {
         guard let objetivo = paso.objetivo, let marco = marcos[objetivo], marco.width > 0, altoPantalla > 0 else { return false }
-        return marco.maxY > 100 && marco.minY < altoPantalla - 110
+        return marco.maxY > 100 && marco.minY < altoPantalla - margenAbajo
     }
 
     private func tieneMarco(_ paso: RecorridoID.Paso) -> Bool {
@@ -239,6 +300,8 @@ final class Recorrido {
                 desplazarA = pasos[proximo].objetivo
                 try? await Task.sleep(for: .milliseconds(450))
                 desplazarA = nil
+                // La última fila de una lista larga tarda más en dibujarse (y medirse) al llegar: se espera un poco.
+                for _ in 0..<4 where !asoma(pasos[proximo]) { try? await Task.sleep(for: .milliseconds(150)) }
                 if !asoma(pasos[proximo]) { proximo += 1 }
             }
             guard proximo < pasos.count else { cambiando = false; terminar(); return }
@@ -255,8 +318,12 @@ final class Recorrido {
 
     func terminar() {
         guard let activo else { return }
-        UserDefaults.standard.set(true, forKey: activo.seenKey)
-        NSUbiquitousKeyValueStore.default.set(true, forKey: activo.seenKey)
+        if activoAFondo { UserDefaults.standard.set(true, forKey: activo.fondoKey) }
+        // El largo de una pestaña vale también por el corto (no sale después).
+        if activo.esPestana {
+            UserDefaults.standard.set(true, forKey: activo.seenKey)
+            NSUbiquitousKeyValueStore.default.set(true, forKey: activo.seenKey)
+        }
         vistos.insert(activo)
         desplazarA = nil
         withAnimation(.easeOut(duration: 0.25)) {
@@ -273,6 +340,15 @@ final class Recorrido {
             if let label = vista.accessibilityLabel, label.hasPrefix(etiqueta), vista.bounds.width > 0 {
                 let marco = vista.convert(vista.bounds, to: nil)
                 if vista.window?.bounds.intersects(marco) ?? false { return marco }
+            }
+            // iOS 27: el botón de la barra ya no lleva la etiqueta en su vista, sino en un elemento de accesibilidad
+            // dentro de ella (`UIKitBarItemHost` › `AccessibilityNode`); su marco viene en coordenadas de la pantalla.
+            if let ventana = vista.window {
+                for case let elemento as NSObject in vista.accessibilityElements ?? [] where !(elemento is UIView) {
+                    guard let label = elemento.accessibilityLabel, label.hasPrefix(etiqueta) else { continue }
+                    let marco = ventana.convert(elemento.accessibilityFrame, from: ventana.screen.coordinateSpace)
+                    if marco.width > 0, ventana.bounds.intersects(marco) { return marco }
+                }
             }
             for sub in vista.subviews { if let marco = buscar(sub) { return marco } }
             return nil
@@ -292,6 +368,11 @@ extension View {
     /// objetivo).
     func siguiendoRecorrido(_ proxy: ScrollViewProxy) -> some View {
         modifier(SiguiendoRecorrido(proxy: proxy))
+    }
+
+    /// Lo mismo, para una lista o un formulario sin `ScrollViewReader` propio.
+    func recorridoDesplazable() -> some View {
+        ScrollViewReader { proxy in siguiendoRecorrido(proxy) }
     }
 }
 
@@ -321,9 +402,51 @@ struct RecorridoScrollView<Content: View>: View {
 private struct RecorridoObjetivo: ViewModifier {
     let id: String
     @Environment(Recorrido.self) private var recorrido: Recorrido?
+    /// Sube al aparecer: así se vuelve a medir aunque el marco sea el mismo de antes (al volver a una pestaña, el
+    /// marco no cambia y `onGeometryChange` no avisaba; sin esto, Inicio se quedaba sin sus pasos).
+    @State private var apariciones = 0
+
+    nonisolated private struct Medida: Equatable, Sendable {
+        var marco: CGRect
+        var aparicion: Int
+    }
 
     func body(content: Content) -> some View {
-        content.onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { recorrido?.marcos[id] = $0 }
+        content
+            .onGeometryChange(for: Medida.self) { Medida(marco: $0.frame(in: .global), aparicion: apariciones) } action: {
+                recorrido?.marcos[id] = $0.marco
+            }
+            .onAppear { apariciones += 1 }
+            // Al cerrar una pantalla su marco no sirve: la factura siguiente puede no tener «Registrar pago».
+            .onDisappear { recorrido?.marcos[id] = nil }
+    }
+}
+
+extension View {
+    /// Pantalla con recorrido propio (solo con el «Tutorial completo»): lo empieza al aparecer. En el iPad y el Mac no
+    /// hay `Recorrido` y no hace nada.
+    func recorridoPantalla(_ id: RecorridoID) -> some View { modifier(RecorridoPantalla(id: id)) }
+
+    /// El velo del recorrido de una hoja (los editores), encima de su barra de navegación. Va en `editorSheetSizing`.
+    func recorridoEnHoja() -> some View { modifier(RecorridoEnHoja()) }
+}
+
+private struct RecorridoPantalla: ViewModifier {
+    let id: RecorridoID
+    @Environment(Recorrido.self) private var recorrido: Recorrido?
+
+    func body(content: Content) -> some View {
+        content.onAppear { recorrido?.empezarSiHaceFalta(id) }
+    }
+}
+
+private struct RecorridoEnHoja: ViewModifier {
+    @Environment(Recorrido.self) private var recorrido: Recorrido?
+
+    func body(content: Content) -> some View {
+        content.overlay {
+            if let recorrido, recorrido.activo?.enHoja == true { RecorridoOverlay(enHoja: true).environment(recorrido) }
+        }
     }
 }
 
@@ -352,6 +475,8 @@ nonisolated private struct VeloConHueco: Shape {
 }
 
 struct RecorridoOverlay: View {
+    /// El de una hoja (editores) o el de las pestañas: cada uno dibuja solo los recorridos de su capa.
+    var enHoja = false
     @Environment(Recorrido.self) private var recorrido
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.accessibilityVoiceOverEnabled) private var voiceOver
@@ -359,16 +484,34 @@ struct RecorridoOverlay: View {
     @AccessibilityFocusState private var focoEnTarjeta: Bool
     /// Alto de la tarjeta, para que quepa entera en la pantalla (con letra grande lo iluminado puede ocupar casi todo).
     @State private var altoTarjeta: CGFloat = 150
+    @State private var alto: CGFloat = 0
+
+    /// El alto de la capa del recorrido a la vista (la hoja es más baja que la pantalla).
+    private func ponerAlto() {
+        if (recorrido.activo?.enHoja ?? false) == enHoja, alto > 0 {
+            // Los marcos son de la ventana: el alto también (el del velo salía 81 pt más bajo y la última fila de
+            // «Más», «Ayuda», contaba como tapada aunque se veía).
+            #if os(iOS)
+            let ventana = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+                .flatMap(\.windows).first(where: \.isKeyWindow)?.bounds.height
+            recorrido.altoPantalla = ventana ?? alto
+            #else
+            recorrido.altoPantalla = alto
+            #endif
+            recorrido.margenAbajo = enHoja ? 34 : 100
+        }
+    }
 
     var body: some View {
         GeometryReader { geo in
-            if recorrido.activo != nil, recorrido.pasos.indices.contains(recorrido.paso) {
+            if let activo = recorrido.activo, activo.enHoja == enHoja, recorrido.pasos.indices.contains(recorrido.paso) {
                 contenido(geo: geo)
                     .transition(.opacity)
             }
         }
         .ignoresSafeArea()
-        .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { recorrido.altoPantalla = $0 }
+        .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { alto = $0; ponerAlto() }
+        .onChange(of: recorrido.activo, initial: true) { ponerAlto() }
         .onChange(of: reduceMotion, initial: true) { recorrido.reduceMotion = reduceMotion }
         .onChange(of: recorrido.tarjetaVisible) { if recorrido.tarjetaVisible { focoEnTarjeta = true } }
     }
@@ -447,10 +590,16 @@ struct RecorridoOverlay: View {
 
     private var esUltimo: Bool { recorrido.paso + 1 >= recorrido.pasos.count }
 
-    /// «Paso 2 de 5»: los puntos con letra normal; con letra de accesibilidad, el texto.
+    /// «Paso 2 de 5»: los puntos con letra normal; con letra de accesibilidad, el texto. Con muchos pasos (el «Tutorial
+    /// completo» de Inicio tiene 12), «2 de 12»: los puntos apretaban «Siguiente» hasta partirlo en tres líneas.
     @ViewBuilder
     private var indicador: some View {
-        if dynamicTypeSize.isAccessibilitySize {
+        if recorrido.pasos.count > 7 && !dynamicTypeSize.isAccessibilitySize {
+            Text("\(recorrido.paso + 1) de \(recorrido.pasos.count)")
+                .font(.subheadline).monospacedDigit().foregroundStyle(Palette.ink2)
+                .fixedSize()
+                .accessibilityLabel(String(localized: "Paso \(recorrido.paso + 1) de \(recorrido.pasos.count)"))
+        } else if dynamicTypeSize.isAccessibilitySize {
             Text("Paso \(recorrido.paso + 1) de \(recorrido.pasos.count)")
                 .font(.subheadline).foregroundStyle(Palette.ink2)
         } else {
@@ -530,6 +679,7 @@ struct RecorridoOverlay: View {
                     Button(esUltimo ? String(localized: "Entendido") : String(localized: "Siguiente")) { recorrido.siguiente() }
                         .buttonStyle(.primaryCompact)
                         .controlSize(.regular)
+                        .fixedSize()
                 }
                 .padding(.top, 12)
             }

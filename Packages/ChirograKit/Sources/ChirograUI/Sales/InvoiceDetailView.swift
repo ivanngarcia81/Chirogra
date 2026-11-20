@@ -74,24 +74,25 @@ struct InvoiceDetailView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
                     if let errorMessage { ErrorBanner(message: errorMessage).padding(.bottom, 12) }
-                    summary
+                    summary.recorridoObjetivo("invoice.summary")
                     if isDraft {
                         draftActions.padding(.top, 16)
                     } else {
                         if needsSending {
                             Button("Enviar factura", systemImage: "paperplane") { sending = true }
                                 .buttonStyle(.primary)
+                                .recorridoObjetivo("invoice.send").id("invoice.send")
                                 .padding(.top, 14)
                         }
-                        if !isWide { actionTiles.padding(.top, 14) }
+                        if !isWide { actionTiles.recorridoObjetivo("invoice.tiles").id("invoice.tiles").padding(.top, 14) }
                     }
                     if !isDraft {
                         if isWide {
                             activity
                             if invoice.isOpen { paymentSection }
                         } else {
-                            if invoice.isOpen { paymentSection }
-                            activity
+                            if invoice.isOpen { paymentSection.recorridoObjetivo("invoice.payment").id("invoice.payment") }
+                            activity.recorridoObjetivo("invoice.activity").id("invoice.activity")
                         }
                     }
                     linesSection
@@ -108,6 +109,7 @@ struct InvoiceDetailView: View {
             // (recorrido «cliente nuevo», 5-nov). Ahora lleva «Listo», se cierra al desplazar y, al escribir el monto,
             // la pantalla sube hasta el botón.
             .keyboardDoneButton()
+            .siguiendoRecorrido(proxy)
             // «Pago · Pendiente» y «Pagada» de Actividad llevan al botón de registrar (5.º tester de Userbrain, 16-nov:
             // tocaba esos círculos creyendo que marcaban la factura como pagada y no pasaba nada).
             .onChange(of: recordJump) { _, _ in
@@ -123,6 +125,7 @@ struct InvoiceDetailView: View {
             }
         }
         .background(Palette.background)
+        .recorridoPantalla(.invoiceDetail)
         .modifier(DetailTitle(title: invoice.number.isEmpty ? String(localized: "Borrador") : invoice.number, shown: !embedded))
         .toolbar {
             // `iPadVentas`: Duplicar · Compartir PDF · Recordatorio en un grupo de vidrio de la barra.
@@ -263,6 +266,7 @@ struct InvoiceDetailView: View {
     private var draftActions: some View {
         VStack(spacing: 8) {
             Button("Emitir factura", action: issue).buttonStyle(.primary)
+                .recorridoObjetivo("invoice.issue").id("invoice.issue")
             tileRow {
                 actionTile(String(localized: "Editar"), "pencil") { editingDraft = true }
                 actionTile(String(localized: "Vista previa"), "doc.richtext") { showingPreview = true }

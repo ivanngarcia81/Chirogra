@@ -859,7 +859,7 @@ struct MoreView: View {
 
                 if let company = companies.first {
                     Section {
-                        companyRow(company)
+                        companyRow(company).recorridoObjetivo("more.company").id("more.company")
                         // Varias empresas: la lista con lo pendiente de cada una, cambiar, añadir, archivar y borrar.
                         MoreRow(title: String(localized: "Empresas"), value: "\(allCompanies.filter { !$0.isArchived }.count)",
                                 systemImage: "building.2", color: Palette.orange, tool: .companies) { CompaniesView() }
@@ -879,6 +879,7 @@ struct MoreView: View {
                 Section {
                     MoreRow(title: String(localized: "Resumen"), value: taxSubtitle, valueColor: taxOwed > 0 ? Palette.warning : Palette.ink2,
                             systemImage: "percent", color: Palette.red, tool: .taxes) { TaxesView() }
+                        .recorridoObjetivo("more.taxes").id("more.taxes")
                     MoreRow(title: String(localized: "Tasas"), value: String(localized: "\(rates.count) activas"),
                             systemImage: "list.number", color: Palette.pink, tool: .taxRates) { TaxesView(tab: .rates) }
                     // Fase 2 (canvas `Mas`): deducibles por línea del Schedule C / 1120-S (`Taxes/DeductionsView.swift`).
@@ -892,6 +893,7 @@ struct MoreView: View {
                 Section(title: "Contabilidad") {
                     MoreRow(title: String(localized: "Plan de cuentas"), value: String(localized: "\(accounts.filter { !$0.isArchived }.count) cuentas"),
                             systemImage: "list.bullet.indent", color: Palette.indigo, tool: .chartOfAccounts) { ChartOfAccountsView() }
+                        .recorridoObjetivo("more.accounting").id("more.accounting")
                     MoreRow(title: String(localized: "Asientos de diario"), value: String(localized: "\(entriesThisMonth) este mes"),
                             systemImage: "doc.plaintext", color: Palette.blue, tool: .journal) { JournalListView() }
                     MoreRow(title: String(localized: "Libro mayor"), value: String(localized: "Por cuenta"),
@@ -906,6 +908,7 @@ struct MoreView: View {
                         MoreRow(title: String(localized: "Perfil de la empresa"), systemImage: "building.2", color: Palette.gray) {
                             CompanyProfileView(company: company)
                         }
+                        .recorridoObjetivo("more.settings").id("more.settings")
                         // Canvas `AjustesPlantilla` (se abre desde «Más»).
                         MoreRow(title: String(localized: "Plantilla de factura"), value: company.invoiceAccent?.title,
                                 systemImage: "doc.richtext", color: Palette.indigo) { InvoiceTemplateView(company: company) }
@@ -937,7 +940,7 @@ struct MoreView: View {
                 }
                 #endif
 
-                Section(title: "Ayuda") {
+                Section {
                     GuideLinkRow()
                     if let recorrido {
                         // Vuelve a Inicio con su recorrido; las demás pestañas lo enseñan otra vez al abrirlas.
@@ -950,6 +953,22 @@ struct MoreView: View {
                             .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
+                        // «Tutorial completo»: al encenderlo va a Inicio y empieza; después, cada pantalla al abrirla.
+                        Toggle(isOn: Binding(get: { recorrido.aFondo },
+                                             set: { $0 ? recorrido.activarAFondo() : recorrido.apagarAFondo() })) {
+                            HStack(spacing: 12) {
+                                IconTile(systemImage: "graduationcap", foreground: Palette.brand)
+                                Text("Tutorial completo").foregroundStyle(Palette.ink)
+                            }
+                        }
+                        .tint(Palette.green)
+                        .recorridoObjetivo("more.help").id("more.help")
+                    }
+                } header: {
+                    SectionLabel(text: String(localized: "Ayuda"))
+                } footer: {
+                    if recorrido != nil {
+                        Text("Con el tutorial completo, cada pantalla te explica todos sus botones la primera vez que la abres.")
                     }
                 }
             }

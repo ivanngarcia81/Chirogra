@@ -105,6 +105,7 @@ struct TaxesView: View {
         }
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
         .background(Palette.background)
+        .recorridoPantalla(.taxes)
         .navigationTitle("Impuestos")
         #if os(macOS)
         .navigationSubtitle(String(localized: "\(quarterTitle(quarter(quarterOffset))) · declaración trimestral"))
@@ -258,8 +259,9 @@ struct TaxesView: View {
     private var compactBody: some View {
         VStack(alignment: .leading, spacing: 0) {
             // Los deducibles llevan su propio periodo (el año): el trimestre del sales tax no les aplica.
-            if tab != .deductions { quarterMenu(compact: true) }
+            if tab != .deductions { quarterMenu(compact: true).recorridoObjetivo("taxes.quarter") }
             FilterPicker(title: String(localized: "Sección"), options: Tab.allCases, selection: $tab) { $0.localizedTitle }
+                .recorridoObjetivo("taxes.tabs")
                 .padding(.top, 8)
             switch tab {
             case .summary: summaryTab
@@ -292,6 +294,7 @@ struct TaxesView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 18).padding(.top, 18).padding(.bottom, 14)
             .accessibilityElement(children: .combine)
+            .recorridoObjetivo("taxes.owed")
             if payable > 0 {
                 Divider().padding(.leading, 16 + 38 + 12)
                 TaxRow(title: String(localized: "Declarar y pagar"),
@@ -311,6 +314,7 @@ struct TaxesView: View {
             }
             .buttonStyle(.plain)
             .disabled(payable <= 0)
+            .recorridoObjetivo("taxes.pay")
         }
         .background(Palette.surface, in: RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous))
         .padding(.top, 16)

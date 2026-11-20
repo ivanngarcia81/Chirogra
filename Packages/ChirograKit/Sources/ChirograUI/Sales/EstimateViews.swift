@@ -253,13 +253,14 @@ struct EstimateDetailView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
                 if let errorMessage { ErrorBanner(message: errorMessage).padding(.bottom, 12) }
-                summary
+                summary.recorridoObjetivo("estimate.summary")
                 linesSection
                 totalsSection
                 if let createdInvoice {
                     createdSection(createdInvoice)
                 } else if estimate.isConvertible {
                     EstimateConversionSection(estimate: estimate, choice: $conversion)
+                        .recorridoObjetivo("estimate.convert").id("estimate.convert")
                     if isWide { convertButton.padding(.top, 16) }
                 }
                 invoicesSection
@@ -271,10 +272,14 @@ struct EstimateDetailView: View {
             .frame(maxWidth: 720, alignment: .leading)
             .frame(maxWidth: .infinity, alignment: isWide ? .leading : .center)
         }
+        .recorridoDesplazable()
         .background(Palette.background)
+        .recorridoPantalla(.estimateDetail)
         .navigationTitle(estimate.number.isEmpty ? String(localized: "Estimado") : estimate.number)
         .inlineTitle()
-        .modifier(ConvertBar(shown: !isWide && (createdInvoice != nil || estimate.isConvertible)) { bottomButton })
+        .modifier(ConvertBar(shown: !isWide && (createdInvoice != nil || estimate.isConvertible)) {
+            bottomButton.recorridoObjetivo("estimate.bar")
+        })
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
                 Button("Enviar", systemImage: "square.and.arrow.up") { sending = true }

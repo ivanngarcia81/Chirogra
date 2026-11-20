@@ -228,8 +228,10 @@ struct ReportsView: View {
             .frame(maxWidth: isPhone ? 720 : .infinity, alignment: .leading)
             .frame(maxWidth: .infinity, alignment: isPhone ? .center : .leading)
         }
+        .recorridoDesplazable()
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
         .background(Palette.background)
+        .recorridoPantalla(.reports)
         // En el iPhone con letra de accesibilidad, el nombre corto: el largo se cortaba («Antigüedad por cobr…», QA del 10-nov).
         .navigationTitle(isPhone && (kind == .income || dynamicTypeSize.isAccessibilitySize)
                          ? String(localized: String.LocalizationValue(kind.rawValue)) : kind.fullTitle)
@@ -622,14 +624,14 @@ struct ReportsView: View {
         let current = incomeStatement(interval())
         let previous = incomeStatement(interval(offset: -1))
         phoneStatementControls
-        netIncomeCard(current, previous).padding(.top, 16)
+        netIncomeCard(current, previous).recorridoObjetivo("reports.result").id("reports.result").padding(.top, 16)
         ForEach(incomeBlocks) { block in phoneBlock(block) }
     }
 
     /// Mes · Trimestre · Año, el periodo, la base y «Comparar con septiembre» de Resultados y Flujo de efectivo.
     @ViewBuilder
     private var phoneStatementControls: some View {
-        periodPicker.padding(.top, 4)
+        periodPicker.recorridoObjetivo("reports.period").padding(.top, 4)
         phonePeriodNavigator
         phoneBasis
         RowGroup(macBorder: true) {
@@ -796,7 +798,7 @@ struct ReportsView: View {
 
     /// «Devengado | Caja» con su ⓘ, debajo del periodo o de la fecha de corte.
     private var phoneBasis: some View {
-        BasisPicker(basis: $basis).padding(.top, 10)
+        BasisPicker(basis: $basis).recorridoObjetivo("reports.basis").id("reports.basis").padding(.top, 10)
     }
 
     // MARK: Flujo de efectivo (iPhone)

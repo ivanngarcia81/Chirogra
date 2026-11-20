@@ -163,6 +163,7 @@ struct ExpenseEditorView: View {
         Group {
             if isWide { wideForm } else { compactForm }
         }
+        .recorridoPantalla(.expenseEditor)
         .navigationTitle(isEditing ? "Editar gasto" : "Nuevo gasto")
         .inlineTitle()
         .discardableEditor(tracking: tracking, token: editorToken)
@@ -279,6 +280,7 @@ struct ExpenseEditorView: View {
             if lines.count == 1 {
                 MoneyRow(String(localized: "Monto"), minorUnits: $lines[0].amount, font: .amount(isWide ? 17 : 24),
                          marked: isMarked(.amount), onEndEditing: refreshAutoTax)
+                    .recorridoObjetivo("expense.amount")
             }
             DatePicker(selection: $date, displayedComponents: .date) {
                 ScannedLabel(title: String(localized: "Fecha"), marked: isMarked(.date))
@@ -310,6 +312,7 @@ struct ExpenseEditorView: View {
     private var detailsSection: some View {
         Section {
             VendorPicker(vendors: vendors, selection: $vendorID, proposedName: payee) { use($0) }
+                .recorridoObjetivo("expense.details").id("expense.details")
             // Con un proveedor elegido, su nombre es el «Pagado a»: basta con uno de los dos.
             if vendorID == nil {
                 if isMarked(.merchant) {
@@ -328,8 +331,10 @@ struct ExpenseEditorView: View {
             if lines.count == 1 {
                 ExpenseCategoryPicker(title: String(localized: "Categoría"), accounts: accounts, selection: $lines[0].accountID,
                                       suggested: isMarked(.category))
+                    .recorridoObjetivo("expense.category").id("expense.category")
             }
             PaymentAccountPicker(title: String(localized: "Cuenta de pago"), accounts: paymentAccounts, selection: $paymentAccountID)
+                .recorridoObjetivo("expense.account").id("expense.account")
             PaymentMethodPicker(account: paymentAccounts.first { $0.id == paymentAccountID }, selection: $method)
             Picker(selection: $customerID) {
                 Text("Ninguno").tag(UUID?.none)
@@ -397,6 +402,7 @@ struct ExpenseEditorView: View {
         if !isEditing {
             Section {
                 Toggle("Gasto recurrente", isOn: $repeats.animation())
+                    .recorridoObjetivo("expense.recurring").id("expense.recurring")
                 if repeats {
                     Picker("Frecuencia", selection: $frequency) {
                         ForEach(RecurrenceFrequency.allCases, id: \.self) { Text($0.title).tag($0) }
@@ -442,12 +448,14 @@ struct ExpenseEditorView: View {
                     }
                     .onDelete { receipts.remove(atOffsets: $0) }
                     ReceiptPickerButtons { receipts.append($0) }
+                        .recorridoObjetivo("expense.receipt").id("expense.receipt")
                 } header: {
                     SectionLabel(text: String(localized: "Recibo"))
                 }
             }
         }
         .formStyle(.grouped)
+        .recorridoDesplazable()
         .keyboardDoneButton()
         .screenBackground()
     }
