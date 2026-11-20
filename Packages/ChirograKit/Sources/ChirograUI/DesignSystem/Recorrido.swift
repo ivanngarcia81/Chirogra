@@ -527,6 +527,14 @@ struct RecorridoOverlay: View {
         let ancho = min(geo.size.width - 32, 380)
 
         ZStack(alignment: .topLeading) {
+            // Los pasos sin nada iluminado (la presentación de cada recorrido) difuminan la pantalla: con el velo
+            // solo, en oscuro casi no se distinguía de la app y la tarjeta no destacaba (Yurii S., build 54).
+            if hueco == nil {
+                Rectangle().fill(.ultraThinMaterial)
+                    .allowsHitTesting(false)
+                    .accessibilityHidden(true)
+                    .transition(.opacity)
+            }
             VeloConHueco(hueco: hueco ?? centro, radio: radio)
                 .fill(Color.black.opacity(0.5), style: FillStyle(eoFill: true))
                 .contentShape(Rectangle())

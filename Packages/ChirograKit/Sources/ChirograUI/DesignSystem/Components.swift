@@ -1441,29 +1441,82 @@ struct LogoMark: View {
 // MARK: - Campos
 
 /// Campo de importe en dólares enlazado a centavos.
+///
+/// Mientras se escribe enseña solo el número («10,99»); al salir, con la moneda («10,99 US$», «$10.99»). Antes el texto
+/// llevaba la moneda también al editar y lo tecleado se pegaba detrás del símbolo: «10,99 US$80» no se entendía y el
+/// importe se quedaba en el de antes (Yurii S., Beta Family, build 54, formato de Ucrania; en EE. UU. salía
+/// «$10.9980»). Con cero el campo va vacío y la moneda es solo la guía (2-nov).
 struct MoneyField: View {
     let title: String
     @Binding var minorUnits: Int64
     /// Guía del campo vacío; por defecto «$0.00». La línea de la factura pone «Precio» para no confundirlo con el importe.
     var prompt: String? = nil
 
+    @Environment(\.locale) private var locale
+    @FocusState private var editing: Bool
+    /// Lo que se va escribiendo; fuera de la edición el texto sale del importe (así se ve al momento lo que cambie desde
+    /// fuera: escaneo de recibo, «Total de la línea»…). Sin `onAppear`: con él, las pruebas de pantalla con
+    /// `ImageRenderer` se caían al soltar la vista.
+    @State private var draft = ""
+
     var body: some View {
-        // Con cero, el campo va vacío y «$0.00» es solo la guía: si el texto era «$0.00», lo escrito se pegaba detrás
-        // («$0.00500» → $0.01, 2-nov).
-        TextField(title, value: decimal, format: .currency(code: "USD"), prompt: Text(prompt ?? Int64(0).money))
+        TextField(title, text: text, prompt: Text(prompt ?? Int64(0).money))
             // El título como etiqueta: sin ella VoiceOver solo leía la guía («$0.00») y no qué importe era (QA Hudson, H22).
             .accessibilityLabel(Text(title))
             .monospacedDigit()
             #if os(iOS)
             .keyboardType(.decimalPad)
             #endif
+            .focused($editing)
+            .onChange(of: editing) { _, now in draft = now ? Self.text(minorUnits, editing: true, locale: locale) : "" }
     }
 
-    private var decimal: Binding<Decimal?> {
+    private var text: Binding<String> {
         Binding(
-            get: { minorUnits == 0 ? nil : Money(minorUnits: minorUnits).decimalValue },
-            set: { minorUnits = $0.map { Money(decimal: $0).minorUnits } ?? 0 }
+            get: { editing ? draft : Self.text(minorUnits, editing: false, locale: locale) },
+            set: { new in
+                guard editing else { return }
+                draft = new
+                if let value = Self.minorUnits(from: new, locale: locale), value != minorUnits { minorUnits = value }
+            }
         )
+    }
+
+    /// Cero → vacío (sale la guía). Editando: «10,99», «50», «-12,5» → «-12,50», sin agrupar miles. Si no, con la moneda.
+    nonisolated static func text(_ minorUnits: Int64, editing: Bool, locale: Locale) -> String {
+        guard minorUnits != 0 else { return "" }
+        let value = Money(minorUnits: minorUnits).decimalValue
+        guard editing else { return value.formatted(.currency(code: "USD").locale(locale)) }
+        let decimals = minorUnits % 100 == 0 ? 0 : 2
+        return value.formatted(.number.grouping(.never).precision(.fractionLength(decimals)).locale(locale))
+    }
+
+    /// Lee lo escrito con coma o punto decimal y sin hacer caso de la moneda ni de los separadores de miles.
+    /// La coma o el punto es decimal si es el del idioma o si le siguen una o dos cifras al final («10,5» en EE. UU.);
+    /// si no, es de miles («1.000» en España, «1,000» en EE. UU.). Vacío → 0; sin cifras → nil (no cambia el importe).
+    nonisolated static func minorUnits(from text: String, locale: Locale) -> Int64? {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.isEmpty { return 0 }
+        let negative = trimmed.contains("-") || trimmed.contains("\u{2212}")
+        let localSeparator = Character(locale.decimalSeparator ?? ".")
+        // Solo cifras (también las de otros alfabetos, pasadas a 0-9) y separadores.
+        let kept: [Character] = trimmed.compactMap { char in
+            if let digit = char.wholeNumberValue, (0...9).contains(digit) { return Character(String(digit)) }
+            return char == "." || char == "," || char == localSeparator ? char : nil
+        }
+        guard kept.contains(where: \.isNumber) else { return nil }
+        let isSeparator: (Character) -> Bool = { $0 == "." || $0 == "," || $0 == localSeparator }
+        var decimalIndex = kept.lastIndex(of: localSeparator)
+        if decimalIndex == nil, let last = kept.lastIndex(where: isSeparator) {
+            let after = kept.count - last - 1
+            if (1...2).contains(after) { decimalIndex = last }
+        }
+        let integer = kept[..<(decimalIndex ?? kept.endIndex)].filter(\.isNumber)
+        let fraction = decimalIndex.map { kept[kept.index(after: $0)...].filter(\.isNumber) } ?? []
+        guard let value = Decimal(string: String(integer.isEmpty ? ["0"] : integer) + "." + String(fraction.isEmpty ? ["0"] : fraction),
+                                  locale: Locale(identifier: "en_US_POSIX")) else { return nil }
+        let minor = Money(decimal: value).minorUnits
+        return negative ? -minor : minor
     }
 }
 
