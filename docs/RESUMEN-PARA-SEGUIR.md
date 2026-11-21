@@ -1,4 +1,4 @@
-# Chirogra: resumen para empezar el siguiente chat (21-nov-2026, build 56)
+# Chirogra: resumen para empezar el siguiente chat (21-nov-2026, build 57)
 
 Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («Dónde nos quedamos» y «Siguiente»).
 **Al usuario se le habla siempre en español.**
@@ -8,9 +8,9 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 - **Ramas:** `version-1.3` empujada el 18-nov (builds 50, 51 y 52 y sus docs). `main` en `83b1db4` (build 50 y la web
   con «Kairogra»), empujada el 17-nov; los builds 51 y 52 no tocan la web, así que `main` no hace falta moverla. La web
   (`sitio/`) se publica desde `main`.
-- **Último build: 56 (1.3.0)**, subido a TestFlight para iOS y macOS el 21-nov (`130588b`). Antes: 55 (20-nov), 54 (20-nov), 53 (18-nov), 52 (18-nov), 51
+- **Último build: 57 (1.3.0)**, subido a TestFlight para iOS y macOS el 21-nov (`c13f955`). Antes: 56 (21-nov), 55 (20-nov), 54 (20-nov), 53 (18-nov), 52 (18-nov), 51
   (recorrido de la primera vez, 17-nov) y 50 (17-nov). Los testers externos (Userbrain, Beta Family) entran con el enlace público
-  https://testflight.apple.com/join/RGwqqUyw: **el usuario tiene que asignar el 56 a ese grupo** cuando Apple lo procese.
+  https://testflight.apple.com/join/RGwqqUyw: **el usuario tiene que asignar el 57 a ese grupo** cuando Apple lo procese.
 - **En App Store Connect:** la **1.0 (build 11)** espera la revisión. **Decidido el 13-nov:** cuando la aprueben se envía
   **directo la 1.3** con su último build, sin la 1.0.1, la 1.1 ni la 1.2, con un «What's New» que junte las tres. El plan
   «Chirogra para contadores» está completo en App Store Connect y va en ese envío (no pulsar «Add for Review» suelto).
@@ -57,7 +57,8 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 | 53 | `a5f6468` | 1.3.0: tras Yurii S. (tester de pago de Beta Family; iPhone 16e, iOS 26.7.1, letra XL, región de Ucrania, oscuro): en Ventas, si «1 570,00 US$ of 2 570 US$» no cabe junto al cliente, «of …» baja a su línea (salía «M…»); «Ver el recorrido otra vez» lleva a Inicio; defensa del hueco del teclado sin teclado (`ignoringStaleKeyboardSpace`; lista cortada y barra de Total a media pantalla, no reproducido). 346 pruebas. |
 | 54 | `801e8c3` | 1.3.0: **«Tutorial completo»** en Más › Ayuda (cada pantalla del iPhone explica todos sus botones la primera vez; el corto no cambia); **iOS 27**: los pasos que iluminan botones de la barra de arriba ya no se saltan (`marcoEnVentana` mira `accessibilityElements`); en Inicio el recorrido ilumina el título del grupo con su tarjeta (iPhone 13 mini, Jiga T. de Beta Family). 177 + 75 pruebas. |
 | 55 | `216d429` | 1.3.0: tras Yurii S. (Beta Family, build 54; iPhone 16e, formato de Ucrania, oscuro): **campos de dinero** que se editan sin la moneda (`MoneyField`: «10,99» al escribir, «10,99 US$» al salir; antes lo tecleado se pegaba tras «US$» y el importe no cambiaba: «10,99 US$80», «1,00 US$896253»; en EE. UU. «$510.99»); lee coma o punto decimal; **difuminado** (`.ultraThinMaterial`) en la primera tarjeta de cada recorrido, la que no ilumina nada. 177 + 75 + 87 pruebas (`ScreenSmokeTests` ya se caía en el 54: `ImageRenderer`, «no current update to enqueue action to»). |
-| 56 | `130588b` | 1.3.0: tras Eric (Beta Family, build 55; iPhone 13, iOS 27.2.1; app 3/5, recomendación 2/5) y un **repaso visual** de toda la app. Ver «Lo siguiente» 0. 350 pruebas (94 + 181 + 75). |
+| 56 | `130588b` | 1.3.0: tras Eric (Beta Family, build 55; iPhone 13, iOS 27.2.1; app 3/5, recomendación 2/5) y un **repaso visual** de toda la app. Ver «Lo siguiente» 0b. 350 pruebas (94 + 181 + 75). |
+| 57 | `c13f955` | 1.3.0: en «Nuevo gasto › Recibo» los tres botones (escanear, foto, archivo) vuelven a ir **uno por fila**; salían amontonados en una sola (captura del usuario con el 56; venía del 54). Ver «Lo siguiente» 0. 350 pruebas. |
 
 ## Último chat (17 y 18-nov): builds 50, 51 y 52, recorrido y testers
 
@@ -143,7 +144,7 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 
 ## Lo que le toca al usuario
 
-1. **Asignar el build 56** al grupo de testers externos del enlace público cuando Apple lo procese, y mandar más
+1. **Asignar el build 57** al grupo de testers externos del enlace público cuando Apple lo procese, y mandar más
    testers (Beta Family, Userbrain, UXtweak) con él. Traer aquí lo que digan.
 2. **Probar el 52 en TestFlight:** el recorrido de cada pestaña, «Más › Ayuda › Ver el recorrido otra vez», y borrar los
    datos de ejemplo y crear su empresa (el recorrido tiene que volver). Si puede, con Reducir movimiento y VoiceOver,
@@ -155,7 +156,16 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 
 ## Lo siguiente
 
-0. **Build 56: SUBIDO iOS+Mac a TestFlight (21-nov, `130588b`).** Informe de Beta Family de **Eric** con el 55 (gratis; iPhone 13,
+0. **Build 57: SUBIDO iOS+Mac a TestFlight (21-nov, `c13f955`).** El usuario mandó una captura del 56 en su iPhone: en
+   «Nuevo gasto › Recibo» los tres botones salían amontonados y centrados en **una sola fila**. Causa (del build 54,
+   `801e8c3`): `.recorridoObjetivo("expense.receipt").id("expense.receipt")` sobre `ReceiptPickerButtons`, que da
+   varias filas; en un `Form`, `.id` sobre una vista así las junta en una. Arreglo: `ReceiptPickerButtons(objetivo:)`
+   pone el objetivo solo en el primer botón (escanear si hay `DocumentScanner`; si no, la foto) con el modificador
+   privado `ObjetivoDelRecorrido`. Revisados los otros 34 objetivos con `.id`: todos van sobre una sola fila. Probado
+   en el simulador (UITestsQA `Build56Recibo`, sin commitear): filas separadas y el paso «Receipt 7 of 8» del
+   tutorial completo ilumina el primer botón. **Regla:** no poner `.recorridoObjetivo(...).id(...)` sobre una vista
+   que dé varias filas dentro de un `Form`/`List`.
+0b. **Build 56: SUBIDO iOS+Mac a TestFlight (21-nov, `130588b`).** Informe de Beta Family de **Eric** con el 55 (gratis; iPhone 13,
    iOS 27.2.1; facilidad 5/5, app 3/5, **recomendación 2/5**: «no security assurances, very few safeguards», «parece hecho
    con IA» por los recorridos incoherentes). Sin fotos ni bugs en el xlsx. Hecho con un agente por arreglo (worktrees;
    ojo: los worktrees nacen de `main`, hay que avanzarlos a `version-1.3` y aplicar el trabajo sin commitear como parche).
