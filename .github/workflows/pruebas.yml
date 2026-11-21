@@ -15,15 +15,15 @@ concurrency:
   cancel-in-progress: true
 jobs:
   verificar:
-    runs-on: macos-26
+    # macos-26 solo trae hasta Xcode 26.6, que se cae compilando el paquete (21-nov). La imagen xcode-27 (en
+    # «preview» de GitHub) trae Xcode 27; se usa el 27.0, el mismo con que se suben los builds.
+    runs-on: xcode-27
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
-      - name: Usar el Xcode más nuevo de la máquina
+      - name: Usar Xcode 27.0
         run: |
-          xcode=$(ls -d /Applications/Xcode_*.app | grep -v -i beta | sort -V | tail -1)
-          echo "Xcode: $xcode"
-          sudo xcode-select -s "$xcode/Contents/Developer"
+          sudo xcode-select -s /Applications/Xcode_27.app/Contents/Developer
           xcodebuild -version
       - name: Verificar
         run: zsh scripts/verificar.sh
