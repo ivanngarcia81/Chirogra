@@ -163,27 +163,11 @@ struct WelcomeView: View {
         }
     }
 
-    /// Puntos de página: la actual alargada y en Tinta; las demás al 25 % (canvas).
+    /// «2 de 6», como los recorridos y el alta (antes, puntos con el actual alargado; repaso visual, build 56).
+    /// Con VoiceOver, «Página 2 de 6». Deslizar sigue igual: el indicador no es el carrusel.
     private var dots: some View {
-        HStack(spacing: Self.dotSpacing) {
-            ForEach(0..<Self.pageCount, id: \.self) { index in
-                Capsule()
-                    .fill(Palette.ink)
-                    .frame(width: index == page ? Self.dotSide * 2.75 : Self.dotSide, height: Self.dotSide)
-                    .opacity(index == page ? 1 : 0.25)
-            }
-        }
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(Text("Página \(page + 1) de \(Self.pageCount)"))
+        PasoIndicador(actual: page + 1, total: Self.pageCount, unidad: .pagina)
     }
-
-    #if os(macOS)
-    private static let dotSide: CGFloat = 7
-    private static let dotSpacing: CGFloat = 6
-    #else
-    private static let dotSide: CGFloat = 8
-    private static let dotSpacing: CGFloat = 7
-    #endif
 
     // MARK: iPhone e iPad
 
@@ -785,7 +769,7 @@ struct OtherDeviceSheet: View {
             ScrollView {
                 VStack(spacing: 16) {
                     Image(systemName: "icloud.fill")
-                        .font(.system(size: 44))
+                        .font(.system(size: Metrics.stateIcon))
                         .foregroundStyle(Palette.blue)
                         .accessibilityHidden(true)
                     Text("¿Ya usas Chirogra en otro aparato?")

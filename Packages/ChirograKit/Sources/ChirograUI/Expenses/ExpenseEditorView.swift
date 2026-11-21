@@ -49,6 +49,7 @@ struct ExpenseEditorView: View {
     @State private var paymentAccountID: UUID?
     @State private var memo = ""
     @State private var receipts: [ReceiptFile] = []
+    @State private var previewing = ReceiptPreview()
     @State private var method: PaymentMethod = .card
     @State private var repeats = false
     @State private var frequency: RecurrenceFrequency = .monthly
@@ -214,6 +215,7 @@ struct ExpenseEditorView: View {
         }
         .reconciledChangeConfirmation($reconciledRetry) { errorMessage = $0 }
         .closedPeriodUnlock($closedPeriodRetry) { errorMessage = $0 }
+        .receiptPreview($previewing)
     }
 
     /// Proveedor recién elegido (o creado desde el menú): su nombre pasa a «Pagado a», que se esconde, y su
@@ -280,7 +282,7 @@ struct ExpenseEditorView: View {
             if lines.count == 1 {
                 MoneyRow(String(localized: "Monto"), minorUnits: $lines[0].amount, font: .amount(isWide ? 17 : 24),
                          marked: isMarked(.amount), onEndEditing: refreshAutoTax)
-                    .recorridoObjetivo("expense.amount")
+                    .recorridoObjetivo("expense.amount").id("expense.amount")
             }
             DatePicker(selection: $date, displayedComponents: .date) {
                 ScannedLabel(title: String(localized: "Fecha"), marked: isMarked(.date))
@@ -440,11 +442,19 @@ struct ExpenseEditorView: View {
             recurrenceSection
             if !isEditing {
                 Section {
-                    ForEach(receipts) { receipt in
-                        HStack(spacing: 12) {
-                            ReceiptThumbnail(data: receipt.data, contentType: receipt.type.identifier, side: 48)
-                            Text(receipt.name).lineLimit(1)
+                    ForEach(Array(receipts.enumerated()), id: \.element.id) { index, receipt in
+                        // Como en el detalle del gasto (Eric, Beta Family, build 55): tocarlo lo abre en Vista Rápida.
+                        Button { previewing.show(receipts, from: index) } label: {
+                            HStack(spacing: 12) {
+                                ReceiptThumbnail(data: receipt.data, contentType: receipt.type.identifier, side: 48)
+                                Text(receipt.name).lineLimit(1)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .contentShape(Rectangle())
                         }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("Ver recibo \(receipt.name)")
+                        .accessibilityHint("Abre el archivo a pantalla completa.")
                     }
                     .onDelete { receipts.remove(atOffsets: $0) }
                     ReceiptPickerButtons { receipts.append($0) }

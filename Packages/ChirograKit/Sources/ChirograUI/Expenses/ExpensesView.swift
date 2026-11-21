@@ -139,7 +139,7 @@ struct ExpensesSegmentRow: View {
         Section {
             FilterPicker(title: String(localized: "Sección"), options: [.expenses, .bills, .recurring], selection: $selection) { $0.localizedTitle }
                 .labelsHidden()
-                .recorridoObjetivo("expenses.segment")
+                .recorridoObjetivo("expenses.segment").id("expenses.segment")
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .listRowInsets(EdgeInsets())
                 .listRowBackground(Color.clear)
@@ -239,7 +239,7 @@ struct ExpenseListView: View {
             }
 
             Section {
-                monthCard.recorridoObjetivo("expenses.month")
+                monthCard.recorridoObjetivo("expenses.month").id("expenses.month")
             } header: {
                 ListGroupHeader(title: cardMonth.start.formatted(.appDateTime.month(.wide)).sentenceCased) {
                     Text("Por categoría").font(.subheadline).foregroundStyle(Palette.ink2)
@@ -273,9 +273,7 @@ struct ExpenseListView: View {
                 if expenses.isEmpty {
                     EmptyStateView(guide: .expenses, action: onCreate)
                 } else if shown.isEmpty {
-                    EmptyStateView(systemImage: "line.3.horizontal.decrease.circle", title: String(localized: "Sin resultados"),
-                                   message: String(localized: "Ningún gasto coincide con el filtro."),
-                                   actionTitle: String(localized: "Quitar filtro")) { filter = .all }
+                    NoResultsView(message: String(localized: "Ningún gasto coincide con el filtro.")) { filter = .all }
                 }
                 ForEach(shown) { expense in
                     NavigationLink { ExpenseDetailView(expense: expense) } label: {
@@ -562,9 +560,11 @@ struct BillListView: View {
                         } else {
                             NavigationLink { BillDetailView(bill: bill) } label: { BillRow(bill: bill, accounts: accounts) }
                                 .navigationLinkIndicatorVisibility(.hidden)
+                                // Ícono y texto en cada acción, verde la principal y el mismo «Registrar pago…» que el
+                                // menú contextual (antes «Pagar» solo con texto; repaso visual, build 56).
                                 .swipeActions {
                                     if bill.isOpen {
-                                        Button("Pagar") { paying = bill }.tint(Palette.brandFill)
+                                        Button("Registrar pago…", systemImage: "checkmark.circle") { paying = bill }.tint(Palette.positive)
                                     }
                                 }
                                 .swipeActions(edge: .leading) {
@@ -656,7 +656,9 @@ struct BillRow: View {
     }
 
     var body: some View {
-        LedgerRow(title: bill.vendor?.name ?? String(localized: "Proveedor"), subtitle: subtitle) {
+        // Dos líneas: en una, «Programado para el 27 nov · Corriente ••4821» se cortaba por el medio y se perdía la
+        // fecha en un iPhone de 375 pt (repaso visual, build 56).
+        LedgerRow(title: bill.vendor?.name ?? String(localized: "Proveedor"), subtitle: subtitle, subtitleLines: 2) {
             DateTile(date: bill.dueDate)
         } trailing: {
             VStack(alignment: dynamicTypeSize.amountAlignment, spacing: 3) {
@@ -852,7 +854,7 @@ struct VendorListView: View {
             if vendors.isEmpty {
                 EmptyStateView(guide: .vendors, action: onCreate)
             } else if shown.isEmpty {
-                EmptyStateView(systemImage: "magnifyingglass", title: String(localized: "Sin resultados"), message: String(localized: "Ningún proveedor coincide"))
+                NoResultsView(message: String(localized: "Ningún proveedor coincide con la búsqueda.")) { query = "" }
             }
             Section {
                 ForEach(shown) { vendor in

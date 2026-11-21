@@ -160,8 +160,14 @@ extension Bookkeeper {
     /// Periodo de declaración (según la frecuencia de la agencia) que contiene `date`, con su fecha límite
     /// (el día `salesTaxFilingDueDay` del mes siguiente al cierre del periodo).
     public func salesTaxFilingPeriod(for agency: TaxAgency, containing date: Date, calendar: Calendar = .current) -> SalesTaxFilingPeriod {
+        Self.salesTaxFilingPeriod(agency.filingFrequency, containing: date, calendar: calendar)
+    }
+
+    /// Lo mismo con la frecuencia sola (Impuestos e Inicio, que no declaran por una agencia concreta).
+    public static func salesTaxFilingPeriod(_ frequency: FilingFrequency, containing date: Date,
+                                            calendar: Calendar = .current) -> SalesTaxFilingPeriod {
         let months: Int
-        switch FilingFrequency(rawValue: agency.filingFrequencyRaw) ?? .quarterly {
+        switch frequency {
         case .monthly: months = 1
         case .quarterly: months = 3
         case .annual: months = 12
@@ -184,6 +190,20 @@ extension Bookkeeper {
         return salesTaxFilingPeriod(for: agency, containing: previousDay, calendar: calendar)
     }
 
+    /// El periodo que contiene `date` y los `count − 1` anteriores, del más reciente al más antiguo (menú de periodo de
+    /// Impuestos: antes eran siempre trimestres; Eric, Beta Family, build 55).
+    public static func salesTaxFilingPeriods(_ frequency: FilingFrequency, containing date: Date, count: Int,
+                                             calendar: Calendar = .current) -> [SalesTaxFilingPeriod] {
+        var periods: [SalesTaxFilingPeriod] = []
+        var day = date
+        for _ in 0..<max(count, 0) {
+            let period = salesTaxFilingPeriod(frequency, containing: day, calendar: calendar)
+            periods.append(period)
+            day = calendar.date(byAdding: .day, value: -1, to: period.start) ?? period.start
+        }
+        return periods
+    }
+
     static func dayKey(_ date: Date, _ calendar: Calendar) -> String {
         let parts = calendar.dateComponents([.year, .month, .day], from: date)
         return String(format: "%04d-%02d-%02d", parts.year ?? 0, parts.month ?? 0, parts.day ?? 0)
@@ -204,5 +224,19 @@ extension NoticeKind {
         case .billDueSoon: 3
         case .recurringGenerated: 4
         }
+    }
+}
+
+extension TaxAgency {
+    /// `filingFrequencyRaw` leído; si no se reconoce, trimestral (el valor por omisión del modelo).
+    public var filingFrequency: FilingFrequency { FilingFrequency(rawValue: filingFrequencyRaw) ?? .quarterly }
+}
+
+extension FilingFrequency {
+    /// Periodo con que Impuestos e Inicio muestran el sales tax (Eric, Beta Family, build 55: el periodo de la agencia
+    /// no cambiaba nada). Las cifras suman todas las agencias, así que con varias de frecuencias distintas manda la
+    /// primera sin archivar en el orden recibido (las dos pantallas las piden por nombre); sin ninguna, trimestral.
+    public static func shownForSalesTax(_ agencies: [TaxAgency]) -> FilingFrequency {
+        agencies.first { !$0.isArchived }?.filingFrequency ?? .quarterly
     }
 }

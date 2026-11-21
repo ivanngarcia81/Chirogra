@@ -195,10 +195,11 @@ struct DeductionsView: View {
                 ToolbarItem(placement: .primaryAction) {
                     Button { exportingPackage = true } label: {
                         #if os(macOS)
-                        HStack(spacing: 6) { Image(systemName: "archivebox"); Text("Exportar para mi contador…") }
+                        HStack(spacing: 6) { Image(systemName: "square.and.arrow.up"); Text("Exportar para mi contador…") }
                         #else
-                        // En el iPad, solo el símbolo: con el texto, «‹ Impuestos» quedaba escondido en «…».
-                        Label("Exportar para mi contador…", systemImage: "archivebox").labelStyle(.iconOnly)
+                        // En el iPad, solo el símbolo: con el texto, «‹ Impuestos» quedaba escondido en «…». El de exportar y
+                        // no la caja, que en Clientes y Cuentas es «Archivar» (repaso visual, build 56).
+                        Label("Exportar para mi contador…", systemImage: "square.and.arrow.up").labelStyle(.iconOnly)
                         #endif
                     }
                     .headerButton()
@@ -368,7 +369,7 @@ struct DeductionsView: View {
             .accessibilityElement(children: .combine)
             Divider().padding(.leading, 16)
             Button { exportingPackage = true } label: {
-                Label("Exportar para mi contador", systemImage: "square.and.arrow.up")
+                Label("Exportar para mi contador…", systemImage: "square.and.arrow.up")
                     .foregroundStyle(Palette.brand)
                     .frame(maxWidth: .infinity, minHeight: Metrics.target, alignment: .leading)
                     .padding(.horizontal, 16).padding(.vertical, 4)

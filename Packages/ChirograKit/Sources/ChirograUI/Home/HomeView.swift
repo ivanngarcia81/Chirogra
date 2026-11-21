@@ -29,6 +29,8 @@ struct HomeView: View {
     /// Para decir en «Configura tu sales tax» qué impuesto cobran las facturas.
     @CompanyQuery private var taxRates: [TaxRate]
     @CompanyQuery private var taxGroups: [TaxGroup]
+    /// Su periodo de declaración da la fecha límite del sales tax (por nombre, como en Impuestos).
+    @CompanyQuery(sort: \TaxAgency.name) private var taxAgencies: [TaxAgency]
     /// La tarjeta de primeros pasos del tablero se ocultó en este aparato.
     @AppStorage("homeSetupStepsHidden") private var setupStepsHidden = false
 
@@ -401,8 +403,8 @@ struct HomeView: View {
         // Cada cifra con su color (decisión del usuario, 16-nov, tras un test de usuario que no encontraba la ganancia):
         // ingresos en verde, gastos en rojo y la ganancia en el color de la marca (en rojo si es pérdida).
         let items: [(String, Int64, String?, Color, Color)] = [
-            (String(localized: "Ingresos"), thisMonth.totalIncome, income?.text, income?.color ?? Palette.ink2, Palette.positive),
-            (String(localized: "Gastos"), monthExpenses, spent?.text, spent?.color ?? Palette.ink2, Palette.negative),
+            (String(localized: "Ingresos"), thisMonth.totalIncome, income?.text, income?.color ?? Palette.ink2, Palette.income),
+            (String(localized: "Gastos"), monthExpenses, spent?.text, spent?.color ?? Palette.ink2, Palette.expense),
             (large ? String(localized: "Ganancia neta") : String(localized: "Ganancia del mes"), thisMonth.netIncome, margin,
              Palette.ink2, profitColor),
         ]
@@ -455,7 +457,7 @@ struct HomeView: View {
     private var phoneBody: some View {
         VStack(alignment: .leading, spacing: 0) {
             periodMenu(compact: true, prefix: companyName)
-                .recorridoObjetivo("home.period")
+                .recorridoObjetivo("home.period").id("home.period")
                 .padding(.horizontal, Metrics.gutter)
 
             // Mientras los libros son los de ejemplo: «Empezar con mi empresa».
@@ -647,13 +649,13 @@ struct HomeView: View {
                     .offset(x: point.isIncome ? -(barWidth / 2 + 1) : barWidth / 2 + 1)
                     .clipShape(UnevenRoundedRectangle(topLeadingRadius: 3, topTrailingRadius: 3))
             }
-            .chartForegroundStyleScale([String(localized: "Ingresos"): Palette.positive, String(localized: "Gastos"): Palette.negative])
+            .chartForegroundStyleScale([String(localized: "Ingresos"): Palette.income, String(localized: "Gastos"): Palette.expense])
             .chartLegend(.hidden)
             .chartXAxis {
                 AxisMarks(values: points.filter(\.isIncome).map(\.key)) { value in
                     AxisValueLabel {
                         if let key = value.as(String.self), let month = points.first(where: { $0.key == key })?.month {
-                            Text(month.formatted(.dateTime.month(.narrow))).foregroundStyle(Palette.ink2)
+                            Text(month.formatted(.appDateTime.month(.narrow))).foregroundStyle(Palette.ink2)
                         }
                     }
                 }
@@ -689,8 +691,8 @@ struct HomeView: View {
 
     private var legend: some View {
         HStack(spacing: 16) {
-            legendItem(String(localized: "Ingresos"), Palette.positive)
-            legendItem(String(localized: "Gastos"), Palette.negative)
+            legendItem(String(localized: "Ingresos"), Palette.income)
+            legendItem(String(localized: "Gastos"), Palette.expense)
         }
         .font(.footnote)
         .foregroundStyle(Palette.ink2)
@@ -804,11 +806,10 @@ struct HomeView: View {
     /// no escondido en Más»), salvo en una empresa que no cobra ninguno ni debe nada (estados sin sales tax).
     private var showsSalesTax: Bool { companies.first?.defaultTaxGroupID != nil || salesTaxPayable != 0 }
 
-    /// Fecha habitual de la declaración del trimestre: el día 20 del mes siguiente (la de Impuestos).
+    /// Fecha límite del periodo actual (mes, trimestre o año de la agencia): el día 20 del mes siguiente, la misma que
+    /// Impuestos › Resumen (Eric, Beta Family, build 55: antes era siempre la del trimestre).
     private var salesTaxDueDate: Date {
-        let calendar = Calendar.current
-        let quarter = calendar.dateInterval(of: .quarter, for: .now) ?? DateInterval(start: .now, duration: 0)
-        return calendar.date(byAdding: .day, value: 19, to: quarter.end) ?? quarter.end
+        SalesTaxShownPeriod(.shownForSalesTax(taxAgencies)).deadline
     }
 
     /// «Austin, TX · 8.25%»: lo que cobran las facturas nuevas.
@@ -958,7 +959,8 @@ struct HomeView: View {
             .padding(8)
         }
         .scrollBounceBehavior(.basedOnSize)
-        .background(Palette.surface, in: RoundedRectangle(cornerRadius: 26, style: .continuous))
+        // Radio de tarjeta: antes 26, el único así (repaso visual, build 56).
+        .background(Palette.surface, in: RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous))
         .padding(.leading, 8).padding(.bottom, 8)
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Secciones del resumen")
@@ -1065,9 +1067,9 @@ struct HomeView: View {
         return [
             KPIItem(title: String(localized: "Efectivo disponible"), value: ledger.availableCash.money, foot: accountsDetail),
             KPIItem(title: String(localized: "Ingresos del mes"), value: thisMonth.totalIncome.money, foot: income?.text, footColor: income?.color ?? Palette.ink2,
-                    valueColor: Palette.positive),
+                    valueColor: Palette.income),
             KPIItem(title: String(localized: "Gastos del mes"), value: monthExpenses.money, foot: spent?.text, footColor: spent?.color ?? Palette.ink2,
-                    valueColor: Palette.negative),
+                    valueColor: Palette.expense),
             KPIItem(title: String(localized: "Ganancia neta"), value: thisMonth.netIncome.money, foot: margin, valueColor: profitColor),
         ]
     }
@@ -1309,10 +1311,10 @@ struct HomeView: View {
         }
     }
 
-    /// «Registrar pago…» (vidrio), «Enviar recordatorio» y «Abrir factura».
+    /// «Registrar cobro…» (vidrio), «Enviar recordatorio» y «Abrir factura».
     @ViewBuilder
     private func invoiceActions(_ invoice: Invoice) -> some View {
-        Button("Registrar pago…") { payingInvoice = invoice }.buttonStyle(.primary)
+        Button("Registrar cobro…") { payingInvoice = invoice }.buttonStyle(.primary)
         HStack(spacing: 8) {
             ShareLink(item: invoice.reminderText, subject: Text("Recordatorio de pago")) { Text("Enviar recordatorio") }
                 .buttonStyle(.secondary)
@@ -1401,8 +1403,9 @@ struct HomeView: View {
                 .padding(.horizontal, Metrics.gutter)
 
             VStack(spacing: 8) {
+                // Del tamaño y peso de los demás iconos de estado (repaso visual, build 56).
                 Image(systemName: "chart.bar")
-                    .font(.system(size: 48, weight: .light))
+                    .font(.system(size: Metrics.stateIcon))
                     .foregroundStyle(Palette.ink2)
                     .padding(.bottom, 6)
                     .accessibilityHidden(true)

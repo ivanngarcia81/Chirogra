@@ -98,6 +98,12 @@ struct ChartOfAccountsView: View {
         let ledger = Ledger(accounts: accounts, lines: journalLines)
         let text = query.trimmingCharacters(in: .whitespaces)
         List {
+            // La búsqueda sin coincidencias, como en las demás listas (repaso visual, build 56).
+            if !text.isEmpty, !accounts.contains(where: { (showArchived || !$0.isArchived)
+                && ($0.code.localizedStandardContains(text) || $0.name.localizedStandardContains(text)) }) {
+                NoResultsView(message: String(localized: "Ninguna cuenta coincide con la búsqueda.")) { query = "" }
+                    .listRowBackground(Color.clear)
+            }
             ForEach(AccountType.allCases, id: \.self) { type in
                 let rows = accounts.filter {
                     $0.type == type && (showArchived || !$0.isArchived)
@@ -133,11 +139,14 @@ struct ChartOfAccountsView: View {
                                 .accessibilityElement(children: .combine)
                                 }
                             }
+                            // Ícono y texto, como el menú contextual; «Editar» en índigo, la secundaria (repaso visual, build 56).
                             .swipeActions {
                                 if !account.isSystem {
-                                    Button(account.isArchived ? "Restaurar" : "Archivar") { account.isArchived.toggle() }
+                                    Button(account.isArchived ? "Restaurar" : "Archivar",
+                                           systemImage: account.isArchived ? "arrow.uturn.backward" : "archivebox") { account.isArchived.toggle() }
+                                        .tint(Palette.gray)
                                 }
-                                Button("Editar") { editing = account }.tint(Palette.blue)
+                                Button("Editar", systemImage: "pencil") { editing = account }.tint(Palette.indigo)
                             }
                             .contextMenu {
                                 Button("Editar…", systemImage: "pencil") { editing = account }
@@ -224,7 +233,7 @@ struct JournalListView: View {
             if entries.isEmpty {
                 EmptyStateView(guide: .journal) { showingEditor = true }
             } else if shown.isEmpty {
-                Text("Ningún asiento coincide").foregroundStyle(Palette.ink2).frame(maxWidth: .infinity)
+                NoResultsView(message: String(localized: "Ningún asiento coincide con el filtro.")) { filter = .all }
                     .listRowBackground(Color.clear)
             }
             Section {
@@ -269,7 +278,7 @@ struct JournalEntryRow: View {
             VStack(alignment: dynamicTypeSize.amountAlignment, spacing: 3) {
                 Text(entry.totalDebits.money).monospacedDigit().foregroundStyle(Palette.ink)
                 if entry.source == .accountantAdjustment {
-                    StatusChip(text: String(localized: "Del contador"), foreground: Palette.info, compact: true, dot: Palette.info)
+                    StatusChip(text: String(localized: "Del contador"), foreground: Palette.info, compact: true, dot: Palette.blue)
                 }
                 if entry.isReversed || entry.reversesEntryID != nil {
                     StatusChip(text: entry.isReversed ? String(localized: "Revertido") : String(localized: "Reversión"),

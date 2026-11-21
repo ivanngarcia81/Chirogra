@@ -53,12 +53,13 @@ extension Bill {
         return date < Calendar.current.startOfDay(for: .now)
     }
 
-    /// Lo que se ve de su pago en una fila (canvas `Gastos` · Por pagar: «Programado · Corriente ••4821»).
+    /// Lo que se ve de su pago en una fila (canvas `Gastos` · Por pagar: «Programado para el 27 nov · Corriente
+    /// ••4821»). «Se paga el» salía en inglés «Paid on», como si ya estuviera pagada (repaso visual, build 56).
     func paymentSummary(accounts: [Account]) -> String? {
         guard isScheduled, let date = scheduledPaymentDate else { return nil }
         let account = accounts.account(scheduledPaymentAccountID ?? vendor?.preferredPaymentAccountID)
-        let lead = String(localized: "Se paga el \(date.dayMonth)")
-        return [lead, account?.paymentLabel].compactMap { $0 }.joined(separator: " · ")
+        guard let label = account?.paymentLabel else { return String(localized: "Programado para el \(date.dayMonth)") }
+        return String(localized: "Programado para el \(date.dayMonth) · \(label)")
     }
 }
 

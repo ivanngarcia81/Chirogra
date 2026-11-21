@@ -157,9 +157,11 @@ struct InvoiceEditorView: View {
             : String(localized: "Al emitirla se registra el asiento contable: débito a cuentas por cobrar, crédito a ingresos y sales tax.")
     }
 
-    /// Aviso de arriba al corregir una emitida (como el de los gastos contabilizados).
+    /// Aviso de arriba al corregir una emitida (como el de los gastos contabilizados). Eric (Beta Family, build 55)
+    /// temía el fraude con tanta libertad para editar: el aviso dice dónde queda el rastro (`updateIssuedInvoice` anota
+    /// «edit» o «editText» en la bitácora) y que el asiento solo se revierte si cambia la contabilidad.
     private var issuedNoticeText: String {
-        String(localized: "Esta factura ya está en tus libros. Al guardar, Chirogra revierte su asiento y registra uno nuevo con los cambios; conserva el número \(editing?.number ?? "") y la edición queda en su actividad.")
+        String(localized: "Esta factura ya se emitió: el cambio queda en su actividad y en la bitácora de cambios, y conserva el número \(editing?.number ?? ""). Si cambian importes, cuentas, cliente o fecha, Chirogra revierte su asiento y registra uno nuevo.")
     }
 
     private var issuedNotice: some View {
@@ -471,7 +473,7 @@ struct InvoiceEditorView: View {
                 .buttonStyle(.plain)
                 .accessibilityLabel("Cliente")
                 .accessibilityValue(customer?.name ?? String(localized: "Sin elegir"))
-                .recorridoObjetivo("editor.customer")
+                .recorridoObjetivo("editor.customer").id("editor.customer")
                 if let customer, customer.isTaxExempt {
                     Label("Cliente exento de sales tax", systemImage: "checkmark.seal").foregroundStyle(Palette.positive)
                 }
@@ -479,7 +481,7 @@ struct InvoiceEditorView: View {
 
             // Número · Fecha · Términos como filas del formulario; el vencimiento, en el pie.
             Section {
-                LabeledContent("Número", value: documentNumber).recorridoObjetivo("editor.dates")
+                LabeledContent("Número", value: documentNumber).recorridoObjetivo("editor.dates").id("editor.dates")
                 if isEstimate {
                     TextField("Concepto", text: $estimateTitle, prompt: Text("Concepto (opcional)"))
                 }

@@ -123,6 +123,16 @@
         }
       }
     },
+    "%@ cobrado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ collected"
+          }
+        }
+      }
+    },
     "%@ de %@" : {
       "localizations" : {
         "en" : {
@@ -379,6 +389,16 @@
         }
       }
     },
+    "%@ · %@ vencido" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · %@ overdue"
+          }
+        }
+      }
+    },
     "%@ · %@ · %@" : {
       "localizations" : {
         "en" : {
@@ -476,6 +496,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ · created today"
+          }
+        }
+      }
+    },
+    "%@ · declaración anual" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · annual filing"
+          }
+        }
+      }
+    },
+    "%@ · declaración mensual" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · monthly filing"
           }
         }
       }
@@ -2746,7 +2786,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "12 months"
+            "value" : "12 Months"
           }
         }
       }
@@ -2796,7 +2836,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "6 months"
+            "value" : "6 Months"
           }
         }
       }
@@ -2943,6 +2983,16 @@
         }
       }
     },
+    "Abre el archivo a pantalla completa." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens the file full screen."
+          }
+        }
+      }
+    },
     "Abre el documento" : {
       "localizations" : {
         "en" : {
@@ -2958,7 +3008,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Opens the company profile"
+            "value" : "Opens the business profile"
           }
         }
       }
@@ -3095,7 +3145,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Open profile"
+            "value" : "Open Profile"
           }
         }
       }
@@ -3218,7 +3268,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Accept suggestions"
+            "value" : "Accept Suggestions"
           }
         }
       }
@@ -3320,7 +3370,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Turn on"
+            "value" : "Turn On"
           }
         }
       }
@@ -3436,7 +3486,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Attach file (PDF or image)"
+            "value" : "Attach File (PDF or Image)"
           }
         }
       }
@@ -3456,7 +3506,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Attach receipt photo"
+            "value" : "Attach Receipt Photo"
           }
         }
       }
@@ -3467,7 +3517,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Attach another receipt…"
+            "value" : "Attach Another Receipt…"
           }
         }
       }
@@ -3478,7 +3528,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Attach receipt…"
+            "value" : "Attach Receipt…"
           }
         }
       }
@@ -3518,7 +3568,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Not now"
+            "value" : "Not Now"
           }
         }
       }
@@ -3584,7 +3634,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Business settings"
+            "value" : "Business Settings"
           }
         }
       }
@@ -3804,7 +3854,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Add my first expense"
+            "value" : "Add My First Expense"
           }
         }
       }
@@ -3814,7 +3864,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Add a bill"
+            "value" : "Add a Bill"
           }
         }
       }
@@ -3896,7 +3946,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Receivables aging"
+            "value" : "Receivables Aging"
           }
         }
       }
@@ -3906,7 +3956,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Payables aging"
+            "value" : "Payables Aging"
           }
         }
       }
@@ -3996,7 +4046,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Void invoice"
+            "value" : "Void Invoice"
           }
         }
       }
@@ -4058,7 +4108,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Apply now"
+            "value" : "Apply Now"
           }
         }
       }
@@ -4068,7 +4118,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Apply to the inbox now"
+            "value" : "Apply to the Inbox Now"
           }
         }
       }
@@ -4078,7 +4128,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Apply customer credit (%@)"
+            "value" : "Apply Customer Credit (%@)"
           }
         }
       }
@@ -4148,7 +4198,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This is where you keep the people and companies you sell to."
+            "value" : "This is where you keep the people and businesses you sell to."
           }
         }
       }
@@ -4421,7 +4471,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Manual entry"
+            "value" : "Manual Entry"
           }
         }
       }
@@ -4461,7 +4511,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Journal entries"
+            "value" : "Journal Entries"
           }
         }
       }
@@ -4701,7 +4751,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Add category"
+            "value" : "Add Category"
           }
         }
       }
@@ -4721,7 +4771,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Add discount"
+            "value" : "Add Discount"
           }
         }
       }
@@ -4741,7 +4791,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Add line"
+            "value" : "Add Line"
           }
         }
       }
@@ -4751,7 +4801,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Add my first customer"
+            "value" : "Add My First Customer"
           }
         }
       }
@@ -4761,7 +4811,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Add my first vendor"
+            "value" : "Add My First Vendor"
           }
         }
       }
@@ -4771,7 +4821,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Add product or service"
+            "value" : "Add Product or Service"
           }
         }
       }
@@ -4781,7 +4831,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Add rate"
+            "value" : "Add Rate"
           }
         }
       }
@@ -4801,7 +4851,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Add an account"
+            "value" : "Add an Account"
           }
         }
       }
@@ -4904,7 +4954,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No Changes Yet"
+            "value" : "No changes yet"
           }
         }
       }
@@ -5100,7 +5150,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Balance sheet"
+            "value" : "Balance Sheet"
           }
         }
       }
@@ -5111,7 +5161,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Trial balance"
+            "value" : "Trial Balance"
           }
         }
       }
@@ -5121,7 +5171,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Trial balance"
+            "value" : "Trial Balance"
           }
         }
       }
@@ -5449,7 +5499,7 @@
       }
     },
     "Borradores" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5510,6 +5560,26 @@
         }
       }
     },
+    "Borrar estimado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete Estimate"
+          }
+        }
+      }
+    },
+    "Borrar factura" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete Invoice"
+          }
+        }
+      }
+    },
     "Borrar nota" : {
       "localizations" : {
         "en" : {
@@ -5555,7 +5625,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Delete recurring"
+            "value" : "Delete Recurring"
           }
         }
       }
@@ -5575,7 +5645,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Delete everything"
+            "value" : "Delete Everything"
           }
         }
       }
@@ -5585,7 +5655,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Delete everything and start over…"
+            "value" : "Delete Everything and Start Over…"
           }
         }
       }
@@ -5748,7 +5818,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "CSV (spreadsheet)"
+            "value" : "CSV (Spreadsheet)"
           }
         }
       }
@@ -5789,6 +5859,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Every change to your books, with the date and the device it was made on. The change log can’t be edited or deleted."
+          }
+        }
+      }
+    },
+    "Cada cambio queda anotado: qué cambió, cuándo y en qué aparato. Desde la app no se puede editar ni quitar una anotación." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Every change is written down: what changed, when, and on which device. Entries can't be edited or removed in the app."
           }
         }
       }
@@ -5958,7 +6038,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Change closing password"
+            "value" : "Change Closing Password"
           }
         }
       }
@@ -6028,7 +6108,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Change scheduled payment"
+            "value" : "Change Scheduled Payment"
           }
         }
       }
@@ -6038,7 +6118,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Change scheduled payment…"
+            "value" : "Change Scheduled Payment…"
           }
         }
       }
@@ -6049,7 +6129,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Change payment…"
+            "value" : "Change Payment…"
           }
         }
       }
@@ -6111,7 +6191,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Changes After Close"
+            "value" : "Changes after close"
           }
         }
       }
@@ -6151,7 +6231,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cancel scheduled payment"
+            "value" : "Cancel Scheduled Payment"
           }
         }
       }
@@ -6491,7 +6571,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Close without password"
+            "value" : "Close Without Password"
           }
         }
       }
@@ -6553,6 +6633,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Chirogra reads the receipt on this device and fills in the form: review the details before saving. The file is kept with the expense exactly as you upload it."
+          }
+        }
+      }
+    },
+    "Chirogra no pide cuenta ni contraseña para entrar: lo protegen el código de tu aparato y tu cuenta de Apple. No los compartas." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chirogra has no sign-in of its own: your device passcode and your Apple Account protect it. Don't share them."
+          }
+        }
+      }
+    },
+    "Chirogra no tiene analíticas ni publicidad y no manda tus libros a ningún servidor nuestro. Sale lo que tú compartes (facturas, reportes y copias) y, si la activas, la sincronización con iCloud." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chirogra has no analytics or ads and doesn't send your books to any server of ours. What leaves is what you share (invoices, reports, and backups) and, if you turn it on, iCloud sync."
           }
         }
       }
@@ -6642,7 +6742,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Period close"
+            "value" : "Period Close"
           }
         }
       }
@@ -6846,6 +6946,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Online Payments"
+          }
+        }
+      }
+    },
+    "Cobro · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Payment received · %@"
           }
         }
       }
@@ -7249,7 +7359,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "With balance"
+            "value" : "With Balance"
           }
         }
       }
@@ -7300,6 +7410,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "When several rules match, the one with the highest priority wins. If it records automatically and can’t (closed period…), the transaction stays to review with its suggestion."
+          }
+        }
+      }
+    },
+    "Con «Sincronizar con iCloud», viajan cifrados a la base privada de tu cuenta de iCloud para llegar a tu iPhone, iPad y Mac. Sin ella, se quedan solo en este aparato." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "With “Sync with iCloud” on, they travel encrypted to the private database of your iCloud account to reach your iPhone, iPad, and Mac. With it off, they stay on this device only."
           }
         }
       }
@@ -7390,7 +7510,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Reconciliations Completed in the Period"
+            "value" : "Reconciliations completed in the period"
           }
         }
       }
@@ -7450,7 +7570,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Reconciliation Finished"
+            "value" : "Reconciliation finished"
           }
         }
       }
@@ -7561,7 +7681,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Keep draft"
+            "value" : "Keep Draft"
           }
         }
       }
@@ -7820,6 +7940,17 @@
         }
       }
     },
+    "Convertidos" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Converted"
+          }
+        }
+      }
+    },
     "Convertidos en %@" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -7947,7 +8078,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Copy another"
+            "value" : "Copy Another"
           }
         }
       }
@@ -8037,7 +8168,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Create your company"
+            "value" : "Create your business"
           }
         }
       }
@@ -8117,7 +8248,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Create customer"
+            "value" : "Create Customer"
           }
         }
       }
@@ -8147,7 +8278,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Create company"
+            "value" : "Create Business"
           }
         }
       }
@@ -8157,7 +8288,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Create the “%@” rate of %@…"
+            "value" : "Create the “%@” Rate of %@…"
           }
         },
         "es" : {
@@ -8173,7 +8304,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Create my company"
+            "value" : "Create My Business"
           }
         }
       }
@@ -8183,7 +8314,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Create my first estimate"
+            "value" : "Create My First Estimate"
           }
         }
       }
@@ -8193,7 +8324,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Create my first invoice"
+            "value" : "Create My First Invoice"
           }
         }
       }
@@ -8203,7 +8334,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Create vendor “%@”"
+            "value" : "Create Vendor “%@”"
           }
         }
       }
@@ -8244,7 +8375,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Create your first invoice"
+            "value" : "Create Your First Invoice"
           }
         }
       }
@@ -8264,7 +8395,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Create a new company"
+            "value" : "Create a New Business"
           }
         }
       }
@@ -8274,7 +8405,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Create a recurring expense"
+            "value" : "Create a Recurring Expense"
           }
         }
       }
@@ -8284,7 +8415,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Let’s set up your company"
+            "value" : "Let’s set up your business"
           }
         }
       }
@@ -8676,7 +8807,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ZIP Code"
+            "value" : "ZIP code"
           }
         }
       }
@@ -8686,7 +8817,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Delivery ZIP Code"
+            "value" : "Delivery ZIP code"
           }
         }
       }
@@ -8697,6 +8828,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "How to pay: %@"
+          }
+        }
+      }
+    },
+    "Cómo protege Chirogra tus libros" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How Chirogra protects your books"
           }
         }
       }
@@ -8736,7 +8877,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Company details"
+            "value" : "Business details"
           }
         }
       }
@@ -9012,7 +9153,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Turn off"
+            "value" : "Turn Off"
           }
         }
       }
@@ -9062,7 +9203,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Discard draft"
+            "value" : "Discard Draft"
           }
         }
       }
@@ -9173,7 +9314,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "From actuals"
+            "value" : "From Actuals"
           }
         }
       }
@@ -9184,6 +9325,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Deselect"
+          }
+        }
+      }
+    },
+    "Desglose · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Breakdown · %@"
           }
         }
       }
@@ -9587,7 +9738,27 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Day to Day"
+            "value" : "Day to day"
+          }
+        }
+      }
+    },
+    "Dónde están" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Where they live"
+          }
+        }
+      }
+    },
+    "Dónde están tus datos, quién los ve y qué queda registrado." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Where your data lives, who sees it, and what gets recorded."
           }
         }
       }
@@ -9697,7 +9868,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Edit draft"
+            "value" : "Edit Draft"
           }
         }
       }
@@ -9707,7 +9878,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Edit customer"
+            "value" : "Edit Customer"
           }
         }
       }
@@ -9737,7 +9908,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Edit invoice"
+            "value" : "Edit Invoice"
           }
         }
       }
@@ -9758,7 +9929,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Edit expense"
+            "value" : "Edit Expense"
           }
         }
       }
@@ -9808,7 +9979,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Edit recurring"
+            "value" : "Edit Recurring"
           }
         }
       }
@@ -9959,7 +10130,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "E.g. Zelle to payments@yourcompany.com · Bank transfer to account 1234…"
+            "value" : "E.g. Zelle to payments@yourbusiness.com · Bank transfer to account 1234…"
           }
         }
       }
@@ -10488,7 +10659,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Choose a CSV, OFX or QFX file…"
+            "value" : "Choose a CSV, OFX or QFX File…"
           }
         }
       }
@@ -10508,7 +10679,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Choose customer…"
+            "value" : "Choose Customer…"
           }
         }
       }
@@ -10528,7 +10699,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Choose dates…"
+            "value" : "Choose Dates…"
           }
         }
       }
@@ -10538,7 +10709,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Choose photo"
+            "value" : "Choose Photo"
           }
         }
       }
@@ -10886,37 +11057,18 @@
         }
       }
     },
-    "Eliminar" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Delete"
-          }
-        }
-      }
-    },
-    "Eliminar borrador" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Delete draft"
-          }
-        }
-      }
-    },
-    "Eliminar estimado" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Delete Estimate"
-          }
-        }
-      }
-    },
     "Emitida" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Issued"
+          }
+        }
+      }
+    },
+    "Emitidas" : {
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -10961,7 +11113,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Issue invoice"
+            "value" : "Issue Invoice"
           }
         }
       }
@@ -11032,7 +11184,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Start with my company"
+            "value" : "Start with My Business"
           }
         }
       }
@@ -11042,7 +11194,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Start with my company…"
+            "value" : "Start with My Business…"
           }
         }
       }
@@ -11092,7 +11244,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Company archived: %@"
+            "value" : "Business archived: %@"
           }
         }
       }
@@ -11102,7 +11254,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Company restored: %@"
+            "value" : "Business restored: %@"
           }
         }
       }
@@ -11142,7 +11294,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Unlimited companies"
+            "value" : "Unlimited businesses"
           }
         }
       }
@@ -11228,6 +11380,16 @@
         }
       }
     },
+    "En Seguridad ves dónde se guardan tus datos, el bloqueo con Face ID y la bitácora de cambios." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In Security you'll see where your data is kept, the Face ID lock, and the change log."
+          }
+        }
+      }
+    },
     "En curso" : {
       "localizations" : {
         "en" : {
@@ -11248,6 +11410,16 @@
         }
       }
     },
+    "En iCloud y copias creas un archivo .chirogra con tus libros y recibos. No lleva contraseña: guárdalo en un sitio de confianza. Antes de restaurar una copia, Chirogra guarda lo que tenías para poder deshacerlo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In iCloud and backups you create a .chirogra file with your books and receipts. It has no password: keep it somewhere you trust. Before restoring a backup, Chirogra saves what you had so you can undo it."
+          }
+        }
+      }
+    },
     "En inglés" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -11264,7 +11436,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "In the Tab Bar"
+            "value" : "In the tab bar"
           }
         }
       }
@@ -11300,12 +11472,32 @@
         }
       }
     },
+    "En tu iCloud, si lo activas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In your iCloud, if you turn it on"
+          }
+        }
+      }
+    },
+    "En tus aparatos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On your devices"
+          }
+        }
+      }
+    },
     "Enlace de pago" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Payment Link"
+            "value" : "Payment link"
           }
         }
       }
@@ -11402,6 +11594,17 @@
         }
       }
     },
+    "Enviados" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sent"
+          }
+        }
+      }
+    },
     "Enviar" : {
       "localizations" : {
         "en" : {
@@ -11427,7 +11630,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Send to customer"
+            "value" : "Send to Customer"
           }
         }
       }
@@ -11771,12 +11974,12 @@
         }
       }
     },
-    "Esta factura ya está en tus libros. Al guardar, Chirogra revierte su asiento y registra uno nuevo con los cambios; conserva el número %@ y la edición queda en su actividad." : {
+    "Esta factura ya se emitió: el cambio queda en su actividad y en la bitácora de cambios, y conserva el número %@. Si cambian importes, cuentas, cliente o fecha, Chirogra revierte su asiento y registra uno nuevo." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This invoice is already in your books. When you save, Chirogra reverses its entry and records a new one with the changes; it keeps number %@ and the edit shows in its activity."
+            "value" : "This invoice was already issued: the change is recorded in its activity and in the change log, and it keeps number %@. If amounts, accounts, customer, or date change, Chirogra reverses its entry and records a new one."
           }
         }
       }
@@ -11879,7 +12082,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Profit and loss"
+            "value" : "Profit and Loss"
           }
         }
       }
@@ -11960,7 +12163,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "We are bringing your books from iCloud. If this is your first time using Chirogra, you can create your company."
+            "value" : "We are bringing your books from iCloud. If this is your first time using Chirogra, you can create your business."
           }
         }
       }
@@ -12231,7 +12434,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "You’re using the sample data for “%@”. Delete it and set up your company from scratch."
+            "value" : "You’re using the sample data for “%@”. Delete it and set up your business from scratch."
           }
         }
       }
@@ -12443,7 +12646,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Export for my accountant"
+            "value" : "Export for My Accountant"
           }
         }
       }
@@ -12894,7 +13097,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bills to pay"
+            "value" : "Bills to Pay"
           }
         }
       }
@@ -12964,7 +13167,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Missing Information"
+            "value" : "Missing information"
           }
         }
       }
@@ -13154,7 +13357,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Period dates"
+            "value" : "Period Dates"
           }
         }
       }
@@ -13254,7 +13457,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Filter customers"
+            "value" : "Filter Customers"
           }
         }
       }
@@ -13274,7 +13477,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Filter by status"
+            "value" : "Filter by Status"
           }
         }
       }
@@ -13294,7 +13497,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Filter by source"
+            "value" : "Filter by Source"
           }
         }
       }
@@ -13305,7 +13508,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Filter by type"
+            "value" : "Filter by Type"
           }
         }
       }
@@ -13327,7 +13530,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Filter vendors"
+            "value" : "Filter Vendors"
           }
         }
       }
@@ -13358,7 +13561,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cash flow"
+            "value" : "Cash Flow"
           }
         }
       }
@@ -13901,7 +14104,7 @@
         }
       }
     },
-    "Guarda el comprobante: el IRS pide conservarlo." : {
+    "Guarda el recibo: el IRS pide conservarlo." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -13911,8 +14114,7 @@
         }
       }
     },
-    "Guarda el comprobante: el IRS pide conservarlo. Puedes soltar aquí una foto o un PDF." : {
-      "extractionState" : "stale",
+    "Guarda el recibo: el IRS pide conservarlo. Puedes soltar aquí una foto o un PDF." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -13989,7 +14191,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Save draft"
+            "value" : "Save Draft"
           }
         }
       }
@@ -13999,7 +14201,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Save changes"
+            "value" : "Save Changes"
           }
         }
       }
@@ -14030,7 +14232,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Save expense"
+            "value" : "Save Expense"
           }
         }
       }
@@ -14040,7 +14242,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Save and new"
+            "value" : "Save and New"
           }
         }
       }
@@ -14629,7 +14831,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Uncleared Amount"
+            "value" : "Uncleared amount"
           }
         }
       }
@@ -14759,7 +14961,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sales tax"
+            "value" : "Sales Tax"
           }
         }
       }
@@ -15002,7 +15204,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Payment Instructions"
+            "value" : "Payment instructions"
           }
         }
       }
@@ -15272,7 +15474,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The company was created, but something is missing"
+            "value" : "The business was created, but something is missing"
           }
         }
       }
@@ -15282,7 +15484,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The company is already set up."
+            "value" : "The business is already set up."
           }
         }
       }
@@ -15568,6 +15770,16 @@
         }
       }
     },
+    "La suscripción la cobra Apple: Chirogra nunca ve tu tarjeta." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple bills the subscription: Chirogra never sees your card."
+          }
+        }
+      }
+    },
     "La tasa debe estar entre 0 % y 100 %." : {
       "localizations" : {
         "en" : {
@@ -15750,7 +15962,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "General ledger"
+            "value" : "General Ledger"
           }
         }
       }
@@ -15881,7 +16093,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Keep the books for as many companies as you like, each with its own customers, invoices, taxes, and reports."
+            "value" : "Keep the books for as many businesses as you like, each with its own customers, invoices, taxes, and reports."
           }
         }
       }
@@ -15891,7 +16103,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Keep the books for all your clients in one place, each in its own company."
+            "value" : "Keep the books for all your clients in one place, each in its own business."
           }
         }
       }
@@ -15912,6 +16124,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "I keep the books for my own business: invoices, expenses, and sales tax."
+          }
+        }
+      }
+    },
+    "Lo contabilizado no se borra" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Posted entries aren't erased"
           }
         }
       }
@@ -16356,6 +16578,16 @@
         }
       }
     },
+    "Los recibos se leen en el propio aparato. Chirogra no se conecta a tu banco: los extractos los importas tú desde un archivo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Receipts are read on the device itself. Chirogra doesn't connect to your bank: you import statements from a file."
+          }
+        }
+      }
+    },
     "Los saldos deudores van en Débito y los acreedores en Crédito." : {
       "localizations" : {
         "en" : {
@@ -16544,7 +16776,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Check items until you reach $0.00"
+            "value" : "Check Items Until You Reach $0.00"
           }
         }
       }
@@ -16629,6 +16861,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mark as Read"
+          }
+        }
+      }
+    },
+    "Marcar como pagada" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mark as Paid"
           }
         }
       }
@@ -17023,7 +17265,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Show Inspector (⌥⌘I)"
+            "value" : "Show inspector (⌥⌘I)"
           }
         }
       }
@@ -17063,7 +17305,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Show “Pay Now” on Invoices"
+            "value" : "Show “Pay Now” on invoices"
           }
         }
       }
@@ -17133,7 +17375,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Move money"
+            "value" : "Move Money"
           }
         }
       }
@@ -17143,7 +17385,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Move money between accounts"
+            "value" : "Move Money Between Accounts"
           }
         }
       }
@@ -17351,7 +17593,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "More actions"
+            "value" : "More Actions"
           }
         }
       }
@@ -17371,7 +17613,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "More categories…"
+            "value" : "More Categories…"
           }
         }
       }
@@ -17742,6 +17984,16 @@
         }
       }
     },
+    "Ningún asiento coincide con el filtro." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No entries match the filter."
+          }
+        }
+      }
+    },
     "Ningún asiento coincide con la búsqueda o el filtro." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -17908,6 +18160,16 @@
         }
       }
     },
+    "Ningún proveedor coincide con la búsqueda." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No vendors match the search."
+          }
+        }
+      }
+    },
     "No" : {
       "localizations" : {
         "en" : {
@@ -17944,7 +18206,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Don't set up your company again: on that device, turn on “Sync with iCloud” in Settings (on iPhone, in More) and your books will arrive here on their own."
+            "value" : "Don't set up your business again: on that device, turn on “Sync with iCloud” in Settings (on iPhone, in More) and your books will arrive here on their own."
           }
         }
       }
@@ -18014,7 +18276,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Not taxable"
+            "value" : "Not Taxable"
           }
         }
       }
@@ -18239,7 +18501,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Couldn’t Delete the Sample Data"
+            "value" : "Couldn’t delete the sample data"
           }
         }
       }
@@ -18299,7 +18561,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Couldn’t Complete"
+            "value" : "Couldn’t complete"
           }
         }
       }
@@ -18489,7 +18751,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Company name"
+            "value" : "Business name"
           }
         }
       }
@@ -18499,7 +18761,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Client’s company name"
+            "value" : "Client’s business name"
           }
         }
       }
@@ -18560,7 +18822,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Name or company"
+            "value" : "Name or business"
           }
         }
       }
@@ -18621,7 +18883,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Credit memo"
+            "value" : "Credit Memo"
           }
         }
       }
@@ -18641,7 +18903,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Credit memo or refund"
+            "value" : "Credit Memo or Refund"
           }
         }
       }
@@ -18712,7 +18974,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "New agency…"
+            "value" : "New Agency…"
           }
         }
       }
@@ -18732,7 +18994,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "New account"
+            "value" : "New Account"
           }
         }
       }
@@ -18752,7 +19014,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "New vendor bill"
+            "value" : "New Vendor Bill"
           }
         }
       }
@@ -18782,7 +19044,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "New recurring"
+            "value" : "New Recurring"
           }
         }
       }
@@ -18802,7 +19064,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "New rate"
+            "value" : "New Rate"
           }
         }
       }
@@ -18822,7 +19084,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "New journal entry"
+            "value" : "New Journal Entry"
           }
         }
       }
@@ -18862,7 +19124,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "New group"
+            "value" : "New Group"
           }
         }
       }
@@ -18872,7 +19134,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "New transaction"
+            "value" : "New Transaction"
           }
         }
       }
@@ -18912,7 +19174,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "New vendor…"
+            "value" : "New Vendor…"
           }
         }
       }
@@ -19035,7 +19297,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Hide Inspector (⌥⌘I)"
+            "value" : "Hide inspector (⌥⌘I)"
           }
         }
       }
@@ -19266,7 +19528,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Other amount…"
+            "value" : "Other Amount…"
           }
         }
       }
@@ -19558,7 +19820,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pay this card"
+            "value" : "Pay This Card"
           }
         }
       }
@@ -19568,7 +19830,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pay bill"
+            "value" : "Pay Bill"
           }
         }
       }
@@ -19578,7 +19840,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pay the card"
+            "value" : "Pay the Card"
           }
         }
       }
@@ -19668,7 +19930,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Batch payment"
+            "value" : "Batch Payment"
           }
         }
       }
@@ -19754,26 +20016,6 @@
         }
       }
     },
-    "Pago recibido" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Payment received"
-          }
-        }
-      }
-    },
-    "Pago recibido · %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Payment received · %@"
-          }
-        }
-      }
-    },
     "Pagos" : {
       "localizations" : {
         "en" : {
@@ -19790,6 +20032,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Payments to the agency"
+          }
+        }
+      }
+    },
+    "Pagos del año" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Payments this year"
+          }
+        }
+      }
+    },
+    "Pagos del mes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Payments this month"
           }
         }
       }
@@ -19971,7 +20233,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "To get a copy, add the company email in Settings › Company Profile."
+            "value" : "To get a copy, add the business email in Settings › Business Profile."
           }
         }
       }
@@ -20084,7 +20346,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Move to another account"
+            "value" : "Move to Another Account"
           }
         }
       }
@@ -20269,7 +20531,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Company Profile"
+            "value" : "Business Profile"
           }
         }
       }
@@ -20299,7 +20561,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Closed Period"
+            "value" : "Closed period"
           }
         }
       }
@@ -20431,7 +20693,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Chart of accounts"
+            "value" : "Chart of Accounts"
           }
         }
       }
@@ -20491,7 +20753,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Accountants plan: unlimited businesses…"
+            "value" : "Accountants Plan: Unlimited Businesses…"
           }
         }
       }
@@ -20531,7 +20793,17 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "You can still start with your company from Settings › iCloud, backups and security."
+            "value" : "You can still start with your business from Settings › iCloud, backups and security."
+          }
+        }
+      }
+    },
+    "Política de privacidad" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Privacy Policy"
           }
         }
       }
@@ -20603,6 +20875,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "By"
+          }
+        }
+      }
+    },
+    "Por aceptar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Awaiting approval"
           }
         }
       }
@@ -20785,7 +21067,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Payables and Recurring"
+            "value" : "Payables and recurring"
           }
         }
       }
@@ -21048,7 +21330,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Budget vs. actual"
+            "value" : "Budget vs. Actual"
           }
         }
       }
@@ -21148,7 +21430,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Try with sample data"
+            "value" : "Try with Sample Data"
           }
         }
       }
@@ -21158,7 +21440,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Try free"
+            "value" : "Try Free"
           }
         }
       }
@@ -21234,6 +21516,16 @@
         }
       }
     },
+    "Programado para el %@ · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scheduled for %@ · %@"
+          }
+        }
+      }
+    },
     "Programado para hoy" : {
       "localizations" : {
         "en" : {
@@ -21270,7 +21562,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Schedule payment"
+            "value" : "Schedule Payment"
           }
         }
       }
@@ -21280,7 +21572,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Schedule payment…"
+            "value" : "Schedule Payment…"
           }
         }
       }
@@ -21644,7 +21936,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "I put in money of my own"
+            "value" : "I Put In Money of My Own"
           }
         }
       }
@@ -21735,7 +22027,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Clear search"
+            "value" : "Clear Search"
           }
         }
       }
@@ -21745,7 +22037,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Remove closing"
+            "value" : "Remove Closing"
           }
         }
       }
@@ -21815,7 +22107,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Clear filters"
+            "value" : "Clear Filters"
           }
         }
       }
@@ -21825,7 +22117,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Remove the Closing Password"
+            "value" : "Remove the closing password"
           }
         }
       }
@@ -21855,7 +22147,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Remove line"
+            "value" : "Remove Line"
           }
         }
       }
@@ -21865,7 +22157,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Remove receipt"
+            "value" : "Remove Receipt"
           }
         }
       }
@@ -21920,6 +22212,16 @@
         }
       }
     },
+    "Quién puede abrirlos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Who can open them"
+          }
+        }
+      }
+    },
     "Qué" : {
       "localizations" : {
         "en" : {
@@ -21970,6 +22272,16 @@
         }
       }
     },
+    "Qué queda registrado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What gets recorded"
+          }
+        }
+      }
+    },
     "Qué quieres recordar de %@" : {
       "localizations" : {
         "en" : {
@@ -21986,6 +22298,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "What to reclassify"
+          }
+        }
+      }
+    },
+    "Qué sale del aparato" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What leaves your device"
           }
         }
       }
@@ -22131,6 +22453,17 @@
         }
       }
     },
+    "Rechazados" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Declined"
+          }
+        }
+      }
+    },
     "Recibido" : {
       "localizations" : {
         "en" : {
@@ -22232,6 +22565,16 @@
         }
       }
     },
+    "Recibos y extractos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Receipts and statements"
+          }
+        }
+      }
+    },
     "Recientes" : {
       "localizations" : {
         "en" : {
@@ -22298,7 +22641,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Remind to pay"
+            "value" : "Remind to Pay"
           }
         }
       }
@@ -22349,7 +22692,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Reminder Sent"
+            "value" : "Reminder sent"
           }
         }
       }
@@ -22596,6 +22939,16 @@
         }
       }
     },
+    "Registrar cobro…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Record Payment…"
+          }
+        }
+      }
+    },
     "Registrar cobro de %@" : {
       "localizations" : {
         "en" : {
@@ -22636,6 +22989,16 @@
         }
       }
     },
+    "Registrar en un mes cerrado pide la contraseña de cierre o, si no la fijaste, un motivo. Esa autorización también queda en la bitácora." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recording in a closed month asks for the closing password or, if you haven't set one, a reason. That authorization is also kept in the change log."
+          }
+        }
+      }
+    },
     "Registrar gasto" : {
       "localizations" : {
         "en" : {
@@ -22661,7 +23024,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Record payment for %@"
+            "value" : "Record Payment for %@"
           }
         }
       }
@@ -22671,7 +23034,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Record tax payment"
+            "value" : "Record Tax Payment"
           }
         }
       }
@@ -22721,7 +23084,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Record a transaction"
+            "value" : "Record a Transaction"
           }
         }
       }
@@ -22811,7 +23174,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Rules Applied"
+            "value" : "Rules applied"
           }
         }
       }
@@ -22841,7 +23204,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Split across categories"
+            "value" : "Split Across Categories"
           }
         }
       }
@@ -23096,7 +23459,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Search results"
+            "value" : "Search Results"
           }
         }
       }
@@ -23248,7 +23611,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Reverse entry"
+            "value" : "Reverse Entry"
           }
         }
       }
@@ -23320,7 +23683,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Check Your iCloud Account"
+            "value" : "Check your iCloud account"
           }
         }
       }
@@ -23640,7 +24003,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Statement Balance"
+            "value" : "Statement balance"
           }
         }
       }
@@ -23712,7 +24075,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Statement Balance"
+            "value" : "Statement balance"
           }
         }
       }
@@ -23916,7 +24279,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "They appear in the header of your invoices and estimates. Edit them in Company Profile."
+            "value" : "They appear in the header of your invoices and estimates. Edit them in Business Profile."
           }
         }
       }
@@ -24027,7 +24390,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Skip for now"
+            "value" : "Skip for Now"
           }
         }
       }
@@ -24057,7 +24420,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "I took money out for myself"
+            "value" : "I Took Money Out for Myself"
           }
         }
       }
@@ -24380,6 +24743,26 @@
         }
       }
     },
+    "Se registrará un cobro de %@ (%@) en %@ con fecha %@. La factura quedará como pagada." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A payment of %@ (%@) will be deposited to %@ on %@. The invoice will be marked as paid."
+          }
+        }
+      }
+    },
+    "Se registrará un cobro de %@ (%@) en %@ con fecha %@. Quedará un saldo de %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A payment of %@ (%@) will be deposited to %@ on %@. A balance of %@ will remain."
+          }
+        }
+      }
+    },
     "Se registró el recurrente de %@" : {
       "localizations" : {
         "en" : {
@@ -24435,7 +24818,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Keep editing"
+            "value" : "Keep Editing"
           }
         }
       }
@@ -24445,7 +24828,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Continue offline"
+            "value" : "Continue Offline"
           }
         }
       }
@@ -24618,7 +25001,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Select all"
+            "value" : "Select All"
           }
         }
       }
@@ -24743,6 +25126,16 @@
         }
       }
     },
+    "Si lo activas en Seguridad, Chirogra pide Face ID, Touch ID o el código del aparato cada vez que vuelves a ella." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "If you turn it on in Security, Chirogra asks for Face ID, Touch ID, or your device passcode every time you return to it."
+          }
+        }
+      }
+    },
     "Si quieres conservarlos, crea antes una copia." : {
       "localizations" : {
         "en" : {
@@ -24769,6 +25162,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "If what you're owed or inventory goes up, less money comes in than income shows; if what you owe goes up, less goes out."
+          }
+        }
+      }
+    },
+    "Si una corrección cambia la contabilidad de una factura emitida o de un gasto, Chirogra revierte su asiento y registra uno nuevo; el original sigue en el diario. Una factura emitida no se borra: se anula." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "If a correction changes the accounting of an issued invoice or an expense, Chirogra reverses its entry and records a new one; the original stays in the journal. An issued invoice isn't deleted: it's voided."
           }
         }
       }
@@ -24829,7 +25232,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No Notifications"
+            "value" : "No notifications"
           }
         }
       }
@@ -25280,6 +25683,26 @@
         }
       }
     },
+    "Sin pagos en el año" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No payments this year"
+          }
+        }
+      }
+    },
+    "Sin pagos en el mes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No payments this month"
+          }
+        }
+      }
+    },
     "Sin pagos en el trimestre" : {
       "localizations" : {
         "en" : {
@@ -25386,7 +25809,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No Selection"
+            "value" : "No selection"
           }
         }
       }
@@ -25551,6 +25974,16 @@
         }
       }
     },
+    "Solo lo que tú envías" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Only what you send"
+          }
+        }
+      }
+    },
     "Solo necesitas uno a mano para cosas como poner dinero de tu bolsillo en el negocio." : {
       "localizations" : {
         "en" : {
@@ -25566,7 +25999,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Period only"
+            "value" : "Period Only"
           }
         }
       }
@@ -25696,7 +26129,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Only without receipt"
+            "value" : "Only Without Receipt"
           }
         }
       }
@@ -25726,7 +26159,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "I’m an accountant or bookkeeper with several companies."
+            "value" : "I’m an accountant or bookkeeper with several businesses."
           }
         }
       }
@@ -26535,7 +26968,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No Estimates Yet"
+            "value" : "No estimates yet"
           }
         }
       }
@@ -26555,7 +26988,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No company is set up yet."
+            "value" : "No business is set up yet."
           }
         }
       }
@@ -26989,7 +27422,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Total Uncleared"
+            "value" : "Total uncleared"
           }
         }
       }
@@ -27171,7 +27604,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Your iCloud Is Full"
+            "value" : "Your iCloud is full"
           }
         }
       }
@@ -27291,7 +27724,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Your First Client"
+            "value" : "Your first client"
           }
         }
       }
@@ -27554,7 +27987,17 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Your Books Are Saved on This Device"
+            "value" : "Your books are saved on this device"
+          }
+        }
+      }
+    },
+    "Tus libros se guardan en este aparato. Chirogra no tiene servidores propios, así que nosotros no podemos verlos." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your books are stored on this device. Chirogra has no servers of its own, so we can't see them."
           }
         }
       }
@@ -27621,6 +28064,16 @@
         }
       }
     },
+    "Tus libros, protegidos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your books, protected"
+          }
+        }
+      }
+    },
     "Tus marcas se guardan al momento: puedes salir y seguir después." : {
       "localizations" : {
         "en" : {
@@ -27636,7 +28089,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Your other devices delete it as soon as they open Chirogra with a connection. You can now set up your company."
+            "value" : "Your other devices delete it as soon as they open Chirogra with a connection. You can now set up your business."
           }
         }
       }
@@ -27707,6 +28160,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "USD · Dollar"
+          }
+        }
+      }
+    },
+    "Un archivo que guardas tú" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A file you keep"
           }
         }
       }
@@ -27947,7 +28410,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Use this plan"
+            "value" : "Use This Plan"
           }
         }
       }
@@ -27967,7 +28430,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Use the %@ rate: %@"
+            "value" : "Use the %@ Rate: %@"
           }
         },
         "es" : {
@@ -28178,6 +28641,16 @@
         }
       }
     },
+    "Vence en %lld días · saldo %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Due in %lld days · balance %@"
+          }
+        }
+      }
+    },
     "Vence esta semana" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -28199,12 +28672,32 @@
         }
       }
     },
+    "Vence hoy · saldo %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Due today · balance %@"
+          }
+        }
+      }
+    },
     "Vence mañana" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Due tomorrow"
+          }
+        }
+      }
+    },
+    "Vence mañana · saldo %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Due tomorrow · balance %@"
           }
         }
       }
@@ -28333,6 +28826,16 @@
         }
       }
     },
+    "Venció ayer · saldo %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 day overdue · balance %@"
+          }
+        }
+      }
+    },
     "Venció el %@" : {
       "localizations" : {
         "en" : {
@@ -28379,6 +28882,16 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "Venció hace %lld días · saldo %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld days overdue · balance %@"
           }
         }
       }
@@ -28505,6 +29018,16 @@
         }
       }
     },
+    "Ver" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View"
+          }
+        }
+      }
+    },
     "Ver asiento" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -28549,6 +29072,16 @@
         }
       }
     },
+    "Ver documento" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View document"
+          }
+        }
+      }
+    },
     "Ver el recorrido otra vez" : {
       "localizations" : {
         "en" : {
@@ -28565,7 +29098,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "View in ledger"
+            "value" : "View in Ledger"
           }
         }
       }
@@ -28586,7 +29119,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "View profit and loss"
+            "value" : "View Profit and Loss"
           }
         }
       }
@@ -28645,12 +29178,21 @@
       }
     },
     "Ver recibo" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "View receipt"
+            "value" : "View Receipt"
+          }
+        }
+      }
+    },
+    "Ver recibo %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View receipt %@"
           }
         }
       }
@@ -28660,7 +29202,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "View report"
+            "value" : "View Report"
           }
         }
       }
@@ -28671,7 +29213,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "View rates"
+            "value" : "View Rates"
           }
         }
       }
@@ -28681,7 +29223,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "See all invoices"
+            "value" : "See All Invoices"
           }
         }
       }
@@ -28691,7 +29233,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "View all bills"
+            "value" : "View All Bills"
           }
         }
       }
@@ -28701,7 +29243,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "See all"
+            "value" : "See All"
           }
         }
       }
@@ -28712,7 +29254,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Show all months"
+            "value" : "Show All Months"
           }
         }
       }
@@ -28802,7 +29344,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Preview on the Invoice"
+            "value" : "Preview on the invoice"
           }
         }
       }
@@ -28883,7 +29425,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vs. previous"
+            "value" : "Vs. Previous"
           }
         }
       }
@@ -29044,6 +29586,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "down"
+          }
+        }
+      }
+    },
+    "bank.accept.bill" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Record Bill Payment"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registrar pago"
           }
         }
       }
@@ -29236,7 +29794,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "the company name"
+            "value" : "the business name"
           }
         }
       }
@@ -29399,6 +29957,22 @@
         }
       }
     },
+    "estimates.expired" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Expired"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vencidos"
+          }
+        }
+      }
+    },
     "facturado" : {
       "localizations" : {
         "en" : {
@@ -29465,7 +30039,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "iCloud and backups"
+            "value" : "iCloud and Backups"
           }
         }
       }
@@ -29646,7 +30220,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "“%@” is a made-up company for trying out Chirogra. Whenever you’re ready, delete it and create your own."
+            "value" : "“%@” is a made-up business for trying out Chirogra. Whenever you’re ready, delete it and create your own."
           }
         }
       }
@@ -29656,7 +30230,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "“%@” is a made-up company for trying the app. It’s deleted with its sample data, and then you create yours. Nothing of yours is deleted."
+            "value" : "“%@” is a made-up business for trying the app. It’s deleted with its sample data, and then you create yours. Nothing of yours is deleted."
           }
         }
       }
@@ -29708,7 +30282,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "What does the company do?"
+            "value" : "What does the business do?"
           }
         }
       }
@@ -29763,6 +30337,26 @@
         }
       }
     },
+    "¿Borrar este borrador?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete this draft?"
+          }
+        }
+      }
+    },
+    "¿Borrar este estimado?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete this estimate?"
+          }
+        }
+      }
+    },
     "¿Borrar la nota?" : {
       "localizations" : {
         "en" : {
@@ -29788,7 +30382,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Delete Sample Data?"
+            "value" : "Delete sample data?"
           }
         }
       }
@@ -29818,7 +30412,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Change Something Reconciled?"
+            "value" : "Change something reconciled?"
           }
         }
       }
@@ -29838,7 +30432,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Close Without a Closing Password?"
+            "value" : "Close without a closing password?"
           }
         }
       }
@@ -29858,7 +30452,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "How much money do the company’s books start with?"
+            "value" : "How much money do the business’s books start with?"
           }
         }
       }
@@ -29944,27 +30538,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Undo the Restore?"
-          }
-        }
-      }
-    },
-    "¿Eliminar el borrador?" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Delete the draft?"
-          }
-        }
-      }
-    },
-    "¿Eliminar el estimado?" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Delete the estimate?"
+            "value" : "Undo the restore?"
           }
         }
       }
@@ -30069,12 +30643,22 @@
         }
       }
     },
+    "¿Registrar el cobro de %@?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Record payment of %@?"
+          }
+        }
+      }
+    },
     "¿Registrar en un periodo cerrado?" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Record in a Closed Period?"
+            "value" : "Record in a closed period?"
           }
         }
       }
@@ -30084,7 +30668,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Restore This Backup?"
+            "value" : "Restore this backup?"
           }
         }
       }
@@ -30187,7 +30771,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Last Statement"
+            "value" : "Last statement"
           }
         }
       }
@@ -30276,7 +30860,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Full Tutorial"
+            "value" : "Full tutorial"
           }
         }
       }
@@ -30341,12 +30925,12 @@
         }
       }
     },
-    "El impuesto que cobraste a tus clientes y le debes al estado este trimestre." : {
+    "El impuesto que cobraste a tus clientes y le debes al estado, y cuándo vence la declaración." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The tax you collected from your customers and owe the state this quarter."
+            "value" : "The tax you collected from your customers and owe the state, and when the return is due."
           }
         }
       }
@@ -31211,12 +31795,12 @@
         }
       }
     },
-    "El sales tax se declara por trimestre. Toca para ver otro." : {
+    "El sales tax se declara por mes, trimestre o año, según tu agencia. Toca para ver otro periodo." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sales tax is filed by quarter. Tap to see another one."
+            "value" : "Sales tax is filed by month, quarter or year, depending on your agency. Tap to see another period."
           }
         }
       }

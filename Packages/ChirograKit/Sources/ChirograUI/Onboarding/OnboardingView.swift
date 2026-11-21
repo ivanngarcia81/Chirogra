@@ -568,15 +568,9 @@ struct OnboardingView: View {
 
     // MARK: Barra de abajo
 
-    /// Puntos de paso (canvas: el actual en `label`, los demás al 25 %).
+    /// «2 de 3», como los recorridos y la bienvenida (antes, puntos redondos; repaso visual, build 56).
     private var stepDots: some View {
-        HStack(spacing: 8) {
-            ForEach(1...Self.stepCount, id: \.self) { index in
-                Circle().fill(Palette.ink).opacity(index == step ? 1 : 0.25).frame(width: Self.dotSide, height: Self.dotSide)
-            }
-        }
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(Text("Paso \(step) de \(Self.stepCount)"))
+        PasoIndicador(actual: step, total: Self.stepCount)
     }
 
     private var primaryTitle: LocalizedStringKey {
@@ -590,12 +584,6 @@ struct OnboardingView: View {
         default: "Crear empresa"
         }
     }
-
-    #if os(macOS)
-    private static let dotSide: CGFloat = 7
-    #else
-    private static let dotSide: CGFloat = 8
-    #endif
 
     #if os(iOS)
     /// Barra de vidrio que flota abajo (canvas `OnbEmpresa`): puntos de paso, «Continuar» y, en el paso 1, los datos de

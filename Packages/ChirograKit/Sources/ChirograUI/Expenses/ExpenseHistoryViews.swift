@@ -24,7 +24,7 @@ enum ExpenseStatus {
         switch self {
         case .pending: StatusChip(text: title, foreground: Palette.warning, compact: compact, dot: Palette.orange)
         case .void: StatusChip(text: title, foreground: Palette.ink2, compact: compact, dot: Palette.gray)
-        case .edited: StatusChip(text: title, foreground: Palette.info, compact: compact, dot: Palette.teal)
+        case .edited: StatusChip(text: title, foreground: Palette.info, compact: compact, dot: Palette.blue)
         }
     }
 }

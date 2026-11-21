@@ -787,7 +787,7 @@ private struct JournalMasterList: View {
                           subtitle: "#\(entry.number) · \(entry.date.shortDate) · \(entry.source.title)") {
                     if entry.source == .accountantAdjustment {
                         MasterStatus(chip: StatusChip(text: String(localized: "Del contador"), foreground: Palette.info,
-                                                      compact: true, dot: Palette.info))
+                                                      compact: true, dot: Palette.blue))
                     } else if entry.isReversed || entry.reversesEntryID != nil {
                         MasterStatus(chip: StatusChip(text: entry.isReversed ? String(localized: "Revertido") : String(localized: "Reversión"),
                                                       foreground: Palette.ink2, compact: true, dot: Palette.gray))
@@ -921,25 +921,18 @@ struct BillDetailView: View {
     var body: some View {
         List {
             if let errorMessage { ErrorBanner(message: errorMessage).listRowBackground(Color.clear).listRowInsets(EdgeInsets()) }
-            // Cabecera como la factura del canvas (`iPadVentas`, `FacturaDetalle`): proveedor y número, saldo de 40 pt y
-            // el estado con el vencimiento debajo; «Registrar pago» como botón principal.
+            // Cabecera de la factura (`DetailSummary`): proveedor y número, saldo y el estado con el vencimiento debajo;
+            // centrada en el iPhone (repaso visual, build 56; antes, a la izquierda y de 40 pt). «Registrar pago» como
+            // botón principal.
             Section {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(bill.vendorNumber.isEmpty ? (bill.vendor?.name ?? String(localized: "Proveedor"))
-                                                   : "\(bill.vendor?.name ?? String(localized: "Proveedor")) · \(bill.vendorNumber)")
-                        .font(.subheadline).foregroundStyle(Palette.ink2)
-                    Text(bill.balanceDue.money).font(.amount(40)).foregroundStyle(Palette.ink)
-                        .lineLimit(1).minimumScaleFactor(0.6)
-                    HStack(alignment: .firstTextBaseline, spacing: 6) {
-                        StatusChip(billWithAge: bill, compact: false)
-                        Text(verbatim: "· " + (bill.isOpen ? String(localized: "Saldo por pagar · \(bill.dueDate.dueLabel)")
-                                                          : String(localized: "Total \(bill.total.money)")))
-                            .font(.subheadline).foregroundStyle(bill.isOverdue ? Palette.negative : Palette.ink2)
-                    }
+                let vendor = bill.vendor?.name ?? String(localized: "Proveedor")
+                // Pagada o anulada, el total, como la factura: un «$0.00» grande no dice nada.
+                DetailSummary(name: bill.vendorNumber.isEmpty ? vendor : "\(vendor) · \(bill.vendorNumber)",
+                              amount: (bill.isOpen ? bill.balanceDue : bill.total).money) {
+                    StatusChip(billWithAge: bill, compact: false)
+                    if bill.isOpen { DetailSummaryLine(text: String(localized: "Saldo por pagar · \(bill.dueDate.dueLabel)")) }
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .accessibilityElement(children: .combine)
-                .listRowInsets(EdgeInsets(top: 4, leading: 8, bottom: 4, trailing: 8))
+                .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
                 .listRowBackground(Color.clear)
                 .listRowSeparator(.hidden)
                 if bill.isOpen {

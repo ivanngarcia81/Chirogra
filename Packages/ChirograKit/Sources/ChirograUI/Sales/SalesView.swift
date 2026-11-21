@@ -53,7 +53,7 @@ struct SalesView: View {
             filter = .overdue
         }
         .navigationTitle(fixedSegment == .customers ? "Clientes" : fixedSegment == .estimates ? "Estimados" : "Ventas")
-        .headerTitle()
+        .modifier(SalesTitle())
         // Una sola búsqueda en el contenedor y siempre visible: puesta en cada lista, desaparecía al volver de
         // una factura, porque la barra ya no encontraba la lista.
         .modifier(SalesSearch(query: $query,
@@ -146,8 +146,9 @@ extension View {
 
 struct InvoiceListView: View {
     enum Filter: String, CaseIterable, Identifiable {
-        // «Emitida» (y no «Enviada»): reúne las emitidas pendientes, se hayan mandado o no al cliente.
-        case all = "Todas", draft = "Borrador", sent = "Emitida", partial = "Pago parcial", overdue = "Vencida", paid = "Pagada"
+        // «Emitidas» (y no «Enviadas»): reúne las emitidas pendientes, se hayan mandado o no al cliente. En plural, como
+        // los demás filtros; el singular queda para el estado de cada fila (repaso visual, build 56).
+        case all = "Todas", draft = "Borradores", sent = "Emitidas", partial = "Pago parcial", overdue = "Vencidas", paid = "Pagadas"
         var id: String { rawValue }
 
         func matches(_ invoice: Invoice) -> Bool {
@@ -229,27 +230,7 @@ struct InvoiceListView: View {
         let count = filter == .all ? Text("\(filtered.count) facturas")   // singular y plural en el catálogo
             : Text("\(filtered.count) facturas") + Text(verbatim: " · ") + Text(filter.localizedTitle)
         // La cifra en grande y en `ink` (5.º tester de Userbrain, 16-nov: buscaba cuánto le deben y no vio la línea gris).
-        let total = HStack(alignment: .firstTextBaseline, spacing: 6) {
-            Text("Por cobrar")
-            Text(verbatim: receivable.money).font(.headline).foregroundStyle(Palette.ink)
-        }
-        .accessibilityElement(children: .combine)
-        .recorridoObjetivo("sales.receivable")
-        return ViewThatFits(in: .horizontal) {
-            HStack(alignment: .firstTextBaseline) {
-                count.fixedSize()
-                Spacer(minLength: 8)
-                total.fixedSize()
-            }
-            VStack(alignment: .leading, spacing: 2) {
-                count
-                total
-            }
-        }
-        .font(.footnote)
-        .foregroundStyle(Palette.ink2)
-        .monospacedDigit()
-        .textCase(nil)
+        return ListSummaryHeader(title: count, label: Text("Por cobrar"), amount: receivable.money, objetivo: "sales.receivable")
     }
 
     @ViewBuilder
@@ -258,16 +239,9 @@ struct InvoiceListView: View {
             EmptyStateView(guide: .invoices, action: onCreate)
         } else {
             // Canvas `Ventas`: «Sin resultados» con «Quitar filtros» en la cápsula gris.
-            ContentUnavailableView {
-                Label("Sin resultados", systemImage: "magnifyingglass")
-            } description: {
-                Text("Prueba con otro cliente, número o estado.")
-            } actions: {
-                Button("Quitar filtros") {
-                    query = ""
-                    filter = .all
-                }
-                .buttonStyle(FillCapsuleButtonStyle(fullWidth: false))
+            NoResultsView(message: String(localized: "Prueba con otro cliente, número o estado.")) {
+                query = ""
+                filter = .all
             }
         }
     }
@@ -349,6 +323,24 @@ private struct SalesSearch: ViewModifier {
         content.searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: prompt)
         #else
         content.searchable(text: $query, prompt: prompt)
+        #endif
+    }
+}
+
+/// Título de Ventas: como `headerTitle()`, pero grande a la fuerza en el iPhone. Con el buscador fijo en el cajón de la
+/// barra, `.automatic` lo dejaba en línea, pequeño y centrado, distinto de Inicio, Gastos y Banca (repaso visual,
+/// build 56). Un solo modificador con el modo calculado: con un `if` se perdían la sección y la búsqueda al cambiar de
+/// tamaño la columna del iPad.
+private struct SalesTitle: ViewModifier {
+    #if os(iOS)
+    @Environment(\.horizontalSizeClass) private var sizeClass
+    #endif
+
+    func body(content: Content) -> some View {
+        #if os(iOS)
+        content.toolbarTitleDisplayMode(sizeClass == .regular ? .inlineLarge : .large)
+        #else
+        content.headerTitle()
         #endif
     }
 }

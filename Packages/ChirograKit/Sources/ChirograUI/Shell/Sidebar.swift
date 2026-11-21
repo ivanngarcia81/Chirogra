@@ -512,8 +512,7 @@ struct SearchResultsView: View {
         List {
             if foundInvoices.isEmpty && foundEstimates.isEmpty && foundCustomers.isEmpty && foundVendors.isEmpty && foundExpenses.isEmpty
                 && foundAccounts.isEmpty {
-                EmptyStateView(systemImage: "magnifyingglass", title: String(localized: "Sin resultados"),
-                               message: String(localized: "Prueba con un cliente, un número de factura, un proveedor o un monto."))
+                NoResultsView(message: String(localized: "Prueba con un cliente, un número de factura, un proveedor o un monto."))
             }
             if !foundInvoices.isEmpty {
                 Section(title: "Facturas") {

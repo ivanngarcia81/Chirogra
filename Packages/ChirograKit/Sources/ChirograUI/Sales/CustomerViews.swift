@@ -66,7 +66,7 @@ struct CustomerListView: View {
                     Section {
                         rows(owing)
                     } header: {
-                        groupHeader(String(localized: "Con saldo pendiente"), owing.reduce(0) { $0 + $1.openBalance }.money)
+                        ListSummaryHeader(title: Text("Con saldo pendiente"), amount: owing.reduce(0) { $0 + $1.openBalance }.money)
                     }
                     .listRowBackground(Palette.surface)
                 }
@@ -74,7 +74,7 @@ struct CustomerListView: View {
                     Section {
                         rows(settled)
                     } header: {
-                        groupHeader(String(localized: "Sin saldo"), String(localized: "\(settled.count) clientes"))
+                        ListSummaryHeader(title: Text("Sin saldo"), label: Text("\(settled.count) clientes"))
                     }
                     .listRowBackground(Palette.surface)
                 }
@@ -94,24 +94,6 @@ struct CustomerListView: View {
         }
     }
 
-    private func groupHeader(_ title: String, _ value: String) -> some View {
-        ViewThatFits(in: .horizontal) {
-            HStack(alignment: .firstTextBaseline) {
-                Text(title).fixedSize()
-                Spacer(minLength: 8)
-                Text(value).fixedSize()
-            }
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                Text(value)
-            }
-        }
-        .font(.footnote)
-        .foregroundStyle(Palette.ink2)
-        .monospacedDigit()
-        .textCase(nil)
-    }
-
     @ViewBuilder
     private var emptyState: some View {
         if active.isEmpty {
@@ -126,13 +108,7 @@ struct CustomerListView: View {
                 Button("Crear cliente") { creatingFromQuery = true }.buttonStyle(.primaryCompact)
             }
         } else {
-            ContentUnavailableView {
-                Label("Ningún cliente coincide", systemImage: "person.2")
-            } description: {
-                Text("Prueba con otro filtro.")
-            } actions: {
-                Button("Quitar filtros") { filter = .all }.buttonStyle(FillCapsuleButtonStyle(fullWidth: false))
-            }
+            NoResultsView(message: String(localized: "Ningún cliente coincide con el filtro.")) { filter = .all }
         }
     }
 }
@@ -243,13 +219,13 @@ struct CustomerDetailView: View {
                 // Canvas `MacClienteFicha`: «Editar | Enviar recordatorio» en un grupo y «Nueva factura» aparte.
                 ToolbarItemGroup(placement: .primaryAction) {
                     Button("Editar", systemImage: "pencil") { editing = true }.labelStyle(.titleAndIcon).headerButton()
+                    // Siempre la acción; «enviado hoy» va bajo el nombre (Eric, Beta Family, build 55).
                     if let reminderInvoice {
                         Button { reminding = reminderInvoice } label: {
-                            Label(remindedToday ? "Recordatorio enviado" : "Enviar recordatorio",
-                                  systemImage: remindedToday ? "checkmark" : "bell")
-                                .labelStyle(.titleAndIcon)
+                            Label("Enviar recordatorio", systemImage: "bell").labelStyle(.titleAndIcon)
                         }
                         .headerButton()
+                        .accessibilityValue(remindedToday ? String(localized: "Enviado hoy") : "")
                     }
                 }
                 ToolbarSpacer(.fixed, placement: .primaryAction)
@@ -343,6 +319,10 @@ struct CustomerDetailView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(customer.name).font(Self.wideNameFont).foregroundStyle(Palette.ink).accessibilityAddTraits(.isHeader)
                 Text(headerDetail).font(.subheadline).foregroundStyle(Palette.ink2)
+                if remindedToday {
+                    Label("Recordatorio enviado hoy", systemImage: "checkmark.circle.fill")
+                        .font(.footnote.weight(.semibold)).foregroundStyle(Palette.positive)
+                }
                 if !customer.contactLine.isEmpty {
                     Text(customer.contactLine).font(.subheadline).foregroundStyle(Palette.ink2)
                 }
@@ -550,10 +530,9 @@ struct CustomerDetailView: View {
     private var compactBody: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
-                ProfileHeader(initials: customer.initials, name: customer.name, detail: headerDetail)
-                    .padding(.top, 4)
+                summary.padding(.top, 4)
                 actions.padding(.top, 18).padding(.horizontal, 8)
-                balanceCard.padding(.top, 22)
+                if customer.openBalance > 0 { balanceCard.padding(.top, 22) }
                 Text(balanceFootnote).font(.footnote).foregroundStyle(Palette.ink2)
                     .padding(.horizontal, Metrics.cardPadding).padding(.top, 7)
                 if customer.creditBalance > 0 { creditCard.padding(.top, 20) }
@@ -572,6 +551,22 @@ struct CustomerDetailView: View {
             .padding(.bottom, 24)
             .frame(maxWidth: 720, alignment: .leading)
             .frame(maxWidth: .infinity, alignment: .center)
+        }
+    }
+
+    /// Nombre, saldo pendiente y «Cliente desde…» con la cabecera de la factura (repaso visual, build 56; antes, el
+    /// monograma de 84 con el nombre grande y el saldo de 28 en la tarjeta de abajo).
+    private var summary: some View {
+        DetailSummary(name: customer.name, amount: customer.openBalance.money, alignment: .center, initials: customer.initials) {
+            Group {
+                if openInvoices.isEmpty {
+                    Text("Sin saldo")
+                } else {
+                    Text("Saldo pendiente") + Text(verbatim: " · ") + Text("\(openInvoices.count) facturas abiertas")
+                }
+            }
+            .font(.subheadline).foregroundStyle(Palette.ink2)
+            DetailSummaryLine(text: headerDetail)
         }
     }
 
@@ -611,16 +606,11 @@ struct CustomerDetailView: View {
         }
     }
 
-    /// Canvas `ClienteFicha`: «Saldo pendiente» (28 bold), barra vencido / por vencer y «Recordar pago».
+    /// Canvas `ClienteFicha`: barra vencido / por vencer y «Recordar pago». El saldo va en la cabecera (`summary`).
     private var balanceCard: some View {
         let total = customer.openBalance
         return VStack(alignment: .leading, spacing: 0) {
             VStack(alignment: .leading, spacing: 10) {
-                VStack(alignment: .leading, spacing: 1) {
-                    Text("Saldo pendiente").font(.subheadline).foregroundStyle(Palette.ink2)
-                    Text(total.money).font(.amount(28)).foregroundStyle(Palette.ink).minimumScaleFactor(0.6).lineLimit(1)
-                }
-                .accessibilityElement(children: .combine)
                 if total > 0 {
                     GeometryReader { proxy in
                         HStack(spacing: 2) {
@@ -654,14 +644,23 @@ struct CustomerDetailView: View {
             .padding(.bottom, 12)
             if total > 0, let reminderInvoice {
                 Divider().padding(.leading, Metrics.cardPadding)
+                // «Recordar pago» en azul siempre; «Enviado hoy», gris a la derecha (Eric, Beta Family, build 55: en verde
+                // y con palomita no parecía una acción).
                 Button { reminding = reminderInvoice } label: {
-                    Label(remindedToday ? "Recordatorio enviado hoy" : "Recordar pago", systemImage: remindedToday ? "checkmark.circle" : "bell")
-                        .foregroundStyle(remindedToday ? Palette.positive : Palette.brand)
-                        .frame(maxWidth: .infinity, minHeight: Metrics.target, alignment: .leading)
-                        .padding(.horizontal, Metrics.cardPadding)
-                        .contentShape(Rectangle())
+                    HStack {
+                        Label("Recordar pago", systemImage: "bell").foregroundStyle(Palette.brand)
+                        Spacer(minLength: 8)
+                        if remindedToday {
+                            Text("Enviado hoy").font(.footnote).foregroundStyle(Palette.ink2)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, minHeight: Metrics.target, alignment: .leading)
+                    .padding(.horizontal, Metrics.cardPadding)
+                    .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel("Recordar pago")
+                .accessibilityValue(remindedToday ? String(localized: "Enviado hoy") : "")
             }
         }
         .card(padding: 0)
@@ -886,7 +885,7 @@ private enum HistoryItem: Identifiable {
             return String(localized: "Factura \(invoice.number) · \(invoice.statusTitle.lowercased())")
         case .payment(let payment):
             let numbers = (payment.applications ?? []).compactMap(\.invoice?.number).joined(separator: ", ")
-            return numbers.isEmpty ? String(localized: "Pago recibido") : String(localized: "Pago recibido · \(numbers)")
+            return numbers.isEmpty ? String(localized: "Cobro") : String(localized: "Cobro · \(numbers)")
         case .estimate(let estimate):
             // Canvas `ClienteFicha`: «Estimado E-0009 · aceptado».
             return String(localized: "Estimado \(estimate.number) · \(estimate.statusTitle.lowercased())")

@@ -369,7 +369,7 @@ struct FormatsView: View {
                         .font(.footnote).foregroundStyle(Palette.ink2)
                     Text((sample?.total ?? 255_805).money).font(.amount(34)).foregroundStyle(Palette.ink)
                         .lineLimit(1).minimumScaleFactor(0.6)
-                    Text("Vence el \((sample?.dueDate ?? Date.now.addingTimeInterval(15 * 86_400)).formatted(Date.FormatStyle(date: .numeric, time: .omitted, locale: .app)))")
+                    Text("Vence el \((sample?.dueDate ?? Date.now.addingTimeInterval(15 * 86_400)).shortDate)")
                         .font(.subheadline).foregroundStyle(Palette.ink2)
                 }
                 .padding(.vertical, 6)
@@ -385,7 +385,9 @@ struct FormatsView: View {
                 SectionLabel(text: String(localized: "Moneda"))
             }
             SettingsSection {
-                LabeledContent("Formato de fecha", value: Date.now.formatted(Date.FormatStyle(date: .numeric, time: .omitted, locale: .app)))
+                // La fecha como la escribe la app («20 nov 2026»), no en cifras: la app no muestra fechas en cifras
+                // (repaso visual, build 56).
+                LabeledContent("Formato de fecha", value: Date.now.shortDate)
                 LabeledContent("Idioma", value: languageName)
                 LabeledContent("Inicio del año fiscal", value: Calendar.current.standaloneMonthSymbols[max(0, min(11, company.fiscalYearStartMonth - 1))].sentenceCased)
                 LabeledContent("Primer día de la semana", value: Calendar.current.standaloneWeekdaySymbols[Calendar.current.firstWeekday - 1].sentenceCased)
@@ -469,6 +471,8 @@ struct SecurityView: View {
 
     var body: some View {
         SettingsForm {
+            // Eric (Beta Family, build 55) pedía saber qué protege la app: la explicación, arriba (`BooksProtectionView`).
+            SettingsSection { BooksProtectionLink() }
             SettingsSection {
                 HStack(spacing: 12) {
                     IconTile(systemImage: "faceid", foreground: Palette.green)

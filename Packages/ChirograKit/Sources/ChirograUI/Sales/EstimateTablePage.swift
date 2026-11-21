@@ -97,7 +97,7 @@ struct EstimateTablePage: View {
             .width(min: 52, ideal: 60, max: 100)
             TableColumn("Válido hasta", value: \.expirationDate) { estimate in
                 MacCellText(text: estimate.expirationDate.dayMonth,
-                            color: estimate.effectiveStatus() == .expired ? Palette.warning : Palette.ink2)
+                            color: estimate.effectiveStatus() == .expired ? Palette.negative : Palette.ink2)
             }
             .width(min: 60, ideal: 70, max: 110)
             TableColumn("Estado", value: \.statusRank) { estimate in
@@ -208,7 +208,7 @@ private struct EstimateInspector: View {
             if !estimate.title.isEmpty { MacInspectorRow(String(localized: "Concepto"), value: estimate.title) }
             MacInspectorRow(String(localized: "Emitido"), value: estimate.issueDate.shortDate)
             MacInspectorRow(String(localized: "Válido hasta"), value: estimate.expirationDate.shortDate,
-                            color: estimate.effectiveStatus() == .expired ? Palette.warning : Palette.ink)
+                            color: estimate.effectiveStatus() == .expired ? Palette.negative : Palette.ink)
             if let sent = estimate.sentDate { MacInspectorRow(String(localized: "Enviado"), value: sent.shortDate) }
             if estimate.status == .accepted || estimate.status == .converted, let accepted = estimate.acceptedDate {
                 MacInspectorRow(String(localized: "Aceptado"),

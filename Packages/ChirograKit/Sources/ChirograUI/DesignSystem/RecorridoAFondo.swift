@@ -2,7 +2,7 @@ import SwiftUI
 
 // «Tutorial completo» (Más › Ayuda): el recorrido largo de cada pantalla, con todos sus botones (tester de Beta Family,
 // 18-nov: «too short», quería ver todos los botones). No sale solo: se enciende a mano y cada pantalla se explica la
-// primera vez que se abre. Los pasos cuyo objetivo no está (una factura pagada no tiene «Registrar pago») se saltan, como
+// primera vez que se abre. Los pasos cuyo objetivo no está (una factura pagada no tiene «Registrar cobro») se saltan, como
 // en el corto. Objetivos: `.recorridoObjetivo("…")` en la vista (con `.id` igual si hay que desplazarse hasta él).
 
 extension RecorridoID {
@@ -29,7 +29,8 @@ extension RecorridoID {
                  desplazar: true),
             Paso(objetivo: "home.salesTax", icono: "percent",
                  titulo: String(localized: "Sales tax"),
-                 mensaje: String(localized: "El impuesto que cobraste a tus clientes y le debes al estado este trimestre."),
+                 // Sin «este trimestre»: el periodo es el de la agencia (Eric, Beta Family, build 55).
+                 mensaje: String(localized: "El impuesto que cobraste a tus clientes y le debes al estado, y cuándo vence la declaración."),
                  desplazar: true),
             Paso(objetivo: "home.chart", icono: "chart.xyaxis.line",
                  titulo: String(localized: "Ingresos y gastos"),
@@ -174,7 +175,7 @@ extension RecorridoID {
                  mensaje: String(localized: "Corrige la factura, comparte el PDF o recuérdale al cliente que te pague."),
                  desplazar: true),
             Paso(objetivo: "invoice.payment", icono: "checkmark.circle",
-                 titulo: String(localized: "Registrar pago"),
+                 titulo: String(localized: "Registrar cobro"),
                  mensaje: String(localized: "Cuando te paguen: si fue todo o una parte, cómo te pagaron y a qué cuenta entró el dinero."),
                  desplazar: true),
             Paso(objetivo: "invoice.activity", icono: "clock",
@@ -199,7 +200,7 @@ extension RecorridoID {
             Paso(objetivo: "estimate.bar", icono: "arrow.right.doc.on.clipboard",
                  titulo: String(localized: "Convertir en factura"),
                  mensaje: String(localized: "Cuando el cliente dice que sí, toca aquí y se crea la factura.")),
-            Paso(objetivo: "ax:" + String(localized: "Enviar"), icono: "square.and.arrow.up",
+            Paso(objetivo: "ax:" + String(localized: "Enviar"), icono: "paperplane",
                  titulo: String(localized: "Enviar"),
                  mensaje: String(localized: "Mándale el estimado al cliente en PDF.")),
             Paso(objetivo: "ax:" + String(localized: "Más acciones"), icono: "ellipsis",
@@ -285,9 +286,10 @@ extension RecorridoID {
             Paso(objetivo: nil, icono: "percent",
                  titulo: String(localized: "Impuestos"),
                  mensaje: String(localized: "El sales tax que cobras a tus clientes y luego le pagas al estado.")),
+            // Mes, trimestre o año según la agencia (Eric, Beta Family, build 55): el objetivo sigue llamándose así.
             Paso(objetivo: "taxes.quarter", icono: "calendar",
-                 titulo: String(localized: "Trimestre"),
-                 mensaje: String(localized: "El sales tax se declara por trimestre. Toca para ver otro.")),
+                 titulo: String(localized: "Periodo"),
+                 mensaje: String(localized: "El sales tax se declara por mes, trimestre o año, según tu agencia. Toca para ver otro periodo.")),
             Paso(objetivo: "taxes.tabs", icono: "list.number",
                  titulo: String(localized: "Resumen, tasas y deducibles"),
                  mensaje: String(localized: "Las tasas que cobras y los gastos que puedes deducir de tus impuestos.")),

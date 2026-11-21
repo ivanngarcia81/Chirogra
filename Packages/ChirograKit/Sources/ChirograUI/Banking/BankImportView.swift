@@ -522,7 +522,7 @@ struct BankImportView: View {
         Form {
             Section {
                 VStack(spacing: 6) {
-                    Image(systemName: "checkmark.circle").font(.system(size: 44)).foregroundStyle(Palette.green).accessibilityHidden(true)
+                    Image(systemName: "checkmark.circle").font(.system(size: Metrics.stateIcon)).foregroundStyle(Palette.positive).accessibilityHidden(true)
                     Text(outcome.imported == 0 ? String(localized: "Nada nuevo que importar") : String(localized: "Movimientos importados"))
                         .font(.title3.weight(.semibold)).foregroundStyle(Palette.ink)
                     Text(outcome.account.maskedName).font(.subheadline).foregroundStyle(Palette.ink2)

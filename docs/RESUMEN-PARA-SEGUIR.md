@@ -1,4 +1,4 @@
-# Chirogra: resumen para empezar el siguiente chat (20-nov-2026, build 55)
+# Chirogra: resumen para empezar el siguiente chat (21-nov-2026, build 56)
 
 Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («Dónde nos quedamos» y «Siguiente»).
 **Al usuario se le habla siempre en español.**
@@ -8,9 +8,9 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 - **Ramas:** `version-1.3` empujada el 18-nov (builds 50, 51 y 52 y sus docs). `main` en `83b1db4` (build 50 y la web
   con «Kairogra»), empujada el 17-nov; los builds 51 y 52 no tocan la web, así que `main` no hace falta moverla. La web
   (`sitio/`) se publica desde `main`.
-- **Último build: 55 (1.3.0)**, subido a TestFlight para iOS y macOS el 20-nov (`216d429`). Antes: 54 (20-nov), 53 (18-nov), 52 (18-nov), 51
+- **Último build: 56 (1.3.0)**, subido a TestFlight para iOS y macOS el 21-nov (ver la tabla). Antes: 55 (20-nov), 54 (20-nov), 53 (18-nov), 52 (18-nov), 51
   (recorrido de la primera vez, 17-nov) y 50 (17-nov). Los testers externos (Userbrain, Beta Family) entran con el enlace público
-  https://testflight.apple.com/join/RGwqqUyw: **el usuario tiene que asignar el 55 a ese grupo** cuando Apple lo procese.
+  https://testflight.apple.com/join/RGwqqUyw: **el usuario tiene que asignar el 56 a ese grupo** cuando Apple lo procese.
 - **En App Store Connect:** la **1.0 (build 11)** espera la revisión. **Decidido el 13-nov:** cuando la aprueben se envía
   **directo la 1.3** con su último build, sin la 1.0.1, la 1.1 ni la 1.2, con un «What's New» que junte las tres. El plan
   «Chirogra para contadores» está completo en App Store Connect y va en ese envío (no pulsar «Add for Review» suelto).
@@ -57,6 +57,7 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 | 53 | `a5f6468` | 1.3.0: tras Yurii S. (tester de pago de Beta Family; iPhone 16e, iOS 26.7.1, letra XL, región de Ucrania, oscuro): en Ventas, si «1 570,00 US$ of 2 570 US$» no cabe junto al cliente, «of …» baja a su línea (salía «M…»); «Ver el recorrido otra vez» lleva a Inicio; defensa del hueco del teclado sin teclado (`ignoringStaleKeyboardSpace`; lista cortada y barra de Total a media pantalla, no reproducido). 346 pruebas. |
 | 54 | `801e8c3` | 1.3.0: **«Tutorial completo»** en Más › Ayuda (cada pantalla del iPhone explica todos sus botones la primera vez; el corto no cambia); **iOS 27**: los pasos que iluminan botones de la barra de arriba ya no se saltan (`marcoEnVentana` mira `accessibilityElements`); en Inicio el recorrido ilumina el título del grupo con su tarjeta (iPhone 13 mini, Jiga T. de Beta Family). 177 + 75 pruebas. |
 | 55 | `216d429` | 1.3.0: tras Yurii S. (Beta Family, build 54; iPhone 16e, formato de Ucrania, oscuro): **campos de dinero** que se editan sin la moneda (`MoneyField`: «10,99» al escribir, «10,99 US$» al salir; antes lo tecleado se pegaba tras «US$» y el importe no cambiaba: «10,99 US$80», «1,00 US$896253»; en EE. UU. «$510.99»); lee coma o punto decimal; **difuminado** (`.ultraThinMaterial`) en la primera tarjeta de cada recorrido, la que no ilumina nada. 177 + 75 + 87 pruebas (`ScreenSmokeTests` ya se caía en el 54: `ImageRenderer`, «no current update to enqueue action to»). |
+| 56 | `PENDIENTE` | 1.3.0: tras Eric (Beta Family, build 55; iPhone 13, iOS 27.2.1; app 3/5, recomendación 2/5) y un **repaso visual** de toda la app. Ver «Lo siguiente» 0. 350 pruebas (94 + 181 + 75). |
 
 ## Último chat (17 y 18-nov): builds 50, 51 y 52, recorrido y testers
 
@@ -142,7 +143,7 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 
 ## Lo que le toca al usuario
 
-1. **Asignar el build 54** al grupo de testers externos del enlace público cuando Apple lo procese, y mandar más
+1. **Asignar el build 56** al grupo de testers externos del enlace público cuando Apple lo procese, y mandar más
    testers (Beta Family, Userbrain, UXtweak) con él. Traer aquí lo que digan.
 2. **Probar el 52 en TestFlight:** el recorrido de cada pestaña, «Más › Ayuda › Ver el recorrido otra vez», y borrar los
    datos de ejemplo y crear su empresa (el recorrido tiene que volver). Si puede, con Reducir movimiento y VoiceOver,
@@ -153,6 +154,35 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 5. **Avisar cuando Apple apruebe la 1.0**, para preparar el envío de la 1.3.
 
 ## Lo siguiente
+
+0. **Build 56: SUBIDO iOS+Mac a TestFlight (21-nov).** Informe de Beta Family de **Eric** con el 55 (gratis; iPhone 13,
+   iOS 27.2.1; facilidad 5/5, app 3/5, **recomendación 2/5**: «no security assurances, very few safeguards», «parece hecho
+   con IA» por los recorridos incoherentes). Sin fotos ni bugs en el xlsx. Hecho con un agente por arreglo (worktrees;
+   ojo: los worktrees nacen de `main`, hay que avanzarlos a `version-1.3` y aplicar el trabajo sin commitear como parche).
+   **Arreglos del informe:** (1) **Impuestos** usa la frecuencia de la agencia (mensual/trimestral/anual;
+   `SalesTaxShownPeriod`, `salesTaxFilingPeriods`); antes siempre trimestral. (2) **Confirmación antes de registrar un
+   cobro** en el detalle de la factura (`confirmationDialog`); no en la hoja del iPad/Mac ni en Banca. **Pendiente:** no
+   hay forma de borrar o anular un cobro (y «Devolver a la bandeja» solo desvincula el cobro del banco). (3) **Recibo en
+   grande** al tocarlo (Quick Look, `ReceiptPreview`), también al crear el gasto y el W-9. (4) **PDF en grande** desde la
+   miniatura de Enviar/Recordatorio (pastilla «Ver»). (5) Hoja del **recordatorio** con «Recordatorio de pago · vence…
+   · saldo» arriba; el botón siempre «Recordatorio» con campana, azul («enviado hoy» aparte). (6) **Recorrido:** deslizar
+   la tarjeta adelante/atrás y un solo indicador «n de m». (7) **«Cómo protege Chirogra tus libros»** (Más › Seguridad y
+   un paso del recorrido de Más; cada frase comprobada en el código; la copia de seguridad no lleva contraseña y
+   restaurar una vieja reemplaza la bitácora). (8) Aviso al editar una factura emitida corregido (no siempre revierte).
+   **Repaso visual (capturas antes/después vistas por el usuario):** indicador «n de m» también en bienvenida y alta
+   (`PasoIndicador`); inglés con **Title Case** en botones/menús/títulos y frase en mensajes, diálogos y etiquetas;
+   «empresa» = **business**; **«cobro»** para facturas y «pago» para proveedores e impuestos; títulos grandes en Ventas
+   y listas de Más; **misma cabecera en todos los detalles** (`DetailSummary`; cliente y proveedor **con el círculo de
+   iniciales**, decidido por el usuario el 21-nov); `Metrics.tileRadius`, tarjetas del recorrido con `cardRadius`;
+   botones sueltos con los estilos de la app; Por pagar «Programado para…» en dos líneas. **Menores (pedido meterlos
+   en el 56):** colores de estado (vencido rojo, borrador gris, informativos azul: el canvas tenía «Programada» en Tinta y
+   «Recurrente» en verde azulado), `ListSummaryHeader` en Ventas/Estimados/Clientes, `NoResultsView` en todas las
+   listas, `Metrics.stateIcon`, «Borrar» en vez de «Eliminar», iconos (enviar = avión; PDF = `doc.badge.arrow.up`;
+   exportar = compartir), deslizar con icono y texto, filtros en plural, fechas con los ayudantes de la app (también
+   Formatos y copias), «Profit and Loss» igual en fila y título, subtítulo «Empresa · base», gráficas de Reportes con los
+   colores de Inicio (`Palette.income`/`expense`, `previousPeriod`). **Sin cambiar (una opinión):** el sales tax en
+   Gastos; «ya no es novedad en 2026». **Ojo pruebas:** la de Vision del recibo (`ReceiptReaderTests`) falla a veces con
+   el Mac cargado (simuladores a la vez); sola pasa.
 
 0. **Build 55: SUBIDO iOS+Mac a TestFlight (20-nov, `216d429`).** Informe de Beta Family de Yurii S. con el 54 (pago;
    iPhone 16e, iOS 26.7.1, formato de Ucrania, oscuro; 4/5, recomendación 4/5, **facilidad 2/5**). Test con 4 tareas

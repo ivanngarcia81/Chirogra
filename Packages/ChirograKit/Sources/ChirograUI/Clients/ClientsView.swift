@@ -340,7 +340,7 @@ struct ClientsView: View {
                     Spacer(minLength: 8)
                     Image(systemName: "chevron.right")
                         .font(.footnote.weight(.semibold))
-                        .foregroundStyle(Palette.ink2.opacity(0.6))
+                        .foregroundStyle(Palette.chevron)
                         .accessibilityHidden(true)
                 }
                 .frame(minHeight: 48)
@@ -378,8 +378,8 @@ struct ClientsView: View {
     private var allGoodNote: some View {
         VStack(spacing: 6) {
             Image(systemName: "checkmark.circle")
-                .font(.system(size: 40))
-                .foregroundStyle(Palette.green)
+                .font(.system(size: Metrics.stateIcon))
+                .foregroundStyle(Palette.positive)
                 .accessibilityHidden(true)
             Text("Todos tus clientes están al día").font(.title3.bold())
             Text("Nada vence en los próximos 7 días y no hay movimientos por revisar.")
@@ -459,7 +459,7 @@ struct ClientsView: View {
                 .padding(.horizontal, Self.boxMargin)
                 .padding(.vertical, 10)
             if showsAllGood {
-                notice(icon: "checkmark.circle", color: Palette.green,
+                notice(icon: "checkmark.circle", color: Palette.positive,
                        title: String(localized: "Todos tus clientes están al día"),
                        message: String(localized: "Nada vence en los próximos 7 días y no hay movimientos por revisar."))
             }
@@ -510,7 +510,7 @@ struct ClientsView: View {
             TableColumn("Vencidas", value: \.overdue) { row in
                 ClientCell(text: row.client.overdueInvoices > 0
                            ? "\(row.client.overdueInvoices) · \(row.client.overdueAmount.moneyWhole)" : "—",
-                           tone: row.client.overdueInvoices > 0 ? .warning : .plain)
+                           tone: row.client.overdueInvoices > 0 ? .bad : .plain)  // vencido en rojo (repaso visual, build 56)
             }
             .width(min: Self.w.overdue.0, ideal: Self.w.overdue.1, max: Self.w.overdue.2)
             .alignment(.trailing)
@@ -893,7 +893,7 @@ extension ClientSummary {
         if overdueInvoices > 0 {
             items.append(.init(id: "invoices", title: String(localized: "Facturas vencidas"),
                                value: "\(overdueInvoices == 1 ? String(localized: "1 vencida") : String(localized: "\(overdueInvoices) vencidas")) · \(overdueAmount.moneyWhole)",
-                               systemImage: "doc.text", tone: .warning, route: .overdueInvoices))
+                               systemImage: "doc.text", tone: .bad, route: .overdueInvoices))
         }
         if unreadNotices > 0 {
             items.append(.init(id: "notices", title: String(localized: "Avisos"), value: unreadNotices == 1 ? String(localized: "1 aviso sin leer") : String(localized: "\(unreadNotices) avisos sin leer"),
@@ -981,7 +981,7 @@ private struct ClientInspector: View {
                                     Text(item.value).font(.caption).foregroundStyle(item.tone.color)
                                 }
                                 Spacer(minLength: 4)
-                                Image(systemName: "chevron.right").font(.caption).foregroundStyle(Palette.ink2)
+                                Image(systemName: "chevron.right").font(.caption).foregroundStyle(Palette.chevron)
                             }
                             .contentShape(Rectangle())
                         }
@@ -999,9 +999,9 @@ private struct ClientInspector: View {
                 }
                 Section {
                     if !client.isArchived {
+                        // El principal de la app (vidrio en Tinta), no el vidrio relleno de color (repaso visual, build 56).
                         Button("Abrir cliente") { router.open(client.id) }
-                            .buttonStyle(.glassProminent)
-                            .frame(maxWidth: .infinity)
+                            .buttonStyle(.primary)
                     }
                     Menu("Más acciones") { actions(client) }
                 }

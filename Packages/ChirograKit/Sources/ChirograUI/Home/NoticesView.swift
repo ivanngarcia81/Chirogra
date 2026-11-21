@@ -84,14 +84,16 @@ struct NoticesList: View {
                     NoticeRow(notice: notice)
                 }
                 .buttonStyle(.plain)
+                // Descartar no borra nada: en gris y sin `.destructive` (el rojo queda para borrar). La acción secundaria va
+                // en índigo, como en el resto de la app (repaso visual, build 56).
                 .swipeActions(edge: .trailing) {
-                    Button("Descartar", systemImage: "xmark", role: .destructive) { act { try books.dismissNotice(notice.id) } }
-                        .tint(Palette.red)
+                    Button("Descartar", systemImage: "xmark") { act { try books.dismissNotice(notice.id) } }
+                        .tint(Palette.gray)
                 }
                 .swipeActions(edge: .leading) {
                     if !notice.isRead {
                         Button("Leído", systemImage: "envelope.open") { act { try books.markNoticeRead(notice.id) } }
-                            .tint(Palette.blue)
+                            .tint(Palette.indigo)
                     }
                 }
                 .contextMenu {
@@ -102,7 +104,7 @@ struct NoticesList: View {
                     if !notice.isRead {
                         Button("Marcar como leído", systemImage: "envelope.open") { act { try books.markNoticeRead(notice.id) } }
                     }
-                    Button("Descartar", systemImage: "xmark", role: .destructive) { act { try books.dismissNotice(notice.id) } }
+                    Button("Descartar", systemImage: "xmark") { act { try books.dismissNotice(notice.id) } }
                 }
                 .accessibilityAction(named: "Descartar") { act { try books.dismissNotice(notice.id) } }
                 .accessibilityAction(named: "Marcar como leído") { act { try books.markNoticeRead(notice.id) } }

@@ -266,9 +266,9 @@ public struct ChirograRootView: View {
             Button("Aceptar", role: .cancel) {}
         } message: { info in
             if info.companyName.isEmpty {
-                Text("Tus libros son ahora los de la copia del \(info.createdAt.formatted(date: .abbreviated, time: .shortened))")
+                Text("Tus libros son ahora los de la copia del \(info.createdAt.shortDateTime)")
             } else {
-                Text("Los libros de «\(info.companyName)» son ahora los de la copia del \(info.createdAt.formatted(date: .abbreviated, time: .shortened))")
+                Text("Los libros de «\(info.companyName)» son ahora los de la copia del \(info.createdAt.shortDateTime)")
             }
         }
         .tint(Palette.brand)
@@ -921,6 +921,7 @@ struct MoreView: View {
                     MoreRow(title: String(localized: "Seguridad"),
                             value: appLockEnabled ? String(localized: "Face ID") : String(localized: "Desactivado"),
                             systemImage: "faceid", color: Palette.red) { SecurityView() }
+                        .recorridoObjetivo("more.security").id("more.security")
                 }
 
                 #if os(iOS)

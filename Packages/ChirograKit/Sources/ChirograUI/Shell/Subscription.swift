@@ -273,7 +273,7 @@ struct PaywallView: View {
                     // El plan general lleva el logotipo (la χ del icono); antes, un libro del sistema (build 21).
                     if focus == .accountant {
                         Image(systemName: "building.2.fill")
-                            .font(.system(size: 44))
+                            .font(.system(size: Metrics.stateIcon))
                             .foregroundStyle(Palette.brand)
                             .accessibilityHidden(true)
                     } else {
@@ -427,10 +427,10 @@ struct ReadOnlyBanner: View {
                  : "Solo lectura: tu suscripción terminó. Puedes ver tus libros y sacar copias.")
                 .font(.subheadline).foregroundStyle(Palette.ink)
                 .frame(maxWidth: .infinity, alignment: .leading)
+            // El principal de la app del ancho de su texto, no el relleno del sistema (repaso visual, build 56).
             Button(store.canStartTrial ? "Probar gratis" : "Suscribirme") { store.showsPaywall = true }
-                .buttonStyle(.borderedProminent)
-                .tint(Palette.brandFill)
-                .controlSize(.small)
+                .buttonStyle(.primaryCompact)
+                .fixedSize()
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 8)

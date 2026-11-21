@@ -180,7 +180,7 @@ private struct StartOverProgress: View {
                 Text("Deja la app abierta un momento: el borrado está subiendo a iCloud para que tus otros aparatos también lo borren.")
             case .finished(let uploaded):
                 Image(systemName: uploaded ? "checkmark.icloud.fill" : "icloud.slash.fill")
-                    .font(.system(size: 44))
+                    .font(.system(size: Metrics.stateIcon))
                     .foregroundStyle(uploaded ? Palette.positive : Palette.ink2)
                     .accessibilityHidden(true)
                 Text(uploaded ? String(localized: "Listo: se borró también en iCloud") : String(localized: "Borrado en este aparato"))
@@ -188,9 +188,9 @@ private struct StartOverProgress: View {
                 Text(uploaded
                      ? String(localized: "Tus otros aparatos lo borran en cuanto abran Chirogra con conexión. Ya puedes crear tu empresa.")
                      : String(localized: "Todavía no se pudo subir a iCloud (¿sin conexión?). Se subirá solo en cuanto haya conexión con la app abierta, y tus otros aparatos lo borrarán aunque lo tuvieran guardado."))
+                // El principal de la app, no el relleno morado del sistema (repaso visual, build 56).
                 Button("Continuar", action: done)
-                    .buttonStyle(.borderedProminent)
-                    .tint(Palette.brand)
+                    .buttonStyle(.primary)
             }
         }
         .multilineTextAlignment(.center)

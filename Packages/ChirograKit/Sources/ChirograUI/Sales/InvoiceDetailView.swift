@@ -5,9 +5,9 @@ import SwiftUI
 import TipKit
 
 /// Factura. iPhone (canvas `FacturaDetalle`): cliente, saldo de 40 y estado centrados; baldosas Duplicar · PDF ·
-/// Recordatorio; «Registrar pago» como grupo con Total · Parcial y el botón dentro; «Actividad» con círculos de Tinta.
+/// Recordatorio; «Registrar cobro» como grupo con Total · Parcial y el botón dentro; «Actividad» con círculos de Tinta.
 /// iPad y Mac (canvas `iPadVentas`, columna derecha): el resumen a la izquierda, las acciones en la barra y «Actividad»
-/// antes de «Registrar pago». Debajo, en todos, las líneas, los totales y las notas de crédito.
+/// antes de «Registrar cobro». Debajo, en todos, las líneas, los totales y las notas de crédito.
 struct InvoiceDetailView: View {
     @Bindable var invoice: Invoice
     /// Dentro de la lista y detalle de iPad (`iPadVentas`): sin título propio, que es el de Ventas.
@@ -40,7 +40,7 @@ struct InvoiceDetailView: View {
     /// El campo «Monto» de «Parcial» tiene el foco: se desplaza hasta «Registrar $…» para que el teclado no lo tape.
     @FocusState private var amountFocused: Bool
 
-    // Registrar pago
+    // Registrar cobro
     enum PaymentMode: String, CaseIterable, Identifiable {
         case total = "Total", partial = "Parcial"
         var id: String { rawValue }
@@ -52,6 +52,9 @@ struct InvoiceDetailView: View {
     @State private var paymentDate = Date()
     @State private var depositAccountID: UUID?
     @State private var method: PaymentMethod = .bankTransfer
+    /// «¿Registrar el cobro de $X?» antes de asentarlo: un toque de más dejaba un cobro que no se puede borrar
+    /// (Eric, Beta Family, build 55).
+    @State private var confirmingPayment = false
 
     private var books: Bookkeeper { Bookkeeper(context: context) }
     private var depositAccounts: [Account] { accounts.filtered { $0.isMoneyAccount && $0 != .creditCard } }
@@ -74,7 +77,7 @@ struct InvoiceDetailView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
                     if let errorMessage { ErrorBanner(message: errorMessage).padding(.bottom, 12) }
-                    summary.recorridoObjetivo("invoice.summary")
+                    summary.recorridoObjetivo("invoice.summary").id("invoice.summary")
                     if isDraft {
                         draftActions.padding(.top, 16)
                     } else {
@@ -105,7 +108,7 @@ struct InvoiceDetailView: View {
                 .frame(maxWidth: 720, alignment: .leading)
                 .frame(maxWidth: .infinity, alignment: isWide ? .leading : .center)
             }
-            // «Registrar pago › Parcial»: el teclado decimal no tiene tecla para cerrarse y tapaba «Registrar $…»
+            // «Registrar cobro › Parcial»: el teclado decimal no tiene tecla para cerrarse y tapaba «Registrar $…»
             // (recorrido «cliente nuevo», 5-nov). Ahora lleva «Listo», se cierra al desplazar y, al escribir el monto,
             // la pantalla sube hasta el botón.
             .keyboardDoneButton()
@@ -136,11 +139,13 @@ struct InvoiceDetailView: View {
                     } else {
                         Button("Duplicar", systemImage: "plus.square.on.square", action: duplicateInvoice).headerButton()
                     }
-                    Button("PDF", systemImage: "doc.richtext") { sending = true }.headerButton()
+                    Button("PDF", systemImage: "doc.badge.arrow.up") { sending = true }.headerButton()
+                    // Siempre «Recordatorio» con la campana; «enviado hoy» va en la nota del resumen (Eric, Beta Family,
+                    // build 55: con la palomita no parecía un botón).
                     if invoice.isOpen {
-                        Button(remindedToday ? "Recordatorio enviado hoy" : "Recordatorio",
-                               systemImage: remindedToday ? "checkmark" : "bell") { reminding = true }
+                        Button("Recordatorio", systemImage: "bell") { reminding = true }
                             .headerButton()
+                            .accessibilityValue(remindedToday ? String(localized: "Enviado hoy") : "")
                     }
                 }
                 ToolbarSpacer(.fixed, placement: .primaryAction)
@@ -173,8 +178,9 @@ struct InvoiceDetailView: View {
         } message: {
             Text("Se registrará un asiento de reversión. La factura queda en el historial como anulada.")
         }
-        .confirmationDialog("¿Eliminar el borrador?", isPresented: $confirmingDelete, titleVisibility: .visible) {
-            Button("Eliminar borrador", role: .destructive, action: deleteDraft)
+        // «Borrar» como en el resto de la app (antes «Eliminar» solo aquí y en estimados; repaso visual, build 56).
+        .confirmationDialog("¿Borrar este borrador?", isPresented: $confirmingDelete, titleVisibility: .visible) {
+            Button("Borrar factura", role: .destructive, action: deleteDraft)
         }
         // Al pasar a «Parcial» el monto se vacía para escribir el que se cobra (antes quedaba el saldo completo).
         .onChange(of: paymentMode) { _, mode in paymentAmount = mode == .partial ? 0 : invoice.balanceDue }
@@ -262,7 +268,7 @@ struct InvoiceDetailView: View {
 
     // MARK: Acciones
 
-    /// Borrador: «Emitir factura» y, debajo, Editar · Vista previa · Eliminar.
+    /// Borrador: «Emitir factura» y, debajo, Editar · Vista previa · Borrar.
     private var draftActions: some View {
         VStack(spacing: 8) {
             Button("Emitir factura", action: issue).buttonStyle(.primary)
@@ -270,12 +276,12 @@ struct InvoiceDetailView: View {
             tileRow {
                 actionTile(String(localized: "Editar"), "pencil") { editingDraft = true }
                 actionTile(String(localized: "Vista previa"), "doc.richtext") { showingPreview = true }
-                actionTile(String(localized: "Eliminar"), "trash", tint: Palette.negative) { confirmingDelete = true }
+                actionTile(String(localized: "Borrar"), "trash", tint: Palette.negative) { confirmingDelete = true }
             }
         }
     }
 
-    /// Canvas `FacturaDetalle`: Duplicar · PDF · Recordatorio en baldosas `surface` de radio 16. Mientras la emitida se
+    /// Canvas `FacturaDetalle`: Duplicar · PDF · Recordatorio en baldosas `surface` de radio `Metrics.tileRadius`. Mientras la emitida se
     /// puede corregir, la primera baldosa es «Editar» (Duplicar sigue en «⋯»): escondido en el menú no se encontraba
     /// (recorrido «cliente nuevo», 6-nov).
     private var actionTiles: some View {
@@ -286,14 +292,13 @@ struct InvoiceDetailView: View {
             } else {
                 actionTile(String(localized: "Duplicar"), "plus.square.on.square", action: duplicateInvoice)
             }
-            actionTile(String(localized: "PDF"), "doc.richtext") { sending = true }
+            // Abre «Enviar factura» (correo, compartir, imprimir): su ícono no es el de «Vista previa» (repaso visual, build 56).
+            actionTile(String(localized: "PDF"), "doc.badge.arrow.up") { sending = true }
+            // Azul como las otras aunque ya se mandara hoy: en verde y con «Enviado hoy» no se veía que se pudiera tocar
+            // (Eric, Beta Family, build 55). «Recordatorio enviado hoy» queda en el resumen, encima.
             if invoice.isOpen {
-                if remindedToday {
-                    actionTile(String(localized: "Enviado hoy"), "checkmark.circle", tint: Palette.positive) { reminding = true }
-                        .accessibilityLabel("Recordatorio enviado hoy")
-                } else {
-                    actionTile(String(localized: "Recordatorio"), "bell") { reminding = true }
-                }
+                actionTile(String(localized: "Recordatorio"), "bell") { reminding = true }
+                    .accessibilityValue(remindedToday ? String(localized: "Enviado hoy") : "")
             }
         }
     }
@@ -316,8 +321,8 @@ struct InvoiceDetailView: View {
         }
         .foregroundStyle(tint)
         .frame(maxWidth: .infinity, minHeight: 60)
-        .background(Palette.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .contentShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .background(Palette.surface, in: RoundedRectangle(cornerRadius: Metrics.tileRadius, style: .continuous))
+        .contentShape(RoundedRectangle(cornerRadius: Metrics.tileRadius, style: .continuous))
     }
 
     /// «⋯» de la barra (canvas: editar, duplicar, anular).
@@ -325,7 +330,7 @@ struct InvoiceDetailView: View {
         Menu {
             if isDraft {
                 Button("Editar borrador", systemImage: "pencil") { editingDraft = true }
-                Button("Eliminar borrador", systemImage: "trash", role: .destructive) { confirmingDelete = true }
+                Button("Borrar factura", systemImage: "trash", role: .destructive) { confirmingDelete = true }
             } else {
                 Button("Duplicar", systemImage: "plus.square.on.square", action: duplicateInvoice)
                 if invoice.isOpen, let credit = invoice.customer?.creditBalance, credit > 0 {
@@ -391,7 +396,7 @@ struct InvoiceDetailView: View {
         if invoice.status == .void {
             steps.append((String(localized: "Anulada"), "", "", true))
         } else {
-            steps.append((String(localized: "Pago"), "", invoice.amountPaid > 0 ? invoice.amountPaid.money : String(localized: "Pendiente"), invoice.amountPaid > 0))
+            steps.append((String(localized: "Cobro"), "", invoice.amountPaid > 0 ? invoice.amountPaid.money : String(localized: "Pendiente"), invoice.amountPaid > 0))
             steps.append((String(localized: "Pagada"), "", invoice.status == .paid ? (payments.last ?? invoice.issueDate).dayMonth : "—",
                           invoice.status == .paid))
         }
@@ -416,7 +421,7 @@ struct InvoiceDetailView: View {
                                 Text(step.value).foregroundStyle(Palette.ink2).monospacedDigit()
                                 if action != nil {
                                     Image(systemName: "chevron.right").font(.footnote.weight(.semibold))
-                                        .foregroundStyle(Palette.ink2).accessibilityHidden(true)
+                                        .foregroundStyle(Palette.chevron).accessibilityHidden(true)
                                 }
                             }
                         }
@@ -436,22 +441,22 @@ struct InvoiceDetailView: View {
         }
     }
 
-    /// Lo que hace tocar un paso pendiente de Actividad: «Pago» y «Pagada» llevan a «Marcar como pagada»; «Enviar al
+    /// Lo que hace tocar un paso pendiente de Actividad: «Cobro» y «Pagada» llevan a «Marcar como pagada»; «Enviar al
     /// cliente» abre el envío.
     private func activityAction(for title: String, done: Bool) -> (() -> Void)? {
         guard !done, invoice.isOpen else { return nil }
         switch title {
-        case String(localized: "Pago"), String(localized: "Pagada"): return { recordJump += 1 }
+        case String(localized: "Cobro"), String(localized: "Pagada"): return { recordJump += 1 }
         case String(localized: "Enviar al cliente"): return { sending = true }
         default: return nil
         }
     }
 
-    // MARK: Registrar pago
+    // MARK: Registrar cobro
 
     private var paymentSection: some View {
         VStack(alignment: .leading, spacing: 0) {
-            DetailSectionLabel(text: String(localized: "Registrar pago"))
+            DetailSectionLabel(text: String(localized: "Registrar cobro"))
             InlineTip(tip: RecordPaymentTip()).padding(.bottom, 8)
             VStack(spacing: 0) {
                 FilterPicker(title: String(localized: "Tipo de pago"), options: PaymentMode.allCases, selection: $paymentMode, label: \.localizedTitle)
@@ -504,7 +509,7 @@ struct InvoiceDetailView: View {
                         // «Fecha, <día>». Al tocar dos veces, VoiceOver toca el centro y abre el calendario.
                         .accessibilityElement(children: .ignore)
                         .accessibilityLabel("Fecha")
-                        .accessibilityValue(paymentDate.formatted(date: .long, time: .omitted))
+                        .accessibilityValue(paymentDate.shortDate)
                         .accessibilityAddTraits(.isButton)
                         #endif
                 }
@@ -539,10 +544,29 @@ struct InvoiceDetailView: View {
         // cobro parcial, «Registrar cobro de $X».
         Button(paymentMode == .total ? String(localized: "Marcar como pagada · \(amountToRecord.money)")
                                      : String(localized: "Registrar cobro de \(amountToRecord.money)"),
-               systemImage: "checkmark.circle", action: recordPayment)
+               systemImage: "checkmark.circle") { confirmingPayment = true }
             .buttonStyle(.primary)
             .disabled(amountToRecord <= 0 || amountToRecord > invoice.balanceDue || depositAccountID == nil)
+            // En el botón (no en la pantalla) para que en el iPad salga junto a él; título visible para VoiceOver.
+            .confirmationDialog(String(localized: "¿Registrar el cobro de \(amountToRecord.money)?"),
+                                isPresented: $confirmingPayment, titleVisibility: .visible) {
+                Button(paymentMode == .total ? String(localized: "Marcar como pagada") : String(localized: "Registrar cobro"),
+                       action: recordPayment)
+                Button("Cancelar", role: .cancel) {}
+            } message: {
+                Text(paymentSummary)
+            }
             .id(Self.recordButtonID)
+    }
+
+    /// Lo que se va a asentar: monto, método, cuenta de depósito y fecha; y si la factura queda pagada o con saldo.
+    private var paymentSummary: String {
+        let account = depositAccounts.first { $0.id == depositAccountID }?.displayName ?? ""
+        // Como el resto de la app («20 nov 2026»), no el formato largo del sistema (repaso visual, build 56).
+        let date = paymentDate.shortDate
+        return paymentMode == .total
+            ? String(localized: "Se registrará un cobro de \(amountToRecord.money) (\(method.title)) en \(account) con fecha \(date). La factura quedará como pagada.")
+            : String(localized: "Se registrará un cobro de \(amountToRecord.money) (\(method.title)) en \(account) con fecha \(date). Quedará un saldo de \((invoice.balanceDue - amountToRecord).money).")
     }
 
     /// Valor de un menú del formulario: en gris con el símbolo de menú, y en varias líneas si no cabe.
@@ -924,7 +948,7 @@ private struct DetailTitle: ViewModifier {
     }
 }
 
-/// Encabezado de grupo del canvas en los detalles de factura y de estimado («Registrar pago», «Actividad»,
+/// Encabezado de grupo del canvas en los detalles de factura y de estimado («Registrar cobro», «Actividad»,
 /// «Conceptos»): `.footnote` gris, alineado con el texto de las tarjetas.
 struct DetailSectionLabel: View {
     let text: String

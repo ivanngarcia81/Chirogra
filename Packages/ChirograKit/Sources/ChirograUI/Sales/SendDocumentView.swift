@@ -1,5 +1,6 @@
 import ChirograCore
 import ChirograData
+import QuickLook
 import SwiftData
 import SwiftUI
 #if canImport(MessageUI)
@@ -36,6 +37,8 @@ struct SendDocumentView: View {
     @State private var width: CGFloat = 0
     @State private var loaded = false
     @State private var errorMessage: String?
+    /// El PDF en Quick Look, para ampliarlo con los dedos antes de mandarlo.
+    @State private var previewURL: URL?
     #if os(iOS)
     @State private var composingMail = false
     @State private var sharingFile: SharedFile?
@@ -65,47 +68,15 @@ struct SendDocumentView: View {
             if let errorMessage {
                 Section { ErrorBanner(message: errorMessage) }.listRowBackground(Color.clear).listRowInsets(EdgeInsets())
             }
-            Section {
-                preview
-                    .frame(maxWidth: .infinity)
-                    .listRowBackground(Color.clear)
-                    .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 0, trailing: 0))
-            }
-            Section {
-                LabeledContent("Para") {
-                    TextField("Para", text: $recipient, prompt: Text("correo@cliente.com"))
-                        .labelsHidden()
-                        .textContentType(.emailAddress)
-                        .autocorrectionDisabled()
-                        #if os(iOS)
-                        .keyboardType(.emailAddress)
-                        .textInputAutocapitalization(.never)
-                        .multilineTextAlignment(.leading)
-                        #endif
-                }
-                .fieldRow()
-                LabeledContent("Asunto") {
-                    TextField("Asunto", text: $subject).labelsHidden()
-                        #if os(iOS)
-                        .multilineTextAlignment(.leading)
-                        #endif
-                }
-                .fieldRow()
-                TextField("Mensaje", text: $message, axis: .vertical)
-                    .lineLimit(3...8)
-                    .accessibilityLabel("Mensaje")
-                Toggle("Enviarme una copia", isOn: $copyToMe)
-                    .disabled(companyEmail.isEmpty)
-            } header: {
-                SectionLabel(text: String(localized: "Enviar por correo"))
-            } footer: {
-                if companyEmail.isEmpty {
-                    Text("Para recibir una copia, añade el correo de la empresa en Ajustes › Perfil de la empresa.")
-                } else if copyToMe {
-                    Text("La copia va a \(companyEmail). El PDF va adjunto.")
-                } else {
-                    Text("El PDF va adjunto.")
-                }
+            // Recordatorio: qué es y el mensaje arriba, sin desplazar; el PDF adjunto debajo (Eric, Beta Family,
+            // build 55: se parecía a la hoja de «PDF» y el texto del recordatorio quedaba fuera de la pantalla).
+            if purpose == .reminder, case .invoice(let invoice) = source {
+                reminderBanner(invoice)
+                mailSection
+                previewSection
+            } else {
+                previewSection
+                mailSection
             }
             Section {
                 ShareAndPrintGroup(pdf: pdf)
@@ -119,6 +90,7 @@ struct SendDocumentView: View {
         .navigationTitle(title)
         .inlineTitle()
         .discardableEditor(tracking: "\(recipient)|\(subject)|\(message)", token: editorToken)
+        .quickLookPreview($previewURL)
         #if os(macOS)
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
@@ -167,19 +139,113 @@ struct SendDocumentView: View {
         }
     }
 
+    private var previewSection: some View {
+        Section {
+            preview
+                .frame(maxWidth: .infinity)
+                .listRowBackground(Color.clear)
+                .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 0, trailing: 0))
+        }
+    }
+
+    private var mailSection: some View {
+        Section {
+            LabeledContent("Para") {
+                TextField("Para", text: $recipient, prompt: Text("correo@cliente.com"))
+                    .labelsHidden()
+                    .textContentType(.emailAddress)
+                    .autocorrectionDisabled()
+                    #if os(iOS)
+                    .keyboardType(.emailAddress)
+                    .textInputAutocapitalization(.never)
+                    .multilineTextAlignment(.leading)
+                    #endif
+            }
+            .fieldRow()
+            LabeledContent("Asunto") {
+                TextField("Asunto", text: $subject).labelsHidden()
+                    #if os(iOS)
+                    .multilineTextAlignment(.leading)
+                    #endif
+            }
+            .fieldRow()
+            TextField("Mensaje", text: $message, axis: .vertical)
+                .lineLimit(3...8)
+                .accessibilityLabel("Mensaje")
+            Toggle("Enviarme una copia", isOn: $copyToMe)
+                .disabled(companyEmail.isEmpty)
+        } header: {
+            SectionLabel(text: String(localized: "Enviar por correo"))
+        } footer: {
+            if companyEmail.isEmpty {
+                Text("Para recibir una copia, añade el correo de la empresa en Ajustes › Perfil de la empresa.")
+            } else if copyToMe {
+                Text("La copia va a \(companyEmail). El PDF va adjunto.")
+            } else {
+                Text("El PDF va adjunto.")
+            }
+        }
+    }
+
+    /// «Recordatorio de pago · Venció hace 12 días · saldo $1,200.00», encima de todo.
+    private func reminderBanner(_ invoice: Invoice) -> some View {
+        Section {
+            HStack(spacing: 12) {
+                Image(systemName: "bell.fill").font(.title3).foregroundStyle(Palette.brand).accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Recordatorio de pago").font(.headline).foregroundStyle(Palette.ink)
+                    Text(reminderStatus(invoice)).font(.subheadline)
+                        .foregroundStyle(invoice.daysOverdue() != nil ? Palette.negative : Palette.ink2)
+                }
+                Spacer(minLength: 0)
+            }
+            .accessibilityElement(children: .combine)
+        }
+    }
+
+    /// «Venció hace 12 días · saldo $X», «Vence hoy · saldo $X», «Vence en 5 días · saldo $X».
+    private func reminderStatus(_ invoice: Invoice) -> String {
+        let balance = invoice.balanceDue.money
+        if let overdue = invoice.daysOverdue() {
+            return overdue == 1 ? String(localized: "Venció ayer · saldo \(balance)")
+                : String(localized: "Venció hace \(overdue) días · saldo \(balance)")
+        }
+        let calendar = Calendar.current
+        let days = calendar.dateComponents([.day], from: calendar.startOfDay(for: .now), to: calendar.startOfDay(for: invoice.dueDate)).day ?? 0
+        switch days {
+        case ...0: return String(localized: "Vence hoy · saldo \(balance)")
+        case 1: return String(localized: "Vence mañana · saldo \(balance)")
+        default: return String(localized: "Vence en \(days) días · saldo \(balance)")
+        }
+    }
+
     private var canSend: Bool { pdf != nil && !recipients.isEmpty && !subject.trimmingCharacters(in: .whitespaces).isEmpty }
 
-    /// La primera página, pequeña, como en el canvas (la hoja entera está en «Compartir PDF…»).
+    /// La primera página, pequeña, como en el canvas. Al tocarla se abre el PDF en Quick Look, donde se amplía con los
+    /// dedos (Eric, Beta Family, build 55: quería verlo de cerca antes de abrir el adjunto en Mail).
     private var preview: some View {
         let document = document
         let pages = InvoicePDF.pages(for: document, company: company)
         return VStack(spacing: 8) {
             Color.clear.frame(height: 0).frame(maxWidth: .infinity)
                 .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
-            DocumentPageThumbnail(document: document, company: company, lines: pages.first ?? [], pageCount: pages.count,
-                                  width: min(max(width - 56, 120), 340))
-                .accessibilityElement(children: .ignore)
-                .accessibilityLabel(String(localized: "Vista previa de \(document.number.isEmpty ? title : document.number)"))
+            Button { previewURL = pdf?.temporaryURL() } label: {
+                DocumentPageThumbnail(document: document, company: company, lines: pages.first ?? [], pageCount: pages.count,
+                                      width: min(max(width - 56, 120), 340))
+                    .overlay(alignment: .bottomTrailing) {
+                        Label("Ver", systemImage: "magnifyingglass")
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(Palette.onBrandFill)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(Palette.brandFill, in: Capsule())
+                            .padding(8)
+                    }
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Ver documento")
+            .accessibilityValue(document.number.isEmpty ? title : document.number)
             Text(pages.count == 1 ? String(localized: "Página 1 de 1 · PDF") : String(localized: "\(pages.count) páginas · PDF"))
                 .font(.footnote).foregroundStyle(Palette.ink2)
         }

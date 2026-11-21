@@ -252,7 +252,7 @@ private struct VendorInspector: View {
             MacInspectorSection(title: String(localized: "Impuestos")) {
                 MacInspectorRow(label: String(localized: "Formulario 1099")) {
                     HStack(spacing: 5) {
-                        StatusDot(color: row.is1099 ? Palette.teal : Palette.gray)
+                        StatusDot(color: row.is1099 ? Palette.blue : Palette.gray)
                         Text(row.is1099 ? String(localized: "Requiere 1099-NEC") : String(localized: "No aplica"))
                             .foregroundStyle(row.is1099 ? Palette.info : Palette.ink2)
                     }

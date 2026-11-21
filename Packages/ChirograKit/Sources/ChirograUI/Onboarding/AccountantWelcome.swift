@@ -64,7 +64,7 @@ struct AudiencePage: View {
                     .fill(Palette.brandWash)
                     .frame(width: 120, height: 120)
                     .overlay {
-                        Image(systemName: "building.2").font(.system(size: 50, weight: .regular)).foregroundStyle(Palette.brand)
+                        Image(systemName: "building.2").font(.system(size: Metrics.stateIcon)).foregroundStyle(Palette.brand)
                     }
                     .accessibilityHidden(true)
                 VStack(spacing: 10) {
@@ -135,9 +135,10 @@ struct AudiencePage: View {
             }
             .padding(16)
             .frame(maxWidth: .infinity, minHeight: 84, alignment: .leading)
-            .background(Palette.surface, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+            // Radio de tarjeta, antes 22 (repaso visual, build 56).
+            .background(Palette.surface, in: RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous))
             .overlay {
-                RoundedRectangle(cornerRadius: 22, style: .continuous)
+                RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous)
                     .strokeBorder(isOn ? Palette.brand : .clear, lineWidth: 2)
             }
             .contentShape(Rectangle())
@@ -232,7 +233,7 @@ struct AccountantIntroView: View {
                     }
                 }
                 .padding(.vertical, 4)
-                .background(Palette.surface, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+                .background(Palette.surface, in: RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous))
                 .padding(.top, 22)
                 if let errorMessage { ErrorBanner(message: errorMessage).padding(.top, 12) }
             }

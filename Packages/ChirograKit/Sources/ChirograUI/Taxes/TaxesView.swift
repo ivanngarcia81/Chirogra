@@ -4,12 +4,13 @@ import SwiftData
 import SwiftUI
 
 /// Impuestos.
-/// - iPhone (y la columna estrecha del iPad): tablero `Impuestos`. Subtítulo con el trimestre (menú), segmentado
+/// - iPhone (y la columna estrecha del iPad): tablero `Impuestos`. Subtítulo con el periodo (menú), segmentado
 ///   Resumen · Tasas; en Resumen, la tarjeta «Impuesto sobre ventas por pagar» con la hoja de calendario «Declarar y
 ///   pagar» y «Registrar pago de impuesto», y el desglose como grupo de filas; en Tasas, la lista con «Nueva tasa» en
 ///   Tinta, su pie gris y el periodo de declaración de cada agencia.
 /// - iPad y Mac: `MacImpuestos`: cuatro cajas de cifras, la tabla de tasas con cebra y los pagos a la agencia. En el
-///   Mac, además, el inspector de la derecha con la tasa elegida en la tabla y la declaración del trimestre.
+///   Mac, además, el inspector de la derecha con la tasa elegida en la tabla y la declaración del periodo.
+/// El periodo (mes, trimestre o año) es el de declaración de la agencia (`SalesTaxShownPeriod`).
 /// En Tasas (iPhone) y en la caja «Facturas nuevas» (iPad y Mac): el impuesto predeterminado de la empresa, «Precios con
 /// impuesto incluido» y el origen de las ventas. Cada tasa se edita («Editar tasa…»; las facturas emitidas no cambian).
 /// Fase 2 (1.3): «Deducibles» como tercera pestaña en el iPhone (`DeductionsView` dentro) y, en iPad y Mac, la tarjeta
@@ -30,8 +31,8 @@ struct TaxesView: View {
     @CompanyQuery(sort: \JournalEntry.date, order: .reverse) private var entries: [JournalEntry]
 
     @State var tab: Tab = .summary
-    /// Trimestre mostrado: 0 el actual, −1 el anterior…
-    @State private var quarterOffset = 0
+    /// Periodo mostrado: 0 el actual, −1 el anterior…
+    @State private var periodOffset = 0
     @State private var showingRate = false
     @State private var showingPayment = false
     @State private var showingGroup = false
@@ -108,8 +109,10 @@ struct TaxesView: View {
         .recorridoPantalla(.taxes)
         .navigationTitle("Impuestos")
         #if os(macOS)
-        .navigationSubtitle(String(localized: "\(quarterTitle(quarter(quarterOffset))) · declaración trimestral"))
+        .navigationSubtitle(shownPeriod.subtitle)
         #endif
+        // Otra frecuencia en Tasas: se vuelve al periodo actual (−2 meses no es −2 trimestres).
+        .onChange(of: frequency) { periodOffset = 0 }
         .headerTitle()
         #if os(macOS)
         .macInspectorToggle()
@@ -117,7 +120,7 @@ struct TaxesView: View {
         .toolbar {
             if isWide {
                 #if os(iOS)
-                ToolbarItem(placement: .primaryAction) { quarterMenu(compact: false) }
+                ToolbarItem(placement: .primaryAction) { periodMenu(compact: false) }
                 #endif
                 ToolbarItem(placement: .primaryAction) {
                     SectionLink(item: .report(.salesTax)) { ReportsView(fixedKind: .salesTax) } label: {
@@ -190,33 +193,16 @@ struct TaxesView: View {
         #endif
     }
 
-    // MARK: Trimestre
+    // MARK: Periodo
 
-    private func quarter(_ offset: Int) -> DateInterval {
-        let calendar = Calendar.current
-        let date = calendar.date(byAdding: .month, value: offset * 3, to: .now) ?? .now
-        return calendar.dateInterval(of: .quarter, for: date) ?? DateInterval(start: date, duration: 0)
-    }
+    /// Frecuencia de la pantalla: la de la agencia (`FilingFrequency.shownForSalesTax`, con varias manda la primera sin
+    /// archivar). Se lee en `body`: al cambiar «Periodo de declaración» en Tasas, todo se recalcula al momento (Eric,
+    /// Beta Family, build 55: antes era siempre el trimestre).
+    private var frequency: FilingFrequency { .shownForSalesTax(agencies) }
 
-    /// «T4 2026 · oct–dic».
-    private func quarterTitle(_ interval: DateInterval) -> String {
-        String(localized: "\(quarterName(interval)) · \(quarterMonths(interval))")
-    }
+    private func period(_ offset: Int) -> SalesTaxShownPeriod { SalesTaxShownPeriod(frequency, offset: offset) }
 
-    private func quarterName(_ interval: DateInterval) -> String {
-        let number = (Calendar.current.component(.month, from: interval.start) - 1) / 3 + 1
-        return String(localized: "T\(number) \(interval.start.formatted(.appDateTime.year()))")
-    }
-
-    /// «oct–dic».
-    private func quarterMonths(_ interval: DateInterval) -> String {
-        (interval.start..<interval.end.addingTimeInterval(-1)).formatted(.interval.month(.abbreviated).locale(.appText))
-    }
-
-    /// Fecha habitual de declaración: el día 20 del mes siguiente al trimestre (Texas y muchos estados).
-    private func dueDate(_ interval: DateInterval) -> Date {
-        Calendar.current.date(byAdding: .day, value: 19, to: interval.end) ?? interval.end
-    }
+    private var shownPeriod: SalesTaxShownPeriod { period(periodOffset) }
 
     private func paid(in interval: DateInterval) -> Int64 {
         entries.filter { $0.source == .salesTaxPayment && $0.reversesEntryID == nil && interval.contains($0.date) }
@@ -227,39 +213,42 @@ struct TaxesView: View {
         try? Bookkeeper(context: context).salesTaxSummary(from: interval.start, to: interval.end.addingTimeInterval(-1))
     }
 
-    /// «T4 2026 · oct–dic ▾» (iPhone: subtítulo gris bajo el título; iPad: botón de la barra).
-    private func quarterMenu(compact: Bool) -> some View {
-        Menu {
-            Picker("Trimestre", selection: $quarterOffset) {
-                ForEach(0..<4) { index in Text(quarterTitle(quarter(-index))).tag(-index) }
+    /// «T4 2026 · oct–dic ▾», «Noviembre de 2026 ▾» o «2026 ▾» con los tres anteriores (iPhone: subtítulo gris bajo el
+    /// título; iPad: botón de la barra).
+    private func periodMenu(compact: Bool) -> some View {
+        let shown = shownPeriod
+        return Menu {
+            Picker(shown.pickerLabel, selection: $periodOffset) {
+                ForEach(0..<4) { index in Text(period(-index).title).tag(-index) }
             }
             .pickerStyle(.inline)
         } label: {
             if compact {
                 HStack(spacing: 4) {
-                    Text(quarterTitle(quarter(quarterOffset)))
+                    Text(shown.title)
                     Image(systemName: "chevron.down").font(.caption.weight(.semibold)).accessibilityHidden(true)
                 }
                 .font(.subheadline).foregroundStyle(Palette.ink2)
                 .frame(minHeight: Metrics.target)
                 .contentShape(Rectangle())
             } else {
-                HStack(spacing: 6) { Image(systemName: "calendar"); Text(quarterTitle(quarter(quarterOffset))) }
+                HStack(spacing: 6) { Image(systemName: "calendar"); Text(shown.title) }
             }
         }
         .menuIndicator(.hidden)
         .buttonStyle(.plain)
         .headerButton()
-        .accessibilityLabel("Trimestre")
-        .accessibilityValue(quarterTitle(quarter(quarterOffset)))
+        .accessibilityLabel(shown.pickerLabel)
+        .accessibilityValue(shown.title)
     }
 
     // MARK: - iPhone (`Impuestos`)
 
     private var compactBody: some View {
         VStack(alignment: .leading, spacing: 0) {
-            // Los deducibles llevan su propio periodo (el año): el trimestre del sales tax no les aplica.
-            if tab != .deductions { quarterMenu(compact: true).recorridoObjetivo("taxes.quarter") }
+            // Los deducibles llevan su propio periodo (el año): el del sales tax no les aplica. El objetivo del
+            // recorrido conserva su nombre «taxes.quarter» aunque el periodo sea un mes o un año.
+            if tab != .deductions { periodMenu(compact: true).recorridoObjetivo("taxes.quarter") }
             FilterPicker(title: String(localized: "Sección"), options: Tab.allCases, selection: $tab) { $0.localizedTitle }
                 .recorridoObjetivo("taxes.tabs")
                 .padding(.top, 8)
@@ -278,9 +267,10 @@ struct TaxesView: View {
     /// «Sales tax por pagar»: cifra grande, la fecha de la declaración y el pago.
     @ViewBuilder
     private var summaryTab: some View {
-        let interval = quarter(quarterOffset)
+        let shown = shownPeriod
+        let interval = shown.interval
         let position = SalesTaxPosition(liabilityBalance: payable)
-        let due = dueDate(interval)
+        let due = shown.deadline
         VStack(spacing: 0) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(position.title).font(.subheadline).foregroundStyle(Palette.ink2)
@@ -320,7 +310,7 @@ struct TaxesView: View {
         .padding(.top, 16)
 
         if let summary = summary(interval) {
-            groupLabel(String(localized: "Desglose · \(quarterMonths(interval)) \(interval.start.formatted(.appDateTime.year()))"))
+            groupLabel(String(localized: "Desglose · \(shown.range)"))
             RowGroup {
                 valueRow(String(localized: "Ventas gravables"), summary.taxableSales.money)
                 valueRow(String(localized: "Ventas no gravables y exentas"), (summary.nonTaxableSales + summary.exemptSales).money)
@@ -425,7 +415,7 @@ struct TaxesView: View {
                         Text(agency.name).foregroundStyle(Palette.ink)
                     } trailing: {
                         Picker(agency.name, selection: Binding(
-                            get: { FilingFrequency(rawValue: agency.filingFrequencyRaw) ?? .quarterly },
+                            get: { agency.filingFrequency },
                             set: { agency.filingFrequencyRaw = $0.rawValue; try? context.save() })) {
                             ForEach(FilingFrequency.allCases, id: \.self) { Text($0.title).tag($0) }
                         }
@@ -478,25 +468,26 @@ struct TaxesView: View {
 
     // MARK: - iPad y Mac (`MacImpuestos`)
 
-    /// Cuatro cifras (cobrado, pagado, saldo y fecha límite), las tasas con lo cobrado en el trimestre y los pagos a la
+    /// Cuatro cifras (cobrado, pagado, saldo y fecha límite), las tasas con lo cobrado en el periodo y los pagos a la
     /// agencia; a la derecha, «Gastos deducibles» del año (fase 2) encima de «Facturas nuevas» y los pagos.
     private var wideBody: some View {
-        let interval = quarter(quarterOffset)
+        let shown = shownPeriod
+        let interval = shown.interval
         let summary = summary(interval)
         let paid = paid(in: interval)
-        let due = dueDate(interval)
+        let due = shown.deadline
         let days = Calendar.current.dateComponents([.day], from: Calendar.current.startOfDay(for: .now), to: due).day ?? 0
         let settled = payable <= 0
         return VStack(alignment: .leading, spacing: 16) {
             #if os(iOS)
-            Text(String(localized: "\(quarterTitle(interval)) · declaración trimestral")).font(.subheadline).foregroundStyle(Palette.ink2)
+            Text(shown.subtitle).font(.subheadline).foregroundStyle(Palette.ink2)
                 .padding(.horizontal, 8)
             #endif
             KPIGrid(items: [
                 KPIItem(title: String(localized: "Impuesto cobrado"), value: (summary?.totalTax ?? 0).money,
                         foot: String(localized: "Sobre \((summary?.taxableSales ?? 0).money) gravables")),
                 KPIItem(title: String(localized: "Pagado"), value: paid.money,
-                        foot: paid > 0 ? String(localized: "Pagos del trimestre") : String(localized: "Sin pagos en el trimestre")),
+                        foot: shown.paymentsFoot(hasPayments: paid > 0)),
                 KPIItem(title: String(localized: "Saldo por pagar"), value: max(payable, 0).money,
                         foot: settled ? String(localized: "Al día") : String(localized: "Pendiente"),
                         footColor: settled ? Palette.positive : Palette.warning),
@@ -510,7 +501,7 @@ struct TaxesView: View {
             let layout = sideBySide ? AnyLayout(HStackLayout(alignment: .top, spacing: 16)) : AnyLayout(VStackLayout(spacing: 16))
             if let errorMessage { ErrorBanner(message: errorMessage) }
             layout {
-                ratesTable(summary, interval: interval).frame(maxWidth: .infinity)
+                ratesTable(summary, period: shown).frame(maxWidth: .infinity)
                 VStack(alignment: .leading, spacing: 16) {
                     deductionsCard
                     defaultsCard
@@ -525,10 +516,9 @@ struct TaxesView: View {
         .padding(.top, 8).padding(.bottom, 28)
     }
 
-    /// Grupos («Combinada») y tasas de cada agencia con lo cobrado en el trimestre; «+» para añadir.
-    private func ratesTable(_ summary: SalesTaxSummary?, interval: DateInterval) -> some View {
+    /// Grupos («Combinada») y tasas de cada agencia con lo cobrado en el periodo; «+» para añadir.
+    private func ratesTable(_ summary: SalesTaxSummary?, period: SalesTaxShownPeriod) -> some View {
         let collected = Dictionary((summary?.rows ?? []).compactMap { row in row.rateID.map { ($0, row.tax) } }, uniquingKeysWith: +)
-        let number = (Calendar.current.component(.month, from: interval.start) - 1) / 3 + 1
         let activeGroups = groups.filter { !$0.isArchived }
         let rates = agencies.flatMap { agency in agency.sortedRates.filter { !$0.isArchived }.map { (agency, $0) } }
         #if os(macOS)
@@ -548,7 +538,7 @@ struct TaxesView: View {
                 Text("Nombre").frame(maxWidth: .infinity, alignment: .leading)
                 Text("Tipo").frame(width: 150, alignment: .leading)
                 Text("Tasa").frame(width: 64, alignment: .trailing)
-                Text("T\(number) cobrado").frame(width: 110, alignment: .trailing)
+                Text("\(period.columnName) cobrado").frame(width: 110, alignment: .trailing)
             } rows: {
                 ForEach(Array(activeGroups.enumerated()), id: \.element.id) { index, group in
                     rateTableRow(group.name, kind: String(localized: "Combinada"), percent: group.percent,
@@ -647,7 +637,7 @@ struct TaxesView: View {
 
     /// En el orden de la tabla: los grupos y después las tasas de cada agencia.
     private var macRateItems: [MacRateItem] {
-        let summary = summary(quarter(quarterOffset))
+        let summary = summary(shownPeriod.interval)
         let collected = Dictionary((summary?.rows ?? []).compactMap { row in row.rateID.map { ($0, row.tax) } }, uniquingKeysWith: +)
         let groupItems = groups.filter { !$0.isArchived }.map { group in
             MacRateItem(key: "group:\(group.id)", name: group.name, percent: group.percent, agency: nil, components: group.sortedRates,
@@ -668,12 +658,13 @@ struct TaxesView: View {
         return items.first { $0.key == macPick } ?? items.first
     }
 
-    /// La tasa con su porcentaje y su tipo, lo cobrado en el trimestre y la declaración del trimestre.
+    /// La tasa con su porcentaje y su tipo, lo cobrado en el periodo y la declaración del periodo.
     @ViewBuilder
     private func rateInspector(_ item: MacRateItem) -> some View {
-        let interval = quarter(quarterOffset)
+        let shown = shownPeriod
+        let interval = shown.interval
         let summary = summary(interval)
-        let due = dueDate(interval)
+        let due = shown.deadline
         let isGroup = item.agency == nil
         MacReportFigure(caption: String(localized: "Tasa de impuesto sobre ventas"), amount: "\(item.percent.formatted())%") {
             Text(isGroup ? String(localized: "Combinada · \(item.components.count) tasas") : String(localized: "Componente · \(item.agency ?? "")"))
@@ -684,7 +675,7 @@ struct TaxesView: View {
             MacInspectorRow(String(localized: "Tipo"), value: isGroup ? String(localized: "Combinada") : String(localized: "Componente"))
             if let agency = item.agency { MacInspectorRow(String(localized: "Agencia"), value: agency) }
             MacInspectorRow(String(localized: "Predeterminada"), value: item.id == defaultTaxID ? String(localized: "Sí") : String(localized: "No"))
-            MacInspectorRow(String(localized: "Cobrado en \(quarterName(interval))"), value: item.collected.money)
+            MacInspectorRow(String(localized: "Cobrado en \(shown.name)"), value: item.collected.money)
         }
         if isGroup && !item.components.isEmpty {
             MacInspectorSection(title: String(localized: "Tasas incluidas")) {
@@ -693,7 +684,7 @@ struct TaxesView: View {
                 }
             }
         }
-        MacInspectorSection(title: String(localized: "Declaración \(quarterName(interval))")) {
+        MacInspectorSection(title: String(localized: "Declaración \(shown.name)")) {
             MacInspectorRow(String(localized: "Cobrado"), value: (summary?.totalTax ?? 0).money)
             MacInspectorRow(String(localized: "Pagado"), value: paid(in: interval).money)
             MacInspectorRow(String(localized: "Saldo por pagar"), value: max(payable, 0).money, bold: true)

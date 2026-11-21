@@ -31,10 +31,13 @@ public enum Palette {
 
     // MARK: Significados (Main · «Color de acento y colores del sistema»)
 
-    /// Ingresos en gráficas: el acento.
-    public static let income = brand
-    /// Barras de gastos de las gráficas.
-    public static let expenseBar = orange
+    /// Ingresos en las gráficas de Inicio y de Reportes: verde, como «entradas de dinero» (decidido el 16-nov; repaso
+    /// visual, build 56).
+    public static let income = positive
+    /// Gastos y costos en las gráficas de Inicio y de Reportes: rojo.
+    public static let expense = negative
+    /// La barra del periodo anterior en las comparaciones: el mismo color que la del periodo, más claro.
+    public static func previousPeriod(_ color: Color) -> Color { color.opacity(0.4) }
     /// Icono de cuenta bancaria: systemBlue.
     public static let bankAccount = blue
     /// Icono de tarjeta de crédito: systemIndigo.
@@ -137,10 +140,15 @@ public enum Metrics {
     /// Cajas del Mac: radio 12 (tablas: 8).
     public static let cardRadius: CGFloat = 12
     public static let tableRadius: CGFloat = 8
+    /// Baldosa de acción (Editar · PDF · Recordatorio): más baja que una tarjeta, con menos radio (repaso visual, build 56).
+    public static let tileRadius: CGFloat = 10
     #else
     /// Grupos y tarjetas de iPhone e iPad: radio 24, como las listas agrupadas de iOS 26.
     public static let cardRadius: CGFloat = 24
     public static let tableRadius: CGFloat = 24
+    /// Baldosa de acción (Editar · PDF · Recordatorio, 60 pt de alto): con 24 casi era una cápsula (repaso visual,
+    /// build 56).
+    public static let tileRadius: CGFloat = 16
     #endif
     #if os(macOS)
     /// En el Mac, botones, filas y chips con la densidad de sus controles (canvas: botones de 28, filas de 28,
@@ -170,6 +178,9 @@ public enum Metrics {
     #else
     public static let rowHeight: CGFloat = 60
     #endif
+    /// Icono grande de un estado (todo al día, listo, primera vez): 44 pt de peso normal en todas las pantallas; antes
+    /// iba de 40 a 50 según la vista (repaso visual, build 56).
+    public static let stateIcon: CGFloat = 44
 }
 
 extension Color {

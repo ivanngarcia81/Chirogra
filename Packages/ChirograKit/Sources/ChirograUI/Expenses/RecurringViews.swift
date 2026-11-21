@@ -191,7 +191,7 @@ struct RecurringTemplateRow: View {
                 if !template.isActive {
                     StatusChip(text: String(localized: "En pausa"), foreground: Palette.ink2, compact: true, dot: Palette.gray)
                 } else if template.autoCharge {
-                    StatusChip(text: String(localized: "Automático"), foreground: Palette.info, compact: true, dot: Palette.teal)
+                    StatusChip(text: String(localized: "Automático"), foreground: Palette.info, compact: true, dot: Palette.blue)
                 } else {
                     StatusChip(text: String(localized: "Manual"), foreground: Palette.ink2, compact: true, dot: Palette.orange)
                 }
@@ -212,10 +212,11 @@ struct PendingExpenseRow: View {
             NavigationLink { ExpenseDetailView(expense: expense) } label: { label }
                 .navigationLinkIndicatorVisibility(.hidden)
         } trailing: {
+            // La cápsula gris de las demás acciones de fila y de sección, no el `.bordered` del sistema (repaso visual,
+            // build 56).
             Button("Registrar", action: record)
-                .buttonStyle(.bordered)
-                .buttonBorderShape(.capsule)
-                .frame(minHeight: Metrics.target)
+                .buttonStyle(FillCapsuleButtonStyle(fullWidth: false))
+                .fixedSize()
                 .accessibilityLabel(String(localized: "Registrar \(expense.payee)"))
         }
         .contextMenu {

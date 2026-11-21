@@ -233,7 +233,9 @@ struct ReportsView: View {
         .background(Palette.background)
         .recorridoPantalla(.reports)
         // En el iPhone con letra de accesibilidad, el nombre corto: el largo se cortaba («Antigüedad por cobr…», QA del 10-nov).
-        .navigationTitle(isPhone && (kind == .income || dynamicTypeSize.isAccessibilitySize)
+        // Si no, el nombre completo, el mismo de la fila de «Más» y de la barra lateral; Resultados llevaba el corto y en
+        // inglés no casaban («Profit & loss» frente a «Profit and loss»; repaso visual, build 56).
+        .navigationTitle(isPhone && dynamicTypeSize.isAccessibilitySize
                          ? String(localized: String.LocalizationValue(kind.rawValue)) : kind.fullTitle)
         #if os(macOS)
         .navigationSubtitle(subtitle)
@@ -332,7 +334,8 @@ struct ReportsView: View {
             }
             Divider()
             Button { exportingPackage = true } label: {
-                Label("Exportar para mi contador…", systemImage: "archivebox")
+                // El de exportar y no la caja, que es «Archivar» (repaso visual, build 56).
+                Label("Exportar para mi contador…", systemImage: "square.and.arrow.up")
             }
         } label: {
             if isPhone { Label("Exportar", systemImage: "square.and.arrow.up").labelStyle(.iconOnly) }
@@ -412,13 +415,15 @@ struct ReportsView: View {
 
     // MARK: Textos del periodo
 
+    /// Un solo patrón en iPhone y Mac: «Empresa · base» («Rios Design & Build · base devengado»), sin repetir el nombre
+    /// del reporte, que ya es el título; la antigüedad lleva lo vencido y Sales tax solo la empresa (repaso visual,
+    /// build 56). La fecha de corte está en su selector.
     private var subtitle: String {
         switch kind {
-        case .income, .balance, .cashFlow: String(localized: "\(companyName) · \(basisText) · \(currencyCode)")
-        case .trial: String(localized: "Saldos al \(asOf.shortDate) · \(trialBalanceReport.rows.count) cuentas con movimiento · \(basisText)")
-        case .receivables: String(localized: "Facturas de clientes abiertas · \(lateTotal(receivablesReport).money) vencido")
-        case .payables: String(localized: "Facturas de proveedores abiertas · \(lateTotal(payablesReport).money) vencido")
-        case .salesTax: String(localized: "Sales tax por jurisdicción · declaración trimestral")
+        case .income, .balance, .trial, .cashFlow: String(localized: "\(companyName) · \(basisText)")
+        case .receivables: String(localized: "\(companyName) · \(lateTotal(receivablesReport).money) vencido")
+        case .payables: String(localized: "\(companyName) · \(lateTotal(payablesReport).money) vencido")
+        case .salesTax: companyName
         case .budget: ""
         }
     }
@@ -594,7 +599,7 @@ struct ReportsView: View {
 
     @ViewBuilder
     private var phoneContent: some View {
-        Text(phoneSubtitle).font(.subheadline).foregroundStyle(Palette.ink2)
+        Text(subtitle).font(.subheadline).foregroundStyle(Palette.ink2)
             .padding(.bottom, 8)
         switch kind {
         case .income: phoneIncome
@@ -607,15 +612,6 @@ struct ReportsView: View {
         case .budget: EmptyView()
         }
         if fixedKind == nil { otherReports }
-    }
-
-    private var phoneSubtitle: String {
-        switch kind {
-        case .income: String(localized: "Estado de resultados · \(companyName)")
-        case .cashFlow: String(localized: "Método indirecto · \(companyName)")
-        case .salesTax: companyName
-        default: subtitle
-        }
     }
 
     /// `ReportePyG`: segmentado, comparar, «Ganancia neta» con su gráfica y los grupos de cuentas.
@@ -631,7 +627,7 @@ struct ReportsView: View {
     /// Mes · Trimestre · Año, el periodo, la base y «Comparar con septiembre» de Resultados y Flujo de efectivo.
     @ViewBuilder
     private var phoneStatementControls: some View {
-        periodPicker.recorridoObjetivo("reports.period").padding(.top, 4)
+        periodPicker.recorridoObjetivo("reports.period").id("reports.period").padding(.top, 4)
         phonePeriodNavigator
         phoneBasis
         RowGroup(macBorder: true) {
@@ -645,11 +641,13 @@ struct ReportsView: View {
         let change = compare ? percentChange(current.netIncome, previous.netIncome) : nil
         let margin = current.totalIncome > 0 ? String(localized: "Margen \(current.netIncome * 100 / current.totalIncome)%") : nil
         let note = change.map { String(localized: "\($0) vs. \(previousName)") } ?? margin
-        let bars: [(String, Int64, Int64)] = [
-            (String(localized: "Ingresos"), current.totalIncome, previous.totalIncome),
-            (String(localized: "Costos"), current.totalCostOfGoodsSold, previous.totalCostOfGoodsSold),
-            (String(localized: "Gastos"), current.totalExpenses, previous.totalExpenses),
-            (String(localized: "Ganancia"), current.netIncome, previous.netIncome),
+        // Como Inicio: ingresos en verde, costos y gastos en rojo, la ganancia en Tinta (repaso visual, build 56).
+        let bars: [ComparisonBars.Bar] = [
+            .init(title: String(localized: "Ingresos"), current: current.totalIncome, previous: previous.totalIncome, color: Palette.income),
+            .init(title: String(localized: "Costos"), current: current.totalCostOfGoodsSold, previous: previous.totalCostOfGoodsSold,
+                  color: Palette.expense),
+            .init(title: String(localized: "Gastos"), current: current.totalExpenses, previous: previous.totalExpenses, color: Palette.expense),
+            .init(title: String(localized: "Ganancia"), current: current.netIncome, previous: previous.netIncome, color: Palette.brand),
         ]
         return VStack(alignment: .leading, spacing: 14) {
             VStack(alignment: .leading, spacing: 2) {
@@ -666,16 +664,20 @@ struct ReportsView: View {
                 .frame(height: dynamicTypeSize.isAccessibilitySize ? 200 : 150)
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel(String(localized: "\(periodName(offset: 0)) frente a \(previousName)"))
-                .accessibilityValue(bars.map { "\($0.0): \($0.1.money)" + (compare ? ", \(previousName) \($0.2.money)" : "") }
+                .accessibilityValue(bars.map { "\($0.title): \($0.current.money)" + (compare ? ", \(previousName) \($0.previous.money)" : "") }
                     .joined(separator: ". "))
-            HStack(spacing: 16) {
-                legendDot(periodName(offset: 0), Palette.income)
-                if compare { legendDot(periodName(offset: -1).sentenceCased, Palette.gray) }
+            // El color dice el concepto; la leyenda, el periodo: oscuro el actual, claro el anterior.
+            if compare {
+                HStack(spacing: 16) {
+                    legendDot(periodName(offset: 0), Palette.ink2)
+                    legendDot(periodName(offset: -1).sentenceCased, Palette.previousPeriod(Palette.ink2))
+                }
+                .font(.footnote).foregroundStyle(Palette.ink2)
+                .accessibilityHidden(true)
             }
-            .font(.footnote).foregroundStyle(Palette.ink2)
-            .accessibilityHidden(true)
         }
-        .padding(18)
+        // Relleno de tarjeta, antes 18 (repaso visual, build 56).
+        .padding(Metrics.cardPadding)
         .background(Palette.surface, in: RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous))
     }
 
@@ -833,7 +835,7 @@ struct ReportsView: View {
     private func phoneFigureCard<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 2) { content() }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(18)
+            .padding(Metrics.cardPadding) // antes 18 (repaso visual, build 56)
             .background(Palette.surface, in: RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous))
             .accessibilityElement(children: .combine)
     }
@@ -1800,7 +1802,8 @@ struct ReportsView: View {
                     .foregroundStyle(color(for: delta, line.trend))
             }
             MacInspectorSection(title: String(localized: "Comparación")) {
-                comparisonRows(line)
+                comparisonRows(line, barColor: line.style == .result || line.style == .grand ? Palette.brand
+                               : line.trend == .downIsGood ? Palette.expense : Palette.income)
                 MacInspectorRow(String(localized: "Porcentaje"), value: percent ?? "—", color: color(for: delta, line.trend))
             }
             MacInspectorSection(title: String(localized: "Proporción")) {
@@ -1813,10 +1816,10 @@ struct ReportsView: View {
 
     /// Barras, periodo, anterior y variación de una fila de resultados o del flujo (en el flujo todas suben bien).
     @ViewBuilder
-    private func comparisonRows(_ line: Line) -> some View {
+    private func comparisonRows(_ line: Line, barColor: Color = Palette.brand) -> some View {
         let previous = line.previous ?? 0
         let delta = line.amount - previous
-        MacCompareBars(current: (columnTitle(offset: 0), line.amount), previous: (columnTitle(offset: -1), previous))
+        MacCompareBars(current: (columnTitle(offset: 0), line.amount), previous: (columnTitle(offset: -1), previous), color: barColor)
             .padding(.vertical, 6)
         MacInspectorRow(columnTitle(offset: 0), value: line.amount.money)
         MacInspectorRow(columnTitle(offset: -1), value: previous.money)
@@ -2099,24 +2102,32 @@ private extension View {
     }
 }
 
-/// Barras del periodo (Tinta) frente al anterior (gris) por concepto (`ReportePyG`), con guías y escala a la derecha.
+/// Barras por concepto (`ReportePyG`), con guías: cada concepto en su color (ingresos verde, costos y gastos rojo, como
+/// Inicio) y el periodo anterior al lado, en el mismo color más claro (repaso visual, build 56).
 private struct ComparisonBars: View {
-    let bars: [(String, Int64, Int64)]
+    struct Bar {
+        let title: String
+        let current: Int64
+        let previous: Int64
+        let color: Color
+    }
+
+    let bars: [Bar]
     let showsPrevious: Bool
 
     var body: some View {
-        let top = max(1, bars.map { max($0.1, showsPrevious ? $0.2 : 0) }.max() ?? 1)
+        let top = max(1, bars.map { max($0.current, showsPrevious ? $0.previous : 0) }.max() ?? 1)
         GeometryReader { proxy in
             let chartHeight = proxy.size.height - 20
             HStack(alignment: .bottom, spacing: 0) {
                 ForEach(Array(bars.enumerated()), id: \.offset) { _, bar in
                     VStack(spacing: 6) {
                         HStack(alignment: .bottom, spacing: 3) {
-                            column(bar.1, top: top, height: chartHeight, color: Palette.income)
-                            if showsPrevious { column(bar.2, top: top, height: chartHeight, color: Palette.gray) }
+                            column(bar.current, top: top, height: chartHeight, color: bar.color)
+                            if showsPrevious { column(bar.previous, top: top, height: chartHeight, color: Palette.previousPeriod(bar.color)) }
                         }
                         .frame(height: chartHeight, alignment: .bottom)
-                        Text(bar.0).font(.caption2).foregroundStyle(Palette.ink2).lineLimit(1).minimumScaleFactor(0.7)
+                        Text(bar.title).font(.caption2).foregroundStyle(Palette.ink2).lineLimit(1).minimumScaleFactor(0.7)
                     }
                     .frame(maxWidth: .infinity)
                 }
@@ -2359,16 +2370,19 @@ struct MacReportRow<Content: View>: View {
     }
 }
 
-/// Dos barras horizontales, el periodo (Tinta) frente al anterior (gris), del inspector de `MacPyG`.
+/// Dos barras horizontales del inspector de `MacPyG` y del flujo: el periodo frente al anterior, en el mismo color (el
+/// anterior más claro; repaso visual, build 56).
 private struct MacCompareBars: View {
     let current: (title: String, amount: Int64)
     let previous: (title: String, amount: Int64)
+    /// Ingresos verde, costos y gastos rojo (como Inicio); totales mixtos y flujo, Tinta.
+    var color: Color = Palette.brand
 
     var body: some View {
         let top = max(1, abs(current.amount), abs(previous.amount))
         VStack(alignment: .leading, spacing: 6) {
-            bar(current.title, current.amount, top: top, color: Palette.income)
-            bar(previous.title, previous.amount, top: top, color: Palette.gray)
+            bar(current.title, current.amount, top: top, color: color)
+            bar(previous.title, previous.amount, top: top, color: Palette.previousPeriod(color))
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(current.title): \(current.amount.money), \(previous.title): \(previous.amount.money)")

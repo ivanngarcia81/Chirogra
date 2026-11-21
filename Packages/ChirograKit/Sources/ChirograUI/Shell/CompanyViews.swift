@@ -290,7 +290,7 @@ struct CompaniesView: View {
                             Text(company.name).font(.body.weight(.semibold)).foregroundStyle(Palette.ink)
                                 .layoutPriority(1)
                             if sampleIDs.contains(company.id) {
-                                Text("Ejemplo").font(.caption.weight(.semibold)).foregroundStyle(Palette.orange)
+                                Text("Ejemplo").font(.caption.weight(.semibold)).foregroundStyle(Palette.warning)
                                     .fixedSize()
                             }
                         }

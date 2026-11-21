@@ -137,13 +137,15 @@ struct BankInboxSection: View {
                         .accessibilityLabel(Text("Aceptar: \(suggestion.title)"))
                     }
                 }
+                // Ícono y texto en cada acción, como en el menú contextual (repaso visual, build 56).
                 .swipeActions(edge: .leading) {
                     if suggestion.isActionable {
-                        Button(suggestion.acceptTitle) { accept(suggestion, transaction) }.tint(Palette.green)
+                        Button(suggestion.acceptTitle, systemImage: "checkmark.circle") { accept(suggestion, transaction) }
+                            .tint(Palette.positive)
                     }
                 }
                 .swipeActions(edge: .trailing) {
-                    Button("Excluir", role: .destructive) { excluding = transaction }.tint(Palette.negative)
+                    Button("Excluir", systemImage: "nosign", role: .destructive) { excluding = transaction }.tint(Palette.negative)
                 }
             }
         } header: {
@@ -231,9 +233,12 @@ struct BankInboxScreen: View {
                     .buttonStyle(.plain)
                     .swipeActions {
                         if transaction.isPending {
-                            Button("Excluir", role: .destructive) { excluding = transaction }.tint(Palette.negative)
+                            Button("Excluir", systemImage: "nosign", role: .destructive) { excluding = transaction }.tint(Palette.negative)
                         } else {
-                            Button("Devolver a la bandeja") { act { try context.books.returnToInbox(transaction) } }.tint(Palette.blue)
+                            Button("Devolver a la bandeja", systemImage: "tray.and.arrow.up") {
+                                act { try context.books.returnToInbox(transaction) }
+                            }
+                            .tint(Palette.indigo)
                         }
                     }
                     .contextMenu {
@@ -887,9 +892,12 @@ struct BankInboxMasterList: View {
                     // Deslizar para excluir o devolver, como en el iPhone (QA del iPad, 11-nov).
                     .swipeActions {
                         if transaction.isPending {
-                            Button("Excluir", role: .destructive) { excluding = transaction }.tint(Palette.negative)
+                            Button("Excluir", systemImage: "nosign", role: .destructive) { excluding = transaction }.tint(Palette.negative)
                         } else {
-                            Button("Devolver a la bandeja") { act { try context.books.returnToInbox(transaction) } }.tint(Palette.blue)
+                            Button("Devolver a la bandeja", systemImage: "tray.and.arrow.up") {
+                                act { try context.books.returnToInbox(transaction) }
+                            }
+                            .tint(Palette.indigo)
                         }
                     }
                     .contextMenu {

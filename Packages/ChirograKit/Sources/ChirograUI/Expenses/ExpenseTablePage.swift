@@ -41,8 +41,7 @@ struct ExpenseTablePage: View {
     /// Gasto al que se adjunta lo que se elija en «Adjuntar recibo…».
     @State private var attachingTo: Expense?
     @State private var removing: Attachment?
-    @State private var previewURL: URL?
-    @State private var previewURLs: [URL] = []
+    @State private var previewing = ReceiptPreview()
     @State private var errorMessage: String?
 
     init(selection: Binding<UUID?>) {
@@ -227,7 +226,7 @@ struct ExpenseTablePage: View {
             attachingTo = nil
         }
         .receiptRemovalDialog($removing, remove: remove)
-        .quickLookPreview($previewURL, in: previewURLs)
+        .receiptPreview($previewing)
         #if DEBUG
         .task { await runQAActions() }
         #endif
@@ -294,34 +293,9 @@ struct ExpenseTablePage: View {
         }
     }
 
-    /// Vista Rápida de los recibos del gasto, empezando por `index`: cada archivo se copia a la carpeta temporal con su
-    /// nombre (el título de la ventana de Vista Rápida) y se puede pasar de uno a otro.
+    /// Vista Rápida de los recibos del gasto, empezando por `index`, y se puede pasar de uno a otro (`ReceiptPreview`).
     private func preview(_ attachments: [Attachment], from index: Int) {
-        let urls = attachments.compactMap(Self.temporaryFile)
-        guard !urls.isEmpty else { return }
-        previewURLs = urls
-        previewURL = urls[min(max(0, index), urls.count - 1)]
-    }
-
-    private static func temporaryFile(for attachment: Attachment) -> URL? {
-        guard let data = attachment.data else { return nil }
-        let folder = FileManager.default.temporaryDirectory
-            .appending(path: "Recibos", directoryHint: .isDirectory)
-            .appending(path: attachment.id.uuidString, directoryHint: .isDirectory)
-        var name = attachment.filename.replacingOccurrences(of: "/", with: "-")
-        if name.isEmpty { name = String(localized: "Recibo") }
-        if (name as NSString).pathExtension.isEmpty,
-           let ext = UTType(attachment.contentType)?.preferredFilenameExtension {
-            name += ".\(ext)"
-        }
-        let url = folder.appending(path: name, directoryHint: .notDirectory)
-        do {
-            try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-            if !FileManager.default.fileExists(atPath: url.path) { try data.write(to: url, options: .atomic) }
-            return url
-        } catch {
-            return nil
-        }
+        previewing.show(attachments, from: index)
     }
 
     #if DEBUG
@@ -505,9 +479,9 @@ private struct ExpenseReceiptCell: View {
 
     var body: some View {
         if hasReceipt {
-            Image(systemName: "paperclip").foregroundStyle(.secondary).accessibilityLabel("Recibo adjunto")
+            Image(systemName: "paperclip").foregroundStyle(Palette.ink2).accessibilityLabel("Recibo adjunto")
         } else {
-            Text(verbatim: "—").foregroundStyle(.secondary).accessibilityLabel("Sin recibo")
+            Text(verbatim: "—").foregroundStyle(Palette.ink2).accessibilityLabel("Sin recibo")
         }
     }
 }
@@ -723,7 +697,7 @@ private struct ExpenseInspector: View {
                         Text("Sin recibo").foregroundStyle(Palette.warning)
                     }
                     .accessibilityElement(children: .combine)
-                    Text("Guarda el comprobante: el IRS pide conservarlo. Puedes soltar aquí una foto o un PDF.")
+                    Text("Guarda el recibo: el IRS pide conservarlo. Puedes soltar aquí una foto o un PDF.")
                         .font(.footnote).foregroundStyle(Palette.ink2)
                         .fixedSize(horizontal: false, vertical: true)
                 }

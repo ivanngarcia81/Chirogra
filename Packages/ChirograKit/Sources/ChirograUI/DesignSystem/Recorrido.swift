@@ -14,6 +14,12 @@ import SwiftUI
 // Tiempos (ficha «Motion spec» del canvas): al pasar de paso, la tarjeta se va (120 ms), el foco se desliza (muelle de
 // 450 ms) y la tarjeta nueva entra a los 300 ms (240 ms). El anillo late 2 veces y se para. Con «Reducir movimiento»,
 // solo un fundido de 200 ms. Con VoiceOver, el foco va a la tarjeta y tocar fuera no avanza.
+//
+// La tarjeta se desliza como la bienvenida: a la izquierda, el paso siguiente; a la derecha, el anterior (Eric, Beta
+// Family, build 55). Con VoiceOver, lo mismo ajustando el indicador «2 de 5» (deslizar arriba o abajo).
+
+/// Hacia dónde lleva deslizar la tarjeta del recorrido.
+nonisolated enum Deslizamiento: Equatable, Sendable { case siguiente, anterior }
 
 enum RecorridoID: String, CaseIterable {
     case home, sales, expenses, banking, more
@@ -115,6 +121,11 @@ enum RecorridoID: String, CaseIterable {
             Paso(objetivo: "more.reports", icono: "chart.bar.doc.horizontal",
                  titulo: String(localized: "Reportes"),
                  mensaje: String(localized: "Estado de resultados, balance y más, listos para tu contador."),
+                 desplazar: true, enLista: true),
+            // Eric (Beta Family, build 55): nadie le contó cómo se protegen sus datos. Se señala Seguridad una vez.
+            Paso(objetivo: "more.security", icono: "lock.shield",
+                 titulo: String(localized: "Tus libros, protegidos"),
+                 mensaje: String(localized: "En Seguridad ves dónde se guardan tus datos, el bloqueo con Face ID y la bitácora de cambios."),
                  desplazar: true, enLista: true),
             Paso(objetivo: "more.tabs", icono: "dock.rectangle",
                  titulo: String(localized: "Ponla a tu gusto"),
@@ -287,24 +298,84 @@ final class Recorrido {
         return (marcos[objetivo]?.width ?? 0) > 0
     }
 
+    /// Fuera de la pantalla del todo, o sin medir (una fila de `List` que ya no se dibuja). Lo de arriba no lleva
+    /// `desplazar`: solo pasa al volver atrás después de bajar (por eso lleva también su `.id`).
+    private func fuera(_ paso: RecorridoID.Paso) -> Bool {
+        guard let objetivo = paso.objetivo else { return false }
+        guard let marco = marcos[objetivo], marco.width > 0 else { return true }
+        guard altoPantalla > 0 else { return false }
+        return marco.maxY <= 100 || marco.minY >= altoPantalla
+    }
+
+    /// Desplaza la pantalla hasta el objetivo si hace falta; `false` si no aparece (y el paso se salta).
+    private func ponerALaVista(_ paso: RecorridoID.Paso) async -> Bool {
+        guard let objetivo = paso.objetivo, !objetivo.hasPrefix("ax:") else { return true }
+        // En una `List` el marco guardado puede ser de antes (la fila deja de medirse al salir de la pantalla):
+        // ahí se desplaza siempre.
+        let haceFalta = paso.desplazar ? paso.enLista || !aLaVista(paso) : fuera(paso)
+        guard haceFalta else { return true }
+        let visible = { paso.desplazar ? self.asoma(paso) : !self.fuera(paso) }
+        desplazarA = objetivo
+        try? await Task.sleep(for: .milliseconds(450))
+        desplazarA = nil
+        // La última fila de una lista larga tarda más en dibujarse (y medirse) al llegar: se espera un poco.
+        for _ in 0..<4 where !visible() { try? await Task.sleep(for: .milliseconds(150)) }
+        return visible()
+    }
+
+    /// Adónde lleva deslizar la tarjeta: horizontal y de al menos `umbral` pt, o un golpe rápido que lo pasaría
+    /// de largo; lo vertical o corto no cuenta.
+    nonisolated static func deslizamiento(_ traslacion: CGSize, previsto: CGSize,
+                                          umbral: CGFloat = 50) -> Deslizamiento? {
+        func horizontal(_ t: CGSize, _ minimo: CGFloat) -> CGFloat? {
+            abs(t.width) >= minimo && abs(t.width) > abs(t.height) * 1.5 ? t.width : nil
+        }
+        let golpe = traslacion.width * previsto.width > 0 ? horizontal(previsto, umbral * 2) : nil
+        guard let dx = horizontal(traslacion, umbral) ?? golpe else { return nil }
+        return dx < 0 ? .siguiente : .anterior
+    }
+
+    /// El paso al que lleva deslizar, sin salirse: en el primero no hay anterior y en el último no termina (para eso,
+    /// «Entendido»; deslizar no cierra el recorrido sin querer).
+    nonisolated static func pasoTras(_ deslizamiento: Deslizamiento, actual: Int, total: Int) -> Int? {
+        let destino = deslizamiento == .siguiente ? actual + 1 : actual - 1
+        return (0..<total).contains(destino) ? destino : nil
+    }
+
+    /// La tarjeta deslizada, o ajustada con VoiceOver.
+    func deslizar(_ deslizamiento: Deslizamiento) {
+        guard Self.pasoTras(deslizamiento, actual: paso, total: pasos.count) != nil else { return }
+        if deslizamiento == .siguiente { siguiente() } else { anterior() }
+    }
+
     func siguiente() {
         guard !cambiando, activo != nil else { return }
         guard paso + 1 < pasos.count else { terminar(); return }
+        ir(adelante: true)
+    }
+
+    /// El paso anterior (deslizando la tarjeta a la derecha); en el primero no hace nada.
+    func anterior() {
+        guard !cambiando, activo != nil, paso > 0 else { return }
+        ir(adelante: false)
+    }
+
+    private func ir(adelante: Bool) {
         cambiando = true
+        let salto = adelante ? 1 : -1
         Task {
             withAnimation(reduceMotion ? .easeInOut(duration: 0.2) : .easeIn(duration: 0.12)) { tarjetaVisible = false }
-            var proximo = paso + 1
-            // En una `List` el marco guardado puede ser de antes (la fila deja de medirse al salir de la pantalla):
-            // ahí se desplaza siempre.
-            if pasos[proximo].desplazar, pasos[proximo].enLista || !aLaVista(pasos[proximo]) {
-                desplazarA = pasos[proximo].objetivo
-                try? await Task.sleep(for: .milliseconds(450))
-                desplazarA = nil
-                // La última fila de una lista larga tarda más en dibujarse (y medirse) al llegar: se espera un poco.
-                for _ in 0..<4 where !asoma(pasos[proximo]) { try? await Task.sleep(for: .milliseconds(150)) }
-                if !asoma(pasos[proximo]) { proximo += 1 }
+            var proximo = paso + salto
+            // Lo que no se pone a la vista se salta (hacia atrás para en la presentación, que siempre está).
+            while pasos.indices.contains(proximo) {
+                if await ponerALaVista(pasos[proximo]) { break }
+                proximo += salto
             }
-            guard proximo < pasos.count else { cambiando = false; terminar(); return }
+            guard pasos.indices.contains(proximo) else {
+                cambiando = false
+                if adelante { terminar() } else { withAnimation(.easeOut(duration: 0.24)) { tarjetaVisible = true } }
+                return
+            }
             if reduceMotion {
                 withAnimation(.easeInOut(duration: 0.2)) { paso = proximo; tarjetaVisible = true }
             } else {
@@ -582,6 +653,7 @@ struct RecorridoOverlay: View {
                 }
             }
             .frame(width: ancho)
+            .modifier(TarjetaDeslizable(reduceMotion: reduceMotion))
             .offset(x: izquierda, y: conFlecha && debajo ? arriba - 10 : arriba)
             .transition(reduceMotion ? .opacity : .asymmetric(
                 insertion: .opacity.combined(with: .offset(y: debajo ? -8 : 8)),
@@ -589,6 +661,7 @@ struct RecorridoOverlay: View {
         } else {
             presentacion(paso: paso)
                 .frame(width: ancho)
+                .modifier(TarjetaDeslizable(reduceMotion: reduceMotion))
                 .frame(width: geo.size.width, height: geo.size.height)
                 .transition(reduceMotion ? .opacity : .asymmetric(
                     insertion: .opacity.combined(with: .scale(scale: 0.94)),
@@ -598,21 +671,19 @@ struct RecorridoOverlay: View {
 
     private var esUltimo: Bool { recorrido.paso + 1 >= recorrido.pasos.count }
 
-    /// «Paso 2 de 5»: los puntos con letra normal; con letra de accesibilidad, el texto. Con muchos pasos (el «Tutorial
-    /// completo» de Inicio tiene 12), «2 de 12»: los puntos apretaban «Siguiente» hasta partirlo en tres líneas.
-    @ViewBuilder
+    /// «2 de 5» en todos los recorridos, también en la presentación; con letra de accesibilidad, «Paso 2 de 5». Antes,
+    /// puntos hasta 7 pasos y números en el «Tutorial completo» (12; los puntos partían «Siguiente» en tres líneas):
+    /// dos estilos en la misma app (Eric, Beta Family, build 55). Con VoiceOver se ajusta para cambiar de paso.
+    /// El mismo `PasoIndicador` que la bienvenida y el alta (repaso visual, build 56).
     private var indicador: some View {
-        if recorrido.pasos.count > 7 && !dynamicTypeSize.isAccessibilitySize {
-            Text("\(recorrido.paso + 1) de \(recorrido.pasos.count)")
-                .font(.subheadline).monospacedDigit().foregroundStyle(Palette.ink2)
-                .fixedSize()
-                .accessibilityLabel(String(localized: "Paso \(recorrido.paso + 1) de \(recorrido.pasos.count)"))
-        } else if dynamicTypeSize.isAccessibilitySize {
-            Text("Paso \(recorrido.paso + 1) de \(recorrido.pasos.count)")
-                .font(.subheadline).foregroundStyle(Palette.ink2)
-        } else {
-            Puntos(total: recorrido.pasos.count, actual: recorrido.paso)
-        }
+        PasoIndicador(actual: recorrido.paso + 1, total: recorrido.pasos.count)
+            .accessibilityAdjustableAction { direccion in
+                switch direccion {
+                case .increment: recorrido.deslizar(.siguiente)
+                case .decrement: recorrido.deslizar(.anterior)
+                @unknown default: break
+                }
+            }
     }
 
     /// Primer paso: centrado, con el icono que se anima, «Empezar» a todo el ancho y «Saltar» debajo.
@@ -622,7 +693,7 @@ struct RecorridoOverlay: View {
                 .font(.system(size: 34, weight: .semibold))
                 .foregroundStyle(Palette.brand)
                 .frame(width: 76, height: 76)
-                .background(Palette.brand.opacity(0.12), in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+                .background(Palette.brandWash, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
                 .symbolEffect(.bounce, options: .repeat(2), isActive: !reduceMotion)
                 .accessibilityHidden(true)
             Text(paso.titulo).font(.title2.bold()).foregroundStyle(Palette.ink)
@@ -645,12 +716,11 @@ struct RecorridoOverlay: View {
         }
         .multilineTextAlignment(.center)
         .fixedSize(horizontal: false, vertical: true)
-        .padding(.horizontal, 24)
+        // Arriba, más aire para el icono.
+        .padding(.horizontal, Self.margenTarjeta)
         .padding(.top, 28)
         .padding(.bottom, 16)
-        .background(Palette.surface, in: RoundedRectangle(cornerRadius: 30, style: .continuous))
-        .shadow(color: .black.opacity(0.3), radius: 30, y: 10)
-        .modifier(TarjetaAccesible())
+        .modifier(FondoDeTarjeta())
     }
 
     /// Pasos con foco: título, una frase, y abajo el indicador, «Saltar» y «Siguiente».
@@ -692,14 +762,25 @@ struct RecorridoOverlay: View {
                 .padding(.top, 12)
             }
         }
-        .padding(.leading, 20)
-        .padding(.trailing, 16)
+        .padding(.horizontal, Self.margenTarjeta)
         .padding(.top, 18)
         .padding(.bottom, 12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Palette.surface, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
-        .shadow(color: .black.opacity(0.28), radius: 24, y: 8)
-        .modifier(TarjetaAccesible())
+        .modifier(FondoDeTarjeta())
+    }
+
+    /// Margen lateral de las dos tarjetas (antes 24 en la presentación y 20/16 en los pasos; repaso visual, build 56).
+    private static let margenTarjeta: CGFloat = 20
+}
+
+/// Fondo, radio y sombra de las dos tarjetas del recorrido: antes radio 30 con sombra 0.3/30 en la presentación y radio
+/// 22 con 0.28/24 en los pasos; ahora `Metrics.cardRadius` y la sombra de los pasos en las dos (repaso visual, build 56).
+private struct FondoDeTarjeta: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .background(Palette.surface, in: RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous))
+            .shadow(color: .black.opacity(0.28), radius: 24, y: 8)
+            .modifier(TarjetaAccesible())
     }
 }
 
@@ -738,20 +819,36 @@ private struct Anillo: View {
     }
 }
 
-private struct Puntos: View {
-    let total: Int
-    let actual: Int
+/// Deslizar la tarjeta, como en la bienvenida (Eric, Beta Family, build 55): a la izquierda, el paso siguiente; a la
+/// derecha, el anterior. Solo la tarjeta: el velo y lo iluminado siguen con el toque, y los botones con el suyo (el
+/// arrastre empieza a los 20 pt). Mientras se arrastra, la tarjeta sigue un poco al dedo, y menos si no hay adónde ir;
+/// con «Reducir movimiento», quieta.
+private struct TarjetaDeslizable: ViewModifier {
+    let reduceMotion: Bool
+    @Environment(Recorrido.self) private var recorrido
+    @State private var arrastre: CGFloat = 0
 
-    var body: some View {
-        HStack(spacing: 6) {
-            ForEach(0..<total, id: \.self) { indice in
-                Capsule()
-                    .fill(indice == actual ? Palette.brand : Palette.ink2.opacity(0.35))
-                    .frame(width: indice == actual ? 18 : 6, height: 6)
-            }
-        }
-        .accessibilityElement()
-        .accessibilityLabel(String(localized: "Paso \(actual + 1) de \(total)"))
+    func body(content: Content) -> some View {
+        content
+            .offset(x: arrastre)
+            .gesture(
+                DragGesture(minimumDistance: 20)
+                    .onChanged { valor in
+                        let t = valor.translation
+                        guard !reduceMotion, abs(t.width) > abs(t.height) else { return }
+                        let hacia: Deslizamiento = t.width < 0 ? .siguiente : .anterior
+                        let hay = Recorrido.pasoTras(hacia, actual: recorrido.paso, total: recorrido.pasos.count) != nil
+                        arrastre = t.width * (hay ? 0.35 : 0.12)
+                    }
+                    .onEnded { valor in
+                        if arrastre != 0 {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) { arrastre = 0 }
+                        }
+                        if let hacia = Recorrido.deslizamiento(valor.translation, previsto: valor.predictedEndTranslation) {
+                            recorrido.deslizar(hacia)
+                        }
+                    }
+            )
     }
 }
 

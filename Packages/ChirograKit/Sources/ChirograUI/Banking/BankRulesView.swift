@@ -79,8 +79,10 @@ struct BankRulesView: View {
                 ForEach(rules) { rule in
                     Button { editing = rule } label: { row(rule) }
                         .buttonStyle(.plain)
+                        // Como «Pausar»/«Reanudar» de las recurrentes: ícono y texto, en índigo (repaso visual, build 56).
                         .swipeActions {
-                            Button(rule.isActive ? "Desactivar" : "Activar") { toggle(rule) }.tint(rule.isActive ? Palette.gray : Palette.green)
+                            Button(rule.isActive ? "Desactivar" : "Activar", systemImage: rule.isActive ? "pause" : "play") { toggle(rule) }
+                                .tint(Palette.indigo)
                         }
                         .contextMenu {
                             Button(rule.isActive ? "Desactivar" : "Activar") { toggle(rule) }

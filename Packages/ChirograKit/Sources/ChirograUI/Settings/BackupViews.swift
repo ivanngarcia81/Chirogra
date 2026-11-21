@@ -113,7 +113,7 @@ struct BackupSection: View {
                     Text(errorMessage).foregroundStyle(Palette.negative)
                 }
                 if lastBackupAt > 0 {
-                    Text("Última copia: \(Date(timeIntervalSinceReferenceDate: lastBackupAt).formatted(date: .abbreviated, time: .shortened))")
+                    Text("Última copia: \(Date(timeIntervalSinceReferenceDate: lastBackupAt).shortDateTime)")
                 }
                 Text("Guarda los libros de «\(companyName)», con los recibos, en un archivo .chirogra que puedes restaurar en cualquier aparato con Chirogra, sin depender de iCloud. Cada empresa tiene su copia.")
             }
@@ -179,7 +179,7 @@ struct BackupSection: View {
 
     private func confirmation(for pending: PendingRestore) -> String {
         let info = pending.info
-        let when = info.createdAt.formatted(date: .abbreviated, time: .shortened)
+        let when = info.createdAt.shortDateTime
         let source = info.companyName.isEmpty ? String(localized: "Copia del \(when)") : String(localized: "«\(info.companyName)», copia del \(when)")
         if pending.isUndo {
             let scope = iCloudSyncEnabled

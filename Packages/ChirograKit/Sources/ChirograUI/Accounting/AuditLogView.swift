@@ -122,7 +122,7 @@ extension AuditEvent {
     var timeTitle: String { date.formatted(.appDateTime.hour().minute()) }
     /// Para la tabla del Mac: «10 nov, 7:49 p.m.» (el año, en el inspector).
     var shortDateTimeTitle: String { date.formatted(.appDateTime.day().month(.abbreviated).hour().minute()) }
-    var dateTimeTitle: String { date.formatted(.appDateTime.day().month(.abbreviated).year().hour().minute()) }
+    var dateTimeTitle: String { date.shortDateTime }
 
     func matches(_ text: String) -> Bool {
         text.isEmpty || summary.localizedStandardContains(text) || changeDetails.localizedStandardContains(text)
@@ -183,8 +183,15 @@ struct AuditLogView: View {
                 Text("Cada cambio de tus libros, con la fecha y el aparato en que se hizo. La bitácora no se puede editar ni borrar.")
             }
             if shown.isEmpty {
-                Text(events.isEmpty ? String(localized: "Aún no hay cambios.") : String(localized: "Ningún cambio coincide con la búsqueda o el filtro."))
-                    .foregroundStyle(Palette.ink2)
+                if events.isEmpty {
+                    Text("Aún no hay cambios.").foregroundStyle(Palette.ink2)
+                } else {
+                    NoResultsView(message: String(localized: "Ningún cambio coincide con la búsqueda o el filtro.")) {
+                        query = ""
+                        filter = .all
+                    }
+                    .listRowBackground(Color.clear)
+                }
             }
             ForEach(days.keys.sorted(by: >), id: \.self) { day in
                 Section {
@@ -200,7 +207,8 @@ struct AuditLogView: View {
         .screenBackground()
         .searchable(text: $query, prompt: Text("Buscar en la bitácora"))
         .navigationTitle("Bitácora de cambios")
-        .inlineTitle()
+        // Grande, como las demás listas y reportes de Más (repaso visual, build 56); en línea solo los formularios.
+        .headerTitle()
     }
     #endif
 

@@ -55,6 +55,8 @@ extension Date {
 extension Date {
     var shortDate: String { formatted(.appDateTime.day().month(.abbreviated).year()) }
     var dayMonth: String { formatted(.appDateTime.day().month(.abbreviated)) }
+    /// «20 nov 2026, 14:05»: `shortDate` con la hora (copias de seguridad, historial; repaso visual, build 56).
+    var shortDateTime: String { formatted(.appDateTime.day().month(.abbreviated).year().hour().minute()) }
     /// «Octubre de 2026»: solo la primera letra en mayúscula (`capitalized` daría «Octubre De 2026»).
     var monthYear: String { formatted(.appDateTime.month(.wide).year()).sentenceCased }
     /// «vence Oct 28» con espacios de no separación: en una fila estrecha se parte antes, nunca dentro.
@@ -501,6 +503,38 @@ extension PrimitiveButtonStyle where Self == CompactPrimaryButtonStyle {
 extension PrimitiveButtonStyle where Self == SecondaryButtonStyle {
     static var secondary: SecondaryButtonStyle { SecondaryButtonStyle() }
     static var destructive: SecondaryButtonStyle { SecondaryButtonStyle(destructive: true) }
+}
+
+// MARK: - Indicador de paso
+
+/// «2 de 5»; con letra de accesibilidad, «Paso 2 de 5» (o «Página 2 de 5»). El mismo en los recorridos, la bienvenida
+/// y el alta, que antes usaban puntos de dos formas distintas (repaso visual, build 56).
+struct PasoIndicador: View {
+    enum Unidad { case paso, pagina }
+
+    let actual: Int
+    let total: Int
+    var unidad: Unidad = .paso
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    private var completo: Text {
+        unidad == .paso ? Text("Paso \(actual) de \(total)") : Text("Página \(actual) de \(total)")
+    }
+
+    var body: some View {
+        Group {
+            if dynamicTypeSize.isAccessibilitySize {
+                completo
+                    .font(.subheadline).foregroundStyle(Palette.ink2)
+            } else {
+                Text("\(actual) de \(total)")
+                    .font(.subheadline).monospacedDigit().foregroundStyle(Palette.ink2)
+                    .fixedSize()
+            }
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(completo)
+    }
 }
 
 // MARK: - Estados

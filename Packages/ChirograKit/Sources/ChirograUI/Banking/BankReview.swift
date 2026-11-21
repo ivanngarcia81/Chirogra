@@ -66,7 +66,9 @@ enum BankSuggestion {
         switch self {
         case .match: String(localized: "Emparejar")
         case .invoice: String(localized: "Registrar cobro")
-        case .bill: String(localized: "Registrar pago")
+        // Clave propia: en inglés «Record Bill Payment», como «… y siguiente», para no confundirlo con el cobro
+        // de una factura de venta (repaso visual, build 56).
+        case .bill: String(localized: "bank.accept.bill", defaultValue: "Registrar pago")
         case .category: String(localized: "Categorizar")
         case .none: String(localized: "Revisar")
         }

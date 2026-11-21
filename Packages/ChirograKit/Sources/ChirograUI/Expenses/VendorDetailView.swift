@@ -17,6 +17,7 @@ struct VendorDetailView: View {
     @State private var payFromID: UUID?
     @State private var payDate = Date()
     @State private var errorMessage: String?
+    @State private var previewing = ReceiptPreview()
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     #if os(iOS)
     @LayoutSizeClass private var sizeClass
@@ -77,6 +78,7 @@ struct VendorDetailView: View {
         .onAppear {
             payFromID = payFromID ?? vendor.preferredPaymentAccountID ?? paymentAccounts.first { $0.subtype == .bank }?.id
         }
+        .receiptPreview($previewing)
     }
 
     // MARK: iPhone (`ProveedorFicha`)
@@ -86,9 +88,7 @@ struct VendorDetailView: View {
             if let errorMessage { ErrorBanner(message: errorMessage).listRowBackground(Color.clear).listRowInsets(EdgeInsets()) }
             Section {
                 VStack(spacing: 18) {
-                    ProfileHeader(initials: Initials.from(vendor.name), name: vendor.name,
-                                  detail: [category, terms, sinceText].compactMap { $0 }.joined(separator: " · "))
-                        .fixedSize(horizontal: false, vertical: true)
+                    header.fixedSize(horizontal: false, vertical: true)
                     actions
                 }
                 .padding(.top, 4)
@@ -152,10 +152,26 @@ struct VendorDetailView: View {
         openURL(url)
     }
 
-    /// Resumen de tres cifras en una sola tarjeta con separadores verticales; con texto de accesibilidad, en columna.
+    /// Nombre, saldo por pagar y «Categoría · Neto 30 · desde 2024» con la cabecera de la factura, como el cliente
+    /// (repaso visual, build 56; antes, el monograma de 84 con el nombre grande).
+    private var header: some View {
+        DetailSummary(name: vendor.name, amount: vendor.openBalance.money, alignment: .center, initials: Initials.from(vendor.name)) {
+            Group {
+                if openBills.isEmpty {
+                    Text("Nada por pagar")
+                } else {
+                    Text("Saldo por pagar") + Text(verbatim: " · ") + Text("\(openBills.count) facturas de proveedor")
+                }
+            }
+            .font(.subheadline).foregroundStyle(Palette.ink2)
+            DetailSummaryLine(text: [category, terms, sinceText].compactMap { $0 }.joined(separator: " · "))
+        }
+    }
+
+    /// Resumen en una sola tarjeta con separadores verticales; con texto de accesibilidad, en columna. Sin «Por pagar»:
+    /// va en la cabecera.
     private var summary: some View {
         let stats = [
-            (String(localized: "Por pagar"), vendor.openBalance.money),
             (String(localized: "Gastado \(Date.now.formatted(.appDateTime.year()))"), spentThisYear.money),
             (String(localized: "Compras"), (bills.count + expenses.count).formatted()),
         ]
@@ -258,15 +274,27 @@ struct VendorDetailView: View {
         }
     }
 
-    /// La copia del W-9 para compartirla o abrirla.
+    /// La copia del W-9: tocarla la abre en Vista Rápida (como los recibos del gasto, Eric, Beta Family, build 55) y
+    /// el icono de al lado la comparte. Los dos `.borderless`, para que en la lista no se disparen juntos.
     @ViewBuilder
     private func w9Link(_ attachment: Attachment) -> some View {
         if let data = attachment.data {
-            ShareLink(item: AttachmentFile(data: data, filename: attachment.filename, contentType: attachment.contentType),
-                      preview: SharePreview(attachment.filename)) {
-                Label(String(localized: "Copia del W-9 · \(attachment.filename)"), systemImage: "doc.text")
-                    .lineLimit(1)
-                    .frame(minHeight: Metrics.target)
+            HStack(spacing: 8) {
+                Button { previewing.show([attachment]) } label: {
+                    Label(String(localized: "Copia del W-9 · \(attachment.filename)"), systemImage: "doc.text")
+                        .lineLimit(1)
+                        .frame(maxWidth: .infinity, minHeight: Metrics.target, alignment: .leading)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.borderless)
+                .accessibilityHint("Abre el archivo a pantalla completa.")
+                ShareLink(item: AttachmentFile(data: data, filename: attachment.filename, contentType: attachment.contentType),
+                          preview: SharePreview(attachment.filename)) {
+                    Label("Compartir", systemImage: "square.and.arrow.up").labelStyle(.iconOnly)
+                        .frame(minWidth: Metrics.target, minHeight: Metrics.target)
+                }
+                .buttonStyle(.borderless)
+                .accessibilityLabel("Compartir \(attachment.filename)")
             }
         }
     }

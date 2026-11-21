@@ -99,6 +99,7 @@ struct ReceiptPickerButtons: View {
 struct ReceiptDropPanel: View {
     @Binding var receipts: [ReceiptFile]
     @State private var isTargeted = false
+    @State private var previewing = ReceiptPreview()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -123,14 +124,25 @@ struct ReceiptDropPanel: View {
             .overlay(RoundedRectangle(cornerRadius: Metrics.fieldRadius, style: .continuous)
                 .strokeBorder(isTargeted ? Palette.brand : Palette.separator, style: StrokeStyle(lineWidth: 1, dash: [5, 4])))
 
-            ForEach(receipts) { receipt in
+            ForEach(Array(receipts.enumerated()), id: \.element.id) { index, receipt in
                 HStack(spacing: 10) {
-                    ReceiptThumbnail(data: receipt.data, contentType: receipt.type.identifier, side: 40)
-                    VStack(alignment: .leading, spacing: 1) {
-                        Text(receipt.name).font(.subheadline).lineLimit(1).truncationMode(.middle)
-                        Text("\(Int64(receipt.data.count).formatted(.byteCount(style: .file))) · adjunto")
-                            .font(.footnote).foregroundStyle(Palette.ink2)
+                    // Como en el detalle del gasto (Eric, Beta Family, build 55): clic para verlo en Vista Rápida.
+                    Button { previewing.show(receipts, from: index) } label: {
+                        HStack(spacing: 10) {
+                            ReceiptThumbnail(data: receipt.data, contentType: receipt.type.identifier, side: 40)
+                            VStack(alignment: .leading, spacing: 1) {
+                                Text(receipt.name).font(.subheadline).lineLimit(1).truncationMode(.middle)
+                                Text("\(Int64(receipt.data.count).formatted(.byteCount(style: .file))) · adjunto")
+                                    .font(.footnote).foregroundStyle(Palette.ink2)
+                            }
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .contentShape(Rectangle())
                     }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Ver recibo \(receipt.name)")
+                    .accessibilityHint("Abre el archivo a pantalla completa.")
+                    .help("Ver recibo")
                     Spacer(minLength: 6)
                     Button("Quitar") { receipts.removeAll { $0.id == receipt.id } }
                         .buttonStyle(.bordered).controlSize(.small)
@@ -145,6 +157,7 @@ struct ReceiptDropPanel: View {
             receipts += files
             return !files.isEmpty
         } isTargeted: { isTargeted = $0 }
+        .receiptPreview($previewing)
     }
 }
 
@@ -203,6 +216,7 @@ struct ExpenseDetailView: View {
     @State private var removing: Attachment?
     @State private var isTargeted = false
     @State private var editing = false
+    @State private var previewing = ReceiptPreview()
 
     private func accountName(_ id: UUID?) -> String? { accounts.first { $0.id == id }?.name }
     private var category: String? { expense.sortedLines.first.flatMap { accountName($0.accountID) } }
@@ -237,21 +251,18 @@ struct ExpenseDetailView: View {
             return !files.isEmpty
         } isTargeted: { isTargeted = $0 }
         .receiptRemovalDialog($removing, remove: remove)
+        .receiptPreview($previewing)
     }
 
-    /// Icono de la categoría, beneficiario y cifra (canvas: cuadrado de 36 pt, nombre semibold e importe de 24 bold).
+    /// Beneficiario, cifra y «Categoría · fecha», como la cabecera de la factura (repaso visual, build 56). Sin el
+    /// icono de la categoría: la categoría ya va en la línea de abajo y, centrado encima, alargaba la cabecera.
     private var header: some View {
-        HStack(spacing: 12) {
-            LargeIconTile(systemImage: ExpenseCategoryStyle.symbol(for: category), color: ExpenseCategoryStyle.color(for: category))
-            VStack(alignment: .leading, spacing: 1) {
-                Text(title).font(.subheadline.weight(.semibold)).foregroundStyle(Palette.ink)
-                Text(expense.total.money).font(.amount(28)).foregroundStyle(Palette.ink).strikethrough(expense.isVoid)
-                if let status = ExpenseStatus(expense) { status.chip(compact: false) }
-            }
-            Spacer(minLength: 0)
+        let lines = expense.sortedLines
+        let categoryText = lines.count > 1 ? String(localized: "Varias categorías") : (category ?? String(localized: "Sin categoría"))
+        return DetailSummary(name: title, amount: expense.total.money, struck: expense.isVoid) {
+            if let status = ExpenseStatus(expense) { status.chip(compact: false) }
+            DetailSummaryLine(text: "\(categoryText) · \(expense.date.shortDate)")
         }
-        .padding(.vertical, 4)
-        .accessibilityElement(children: .combine)
     }
 
     @ViewBuilder
@@ -293,15 +304,26 @@ struct ExpenseDetailView: View {
                 }
                 .accessibilityElement(children: .combine)
             }
-            ForEach(attachments) { attachment in
+            ForEach(Array(attachments.enumerated()), id: \.element.id) { index, attachment in
                 AdaptiveRow {
-                    HStack(spacing: 12) {
-                        ReceiptThumbnail(data: attachment.data, contentType: attachment.contentType, side: 48)
-                        VStack(alignment: .leading, spacing: 1) {
-                            Text(attachment.filename).lineLimit(2)
-                            Text(attachment.createdAt.shortDate).font(.footnote).foregroundStyle(Palette.ink2)
+                    // Eric, Beta Family, build 55: tocar la miniatura o la fila abre el recibo en Vista Rápida (zoom,
+                    // deslizar entre los recibos del gasto). Botón propio y sin estilo de fila, para que Compartir y
+                    // Quitar sigan siendo botones aparte.
+                    Button { previewing.show(attachments, from: index) } label: {
+                        HStack(spacing: 12) {
+                            ReceiptThumbnail(data: attachment.data, contentType: attachment.contentType, side: 48)
+                            VStack(alignment: .leading, spacing: 1) {
+                                Text(attachment.filename).lineLimit(2)
+                                Text(attachment.createdAt.shortDate).font(.footnote).foregroundStyle(Palette.ink2)
+                            }
                         }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .contentShape(Rectangle())
                     }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Ver recibo \(attachment.filename)")
+                    .accessibilityHint("Abre el archivo a pantalla completa.")
+                    .help("Ver recibo")
                 } trailing: {
                     HStack(spacing: 16) { attachmentActions(attachment) }
                 }
@@ -309,6 +331,9 @@ struct ExpenseDetailView: View {
                     Button("Quitar", systemImage: "trash", role: .destructive) { removing = attachment }
                 }
                 .contextMenu {
+                    if attachment.data != nil {
+                        Button("Ver recibo", systemImage: "eye") { previewing.show(attachments, from: index) }
+                    }
                     Button("Quitar recibo", systemImage: "trash", role: .destructive) { removing = attachment }
                 }
             }
@@ -317,7 +342,7 @@ struct ExpenseDetailView: View {
             SectionLabel(text: String(localized: "Recibo"))
         } footer: {
             if attachments.isEmpty {
-                Text("Guarda el comprobante: el IRS pide conservarlo.")
+                Text("Guarda el recibo: el IRS pide conservarlo.")
             }
         }
         .listRowBackground(isTargeted ? Palette.brandWash : Palette.surface)

@@ -37,7 +37,8 @@ extension Estimate {
         case .sent: (Palette.ink2, Palette.blue)
         case .accepted: hasInvoices ? (Palette.warning, Palette.orange) : (Palette.positive, Palette.green)
         case .declined: (Palette.negative, Palette.red)
-        case .expired: (Palette.warning, Palette.orange)
+        // Vencido en rojo, como las facturas vencidas (repaso visual, build 56).
+        case .expired: (Palette.negative, Palette.red)
         case .converted: (Palette.info, Palette.blue)
         }
         return StatusChip(text: statusTitle, foreground: text, compact: compact, dot: dot)
@@ -80,15 +81,16 @@ extension Estimate {
     }
 }
 
-/// Filtro de la lista de estimados (los `rawValue` son las etiquetas en español del catálogo).
+/// Filtro de la lista de estimados (los `rawValue` son las etiquetas en español del catálogo). En plural, como los
+/// filtros de facturas por pagar y del banco; el singular queda para el estado de cada fila (repaso visual, build 56).
 enum EstimateFilter: String, CaseIterable, Identifiable {
-    case all = "Todos", draft = "Borrador", sent = "Enviado", accepted = "Aceptado", expired = "Vencido",
-         declined = "Rechazado", converted = "Convertido"
+    case all = "Todos", draft = "Borradores", sent = "Enviados", accepted = "Aceptados", expired = "Vencidos",
+         declined = "Rechazados", converted = "Convertidos"
     var id: String { rawValue }
 
-    /// Etiqueta visible (como `localizedTitle`, pero «Vencido» con su clave de estimado).
+    /// Etiqueta visible (como `localizedTitle`, pero «Vencidos» con su clave de estimado: «Expired», no «Overdue»).
     var title: String {
-        self == .expired ? String(localized: "estimate.expired", defaultValue: "Vencido") : localizedTitle
+        self == .expired ? String(localized: "estimates.expired", defaultValue: "Vencidos") : localizedTitle
     }
 
     func matches(_ estimate: Estimate) -> Bool {
@@ -154,22 +156,8 @@ struct EstimateListView: View {
     private var summary: some View {
         let count = filter == .all ? Text("\(filtered.count) estimados")
             : Text("\(filtered.count) estimados") + Text(verbatim: " · ") + Text(filter.title)
-        let total = Text("Por aceptar \(pending.money)")
-        return ViewThatFits(in: .horizontal) {
-            HStack {
-                count.fixedSize()
-                Spacer(minLength: 8)
-                total.fixedSize()
-            }
-            VStack(alignment: .leading, spacing: 2) {
-                count
-                total
-            }
-        }
-        .font(.footnote)
-        .foregroundStyle(Palette.ink2)
-        .monospacedDigit()
-        .textCase(nil)
+        // La cifra en `.headline` e `ink`, como «Por cobrar» de Ventas (repaso visual, build 56).
+        return ListSummaryHeader(title: count, label: Text("Por aceptar"), amount: pending.money)
     }
 
     @ViewBuilder
@@ -177,16 +165,9 @@ struct EstimateListView: View {
         if estimates.isEmpty {
             EmptyStateView(guide: .estimates, action: onCreate)
         } else {
-            ContentUnavailableView {
-                Label("Sin resultados", systemImage: "magnifyingglass")
-            } description: {
-                Text("Prueba con otro cliente, número o estado.")
-            } actions: {
-                Button("Quitar filtros") {
-                    query = ""
-                    filter = .all
-                }
-                .buttonStyle(FillCapsuleButtonStyle(fullWidth: false))
+            NoResultsView(message: String(localized: "Prueba con otro cliente, número o estado.")) {
+                query = ""
+                filter = .all
             }
         }
     }
@@ -253,7 +234,7 @@ struct EstimateDetailView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
                 if let errorMessage { ErrorBanner(message: errorMessage).padding(.bottom, 12) }
-                summary.recorridoObjetivo("estimate.summary")
+                summary.recorridoObjetivo("estimate.summary").id("estimate.summary")
                 linesSection
                 totalsSection
                 if let createdInvoice {
@@ -282,7 +263,8 @@ struct EstimateDetailView: View {
         })
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
-                Button("Enviar", systemImage: "square.and.arrow.up") { sending = true }
+                // Avión de papel como «Enviar factura» (repaso visual, build 56).
+                Button("Enviar", systemImage: "paperplane") { sending = true }
                     .disabled(estimate.status == .converted || estimate.status == .declined)
                     .headerButton()
                 if estimate.isEditable {
@@ -302,8 +284,8 @@ struct EstimateDetailView: View {
             NavigationStack { EstimateAcceptView(estimate: estimate) }.editorSheetSizing()
         }
         .navigationDestination(item: $openedInvoice) { InvoiceDetailView(invoice: $0) }
-        .confirmationDialog("¿Eliminar el estimado?", isPresented: $confirmingDelete, titleVisibility: .visible) {
-            Button("Eliminar estimado", role: .destructive, action: delete)
+        .confirmationDialog("¿Borrar este estimado?", isPresented: $confirmingDelete, titleVisibility: .visible) {
+            Button("Borrar estimado", role: .destructive, action: delete)
         } message: {
             Text("No afecta a la contabilidad.")
         }
@@ -312,25 +294,14 @@ struct EstimateDetailView: View {
 
     // MARK: Resumen
 
+    /// Cliente (y título), total, estado y «Enviado el… · válido hasta…»: la cabecera de la factura, centrada en el
+    /// iPhone (repaso visual, build 56; antes, una tarjeta a la izquierda).
     private var summary: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            HStack(alignment: .firstTextBaseline, spacing: 12) {
-                Text(estimate.customer?.name ?? String(localized: "Sin cliente")).font(.subheadline).foregroundStyle(Palette.ink2)
-                Spacer(minLength: 8)
-                estimate.statusChip(compact: false)
-            }
-            if !estimate.title.isEmpty {
-                Text(estimate.title).font(.headline).foregroundStyle(Palette.ink).padding(.top, 4)
-            }
-            Text(estimate.total.money)
-                .font(.system(.largeTitle, weight: .bold)).monospacedDigit()
-                .foregroundStyle(Palette.ink)
-                .minimumScaleFactor(0.6).lineLimit(1)
-            Text(estimate.statusDetail).font(.footnote).foregroundStyle(Palette.ink2)
+        let customer = estimate.customer?.name ?? String(localized: "Sin cliente")
+        return DetailSummary(name: estimate.title.isEmpty ? customer : "\(customer) · \(estimate.title)", amount: estimate.total.money) {
+            estimate.statusChip(compact: false)
+            DetailSummaryLine(text: estimate.statusDetail)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .card()
-        .accessibilityElement(children: .combine)
     }
 
     /// Conceptos: descripción y «40 × $58.00» debajo; importe a la derecha.
@@ -499,7 +470,7 @@ struct EstimateDetailView: View {
             }
             Button("Vista previa del PDF", systemImage: "doc.richtext") { sending = true }
             if !estimate.hasInvoices {
-                Button("Eliminar estimado", systemImage: "trash", role: .destructive) { confirmingDelete = true }
+                Button("Borrar estimado", systemImage: "trash", role: .destructive) { confirmingDelete = true }
             }
         } label: {
             Label("Más acciones", systemImage: "ellipsis")

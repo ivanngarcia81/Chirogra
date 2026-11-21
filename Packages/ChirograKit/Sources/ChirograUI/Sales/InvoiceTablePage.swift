@@ -6,7 +6,7 @@ import SwiftUI
 
 /// Mac: Facturas como tabla + inspector (canvas `MacVentas`, `MacVentasOscuro`). Arriba el segmentado de estados con su
 /// cuenta, las cajas Por cobrar · Vencido · Cobrado en el mes · Borradores y la tabla Número · Cliente · Emitida ·
-/// Vence · Estado · Importe. El inspector muestra la factura elegida (Detalles, Importes) con «Registrar pago…»,
+/// Vence · Estado · Importe. El inspector muestra la factura elegida (Detalles, Importes) con «Registrar cobro…»,
 /// «Enviar recordatorio», «Abrir factura» y «Ver cliente». Doble clic abre la factura completa (`InvoiceDetailView`).
 struct InvoiceTablePage: View {
     static let isReady = true
@@ -145,7 +145,7 @@ struct InvoiceTablePage: View {
         .navigationDestination(item: $openedInvoice) { InvoiceDetailView(invoice: $0) }
         .navigationDestination(item: $openedCustomer) { CustomerDetailView(customer: $0) }
         #if DEBUG
-        // `-qa.pago 1` abre «Registrar pago…» y `-qa.abrir 1` la factura completa de la fila elegida con `-qa.fila`.
+        // `-qa.pago 1` abre «Registrar cobro…» y `-qa.abrir 1` la factura completa de la fila elegida con `-qa.fila`.
         .task {
             try? await Task.sleep(for: .seconds(1))
             if UserDefaults.standard.bool(forKey: "qa.nuevo") { creating = true; return }
@@ -181,14 +181,16 @@ struct InvoiceTablePage: View {
             Button("Emitir factura") { issue(invoice) }.buttonStyle(.primary)
             Button("Editar borrador") { editing = invoice }.buttonStyle(.secondary)
         } else if invoice.isOpen {
-            Button("Registrar pago…") { paying = invoice }.buttonStyle(.primary)
+            Button("Registrar cobro…") { paying = invoice }.buttonStyle(.primary)
             if invoice.lastSentDate == nil {
                 Button("Enviar factura…") { sending = invoice }.buttonStyle(.secondary)
             }
-            // Canvas `MacClienteFicha`: «Recordatorio enviado» cuando ya se mandó hoy (se puede mandar otro).
-            Button(invoice.lastReminderDate.map(Calendar.current.isDateInToday) == true
-                   ? String(localized: "Recordatorio enviado hoy") : String(localized: "Enviar recordatorio…")) { reminding = invoice }
+            // Siempre la acción; si ya se mandó hoy lo dice la fila «Recordatorio · Enviado hoy» de arriba (Eric, Beta
+            // Family, build 55: «Recordatorio enviado hoy» no parecía un botón).
+            Button("Enviar recordatorio…") { reminding = invoice }
                 .buttonStyle(.secondary)
+                .accessibilityValue(invoice.lastReminderDate.map(Calendar.current.isDateInToday) == true
+                                    ? String(localized: "Enviado hoy") : "")
             // Sin cobros ni créditos se corrige (reversión + asiento nuevo, mismo número); con ellos, nota de crédito.
             if Bookkeeper(context: context).canEditIssued(invoice) {
                 Button("Editar factura…") { editing = invoice }.buttonStyle(.secondary)
@@ -268,8 +270,8 @@ private struct InvoiceInspector: View {
     }
 }
 
-/// «Registrar pago…» del inspector: hoja del Mac con Total · Parcial, monto, método, cuenta de depósito y fecha (lo
-/// mismo que el grupo «Registrar pago» de `InvoiceDetailView`), con «Cancelar» y la acción por defecto.
+/// «Registrar cobro…» del inspector: hoja del Mac con Total · Parcial, monto, método, cuenta de depósito y fecha (lo
+/// mismo que el grupo «Registrar cobro» de `InvoiceDetailView`), con «Cancelar» y la acción por defecto.
 struct InvoicePaymentSheet: View {
     let invoice: Invoice
     @Environment(\.modelContext) private var context
@@ -326,7 +328,7 @@ struct InvoicePaymentSheet: View {
         }
         .formStyle(.grouped)
         .screenBackground()
-        .navigationTitle("Registrar pago")
+        .navigationTitle("Registrar cobro")
         .discardableEditor(tracking: "\(mode)|\(amount)|\(date)|\(depositAccountID?.uuidString ?? "")|\(method)", token: editorToken)
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
