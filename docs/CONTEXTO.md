@@ -462,6 +462,8 @@ las claves que lista como cambiadas en las dos ramas.
 
 - **Proyecto:** `project.yml` es la fuente; se regenera con `xcodegen` **en una copia** (scratchpad) y se copian al repo
   `project.pbxproj`, el esquema, `Info.plist` y los `.entitlements`, comparando antes con `diff`.
+- **Antes de subir:** `scripts/verificar.sh` (pruebas, iOS y Mac compilados, número de build igual en los dos sitios; ~3 min;
+  `--rapido` solo pruebas). GitHub Actions corre lo mismo en cada push (`.github/workflows/pruebas.yml`).
 - **Subir un build:** `CURRENT_PROJECT_VERSION` en `project.yml` **y** en el pbxproj (comprobar con xcodegen en una copia
   que coinciden); `MARKETING_VERSION` si cambia la versión. Desde un clon limpio del commit: `xcodebuild archive`
   (Release, `-destination 'generic/platform=iOS'` y luego `'generic/platform=macOS'`,

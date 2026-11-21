@@ -1,0 +1,29 @@
+# Verificación de cada cambio (revisión externa del 21-nov): en cada push y pull request corre scripts/verificar.sh
+# (pruebas del paquete, apps de iOS y Mac compiladas, número de build). El repo es público: los minutos de macOS de
+# GitHub Actions no se cobran.
+name: Pruebas
+on:
+  push:
+    branches: [main, "version-*"]
+    paths-ignore: ["sitio/**", "docs/**", "**.md"]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: pruebas-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verificar:
+    runs-on: macos-26
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Usar el Xcode más nuevo de la máquina
+        run: |
+          xcode=$(ls -d /Applications/Xcode_*.app | grep -v -i beta | sort -V | tail -1)
+          echo "Xcode: $xcode"
+          sudo xcode-select -s "$xcode/Contents/Developer"
+          xcodebuild -version
+      - name: Verificar
+        run: zsh scripts/verificar.sh
