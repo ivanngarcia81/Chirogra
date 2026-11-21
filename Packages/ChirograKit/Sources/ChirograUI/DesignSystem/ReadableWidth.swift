@@ -48,3 +48,49 @@ struct EditToolbarButton: View {
         #endif
     }
 }
+
+/// Título con su detalle gris («Patio redesign · 1 × $2,400.00 · taxable», «Entry #2 · Nov 21, 2026 · Current»): en el
+/// iPad, en la misma línea si cabe; si no, o en el iPhone y el Mac, el detalle debajo (pedido del usuario, 21-nov: en
+/// los detalles del iPad sobraba sitio y quedaban dos líneas). Para las líneas de los documentos y los historiales.
+struct TituloConDetalle: View {
+    let title: String
+    let detail: String
+    var titleWeight: Font.Weight = .regular
+    var detailFont: Font = .footnote
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    #if os(iOS)
+    @LayoutSizeClass private var sizeClass
+    #endif
+
+    private var enLinea: Bool {
+        #if os(iOS)
+        sizeClass == .regular && !dynamicTypeSize.isAccessibilitySize && !detail.isEmpty
+        #else
+        false
+        #endif
+    }
+
+    var body: some View {
+        if enLinea {
+            ViewThatFits(in: .horizontal) {
+                HStack(alignment: .firstTextBaseline, spacing: 10) {
+                    titulo.lineLimit(1)
+                    detalle.lineLimit(1)
+                }
+                apilado
+            }
+        } else {
+            apilado
+        }
+    }
+
+    private var titulo: some View { Text(title).fontWeight(titleWeight).foregroundStyle(Palette.ink) }
+    private var detalle: some View { Text(detail).font(detailFont).foregroundStyle(Palette.ink2) }
+
+    private var apilado: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            titulo
+            if !detail.isEmpty { detalle }
+        }
+    }
+}

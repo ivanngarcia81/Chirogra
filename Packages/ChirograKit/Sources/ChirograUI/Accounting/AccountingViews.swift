@@ -977,10 +977,7 @@ struct JournalEntryDetailView: View {
             .monospacedDigit()
         } else {
             HStack {
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(title).fontWeight(bold ? .semibold : .regular)
-                    if !memo.isEmpty { Text(memo).font(.footnote).foregroundStyle(Palette.ink2) }
-                }
+                TituloConDetalle(title: title, detail: memo, titleWeight: bold ? .semibold : .regular)
                 Spacer()
                 Text(debit > 0 ? debit.money : "").frame(width: columnWidth, alignment: .trailing)
                 Text(credit > 0 ? credit.money : "").frame(width: columnWidth, alignment: .trailing)

@@ -75,7 +75,7 @@ struct ExpenseHistorySection: View {
             ForEach(items) { item in
                 NavigationLink { JournalEntryDetailView(entry: item.entry) } label: {
                     LedgerRow(title: String(localized: "Asiento #\(item.entry.number)"),
-                              subtitle: "\(item.entry.date.shortDate) · \(item.role)") {
+                              subtitle: "\(item.entry.date.shortDate) · \(item.role)", subtitleInline: true) {
                         EmptyView()
                     } trailing: {
                         Text(item.entry.totalDebits.money).monospacedDigit()

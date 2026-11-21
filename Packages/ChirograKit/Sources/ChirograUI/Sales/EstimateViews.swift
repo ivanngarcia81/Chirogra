@@ -312,10 +312,8 @@ struct EstimateDetailView: View {
                 ForEach(Array(estimate.sortedLines.enumerated()), id: \.element.id) { index, line in
                     if index > 0 { Divider().padding(.leading, Metrics.cardPadding) }
                     AdaptiveRow(alignment: .firstTextBaseline) {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(line.details.isEmpty ? String(localized: "Sin descripción") : line.details).foregroundStyle(Palette.ink)
-                            Text(lineDetail(line)).font(.footnote).foregroundStyle(Palette.ink2)
-                        }
+                        TituloConDetalle(title: line.details.isEmpty ? String(localized: "Sin descripción") : line.details,
+                                         detail: lineDetail(line))
                     } trailing: {
                         Text(line.amount.money).monospacedDigit().foregroundStyle(Palette.ink)
                     }

@@ -381,6 +381,9 @@ extension View {
         #else
         textFieldStyle(.plain)
             .padding(.horizontal, 10)
+            // Arriba y abajo también: en un campo de varias líneas («Notas y términos» de la factura) el texto quedaba
+            // pegado al borde de arriba (captura del usuario, 21-nov). En los de una línea no cambia nada: caben en 38.
+            .padding(.vertical, 8)
             .frame(minHeight: 38)
             .background(Palette.surface2, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
         #endif
@@ -822,6 +825,8 @@ struct LedgerRow<Leading: View, Trailing: View>: View {
     var subtitleLines = 1
     /// Líneas del título: 2 para nombres de cuenta con sus últimos dígitos («Cuenta corriente ••4821»).
     var titleLines = 1
+    /// En el iPad, el subtítulo en la misma línea si cabe (`TituloConDetalle`): historiales de los detalles.
+    var subtitleInline = false
     @ViewBuilder var leading: Leading
     @ViewBuilder var trailing: Trailing
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
@@ -852,7 +857,16 @@ struct LedgerRow<Leading: View, Trailing: View>: View {
     /// Una línea por dato, como en el canvas («F-1047 · vence 12 nov»). Si no cabe, el subtítulo se encoge un poco
     /// antes de recortarse por el medio, así no se pierde el vencimiento del final. Con tamaños de accesibilidad
     /// se permiten varias líneas.
+    @ViewBuilder
     private var texts: some View {
+        if subtitleInline {
+            TituloConDetalle(title: title, detail: subtitle, detailFont: Self.subtitleFont)
+        } else {
+            stackedTexts
+        }
+    }
+
+    private var stackedTexts: some View {
         let lines = dynamicTypeSize.isAccessibilitySize ? nil : 1 as Int?
         return VStack(alignment: .leading, spacing: 1) {
             Text(title).font(.body).foregroundStyle(Palette.ink).lineLimit(lines.map { _ in titleLines })

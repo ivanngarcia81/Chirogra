@@ -991,10 +991,8 @@ struct BillDetailView: View {
                         LabeledContent {
                             Text(line.amount.money).monospacedDigit()
                         } label: {
-                            Text(line.details.isEmpty ? (accounts.first { $0.id == line.accountID }?.name ?? "—") : line.details)
-                            if !line.details.isEmpty, let account = accounts.first(where: { $0.id == line.accountID }) {
-                                Text(account.name)
-                            }
+                            TituloConDetalle(title: line.details.isEmpty ? (accounts.first { $0.id == line.accountID }?.name ?? "—") : line.details,
+                                             detail: line.details.isEmpty ? "" : accounts.first { $0.id == line.accountID }?.name ?? "")
                         }
                     }
                 }
