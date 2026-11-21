@@ -908,14 +908,19 @@ struct InvoiceEditorView: View {
             Text("\(lines.count) líneas")
         } content: {
             TableCard {
+                // Cada título va sobre el texto de su control, no sobre el borde de la columna: el campo lleva 10 pt de
+                // margen dentro y el menú de iOS 26, 12 pt; la cantidad, centrada sobre su selector (captura del
+                // usuario en el iPad, 21-nov: los títulos quedaban corridos).
                 Text(verbatim: "#").frame(width: 20, alignment: .trailing)
-                Text("Producto o servicio").frame(minWidth: 140, maxWidth: .infinity, alignment: .leading)
-                Text("Cant.").frame(width: Self.quantityColumn, alignment: .trailing)
-                Text("Precio").frame(width: amountColumn, alignment: .trailing)
+                Text("Producto o servicio").padding(.leading, Self.fieldInset)
+                    .frame(minWidth: 140, maxWidth: .infinity, alignment: .leading)
+                Text("Cant.").frame(width: Self.quantityColumn, alignment: .center)
+                Text("Precio").padding(.trailing, Self.fieldInset).frame(width: amountColumn, alignment: .trailing)
                 HStack(spacing: 0) {
                     Text("Impuesto")
                     TermHelp(.taxable).font(.footnote)
                 }
+                .padding(.leading, Self.menuInset)
                 .frame(width: Self.taxColumn, alignment: .leading)
                 Text("Importe").frame(width: amountColumn, alignment: .trailing)
                 Color.clear.frame(width: 24, height: 1)
@@ -929,10 +934,14 @@ struct InvoiceEditorView: View {
                         VStack(alignment: .leading, spacing: 0) {
                             TextField("Producto o servicio", text: $line.details).fieldBox()
                                 .accessibilityLabel("Producto o servicio, línea \(index + 1)")
-                            incomeAccountMenu($line.incomeAccountID).font(.footnote)
+                                // El resto de la fila se centra en este campo, no en la celda con la cuenta debajo:
+                                // si no, cantidad, precio e impuesto quedaban más abajo (captura del usuario, 21-nov).
+                                .alignmentGuide(.lineField) { $0[VerticalAlignment.center] }
+                            // Con el texto del campo, no con su borde.
+                            incomeAccountMenu($line.incomeAccountID).font(.footnote).padding(.leading, Self.fieldInset)
                         }
                         .frame(minWidth: 140, maxWidth: .infinity)
-                        QuantityStepper(quantity: $line.quantity, valueInside: true).frame(width: Self.quantityColumn, alignment: .trailing)
+                        QuantityStepper(quantity: $line.quantity, valueInside: true).frame(width: Self.quantityColumn, alignment: .center)
                         MoneyField(title: String(localized: "Precio, línea \(index + 1)"), minorUnits: $line.unitPrice)
                             .multilineTextAlignment(.trailing).fieldBox().frame(width: amountColumn)
                         // Sin título: con él, VoiceOver lo anteponía a la etiqueta («Impuesto, Impuesto, línea 1») y no
@@ -974,9 +983,14 @@ struct InvoiceEditorView: View {
     #if os(macOS)
     private static let quantityColumn: CGFloat = 76
     private static let taxColumn: CGFloat = 96
+    private static let fieldInset: CGFloat = 0
+    private static let menuInset: CGFloat = 0
     #else
     private static let quantityColumn: CGFloat = 104
     private static let taxColumn: CGFloat = 116
+    /// Margen de `fieldBox()` y del menú de iOS 26 por dentro: los títulos de la tabla se alinean con su texto.
+    private static let fieldInset: CGFloat = 10
+    private static let menuInset: CGFloat = 12
     #endif
 
     private var messageBox: some View {
@@ -1247,7 +1261,7 @@ private struct LineEditRow<Content: View>: View {
     var body: some View {
         VStack(spacing: 0) {
             Divider()
-            HStack(spacing: TableCard<EmptyView, EmptyView>.columnSpacing) { content }
+            HStack(alignment: .lineField, spacing: TableCard<EmptyView, EmptyView>.columnSpacing) { content }
                 #if os(macOS)
                 .font(.body)
                 #else
@@ -1260,6 +1274,16 @@ private struct LineEditRow<Content: View>: View {
                 .frame(minHeight: Metrics.target)
         }
     }
+}
+
+extension VerticalAlignment {
+    /// Centro del campo «Producto o servicio» de una línea (`LineEditRow`): los demás controles se alinean con él.
+    /// Las vistas que no lo marcan usan su propio centro.
+    private enum LineField: AlignmentID {
+        static func defaultValue(in context: ViewDimensions) -> CGFloat { context[VerticalAlignment.center] }
+    }
+
+    static let lineField = VerticalAlignment(LineField.self)
 }
 
 /// «Notas y términos» de la factura (canvas `FacturaNueva`): el mensaje que va al pie del PDF.

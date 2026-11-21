@@ -259,11 +259,12 @@ struct ExpenseDetailView: View {
         }
         .formStyle(.grouped)
         .screenBackground()
+        .readableDetailWidth()
         .recordTitle(title, section: String(localized: "Gasto"))
         .toolbar {
             if !expense.isVoid {
                 ToolbarItem(placement: .primaryAction) {
-                    Button("Editar") { editing = true }.headerButton()
+                    EditToolbarButton { editing = true }
                 }
             }
         }

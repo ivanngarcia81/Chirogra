@@ -725,7 +725,9 @@ struct TaxesView: View {
         let top = max(1, rows.first?.deductibleAmount ?? 1)
         return VStack(alignment: .leading, spacing: 0) {
             HStack(alignment: .firstTextBaseline) {
+                // En dos líneas antes que «Deductible expe…» cuando la columna aprieta.
                 Text("Gastos deducibles \(Date.now.formatted(.appDateTime.year()))").font(.cardTitle).accessibilityAddTraits(.isHeader)
+                    .fixedSize(horizontal: false, vertical: true)
                 Spacer(minLength: 8)
                 Text((summary?.totalDeductions ?? 0).money).font(.cardTitle).monospacedDigit().fixedSize()
             }
@@ -889,6 +891,9 @@ private struct TaxDefaultsRows: View {
                 menu
                 #endif
             }
+            // En dos líneas, con aire arriba: en la caja del iPad «Origen de ventas» quedaba pegado a la línea de
+            // «Precios con impuesto incluido» (captura del usuario, 21-nov).
+            .padding(.vertical, 6)
         }
         .padding(.horizontal, dividers ? 0 : 16).padding(.vertical, 4)
         .frame(maxWidth: .infinity, minHeight: Metrics.target, alignment: .leading)

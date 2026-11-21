@@ -60,7 +60,7 @@ struct VendorDetailView: View {
         .background(Palette.background)
         .recordTitle(vendor.name, section: [String(localized: "Proveedor"), category].compactMap { $0 }.joined(separator: " · "))
         .toolbar {
-            Button("Editar") { editing = true }.headerButton()
+            EditToolbarButton { editing = true }
             if isWide {
                 Button { addingExpense = true } label: {
                     Label("Gasto", systemImage: "plus").labelStyle(.titleAndIcon)

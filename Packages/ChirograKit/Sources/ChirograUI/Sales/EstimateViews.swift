@@ -251,7 +251,7 @@ struct EstimateDetailView: View {
             .padding(.top, 8)
             .padding(.bottom, 32)
             .frame(maxWidth: 720, alignment: .leading)
-            .frame(maxWidth: .infinity, alignment: isWide ? .leading : .center)
+            .frame(maxWidth: .infinity) // Centrado también en el iPad, como los reportes (decisión del usuario del 21-nov).
         }
         .recorridoDesplazable()
         .background(Palette.background)
@@ -268,7 +268,7 @@ struct EstimateDetailView: View {
                     .disabled(estimate.status == .converted || estimate.status == .declined)
                     .headerButton()
                 if estimate.isEditable {
-                    Button("Editar") { editing = true }.headerButton()
+                    EditToolbarButton { editing = true }
                 }
             }
             ToolbarSpacer(.fixed, placement: .primaryAction)

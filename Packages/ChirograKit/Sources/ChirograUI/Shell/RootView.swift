@@ -444,7 +444,7 @@ struct AppShell: View {
     var body: some View {
         Group {
             #if os(iOS)
-            if sizeClass == .compact { tabs } else { split }
+            if sizeClass == .compact { tabs } else { splitConRecorrido }
             #else
             split
             #endif
@@ -545,11 +545,43 @@ struct AppShell: View {
     }
 
     /// Las pestañas con el recorrido de la primera vez encima (oscurece también la barra de abajo).
+    #if os(iOS)
+    /// iPad a pantalla completa: el recorrido de la primera vez de cada sección (build 60, pedido del usuario del
+    /// 21-nov), encima de todo (también de la barra lateral). Empieza al entrar en la sección.
+    private var splitConRecorrido: some View {
+        split
+            .environment(recorrido)
+            .overlay { RecorridoOverlay().environment(recorrido) }
+            .onChange(of: selection, initial: true) {
+                recorrido.esIPad = true
+                recorrido.empezarSiHaceFalta(Self.recorridoIPad(selection))
+            }
+            // «Ver el recorrido otra vez» (en Ajustes): a Inicio, que lo empieza.
+            .onChange(of: recorrido.pedidoInicio) {
+                if selection == .section(.home) { recorrido.empezarSiHaceFalta(.padHome) } else { show(.section(.home)) }
+            }
+    }
+
+    /// La sección del iPad que tiene recorrido. Solo la página principal de cada una (Facturas, Gastos, Cuentas): las
+    /// demás no tienen lo que ilumina.
+    private static func recorridoIPad(_ item: SidebarItem) -> RecorridoID? {
+        switch item {
+        case .section(.home): .padHome
+        case .section(.sales), .sales(.invoices): .padSales
+        case .section(.expenses), .expenses(.expenses): .padExpenses
+        case .section(.banking), .banking(.accounts): .padBanking
+        case .section(.reports), .report: .padReports
+        default: nil
+        }
+    }
+    #endif
+
     private var tabView: some View {
         tabViewBase
             .environment(recorrido)
             .overlay { RecorridoOverlay().environment(recorrido) }
             .onChange(of: tab, initial: true) {
+                recorrido.esIPad = false
                 recorrido.empezarSiHaceFalta(RecorridoID(tab: tab))
             }
             // «Ver el recorrido otra vez» (en Más): a Inicio, que lo empieza al cambiar de pestaña.
@@ -661,6 +693,15 @@ struct AppShell: View {
         })
     }
 
+    /// La barra lateral se ve: en horizontal, salvo que se haya cerrado; en vertical, solo abierta a mano.
+    private var sidebarVisible: Bool {
+        #if os(iOS)
+        isPortrait ? columnVisibility == .all : columnVisibility != .detailOnly
+        #else
+        true
+        #endif
+    }
+
     private var sidebar: some View {
         Sidebar(selection: sidebarSelection, query: $query)
             #if os(macOS)
@@ -668,6 +709,9 @@ struct AppShell: View {
             #else
             // Solo en iOS: en el Mac, quitar el título de la barra lateral la dejaba en ~144 pt.
             .toolbar(removing: .title)
+            // El recorrido del iPad la ilumina entera («Todas las secciones»), solo si está a la vista: en vertical
+            // empieza escondida y su hueco iluminaba el contenido de debajo.
+            .recorridoObjetivo("pad.sidebar", si: sidebarVisible)
             // Después de `.toolbar(removing:)`: antes de él no llegaba a la vista dividida, y la barra medía 320 pt
             // con dos columnas y 280 con tres (cambiaba de ancho al pasar de Inicio a Ventas). Con 280, el detalle
             // de Ventas en un iPad de 13" en horizontal sigue por encima del umbral de `isDetailNarrow`.

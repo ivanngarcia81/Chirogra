@@ -204,6 +204,9 @@ struct ReconciliationView: View {
     /// Propuestos al llegar desde una importación OFX (saldo del extracto, en el lado normal de la cuenta).
     var proposedDate: Date? = nil
     var proposedBalance: Int64? = nil
+    /// En la columna de detalle del iPad (`ReconcileMasterList`): sin «Guardar», que cerraría una pantalla que no se
+    /// abrió encima de nada (las marcas se guardan al momento).
+    var inDetailColumn = false
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     @CompanyQuery(sort: \Reconciliation.statementDate, order: .reverse) private var allReconciliations: [Reconciliation]
@@ -336,6 +339,7 @@ struct ReconciliationView: View {
         }
         .formStyle(.grouped)
         .screenBackground()
+        .modifier(ReadableIfDetail(enabled: inDetailColumn))
         .keyboardDoneButton()
     }
 
@@ -416,8 +420,10 @@ struct ReconciliationView: View {
         .screenBackground()
         .keyboardDoneButton()
         .toolbar {
-            ToolbarItem(placement: .confirmationAction) {
-                Button("Guardar") { dismiss() }.headerButton()
+            if !inDetailColumn {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Guardar") { dismiss() }.headerButton()
+                }
             }
         }
         #endif
@@ -741,5 +747,14 @@ extension View {
         LabeledContent(title) { self.multilineTextAlignment(.trailing) }
             .labeledContentStyle(.automatic)
         #endif
+    }
+}
+
+/// En la columna de detalle del iPad, el formulario en su columna de lectura (`readableDetailWidth`).
+private struct ReadableIfDetail: ViewModifier {
+    let enabled: Bool
+
+    func body(content: Content) -> some View {
+        if enabled { content.readableDetailWidth() } else { content }
     }
 }

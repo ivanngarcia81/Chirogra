@@ -369,6 +369,7 @@ struct BankReviewedSummary: View {
         }
         .formStyle(.grouped)
         .screenBackground()
+        .readableDetailWidth()
         .navigationTitle(transaction.shownTitle)
         .inlineTitle()
     }
@@ -546,6 +547,7 @@ struct BankReviewForm: View {
         }
         .formStyle(.grouped)
         .screenBackground()
+        .readableDetailWidth()
         .navigationTitle("Revisar transacción")
         #if os(macOS)
         .navigationSubtitle(position)
@@ -1020,6 +1022,7 @@ struct BankingShortcutsSection: View {
             SectionLink(item: .banking(.inbox)) { BankInboxScreen() } label: {
                 shortcut("Por revisar", systemImage: "tray", color: Palette.orange, value: "\(pending.count)")
             }
+            .recorridoObjetivo("pad.banking.inbox")
             SectionLink(item: .banking(.reconcile)) { ReconciliationHubView() } label: {
                 shortcut("Conciliar", systemImage: "checklist", color: Palette.teal, value: nil)
             }

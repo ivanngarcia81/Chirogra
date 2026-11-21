@@ -205,7 +205,14 @@ struct ReportsView: View {
     }
 
     private var margin: CGFloat { isPhone ? Metrics.gutter : 20 }
-    private var contentWidth: CGFloat { max(0, width - 2 * margin) }
+    /// iPad: los reportes a ancho de lectura y centrados, con el mismo margen a cada lado (todos menos Presupuesto, que es
+    /// su propia página). A todo el ancho del iPad en horizontal las cifras quedaban a media pantalla del nombre (pedido
+    /// del usuario, 21-nov). En el Mac no hace falta: el inspector ya estrecha el reporte.
+    private var readableWidth: CGFloat? {
+        // 820: las cuatro tarjetas grandes de Flujo de efectivo caben en una fila (`KPIGrid`, 192 pt cada una).
+        !isPhone && !isMac && [.income, .balance, .trial, .cashFlow, .receivables, .payables, .salesTax].contains(kind) ? 820 : nil
+    }
+    private var contentWidth: CGFloat { min(max(0, width - 2 * margin), readableWidth ?? .infinity) }
     private var companyName: String {
         companies.first?.name ?? ""
     }
@@ -225,8 +232,9 @@ struct ReportsView: View {
             .padding(.horizontal, margin)
             .padding(.top, isPhone ? 0 : 8)
             .padding(.bottom, 28)
-            .frame(maxWidth: isPhone ? 720 : .infinity, alignment: .leading)
-            .frame(maxWidth: .infinity, alignment: isPhone ? .center : .leading)
+            .frame(maxWidth: isPhone ? 720 : readableWidth.map { $0 + 2 * margin } ?? .infinity, alignment: .leading)
+            // Los estrechos, centrados: el mismo margen a cada lado (pedido del usuario, 21-nov).
+            .frame(maxWidth: .infinity, alignment: isPhone || readableWidth != nil ? .center : .leading)
         }
         .recorridoDesplazable()
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
@@ -1406,8 +1414,13 @@ struct ReportsView: View {
     private func wideAging(_ report: AgingReport, party: String, empty: String) -> some View {
         let grand = report.total
         let picked = macPickedKey
+        // En la columna de lectura del iPad (820 pt): tramos más estrechos, para que el nombre del cliente no se corte
+        // («Mirador H…»), y las seis cajas en una fila (con `adaptive` quedaban cinco y una sola debajo).
+        let bucketColumn = readableWidth == nil ? bucketColumn : bucketColumn * 0.8
+        let boxes = readableWidth == nil ? [GridItem(.adaptive(minimum: isMac ? 130 : 150), spacing: 12)]
+            : Array(repeating: GridItem(.flexible(), spacing: 12), count: contentWidth >= 6 * 118 + 60 ? 6 : 3)
         wideSubtitle
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: isMac ? 130 : 150), spacing: 12)], spacing: 12) {
+        LazyVGrid(columns: boxes, spacing: 12) {
             bucketBox(String(localized: "Total abierto"), grand, share: grand == 0 ? 0 : 1, bar: Palette.gray, late: false,
                       foot: kind == .receivables ? String(localized: "\(report.rows.count) clientes") : String(localized: "\(report.rows.count) proveedores"))
             ForEach(AgingReport.Bucket.allCases, id: \.self) { bucket in
@@ -1594,23 +1607,26 @@ struct ReportsView: View {
             Text(quarterTitle(taxQuarter)).font(.subheadline).foregroundStyle(Palette.ink2)
         }
         .padding(.horizontal, 2).padding(.bottom, 6)
+        // En la columna de lectura del iPad, cifras más juntas: «Texas Comptroller · combined rate» se cortaba.
+        let wideAmount = readableWidth == nil ? amountColumn + 20 : amountColumn
+        let narrowAmount = readableWidth == nil ? amountColumn - 10 : amountColumn - 24
         TableCard {
             Text("Jurisdicción").frame(maxWidth: .infinity, alignment: .leading)
             Text("Tasa").frame(width: 64, alignment: .trailing)
-            Text("Ventas gravables").frame(width: amountColumn + 20, alignment: .trailing)
-            Text("Cobrado").frame(width: amountColumn - 10, alignment: .trailing)
-            Text("Pagado").frame(width: amountColumn - 10, alignment: .trailing)
-            Text("Saldo").frame(width: amountColumn - 10, alignment: .trailing)
+            Text("Ventas gravables").frame(width: wideAmount, alignment: .trailing)
+            Text("Cobrado").frame(width: narrowAmount, alignment: .trailing)
+            Text("Pagado").frame(width: narrowAmount, alignment: .trailing)
+            Text("Saldo").frame(width: narrowAmount, alignment: .trailing)
         } rows: {
             ForEach(Array(rows.enumerated()), id: \.element.id) { index, row in
                 pickableRow(row.key, index: index, picked: picked) {
                     Text(row.components.count > 1 ? String(localized: "\(row.name) · tasa combinada") : [row.name, row.rates].filter { !$0.isEmpty }.joined(separator: " · "))
                         .lineLimit(1).frame(maxWidth: .infinity, alignment: .leading)
                     Text(percent(row.rateMillionths)).frame(width: 64, alignment: .trailing)
-                    Text(row.taxableSales.money).frame(width: amountColumn + 20, alignment: .trailing)
-                    Text(row.collected.money).frame(width: amountColumn - 10, alignment: .trailing)
-                    Text(row.paid.money).frame(width: amountColumn - 10, alignment: .trailing)
-                    Text(row.balance.money).fontWeight(.semibold).frame(width: amountColumn - 10, alignment: .trailing)
+                    Text(row.taxableSales.money).frame(width: wideAmount, alignment: .trailing)
+                    Text(row.collected.money).frame(width: narrowAmount, alignment: .trailing)
+                    Text(row.paid.money).frame(width: narrowAmount, alignment: .trailing)
+                    Text(row.balance.money).fontWeight(.semibold).frame(width: narrowAmount, alignment: .trailing)
                 }
                 // Desglose por jurisdicción de la tasa combinada; lo pagado se registra por agencia.
                 if row.components.count > 1 {
@@ -1619,10 +1635,10 @@ struct ReportsView: View {
                             Text(component.name).foregroundStyle(Palette.ink2).lineLimit(1).padding(.leading, 16)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                             Text(percent(component.rateMillionths)).foregroundStyle(Palette.ink2).frame(width: 64, alignment: .trailing)
-                            Text(component.taxableSales.money).foregroundStyle(Palette.ink2).frame(width: amountColumn + 20, alignment: .trailing)
-                            Text(component.tax.money).foregroundStyle(Palette.ink2).frame(width: amountColumn - 10, alignment: .trailing)
-                            Text("—").foregroundStyle(Palette.ink2).frame(width: amountColumn - 10, alignment: .trailing)
-                            Text("—").foregroundStyle(Palette.ink2).frame(width: amountColumn - 10, alignment: .trailing)
+                            Text(component.taxableSales.money).foregroundStyle(Palette.ink2).frame(width: wideAmount, alignment: .trailing)
+                            Text(component.tax.money).foregroundStyle(Palette.ink2).frame(width: narrowAmount, alignment: .trailing)
+                            Text("—").foregroundStyle(Palette.ink2).frame(width: narrowAmount, alignment: .trailing)
+                            Text("—").foregroundStyle(Palette.ink2).frame(width: narrowAmount, alignment: .trailing)
                         }
                     }
                 }
@@ -1634,10 +1650,10 @@ struct ReportsView: View {
             TableRow {
                 Text("Total · tasa combinada").frame(maxWidth: .infinity, alignment: .leading)
                 Text(percent(combined)).frame(width: 64, alignment: .trailing)
-                Text(summary.taxableSales.money).frame(width: amountColumn + 20, alignment: .trailing)
-                Text(summary.totalTax.money).frame(width: amountColumn - 10, alignment: .trailing)
-                Text(paid.money).frame(width: amountColumn - 10, alignment: .trailing)
-                doubleRuled(balance.money).frame(width: amountColumn - 10, alignment: .trailing)
+                Text(summary.taxableSales.money).frame(width: wideAmount, alignment: .trailing)
+                Text(summary.totalTax.money).frame(width: narrowAmount, alignment: .trailing)
+                Text(paid.money).frame(width: narrowAmount, alignment: .trailing)
+                doubleRuled(balance.money).frame(width: narrowAmount, alignment: .trailing)
             }
             .fontWeight(.semibold)
         }

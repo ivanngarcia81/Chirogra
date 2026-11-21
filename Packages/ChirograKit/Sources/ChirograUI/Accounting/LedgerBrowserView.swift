@@ -49,6 +49,12 @@ struct LedgerBrowserView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
+                #if os(iOS)
+                // En el contenido, como Reportes e Impuestos: en la barra, el subtítulo dejaba el título pequeño y el
+                // Libro mayor era la única página del iPad sin título grande (repaso del 21-nov).
+                Text("Movimientos por cuenta con saldo acumulado").font(.subheadline).foregroundStyle(Palette.ink2)
+                    .padding(.horizontal, 8)
+                #endif
                 if let selected {
                     let ledger = LedgerView.ledger(for: selected, from: period.interval?.start, to: period.interval.map { _ in end })
                     LedgerSummary(opening: ledger.openingBalance, debits: ledger.totalDebit, credits: ledger.totalCredit,
@@ -68,7 +74,9 @@ struct LedgerBrowserView: View {
         }
         .background(Palette.background)
         .navigationTitle("Libro mayor")
+        #if os(macOS)
         .navigationSubtitle(String(localized: "Movimientos por cuenta con saldo acumulado"))
+        #endif
         .headerTitle()
         .toolbar {
             // Menús con su texto: un `Picker` en la barra del iPad se veía como una cápsula vacía a todo el ancho.

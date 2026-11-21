@@ -193,29 +193,46 @@ struct BankRulesView: View {
     // MARK: Acciones
 
     private func toggle(_ rule: BankRule) {
-        SubscriptionStore.shared.whenWritable {
-            var input = BankRuleInput(rule)
-            input.isActive.toggle()
-            do { try Bookkeeper(context: context).saveBankRule(input, into: rule) } catch { errorMessage = error.localizedDescription }
-        }
+        BankRuleActions.toggle(rule, context: context) { errorMessage = $0 }
     }
 
     private func delete(_ rule: BankRule) {
-        SubscriptionStore.shared.whenWritable {
-            do { try Bookkeeper(context: context).deleteBankRule(rule) } catch { errorMessage = error.localizedDescription }
-        }
+        BankRuleActions.delete(rule, context: context) { errorMessage = $0 }
     }
 
     private func applyNow() {
+        BankRuleActions.applyNow(context: context, done: { message = $0 }, failed: { errorMessage = $0 })
+    }
+}
+
+/// Activar o desactivar, borrar y aplicar las reglas: la lista (iPhone y Mac) y la columna maestro y el detalle del
+/// iPad (`RuleMasterList`, `BankRuleDetail`).
+enum BankRuleActions {
+    static func toggle(_ rule: BankRule, context: ModelContext, failed: @escaping (String) -> Void) {
+        SubscriptionStore.shared.whenWritable {
+            var input = BankRuleInput(rule)
+            input.isActive.toggle()
+            do { try Bookkeeper(context: context).saveBankRule(input, into: rule) } catch { failed(error.localizedDescription) }
+        }
+    }
+
+    static func delete(_ rule: BankRule, context: ModelContext, failed: @escaping (String) -> Void) {
+        SubscriptionStore.shared.whenWritable {
+            do { try Bookkeeper(context: context).deleteBankRule(rule) } catch { failed(error.localizedDescription) }
+        }
+    }
+
+    /// Aplica las reglas activas a la bandeja y devuelve el resumen («3 movimientos con categoría propuesta.»).
+    static func applyNow(context: ModelContext, done: @escaping (String) -> Void, failed: @escaping (String) -> Void) {
         SubscriptionStore.shared.whenWritable {
             do {
                 let run = try Bookkeeper(context: context).applyBankRules()
                 var parts = [String(localized: "\(run.categorized.count) movimientos con categoría propuesta.")]
                 if !run.applied.isEmpty { parts.append(String(localized: "\(run.applied.count) se registraron solos.")) }
                 if let failure = run.failures.first { parts.append(failure.error.localizedDescription) }
-                message = parts.joined(separator: " ")
+                done(parts.joined(separator: " "))
             } catch {
-                errorMessage = error.localizedDescription
+                failed(error.localizedDescription)
             }
         }
     }

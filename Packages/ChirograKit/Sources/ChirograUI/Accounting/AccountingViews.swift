@@ -1051,6 +1051,7 @@ struct JournalEntryDetailView: View {
         }
         .formStyle(.grouped)
         .screenBackground()
+        .readableDetailWidth()
         .navigationTitle("Asiento #\(entry.number)")
         .inlineTitle()
         .confirmationDialog("¿Revertir este asiento?", isPresented: $confirming, titleVisibility: .visible) {

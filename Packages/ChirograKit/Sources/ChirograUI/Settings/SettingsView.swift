@@ -80,6 +80,8 @@ enum SettingsPage: String, CaseIterable, Identifiable {
 /// blanco, y su formulario a la derecha, de 640 pt como máximo.
 struct SettingsWideView: View {
     @Environment(\.modelContext) private var context
+    /// Solo en el iPad a pantalla completa (en el Mac no hay recorrido): «Ver el recorrido otra vez».
+    @Environment(Recorrido.self) private var recorrido: Recorrido?
     @ActiveCompanyQuery private var companies: [Company]
     #if DEBUG
     /// `-qa.ajustes data` (solo Debug): la página con la que arranca.
@@ -96,6 +98,7 @@ struct SettingsWideView: View {
                     ForEach(SettingsPage.allCases) { option in pageRow(option) }
                     Divider().padding(.vertical, 6)
                     guideRow
+                    if let recorrido, recorrido.esIPad { tourRow(recorrido) }
                 }
                 .padding(.horizontal, 10)
                 .padding(.vertical, 8)
@@ -172,6 +175,25 @@ struct SettingsWideView: View {
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(selected ? .isSelected : [])
+    }
+
+    /// iPad: vuelve a Inicio con su recorrido; las demás secciones lo enseñan otra vez al abrirlas (en el iPhone está en
+    /// «Más › Ayuda»).
+    private func tourRow(_ recorrido: Recorrido) -> some View {
+        Button { recorrido.repetirTodo() } label: {
+            HStack(spacing: 8) {
+                IconTile(systemImage: "hand.point.up.left", foreground: Palette.brand)
+                Text("Ver el recorrido otra vez")
+                    .foregroundStyle(Palette.ink)
+                    .lineLimit(2)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .padding(.horizontal, 6)
+            .padding(.vertical, 4)
+            .frame(minHeight: Self.rowHeight)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 
     /// «Guía de uso» bajo las páginas: abre chirogra.com en el navegador (no es una página de Ajustes).

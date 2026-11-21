@@ -17,6 +17,9 @@ enum MasterPage: Hashable {
     #if os(iOS)
     /// Estimados: columna maestro en el iPad (`EstimateMasterList`). En el Mac van con su tabla (`EstimatesMacPage`).
     case estimates
+    /// Banca › Conciliación y Reglas: columna maestro en el iPad (21-nov, a todo el ancho se veían estiradas;
+    /// `Banking/BankingMasterPages.swift`). En el Mac siguen con su tabla y el iPhone con su lista.
+    case reconcile, rules
     #endif
 
     init?(_ item: SidebarItem) {
@@ -31,6 +34,10 @@ enum MasterPage: Hashable {
         case .expenses(.bills): self = .bills
         case .section(.banking), .banking(.accounts): self = .banking
         case .banking(.inbox): self = .bankInbox
+        #if os(iOS)
+        case .banking(.reconcile): self = .reconcile
+        case .banking(.rules): self = .rules
+        #endif
         case .accounting(.journal): self = .journal
         case .accounting(.chart): self = .chart
         default: return nil
@@ -51,6 +58,8 @@ enum MasterPage: Hashable {
         case .chart: ("list.bullet.indent", String(localized: "Elige una cuenta"))
         #if os(iOS)
         case .estimates: ("list.clipboard", String(localized: "Elige un estimado"))
+        case .reconcile: ("checkmark.seal", String(localized: "Elige una cuenta"))
+        case .rules: ("wand.and.stars", String(localized: "Elige una regla"))
         #endif
         }
     }
@@ -113,6 +122,8 @@ struct MasterColumn: View {
         case .chart: ChartMasterList(selection: $selection)
         #if os(iOS)
         case .estimates: EstimateMasterList(selection: $selection)
+        case .reconcile: ReconcileMasterList(selection: $selection)
+        case .rules: RuleMasterList(selection: $selection)
         #endif
         }
     }
@@ -137,6 +148,8 @@ struct MasterDetailColumn: View {
             case .chart: ModelLookup(id: id, key: \Account.id, page: page) { LedgerView(account: $0, inDetailColumn: true) }
             #if os(iOS)
             case .estimates: ModelLookup(id: id, key: \Estimate.id, page: page) { EstimateDetailView(estimate: $0) }
+            case .reconcile: ModelLookup(id: id, key: \Account.id, page: page) { ReconciliationView(account: $0, inDetailColumn: true) }
+            case .rules: ModelLookup(id: id, key: \BankRule.id, page: page) { BankRuleDetail(rule: $0) }
             #endif
             }
         } else {
@@ -188,6 +201,8 @@ private struct MasterPlaceholder: View {
             case .journal: GuideOrPick<JournalEntry, JournalEntryEditorView>(page: page, guide: .journal) { JournalEntryEditorView() }
             #if os(iOS)
             case .estimates: GuideOrPick<Estimate, InvoiceEditorView>(page: page, guide: .estimates) { InvoiceEditorView(mode: .estimate(nil)) }
+            case .reconcile: MasterPick(page: page)
+            case .rules: RulePlaceholder()
             #endif
             case .banking, .chart: MasterPick(page: page)
             case .bankInbox: BankInboxPlaceholder()
@@ -264,7 +279,7 @@ private struct MasterFilterBar<Option: Hashable & Identifiable & RawRepresentabl
                 .labelsHidden()
             } else {
                 HStack(spacing: 8) {
-                    Text("Mostrar").foregroundStyle(Palette.ink2)
+                    Text("Mostrar").foregroundStyle(Palette.ink2).lineLimit(1)
                     Spacer(minLength: 8)
                     Picker("Filtrar", selection: $selection) {
                         ForEach(options) { option in
@@ -273,6 +288,8 @@ private struct MasterFilterBar<Option: Hashable & Identifiable & RawRepresentabl
                     }
                     .pickerStyle(.menu)
                     .labelsHidden()
+                    // En una línea: «Payables (0)» se partía en dos en la columna del iPad (captura del usuario, 21-nov).
+                    .fixedSize()
                 }
                 .frame(minHeight: Metrics.target)
             }
@@ -399,6 +416,8 @@ private struct InvoiceMasterList: View {
                           subtitle: "\(invoice.number.isEmpty ? String(localized: "Borrador") : invoice.number) · \(invoice.dueDate.dueLabel)") {
                     MasterStatus(chip: StatusChip(invoice: invoice))
                 }
+                // El objetivo por dentro de `masterRow`: por fuera, la fila elegida perdía su fondo de Tinta.
+                .recorridoObjetivo("pad.sales.firstRow", si: invoice.id == filtered.first?.id)
                 .masterRow(invoice.id, selection: selection)
             }
             if filtered.isEmpty {
@@ -407,11 +426,13 @@ private struct InvoiceMasterList: View {
                     .frame(maxWidth: .infinity).listRowSeparator(.hidden).listRowBackground(Palette.masterColumn)
             }
         }
-        .masterList(String(localized: "Ventas"), query: $query, prompt: "Cliente, número o monto")
+        // «Facturas», como «Estimados» y «Clientes» y la entrada de la barra lateral (antes «Ventas», repaso del 21-nov).
+        .masterList(String(localized: "Facturas"), query: $query, prompt: "Cliente, número o monto")
         .masterFilter {
             MasterFilterBar(options: InvoiceScope.allCases, selection: $scope) { option in
                 invoices.filter { inScope($0, option) }.count
             }
+            .recorridoObjetivo("pad.sales.filter")
         }
         .masterAddButton(String(localized: "Factura"), label: String(localized: "Nueva factura"), tip: NewInvoiceTip()) { creating = true }
         .task(id: invoices.isEmpty) { NewInvoiceTip.hasInvoices = !invoices.isEmpty }
@@ -515,6 +536,7 @@ private struct ExpenseMasterList: View {
                         MasterSymbol(systemImage: "paperclip", label: "Recibo adjunto")
                     }
                 }
+                .recorridoObjetivo("pad.expenses.firstRow", si: expense.id == filtered.first?.id)
                 .masterRow(expense.id, selection: selection)
             }
             if filtered.isEmpty {
@@ -542,7 +564,8 @@ private struct ExpenseMasterList: View {
                 .headerButton()
             }
         }
-        .masterAddButton(String(localized: "Gasto"), label: String(localized: "Nuevo gasto"), tip: NewExpenseTip()) { creating = true }
+        // Solo «+»: con «⋯» al lado, «+ Gasto» dejaba la columna sin título (repaso del 21-nov).
+        .masterAddButton(nil, label: String(localized: "Nuevo gasto"), tip: NewExpenseTip()) { creating = true }
         .sheet(isPresented: $reclassifying) { NavigationStack { ReclassifyExpensesView() }.editorSheetSizing() }
         .task(id: expenses.isEmpty) {
             NewExpenseTip.hasExpenses = !expenses.isEmpty
@@ -718,10 +741,13 @@ private struct BankingMasterList: View {
                 .listRowBackground(Palette.masterColumn)
             }
             ForEach(shown) { account in
-                MasterRow(title: account.maskedName, amount: ledger.cashBalance(of: account).money,
-                          subtitle: String(localized: "Saldo en libros · \(account.code)")) {
-                    MasterSymbol(systemImage: account.subtype == .creditCard ? "creditcard" : "building.columns", label: nil)
+                // El icono de color de la cuenta a la izquierda, como en Conciliación (repaso del 21-nov).
+                HStack(spacing: 12) {
+                    IconTile(systemImage: account.bankSymbol, foreground: account.bankColor)
+                    MasterRow(title: account.maskedName, amount: ledger.cashBalance(of: account).money,
+                              subtitle: String(localized: "Saldo en libros · \(account.code)")) { EmptyView() }
                 }
+                .recorridoObjetivo("pad.banking.firstRow", si: account.id == shown.first?.id)
                 .masterRow(account.id, selection: selection)
             }
             // Banca 1.2 (canvas `iPadBancaCuentas`): «Bandeja» con Por revisar, Conciliar, Reglas e Importar.
@@ -731,7 +757,9 @@ private struct BankingMasterList: View {
         .scrollContentBackground(.hidden)
         .background(Palette.masterColumn)
         #if os(iOS)
-        .tint(Palette.brandFill)
+        // Como `MasterListStyle`: sin el anillo de foco cuadrado del sistema alrededor de la cuenta elegida.
+        .tint(Color.clear)
+        .focusEffectDisabled()
         #endif
         .navigationTitle("Banca")
         .masterTitle()
@@ -812,7 +840,8 @@ private struct JournalMasterList: View {
             .padding(.horizontal, 16)
             .padding(.bottom, 8)
         }
-        .masterAddButton(String(localized: "Asiento"), label: String(localized: "Nuevo asiento")) { creating = true }
+        // Solo «+»: «+ Journal entry» cortaba el título («Journal…», repaso del 21-nov).
+        .masterAddButton(nil, label: String(localized: "Nuevo asiento")) { creating = true }
         // El editor del asiento cabe en la hoja de 760 pt: en el iPad usa su tabla de líneas sin el plan de cuentas de
         // consulta (que solo sale desde 1000 pt), igual que con la hoja de página de antes.
         .sheet(isPresented: $creating) { NavigationStack { JournalEntryEditorView() }.editorSheetSizing() }
@@ -850,13 +879,14 @@ private struct ChartMasterList: View {
                     }
                 }
             }
+            // Al final de la lista y no en «⋯»: con «+» y «⋯» el título se cortaba («Chart of Acco…», repaso del 21-nov).
+            Toggle("Mostrar archivadas", isOn: $showArchived)
+                .tint(Palette.green)
+                .selectionDisabled()
+                .listRowSeparator(.hidden)
+                .listRowBackground(Palette.masterColumn)
         }
         .masterList(String(localized: "Plan de cuentas"), query: $query, prompt: "Código o nombre")
-        .toolbar {
-            ToolbarItem(placement: .secondaryAction) {
-                Toggle(isOn: $showArchived) { Label("Archivadas", systemImage: "archivebox") }.headerButton()
-            }
-        }
         .masterAddButton(nil, label: String(localized: "Nueva cuenta")) { creating = true }
         .sheet(isPresented: $creating) { NavigationStack { AccountEditorView() }.editorSheetSizing() }
     }
@@ -988,6 +1018,7 @@ struct BillDetailView: View {
             }
         }
         .screenBackground()
+        .readableDetailWidth()
         .navigationTitle(bill.vendorNumber.isEmpty ? String(localized: "Factura por pagar") : bill.vendorNumber)
         .inlineTitle()
         .sheet(isPresented: $paying) { NavigationStack { PayBillView(bill: bill) }.editorSheetSizing() }

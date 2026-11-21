@@ -78,6 +78,14 @@ struct BudgetsView: View {
         return report.periods.firstIndex { $0.start <= .now && .now <= $0.end } ?? 0
     }
 
+    /// iPad: centrado a 820 pt más sus márgenes, como los demás reportes (`ReportsView.readableWidth`, pedido del usuario
+    /// del 21-nov). En el Mac, a todo el ancho: el inspector ya lo estrecha.
+    #if os(iOS)
+    private static let wideWidth: CGFloat = 820 + 2 * 20
+    #else
+    private static let wideWidth: CGFloat = .infinity
+    #endif
+
     private var isWide: Bool {
         #if os(iOS)
         if sizeClass != .regular { return false }
@@ -101,8 +109,8 @@ struct BudgetsView: View {
             .padding(.horizontal, isWide ? 20 : Metrics.gutter)
             .padding(.top, isWide ? 8 : 0)
             .padding(.bottom, 28)
-            .frame(maxWidth: isWide ? .infinity : 720, alignment: .leading)
-            .frame(maxWidth: .infinity, alignment: isWide ? .leading : .center)
+            .frame(maxWidth: isWide ? Self.wideWidth : 720, alignment: .leading)
+            .frame(maxWidth: .infinity, alignment: Self.wideWidth == .infinity && isWide ? .leading : .center)
         }
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
         .background(Palette.background)

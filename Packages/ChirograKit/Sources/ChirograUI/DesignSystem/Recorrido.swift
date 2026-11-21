@@ -25,9 +25,15 @@ enum RecorridoID: String, CaseIterable {
     case home, sales, expenses, banking, more
     /// Pantallas que solo se explican con el «Tutorial completo» (`RecorridoAFondo.swift`).
     case invoiceDetail, estimateDetail, invoiceEditor, expenseEditor, reports, taxes
+    /// iPad a pantalla completa (barra lateral, lista y detalle; build 60, pedido del usuario del 21-nov): el corto de la
+    /// primera vez en cada sección, con sus propios pasos y su propio «visto» (el del iPhone no vale: es otra pantalla).
+    case padHome, padSales, padExpenses, padBanking, padReports
 
-    /// Las 5 pestañas, que tienen también el recorrido corto de la primera vez.
-    var esPestana: Bool { [.home, .sales, .expenses, .banking, .more].contains(self) }
+    /// Las 5 pestañas, que tienen también el recorrido corto de la primera vez (y las secciones del iPad).
+    var esPestana: Bool { [.home, .sales, .expenses, .banking, .more].contains(self) || esIPad }
+
+    /// Recorrido del iPad a pantalla completa.
+    var esIPad: Bool { [.padHome, .padSales, .padExpenses, .padBanking, .padReports].contains(self) }
 
     /// Se abre en una hoja (los editores): la dibuja el velo de la hoja, no el de las pestañas.
     var enHoja: Bool { self == .invoiceEditor || self == .expenseEditor }
@@ -132,6 +138,73 @@ enum RecorridoID: String, CaseIterable {
                  mensaje: String(localized: "Elige qué herramientas van en la barra de abajo."),
                  desplazar: true, enLista: true),
         ]
+        case .padHome: [
+            Paso(objetivo: nil, icono: "house",
+                 titulo: String(localized: "Inicio: tu negocio hoy"),
+                 mensaje: String(localized: "El dinero que tienes y cómo va el mes, de un vistazo.")),
+            Paso(objetivo: "pad.sidebar", icono: "sidebar.left",
+                 titulo: String(localized: "Todas las secciones"),
+                 mensaje: String(localized: "A la izquierda tienes todo: ventas, gastos, banca, reportes e impuestos. Toca una para abrirla.")),
+            Paso(objetivo: "pad.home.column", icono: "chart.bar",
+                 titulo: String(localized: "Tu negocio por partes"),
+                 mensaje: String(localized: "El dinero, los resultados, lo que te deben y lo que debes. Toca una para verla en detalle al lado.")),
+            Paso(objetivo: "ax:" + String(localized: "Nueva factura"), icono: "plus",
+                 titulo: String(localized: "Lo más rápido"),
+                 mensaje: String(localized: "Crea una factura o anota un gasto con un toque.")),
+            Paso(objetivo: "ax:" + String(localized: "Avisos"), icono: "bell",
+                 titulo: String(localized: "Avisos"),
+                 mensaje: String(localized: "Aquí te avisamos de facturas vencidas y pagos por hacer.")),
+        ]
+        case .padSales: [
+            Paso(objetivo: nil, icono: "doc.text",
+                 titulo: String(localized: "Ventas: lo que te pagan"),
+                 mensaje: String(localized: "Aquí le cobras a tus clientes y ves quién te debe.")),
+            Paso(objetivo: "ax:" + String(localized: "Nueva factura"), icono: "plus",
+                 titulo: String(localized: "Crea una factura"),
+                 mensaje: String(localized: "Toca + para cobrarle a un cliente. Se la mandas por correo o mensaje.")),
+            Paso(objetivo: "pad.sales.filter", icono: "line.3.horizontal.decrease",
+                 titulo: String(localized: "Abiertas, vencidas o todas"),
+                 mensaje: String(localized: "Filtra la lista para ver primero lo que tienes que cobrar.")),
+            Paso(objetivo: "pad.sales.firstRow", icono: "checkmark.circle",
+                 titulo: String(localized: "Ábrela al lado"),
+                 mensaje: String(localized: "Toca una factura para verla a la derecha: desde ella la mandas, le pones un recordatorio o la marcas como pagada.")),
+        ]
+        case .padExpenses: [
+            Paso(objetivo: nil, icono: "wallet.bifold",
+                 titulo: String(localized: "Gastos: lo que pagas"),
+                 mensaje: String(localized: "Aquí anotas todo lo que pagas por el negocio.")),
+            Paso(objetivo: "ax:" + String(localized: "Nuevo gasto"), icono: "plus",
+                 titulo: String(localized: "Anota un gasto"),
+                 mensaje: String(localized: "Toca + cada vez que pagues algo. Puedes añadir la foto del recibo.")),
+            Paso(objetivo: "pad.expenses.firstRow", icono: "doc.text.magnifyingglass",
+                 titulo: String(localized: "El detalle, al lado"),
+                 mensaje: String(localized: "Toca un gasto para ver su recibo, su categoría y su historial.")),
+        ]
+        case .padBanking: [
+            Paso(objetivo: nil, icono: "building.columns",
+                 titulo: String(localized: "Banca: tus cuentas"),
+                 mensaje: String(localized: "El dinero de cada cuenta y lo que llega del banco.")),
+            Paso(objetivo: "pad.banking.firstRow", icono: "creditcard",
+                 titulo: String(localized: "Tus saldos"),
+                 mensaje: String(localized: "Cuánto tiene cada cuenta. Tócala para ver sus movimientos.")),
+            Paso(objetivo: "pad.banking.inbox", icono: "tray",
+                 titulo: String(localized: "Lo que llega del banco"),
+                 mensaje: String(localized: "Revisa los movimientos importados, concilia con el extracto y crea reglas para que se anoten solos.")),
+            Paso(objetivo: "ax:" + String(localized: "Nuevo movimiento"), icono: "plus",
+                 titulo: String(localized: "Anota un movimiento"),
+                 mensaje: String(localized: "Un gasto, un traspaso entre cuentas o un asiento a mano.")),
+        ]
+        case .padReports: [
+            Paso(objetivo: nil, icono: "chart.bar.doc.horizontal",
+                 titulo: String(localized: "Reportes: listos para tu contador"),
+                 mensaje: String(localized: "Resultados, balance, flujo de efectivo, antigüedad y sales tax, siempre al día.")),
+            Paso(objetivo: "pad.sidebar", icono: "list.bullet",
+                 titulo: String(localized: "Elige el reporte"),
+                 mensaje: String(localized: "Cada reporte está en la barra lateral, debajo de Reportes.")),
+            Paso(objetivo: "ax:" + String(localized: "Exportar"), icono: "square.and.arrow.up",
+                 titulo: String(localized: "Para tu contador"),
+                 mensaje: String(localized: "Exporta el reporte en PDF o CSV, o el paquete completo para tu contador.")),
+        ]
         default: []
         }
     }
@@ -177,6 +250,9 @@ final class Recorrido {
     private var cambiando = false
     /// Capturas y pruebas con argumentos `-qa.*`: sin recorrido, salvo con `-qa.recorrido`.
     private var desactivado = false
+    /// iPad a pantalla completa (lo pone `RootView`): solo los recorridos del iPad, sin «Tutorial completo» (sus pasos
+    /// son los de las pantallas del iPhone), y nada tapa abajo.
+    var esIPad = false
 
     /// «Más › Ayuda › Tutorial completo»: cada pantalla explica todos sus botones la primera vez que se abre (tester de
     /// Beta Family, 18-nov: «too short»). No sale solo; el recorrido corto de la primera vez no cambia.
@@ -250,8 +326,8 @@ final class Recorrido {
 
     /// Al entrar en una pestaña: si no se ha visto, espera a que la pantalla se coloque y empieza.
     func empezarSiHaceFalta(_ id: RecorridoID?) {
-        guard let id, activo == nil, !desactivado else { return }
-        let fondo = aFondo
+        guard let id, activo == nil, !desactivado, id.esIPad == esIPad else { return }
+        let fondo = aFondo && !esIPad
         if fondo {
             guard !UserDefaults.standard.bool(forKey: id.fondoKey) else { return }
         } else {
@@ -435,6 +511,12 @@ extension View {
     /// Marca una parte de la pantalla como paso del recorrido.
     func recorridoObjetivo(_ id: String) -> some View { modifier(RecorridoObjetivo(id: id)) }
 
+    /// Lo mismo, solo si `condicion` (la primera fila de una lista).
+    @ViewBuilder
+    func recorridoObjetivo(_ id: String, si condicion: Bool) -> some View {
+        if condicion { recorridoObjetivo(id) } else { self }
+    }
+
     /// Desplaza la lista o el `ScrollView` hasta lo que el recorrido va a iluminar (la vista lleva `.id` igual al
     /// objetivo).
     func siguiendoRecorrido(_ proxy: ScrollViewProxy) -> some View {
@@ -569,7 +651,8 @@ struct RecorridoOverlay: View {
             #else
             recorrido.altoPantalla = alto
             #endif
-            recorrido.margenAbajo = enHoja ? 34 : 100
+            // En el iPad a pantalla completa no hay barra de pestañas abajo.
+            recorrido.margenAbajo = enHoja ? 34 : recorrido.esIPad ? 24 : 100
         }
     }
 
@@ -631,8 +714,19 @@ struct RecorridoOverlay: View {
 
     @ViewBuilder
     private func globo(paso: RecorridoID.Paso, hueco: CGRect?, ancho: CGFloat, geo: GeometryProxy) -> some View {
-        let izquierda = (geo.size.width - ancho) / 2
-        if let hueco {
+        if let hueco, hueco.height > geo.size.height * 0.5, geo.size.width - hueco.maxX >= ancho + 40 {
+            // iPad: lo iluminado ocupa casi todo el alto (la barra lateral) y a su derecha cabe la tarjeta: al lado, a
+            // media altura, sin flecha.
+            tarjeta(paso: paso)
+                .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { altoTarjeta = $0 }
+                .frame(width: ancho)
+                .modifier(TarjetaDeslizable(reduceMotion: reduceMotion))
+                .offset(x: hueco.maxX + 20, y: max((geo.size.height - altoTarjeta) / 2, 54))
+                .transition(reduceMotion ? .opacity : .opacity.combined(with: .offset(x: -8)))
+        } else if let hueco {
+            // Centrada sobre lo iluminado y dentro de la pantalla: en el iPhone ocupa casi todo el ancho y queda igual
+            // que antes; en el iPad la flecha llega a lo que está a la izquierda (la lista, la barra lateral).
+            let izquierda = min(max(hueco.midX - ancho / 2, 16), geo.size.width - ancho - 16)
             // Debajo o encima, donde haya más sitio; si no cabe entera, se queda dentro de la pantalla (sin flecha,
             // tapando parte de lo iluminado).
             let debajo = geo.size.height - hueco.maxY >= hueco.minY

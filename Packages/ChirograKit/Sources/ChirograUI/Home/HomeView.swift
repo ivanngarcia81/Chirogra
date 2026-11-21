@@ -964,6 +964,7 @@ struct HomeView: View {
         .padding(.leading, 8).padding(.bottom, 8)
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Secciones del resumen")
+        .recorridoObjetivo("pad.home.column")
     }
 
     private func padItem(_ section: PadSection) -> some View {

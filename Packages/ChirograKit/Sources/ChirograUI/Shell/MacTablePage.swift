@@ -470,6 +470,10 @@ enum QALaunch {
         case "reports": .section(.reports)
         case "taxes": .section(.taxes)
         case "settings": .section(.settings)
+        case "clients": .section(.clients)
+        // `-qa.seccion report3`: el reporte con ese índice de `ReportsView.Kind.allCases` (repaso visual del 21-nov).
+        case let value? where value.hasPrefix("report") && Int(value.dropFirst(6)) != nil:
+            ReportsView.Kind.allCases.indices.contains(Int(value.dropFirst(6))!) ? .report(ReportsView.Kind.allCases[Int(value.dropFirst(6))!]) : nil
         default: nil
         }
     }

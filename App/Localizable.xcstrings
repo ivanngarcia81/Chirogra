@@ -31994,6 +31994,266 @@
           }
         }
       }
+    },
+    "Elige una regla" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose a rule"
+          }
+        }
+      }
+    },
+    "Los movimientos ya registrados no cambian." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transactions already recorded don't change."
+          }
+        }
+      }
+    },
+    "Propone la categoría en la bandeja; tú decides." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suggests the category in the inbox; you decide."
+          }
+        }
+      }
+    },
+    "Registra sola los movimientos que coinciden, sin pasar por la bandeja." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Records matching transactions automatically, without going through the inbox."
+          }
+        }
+      }
+    },
+    "¿Borrar esta regla?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete this rule?"
+          }
+        }
+      }
+    },
+    "Todas las secciones" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All sections"
+          }
+        }
+      }
+    },
+    "A la izquierda tienes todo: ventas, gastos, banca, reportes e impuestos. Toca una para abrirla." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Everything is on the left: sales, expenses, banking, reports, and taxes. Tap one to open it."
+          }
+        }
+      }
+    },
+    "Tu negocio por partes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your business, piece by piece"
+          }
+        }
+      }
+    },
+    "El dinero, los resultados, lo que te deben y lo que debes. Toca una para verla en detalle al lado." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your money, your results, what you're owed, and what you owe. Tap one to see the details next to it."
+          }
+        }
+      }
+    },
+    "Crea una factura o anota un gasto con un toque." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create an invoice or record an expense with one tap."
+          }
+        }
+      }
+    },
+    "Abiertas, vencidas o todas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open, overdue, or all"
+          }
+        }
+      }
+    },
+    "Filtra la lista para ver primero lo que tienes que cobrar." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filter the list to see what you need to collect first."
+          }
+        }
+      }
+    },
+    "Ábrela al lado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open it alongside"
+          }
+        }
+      }
+    },
+    "Toca una factura para verla a la derecha: desde ella la mandas, le pones un recordatorio o la marcas como pagada." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap an invoice to see it on the right: from there you send it, remind your customer, or mark it as paid."
+          }
+        }
+      }
+    },
+    "El detalle, al lado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The details, alongside"
+          }
+        }
+      }
+    },
+    "Toca un gasto para ver su recibo, su categoría y su historial." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap an expense to see its receipt, category, and history."
+          }
+        }
+      }
+    },
+    "Lo que llega del banco" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What comes from the bank"
+          }
+        }
+      }
+    },
+    "Revisa los movimientos importados, concilia con el extracto y crea reglas para que se anoten solos." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Review imported transactions, reconcile with your statement, and create rules so they're recorded on their own."
+          }
+        }
+      }
+    },
+    "Anota un movimiento" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Record a transaction"
+          }
+        }
+      }
+    },
+    "Un gasto, un traspaso entre cuentas o un asiento a mano." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "An expense, a transfer between accounts, or a manual journal entry."
+          }
+        }
+      }
+    },
+    "Reportes: listos para tu contador" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reports: ready for your accountant"
+          }
+        }
+      }
+    },
+    "Resultados, balance, flujo de efectivo, antigüedad y sales tax, siempre al día." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Profit and loss, balance sheet, cash flow, aging, and sales tax, always up to date."
+          }
+        }
+      }
+    },
+    "Elige el reporte" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose a report"
+          }
+        }
+      }
+    },
+    "Cada reporte está en la barra lateral, debajo de Reportes." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Every report is in the sidebar, under Reports."
+          }
+        }
+      }
+    },
+    "Para tu contador" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "For your accountant"
+          }
+        }
+      }
+    },
+    "Exporta el reporte en PDF o CSV, o el paquete completo para tu contador." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Export the report as a PDF or CSV, or the full package for your accountant."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

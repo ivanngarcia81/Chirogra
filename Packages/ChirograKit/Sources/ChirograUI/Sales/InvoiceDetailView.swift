@@ -110,7 +110,7 @@ struct InvoiceDetailView: View {
                 .padding(.top, 8)
                 .padding(.bottom, 32)
                 .frame(maxWidth: 720, alignment: .leading)
-                .frame(maxWidth: .infinity, alignment: isWide ? .leading : .center)
+                .frame(maxWidth: .infinity) // Centrado también en el iPad, como los reportes (decisión del usuario del 21-nov).
             }
             // «Registrar cobro › Parcial»: el teclado decimal no tiene tecla para cerrarse y tapaba «Registrar $…»
             // (recorrido «cliente nuevo», 5-nov). Ahora lleva «Listo», se cierra al desplazar y, al escribir el monto,
