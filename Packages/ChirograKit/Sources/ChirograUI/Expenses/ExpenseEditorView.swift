@@ -457,8 +457,7 @@ struct ExpenseEditorView: View {
                         .accessibilityHint("Abre el archivo a pantalla completa.")
                     }
                     .onDelete { receipts.remove(atOffsets: $0) }
-                    ReceiptPickerButtons { receipts.append($0) }
-                        .recorridoObjetivo("expense.receipt").id("expense.receipt")
+                    ReceiptPickerButtons(objetivo: "expense.receipt") { receipts.append($0) }
                 } header: {
                     SectionLabel(text: String(localized: "Recibo"))
                 }

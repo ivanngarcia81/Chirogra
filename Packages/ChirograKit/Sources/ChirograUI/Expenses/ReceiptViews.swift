@@ -59,6 +59,9 @@ extension View {
 struct ReceiptPickerButtons: View {
     /// Textos cortos para la zona del recibo de pantallas anchas (`MacGastoNuevo`).
     var short = false
+    /// Objetivo del recorrido: va en el primer botón y no en el grupo. Con `.id` sobre los tres, el formulario los
+    /// juntaba en una sola fila, amontonados y centrados (iPhone del usuario, build 56; venía del 54).
+    var objetivo: String? = nil
     let onPick: (ReceiptFile) -> Void
     @State private var photo: PhotosPickerItem?
     @State private var importing = false
@@ -75,11 +78,13 @@ struct ReceiptPickerButtons: View {
                     }
                     .ignoresSafeArea()
                 }
+                .modifier(ObjetivoDelRecorrido(id: objetivo))
         }
         #endif
         PhotosPicker(selection: $photo, matching: .images) {
             Label(short ? String(localized: "Elegir foto") : String(localized: "Adjuntar foto del recibo"), systemImage: "photo.on.rectangle")
         }
+        .modifier(ObjetivoDelRecorrido(id: scannerShown ? nil : objetivo))
         .onChange(of: photo) {
             guard let photo else { return }
             Task {
@@ -91,6 +96,23 @@ struct ReceiptPickerButtons: View {
         }
         Button(short ? String(localized: "Elegir archivo…") : String(localized: "Adjuntar archivo (PDF o imagen)"), systemImage: "doc.badge.plus") { importing = true }
             .receiptFileImporter(isPresented: $importing, onPick: onPick)
+    }
+
+    private var scannerShown: Bool {
+        #if os(iOS)
+        DocumentScanner.isAvailable
+        #else
+        false
+        #endif
+    }
+}
+
+/// `.recorridoObjetivo` + `.id` solo si hay objetivo.
+private struct ObjetivoDelRecorrido: ViewModifier {
+    let id: String?
+
+    func body(content: Content) -> some View {
+        if let id { content.recorridoObjetivo(id).id(id) } else { content }
     }
 }
 
