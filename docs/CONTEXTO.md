@@ -12,17 +12,18 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
 
 ## Dónde nos quedamos (empieza aquí)
 
-**Resumen al 21-nov** (lo de debajo es el detalle y la historia):
-- **Último build: 60 (1.3.0)**, subido iOS y macOS el 21-nov (`229695f`, sin empujar): iPad más consistente (Conciliación
-  y Reglas con lista y detalle, repaso de diseño, detalles y reportes centrados) y **recorrido de la primera vez en el
-  iPad**. **59** (21-nov): **anular un cobro**
-  (`Bookkeeper.voidPayment`; anulado = asiento revertido, sin cambio de esquema). **58** (21-nov): Clientes sin avisos
-  encimados y «Idioma» que lleva a Ajustes. **57** (21-nov): botones del recibo en filas separadas. **56** (21-nov): informe de Eric (Beta Family)
-  y repaso visual de toda la app. **55** y **54** (20-nov): campos de dinero, tutorial completo. Detalle en RESUMEN,
-  «Último chat» y «Lo siguiente».
-- `version-1.3` empujada el 21-nov hasta el build 58 y su resumen; `main` en `83b1db4` (web), sin cambios.
-- iPhone del usuario con el Debug del 58 (Producción), instalado el 21-nov; lo probó y está bien.
-- Anular un cobro: hecho en el build 59 (RESUMEN, «Lo siguiente» 0).
+**Resumen al 21-nov (tarde)** (lo de debajo es el detalle y la historia):
+- **Último build: 61 (1.3.0)**, subido iOS y macOS el 21-nov (`8dbdd3b`): campos de varias líneas con aire y el detalle
+  gris en la misma línea en el iPad. **60** (21-nov): iPad más consistente (Conciliación y Reglas con lista y detalle,
+  repaso de diseño de las 27 secciones, detalles a 720 pt y reportes a 820 pt **centrados**) y **recorrido de la primera
+  vez en el iPad**. **59** (21-nov): **anular un cobro** (`Bookkeeper.voidPayment`; anulado = asiento revertido, sin
+  cambio de esquema). **58**, **57** y **56** (21-nov, mañana): Clientes e «Idioma», botones del recibo, informe de Eric y
+  repaso visual del iPhone. Detalle en RESUMEN, «Último chat» y «Lo siguiente».
+- `version-1.3` con el 61 y su resumen; `main` en `83b1db4` (web), sin cambios.
+- iPhone del usuario con TestFlight (59); **iPad con el Debug del código del 61** (Producción). En ese Debug la hoja de
+  planes sale al abrir: el uso libre empezó el 10-nov (lo comparten los aparatos por iCloud, `freeUse.start`) y el Debug
+  usa otra tienda de prueba sin su suscripción de TestFlight. No es un fallo.
+- El usuario está revisando el **iPad** pantalla por pantalla y manda capturas: lo siguiente probablemente sea más de eso.
 
 **Resumen al 18-nov:**
 - **Último build: 52 (1.3.0)**, subido iOS y macOS el 18-nov (`5643a27`): el recorrido vuelve a salir al borrar los
@@ -372,6 +373,15 @@ tabla del principio. Se programa cuando la 1.3 esté en la tienda.
   lo pida.
 
 ## Lo aprendido (no repetir errores)
+
+- **Recorrido y listas (21-nov):** `.recorridoObjetivo(...)` va por dentro de `.masterRow(...)`; por fuera, la fila
+  elegida de la columna maestro perdía su fondo de Tinta (texto blanco sobre blanco). En el iPad la barra lateral solo es
+  objetivo si se ve (`RootView.sidebarVisible`): en vertical empieza escondida y su marco seguía ahí.
+- **Columnas maestro del iPad:** el título comparte fila con los botones de la barra; con «+ Texto» y «⋯» el sistema lo
+  corta o lo esconde. Regla: «+» solo si hay otro botón o la etiqueta es larga.
+- **Catálogo de textos:** `scripts/sync-strings.sh` solo compila iOS y marca «stale» los textos del Mac (y reordena
+  claves): para pocos textos nuevos, añadirlos con un script de Python que conserve el formato (`json.dumps(indent=2,
+  ensure_ascii=False, separators=(',', ' : '))`). En inglés, títulos de las tarjetas del recorrido en tipo oración.
 
 - **CloudKit en Producción es para siempre:** solo añadir (opcionales o con valor por defecto), **nunca renombrar** (con
   CloudKit Core Data se niega y la app se cierra al abrir; `originalName` no sirve), nunca reutilizar un nombre, ningún

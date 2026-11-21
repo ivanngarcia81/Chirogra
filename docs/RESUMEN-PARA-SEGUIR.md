@@ -1,25 +1,27 @@
-# Chirogra: resumen para empezar el siguiente chat (21-nov-2026, build 60)
+# Chirogra: resumen para empezar el siguiente chat (21-nov-2026, build 61)
 
 Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («Dónde nos quedamos» y «Siguiente»).
 **Al usuario se le habla siempre en español.**
 
 ## Estado
 
-- **Ramas:** `version-1.3` empujada el 21-nov hasta el build 59 (`d294076`); el build 60 (`229695f`) y sus docs,
-  commiteados **sin empujar**. `main` en `83b1db4` (build 50 y la
+- **Ramas:** `version-1.3` con el build 61 (`8dbdd3b`) y este resumen commiteados el 21-nov (ver al final si se
+  empujaron: `git status -sb`). `main` en `83b1db4` (build 50 y la
   web con «Kairogra»), empujada el 17-nov; los builds de después no tocan la web, así que `main` no hace falta moverla.
   La web (`sitio/`) se publica desde `main`.
-- **Último build: 60 (1.3.0)**, subido a TestFlight para iOS y macOS el 21-nov (`229695f`): iPad más consistente y con
-  recorrido de la primera vez. Antes: 59 (21-nov, anular un cobro), 58 (21-nov), 57 (21-nov), 56 (21-nov), 55 (20-nov), 54 (20-nov), 53 (18-nov), 52 (18-nov), 51
+- **Último build: 61 (1.3.0)**, subido a TestFlight para iOS y macOS el 21-nov (`8dbdd3b`): campos de varias líneas con
+  aire y el detalle en la misma línea en el iPad. Antes: 60 (21-nov, iPad: lista y detalle, repaso, centrado, recorrido),
+  59 (21-nov, anular un cobro), 58 (21-nov), 57 (21-nov), 56 (21-nov), 55 (20-nov), 54 (20-nov), 53 (18-nov), 52 (18-nov), 51
   (recorrido de la primera vez, 17-nov) y 50 (17-nov). Los testers externos (Userbrain, Beta Family) entran con el enlace público
-  https://testflight.apple.com/join/RGwqqUyw: **el usuario tiene que asignar el 58 a ese grupo** cuando Apple lo procese.
+  https://testflight.apple.com/join/RGwqqUyw: **el usuario tiene que asignar el 61 a ese grupo** cuando Apple lo procese.
 - **En App Store Connect:** la **1.0 (build 11)** espera la revisión. **Decidido el 13-nov:** cuando la aprueben se envía
   **directo la 1.3** con su último build, sin la 1.0.1, la 1.1 ni la 1.2, con un «What's New» que junte las tres. El plan
   «Chirogra para contadores» está completo en App Store Connect y va en ese envío (no pulsar «Add for Review» suelto).
   El 17-nov la web de App Store Connect le fallaba al usuario (sin apps, «News Request», lo sacaba al entrar); la página
   de estado de Apple no marcaba nada y las subidas funcionaban: era la sesión de Safari (pestaña privada / borrar datos).
-- **Aparatos del usuario:** iPhone y Mac con el código del 45 instalado desde Xcode; desde entonces prueba con TestFlight.
-  El iPad, desde TestFlight cuando quiera (no insistir).
+- **Aparatos del usuario:** iPhone con TestFlight (build 59 el 21-nov). **iPad Pro 12,9″ con el Debug del código del
+  61** (Producción), instalado por él pidiéndolo el 21-nov para revisar el iPad: ahí la hoja de planes sale al abrir
+  porque el Debug usa otra tienda de prueba sin su suscripción (no es un fallo; ver «Lo siguiente» 0a). Mac: TestFlight.
 - **Plan de la 1.4** (agenda + asistente con Claude) en [PLAN-1.4.md](PLAN-1.4.md); **plan de la 2.0** en
   [PLAN-2.0.md](PLAN-2.0.md).
 
@@ -61,20 +63,35 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 | 55 | `216d429` | 1.3.0: tras Yurii S. (Beta Family, build 54; iPhone 16e, formato de Ucrania, oscuro): **campos de dinero** que se editan sin la moneda (`MoneyField`: «10,99» al escribir, «10,99 US$» al salir; antes lo tecleado se pegaba tras «US$» y el importe no cambiaba: «10,99 US$80», «1,00 US$896253»; en EE. UU. «$510.99»); lee coma o punto decimal; **difuminado** (`.ultraThinMaterial`) en la primera tarjeta de cada recorrido, la que no ilumina nada. 177 + 75 + 87 pruebas (`ScreenSmokeTests` ya se caía en el 54: `ImageRenderer`, «no current update to enqueue action to»). |
 | 56 | `130588b` | 1.3.0: tras Eric (Beta Family, build 55; iPhone 13, iOS 27.2.1; app 3/5, recomendación 2/5) y un **repaso visual** de toda la app. Ver «Lo siguiente» 0b. 350 pruebas (94 + 181 + 75). |
 | 57 | `c13f955` | 1.3.0: en «Nuevo gasto › Recibo» los tres botones (escanear, foto, archivo) vuelven a ir **uno por fila**; salían amontonados en una sola (captura del usuario con el 56; venía del 54). Ver «Lo siguiente» 0a. 350 pruebas. |
-| 60 | `229695f` | 1.3.0: **iPad**: Conciliación y Reglas con lista y detalle; repaso de diseño de las 27 secciones (títulos de columna enteros, «Facturas», icono de color en Banca, Libro mayor con título grande, lápiz de Editar); detalles a 720 pt y reportes a 820 pt **centrados**; tabla de líneas de la factura alineada; **recorrido de la primera vez en el iPad**. Ver «Lo siguiente» 0. 355 pruebas. |
-| 59 | `34f6cc0` | 1.3.0: **anular un cobro** (pendiente del informe de Eric): cada cobro en su fila de «Actividad» de la factura; tocarlo o «⋯ › Anular cobro…» lo revierte en su fecha, la factura vuelve a quedar pendiente y el movimiento del banco enlazado vuelve a «Por revisar». Ver «Lo siguiente» 0. 355 pruebas. |
 | 58 | `944e0ad` | 1.3.0: **Clientes** sin avisos encimados (con un filtro vacío, «Nothing to handle» se montaba sobre «¿Llevas los libros de otro negocio?»; captura del usuario) y **«Idioma»** en Más › Moneda y formatos lleva a Ajustes › Apps › Chirogra. Ver «Lo siguiente» 0. 350 pruebas. |
+| 59 | `34f6cc0` | 1.3.0: **anular un cobro** (pendiente del informe de Eric): cada cobro en su fila de «Actividad» de la factura; tocarlo o «⋯ › Anular cobro…» lo revierte en su fecha, la factura vuelve a quedar pendiente y el movimiento del banco enlazado vuelve a «Por revisar». Ver «Lo siguiente» 0. 355 pruebas. |
+| 60 | `229695f` | 1.3.0: **iPad**: Conciliación y Reglas con lista y detalle; repaso de diseño de las 27 secciones (títulos de columna enteros, «Facturas», icono de color en Banca, Libro mayor con título grande, lápiz de Editar); detalles a 720 pt y reportes a 820 pt **centrados**; tabla de líneas de la factura alineada; **recorrido de la primera vez en el iPad**. Ver «Lo siguiente» 0. 355 pruebas. |
+| 61 | `8dbdd3b` | 1.3.0: `fieldBox` con 8 pt arriba y abajo («Notas y términos» de la factura ya no pega el texto arriba); en los detalles del iPad el dato gris va **en la misma línea** que el título (`TituloConDetalle`: líneas de factura, estimado, factura por pagar y asiento; historial del gasto). Capturas del usuario. 355 pruebas. |
 
-## Último chat (21-nov): builds 56, 57, 58, 59 y 60
+## Último chat (21-nov, mediodía y tarde): builds 59, 60 y 61
 
-- **Build 60 (`229695f`), tarde del 21-nov:** el usuario mandó capturas de su iPad (Conciliación y Reglas estiradas,
-  «Sales sourcing» apretado, títulos de la tabla de la factura descolocados, «Payables (0)» en dos líneas). Se
-  arreglaron, se hizo un **repaso de diseño de las 27 secciones del iPad y del Mac** con capturas antes/después, y él
-  decidió: reportes y detalles **centrados**, Presupuesto también, y el **recorrido de la primera vez en el iPad** en el
-  mismo build. Vio cada paso en el Debug de su iPad antes de pedir «publícalo». «Lo siguiente» 0.
+- **Build 59 (`34f6cc0`):** el usuario eligió hacer **«Anular cobro»**, el pendiente que quedaba del informe de Eric.
+  Visto en el simulador y subido a petición suya. «Lo siguiente» 0b.
+- **Build 60 (`229695f`):** se puso a revisar la app **en su iPad** (Debug instalado desde el Mac) y mandó capturas con
+  lo que veía mal rodeado: Conciliación y Reglas estiradas (pidió lista y detalle), «Sales sourcing» apretado, títulos de
+  la tabla de la factura descolocados y la fila más baja que el campo, «Payables (0)» en dos líneas. Pidió además un
+  **repaso de diseño de toda la app**: se capturaron las 27 secciones del iPad (con detalle) y del Mac, se arreglaron las
+  diferencias y se le mandaron hojas antes/después. Decisiones suyas: reportes a 820 pt **centrados** (todos, también
+  Presupuesto), detalles a 720 pt **centrados**, icono de color en las cuentas, y el **recorrido de la primera vez en el
+  iPad** en el mismo build. Preguntó por qué en el iPad la hoja de planes salía enseguida (ver «Lo siguiente» 0a).
+  «Lo siguiente» 0a.
+- **Build 61 (`8dbdd3b`):** dos capturas más del iPad: «Notas y términos» con el texto pegado arriba, y el dato gris
+  («1 × $50.00 · taxable», «Nov 21, 2026 · Current») que quería en la misma línea. «Lo siguiente» 0.
+- **Cómo se trabajó:** él prueba en su iPad y manda capturas; se arregla, se ve en el simulador del iPad
+  (`ADB9E3BB`, en horizontal y vertical) con hojas antes/después, se le reinstala el Debug y él dice «súbelo». Pruebas de
+  interfaz en una copia del repo en el scratchpad (sin commitear): `IPadTodo` (cada sección por `-qa.seccion`, con
+  `QA_LISTA` y `QA_SOLO_MAESTRO`; toca la primera fila de la columna maestro por su posición: con la barra lateral
+  cerrada la columna empieza en x = 0), `IPadRecorrido` (`-qa.recorrido reset`, paso a paso), `IPadRepaso`, `AnularCobro`.
+  El Mac, con una copia ad hoc sin iCloud (`com.chirogra.qa.repaso`) abierta en segundo plano por sección y
+  `screencapture -l` de su ventana. Las capturas del iPad en horizontal se guardan con la orientación en el PNG: `NSImage`
+  las dibuja derechas, `sips -r` no gira los píxeles.
 
-- **Build 59 (`34f6cc0`), en otro chat del mismo día:** el usuario eligió hacer «Anular cobro», el pendiente que quedaba
-  del informe de Eric. Visto en el simulador (hoja de capturas mandada) y subido a petición suya. «Lo siguiente» 0.
+## Chat anterior (21-nov, mañana): builds 56, 57 y 58
 
 - **Build 56 (`130588b`):** informe de Beta Family de **Eric** con el 55 (recomendación 2/5: «no security assurances»,
   «parece hecho con IA») y un **repaso visual** de toda la app. Hecho con **un agente por arreglo** en worktrees.
@@ -182,20 +199,29 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 
 ## Lo que le toca al usuario
 
-1. **Asignar el build 60** al grupo de testers externos del enlace público cuando Apple lo procese, y mandar más
+1. **Asignar el build 61** al grupo de testers externos del enlace público cuando Apple lo procese, y mandar más
    testers (Beta Family, Userbrain, UXtweak) con él. Traer aquí lo que digan.
-1b. ~~Probar el 58 en su iPhone~~: **probado por él el 21-nov** («Idioma» abre Ajustes y Clientes sin avisos encimados).
+1b. **Seguir revisando el iPad** con el Debug (o el 61 desde TestFlight, que no enseña la hoja de planes al abrir) y
+   mandar capturas de lo que vea mal; el recorrido del iPad se repite en Ajustes › «Ver el recorrido otra vez».
 2. **Probar el 52 en TestFlight:** el recorrido de cada pestaña, «Más › Ayuda › Ver el recorrido otra vez», y borrar los
    datos de ejemplo y crear su empresa (el recorrido tiene que volver). Si puede, con Reducir movimiento y VoiceOver,
    que no se han probado en un aparato.
-3. **Instalar en el iPad** cuando quiera y, si sale el aviso de iCloud, mandar captura de «Detalles».
+3. Si en el iPad sale el aviso de iCloud, mandar captura de «Detalles».
 4. **Para la 1.4:** la clave de Anthropic y el proyecto de Supabase «chirogra» los pone él en los secretos (no crearlos
    ni buscarlos). Pregunta abierta: si la suscripción cuesta más con el asistente.
 5. **Avisar cuando Apple apruebe la 1.0**, para preparar el envío de la 1.3.
 
 ## Lo siguiente
 
-0. **Build 60: SUBIDO iOS+Mac a TestFlight (21-nov, `229695f`), sin empujar.** Todo es del iPad salvo la tabla de líneas
+0. **Build 61: SUBIDO iOS+Mac a TestFlight (21-nov, `8dbdd3b`).** (1) `fieldBox()` (`DesignSystem/Components.swift`)
+   con `.padding(.vertical, 8)`: el único campo de varias líneas que lo usa, «Notas y términos» de la factura, ya no pega
+   el texto al borde; los de una línea no cambian (caben en los 38 pt). (2) `TituloConDetalle`
+   (`DesignSystem/ReadableWidth.swift`): en el iPad (`sizeClass == .regular`, sin letra de accesibilidad) título y detalle
+   en una línea con `ViewThatFits` (si no cabe, debajo); en el iPhone y el Mac, debajo. Usado en las líneas de factura,
+   estimado, factura por pagar y asiento, y en el historial del gasto (`LedgerRow(subtitleInline: true)`). Las opciones
+   de «Convertir en factura» del estimado siguen en dos líneas (son opciones, no líneas). La factura por pagar no se vio
+   en una captura (quedaba fuera de la pantalla).
+0a. **Build 60: SUBIDO iOS+Mac a TestFlight (21-nov, `229695f`), empujado.** Todo es del iPad salvo la tabla de líneas
    de la factura (también Mac). (1) **Conciliación y Reglas** con columna maestro y detalle (`MasterPage.reconcile/
    .rules`, solo iOS; `Banking/BankingMasterPages.swift`: `ReconcileMasterList`, `RuleMasterList`, `BankRuleDetail`,
    acciones en `BankRuleActions`); `ReconciliationView(inDetailColumn:)` sin «Guardar». (2) **Repaso**: columnas maestro
@@ -218,7 +244,7 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
    el del iPhone (su recorrido no cambia). **Pregunta del usuario resuelta:** en el Debug del iPad la hoja de planes
    salía al abrir porque el uso libre empezó el 10-nov (lo comparten iPhone e iPad por iCloud) y el Debug usa otra
    tienda de prueba sin su suscripción; en TestFlight se comporta como el iPhone. No es un fallo.
-0. **Build 59: SUBIDO iOS+Mac a TestFlight (21-nov, `34f6cc0`), `version-1.3` empujada.** Anular un cobro registrado por error
+0b. **Build 59: SUBIDO iOS+Mac a TestFlight (21-nov, `34f6cc0`), `version-1.3` empujada.** Anular un cobro registrado por error
    (Eric, Beta Family: «un toque de más deja un cobro que no se puede borrar»). `Bookkeeper.voidPayment(_:on:)`
    revierte el asiento del cobro en su fecha (o en `on`, el primer día abierto, si su periodo está cerrado:
    `ClosedPeriodRetry` con `redate`), resta lo aplicado a cada factura y recalcula su estado, y los `BankTransaction`
@@ -450,3 +476,10 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
   `-exportArchive` con `method app-store-connect`, `destination upload` (CONTEXTO, «Subir un build»).
 - En un simulador nuevo: `-iCloudSyncEnabled NO` (sin cuenta de iCloud, CloudKit cierra la app) y `-qa.suscripcion
   activa` (si no, la pantalla de planes tapa Inicio).
+- **Revisión en sus aparatos (21-nov):** cuando pide ver algo antes del build, se le instala el Debug (iPhone
+  `00008150-0005793E3EC0401C`, iPad `00008103-001439A91E6B001E`) desde una copia del árbol de trabajo con
+  `icloud-container-environment = Production`. Al ser de desarrollo se pueden leer sus ajustes con `devicectl device copy
+  from --domain-type appDataContainer` (así se vio el `freeUse.start` del 10-nov). Él decide «súbelo» o «publícalo».
+- Decisiones de diseño del iPad (21-nov): detalles de una columna a 720 pt y reportes a 820 pt, **centrados**; títulos de
+  columna maestro siempre enteros («+» solo si hay otro botón o la etiqueta es larga); lápiz para Editar; el dato gris
+  en la misma línea si cabe.
