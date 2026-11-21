@@ -13,13 +13,14 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
 ## Dónde nos quedamos (empieza aquí)
 
 **Resumen al 21-nov** (lo de debajo es el detalle y la historia):
-- **Último build: 58 (1.3.0)**, subido iOS y macOS el 21-nov (`944e0ad`): Clientes sin avisos encimados y «Idioma» que
-  lleva a Ajustes. **57** (21-nov): botones del recibo en filas separadas. **56** (21-nov): informe de Eric (Beta Family)
+- **Último build: 59 (1.3.0)**, subido iOS y macOS el 21-nov (`34f6cc0`, sin empujar): **anular un cobro**
+  (`Bookkeeper.voidPayment`; anulado = asiento revertido, sin cambio de esquema). **58** (21-nov): Clientes sin avisos
+  encimados y «Idioma» que lleva a Ajustes. **57** (21-nov): botones del recibo en filas separadas. **56** (21-nov): informe de Eric (Beta Family)
   y repaso visual de toda la app. **55** y **54** (20-nov): campos de dinero, tutorial completo. Detalle en RESUMEN,
   «Último chat» y «Lo siguiente».
 - `version-1.3` empujada el 21-nov hasta el build 58 y su resumen; `main` en `83b1db4` (web), sin cambios.
 - iPhone del usuario con el Debug del 58 (Producción), instalado el 21-nov; lo probó y está bien.
-- Pendiente conocido: no hay forma de borrar o anular un cobro registrado (RESUMEN, «Lo siguiente» 0b).
+- Anular un cobro: hecho en el build 59 (RESUMEN, «Lo siguiente» 0).
 
 **Resumen al 18-nov:**
 - **Último build: 52 (1.3.0)**, subido iOS y macOS el 18-nov (`5643a27`): el recorrido vuelve a salir al borrar los

@@ -1,14 +1,15 @@
-# Chirogra: resumen para empezar el siguiente chat (21-nov-2026, build 58)
+# Chirogra: resumen para empezar el siguiente chat (21-nov-2026, build 59)
 
 Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («Dónde nos quedamos» y «Siguiente»).
 **Al usuario se le habla siempre en español.**
 
 ## Estado
 
-- **Ramas:** `version-1.3` empujada el 21-nov hasta el build 58 y su resumen. `main` en `83b1db4` (build 50 y la
+- **Ramas:** `version-1.3` empujada el 21-nov hasta el build 58 y su resumen; el build 59 (`34f6cc0`) y sus docs,
+  commiteados **sin empujar**. `main` en `83b1db4` (build 50 y la
   web con «Kairogra»), empujada el 17-nov; los builds de después no tocan la web, así que `main` no hace falta moverla.
   La web (`sitio/`) se publica desde `main`.
-- **Último build: 58 (1.3.0)**, subido a TestFlight para iOS y macOS el 21-nov (`944e0ad`). Antes: 57 (21-nov), 56 (21-nov), 55 (20-nov), 54 (20-nov), 53 (18-nov), 52 (18-nov), 51
+- **Último build: 59 (1.3.0)**, subido a TestFlight para iOS y macOS el 21-nov (`34f6cc0`): anular un cobro. Antes: 58 (21-nov), 57 (21-nov), 56 (21-nov), 55 (20-nov), 54 (20-nov), 53 (18-nov), 52 (18-nov), 51
   (recorrido de la primera vez, 17-nov) y 50 (17-nov). Los testers externos (Userbrain, Beta Family) entran con el enlace público
   https://testflight.apple.com/join/RGwqqUyw: **el usuario tiene que asignar el 58 a ese grupo** cuando Apple lo procese.
 - **En App Store Connect:** la **1.0 (build 11)** espera la revisión. **Decidido el 13-nov:** cuando la aprueben se envía
@@ -59,9 +60,13 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 | 55 | `216d429` | 1.3.0: tras Yurii S. (Beta Family, build 54; iPhone 16e, formato de Ucrania, oscuro): **campos de dinero** que se editan sin la moneda (`MoneyField`: «10,99» al escribir, «10,99 US$» al salir; antes lo tecleado se pegaba tras «US$» y el importe no cambiaba: «10,99 US$80», «1,00 US$896253»; en EE. UU. «$510.99»); lee coma o punto decimal; **difuminado** (`.ultraThinMaterial`) en la primera tarjeta de cada recorrido, la que no ilumina nada. 177 + 75 + 87 pruebas (`ScreenSmokeTests` ya se caía en el 54: `ImageRenderer`, «no current update to enqueue action to»). |
 | 56 | `130588b` | 1.3.0: tras Eric (Beta Family, build 55; iPhone 13, iOS 27.2.1; app 3/5, recomendación 2/5) y un **repaso visual** de toda la app. Ver «Lo siguiente» 0b. 350 pruebas (94 + 181 + 75). |
 | 57 | `c13f955` | 1.3.0: en «Nuevo gasto › Recibo» los tres botones (escanear, foto, archivo) vuelven a ir **uno por fila**; salían amontonados en una sola (captura del usuario con el 56; venía del 54). Ver «Lo siguiente» 0a. 350 pruebas. |
+| 59 | `34f6cc0` | 1.3.0: **anular un cobro** (pendiente del informe de Eric): cada cobro en su fila de «Actividad» de la factura; tocarlo o «⋯ › Anular cobro…» lo revierte en su fecha, la factura vuelve a quedar pendiente y el movimiento del banco enlazado vuelve a «Por revisar». Ver «Lo siguiente» 0. 355 pruebas. |
 | 58 | `944e0ad` | 1.3.0: **Clientes** sin avisos encimados (con un filtro vacío, «Nothing to handle» se montaba sobre «¿Llevas los libros de otro negocio?»; captura del usuario) y **«Idioma»** en Más › Moneda y formatos lleva a Ajustes › Apps › Chirogra. Ver «Lo siguiente» 0. 350 pruebas. |
 
-## Último chat (21-nov): builds 56, 57 y 58
+## Último chat (21-nov): builds 56, 57, 58 y 59
+
+- **Build 59 (`34f6cc0`), en otro chat del mismo día:** el usuario eligió hacer «Anular cobro», el pendiente que quedaba
+  del informe de Eric. Visto en el simulador (hoja de capturas mandada) y subido a petición suya. «Lo siguiente» 0.
 
 - **Build 56 (`130588b`):** informe de Beta Family de **Eric** con el 55 (recomendación 2/5: «no security assurances»,
   «parece hecho con IA») y un **repaso visual** de toda la app. Hecho con **un agente por arreglo** en worktrees.
@@ -169,7 +174,7 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 
 ## Lo que le toca al usuario
 
-1. **Asignar el build 58** al grupo de testers externos del enlace público cuando Apple lo procese, y mandar más
+1. **Asignar el build 59** al grupo de testers externos del enlace público cuando Apple lo procese, y mandar más
    testers (Beta Family, Userbrain, UXtweak) con él. Traer aquí lo que digan.
 1b. ~~Probar el 58 en su iPhone~~: **probado por él el 21-nov** («Idioma» abre Ajustes y Clientes sin avisos encimados).
 2. **Probar el 52 en TestFlight:** el recorrido de cada pestaña, «Más › Ayuda › Ver el recorrido otra vez», y borrar los
@@ -182,6 +187,21 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 
 ## Lo siguiente
 
+0. **Build 59: SUBIDO iOS+Mac a TestFlight (21-nov, `34f6cc0`), sin empujar.** Anular un cobro registrado por error
+   (Eric, Beta Family: «un toque de más deja un cobro que no se puede borrar»). `Bookkeeper.voidPayment(_:on:)`
+   revierte el asiento del cobro en su fecha (o en `on`, el primer día abierto, si su periodo está cerrado:
+   `ClosedPeriodRetry` con `redate`), resta lo aplicado a cada factura y recalcula su estado, y los `BankTransaction`
+   con `createdDocumentID` = cobro o `matchedEntryID` = su asiento vuelven a «Por revisar». **Sin campo nuevo** (no
+   cambia el esquema de CloudKit): anulado = asiento revertido (`isVoided`, `voidDate(of:)`); el cobro y su
+   `PaymentApplication` se quedan para el historial. Bitácora: evento `voidPayment` de la factura. Arreglos que
+   hacían falta: base de caja (la reversión de un cobro reparte con el signo contrario), antigüedad a una fecha pasada
+   (el anulado cuenta solo mientras estuvo vigente), `canEditIssued` ignora cobros anulados, «Cobrado en…» del Mac,
+   «pagada el…» de Ventas, media de días de pago y el historial del cliente («Cobro anulado · F-1001», en gris).
+   Pantalla: `InvoiceDetailView` (iPhone, iPad y Mac) con un paso por cobro en «Actividad» (`ActivityStep`), tocar uno
+   vivo pide «¿Anular el cobro de $X del 22 oct?»; en «⋯», «Anular cobro…» (o submenú con varios). Inspector del Mac:
+   «Cobro anulado de $X». `VoidPaymentTests` (5). Visto en el simulador «Chirogra QA 16e» (UITestsQA `AnularCobro`,
+   sin commitear). Detalle visual sin cambiar: la confirmación sale como globo con flecha arriba (igual que «¿Anular la
+   factura?»); el usuario puede pedir un aviso centrado.
 0. **Build 58: SUBIDO iOS+Mac a TestFlight (21-nov, `944e0ad`).** Dos cosas del usuario con el 56/57 en su iPhone:
    (1) **Clientes** con un solo cliente y «Need attention» vacío: «All your clients are up to date» y la tarjeta
    «¿Llevas los libros de otro negocio?» van en la lista, pero `emptyState` iba en `.overlay` y pintaba «Nothing to
@@ -209,8 +229,8 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
    ojo: los worktrees nacen de `main`, hay que avanzarlos a `version-1.3` y aplicar el trabajo sin commitear como parche).
    **Arreglos del informe:** (1) **Impuestos** usa la frecuencia de la agencia (mensual/trimestral/anual;
    `SalesTaxShownPeriod`, `salesTaxFilingPeriods`); antes siempre trimestral. (2) **Confirmación antes de registrar un
-   cobro** en el detalle de la factura (`confirmationDialog`); no en la hoja del iPad/Mac ni en Banca. **Pendiente:** no
-   hay forma de borrar o anular un cobro (y «Devolver a la bandeja» solo desvincula el cobro del banco). (3) **Recibo en
+   cobro** en el detalle de la factura (`confirmationDialog`); no en la hoja del iPad/Mac ni en Banca. Anular un cobro:
+   hecho en el build 59 (punto 0). (3) **Recibo en
    grande** al tocarlo (Quick Look, `ReceiptPreview`), también al crear el gasto y el W-9. (4) **PDF en grande** desde la
    miniatura de Enviar/Recordatorio (pastilla «Ver»). (5) Hoja del **recordatorio** con «Recordatorio de pago · vence…
    · saldo» arriba; el botón siempre «Recordatorio» con campana, azul («enviado hoy» aparte). (6) **Recorrido:** deslizar
