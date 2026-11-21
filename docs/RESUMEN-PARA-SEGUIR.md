@@ -1,16 +1,17 @@
-# Chirogra: resumen para empezar el siguiente chat (21-nov-2026, build 57)
+# Chirogra: resumen para empezar el siguiente chat (21-nov-2026, build 58)
 
 Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («Dónde nos quedamos» y «Siguiente»).
 **Al usuario se le habla siempre en español.**
 
 ## Estado
 
-- **Ramas:** `version-1.3` empujada el 18-nov (builds 50, 51 y 52 y sus docs). `main` en `83b1db4` (build 50 y la web
-  con «Kairogra»), empujada el 17-nov; los builds 51 y 52 no tocan la web, así que `main` no hace falta moverla. La web
-  (`sitio/`) se publica desde `main`.
-- **Último build: 57 (1.3.0)**, subido a TestFlight para iOS y macOS el 21-nov (`c13f955`). Antes: 56 (21-nov), 55 (20-nov), 54 (20-nov), 53 (18-nov), 52 (18-nov), 51
+- **Ramas:** `version-1.3` empujada hasta `abbeeda` (20-nov, build 54 y sus docs). **Sin empujar:** los builds 55,
+  56, 57 y 58 y sus docs (empujar solo cuando el usuario lo diga). `main` en `83b1db4` (build 50 y la
+  web con «Kairogra»), empujada el 17-nov; los builds de después no tocan la web, así que `main` no hace falta moverla.
+  La web (`sitio/`) se publica desde `main`.
+- **Último build: 58 (1.3.0)**, subido a TestFlight para iOS y macOS el 21-nov (`944e0ad`). Antes: 57 (21-nov), 56 (21-nov), 55 (20-nov), 54 (20-nov), 53 (18-nov), 52 (18-nov), 51
   (recorrido de la primera vez, 17-nov) y 50 (17-nov). Los testers externos (Userbrain, Beta Family) entran con el enlace público
-  https://testflight.apple.com/join/RGwqqUyw: **el usuario tiene que asignar el 57 a ese grupo** cuando Apple lo procese.
+  https://testflight.apple.com/join/RGwqqUyw: **el usuario tiene que asignar el 58 a ese grupo** cuando Apple lo procese.
 - **En App Store Connect:** la **1.0 (build 11)** espera la revisión. **Decidido el 13-nov:** cuando la aprueben se envía
   **directo la 1.3** con su último build, sin la 1.0.1, la 1.1 ni la 1.2, con un «What's New» que junte las tres. El plan
   «Chirogra para contadores» está completo en App Store Connect y va en ese envío (no pulsar «Add for Review» suelto).
@@ -58,9 +59,34 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 | 54 | `801e8c3` | 1.3.0: **«Tutorial completo»** en Más › Ayuda (cada pantalla del iPhone explica todos sus botones la primera vez; el corto no cambia); **iOS 27**: los pasos que iluminan botones de la barra de arriba ya no se saltan (`marcoEnVentana` mira `accessibilityElements`); en Inicio el recorrido ilumina el título del grupo con su tarjeta (iPhone 13 mini, Jiga T. de Beta Family). 177 + 75 pruebas. |
 | 55 | `216d429` | 1.3.0: tras Yurii S. (Beta Family, build 54; iPhone 16e, formato de Ucrania, oscuro): **campos de dinero** que se editan sin la moneda (`MoneyField`: «10,99» al escribir, «10,99 US$» al salir; antes lo tecleado se pegaba tras «US$» y el importe no cambiaba: «10,99 US$80», «1,00 US$896253»; en EE. UU. «$510.99»); lee coma o punto decimal; **difuminado** (`.ultraThinMaterial`) en la primera tarjeta de cada recorrido, la que no ilumina nada. 177 + 75 + 87 pruebas (`ScreenSmokeTests` ya se caía en el 54: `ImageRenderer`, «no current update to enqueue action to»). |
 | 56 | `130588b` | 1.3.0: tras Eric (Beta Family, build 55; iPhone 13, iOS 27.2.1; app 3/5, recomendación 2/5) y un **repaso visual** de toda la app. Ver «Lo siguiente» 0b. 350 pruebas (94 + 181 + 75). |
-| 57 | `c13f955` | 1.3.0: en «Nuevo gasto › Recibo» los tres botones (escanear, foto, archivo) vuelven a ir **uno por fila**; salían amontonados en una sola (captura del usuario con el 56; venía del 54). Ver «Lo siguiente» 0. 350 pruebas. |
+| 57 | `c13f955` | 1.3.0: en «Nuevo gasto › Recibo» los tres botones (escanear, foto, archivo) vuelven a ir **uno por fila**; salían amontonados en una sola (captura del usuario con el 56; venía del 54). Ver «Lo siguiente» 0a. 350 pruebas. |
+| 58 | `944e0ad` | 1.3.0: **Clientes** sin avisos encimados (con un filtro vacío, «Nothing to handle» se montaba sobre «¿Llevas los libros de otro negocio?»; captura del usuario) y **«Idioma»** en Más › Moneda y formatos lleva a Ajustes › Apps › Chirogra. Ver «Lo siguiente» 0. 350 pruebas. |
 
-## Último chat (17 y 18-nov): builds 50, 51 y 52, recorrido y testers
+## Último chat (21-nov): builds 56, 57 y 58
+
+- **Build 56 (`130588b`):** informe de Beta Family de **Eric** con el 55 (recomendación 2/5: «no security assurances»,
+  «parece hecho con IA») y un **repaso visual** de toda la app. Hecho con **un agente por arreglo** en worktrees.
+  El usuario vio capturas antes/después de cada cambio de diseño y eligió **mantener el círculo de iniciales** en las
+  fichas de cliente y proveedor. Detalle en «Lo siguiente» 0b.
+- **Build 57 (`c13f955`):** captura del usuario con el 56: los botones del recibo de «Nuevo gasto» salían amontonados
+  en una fila. Venía del 54 (`.id` del tutorial sobre el grupo de botones). «Lo siguiente» 0a.
+- **Build 58 (`944e0ad`):** otra captura suya: en Clientes, con un filtro vacío, dos avisos se pisaban. Y preguntó
+  **dónde se cambia el idioma**: no se encontraba. Ahora la fila «Idioma» de Más › Moneda y formatos lleva a Ajustes.
+  Antes de subirlo pidió **instalar el Debug en su iPhone** para verlo (iPhone 17 Pro Max, `00008150-0005793E3EC0401C`,
+  con `devicectl` e iCloud de Producción, ver CONTEXTO «Instalar en los aparatos»). «Lo siguiente» 0.
+- **Cómo se trabajó:** capturas en el simulador «Chirogra QA 16e» (`44631678`) con pruebas de interfaz `UITestsQA` en
+  una copia aparte (no se commitean: `Build56QA`, `Build56Repaso`, `Build56Cabeceras`, `Build56Circulo`,
+  `Build56Menores`, `Build56Recibo`, `Build57Clientes`, `Build58Idioma`). Hojas de capturas antes/después mandadas al
+  usuario. El usuario manda capturas de su iPhone con lo que ve mal rodeado: arreglar, enseñar antes/después y
+  esperar su «sí» para el build.
+- **Worktrees de agentes:** nacen de `main` (`83b1db4`), no de `version-1.3`. Al agente: `git merge --ff-only <HEAD>` y
+  `git apply --index <parche de lo sin commitear>`; recoger con `git add -N . && git diff --binary` y aplicar con
+  `git apply --3way` (antes `git add -u` si hay cambios sin preparar). Sus DerivedData (~1,5 GB cada uno) llenaron el
+  disco: borrarlos al terminar. Los 12 worktrees y sus ramas `worktree-agent-*` ya se borraron.
+- **Pruebas:** `swift test --skip ScreenSmokeTests` (94 + 181 + 75 = 350). `ScreenSmokeTests` se cae desde el 54.
+  `ReceiptReaderTests` (Vision) falla a veces con el Mac cargado (simuladores, compilaciones); sola pasa.
+
+## Chat anterior (17 y 18-nov): builds 50, 51 y 52, recorrido y testers
 
 - **Builds subidos (iOS y macOS):** 50 (`9f32335`, aviso de iCloud, cobro, precio), 51 (`4d84399`, recorrido de la
   primera vez en cada pestaña del iPhone, estilo A «Foco» de Claude Design) y 52 (`5643a27`, tras un tester de Beta
@@ -144,8 +170,11 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 
 ## Lo que le toca al usuario
 
-1. **Asignar el build 57** al grupo de testers externos del enlace público cuando Apple lo procese, y mandar más
+1. **Asignar el build 58** al grupo de testers externos del enlace público cuando Apple lo procese, y mandar más
    testers (Beta Family, Userbrain, UXtweak) con él. Traer aquí lo que digan.
+1b. **En su iPhone (Debug del 58 instalado, luego TestFlight):** que «Idioma» en Más › Moneda y formatos abra la página
+   de Chirogra en Ajustes (en el simulador abría la portada de Ajustes) y que Clientes ya no tenga avisos encimados.
+1c. **Decir cuándo empujar** `version-1.3` (builds 55 a 58 y sus docs, sin empujar).
 2. **Probar el 52 en TestFlight:** el recorrido de cada pestaña, «Más › Ayuda › Ver el recorrido otra vez», y borrar los
    datos de ejemplo y crear su empresa (el recorrido tiene que volver). Si puede, con Reducir movimiento y VoiceOver,
    que no se han probado en un aparato.
@@ -156,7 +185,19 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 
 ## Lo siguiente
 
-0. **Build 57: SUBIDO iOS+Mac a TestFlight (21-nov, `c13f955`).** El usuario mandó una captura del 56 en su iPhone: en
+0. **Build 58: SUBIDO iOS+Mac a TestFlight (21-nov, `944e0ad`).** Dos cosas del usuario con el 56/57 en su iPhone:
+   (1) **Clientes** con un solo cliente y «Need attention» vacío: «All your clients are up to date» y la tarjeta
+   «¿Llevas los libros de otro negocio?» van en la lista, pero `emptyState` iba en `.overlay` y pintaba «Nothing to
+   handle» encima de las dos. Ahora `showsFilterEmpty` (filtro «Necesitan atención» o «Al día» sin nadie, sin búsqueda y
+   sin `showsAllGood`) pone `filterEmptyNote` como sección de la lista en el iPhone; en la tabla (iPad/Mac) sigue en la
+   capa, sin pisarse con nada. «Al día» vacío dice «Ningún cliente está al día · Todos tienen algo pendiente: míralos en
+   «Necesitan atención».» (antes «Nada que atender», falso). El fallo venía de antes del 56. (2) **Idioma:** no
+   encontraba dónde cambiarlo. La app no lo cambia por código (`AppLanguage`); se cambia en Ajustes › Apps › Chirogra ›
+   Idioma (Mac: Ajustes del Sistema › General › Idioma y región › Aplicaciones). La fila «Idioma» de Más › Moneda y
+   formatos era solo lectura; ahora es `AppLanguageRow(title: "Idioma", showsIcon: false)`, la misma fila del alta
+   (abre `UIApplication.openSettingsURLString`; en el Mac «Cambiar…»), y el pie dice dónde se cambia. Probado en el
+   simulador (`Build57Clientes`, `Build58Idioma`); Debug instalado en su iPhone antes de subir.
+0a. **Build 57: SUBIDO iOS+Mac a TestFlight (21-nov, `c13f955`).** El usuario mandó una captura del 56 en su iPhone: en
    «Nuevo gasto › Recibo» los tres botones salían amontonados y centrados en **una sola fila**. Causa (del build 54,
    `801e8c3`): `.recorridoObjetivo("expense.receipt").id("expense.receipt")` sobre `ReceiptPickerButtons`, que da
    varias filas; en un `Form`, `.id` sobre una vista así las junta en una. Arreglo: `ReceiptPickerButtons(objetivo:)`

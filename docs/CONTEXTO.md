@@ -1,6 +1,6 @@
 # Chirogra: contexto para retomar en otro chat
 
-Estado de Chirogra al **18 de noviembre de 2026**. **Para empezar rápido, lee primero
+Estado de Chirogra al **21 de noviembre de 2026**. **Para empezar rápido, lee primero
 [RESUMEN-PARA-SEGUIR.md](RESUMEN-PARA-SEGUIR.md)** (estado, tabla de builds y lo siguiente); luego este, entero. El diseño técnico está en
 [DISEÑO.md](DISEÑO.md), el sistema visual y los argumentos de QA en [REDISEÑO-NATIVO.md](REDISEÑO-NATIVO.md) (§5), los
 datos en [DATOS-V4.md](DATOS-V4.md) (y [DATOS-V2.md](DATOS-V2.md)), la fase 2 en [PLAN-FASE2.md](PLAN-FASE2.md) y la
@@ -12,7 +12,16 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
 
 ## Dónde nos quedamos (empieza aquí)
 
-**Resumen al 18-nov** (lo de debajo es el detalle y la historia):
+**Resumen al 21-nov** (lo de debajo es el detalle y la historia):
+- **Último build: 58 (1.3.0)**, subido iOS y macOS el 21-nov (`944e0ad`): Clientes sin avisos encimados y «Idioma» que
+  lleva a Ajustes. **57** (21-nov): botones del recibo en filas separadas. **56** (21-nov): informe de Eric (Beta Family)
+  y repaso visual de toda la app. **55** y **54** (20-nov): campos de dinero, tutorial completo. Detalle en RESUMEN,
+  «Último chat» y «Lo siguiente».
+- `version-1.3` empujada hasta `abbeeda` (build 54); **los builds 55 a 58 sin empujar** (el usuario dice cuándo).
+- iPhone del usuario con el Debug del 58 (Producción), instalado el 21-nov para verlo antes de subir.
+- Pendiente conocido: no hay forma de borrar o anular un cobro registrado (RESUMEN, «Lo siguiente» 0b).
+
+**Resumen al 18-nov:**
 - **Último build: 52 (1.3.0)**, subido iOS y macOS el 18-nov (`5643a27`): el recorrido vuelve a salir al borrar los
   datos de ejemplo y la bienvenida dice «Sin cuenta ni contraseña». **51** (17-nov): recorrido de la primera vez en cada
   pestaña del iPhone (`DesignSystem/Recorrido.swift`). **50** (17-nov): aviso de iCloud, cobro y precio de la factura.
