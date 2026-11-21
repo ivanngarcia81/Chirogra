@@ -17,8 +17,8 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
   lleva a Ajustes. **57** (21-nov): botones del recibo en filas separadas. **56** (21-nov): informe de Eric (Beta Family)
   y repaso visual de toda la app. **55** y **54** (20-nov): campos de dinero, tutorial completo. Detalle en RESUMEN,
   «Último chat» y «Lo siguiente».
-- `version-1.3` empujada hasta `abbeeda` (build 54); **los builds 55 a 58 sin empujar** (el usuario dice cuándo).
-- iPhone del usuario con el Debug del 58 (Producción), instalado el 21-nov para verlo antes de subir.
+- `version-1.3` empujada el 21-nov hasta el build 58 y su resumen; `main` en `83b1db4` (web), sin cambios.
+- iPhone del usuario con el Debug del 58 (Producción), instalado el 21-nov; lo probó y está bien.
 - Pendiente conocido: no hay forma de borrar o anular un cobro registrado (RESUMEN, «Lo siguiente» 0b).
 
 **Resumen al 18-nov:**

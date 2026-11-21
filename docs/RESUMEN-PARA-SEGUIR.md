@@ -5,8 +5,7 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 
 ## Estado
 
-- **Ramas:** `version-1.3` empujada hasta `abbeeda` (20-nov, build 54 y sus docs). **Sin empujar:** los builds 55,
-  56, 57 y 58 y sus docs (empujar solo cuando el usuario lo diga). `main` en `83b1db4` (build 50 y la
+- **Ramas:** `version-1.3` empujada el 21-nov hasta el build 58 y su resumen. `main` en `83b1db4` (build 50 y la
   web con «Kairogra»), empujada el 17-nov; los builds de después no tocan la web, así que `main` no hace falta moverla.
   La web (`sitio/`) se publica desde `main`.
 - **Último build: 58 (1.3.0)**, subido a TestFlight para iOS y macOS el 21-nov (`944e0ad`). Antes: 57 (21-nov), 56 (21-nov), 55 (20-nov), 54 (20-nov), 53 (18-nov), 52 (18-nov), 51
@@ -172,9 +171,7 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 
 1. **Asignar el build 58** al grupo de testers externos del enlace público cuando Apple lo procese, y mandar más
    testers (Beta Family, Userbrain, UXtweak) con él. Traer aquí lo que digan.
-1b. **En su iPhone (Debug del 58 instalado, luego TestFlight):** que «Idioma» en Más › Moneda y formatos abra la página
-   de Chirogra en Ajustes (en el simulador abría la portada de Ajustes) y que Clientes ya no tenga avisos encimados.
-1c. **Decir cuándo empujar** `version-1.3` (builds 55 a 58 y sus docs, sin empujar).
+1b. ~~Probar el 58 en su iPhone~~: **probado por él el 21-nov** («Idioma» abre Ajustes y Clientes sin avisos encimados).
 2. **Probar el 52 en TestFlight:** el recorrido de cada pestaña, «Más › Ayuda › Ver el recorrido otra vez», y borrar los
    datos de ejemplo y crear su empresa (el recorrido tiene que volver). Si puede, con Reducir movimiento y VoiceOver,
    que no se han probado en un aparato.
