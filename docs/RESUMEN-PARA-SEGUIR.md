@@ -8,7 +8,7 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 - **Ramas:** `version-1.3` empujada el 18-nov (builds 50, 51 y 52 y sus docs). `main` en `83b1db4` (build 50 y la web
   con «Kairogra»), empujada el 17-nov; los builds 51 y 52 no tocan la web, así que `main` no hace falta moverla. La web
   (`sitio/`) se publica desde `main`.
-- **Último build: 56 (1.3.0)**, subido a TestFlight para iOS y macOS el 21-nov (ver la tabla). Antes: 55 (20-nov), 54 (20-nov), 53 (18-nov), 52 (18-nov), 51
+- **Último build: 56 (1.3.0)**, subido a TestFlight para iOS y macOS el 21-nov (`130588b`). Antes: 55 (20-nov), 54 (20-nov), 53 (18-nov), 52 (18-nov), 51
   (recorrido de la primera vez, 17-nov) y 50 (17-nov). Los testers externos (Userbrain, Beta Family) entran con el enlace público
   https://testflight.apple.com/join/RGwqqUyw: **el usuario tiene que asignar el 56 a ese grupo** cuando Apple lo procese.
 - **En App Store Connect:** la **1.0 (build 11)** espera la revisión. **Decidido el 13-nov:** cuando la aprueben se envía
@@ -57,7 +57,7 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 | 53 | `a5f6468` | 1.3.0: tras Yurii S. (tester de pago de Beta Family; iPhone 16e, iOS 26.7.1, letra XL, región de Ucrania, oscuro): en Ventas, si «1 570,00 US$ of 2 570 US$» no cabe junto al cliente, «of …» baja a su línea (salía «M…»); «Ver el recorrido otra vez» lleva a Inicio; defensa del hueco del teclado sin teclado (`ignoringStaleKeyboardSpace`; lista cortada y barra de Total a media pantalla, no reproducido). 346 pruebas. |
 | 54 | `801e8c3` | 1.3.0: **«Tutorial completo»** en Más › Ayuda (cada pantalla del iPhone explica todos sus botones la primera vez; el corto no cambia); **iOS 27**: los pasos que iluminan botones de la barra de arriba ya no se saltan (`marcoEnVentana` mira `accessibilityElements`); en Inicio el recorrido ilumina el título del grupo con su tarjeta (iPhone 13 mini, Jiga T. de Beta Family). 177 + 75 pruebas. |
 | 55 | `216d429` | 1.3.0: tras Yurii S. (Beta Family, build 54; iPhone 16e, formato de Ucrania, oscuro): **campos de dinero** que se editan sin la moneda (`MoneyField`: «10,99» al escribir, «10,99 US$» al salir; antes lo tecleado se pegaba tras «US$» y el importe no cambiaba: «10,99 US$80», «1,00 US$896253»; en EE. UU. «$510.99»); lee coma o punto decimal; **difuminado** (`.ultraThinMaterial`) en la primera tarjeta de cada recorrido, la que no ilumina nada. 177 + 75 + 87 pruebas (`ScreenSmokeTests` ya se caía en el 54: `ImageRenderer`, «no current update to enqueue action to»). |
-| 56 | `PENDIENTE` | 1.3.0: tras Eric (Beta Family, build 55; iPhone 13, iOS 27.2.1; app 3/5, recomendación 2/5) y un **repaso visual** de toda la app. Ver «Lo siguiente» 0. 350 pruebas (94 + 181 + 75). |
+| 56 | `130588b` | 1.3.0: tras Eric (Beta Family, build 55; iPhone 13, iOS 27.2.1; app 3/5, recomendación 2/5) y un **repaso visual** de toda la app. Ver «Lo siguiente» 0. 350 pruebas (94 + 181 + 75). |
 
 ## Último chat (17 y 18-nov): builds 50, 51 y 52, recorrido y testers
 
@@ -155,7 +155,7 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 
 ## Lo siguiente
 
-0. **Build 56: SUBIDO iOS+Mac a TestFlight (21-nov).** Informe de Beta Family de **Eric** con el 55 (gratis; iPhone 13,
+0. **Build 56: SUBIDO iOS+Mac a TestFlight (21-nov, `130588b`).** Informe de Beta Family de **Eric** con el 55 (gratis; iPhone 13,
    iOS 27.2.1; facilidad 5/5, app 3/5, **recomendación 2/5**: «no security assurances, very few safeguards», «parece hecho
    con IA» por los recorridos incoherentes). Sin fotos ni bugs en el xlsx. Hecho con un agente por arreglo (worktrees;
    ojo: los worktrees nacen de `main`, hay que avanzarlos a `version-1.3` y aplicar el trabajo sin commitear como parche).
