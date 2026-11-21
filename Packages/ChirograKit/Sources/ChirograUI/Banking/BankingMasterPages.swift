@@ -51,8 +51,7 @@ struct ReconcileMasterList: View {
         .background(Palette.masterColumn)
         .tint(Color.clear)
         .focusEffectDisabled()
-        .navigationTitle("Conciliación")
-        .masterTitle()
+        .masterHeader(String(localized: "Conciliación"))
         // Panel de clientes: «Conciliación» abre la cuenta más atrasada.
         .onClientRoute({ route in
             if case .reconcile = route { return true }
@@ -120,8 +119,7 @@ struct RuleMasterList: View {
         .background(Palette.masterColumn)
         .tint(Color.clear)
         .focusEffectDisabled()
-        .navigationTitle("Reglas")
-        .masterTitle()
+        .masterHeader(String(localized: "Reglas"))
         .masterAddButton(String(localized: "Regla"), label: String(localized: "Nueva regla")) { creating = true }
         .sheet(isPresented: $creating) { NavigationStack { BankRuleEditorView() }.editorSheetSizing() }
         .alert("Reglas aplicadas", isPresented: Binding(get: { message != nil }, set: { if !$0 { message = nil } })) {

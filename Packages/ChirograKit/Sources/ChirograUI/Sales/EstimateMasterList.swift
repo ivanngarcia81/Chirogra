@@ -55,9 +55,7 @@ struct EstimateMasterList: View {
         .scrollContentBackground(.hidden)
         .background(Palette.masterColumn)
         .tint(Palette.brandFill)
-        .navigationTitle(String(localized: "Estimados"))
-        .toolbarTitleDisplayMode(.inline)
-        .searchable(text: $query, prompt: Text("Cliente, número o monto"))
+        .masterHeader(String(localized: "Estimados"), query: $query, prompt: "Cliente, número o monto")
         .safeAreaInset(edge: .top, spacing: 0) {
             filterBar.background(Palette.masterColumn)
         }

@@ -70,7 +70,7 @@ struct BooksProtectionView: View {
             SettingsSection {
                 row("externaldrive.fill.badge.plus", Palette.green,
                     title: String(localized: "Un archivo que guardas tú"),
-                    detail: String(localized: "En iCloud y copias creas un archivo .chirogra con tus libros y recibos. No lleva contraseña: guárdalo en un sitio de confianza. Antes de restaurar una copia, Chirogra guarda lo que tenías para poder deshacerlo."))
+                    detail: String(localized: "En iCloud y copias creas un archivo .chirogra con tus libros y recibos. Puedes protegerlo con contraseña: sin ella nadie puede abrirlo, y si la olvidas tampoco se puede recuperar. Antes de restaurar una copia, Chirogra guarda lo que tenías para poder deshacerlo."))
             } header: {
                 SectionLabel(text: String(localized: "Copias de seguridad"))
             }
@@ -107,6 +107,14 @@ struct BooksProtectionView: View {
             }
         }
         .screenBackground()
+        #if os(iOS)
+        // En el iPad, a 720 pt y centrada como los detalles (captura del usuario del 21-nov: ocupaba todo el ancho). Con
+        // marco y no con `readableDetailWidth`: dentro de Ajustes, el margen de contenido de este `Form` no salía igual a
+        // cada lado en horizontal.
+        .frame(maxWidth: 760)
+        .frame(maxWidth: .infinity)
+        .background(Palette.background)
+        #endif
         .navigationTitle("Cómo protege Chirogra tus libros")
         .inlineTitle()
     }
@@ -116,10 +124,8 @@ struct BooksProtectionView: View {
         HStack(alignment: .top, spacing: 12) {
             IconTile(systemImage: symbol, foreground: color)
             VStack(alignment: .leading, spacing: 3) {
-                Text(title).foregroundStyle(Palette.ink)
-                if let status {
-                    Text(status).font(.footnote.weight(.medium)).foregroundStyle(Palette.ink2)
-                }
+                // En el iPad, el estado al lado del título («Bloqueo de la app  Desactivado»; captura del usuario del 21-nov).
+                TituloConDetalle(title: title, detail: status ?? "", detailFont: .footnote.weight(.medium))
                 Text(detail)
                     .font(.footnote)
                     .foregroundStyle(Palette.ink2)

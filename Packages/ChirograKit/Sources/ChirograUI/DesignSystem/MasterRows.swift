@@ -145,6 +145,11 @@ extension View {
         let isSelected = id == selection
         return tag(id)
             .environment(\.isMasterRowSelected, isSelected)
+            #if os(iOS)
+            // Margen fijo y no el del sistema: en el iPad del usuario (12,9″) la fila elegida dejaba el texto pegado al
+            // borde de su fondo de Tinta (captura del 21-nov; en el simulador no salía).
+            .listRowInsets(EdgeInsets(top: 14, leading: 16, bottom: 14, trailing: 16))
+            #endif
             .listRowBackground(MasterRowBackground(isSelected: isSelected))
             .listRowSeparator(isSelected ? .hidden : .automatic)
             // Con teclado o trackpad, el sistema dibujaba encima su anillo de foco: cuadrado, sin las esquinas de la

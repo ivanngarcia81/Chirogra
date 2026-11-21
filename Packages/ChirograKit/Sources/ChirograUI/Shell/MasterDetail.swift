@@ -306,6 +306,10 @@ private struct MasterListStyle: ViewModifier {
     let prompt: LocalizedStringKey
 
     func body(content: Content) -> some View {
+        styled(content).masterHeader(title, query: $query, prompt: prompt)
+    }
+
+    private func styled(_ content: Content) -> some View {
         content
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
@@ -317,11 +321,163 @@ private struct MasterListStyle: ViewModifier {
             .tint(Color.clear)
             .focusEffectDisabled()
             #endif
-            .navigationTitle(title)
-            .masterTitle()
-            .searchable(text: $query, prompt: Text(prompt))
     }
 }
+
+/// Título y búsqueda de una columna maestro. En la tarjeta del iPad (`MasterCardPage`) se los pasa a la página, que
+/// pone el título grande arriba y la búsqueda en la tarjeta; fuera de ella (Mac), el título de la columna y `.searchable`.
+private struct MasterHeaderModifier: ViewModifier {
+    let title: String
+    let query: Binding<String>?
+    let prompt: LocalizedStringKey?
+    #if os(iOS)
+    @Environment(\.masterCardQuery) private var cardQuery
+    #endif
+
+    func body(content: Content) -> some View {
+        #if os(iOS)
+        if let cardQuery {
+            content
+                .preference(key: MasterCardHeaderKey.self,
+                            value: MasterCardHeader(title: title, prompt: query == nil ? nil : prompt.map { Text($0) }))
+                .onChange(of: cardQuery, initial: true) { _, text in query?.wrappedValue = text }
+        } else {
+            standard(content)
+        }
+        #else
+        standard(content)
+        #endif
+    }
+
+    @ViewBuilder
+    private func standard(_ content: Content) -> some View {
+        if let query {
+            content.navigationTitle(title).masterTitle().searchable(text: query, prompt: prompt.map { Text($0) })
+        } else {
+            content.navigationTitle(title).masterTitle()
+        }
+    }
+}
+
+extension View {
+    /// Título (y, si se da `query`, búsqueda) de una columna maestro: ver `MasterHeaderModifier`.
+    func masterHeader(_ title: String, query: Binding<String>? = nil, prompt: LocalizedStringKey? = nil) -> some View {
+        modifier(MasterHeaderModifier(title: title, query: query, prompt: prompt))
+    }
+}
+
+#if os(iOS)
+// MARK: - Lista en tarjeta (iPad)
+
+/// Título y texto de búsqueda de la lista de la tarjeta, que la lista le pasa a `MasterCardPage` (sin búsqueda, `nil`).
+struct MasterCardHeader: Equatable {
+    var title: String = ""
+    var prompt: Text? = nil
+}
+
+struct MasterCardHeaderKey: PreferenceKey {
+    static let defaultValue = MasterCardHeader()
+    static func reduce(value: inout MasterCardHeader, nextValue: () -> MasterCardHeader) {
+        let next = nextValue()
+        if !next.title.isEmpty { value = next }
+    }
+}
+
+extension EnvironmentValues {
+    /// Lo escrito en la búsqueda de la tarjeta (`nil` fuera de ella: la lista usa `.searchable`).
+    @Entry var masterCardQuery: String? = nil
+}
+
+/// Páginas de lista y detalle del iPad con el diseño de Inicio (pedido del usuario del 21-nov: «las otras páginas deben
+/// verse igual que Inicio»; los testers se quejaban de diseños distintos): la barra lateral a la vista, el título grande
+/// con los botones en la barra, la lista en una tarjeta gris a la izquierda (con su búsqueda y su filtro) y el detalle
+/// a la derecha. Antes, la lista era una columna de la vista dividida pegada al borde, con el título pequeño.
+struct MasterCardPage: View {
+    let page: MasterPage
+    @Binding var selection: UUID?
+    @State private var query = ""
+    @State private var header = MasterCardHeader()
+    @State private var detailWidth: CGFloat = .infinity
+    @ScaledMetric(relativeTo: .body) private var cardWidth: CGFloat = 340
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    /// El detalle usa el diseño de iPhone si le queda poco sitio (iPad de 11" en horizontal, o en vertical).
+    private var detailIsNarrow: Bool { detailWidth < (dynamicTypeSize.isAccessibilitySize ? 900 : 700) }
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 0) {
+            card
+            MasterDetailColumn(page: page, selection: selection)
+                .id(selection)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { detailWidth = $0 }
+                .environment(\.isNarrowColumn, detailIsNarrow)
+        }
+        .background(Palette.background)
+        .onPreferenceChange(MasterCardHeaderKey.self) { header = $0 }
+        // El título grande lo dibuja la página, como el de Inicio: el del detalle («F-1005») ganaba al de la lista y
+        // salía pequeño en el centro.
+        .toolbar(removing: .title)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Text(header.title)
+                    .font(.largeTitle.weight(.bold))
+                    .foregroundStyle(Palette.ink)
+                    .lineLimit(1)
+                    .fixedSize()
+                    .accessibilityAddTraits(.isHeader)
+            }
+            .sharedBackgroundVisibility(.hidden)
+        }
+    }
+
+    /// La tarjeta: búsqueda, filtro y lista, con el gris de las columnas maestro (también la de Inicio).
+    private var card: some View {
+        VStack(spacing: 0) {
+            if let prompt = header.prompt {
+                MasterSearchField(text: $query, prompt: prompt)
+                    .padding(.horizontal, 12)
+                    .padding(.top, 12)
+                    .padding(.bottom, 8)
+            }
+            MasterColumn(page: page, selection: $selection)
+                .environment(\.masterCardQuery, query)
+        }
+        .frame(width: cardWidth)
+        .frame(maxHeight: .infinity, alignment: .top)
+        .background(Palette.masterColumn)
+        .clipShape(RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous))
+        .padding(.leading, 8)
+        .padding(.bottom, 8)
+    }
+}
+
+/// Búsqueda dentro de la tarjeta, con el aspecto del campo del sistema.
+private struct MasterSearchField: View {
+    @Binding var text: String
+    let prompt: Text
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "magnifyingglass").foregroundStyle(Palette.ink2).accessibilityHidden(true)
+            TextField(text: $text, prompt: prompt) { Text("Buscar") }
+                .textFieldStyle(.plain)
+                .autocorrectionDisabled()
+                .submitLabel(.search)
+            if !text.isEmpty {
+                Button { text = "" } label: {
+                    Image(systemName: "xmark.circle.fill").foregroundStyle(Palette.ink2)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Borrar la búsqueda")
+            }
+        }
+        .padding(.horizontal, 10)
+        .frame(minHeight: 40)
+        .background(Color(uiColor: .tertiarySystemFill), in: Capsule())
+    }
+}
+#endif
 
 extension View {
     /// Título de la columna maestro: en el iPad, en la fila de la barra junto a «+», como en Mail con la lista
@@ -761,8 +917,7 @@ private struct BankingMasterList: View {
         .tint(Color.clear)
         .focusEffectDisabled()
         #endif
-        .navigationTitle("Banca")
-        .masterTitle()
+        .masterHeader(String(localized: "Banca"))
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Menu {

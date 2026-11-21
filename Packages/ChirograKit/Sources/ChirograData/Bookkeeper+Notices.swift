@@ -14,6 +14,9 @@ public enum NoticeKind: String, CaseIterable, Sendable {
     case recurringGenerated
     /// Sales tax por declarar: la fecha límite de la agencia cae en los próximos 15 días y hay saldo.
     case salesTaxDue
+    /// Factura, nota de crédito o estimado al que se le cambió el número en los últimos 30 días porque otro aparato
+    /// emitió el mismo (`resolveNumberCollisions`): por si ya se le mandó al cliente con el número de antes.
+    case documentRenumbered
 }
 
 /// Aviso calculado a partir de los datos. La UI pone el texto (el nombre y el importe vienen aquí).
@@ -35,6 +38,9 @@ public struct Notice: Identifiable, Hashable, Sendable {
     /// Para `recurringGenerated`: el gasto se creó sin asiento y hay que confirmarlo.
     public var needsConfirmation: Bool = false
     public var isRead: Bool = false
+    /// Para `documentRenumbered`: el número de antes (`reference` es el nuevo) y el tipo de documento.
+    public var previousReference: String = ""
+    public var documentKind: DocumentKind?
 }
 
 /// Periodo de declaración de sales tax de una agencia y su fecha límite.
@@ -109,6 +115,38 @@ extension Bookkeeper {
             guard owed > 0 else { continue }
             notices.append(Notice(id: "salesTax:\(agency.id.uuidString):\(Self.dayKey(period.end, calendar))", kind: .salesTaxDue,
                                   date: period.deadline, days: until, amount: owed, party: agency.name, reference: "", documentID: agency.id))
+        }
+
+        // Números cambiados por una colisión entre aparatos (`Bookkeeper+Numbering.swift`).
+        let renumberStart = calendar.date(byAdding: .day, value: -Self.renumberNoticeDays, to: today) ?? today
+        let renumberAction = Self.renumberAction
+        let renumbers = try fetch(AuditEvent.self, #Predicate { $0.action == renumberAction && $0.date >= renumberStart })
+        for event in renumbers {
+            guard let id = event.entityID, let numbers = event.renumbered else { continue }
+            var notice = Notice(id: "renumber:\(event.id.uuidString)", kind: .documentRenumbered, date: event.date, days: days(to: event.date),
+                                amount: 0, party: "", reference: numbers.new, documentID: id)
+            notice.previousReference = numbers.old
+            switch event.subjectEntity {
+            case AuditSubject.invoice.rawValue:
+                guard let invoice = try fetch(Invoice.self, #Predicate { $0.id == id }, limit: 1).first else { continue }
+                notice.documentKind = .invoice
+                notice.amount = invoice.total
+                notice.party = invoice.customer?.name ?? ""
+            case Self.creditNoteSubject:
+                guard let note = try fetch(CreditNote.self, #Predicate { $0.id == id }, limit: 1).first else { continue }
+                notice.documentKind = .creditNote
+                notice.amount = note.total
+                notice.party = note.invoice?.customer?.name ?? ""
+                notice.documentID = note.invoice?.id
+            case AuditSubject.estimate.rawValue:
+                guard let estimate = try fetch(Estimate.self, #Predicate { $0.id == id }, limit: 1).first else { continue }
+                notice.documentKind = .estimate
+                notice.amount = estimate.total
+                notice.party = estimate.customer?.name ?? ""
+            default:
+                continue  // Los asientos: solo en la bitácora.
+            }
+            notices.append(notice)
         }
 
         let states = Dictionary(try fetch(NoticeState.self).map { ($0.key, $0) }, uniquingKeysWith: { a, b in a.updatedAt > b.updatedAt ? a : b })
@@ -223,6 +261,7 @@ extension NoticeKind {
         case .salesTaxDue: 2
         case .billDueSoon: 3
         case .recurringGenerated: 4
+        case .documentRenumbered: 1
         }
     }
 }

@@ -172,6 +172,7 @@ struct AccountantIntroView: View {
     #endif
     @State private var importing = false
     @State private var errorMessage: String?
+    @State private var lockedBackup: LockedBackup?
 
     private struct Feature: Identifiable {
         let id: String
@@ -265,6 +266,7 @@ struct AccountantIntroView: View {
         .fileImporter(isPresented: $importing, allowedContentTypes: [.chirograBackup]) { result in
             if case .success(let url) = result { importCopy(url) }
         }
+        .backupUnlockAlert($lockedBackup)
     }
 
     #if os(macOS)
@@ -321,6 +323,19 @@ struct AccountantIntroView: View {
         defer { if scoped { url.stopAccessingSecurityScopedResource() } }
         do {
             let data = try Data(contentsOf: url)
+            // Con contraseña: se pide antes (`BackupPassword.swift`).
+            guard !BackupArchive.isEncrypted(data) else {
+                lockedBackup = LockedBackup(data: data) { opened in importData(opened) }
+                return
+            }
+            importData(data)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    private func importData(_ data: Data) {
+        do {
             let result = try BackupArchive.restoreCompany(data, into: context, mode: .newCompany)
             BooksReplacement.shared.didRestore(result.info)
             errorMessage = nil

@@ -896,34 +896,8 @@ public struct Bookkeeper {
         }
     }
 
-    func sequence(_ kind: DocumentKind) throws -> NumberSequence {
-        let raw = kind.rawValue
-        if let existing = try fetch(NumberSequence.self, #Predicate { $0.kindRaw == raw }).first {
-            return existing
-        }
-        let format = kind.defaultFormat
-        let created = NumberSequence(kind: kind, prefix: format.prefix, nextNumber: format.firstNumber, minimumDigits: format.minimumDigits)
-        insert(created)
-        return created
-    }
-
-    private func nextNumber(_ kind: DocumentKind) throws -> Int {
-        let sequence = try sequence(kind)
-        defer { sequence.nextNumber += 1 }
-        return sequence.nextNumber
-    }
-
-    /// Siguiente número con formato, sin reservarlo.
-    public func peekDocumentNumber(_ kind: DocumentKind) throws -> String {
-        let sequence = try sequence(kind)
-        return sequence.format(sequence.nextNumber)
-    }
-
-    /// Número de documento con formato. Se asigna al emitir; tras sincronizar habría que validar colisiones (§6.5).
-    public func nextDocumentNumber(_ kind: DocumentKind) throws -> String {
-        let sequence = try sequence(kind)
-        return sequence.format(try nextNumber(kind))
-    }
+    // La numeración (`sequence`, `nextNumber`, `nextDocumentNumber`, `peekDocumentNumber`) y la reparación de números
+    // repetidos tras sincronizar están en `Bookkeeper+Numbering.swift`.
 
     // `audit(_:_:_:_:changes:)` (la bitácora) está en `Bookkeeper+AuditLog.swift`.
 

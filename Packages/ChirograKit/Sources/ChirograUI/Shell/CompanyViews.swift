@@ -206,6 +206,7 @@ struct CompaniesView: View {
     @State private var errorMessage: String?
     @State private var backup: BackupDocument?
     @State private var backupName = ""
+    @State private var backupRequest: BackupRequest?
     private let store = SubscriptionStore.shared
 
     private var shown: [Company] { companies.filter { !$0.isArchived }.inSelectorOrder }
@@ -272,6 +273,7 @@ struct CompaniesView: View {
                       defaultFilename: BackupArchive.suggestedFilename(companyName: backupName)) { result in
             if case .failure(let error) = result { errorMessage = error.localizedDescription }
         }
+        .backupPasswordSheet($backupRequest, onReady: { backup = $0 }, onError: { errorMessage = $0.localizedDescription })
     }
 
     // MARK: Fila
@@ -453,13 +455,12 @@ struct CompaniesView: View {
     }
 
     private func makeBackup(of company: Company) {
-        do {
-            let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
-            backupName = company.name
-            backup = BackupDocument(data: try BackupArchive.make(from: context, companyID: company.id, appVersion: version))
-            errorMessage = nil
-        } catch {
-            errorMessage = error.localizedDescription
+        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
+        let id = company.id
+        backupName = company.name
+        errorMessage = nil
+        backupRequest = BackupRequest(companyName: company.name) { [context] in
+            try BackupArchive.make(from: context, companyID: id, appVersion: version)
         }
     }
 

@@ -293,7 +293,11 @@ enum AppAutomations {
             var failures: [UUID: String] = [:]
             for company in (try? base.companies()) ?? [] {
                 let books = base.forCompany(company.id)
-                if resolve { _ = try? books.resolveRecurringDuplicates() }
+                if resolve {
+                    _ = try? books.resolveRecurringDuplicates()
+                    // Números repetidos por emitir en dos aparatos a la vez (`Bookkeeper+Numbering.swift`).
+                    _ = try? books.resolveNumberCollisions()
+                }
                 await Task.yield()
                 if let result = try? books.runAutomations() {
                     // Cargos automáticos que no se pudieron registrar (periodo cerrado, cuenta archivada…): la campana los

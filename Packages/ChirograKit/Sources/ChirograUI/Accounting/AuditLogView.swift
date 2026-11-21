@@ -113,11 +113,14 @@ extension AuditEvent {
         case "archive": String(localized: "Archivado")
         case "unarchive": String(localized: "Restaurado")
         case "restore": String(localized: "Restauración")
+        case "renumber": String(localized: "Cambio de número")
         default: String(localized: "Cambio")
         }
     }
 
-    var subjectTitle: String { subject?.title ?? subjectEntity }
+    var subjectTitle: String {
+        subject?.title ?? (subjectEntity == Bookkeeper.creditNoteSubject ? String(localized: "Nota de crédito") : subjectEntity)
+    }
     var deviceTitle: String { device.isEmpty ? "—" : device }
     var timeTitle: String { date.formatted(.appDateTime.hour().minute()) }
     /// Para la tabla del Mac: «10 nov, 7:49 p.m.» (el año, en el inspector).

@@ -9,7 +9,7 @@ struct ChirograApp: App {
     /// Contenedor de iCloud (capacidad de iCloud con CloudKit en `App/Chirogra.entitlements`).
     static let cloudKitContainer = "iCloud.com.chirogra.app"
 
-    let container: ModelContainer
+    @State private var books: BooksStore
     #if os(macOS)
     @NSApplicationDelegateAdaptor(ChirograAppDelegate.self) private var appDelegate
     #endif
@@ -36,10 +36,80 @@ struct ChirograApp: App {
         #endif
         // Pistas de una sola vez (TipKit; en Debug, `-qa.pistas reset|todas|ocultas`).
         ChirograTips.configure()
+        // Abre los libros; si no se puede, la pantalla de recuperación en vez de cerrar la app (`StoreRecoveryView`).
+        let books = BooksStore()
+        _books = State(initialValue: books)
+        #if DEBUG
+        // `-qa.vacia 1` (solo Debug): una empresa nueva y vacía, sin pasar por el alta (estados vacíos y pistas).
+        if let container = books.container, UserDefaults.standard.bool(forKey: "qa.vacia") {
+            let books = Bookkeeper(context: container.mainContext, actor: "QA")
+            if (try? books.company()) == nil {
+                try? books.setUpCompany(legalName: "Taller Luna LLC", displayName: "Taller Luna", entityType: .llc, state: "TX")
+            }
+        }
+        // `-qa.prueba12 1` (solo Debug): empresa «Prueba 1.2» con todo lo de la 1.2, para probar iCloud en Producción.
+        if let container = books.container, UserDefaults.standard.bool(forKey: "qa.prueba12") { QAVersion12.makeTestCompany(in: container.mainContext) }
+        #endif
+    }
+
+    var body: some Scene {
+        WindowGroup {
+            if let container = books.container {
+                ChirograRootView()
+                    .modelContainer(container)
+            } else {
+                StoreRecoveryView(errorText: books.errorText, retry: books.open, setAside: books.setAsideAndOpen)
+            }
+        }
+        .commands { ChirograHelpCommands() }
+        #if os(macOS)
+        .defaultSize(width: 1280, height: 820)
+        #endif
+    }
+}
+
+/// Los libros de la app: el `ModelContainer` o, si no se pudo abrir ni con iCloud ni en local, el error para la
+/// pantalla de recuperación (antes, `fatalError`: la app se cerraba al abrir, cada vez; revisión externa del 21-nov).
+@MainActor
+@Observable
+final class BooksStore {
+    private(set) var container: ModelContainer?
+    private(set) var errorText = ""
+
+    init() { open() }
+
+    func open() {
+        do {
+            container = try Self.makeContainer()
+            errorText = ""
+        } catch {
+            container = nil
+            let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "?"
+            let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "?"
+            errorText = "Chirogra \(version) (\(build)) · \(Date.now.formatted(.iso8601))\n\(error)"
+            NSLog("Chirogra no pudo abrir la base de datos: %@", "\(error)")
+        }
+    }
+
+    /// Aparta la base que no se abre y abre una nueva (`ChirograStore.setAsideStore`).
+    func setAsideAndOpen() throws -> URL {
+        let folder = try ChirograStore.setAsideStore()
+        NSLog("Chirogra apartó la base de datos en %@", folder.path(percentEncoded: false))
+        open()
+        return folder
+    }
+
+    private static func makeContainer() throws -> ModelContainer {
+        #if DEBUG
+        // `-qa.baseRota 1` (solo Debug): la pantalla de recuperación sin estropear nada.
+        if UserDefaults.standard.bool(forKey: "qa.baseRota") {
+            throw CocoaError(.fileReadCorruptFile, userInfo: [NSLocalizedDescriptionKey: "Prueba de la pantalla de recuperación (-qa.baseRota)"])
+        }
+        #endif
         // iCloud encendido en los aparatos nuevos; los que ya tenían libros locales siguen como estaban.
         let wantsSync = ChirograStore.resolveSyncPreference()
         do {
-            container = try ChirograStore.makeContainer(cloudKitContainer: wantsSync ? Self.cloudKitContainer : nil)
+            let container = try ChirograStore.makeContainer(cloudKitContainer: wantsSync ? ChirograApp.cloudKitContainer : nil)
             // Empresas borradas en cualquier aparato (`DeletedCompanies`, almacén de clave-valor de iCloud): solo con iCloud.
             DeletedCompanies.isEnabled = wantsSync
             if wantsSync {
@@ -47,36 +117,13 @@ struct ChirograApp: App {
                 // Antes de dibujar nada: lo que un aparato atrasado volvió a subir de una empresa borrada no llega a verse.
                 _ = try? DeletedCompanies.sweep(in: container.mainContext)
             }
+            return container
         } catch {
-            // Sin la capacidad de iCloud firmada, CloudKit no está disponible: se abre el almacén local.
-            do {
-                container = try ChirograStore.makeContainer()
-            } catch {
-                fatalError("No se pudo abrir la base de datos de Chirogra: \(error)")
-            }
+            // Sin la capacidad de iCloud firmada, CloudKit no está disponible: se abre el almacén local. Si tampoco,
+            // el error sube a la pantalla de recuperación.
+            DeletedCompanies.isEnabled = false
+            return try ChirograStore.makeContainer()
         }
-        #if DEBUG
-        // `-qa.vacia 1` (solo Debug): una empresa nueva y vacía, sin pasar por el alta (estados vacíos y pistas).
-        if UserDefaults.standard.bool(forKey: "qa.vacia") {
-            let books = Bookkeeper(context: container.mainContext, actor: "QA")
-            if (try? books.company()) == nil {
-                try? books.setUpCompany(legalName: "Taller Luna LLC", displayName: "Taller Luna", entityType: .llc, state: "TX")
-            }
-        }
-        // `-qa.prueba12 1` (solo Debug): empresa «Prueba 1.2» con todo lo de la 1.2, para probar iCloud en Producción.
-        if UserDefaults.standard.bool(forKey: "qa.prueba12") { QAVersion12.makeTestCompany(in: container.mainContext) }
-        #endif
-    }
-
-    var body: some Scene {
-        WindowGroup {
-            ChirograRootView()
-        }
-        .modelContainer(container)
-        .commands { ChirograHelpCommands() }
-        #if os(macOS)
-        .defaultSize(width: 1280, height: 820)
-        #endif
     }
 }
 

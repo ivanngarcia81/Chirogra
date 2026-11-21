@@ -757,6 +757,22 @@ struct AppShell: View {
 
     @ViewBuilder
     private var listColumns: some View {
+        #if os(iOS)
+        // iPad: la lista en una tarjeta dentro del contenido, como Inicio (`MasterCardPage`, pedido del 21-nov).
+        if let page = masterPage {
+            NavigationSplitView(columnVisibility: $columnVisibility) {
+                sidebar
+            } detail: {
+                detailColumn { MasterCardPage(page: page, selection: $masterSelection) }
+            }
+        } else {
+            NavigationSplitView(columnVisibility: $columnVisibility) {
+                sidebar
+            } detail: {
+                detailColumn { SyncAwareContent(title: selection.section.title) { selection.destination } }
+            }
+        }
+        #else
         if let page = masterPage {
             NavigationSplitView(columnVisibility: masterVisibility) {
                 sidebar
@@ -775,6 +791,7 @@ struct AppShell: View {
                 detailColumn { SyncAwareContent(title: selection.section.title) { selection.destination } }
             }
         }
+        #endif
     }
 
     private var split: some View {

@@ -74,6 +74,8 @@ struct BackupSection: View {
     @State private var errorMessage: String?
     @State private var savedMessage: String?
     @State private var safetyCopy: URL? = SafetyCopies.all().first
+    @State private var backupRequest: BackupRequest?
+    @State private var lockedBackup: LockedBackup?
 
     private struct PendingRestore: Identifiable {
         let id = UUID()
@@ -95,6 +97,10 @@ struct BackupSection: View {
             row(systemImage: "externaldrive.fill.badge.plus", color: Palette.green) {
                 Button("Crear copia de esta empresa", action: makeBackup)
             }
+            // En la fila y no en la sección: en el iPhone y el iPad `SettingsSection` es un `Section`, que reparte sus
+            // modificadores entre las filas, y una hoja repetida en cada fila no llegaba a presentarse.
+            .backupPasswordSheet($backupRequest, onReady: { document = $0; errorMessage = nil },
+                                 onError: { savedMessage = nil; errorMessage = $0.localizedDescription })
             row(systemImage: "clock.arrow.circlepath", color: Palette.blue) {
                 Button("Restaurar desde una copia…") { importing = true }
             }
@@ -115,7 +121,7 @@ struct BackupSection: View {
                 if lastBackupAt > 0 {
                     Text("Última copia: \(Date(timeIntervalSinceReferenceDate: lastBackupAt).shortDateTime)")
                 }
-                Text("Guarda los libros de «\(companyName)», con los recibos, en un archivo .chirogra que puedes restaurar en cualquier aparato con Chirogra, sin depender de iCloud. Cada empresa tiene su copia.")
+                Text("Guarda los libros de «\(companyName)», con los recibos, en un archivo .chirogra que puedes restaurar en cualquier aparato con Chirogra, sin depender de iCloud. Cada empresa tiene su copia, y puedes protegerla con contraseña.")
             }
         }
         .buttonStyle(.borderless)
@@ -136,6 +142,7 @@ struct BackupSection: View {
             guard case .success(let url) = result else { return }
             prepare(url: url, isUndo: false)
         }
+        .backupUnlockAlert($lockedBackup)
         .alert("¿Deshacer la restauración?",
                isPresented: Binding(get: { pending?.isUndo == true }, set: { if !$0 { pending = nil } }), presenting: pending) { pending in
             Button("Deshacer", role: .destructive) { restore(pending, mode: .replaceCompany(nil)) }
@@ -154,13 +161,20 @@ struct BackupSection: View {
             Text(confirmation(for: pending))
         }
         #if DEBUG
-        // `-qa.copia <ruta>` escribe una copia en la ruta (sin el panel de guardar); `-qa.restaurar <ruta>` abre la
-        // confirmación de restaurar ese archivo, como al elegirlo.
+        // `-qa.copia <ruta>` escribe una copia en la ruta (sin el panel de guardar; con `-qa.copiaClave <contraseña>`,
+        // cifrada); `-qa.restaurar <ruta>` abre la confirmación de restaurar ese archivo, como al elegirlo;
+        // `-qa.copiaHoja 1` abre la hoja de la contraseña.
         .task {
             let defaults = UserDefaults.standard
+            if defaults.bool(forKey: "qa.copiaHoja") {
+                try? await Task.sleep(for: .seconds(1.5))
+                makeBackup()
+            }
             if let path = defaults.string(forKey: "qa.copia") {
                 do {
-                    try BackupArchive.make(from: context, appVersion: Self.appVersion).write(to: URL(filePath: path))
+                    var data = try BackupArchive.make(from: context, appVersion: Self.appVersion)
+                    if let password = defaults.string(forKey: "qa.copiaClave") { data = try BackupArchive.encrypt(data, password: password) }
+                    try data.write(to: URL(filePath: path))
                     savedMessage = String(localized: "Copia guardada.")
                 } catch { errorMessage = error.localizedDescription }
             }
@@ -196,11 +210,8 @@ struct BackupSection: View {
 
     private func makeBackup() {
         savedMessage = nil
-        do {
-            document = BackupDocument(data: try BackupArchive.make(from: context, appVersion: Self.appVersion))
-            errorMessage = nil
-        } catch {
-            errorMessage = error.localizedDescription
+        backupRequest = BackupRequest(companyName: companyName) { [context] in
+            try BackupArchive.make(from: context, appVersion: Self.appVersion)
         }
     }
 
@@ -210,8 +221,19 @@ struct BackupSection: View {
         defer { if scoped { url.stopAccessingSecurityScopedResource() } }
         do {
             let data = try Data(contentsOf: url)
-            pending = PendingRestore(data: data, info: try BackupArchive.info(of: data), isUndo: isUndo)
             errorMessage = nil
+            // Con contraseña: se pide antes de leer nada (`BackupPassword.swift`).
+            guard !BackupArchive.isEncrypted(data) else {
+                lockedBackup = LockedBackup(data: data) { opened in
+                    do {
+                        pending = PendingRestore(data: opened, info: try BackupArchive.info(of: opened), isUndo: isUndo)
+                    } catch {
+                        errorMessage = error.localizedDescription
+                    }
+                }
+                return
+            }
+            pending = PendingRestore(data: data, info: try BackupArchive.info(of: data), isUndo: isUndo)
         } catch {
             errorMessage = error.localizedDescription
         }

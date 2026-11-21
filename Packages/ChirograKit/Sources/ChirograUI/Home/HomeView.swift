@@ -959,8 +959,9 @@ struct HomeView: View {
             .padding(8)
         }
         .scrollBounceBehavior(.basedOnSize)
-        // Radio de tarjeta: antes 26, el único así (repaso visual, build 56).
-        .background(Palette.surface, in: RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous))
+        // Radio de tarjeta: antes 26, el único así (repaso visual, build 56). Gris de las columnas maestro y no blanco,
+        // como la tarjeta de las demás listas (`MasterCardPage`, pedido del usuario del 21-nov).
+        .background(Palette.masterColumn, in: RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous))
         .padding(.leading, 8).padding(.bottom, 8)
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Secciones del resumen")

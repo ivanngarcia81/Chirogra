@@ -54,4 +54,26 @@ public enum ChirograStore {
         }
         return try ModelContainer(for: schema, migrationPlan: ChirograMigrationPlan.self, configurations: configuration)
     }
+
+    /// Aparta el almacén que no se abre (pantalla de recuperación, `StoreRecoveryView`): mueve `Chirogra.store` con sus
+    /// `-shm` y `-wal` y lo que CloudKit guarda al lado (`Chirogra_ckAssets`, `.Chirogra_SUPPORT`) a una carpeta nueva
+    /// «Chirogra apartado <fecha>» en la misma carpeta. No borra nada: la app abre después un almacén nuevo (con iCloud,
+    /// los libros vuelven a bajar). - Returns: la carpeta con lo apartado.
+    @discardableResult
+    public static func setAsideStore(at url: URL = defaultStoreURL, now: Date = .now, fileManager: FileManager = .default) throws -> URL {
+        let directory = url.deletingLastPathComponent()
+        let name = url.deletingPathExtension().lastPathComponent
+        let stamp = now.formatted(Date.ISO8601FormatStyle(timeZone: .current).year().month().day().time(includingFractionalSeconds: false)
+            .timeSeparator(.omitted))
+        let destination = directory.appending(path: "\(name) apartado \(stamp)", directoryHint: .isDirectory)
+        let items = try fileManager.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil).filter { item in
+            let file = item.lastPathComponent
+            return file.hasPrefix(url.lastPathComponent) || file.hasPrefix("\(name)_ckAssets") || file.hasPrefix(".\(name)_SUPPORT")
+        }
+        try fileManager.createDirectory(at: destination, withIntermediateDirectories: true)
+        for item in items {
+            try fileManager.moveItem(at: item, to: destination.appending(path: item.lastPathComponent))
+        }
+        return destination
+    }
 }

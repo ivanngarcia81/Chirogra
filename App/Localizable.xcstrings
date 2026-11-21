@@ -11410,16 +11410,6 @@
         }
       }
     },
-    "En iCloud y copias creas un archivo .chirogra con tus libros y recibos. No lleva contraseña: guárdalo en un sitio de confianza. Antes de restaurar una copia, Chirogra guarda lo que tenías para poder deshacerlo." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "In iCloud and backups you create a .chirogra file with your books and receipts. It has no password: keep it somewhere you trust. Before restoring a backup, Chirogra saves what you had so you can undo it."
-          }
-        }
-      }
-    },
     "En inglés" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -14120,16 +14110,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Keep the receipt: the IRS asks you to keep it. You can drop a photo or a PDF here."
-          }
-        }
-      }
-    },
-    "Guarda los libros de «%@», con los recibos, en un archivo .chirogra que puedes restaurar en cualquier aparato con Chirogra, sin depender de iCloud. Cada empresa tiene su copia." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Saves the books of “%@”, with receipts, to a .chirogra file you can restore on any device with Chirogra, without relying on iCloud. Each business has its own backup."
           }
         }
       }
@@ -32251,6 +32231,416 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Export the report as a PDF or CSV, or the full package for your accountant."
+          }
+        }
+      }
+    },
+    "Factura %@ renumerada a %@: otro aparato emitió el mismo número" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invoice %@ renumbered to %@: another device issued the same number"
+          }
+        }
+      }
+    },
+    "Nota de crédito %@ renumerada a %@: otro aparato emitió el mismo número" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Credit memo %@ renumbered to %@: another device issued the same number"
+          }
+        }
+      }
+    },
+    "Estimado %@ renumerado a %@: otro aparato usó el mismo número" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estimate %@ renumbered to %@: another device used the same number"
+          }
+        }
+      }
+    },
+    "Asiento %lld renumerado a %lld: otro aparato usó el mismo número" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Journal entry %lld renumbered to %lld: another device used the same number"
+          }
+        }
+      }
+    },
+    "Esta copia tiene contraseña." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This backup has a password."
+          }
+        }
+      }
+    },
+    "La contraseña no es correcta." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The password is incorrect."
+          }
+        }
+      }
+    },
+    "El estimado %@ ahora es %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estimate %@ is now %@"
+          }
+        }
+      }
+    },
+    "La nota de crédito %@ ahora es %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Credit memo %@ is now %@"
+          }
+        }
+      }
+    },
+    "La factura %@ ahora es %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invoice %@ is now %@"
+          }
+        }
+      }
+    },
+    "%@ · Otro aparato usó el mismo número. Si ya lo enviaste, mándalo otra vez." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · Another device used the same number. If you already sent it, send it again."
+          }
+        }
+      }
+    },
+    "%@ · Otro aparato usó el mismo número. Si ya la enviaste, mándala otra vez." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · Another device used the same number. If you already sent it, send it again."
+          }
+        }
+      }
+    },
+    "Cambio de número" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Number change"
+          }
+        }
+      }
+    },
+    "No se pudieron abrir tus libros" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your books couldn’t be opened"
+          }
+        }
+      }
+    },
+    "Tus datos no se han borrado. Cierra otras apps y prueba otra vez; si sigue fallando, escríbenos con el detalle de abajo y te ayudamos a recuperarlos." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your data hasn’t been deleted. Close other apps and try again; if it keeps failing, write to us with the details below and we’ll help you recover it."
+          }
+        }
+      }
+    },
+    "Intentar otra vez" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Try Again"
+          }
+        }
+      }
+    },
+    "Escribir a soporte" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Email Support"
+          }
+        }
+      }
+    },
+    "Detalle para soporte" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Details for support"
+          }
+        }
+      }
+    },
+    "Copiado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copied"
+          }
+        }
+      }
+    },
+    "Copiar el detalle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copy Details"
+          }
+        }
+      }
+    },
+    "Empezar sin esta base" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start Without This Database"
+          }
+        }
+      }
+    },
+    "Si no se abre después de intentarlo, puedes apartarla y abrir una nueva. No se borra: queda guardada en una carpeta de este aparato por si soporte la necesita. Con iCloud, tus libros vuelven a bajar solos; sin iCloud, restaura tu última copia .chirogra en Ajustes › iCloud y copias." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "If it still won’t open, you can set it aside and open a new one. It isn’t deleted: it stays in a folder on this device in case support needs it. With iCloud, your books download again on their own; without iCloud, restore your latest .chirogra backup in Settings › iCloud and Backups."
+          }
+        }
+      }
+    },
+    "Apartar la base y abrir una nueva…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set Aside the Database and Open a New One…"
+          }
+        }
+      }
+    },
+    "No se pudo apartar: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn’t set it aside: %@"
+          }
+        }
+      }
+    },
+    "¿Apartar la base que no se abre?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set aside the database that won’t open?"
+          }
+        }
+      }
+    },
+    "Apartar y abrir una nueva" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set Aside and Open a New One"
+          }
+        }
+      }
+    },
+    "La base se mueve a una carpeta de este aparato, sin borrarse, y Chirogra abre una vacía. Con iCloud, tus libros vuelven a bajar." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The database is moved to a folder on this device, without being deleted, and Chirogra opens an empty one. With iCloud, your books download again."
+          }
+        }
+      }
+    },
+    "Chirogra no abre mis libros" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chirogra won’t open my books"
+          }
+        }
+      }
+    },
+    "Proteger con contraseña" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Protect with Password"
+          }
+        }
+      }
+    },
+    "La copia lleva tus libros, los recibos y los W-9 de tus proveedores. Con contraseña, nadie puede abrirla sin ella, aunque la guardes en iCloud Drive o la mandes por correo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The backup contains your books, receipts, and your vendors’ W-9s. With a password, no one can open it without it, even if you keep it in iCloud Drive or send it by email."
+          }
+        }
+      }
+    },
+    "Las dos contraseñas no coinciden." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The passwords don’t match."
+          }
+        }
+      }
+    },
+    "Al menos %lld caracteres." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "At least %lld characters."
+          }
+        }
+      }
+    },
+    "Si la olvidas, esta copia no se podrá abrir: nadie puede recuperarla, tampoco nosotros. Guárdala en un sitio seguro." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "If you forget it, this backup can’t be opened: no one can recover it, not even us. Keep it somewhere safe."
+          }
+        }
+      }
+    },
+    "Crear copia" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create Backup"
+          }
+        }
+      }
+    },
+    "Copia de «%@»" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Backup of “%@”"
+          }
+        }
+      }
+    },
+    "La contraseña no es correcta" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Incorrect Password"
+          }
+        }
+      }
+    },
+    "Esta copia tiene contraseña" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This Backup Has a Password"
+          }
+        }
+      }
+    },
+    "Prueba otra vez. Sin la contraseña con que se creó, la copia no se puede abrir." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Try again. Without the password it was created with, the backup can’t be opened."
+          }
+        }
+      }
+    },
+    "Escribe la contraseña con que se creó la copia." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter the password the backup was created with."
+          }
+        }
+      }
+    },
+    "Guarda los libros de «%@», con los recibos, en un archivo .chirogra que puedes restaurar en cualquier aparato con Chirogra, sin depender de iCloud. Cada empresa tiene su copia, y puedes protegerla con contraseña." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saves the books of “%@”, with receipts, to a .chirogra file you can restore on any device with Chirogra, without relying on iCloud. Each business has its own backup, and you can protect it with a password."
+          }
+        }
+      }
+    },
+    "En iCloud y copias creas un archivo .chirogra con tus libros y recibos. Puedes protegerlo con contraseña: sin ella nadie puede abrirlo, y si la olvidas tampoco se puede recuperar. Antes de restaurar una copia, Chirogra guarda lo que tenías para poder deshacerlo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In iCloud and Backups you create a .chirogra file with your books and receipts. You can protect it with a password: without it no one can open it, and if you forget it, it can’t be recovered either. Before restoring a backup, Chirogra saves what you had so you can undo it."
+          }
+        }
+      }
+    },
+    "Borrar la búsqueda" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear Search"
           }
         }
       }

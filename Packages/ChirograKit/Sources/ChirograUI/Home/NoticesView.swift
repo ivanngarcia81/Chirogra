@@ -191,6 +191,7 @@ extension Notice {
         case .scheduledPaymentDue: "clock"
         case .recurringGenerated: "arrow.triangle.2.circlepath"
         case .salesTaxDue: "percent"
+        case .documentRenumbered: "number"
         }
     }
 
@@ -201,11 +202,12 @@ extension Notice {
         case .scheduledPaymentDue: Palette.blue
         case .recurringGenerated: needsConfirmation ? Palette.orange : Palette.indigo
         case .salesTaxDue: Palette.pink
+        case .documentRenumbered: Palette.orange
         }
     }
 
     /// Lo de hoy o lo vencido va en naranja.
-    var isUrgent: Bool { days <= 0 || needsConfirmation }
+    var isUrgent: Bool { kind != .documentRenumbered && (days <= 0 || needsConfirmation) }
 
     var title: String {
         switch kind {
@@ -216,6 +218,12 @@ extension Notice {
             needsConfirmation ? String(localized: "Confirma el gasto recurrente de \(party)")
                               : String(localized: "Se registró el recurrente de \(party)")
         case .salesTaxDue: String(localized: "Declarar sales tax · \(party)")
+        case .documentRenumbered:
+            switch documentKind {
+            case .estimate: String(localized: "El estimado \(previousReference) ahora es \(reference)")
+            case .creditNote: String(localized: "La nota de crédito \(previousReference) ahora es \(reference)")
+            default: String(localized: "La factura \(previousReference) ahora es \(reference)")
+            }
         }
     }
 
@@ -233,6 +241,10 @@ extension Notice {
             needsConfirmation ? String(localized: "Por confirmar · \(date.shortDate)") : date.shortDate
         case .salesTaxDue:
             String(localized: "Fecha límite \(date.shortDate) · \(dueText)")
+        case .documentRenumbered:
+            documentKind == .estimate
+                ? String(localized: "\(party) · Otro aparato usó el mismo número. Si ya lo enviaste, mándalo otra vez.")
+                : String(localized: "\(party) · Otro aparato usó el mismo número. Si ya la enviaste, mándala otra vez.")
         }
     }
 
@@ -253,12 +265,19 @@ struct NoticeDestination: View {
     @CompanyQuery private var invoices: [Invoice]
     @CompanyQuery private var bills: [Bill]
     @CompanyQuery private var expenses: [Expense]
+    @CompanyQuery private var estimates: [Estimate]
 
     var body: some View {
         let id = notice.documentID
         switch notice.kind {
         case .overdueInvoice:
             if let invoice = invoices.first(where: { $0.id == id }) { InvoiceDetailView(invoice: invoice) } else { missing }
+        case .documentRenumbered:
+            if let invoice = invoices.first(where: { $0.id == id }) {
+                InvoiceDetailView(invoice: invoice)
+            } else if let estimate = estimates.first(where: { $0.id == id }) {
+                EstimateDetailView(estimate: estimate)
+            } else { missing }
         case .billDueSoon, .scheduledPaymentDue:
             if let bill = bills.first(where: { $0.id == id }) { BillDetailView(bill: bill) } else { missing }
         case .recurringGenerated:

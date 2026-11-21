@@ -75,6 +75,7 @@ struct ClientsView: View {
     @State private var deleting: ClientSummary?
     @State private var backup: BackupDocument?
     @State private var backupName = ""
+    @State private var backupRequest: BackupRequest?
     @State private var errorMessage: String?
     @State private var reloadTask: Task<Void, Never>?
     @State private var monitor = SyncMonitor.shared
@@ -165,6 +166,7 @@ struct ClientsView: View {
                       defaultFilename: BackupArchive.suggestedFilename(companyName: backupName)) { result in
             if case .failure(let error) = result { errorMessage = error.localizedDescription }
         }
+        .backupPasswordSheet($backupRequest, onReady: { backup = $0 }, onError: { errorMessage = $0.localizedDescription })
     }
 
     // MARK: Barra
@@ -700,12 +702,11 @@ struct ClientsView: View {
     }
 
     private func makeBackup(of client: ClientSummary) {
-        do {
-            let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
-            backupName = client.name
-            backup = BackupDocument(data: try BackupArchive.make(from: context, companyID: client.id, appVersion: version))
-        } catch {
-            errorMessage = error.localizedDescription
+        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
+        let id = client.id
+        backupName = client.name
+        backupRequest = BackupRequest(companyName: client.name) { [context] in
+            try BackupArchive.make(from: context, companyID: id, appVersion: version)
         }
     }
 

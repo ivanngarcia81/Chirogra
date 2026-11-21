@@ -246,7 +246,10 @@ struct MigrationTests {
             input.lines[0].amount = 5_000
             return input
         }()))
-        #expect(entry.number == 5)   // la serie de asientos sigue donde iba
+        // La serie de V1 iba atrasada (siguiente = 4 con el asiento 4 ya hecho): antes la reversión repetía el 4. Ahora se
+        // sigue al mayor (`Bookkeeper+Numbering.swift`): reversión 5 y asiento corregido 6.
+        #expect(entry.number == 6)
+        #expect(Set(try context.fetch(FetchDescriptor<JournalEntry>()).map(\.number)).count == 6)
         #expect(ReportBuilder.trialBalance(accounts: try books.ledgerAccounts(), lines: try books.ledgerLines(), asOf: .distantFuture).isBalanced)
 
         // Reabrir el almacén ya migrado no vuelve a migrar ni pierde nada.

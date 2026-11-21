@@ -161,6 +161,7 @@ public enum BackupArchive {
     }
 
     static func decompressed(_ data: Data) throws -> Data {
+        if isEncrypted(data) { throw BackupError.needsPassword }
         guard data.starts(with: signature) else { throw BackupError.notABackup }
         do {
             return try (data.dropFirst(signature.count) as NSData).decompressed(using: .zlib) as Data
@@ -312,6 +313,10 @@ public enum BackupError: Error, Equatable, LocalizedError {
     case damaged
     case newerVersion
     case brokenReference(String)
+    /// La copia tiene contraseña: hay que abrirla antes con `BackupArchive.decrypt(_:password:)`.
+    case needsPassword
+    /// La contraseña no es la de la copia (o el archivo cifrado se modificó).
+    case wrongPassword
 
     public var errorDescription: String? {
         switch self {
@@ -319,6 +324,8 @@ public enum BackupError: Error, Equatable, LocalizedError {
         case .damaged: String(localized: "La copia está dañada y no se puede leer.")
         case .newerVersion: String(localized: "La copia es de una versión más nueva de Chirogra. Actualiza la app para restaurarla.")
         case .brokenReference: String(localized: "La copia está incompleta: le falta un registro relacionado.")
+        case .needsPassword: String(localized: "Esta copia tiene contraseña.")
+        case .wrongPassword: String(localized: "La contraseña no es correcta.")
         }
     }
 }
