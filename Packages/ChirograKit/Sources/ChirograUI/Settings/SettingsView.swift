@@ -388,23 +388,21 @@ struct FormatsView: View {
                 // La fecha como la escribe la app («20 nov 2026»), no en cifras: la app no muestra fechas en cifras
                 // (repaso visual, build 56).
                 LabeledContent("Formato de fecha", value: Date.now.shortDate)
-                LabeledContent("Idioma", value: languageName)
+                AppLanguageRow(title: "Idioma", showsIcon: false)
                 LabeledContent("Inicio del año fiscal", value: Calendar.current.standaloneMonthSymbols[max(0, min(11, company.fiscalYearStartMonth - 1))].sentenceCased)
                 LabeledContent("Primer día de la semana", value: Calendar.current.standaloneWeekdaySymbols[Calendar.current.firstWeekday - 1].sentenceCased)
             } header: {
                 SectionLabel(text: String(localized: "Fechas e idioma"))
             } footer: {
-                Text("Los separadores, el formato de fecha y el idioma siguen la región y el idioma de tu dispositivo (Ajustes › General › Idioma y región).")
+                #if os(iOS)
+                Text("Los separadores y el formato de fecha siguen la región de tu dispositivo (Ajustes › General › Idioma y región). El idioma de Chirogra se cambia en Ajustes › Apps › Chirogra › Idioma: toca «Idioma» para ir allí.")
+                #else
+                Text("Los separadores y el formato de fecha siguen la región de tu Mac. Para el idioma de Chirogra, pulsa «Cambiar…»: en Ajustes del Sistema › General › Idioma y región, en «Aplicaciones» pulsa «+», elige Chirogra y el idioma, y vuelve a abrir Chirogra.")
+                #endif
             }
         }
         .screenBackground()
         .modifier(TitleUnlessEmbedded(title: "Moneda y formatos", embedded: embedded))
-    }
-
-    /// Idioma de la app («Español», «English»), en ese mismo idioma.
-    private var languageName: String {
-        let code = Locale.appText.language.languageCode?.identifier ?? "es"
-        return (Locale(identifier: code).localizedString(forLanguageCode: code) ?? code).sentenceCased
     }
 }
 

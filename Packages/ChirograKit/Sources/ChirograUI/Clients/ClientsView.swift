@@ -121,6 +121,20 @@ struct ClientsView: View {
     private var showsAllGood: Bool { loaded && !active.isEmpty && needing.isEmpty && filter != .archived && !isSearching }
     /// Un solo cliente: invitación a añadir el siguiente.
     private var showsAddNext: Bool { loaded && active.count == 1 && canWrite && filter != .archived && !isSearching }
+    /// «Necesitan atención» o «Al día» sin nadie. Con «Necesitan atención» vacío ya lo dice «Todos tus clientes están
+    /// al día» (`showsAllGood`), así que no se repite. En el iPhone va dentro de la lista y no encima: en una capa se
+    /// montaba sobre la tarjeta «¿Llevas los libros de otro negocio?» (iPhone del usuario, build 56).
+    private var showsFilterEmpty: Bool {
+        loaded && shown.isEmpty && !isSearching && (filter == .attention || filter == .upToDate) && !showsAllGood
+    }
+    private var filterEmptyTitle: String {
+        filter == .upToDate ? String(localized: "Ningún cliente está al día") : String(localized: "Nada que atender")
+    }
+    private var filterEmptyMessage: String {
+        filter == .upToDate ? String(localized: "Todos tienen algo pendiente: míralos en «Necesitan atención».")
+                            : String(localized: "Ningún cliente tiene nada pendiente en este momento.")
+    }
+    private var filterEmptyIcon: String { filter == .upToDate ? "exclamationmark.circle" : "checkmark.circle" }
 
     var body: some View {
         Group {
@@ -248,6 +262,10 @@ struct ClientsView: View {
 
             if showsAllGood {
                 Section { allGoodNote }
+                    .listRowBackground(Color.clear)
+            }
+            if showsFilterEmpty {
+                Section { filterEmptyNote }
                     .listRowBackground(Color.clear)
             }
             ForEach(shown) { client in
@@ -391,6 +409,23 @@ struct ClientsView: View {
         .padding(.vertical, 8)
     }
 
+    private var filterEmptyNote: some View {
+        VStack(spacing: 6) {
+            Image(systemName: filterEmptyIcon)
+                .font(.system(size: Metrics.stateIcon))
+                .foregroundStyle(Palette.ink2)
+                .accessibilityHidden(true)
+            Text(filterEmptyTitle).font(.title3.bold())
+            Text(filterEmptyMessage)
+                .font(.subheadline)
+                .foregroundStyle(Palette.ink2)
+        }
+        .multilineTextAlignment(.center)
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 8)
+        .accessibilityElement(children: .combine)
+    }
+
     private func addNextCard(name: String) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .top, spacing: 12) {
@@ -433,9 +468,10 @@ struct ClientsView: View {
             } else if filter == .archived {
                 ContentUnavailableView("No hay clientes archivados", systemImage: "archivebox",
                                        description: Text("Los clientes que archives salen de la lista y del selector, pero sus libros se conservan."))
-            } else if filter == .attention || filter == .upToDate {
-                ContentUnavailableView("Nada que atender", systemImage: "checkmark.circle",
-                                       description: Text("Ningún cliente tiene nada pendiente en este momento."))
+            } else if isTable && showsFilterEmpty {
+                // En la tabla (iPad y Mac) la invitación a añadir otro va debajo, fuera de la tabla: aquí no se pisan.
+                ContentUnavailableView(filterEmptyTitle, systemImage: filterEmptyIcon,
+                                       description: Text(filterEmptyMessage))
             }
         }
     }

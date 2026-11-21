@@ -16608,6 +16608,26 @@
         }
       }
     },
+    "Los separadores y el formato de fecha siguen la región de tu Mac. Para el idioma de Chirogra, pulsa «Cambiar…»: en Ajustes del Sistema › General › Idioma y región, en «Aplicaciones» pulsa «+», elige Chirogra y el idioma, y vuelve a abrir Chirogra." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Separators and the date format follow your Mac’s region. For Chirogra’s language, click Change…: in System Settings › General › Language & Region, under Applications click +, choose Chirogra and the language, then reopen Chirogra."
+          }
+        }
+      }
+    },
+    "Los separadores y el formato de fecha siguen la región de tu dispositivo (Ajustes › General › Idioma y región). El idioma de Chirogra se cambia en Ajustes › Apps › Chirogra › Idioma: toca «Idioma» para ir allí." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Separators and the date format follow your device’s region (Settings › General › Language & Region). Chirogra’s language is set in Settings › Apps › Chirogra › Language: tap Language to go there."
+          }
+        }
+      }
+    },
     "Los separadores, el formato de fecha y el idioma siguen la región y el idioma de tu dispositivo (Ajustes › General › Idioma y región)." : {
       "localizations" : {
         "en" : {
@@ -18052,6 +18072,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No customers match “%@”."
+          }
+        }
+      }
+    },
+    "Ningún cliente está al día" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No client is up to date"
           }
         }
       }
@@ -27101,6 +27131,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "All reports"
+          }
+        }
+      }
+    },
+    "Todos tienen algo pendiente: míralos en «Necesitan atención»." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "They all have something pending: see them in “Need attention”."
           }
         }
       }

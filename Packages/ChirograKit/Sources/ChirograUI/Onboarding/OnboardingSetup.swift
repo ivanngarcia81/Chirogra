@@ -27,37 +27,51 @@ enum AppLanguage {
     #endif
 }
 
-/// Fila del alta con el idioma de la app y el botón para cambiarlo, con una línea de qué hacer en Ajustes.
-struct AppLanguageSection: View {
+/// Fila con el idioma de la app que abre donde se cambia: en iOS la página de Chirogra en Ajustes (toda la fila es el
+/// botón); en el Mac, «Cambiar…» abre Idioma y región. Va en el alta y en Más › Moneda y formatos (desde el build 58;
+/// antes ahí solo se leía y el usuario no encontraba dónde cambiarlo).
+struct AppLanguageRow: View {
+    var title: LocalizedStringKey = "Idioma de la app"
+    /// Con el globo (alta). En Moneda y formatos va sin él, como las demás filas de esa sección.
+    var showsIcon = true
     @Environment(\.openURL) private var openURL
 
     var body: some View {
-        Section {
-            #if os(iOS)
-            Button { if let url = AppLanguage.settingsURL { openURL(url) } } label: {
-                HStack(spacing: 12) {
+        #if os(iOS)
+        Button { if let url = AppLanguage.settingsURL { openURL(url) } } label: {
+            HStack(spacing: 12) {
+                if showsIcon {
                     Image(systemName: "globe").foregroundStyle(Palette.brand).accessibilityHidden(true)
-                    Text("Idioma de la app").foregroundStyle(Palette.ink)
-                    Spacer(minLength: 8)
-                    Text(verbatim: AppLanguage.current).foregroundStyle(Palette.ink2)
-                    Image(systemName: "arrow.up.forward.app").font(.footnote.weight(.semibold)).foregroundStyle(Palette.chevron)
-                        .accessibilityHidden(true)
                 }
-                .frame(minHeight: Metrics.target)
-                .contentShape(Rectangle())
+                Text(title).foregroundStyle(Palette.ink)
+                Spacer(minLength: 8)
+                Text(verbatim: AppLanguage.current).foregroundStyle(Palette.ink2)
+                Image(systemName: "arrow.up.forward.app").font(.footnote.weight(.semibold)).foregroundStyle(Palette.chevron)
+                    .accessibilityHidden(true)
             }
-            .buttonStyle(.plain)
-            .accessibilityLabel(Text("Idioma de la app"))
-            .accessibilityValue(Text(verbatim: AppLanguage.current))
-            .accessibilityHint(Text("Abre Ajustes para cambiarlo"))
-            #else
-            LabeledContent("Idioma de la app") {
-                HStack(spacing: 10) {
-                    Text(verbatim: AppLanguage.current).foregroundStyle(Palette.ink2)
-                    Button("Cambiar…") { if let url = AppLanguage.settingsURL { openURL(url) } }
-                }
+            .frame(minHeight: showsIcon ? Metrics.target : nil)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(Text(title))
+        .accessibilityValue(Text(verbatim: AppLanguage.current))
+        .accessibilityHint(Text("Abre Ajustes para cambiarlo"))
+        #else
+        LabeledContent(title) {
+            HStack(spacing: 10) {
+                Text(verbatim: AppLanguage.current).foregroundStyle(Palette.ink2)
+                Button("Cambiar…") { if let url = AppLanguage.settingsURL { openURL(url) } }
             }
-            #endif
+        }
+        #endif
+    }
+}
+
+/// Sección del alta con el idioma de la app y una línea de qué hacer en Ajustes.
+struct AppLanguageSection: View {
+    var body: some View {
+        Section {
+            AppLanguageRow()
         } header: {
             SectionLabel(text: String(localized: "Idioma"))
         } footer: {
