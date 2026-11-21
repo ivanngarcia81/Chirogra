@@ -26790,16 +26790,6 @@
         }
       }
     },
-    "Tiene cobros: usa una nota de crédito." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "It has payments: use a credit memo."
-          }
-        }
-      }
-    },
     "Tiene créditos aplicados: usa una nota de crédito." : {
       "localizations" : {
         "en" : {
@@ -31901,6 +31891,106 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "With the full tutorial, every screen explains all its buttons the first time you open it."
+          }
+        }
+      }
+    },
+    "Anular cobro" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Void Payment"
+          }
+        }
+      }
+    },
+    "Anular cobro…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Void Payment…"
+          }
+        }
+      }
+    },
+    "Cobro anulado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Payment voided"
+          }
+        }
+      }
+    },
+    "Cobro anulado · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Payment voided · %@"
+          }
+        }
+      }
+    },
+    "Cobro anulado: %@ · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Payment voided: %@ · %@"
+          }
+        }
+      }
+    },
+    "Cobro anulado de %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voided payment of %@"
+          }
+        }
+      }
+    },
+    "Este cobro ya está anulado." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This payment is already voided."
+          }
+        }
+      }
+    },
+    "La factura vuelve a quedar pendiente y queda un asiento que revierte el cobro. Si vino del banco, el movimiento vuelve a «Por revisar»." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The invoice goes back to unpaid and a journal entry reverses the payment. If it came from the bank, the transaction goes back to “To Review”."
+          }
+        }
+      }
+    },
+    "Tiene cobros: anula el cobro o usa una nota de crédito." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "It has payments: void the payment or use a credit note."
+          }
+        }
+      }
+    },
+    "¿Anular el cobro de %@ del %@?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Void the %@ payment from %@?"
           }
         }
       }

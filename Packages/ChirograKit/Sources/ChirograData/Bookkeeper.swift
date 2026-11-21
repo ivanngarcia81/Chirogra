@@ -515,6 +515,66 @@ public struct Bookkeeper {
         return payment
     }
 
+    /// Un cobro está anulado cuando su asiento está revertido (`voidPayment`). No hay campo propio en el modelo: así no
+    /// cambia el esquema de CloudKit.
+    public func isVoided(_ payment: PaymentReceived) -> Bool {
+        guard let entry = try? entry(id: payment.journalEntryID) else { return false }
+        return entry.isReversed
+    }
+
+    /// Fecha del asiento que anuló el cobro (su fecha original, o el primer día abierto si su periodo estaba cerrado);
+    /// `nil` si no está anulado.
+    public func voidDate(of payment: PaymentReceived) -> Date? {
+        guard let original = try? entry(id: payment.journalEntryID), let reversalID = original.reversedByEntryID else { return nil }
+        return (try? entry(id: reversalID))?.date ?? original.date
+    }
+
+    /// Anula un cobro registrado por error (Eric, Beta Family, build 55: «un toque de más deja un cobro que no se puede
+    /// borrar»): revierte su asiento —en su misma fecha, o en `date` si su periodo está cerrado y se elige el primer
+    /// día abierto—, devuelve el importe al saldo de cada factura y, si el cobro salió de un movimiento del banco, ese
+    /// movimiento vuelve a «Por revisar». El cobro y su aplicación se quedan (historial del cliente y de la factura,
+    /// y la base de caja revierte también lo que reconoció).
+    public func voidPayment(_ payment: PaymentReceived, on date: Date? = nil) throws {
+        guard let original = try entry(id: payment.journalEntryID), original.status == .posted,
+              !original.isReversed, original.reversesEntryID == nil else {
+            throw BookkeepingError.invalidState(String(localized: "Este cobro ya está anulado."))
+        }
+        let applications = payment.applications ?? []
+        do {
+            try reverse(original, on: date ?? original.date,
+                        memo: String(localized: "Anulación: \(original.memo)"), save: false)
+            for application in applications {
+                guard let invoice = application.invoice, invoice.status != .void else { continue }
+                invoice.amountPaid = max(0, invoice.amountPaid - application.amount)
+                invoice.status = invoice.balanceDue == 0 ? .paid
+                    : (invoice.amountPaid > 0 || invoice.creditsApplied > 0 ? .partiallyPaid : .sent)
+            }
+            let paymentID: UUID? = payment.id
+            let entryID: UUID? = original.id
+            let linked = try fetch(BankTransaction.self, #Predicate { $0.createdDocumentID == paymentID || $0.matchedEntryID == entryID })
+            for transaction in linked {
+                transaction.status = .toReview
+                transaction.matchedEntryID = nil
+                transaction.matchedLineID = nil
+                transaction.createdDocumentID = nil
+                transaction.reviewedAt = nil
+            }
+            // En la bitácora va con la factura (no hay «Cobro» entre sus tipos): «Cobro anulado: INV-0003 · Cliente».
+            for application in applications {
+                guard let invoice = application.invoice else { continue }
+                var changes = AuditChanges()
+                changes.value(String(localized: "Fecha"), AuditChanges.day(payment.date))
+                changes.value(String(localized: "Importe"), money: application.amount)
+                audit("Invoice", invoice.id, "voidPayment",
+                      String(localized: "Cobro anulado: \(invoice.number) · \(payment.customer?.name ?? "")"), changes: changes)
+            }
+            try commit()
+        } catch {
+            context.rollback()
+            throw error
+        }
+    }
+
     /// Emite una nota de crédito contra una factura emitida: Debe Ingresos (+ Sales Tax Payable) / Haber CxC.
     /// El impuesto se calcula con las tasas con que se emitió la factura (`issuedTaxComponents`), aunque
     /// después se hayan editado. `amount` es siempre sin impuesto, también en facturas con precios con impuesto incluido.
@@ -738,8 +798,15 @@ public struct Bookkeeper {
         let limit = Self.endOfDay(date, calendar)
         let items = try fetch(Invoice.self).filter { $0.status != .draft && $0.status != .void && $0.issueDate <= limit }
             .compactMap { invoice -> AgingReport.OpenItem? in
-                let paidLater = (invoice.paymentApplications ?? []).filter { ($0.payment?.date ?? .distantPast) > limit }
-                    .reduce(0) { $0 + $1.amount }
+                // Lo que cambió el saldo después de la fecha: cobros posteriores (vivos hoy) y cobros vigentes en esa fecha
+                // que se anularon después (hoy ya no restan, entonces sí).
+                let paidLater = (invoice.paymentApplications ?? []).reduce(Int64(0)) { sum, application in
+                    guard let payment = application.payment else { return sum }
+                    let voided = voidDate(of: payment)
+                    let appliedNow = voided == nil
+                    let appliedThen = payment.date <= limit && (voided.map { $0 > limit } ?? true)
+                    return sum + (appliedNow ? application.amount : 0) - (appliedThen ? application.amount : 0)
+                }
                 let creditedLater = (invoice.creditApplications ?? []).filter { $0.date > limit }.reduce(0) { $0 + $1.amount }
                 let balance = invoice.balanceDue + paidLater + creditedLater
                 guard balance > 0 else { return nil }

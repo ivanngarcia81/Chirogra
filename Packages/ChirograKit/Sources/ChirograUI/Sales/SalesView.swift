@@ -298,7 +298,8 @@ struct InvoiceRow: View {
             return Calendar.current.isDateInToday(invoice.createdAt) ? String(localized: "\(number) · creada hoy")
                 : String(localized: "\(number) · creada \(invoice.createdAt.dayMonth)")
         case .paid:
-            let paid = (invoice.paymentApplications ?? []).compactMap(\.payment?.date).max()
+            let books = invoice.modelContext.map { Bookkeeper(context: $0) }
+            let paid = (invoice.paymentApplications ?? []).compactMap(\.payment).filter { !(books?.isVoided($0) ?? false) }.map(\.date).max()
             return paid.map { String(localized: "\(number) · pagada \($0.dayMonth)") } ?? String(localized: "\(number) · pagada")
         case .void:
             return String(localized: "\(number) · anulada")

@@ -79,11 +79,14 @@ extension Bookkeeper {
                 if receivable.contains(accountID), let payment = entry.sourceDocumentID.flatMap({ payments[$0] }) {
                     var lines: [LedgerLine] = []
                     var covered: Int64 = 0
+                    // La reversión de un cobro anulado (`voidPayment`) quita lo que el cobro reconoció: el mismo reparto
+                    // con el signo contrario.
+                    let sign: Int64 = entry.reversesEntryID == nil ? 1 : -1
                     for application in payment.applications ?? [] {
                         guard let invoice = application.invoice,
-                              let part = allocated(-application.amount, over: invoiceMix(invoice), date: entry.date, entryID: entry.id) else { continue }
+                              let part = allocated(-application.amount * sign, over: invoiceMix(invoice), date: entry.date, entryID: entry.id) else { continue }
                         lines += part
-                        covered -= application.amount
+                        covered -= application.amount * sign
                     }
                     if covered == net { replacement = lines }
                 } else if payable.contains(accountID), let payment = entry.sourceDocumentID.flatMap({ billPayments[$0] }),

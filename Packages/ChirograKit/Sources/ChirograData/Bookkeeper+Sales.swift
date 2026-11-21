@@ -70,10 +70,12 @@ extension Bookkeeper {
 extension Bookkeeper {
 
     /// Se puede editar una factura emitida mientras no tenga cobros ni notas de crédito: con ellos el asiento ya
-    /// tiene otros que dependen de él, y se corrige con una nota de crédito (o se anula, si no tiene cobros).
+    /// tiene otros que dependen de él, y se corrige con una nota de crédito (o se anula, si no tiene cobros). Los
+    /// cobros anulados (`voidPayment`) no cuentan.
     public func canEditIssued(_ invoice: Invoice) -> Bool {
         invoice.status == .sent && invoice.amountPaid == 0 && invoice.creditsApplied == 0
-            && (invoice.creditNotes ?? []).isEmpty && (invoice.paymentApplications ?? []).isEmpty
+            && (invoice.creditNotes ?? []).isEmpty
+            && (invoice.paymentApplications ?? []).allSatisfy { $0.payment.map(isVoided) ?? true }
     }
 
     /// Corrige una factura emitida sin cobros ni créditos y **conserva su número**.

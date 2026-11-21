@@ -684,8 +684,10 @@ struct CustomerDetailView: View {
 
     /// Días entre la fecha de la factura y su último cobro, de media entre las facturas pagadas.
     private var averageDaysToPay: Int? {
+        let books = Bookkeeper(context: context)
         let days = (customer.invoices ?? []).filter { $0.status == .paid }.compactMap { invoice -> Int? in
-            guard let paid = (invoice.paymentApplications ?? []).compactMap(\.payment?.date).max() else { return nil }
+            guard let paid = (invoice.paymentApplications ?? []).compactMap(\.payment).filter({ !books.isVoided($0) })
+                .map(\.date).max() else { return nil }
             return Calendar.current.dateComponents([.day], from: invoice.issueDate, to: paid).day
         }
         return days.isEmpty ? nil : days.reduce(0, +) / days.count
@@ -707,7 +709,8 @@ struct CustomerDetailView: View {
     /// Facturas y cobros, del más reciente al más antiguo, con un punto del color de su estado.
     private var history: some View {
         let invoices = (customer.invoices ?? []).map { HistoryItem.invoice($0) }
-        let payments = (customer.payments ?? []).map { HistoryItem.payment($0) }
+        let books = Bookkeeper(context: context)
+        let payments = (customer.payments ?? []).map { HistoryItem.payment($0, voided: books.isVoided($0)) }
         let estimates = estimates.map { HistoryItem.estimate($0) }
         let items = (invoices + payments + estimates).sorted { $0.date > $1.date }
         return VStack(spacing: 0) {
@@ -859,13 +862,14 @@ struct CustomerNoteEditor: View {
 /// Una entrada del historial de un cliente.
 private enum HistoryItem: Identifiable {
     case invoice(Invoice)
-    case payment(PaymentReceived)
+    /// `voided`: anulado (`Bookkeeper.voidPayment`); sale como «Cobro anulado», en gris y sin el «+».
+    case payment(PaymentReceived, voided: Bool)
     case estimate(Estimate)
 
     var id: UUID {
         switch self {
         case .invoice(let invoice): invoice.id
-        case .payment(let payment): payment.id
+        case .payment(let payment, _): payment.id
         case .estimate(let estimate): estimate.id
         }
     }
@@ -873,7 +877,7 @@ private enum HistoryItem: Identifiable {
     var date: Date {
         switch self {
         case .invoice(let invoice): invoice.issueDate
-        case .payment(let payment): payment.date
+        case .payment(let payment, _): payment.date
         case .estimate(let estimate): estimate.issueDate
         }
     }
@@ -883,8 +887,9 @@ private enum HistoryItem: Identifiable {
         case .invoice(let invoice):
             if invoice.number.isEmpty { return String(localized: "Factura en borrador") }
             return String(localized: "Factura \(invoice.number) · \(invoice.statusTitle.lowercased())")
-        case .payment(let payment):
+        case .payment(let payment, let voided):
             let numbers = (payment.applications ?? []).compactMap(\.invoice?.number).joined(separator: ", ")
+            if voided { return numbers.isEmpty ? String(localized: "Cobro anulado") : String(localized: "Cobro anulado · \(numbers)") }
             return numbers.isEmpty ? String(localized: "Cobro") : String(localized: "Cobro · \(numbers)")
         case .estimate(let estimate):
             // Canvas `ClienteFicha`: «Estimado E-0009 · aceptado».
@@ -900,7 +905,7 @@ private enum HistoryItem: Identifiable {
                 return String(localized: "\(invoice.issueDate.dayMonth) · venció \(invoice.dueDate.dayMonth)")
             }
             return invoice.isOpen ? "\(invoice.issueDate.dayMonth) · \(invoice.dueDate.dueLabel)" : invoice.issueDate.dayMonth
-        case .payment(let payment):
+        case .payment(let payment, _):
             return "\(payment.date.dayMonth) · \((PaymentMethod(rawValue: payment.methodRaw) ?? .other).title.lowercased())"
         case .estimate(let estimate):
             return estimate.title.isEmpty ? estimate.issueDate.dayMonth : "\(estimate.issueDate.dayMonth) · \(estimate.title)"
@@ -911,7 +916,7 @@ private enum HistoryItem: Identifiable {
         switch self {
         // Un borrador aún no tiene total guardado: lo que suman sus líneas.
         case .invoice(let invoice): (invoice.status == .draft ? invoice.draftAmount : invoice.total).money
-        case .payment(let payment): "+\(payment.amount.money)"
+        case .payment(let payment, let voided): voided ? payment.amount.money : "+\(payment.amount.money)"
         case .estimate(let estimate): estimate.total.money
         }
     }
@@ -919,7 +924,7 @@ private enum HistoryItem: Identifiable {
     var dot: Color {
         switch self {
         case .invoice(let invoice): invoice.statusDotColor
-        case .payment: Palette.green
+        case .payment(_, let voided): voided ? Palette.gray : Palette.green
         case .estimate: Palette.gray
         }
     }
@@ -928,7 +933,7 @@ private enum HistoryItem: Identifiable {
         switch self {
         case .invoice(let invoice):
             invoice.daysOverdue() != nil ? Palette.negative : (invoice.status == .void || invoice.status == .draft) ? Palette.ink2 : Palette.ink
-        case .payment: Palette.positive
+        case .payment(_, let voided): voided ? Palette.ink2 : Palette.positive
         case .estimate: Palette.ink2
         }
     }

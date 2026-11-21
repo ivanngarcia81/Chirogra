@@ -51,7 +51,8 @@ struct InvoiceTablePage: View {
         let open = invoices.filter(\.isOpen)
         let overdue = open.filter { $0.daysOverdue() != nil }
         let month = DateInterval.month(containing: .now)
-        let collected = payments.filter { month.contains($0.date) }.reduce(0) { $0 + $1.amount }
+        let books = Bookkeeper(context: context)
+        let collected = payments.filter { month.contains($0.date) && !books.isVoided($0) }.reduce(0) { $0 + $1.amount }
         let monthName = Date.now.formatted(.appDateTime.month(.wide))
         return [
             KPIItem(title: String(localized: "Por cobrar"), value: open.reduce(0) { $0 + $1.balanceDue }.money),

@@ -55,6 +55,10 @@ struct InvoiceDetailView: View {
     /// «¿Registrar el cobro de $X?» antes de asentarlo: un toque de más dejaba un cobro que no se puede borrar
     /// (Eric, Beta Family, build 55).
     @State private var confirmingPayment = false
+    /// «Anular cobro»: el cobro que se va a anular, tras confirmarlo (`voidPayment`).
+    @State private var voidingPayment: PaymentReceived?
+    /// Anular un cobro de un periodo cerrado pide desbloquear o la fecha del primer día abierto.
+    @State private var closedPeriodRetry: ClosedPeriodRetry?
 
     private var books: Bookkeeper { Bookkeeper(context: context) }
     private var depositAccounts: [Account] { accounts.filtered { $0.isMoneyAccount && $0 != .creditCard } }
@@ -173,6 +177,14 @@ struct InvoiceDetailView: View {
         .offerToSendIssued($justIssued)
         .reconciledChangeConfirmation($reconciledRetry) { errorMessage = $0 }
         .confirmsZeroTotalIssue($confirmingZeroIssue, issueAnyway: issueNow)
+        .confirmationDialog(voidingPayment.map { String(localized: "¿Anular el cobro de \($0.amount.money) del \($0.date.dayMonth)?") } ?? "",
+                            isPresented: Binding(get: { voidingPayment != nil }, set: { if !$0 { voidingPayment = nil } }),
+                            titleVisibility: .visible, presenting: voidingPayment) { payment in
+            Button("Anular cobro", role: .destructive) { voidPayment(payment) }
+        } message: { _ in
+            Text("La factura vuelve a quedar pendiente y queda un asiento que revierte el cobro. Si vino del banco, el movimiento vuelve a «Por revisar».")
+        }
+        .closedPeriodUnlock($closedPeriodRetry) { errorMessage = $0 }
         .confirmationDialog("¿Anular la factura?", isPresented: $confirmingVoid, titleVisibility: .visible) {
             Button("Anular", role: .destructive, action: void)
         } message: {
@@ -333,6 +345,16 @@ struct InvoiceDetailView: View {
                 Button("Borrar factura", systemImage: "trash", role: .destructive) { confirmingDelete = true }
             } else {
                 Button("Duplicar", systemImage: "plus.square.on.square", action: duplicateInvoice)
+                let live = livePayments
+                if live.count == 1, let payment = live.first {
+                    Button("Anular cobro…", systemImage: "arrow.uturn.backward") { voidingPayment = payment }
+                } else if live.count > 1 {
+                    Menu("Anular cobro", systemImage: "arrow.uturn.backward") {
+                        ForEach(live, id: \.id) { payment in
+                            Button("\(payment.date.dayMonth) · \(payment.amount.money)") { voidingPayment = payment }
+                        }
+                    }
+                }
                 if invoice.isOpen, let credit = invoice.customer?.creditBalance, credit > 0 {
                     Button("Aplicar saldo a favor (\(min(credit, invoice.balanceDue).money))", systemImage: "arrow.uturn.left", action: applyCredit)
                 }
@@ -358,7 +380,7 @@ struct InvoiceDetailView: View {
                             Button("Anular factura", systemImage: "xmark.circle") {}.disabled(true)
                         }
                     } header: {
-                        Text(invoice.amountPaid > 0 ? "Tiene cobros: usa una nota de crédito." : "Tiene créditos aplicados: usa una nota de crédito.")
+                        Text(invoice.amountPaid > 0 ? "Tiene cobros: anula el cobro o usa una nota de crédito." : "Tiene créditos aplicados: usa una nota de crédito.")
                     }
                 }
             }
@@ -374,31 +396,43 @@ struct InvoiceDetailView: View {
     /// con círculos rellenos de Tinta en los pasos cumplidos. Sin envío anotado y pendiente de cobro, el paso por hacer
     /// es «Enviar al cliente» (antes «Enviada · Sin enviar», que se leía como si ya se hubiera mandado).
     private var activity: some View {
-        let payments = (invoice.paymentApplications ?? []).compactMap(\.payment?.date).sorted()
-        var steps: [(title: String, detail: String, value: String, done: Bool)] = [
-            (String(localized: "Creada"), "", min(invoice.createdAt, invoice.issueDate).dayMonth, true),
-            (String(localized: "Emitida"), "", invoice.issueDate.dayMonth, true),
+        let payments = invoicePayments
+        var steps: [ActivityStep] = [
+            ActivityStep(title: String(localized: "Creada"), value: min(invoice.createdAt, invoice.issueDate).dayMonth, done: true),
+            ActivityStep(title: String(localized: "Emitida"), value: invoice.issueDate.dayMonth, done: true),
         ]
         let events = invoice.sortedEvents.reversed()
-        var dated: [(date: Date, step: (title: String, detail: String, value: String, done: Bool))] = events.map { event in
-            (event.date, (event.kind == .sent ? String(localized: "Enviada") : String(localized: "Recordatorio enviado"),
-                          event.recipient, event.date.dayMonth, true))
+        var dated: [(date: Date, step: ActivityStep)] = events.map { event in
+            (event.date, ActivityStep(title: event.kind == .sent ? String(localized: "Enviada") : String(localized: "Recordatorio enviado"),
+                                      detail: event.recipient, value: event.date.dayMonth, done: true))
         }
         for edit in (try? books.edits(of: invoice)) ?? [] {
-            dated.append((edit.date, (String(localized: "Editada"),
-                                      edit.action == "edit" ? String(localized: "Asiento revertido y registrado de nuevo") : "",
-                                      edit.date.dayMonth, true)))
+            dated.append((edit.date, ActivityStep(title: String(localized: "Editada"),
+                                                  detail: edit.action == "edit" ? String(localized: "Asiento revertido y registrado de nuevo") : "",
+                                                  value: edit.date.dayMonth, done: true)))
         }
         steps += dated.sorted { $0.date < $1.date }.map(\.step)
         if invoice.isOpen && !events.contains(where: { $0.kind == .sent }) {
-            steps.append((String(localized: "Enviar al cliente"), "", String(localized: "Pendiente"), false))
+            steps.append(ActivityStep(title: String(localized: "Enviar al cliente"), value: String(localized: "Pendiente"), done: false))
+        }
+        // Un paso por cobro, con su fecha y forma de pago; tocar uno vivo ofrece anularlo. Los anulados quedan tachados.
+        for item in payments {
+            let method = (PaymentMethod(rawValue: item.payment.methodRaw) ?? .other).title.lowercased()
+            steps.append(ActivityStep(title: item.voided ? String(localized: "Cobro anulado") : String(localized: "Cobro"),
+                                      detail: "\(item.payment.date.dayMonth) · \(method)", value: item.amount.money,
+                                      done: !item.voided, voided: item.voided,
+                                      payment: item.voided || invoice.status == .void ? nil : item.payment))
         }
         if invoice.status == .void {
-            steps.append((String(localized: "Anulada"), "", "", true))
+            steps.append(ActivityStep(title: String(localized: "Anulada"), done: true))
         } else {
-            steps.append((String(localized: "Cobro"), "", invoice.amountPaid > 0 ? invoice.amountPaid.money : String(localized: "Pendiente"), invoice.amountPaid > 0))
-            steps.append((String(localized: "Pagada"), "", invoice.status == .paid ? (payments.last ?? invoice.issueDate).dayMonth : "—",
-                          invoice.status == .paid))
+            if !payments.contains(where: { !$0.voided }) {
+                steps.append(ActivityStep(title: String(localized: "Cobro"), value: String(localized: "Pendiente"), done: false))
+            }
+            let lastPaid = payments.last { !$0.voided }?.payment.date
+            steps.append(ActivityStep(title: String(localized: "Pagada"),
+                                      value: invoice.status == .paid ? (lastPaid ?? invoice.issueDate).dayMonth : "—",
+                                      done: invoice.status == .paid))
         }
         return VStack(alignment: .leading, spacing: 0) {
             DetailSectionLabel(text: String(localized: "Actividad"))
@@ -406,7 +440,7 @@ struct InvoiceDetailView: View {
                 ForEach(steps.indices, id: \.self) { index in
                     let step = steps[index]
                     if index > 0 { Divider().padding(.leading, Metrics.cardPadding + 34) }
-                    let action = activityAction(for: step.title, done: step.done)
+                    let action = activityAction(for: step)
                     HStack(spacing: 12) {
                         ActivityMark(done: step.done)
                         AdaptiveRow {
@@ -418,7 +452,7 @@ struct InvoiceDetailView: View {
                             }
                         } trailing: {
                             HStack(spacing: 6) {
-                                Text(step.value).foregroundStyle(Palette.ink2).monospacedDigit()
+                                Text(step.value).foregroundStyle(Palette.ink2).monospacedDigit().strikethrough(step.voided)
                                 if action != nil {
                                     Image(systemName: "chevron.right").font(.footnote.weight(.semibold))
                                         .foregroundStyle(Palette.chevron).accessibilityHidden(true)
@@ -433,7 +467,7 @@ struct InvoiceDetailView: View {
                     .contentShape(Rectangle())
                     .onTapGesture { action?() }
                     .accessibilityElement(children: .combine)
-                    .accessibilityValue(step.done ? Text("Hecho") : Text("Pendiente"))
+                    .accessibilityValue(step.voided ? Text("Anulado") : step.done ? Text("Hecho") : Text("Pendiente"))
                     .accessibilityAddTraits(action != nil ? .isButton : [])
                 }
             }
@@ -441,11 +475,12 @@ struct InvoiceDetailView: View {
         }
     }
 
-    /// Lo que hace tocar un paso pendiente de Actividad: «Cobro» y «Pagada» llevan a «Marcar como pagada»; «Enviar al
-    /// cliente» abre el envío.
-    private func activityAction(for title: String, done: Bool) -> (() -> Void)? {
-        guard !done, invoice.isOpen else { return nil }
-        switch title {
+    /// Lo que hace tocar un paso de Actividad: un cobro registrado ofrece anularlo; «Cobro» y «Pagada» pendientes llevan
+    /// a «Marcar como pagada»; «Enviar al cliente» abre el envío.
+    private func activityAction(for step: ActivityStep) -> (() -> Void)? {
+        if let payment = step.payment { return { voidingPayment = payment } }
+        guard !step.done, invoice.isOpen else { return nil }
+        switch step.title {
         case String(localized: "Cobro"), String(localized: "Pagada"): return { recordJump += 1 }
         case String(localized: "Enviar al cliente"): return { sending = true }
         default: return nil
@@ -780,10 +815,53 @@ struct InvoiceDetailView: View {
         }
     }
 
+    /// Cobros de la factura del más antiguo al más nuevo, con el importe aplicado a esta factura y si están anulados.
+    private var invoicePayments: [(payment: PaymentReceived, amount: Int64, voided: Bool)] {
+        (invoice.paymentApplications ?? []).compactMap { application in
+            application.payment.map { ($0, application.amount, books.isVoided($0)) }
+        }
+        .sorted { $0.payment.date < $1.payment.date }
+    }
+
+    /// Los cobros que aún se pueden anular (no en una factura anulada).
+    private var livePayments: [PaymentReceived] {
+        invoice.status == .void ? [] : invoicePayments.filter { !$0.voided }.map(\.payment)
+    }
+
+    /// Anula el cobro (revierte su asiento en su fecha). En un periodo cerrado pide desbloquear o propone el primer día
+    /// abierto; si está conciliado, pregunta antes (`ReconciledChange`).
+    private func voidPayment(_ payment: PaymentReceived, on date: Date? = nil) {
+        do {
+            try books.voidPayment(payment, on: date)
+            errorMessage = nil
+            paymentMode = .total
+            paymentAmount = invoice.balanceDue
+        } catch {
+            if let lock = PeriodClosing.lockDate(of: error) {
+                closedPeriodRetry = ClosedPeriodRetry(lockDate: lock, perform: { try $0.voidPayment(payment, on: date) },
+                                                      redate: { voidPayment(payment, on: $0) })
+            } else if let retry = ReconciledChange.retry(for: error, { try $0.voidPayment(payment, on: date) }) {
+                reconciledRetry = retry
+            } else {
+                errorMessage = error.localizedDescription
+            }
+        }
+    }
+
     /// Borra el borrador dejando lo que tenía en la bitácora (1.2).
     private func deleteDraft() {
         do { try books.deleteDraft(invoice); dismiss() } catch { errorMessage = error.localizedDescription }
     }
+}
+
+/// Un paso de «Actividad» de la factura. `payment`: el cobro que se ofrece anular al tocarlo.
+private struct ActivityStep {
+    var title: String
+    var detail = ""
+    var value = ""
+    var done: Bool
+    var voided = false
+    var payment: PaymentReceived?
 }
 
 /// Paso de la actividad (canvas `FacturaDetalle`): círculo de 22 pt relleno de Tinta con una marca blanca si está

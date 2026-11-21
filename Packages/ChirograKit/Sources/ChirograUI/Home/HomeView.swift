@@ -1306,7 +1306,11 @@ struct HomeView: View {
             MacInspectorRow(String(localized: "Creada"), value: min(invoice.createdAt, invoice.issueDate).shortDate)
             MacInspectorRow(String(localized: "Emitida"), value: invoice.issueDate.shortDate)
             ForEach((invoice.paymentApplications ?? []).sorted { ($0.payment?.date ?? .distantPast) < ($1.payment?.date ?? .distantPast) }) { application in
-                MacInspectorRow(String(localized: "Cobro de \(application.amount.money)"), value: application.payment?.date.shortDate ?? "—")
+                let books = invoice.modelContext.map { Bookkeeper(context: $0) }
+                let voided = application.payment.flatMap { books?.isVoided($0) } ?? false
+                MacInspectorRow(voided ? String(localized: "Cobro anulado de \(application.amount.money)")
+                                    : String(localized: "Cobro de \(application.amount.money)"),
+                                value: application.payment?.date.shortDate ?? "—")
             }
         }
     }
