@@ -5,8 +5,8 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 
 ## Estado
 
-- **Ramas:** `version-1.3` empujada el 21-nov hasta el build 58 y su resumen; el build 59 (`34f6cc0`) y sus docs,
-  commiteados **sin empujar**. `main` en `83b1db4` (build 50 y la
+- **Ramas:** `version-1.3` empujada el 21-nov hasta el build 58 y su resumen; el build 59 (`34f6cc0`) y sus docs
+  (`22f7428`), empujados el 21-nov. `main` en `83b1db4` (build 50 y la
   web con «Kairogra»), empujada el 17-nov; los builds de después no tocan la web, así que `main` no hace falta moverla.
   La web (`sitio/`) se publica desde `main`.
 - **Último build: 59 (1.3.0)**, subido a TestFlight para iOS y macOS el 21-nov (`34f6cc0`): anular un cobro. Antes: 58 (21-nov), 57 (21-nov), 56 (21-nov), 55 (20-nov), 54 (20-nov), 53 (18-nov), 52 (18-nov), 51
@@ -187,7 +187,7 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 
 ## Lo siguiente
 
-0. **Build 59: SUBIDO iOS+Mac a TestFlight (21-nov, `34f6cc0`), sin empujar.** Anular un cobro registrado por error
+0. **Build 59: SUBIDO iOS+Mac a TestFlight (21-nov, `34f6cc0`), `version-1.3` empujada.** Anular un cobro registrado por error
    (Eric, Beta Family: «un toque de más deja un cobro que no se puede borrar»). `Bookkeeper.voidPayment(_:on:)`
    revierte el asiento del cobro en su fecha (o en `on`, el primer día abierto, si su periodo está cerrado:
    `ClosedPeriodRetry` con `redate`), resta lo aplicado a cada factura y recalcula su estado, y los `BankTransaction`

@@ -13,7 +13,7 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
 ## Dónde nos quedamos (empieza aquí)
 
 **Resumen al 21-nov** (lo de debajo es el detalle y la historia):
-- **Último build: 59 (1.3.0)**, subido iOS y macOS el 21-nov (`34f6cc0`, sin empujar): **anular un cobro**
+- **Último build: 59 (1.3.0)**, subido iOS y macOS el 21-nov (`34f6cc0`, empujado): **anular un cobro**
   (`Bookkeeper.voidPayment`; anulado = asiento revertido, sin cambio de esquema). **58** (21-nov): Clientes sin avisos
   encimados y «Idioma» que lleva a Ajustes. **57** (21-nov): botones del recibo en filas separadas. **56** (21-nov): informe de Eric (Beta Family)
   y repaso visual de toda la app. **55** y **54** (20-nov): campos de dinero, tutorial completo. Detalle en RESUMEN,
