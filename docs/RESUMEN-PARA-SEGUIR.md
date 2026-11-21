@@ -1,15 +1,16 @@
-# Chirogra: resumen para empezar el siguiente chat (21-nov-2026, build 59)
+# Chirogra: resumen para empezar el siguiente chat (21-nov-2026, build 60)
 
 Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («Dónde nos quedamos» y «Siguiente»).
 **Al usuario se le habla siempre en español.**
 
 ## Estado
 
-- **Ramas:** `version-1.3` empujada el 21-nov hasta el build 58 y su resumen; el build 59 (`34f6cc0`) y sus docs
-  (`22f7428`), empujados el 21-nov. `main` en `83b1db4` (build 50 y la
+- **Ramas:** `version-1.3` empujada el 21-nov hasta el build 59 (`d294076`); el build 60 (`229695f`) y sus docs,
+  commiteados **sin empujar**. `main` en `83b1db4` (build 50 y la
   web con «Kairogra»), empujada el 17-nov; los builds de después no tocan la web, así que `main` no hace falta moverla.
   La web (`sitio/`) se publica desde `main`.
-- **Último build: 59 (1.3.0)**, subido a TestFlight para iOS y macOS el 21-nov (`34f6cc0`): anular un cobro. Antes: 58 (21-nov), 57 (21-nov), 56 (21-nov), 55 (20-nov), 54 (20-nov), 53 (18-nov), 52 (18-nov), 51
+- **Último build: 60 (1.3.0)**, subido a TestFlight para iOS y macOS el 21-nov (`229695f`): iPad más consistente y con
+  recorrido de la primera vez. Antes: 59 (21-nov, anular un cobro), 58 (21-nov), 57 (21-nov), 56 (21-nov), 55 (20-nov), 54 (20-nov), 53 (18-nov), 52 (18-nov), 51
   (recorrido de la primera vez, 17-nov) y 50 (17-nov). Los testers externos (Userbrain, Beta Family) entran con el enlace público
   https://testflight.apple.com/join/RGwqqUyw: **el usuario tiene que asignar el 58 a ese grupo** cuando Apple lo procese.
 - **En App Store Connect:** la **1.0 (build 11)** espera la revisión. **Decidido el 13-nov:** cuando la aprueben se envía
@@ -60,10 +61,17 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 | 55 | `216d429` | 1.3.0: tras Yurii S. (Beta Family, build 54; iPhone 16e, formato de Ucrania, oscuro): **campos de dinero** que se editan sin la moneda (`MoneyField`: «10,99» al escribir, «10,99 US$» al salir; antes lo tecleado se pegaba tras «US$» y el importe no cambiaba: «10,99 US$80», «1,00 US$896253»; en EE. UU. «$510.99»); lee coma o punto decimal; **difuminado** (`.ultraThinMaterial`) en la primera tarjeta de cada recorrido, la que no ilumina nada. 177 + 75 + 87 pruebas (`ScreenSmokeTests` ya se caía en el 54: `ImageRenderer`, «no current update to enqueue action to»). |
 | 56 | `130588b` | 1.3.0: tras Eric (Beta Family, build 55; iPhone 13, iOS 27.2.1; app 3/5, recomendación 2/5) y un **repaso visual** de toda la app. Ver «Lo siguiente» 0b. 350 pruebas (94 + 181 + 75). |
 | 57 | `c13f955` | 1.3.0: en «Nuevo gasto › Recibo» los tres botones (escanear, foto, archivo) vuelven a ir **uno por fila**; salían amontonados en una sola (captura del usuario con el 56; venía del 54). Ver «Lo siguiente» 0a. 350 pruebas. |
+| 60 | `229695f` | 1.3.0: **iPad**: Conciliación y Reglas con lista y detalle; repaso de diseño de las 27 secciones (títulos de columna enteros, «Facturas», icono de color en Banca, Libro mayor con título grande, lápiz de Editar); detalles a 720 pt y reportes a 820 pt **centrados**; tabla de líneas de la factura alineada; **recorrido de la primera vez en el iPad**. Ver «Lo siguiente» 0. 355 pruebas. |
 | 59 | `34f6cc0` | 1.3.0: **anular un cobro** (pendiente del informe de Eric): cada cobro en su fila de «Actividad» de la factura; tocarlo o «⋯ › Anular cobro…» lo revierte en su fecha, la factura vuelve a quedar pendiente y el movimiento del banco enlazado vuelve a «Por revisar». Ver «Lo siguiente» 0. 355 pruebas. |
 | 58 | `944e0ad` | 1.3.0: **Clientes** sin avisos encimados (con un filtro vacío, «Nothing to handle» se montaba sobre «¿Llevas los libros de otro negocio?»; captura del usuario) y **«Idioma»** en Más › Moneda y formatos lleva a Ajustes › Apps › Chirogra. Ver «Lo siguiente» 0. 350 pruebas. |
 
-## Último chat (21-nov): builds 56, 57, 58 y 59
+## Último chat (21-nov): builds 56, 57, 58, 59 y 60
+
+- **Build 60 (`229695f`), tarde del 21-nov:** el usuario mandó capturas de su iPad (Conciliación y Reglas estiradas,
+  «Sales sourcing» apretado, títulos de la tabla de la factura descolocados, «Payables (0)» en dos líneas). Se
+  arreglaron, se hizo un **repaso de diseño de las 27 secciones del iPad y del Mac** con capturas antes/después, y él
+  decidió: reportes y detalles **centrados**, Presupuesto también, y el **recorrido de la primera vez en el iPad** en el
+  mismo build. Vio cada paso en el Debug de su iPad antes de pedir «publícalo». «Lo siguiente» 0.
 
 - **Build 59 (`34f6cc0`), en otro chat del mismo día:** el usuario eligió hacer «Anular cobro», el pendiente que quedaba
   del informe de Eric. Visto en el simulador (hoja de capturas mandada) y subido a petición suya. «Lo siguiente» 0.
@@ -174,7 +182,7 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 
 ## Lo que le toca al usuario
 
-1. **Asignar el build 59** al grupo de testers externos del enlace público cuando Apple lo procese, y mandar más
+1. **Asignar el build 60** al grupo de testers externos del enlace público cuando Apple lo procese, y mandar más
    testers (Beta Family, Userbrain, UXtweak) con él. Traer aquí lo que digan.
 1b. ~~Probar el 58 en su iPhone~~: **probado por él el 21-nov** («Idioma» abre Ajustes y Clientes sin avisos encimados).
 2. **Probar el 52 en TestFlight:** el recorrido de cada pestaña, «Más › Ayuda › Ver el recorrido otra vez», y borrar los
@@ -187,6 +195,29 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 
 ## Lo siguiente
 
+0. **Build 60: SUBIDO iOS+Mac a TestFlight (21-nov, `229695f`), sin empujar.** Todo es del iPad salvo la tabla de líneas
+   de la factura (también Mac). (1) **Conciliación y Reglas** con columna maestro y detalle (`MasterPage.reconcile/
+   .rules`, solo iOS; `Banking/BankingMasterPages.swift`: `ReconcileMasterList`, `RuleMasterList`, `BankRuleDetail`,
+   acciones en `BankRuleActions`); `ReconciliationView(inDetailColumn:)` sin «Guardar». (2) **Repaso**: columnas maestro
+   con «+» solo si hay otro botón o la etiqueta es larga (Gastos, Asientos) y «Mostrar archivadas» al final del plan de
+   cuentas (antes en «⋯»; el título se cortaba); «Facturas» (antes «Ventas»); «+ Regla»; Banca y Conciliación con
+   `IconTile` de color y `focusEffectDisabled` (anillo cuadrado); Libro mayor con el subtítulo en el contenido (título
+   grande); `EditToolbarButton` (lápiz en el iPad, texto en iPhone y Mac). (3) **Anchos** (decisión del usuario):
+   `readableDetailWidth()` (`DesignSystem/ReadableWidth.swift`) centra a 720 pt los detalles de `Form`/`List`; factura y
+   estimado centrados; `ReportsView.readableWidth` = 820 pt centrado en todos los reportes del iPad (antigüedad y
+   sales tax con columnas más estrechas ahí; 820 para que quepan 4 tarjetas grandes); Presupuesto igual
+   (`BudgetsView.wideWidth`). (4) **Factura**: títulos de columna sobre el texto de cada control (márgenes 10/12) y la
+   fila alineada con el campo del producto (`VerticalAlignment.lineField`). (5) `MasterFilterBar` con `.fixedSize()`;
+   «Origen de ventas» con aire; título de deducibles sin cortar. (6) **Recorrido del iPad**: `RecorridoID.padHome,
+   padSales, padExpenses, padBanking, padReports` (solo el corto; «visto» propio), montado en
+   `RootView.splitConRecorrido` (empieza al elegir la sección), tarjeta centrada sobre lo iluminado o al lado si es
+   muy alto (barra lateral), `margenAbajo` 24, la barra lateral solo cuenta si se ve (`sidebarVisible`), «Ver el
+   recorrido otra vez» en Ajustes del iPad (`SettingsWideView.tourRow`). **Ojo:** `.recorridoObjetivo` va por dentro de
+   `.masterRow` (por fuera, la fila elegida perdía su fondo de Tinta). QA: `-qa.seccion clients|report0…7`;
+   UITestsQA `IPadTodo`, `IPadRecorrido` (sin commitear). Probado en el simulador del iPad (horizontal y vertical) y
+   el del iPhone (su recorrido no cambia). **Pregunta del usuario resuelta:** en el Debug del iPad la hoja de planes
+   salía al abrir porque el uso libre empezó el 10-nov (lo comparten iPhone e iPad por iCloud) y el Debug usa otra
+   tienda de prueba sin su suscripción; en TestFlight se comporta como el iPhone. No es un fallo.
 0. **Build 59: SUBIDO iOS+Mac a TestFlight (21-nov, `34f6cc0`), `version-1.3` empujada.** Anular un cobro registrado por error
    (Eric, Beta Family: «un toque de más deja un cobro que no se puede borrar»). `Bookkeeper.voidPayment(_:on:)`
    revierte el asiento del cobro en su fecha (o en `on`, el primer día abierto, si su periodo está cerrado:
