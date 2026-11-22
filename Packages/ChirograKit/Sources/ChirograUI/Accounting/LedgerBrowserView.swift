@@ -71,6 +71,7 @@ struct LedgerBrowserView: View {
                 }
             }
             .padding(Metrics.gutter)
+            .padReadingColumn()
         }
         .background(Palette.background)
         .navigationTitle("Libro mayor")

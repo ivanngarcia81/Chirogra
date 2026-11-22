@@ -32644,6 +32644,16 @@
           }
         }
       }
+    },
+    "Elige un cambio" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose a change"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

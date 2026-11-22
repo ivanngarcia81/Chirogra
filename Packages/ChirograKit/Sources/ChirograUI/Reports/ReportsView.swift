@@ -1191,9 +1191,11 @@ struct ReportsView: View {
             .accessibilityHidden(true)
             ForEach(Array(blocks.enumerated()), id: \.element.id) { index, block in
                 if let title = block.title {
-                    SectionLabel(text: title).padding(.horizontal, 16).padding(.top, index == 0 ? 10 : 22).padding(.bottom, 7)
+                    // Más aire antes de cada sección que dentro de ella: el título iba casi pegado a la tarjeta de arriba
+                    // (pedido del usuario, 21-nov).
+                    SectionLabel(text: title).padding(.horizontal, 16).padding(.top, index == 0 ? 10 : 30).padding(.bottom, 8)
                 } else {
-                    Color.clear.frame(height: 12)
+                    Color.clear.frame(height: 18)
                 }
                 RowGroup(macBorder: true) {
                     ForEach(block.lines) { line in

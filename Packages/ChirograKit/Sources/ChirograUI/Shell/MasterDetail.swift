@@ -20,6 +20,9 @@ enum MasterPage: Hashable {
     /// Banca › Conciliación y Reglas: columna maestro en el iPad (21-nov, a todo el ancho se veían estiradas;
     /// `Banking/BankingMasterPages.swift`). En el Mac siguen con su tabla y el iPhone con su lista.
     case reconcile, rules
+    /// Bitácora de cambios: columna maestro en el iPad (pedido del usuario, 21-nov: «que sea esto el maestro detalle»,
+    /// como Asientos de diario). En el Mac sigue con su tabla y el iPhone con su lista.
+    case auditLog
     #endif
 
     init?(_ item: SidebarItem) {
@@ -37,6 +40,7 @@ enum MasterPage: Hashable {
         #if os(iOS)
         case .banking(.reconcile): self = .reconcile
         case .banking(.rules): self = .rules
+        case .accounting(.auditLog): self = .auditLog
         #endif
         case .accounting(.journal): self = .journal
         case .accounting(.chart): self = .chart
@@ -60,6 +64,7 @@ enum MasterPage: Hashable {
         case .estimates: ("list.clipboard", String(localized: "Elige un estimado"))
         case .reconcile: ("checkmark.seal", String(localized: "Elige una cuenta"))
         case .rules: ("wand.and.stars", String(localized: "Elige una regla"))
+        case .auditLog: ("clock.arrow.circlepath", String(localized: "Elige un cambio"))
         #endif
         }
     }
@@ -124,6 +129,7 @@ struct MasterColumn: View {
         case .estimates: EstimateMasterList(selection: $selection)
         case .reconcile: ReconcileMasterList(selection: $selection)
         case .rules: RuleMasterList(selection: $selection)
+        case .auditLog: AuditLogMasterList(selection: $selection)
         #endif
         }
     }
@@ -150,6 +156,7 @@ struct MasterDetailColumn: View {
             case .estimates: ModelLookup(id: id, key: \Estimate.id, page: page) { EstimateDetailView(estimate: $0) }
             case .reconcile: ModelLookup(id: id, key: \Account.id, page: page) { ReconciliationView(account: $0, inDetailColumn: true) }
             case .rules: ModelLookup(id: id, key: \BankRule.id, page: page) { BankRuleDetail(rule: $0) }
+            case .auditLog: ModelLookup(id: id, key: \AuditEvent.id, page: page) { AuditEventDetailView(event: $0) }
             #endif
             }
         } else {
@@ -201,7 +208,7 @@ private struct MasterPlaceholder: View {
             case .journal: GuideOrPick<JournalEntry, JournalEntryEditorView>(page: page, guide: .journal) { JournalEntryEditorView() }
             #if os(iOS)
             case .estimates: GuideOrPick<Estimate, InvoiceEditorView>(page: page, guide: .estimates) { InvoiceEditorView(mode: .estimate(nil)) }
-            case .reconcile: MasterPick(page: page)
+            case .reconcile, .auditLog: MasterPick(page: page)
             case .rules: RulePlaceholder()
             #endif
             case .banking, .chart: MasterPick(page: page)

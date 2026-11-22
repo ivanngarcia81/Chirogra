@@ -6,15 +6,15 @@ import SwiftUI
 /// ancho del detalle. Con margen y no con un marco: así se desplaza también desde los lados. En columnas estrechas
 /// (iPhone, iPad en vertical con la lista) no cambia nada.
 private struct ReadableDetailWidth: ViewModifier {
-    static let column: CGFloat = 720
+    var column: CGFloat = 720
     /// Margen de un `Form` agrupado del sistema a cada lado.
     static let systemMargin: CGFloat = 20
     @State private var width: CGFloat = 0
 
     func body(content: Content) -> some View {
         Group {
-            if width > Self.column + 2 * Self.systemMargin {
-                content.contentMargins(.horizontal, (width - Self.column) / 2, for: .scrollContent)
+            if width > column + 2 * Self.systemMargin {
+                content.contentMargins(.horizontal, (width - column) / 2, for: .scrollContent)
             } else {
                 content
             }
@@ -25,6 +25,37 @@ private struct ReadableDetailWidth: ViewModifier {
 
 extension View {
     func readableDetailWidth() -> some View { modifier(ReadableDetailWidth()) }
+
+    /// iPad: las páginas anchas de una columna (Libro mayor, Cierre de periodo, Bitácora e Impuestos) a 820 pt de
+    /// contenido y centradas, como los reportes (`ReportsView.readableWidth`; pedido del usuario, 21-nov: «está muy
+    /// ancho, debe centrarse como las páginas anteriores»). Para el contenido de un `ScrollView`; en un `List`,
+    /// `padReadingList()`. En el iPhone y el Mac no cambia nada.
+    @ViewBuilder func padReadingColumn() -> some View {
+        #if os(iOS)
+        frame(maxWidth: PadReading.content + 2 * Metrics.gutter).frame(maxWidth: .infinity)
+        #else
+        self
+        #endif
+    }
+
+    /// `padReadingColumn()` para un `List` agrupado (su margen del sistema hace de margen de la página). Con un marco y
+    /// no con `contentMargins`: así, en la Bitácora, las filas salían corridas a la izquierda y el filtro pegado al borde.
+    /// `content`: 820 en las páginas, 720 en un detalle abierto desde ellas (como `readableDetailWidth`).
+    @ViewBuilder func padReadingList(_ content: CGFloat = PadReading.content) -> some View {
+        #if os(iOS)
+        frame(maxWidth: content + 2 * ReadableDetailWidth.systemMargin).frame(maxWidth: .infinity)
+            .background(Palette.background)
+        #else
+        self
+        #endif
+    }
+}
+
+/// Ancho de lectura de las páginas anchas del iPad: el de los reportes.
+enum PadReading {
+    static let content: CGFloat = 820
+    /// Un detalle (`Form`) abierto desde una de esas páginas: el ancho de `readableDetailWidth`.
+    static let detail: CGFloat = 720
 }
 
 /// «Editar» de la barra de un detalle: en el iPad, el lápiz, como la factura y el cliente; en el iPhone y el Mac, la

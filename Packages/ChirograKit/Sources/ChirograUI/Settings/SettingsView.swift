@@ -105,10 +105,21 @@ struct SettingsWideView: View {
             }
             .frame(width: Self.navWidth)
             .scrollIndicators(.never)
-            // La columna maestra (pedido el 8-nov): en el Mac, blanca sobre el suelo gris de los formularios; en el
-            // iPad, el tono de las listas maestro, entre el blanco de la barra lateral y el gris de la derecha.
+            // La columna maestra (pedido el 8-nov): en el Mac, blanca sobre el suelo gris de los formularios. En el
+            // iPad, la tarjeta gris de las demás listas e Inicio (`MasterCardPage`; pedido del usuario, 21-nov: «el
+            // maestro detalle debe parecerse a los otros»).
+            #if os(iOS)
+            .frame(maxHeight: .infinity, alignment: .top)
             .background(Palette.masterColumn)
+            .clipShape(RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous))
+            .padding(.leading, 8)
+            .padding(.bottom, 8)
+            #else
+            .background(Palette.masterColumn)
+            #endif
+            #if os(macOS)
             Divider()
+            #endif
             Group {
                 if let company = companies.first {
                     switch page {
@@ -224,7 +235,8 @@ struct SettingsWideView: View {
     private static let rowHeight: CGFloat = 30
     private static let rowRadius: CGFloat = 7
     #else
-    private static let navWidth: CGFloat = 260
+    /// El ancho de la tarjeta de las listas maestro (`MasterCardPage`).
+    private static let navWidth: CGFloat = 340
     private static let rowHeight: CGFloat = 44
     private static let rowRadius: CGFloat = 12
     #endif

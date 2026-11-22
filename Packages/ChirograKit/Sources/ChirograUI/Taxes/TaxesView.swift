@@ -102,7 +102,7 @@ struct TaxesView: View {
     private var taxesBody: some View {
         let _ = taxLines.count   // se observa para recalcular el resumen al emitir facturas
         return ScrollView {
-            if isWide { wideBody } else { compactBody }
+            if isWide { wideBody.padReadingColumn() } else { compactBody }
         }
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
         .background(Palette.background)
@@ -497,7 +497,13 @@ struct TaxesView: View {
             ], large: true)
             // Con letra de accesibilidad, uno debajo del otro: lado a lado, la columna de 320 pt partía las cifras en dos
             // líneas («$2,645.» / «44», QA del 10-nov).
+            // En el iPad, la página va a 820 pt (`padReadingColumn`): la tabla de tasas encima y las tarjetas debajo;
+            // al lado no caben las columnas de la tabla.
+            #if os(iOS)
+            let sideBySide = false
+            #else
             let sideBySide = width - 40 >= 820 && !dynamicTypeSize.isAccessibilitySize
+            #endif
             let layout = sideBySide ? AnyLayout(HStackLayout(alignment: .top, spacing: 16)) : AnyLayout(VStackLayout(spacing: 16))
             if let errorMessage { ErrorBanner(message: errorMessage) }
             layout {
@@ -738,7 +744,9 @@ struct TaxesView: View {
             }
             ForEach(rows.prefix(6)) { row in
                 Divider()
-                VStack(alignment: .leading, spacing: 4) {
+                // Con aire entre el nombre, su barra y la fila siguiente (pedido del usuario, 21-nov: con 6 pt y la barra
+                // pegada al texto, la tarjeta ancha del iPad se veía apretada).
+                VStack(alignment: .leading, spacing: 8) {
                     HStack {
                         Text(row.line.name(for: .appText)).lineLimit(1)
                         Spacer(minLength: 8)
@@ -752,7 +760,8 @@ struct TaxesView: View {
                         }
                         .accessibilityHidden(true)
                 }
-                .padding(.vertical, 6)
+                // Más abajo que arriba: el texto ya trae su aire encima y la barra quedaba pegada a la línea siguiente.
+                .padding(.top, 10).padding(.bottom, 14)
                 .accessibilityElement(children: .combine)
             }
             // Lado a lado si caben enteros en una línea; si no (columna estrecha del iPad o del Mac, inglés, letra

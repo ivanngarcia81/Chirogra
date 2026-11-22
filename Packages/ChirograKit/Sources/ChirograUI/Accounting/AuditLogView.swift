@@ -208,6 +208,7 @@ struct AuditLogView: View {
         }
         .groupedList()
         .screenBackground()
+        .padReadingList()
         .searchable(text: $query, prompt: Text("Buscar en la bitácora"))
         .navigationTitle("Bitácora de cambios")
         // Grande, como las demás listas y reportes de Más (repaso visual, build 56); en línea solo los formularios.
@@ -292,6 +293,63 @@ struct AuditEventRow: View {
     }
 }
 
+#if os(iOS)
+/// iPad: la bitácora en la tarjeta de la columna maestro y el cambio elegido a la derecha, como Asientos de diario.
+struct AuditLogMasterList: View {
+    @Binding var selection: UUID?
+    @CompanyQuery(sort: [SortDescriptor(\AuditEvent.date, order: .reverse)]) private var events: [AuditEvent]
+    @State private var filter: AuditLogFilter = .all
+    @State private var query = ""
+    #if DEBUG
+    @Environment(\.modelContext) private var context
+    #endif
+
+    private var shown: [AuditEvent] {
+        let text = query.trimmingCharacters(in: .whitespaces)
+        return events.filter { filter.matches($0) && $0.matches(text) }
+    }
+
+    var body: some View {
+        List(selection: $selection) {
+            ForEach(shown) { event in
+                MasterRow(title: event.summary.isEmpty ? event.actionTitle : event.summary, amount: "",
+                          subtitle: [event.subjectTitle, event.date.shortDate, event.timeTitle].joined(separator: " · ")) {
+                    if event.isDeletion {
+                        MasterStatus(chip: StatusChip(text: String(localized: "Borrado"), foreground: Palette.negative,
+                                                      compact: true, dot: Palette.red))
+                    }
+                }
+                .masterRow(event.id, selection: selection)
+            }
+            if shown.isEmpty {
+                Text(events.isEmpty ? String(localized: "Aún no hay cambios.") : String(localized: "Ningún cambio coincide con la búsqueda o el filtro."))
+                    .font(.subheadline).foregroundStyle(Palette.ink2).frame(maxWidth: .infinity)
+                    .selectionDisabled().listRowSeparator(.hidden).listRowBackground(Palette.masterColumn)
+            } else {
+                Text("Cada cambio de tus libros, con la fecha y el aparato en que se hizo. La bitácora no se puede editar ni borrar.")
+                    .font(.footnote).foregroundStyle(Palette.ink2)
+                    .selectionDisabled().listRowSeparator(.hidden).listRowBackground(Palette.masterColumn)
+            }
+        }
+        .masterList(String(localized: "Bitácora de cambios"), query: $query, prompt: "Buscar en la bitácora")
+        .masterFilter {
+            HStack(spacing: 8) {
+                Text("Mostrar").foregroundStyle(Palette.ink2)
+                Spacer(minLength: 8)
+                FilterPicker(title: String(localized: "Filtrar"), options: AuditLogFilter.allCases, selection: $filter,
+                             label: \.localizedTitle) { option in events.filter(option.matches).count }
+            }
+            .frame(minHeight: Metrics.target)
+            .padding(.horizontal, 16)
+            .padding(.bottom, 8)
+        }
+        #if DEBUG
+        .task { QAAuditLog.makeSampleChanges(in: context) }
+        #endif
+    }
+}
+#endif
+
 /// Un cambio de la bitácora: qué, cuándo, en qué aparato y el antes y el después de cada campo.
 struct AuditEventDetailView: View {
     let event: AuditEvent
@@ -321,6 +379,8 @@ struct AuditEventDetailView: View {
         }
         .formStyle(.grouped)
         .screenBackground()
+        // iPad: centrado a 720 pt, como los demás detalles (pedido del usuario, 21-nov: «faltó esta página»).
+        .padReadingList(PadReading.detail)
         .navigationTitle(event.actionTitle)
         .inlineTitle()
     }

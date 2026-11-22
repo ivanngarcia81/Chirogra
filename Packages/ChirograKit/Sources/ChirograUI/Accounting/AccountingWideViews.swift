@@ -313,6 +313,7 @@ struct PeriodCloseView: View {
                 }
             }
             .padding(Metrics.gutter)
+            .padReadingColumn()
         }
         .background(Palette.background)
     }
