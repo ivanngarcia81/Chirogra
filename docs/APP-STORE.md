@@ -290,6 +290,147 @@ Chirogra 1.1 es nuestra actualización más grande.
 > iCloud, backups and security). All data stays on the device and in the user's private iCloud database; there is no
 > server.
 
+## Envío de la 1.3.0 tras aprobarse la 1.0 (22-nov)
+
+**Enviada a revisión el 22-nov** por el usuario: versión 1.3.0 con el build 64 y la suscripción «Chirogra para contadores» (com.chirogra.app.contador.mensual) en el mismo envío. **macOS 1.3.0 (build 64) enviada también el 22-nov**, con su propio «What's New» (sin recorrido, sin las líneas del iPhone y el iPad, y «adjunta una foto o un PDF» en vez de «escanea») y notas adaptadas al Mac (rutas de la barra lateral, recibos adjuntos o arrastrados).
+
+Apple aprobó la 1.0 el 22-nov con el **build 15** (el que arregla iCloud en Producción; el 11 no sincronizaba). Decidido el 13-nov: se envía **directo la 1.3** (sin la 1.0.1, la 1.1 ni la
+1.2) con el **último build de `version-1.3`** (64 el 22-nov, con el icono «chirogra pencils»), el plan **«Chirogra para
+contadores»** añadido al envío y este «What's New», que junta la 1.1, la 1.2 y la 1.3 (los de abajo quedan como
+historia). La descripción y el texto promocional son los de arriba (los de la 1.1).
+
+**What's New (en)**
+
+Chirogra 1.3 is our biggest update yet.
+
+• Chirogra for Accountants: a new plan with unlimited businesses, each with its own books, and a Clients dashboard that shows who needs attention
+• Banking: import statements (CSV, OFX, QFX), review transactions in one inbox with rules, matches and splits, and reconcile your accounts
+• Scan receipts: Chirogra reads them on your device and fills in the expense
+• Sales tax by ZIP code: Chirogra suggests the combined rate (state, county and city) in 34 states
+• Reports: cash flow, cash or accrual basis, budgets vs. actual, deductible expenses, and arrows to move between periods on iPhone
+• Export for My Accountant: reports, aging, bank reconciliations and CSV files in one package
+• Invoices: a Pay Now button and QR code with your own payment link, a confirmation before recording a payment, and void a payment recorded by mistake
+• Change Log, accountant adjustments and closing with a reason for late items
+• Move money: transfers, credit card payments and owner draws
+• A first-run tour on each screen of iPhone and iPad, and a full tutorial in Help
+• Use Chirogra for 7 days before choosing a plan
+• Backups can be protected with a password
+• iPad: lists with details side by side, and wider pages that are easier to read
+• iPhone: choose the tools in your tab bar and keep favorites at the top of More
+• Deleted businesses stay deleted on all your devices
+• A new app icon
+• Design, accessibility and larger-text improvements on iPhone, iPad and Mac
+
+**Novedades (es)**
+
+Chirogra 1.3 es nuestra actualización más grande.
+
+• Chirogra para contadores: un plan nuevo con empresas sin límite, cada una con sus libros, y un panel de clientes que te dice quién necesita atención
+• Banca: importa extractos (CSV, OFX, QFX), revisa los movimientos en una sola bandeja con reglas, coincidencias y divisiones, y concilia tus cuentas
+• Escanea recibos: Chirogra los lee en tu aparato y rellena el gasto
+• Sales tax por código postal: Chirogra te sugiere la tasa combinada (estado, condado y ciudad) en 34 estados
+• Reportes: flujo de efectivo, base caja o devengado, presupuesto contra real, gastos deducibles y flechas para cambiar de periodo en el iPhone
+• Exportar para mi contador: reportes, antigüedad, conciliaciones bancarias y archivos CSV en un solo paquete
+• Facturas: botón «Pagar ahora» y código QR con tu propio enlace de pago, confirmación antes de registrar un cobro y anular un cobro registrado por error
+• Bitácora de cambios, ajustes del contador y cierre con motivo para lo que llega tarde
+• Mover dinero: traspasos, pago de la tarjeta y retiros del dueño
+• Un recorrido la primera vez en cada pantalla del iPhone y el iPad, y un tutorial completo en Ayuda
+• Usa Chirogra 7 días antes de elegir un plan
+• Copias de seguridad protegidas con contraseña
+• iPad: listas con el detalle al lado y páginas anchas más fáciles de leer
+• iPhone: elige las herramientas de la barra de abajo y ten tus favoritas arriba en Más
+• Lo que borras no vuelve en tus otros aparatos
+• Icono nuevo
+• Mejoras de diseño, accesibilidad y letra grande en iPhone, iPad y Mac
+
+**Notas para la revisión (App Review Information › Notes)**
+
+> Chirogra doesn't require an account. On first launch, swipe through the welcome tour (or tap Skip). On the last page,
+> "Whose books do you keep?", tap "Try with Sample Data" to explore a company with invoices, expenses, banking, sales
+> tax and reports, or choose "My business" and create a company. A short tour explains each screen the first time it
+> opens (tap Skip to close it).
+>
+> Subscriptions: new users can record freely for 7 days from their first company; after that the app offers the
+> 14-day free trial. To see the plans at any time: Settings › iCloud and Backups › Subscription › "Try Free" (on
+> iPhone: More › iCloud and Backups). If the subscription ends, books stay in read-only mode (view, export and back up
+> only).
+>
+> New since 1.0: the "Chirogra for Accountants" subscription (com.chirogra.app.contador.mensual), a higher level in the
+> same group as "Chirogra Monthly". The regular plan allows one business (the sample business counts). To see the
+> Accountants plan: Settings › Businesses › Add Business… (on iPhone: More › Businesses › Add Business…). After
+> subscribing to it, you can add more businesses and the Clients dashboard appears.
+>
+> Scan Receipt (Expenses) reads receipts on the device with Apple frameworks; nothing is uploaded. Sales tax rates by
+> ZIP code are bundled in the app; no network request is made. Bank statements are imported from CSV, OFX or QFX files
+> the user chooses; there is no bank connection. Backups can be encrypted with a password chosen by the user. iCloud
+> sync is optional (Settings › iCloud and Backups). All data stays on the device and in the user's private iCloud
+> database; there is no server.
+
+### macOS 1.3.0 (enviada el 22-nov con los textos de abajo)
+
+En el Mac no hay recorrido de la primera vez ni escáner con cámara (los dos son `#if os(iOS)`), pero sí se lee el
+recibo adjunto (`ReceiptReader` no depende de la plataforma). Por eso el «What's New» del Mac quita el recorrido, las
+líneas del iPhone y el iPad y las flechas de Reportes, y dice «adjunta» en vez de «escanea».
+
+**What's New (en, Mac)**
+
+Chirogra 1.3 is our biggest update yet.
+
+• Chirogra for Accountants: a new plan with unlimited businesses, each with its own books, and a Clients dashboard that shows who needs attention
+• Banking: import statements (CSV, OFX, QFX), review transactions in one inbox with rules, matches and splits, and reconcile your accounts
+• Receipts: attach a photo or PDF and Chirogra reads it on your Mac and fills in the expense
+• Sales tax by ZIP code: Chirogra suggests the combined rate (state, county and city) in 34 states
+• Reports: cash flow, cash or accrual basis, budgets vs. actual, and deductible expenses
+• Export for My Accountant: reports, aging, bank reconciliations and CSV files in one package
+• Invoices: a Pay Now button and QR code with your own payment link, a confirmation before recording a payment, and void a payment recorded by mistake
+• Change Log, accountant adjustments and closing with a reason for late items
+• Move money: transfers, credit card payments and owner draws
+• Use Chirogra for 7 days before choosing a plan
+• Backups can be protected with a password
+• Deleted businesses stay deleted on all your devices
+• A new app icon
+• Design, accessibility and larger-text improvements
+
+**Novedades (es, Mac)**
+
+Chirogra 1.3 es nuestra actualización más grande.
+
+• Chirogra para contadores: un plan nuevo con empresas sin límite, cada una con sus libros, y un panel de clientes que te dice quién necesita atención
+• Banca: importa extractos (CSV, OFX, QFX), revisa los movimientos en una sola bandeja con reglas, coincidencias y divisiones, y concilia tus cuentas
+• Recibos: adjunta una foto o un PDF y Chirogra lo lee en tu Mac y rellena el gasto
+• Sales tax por código postal: Chirogra te sugiere la tasa combinada (estado, condado y ciudad) en 34 estados
+• Reportes: flujo de efectivo, base caja o devengado, presupuesto contra real y gastos deducibles
+• Exportar para mi contador: reportes, antigüedad, conciliaciones bancarias y archivos CSV en un solo paquete
+• Facturas: botón «Pagar ahora» y código QR con tu propio enlace de pago, confirmación antes de registrar un cobro y anular un cobro registrado por error
+• Bitácora de cambios, ajustes del contador y cierre con motivo para lo que llega tarde
+• Mover dinero: traspasos, pago de la tarjeta y retiros del dueño
+• Usa Chirogra 7 días antes de elegir un plan
+• Copias de seguridad protegidas con contraseña
+• Lo que borras no vuelve en tus otros aparatos
+• Icono nuevo
+• Mejoras de diseño, accesibilidad y letra grande
+
+**Notas para la revisión (Mac)**
+
+> Chirogra doesn't require an account. On first launch, go through the welcome screens (or click Skip). On the last
+> page, "Whose books do you keep?", click "Try with Sample Data" to explore a company with invoices, expenses, banking,
+> sales tax and reports, or choose "My business" and create a company.
+>
+> Subscriptions: new users can record freely for 7 days from their first company; after that the app offers the
+> 14-day free trial. To see the plans at any time: Settings (in the sidebar) › iCloud and Backups › Subscription ›
+> "Try Free". If the subscription ends, books stay in read-only mode (view, export and back up only).
+>
+> New since 1.0: the "Chirogra for Accountants" subscription (com.chirogra.app.contador.mensual), a higher level in the
+> same group as "Chirogra Monthly". The regular plan allows one business (the sample business counts). To see the
+> Accountants plan: Settings (in the sidebar) › Businesses › Add Business…. After subscribing to it, you can add more
+> businesses and the Clients dashboard appears.
+>
+> Receipts: in a new expense, attach a photo or PDF of a receipt (or drag it onto the receipt area); Chirogra reads it
+> on the Mac with Apple frameworks and nothing is uploaded. Sales tax rates by ZIP code are bundled in the app; no
+> network request is made. Bank statements are imported from CSV, OFX or QFX files the user chooses; there is no bank
+> connection. Backups can be encrypted with a password chosen by the user. iCloud sync is optional (Settings › iCloud
+> and Backups). All data stays on the device and in the user's private iCloud database; there is no server.
+
 ## Versión 1.3.0: «What's New» y notas para la revisión
 
 Preparado el 13-nov. Se envía cuando esté aprobada la 1.2, con el **build 44** (o el último de la rama `version-1.3`).

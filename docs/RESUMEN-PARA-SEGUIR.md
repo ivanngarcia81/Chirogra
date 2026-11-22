@@ -1,22 +1,24 @@
-# Chirogra: resumen para empezar el siguiente chat (21-nov-2026, build 61)
+# Chirogra: resumen para empezar el siguiente chat (22-nov-2026, build 64, 1.3.0 en revisión)
 
 Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («Dónde nos quedamos» y «Siguiente»).
 **Al usuario se le habla siempre en español.**
 
 ## Estado
 
-- **Ramas:** `version-1.3` con el build 61 (`8dbdd3b`) y este resumen commiteados el 21-nov (ver al final si se
-  empujaron: `git status -sb`). `main` en `83b1db4` (build 50 y la
+- **Ramas:** `version-1.3` con el build 64 (`b2c8e43` + `2c05bbf`) y este resumen, commiteados y **empujados el
+  22-nov**. `main` en `83b1db4` (build 50 y la
   web con «Kairogra»), empujada el 17-nov; los builds de después no tocan la web, así que `main` no hace falta moverla.
   La web (`sitio/`) se publica desde `main`.
-- **Último build: 61 (1.3.0)**, subido a TestFlight para iOS y macOS el 21-nov (`8dbdd3b`): campos de varias líneas con
-  aire y el detalle en la misma línea en el iPad. Antes: 60 (21-nov, iPad: lista y detalle, repaso, centrado, recorrido),
+- **Último build: 64 (1.3.0)**, subido a TestFlight para iOS y macOS el 21-nov por la noche (`b2c8e43`): icono nuevo
+  «chirogra pencils». Antes: 63 (21-nov, iPad: páginas anchas centradas, Ajustes y Bitácora como lista y detalle), 62
+  (21-nov, revisión externa: copias con contraseña, números repetidos, pantalla de recuperación; iPad como Inicio), 61
+  (21-nov, campos de varias líneas y detalle en línea en el iPad), 60 (21-nov, iPad: lista y detalle, repaso, centrado, recorrido),
   59 (21-nov, anular un cobro), 58 (21-nov), 57 (21-nov), 56 (21-nov), 55 (20-nov), 54 (20-nov), 53 (18-nov), 52 (18-nov), 51
   (recorrido de la primera vez, 17-nov) y 50 (17-nov). Los testers externos (Userbrain, Beta Family) entran con el enlace público
-  https://testflight.apple.com/join/RGwqqUyw: **el usuario tiene que asignar el 61 a ese grupo** cuando Apple lo procese.
-- **En App Store Connect:** la **1.0 (build 11)** espera la revisión. **Decidido el 13-nov:** cuando la aprueben se envía
-  **directo la 1.3** con su último build, sin la 1.0.1, la 1.1 ni la 1.2, con un «What's New» que junte las tres. El plan
-  «Chirogra para contadores» está completo en App Store Connect y va en ese envío (no pulsar «Add for Review» suelto).
+  https://testflight.apple.com/join/RGwqqUyw: **el usuario tiene que asignar el 64 a ese grupo** (el 22-nov seguían con el 61).
+- **En App Store Connect:** la **1.0 quedó aprobada el 22-nov con el build 15**, y **el 22-nov el usuario ENVIÓ a revisión la 1.3.0 con el build 64** (iOS y macOS) junto con la suscripción «Chirogra para contadores» (textos en APP-STORE.md, «Envío de la 1.3.0 tras aprobarse la 1.0»). Falta ver qué dice Apple. Se saltaron la 1.0.1, la 1.1 y la 1.2 (decidido el 13-nov): el «What's New» junta las
+  tres. iOS y Mac llevan textos distintos (el Mac sin recorrido ni líneas del iPhone/iPad, y «adjunta» en vez de
+  «escanea» recibos), los dos en APP-STORE.md. Si Apple rechaza algo, el usuario trae el mensaje del Resolution Center.
   El 17-nov la web de App Store Connect le fallaba al usuario (sin apps, «News Request», lo sacaba al entrar); la página
   de estado de Apple no marcaba nada y las subidas funcionaban: era la sesión de Safari (pestaña privada / borrar datos).
 - **Aparatos del usuario:** iPhone con TestFlight (build 59 el 21-nov). **iPad Pro 12,9″ con el Debug del código del
@@ -67,8 +69,29 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 | 59 | `34f6cc0` | 1.3.0: **anular un cobro** (pendiente del informe de Eric): cada cobro en su fila de «Actividad» de la factura; tocarlo o «⋯ › Anular cobro…» lo revierte en su fecha, la factura vuelve a quedar pendiente y el movimiento del banco enlazado vuelve a «Por revisar». Ver «Lo siguiente» 0. 355 pruebas. |
 | 60 | `229695f` | 1.3.0: **iPad**: Conciliación y Reglas con lista y detalle; repaso de diseño de las 27 secciones (títulos de columna enteros, «Facturas», icono de color en Banca, Libro mayor con título grande, lápiz de Editar); detalles a 720 pt y reportes a 820 pt **centrados**; tabla de líneas de la factura alineada; **recorrido de la primera vez en el iPad**. Ver «Lo siguiente» 0. 355 pruebas. |
 | 61 | `8dbdd3b` | 1.3.0: `fieldBox` con 8 pt arriba y abajo («Notas y términos» de la factura ya no pega el texto arriba); en los detalles del iPad el dato gris va **en la misma línea** que el título (`TituloConDetalle`: líneas de factura, estimado, factura por pagar y asiento; historial del gasto). Capturas del usuario. 355 pruebas. |
+| 62 | `b0a1777` | 1.3.0: revisión externa del 21-nov: copias `.chirogra` **con contraseña** (AES-GCM, PBKDF2; se pide al restaurar), números de documento repetidos tras sincronizar se renumeran (`resolveNumberCollisions`, bitácora y aviso), **sin `fatalError`** si la base no abre (`StoreRecoveryView`); iPad: todas las listas como Inicio. `scripts/verificar.sh` y GitHub Actions (`pruebas.yml`, runner `xcode-27`). |
+| 63 | `864153d` | 1.3.0: iPad: Libro mayor, Cierre, Bitácora e Impuestos a 820 pt centrados; Ajustes en la tarjeta gris; Bitácora con lista y detalle; más aire en deducibles y estados. Capturas del usuario. |
+| 64 | `b2c8e43` | 1.3.0: **icono «chirogra pencils»** (lapicero y lápiz cruzados en χ, ρ azafrán con brillo de lupa; archivo del usuario), también `LogoMark` y la bienvenida (`LogoGlyph`), el icono de la web y las capturas de la guía. **Enviado a revisión** (1.3.0 iOS y macOS) el 22-nov. |
 
-## Último chat (21-nov, mediodía y tarde): builds 59, 60 y 61
+## Último chat (21-nov noche y 22-nov): build 64, aprobación de la 1.0 y envío de la 1.3.0
+
+- **Tarea de Beta Family para revisar el iPad** (en inglés y español: About, What to test, 4 tareas y 5 preguntas
+  aparte), dada en el chat.
+- **Build 64 (`b2c8e43`):** el usuario pidió cambiar el icono por `~/Desktop/chirogra pencils.icon`. Copiado tal cual a
+  `App/AppIcon.icon`; dentro de la app `LogoGlyph` (`DesignSystem/LogoGlyph.swift`, sustituye a `ChiGlyph`/`RhoGlyph`)
+  dibuja las 7 piezas sacadas de los SVG de las capas, con `Palette.logoFill` (degradado P3 del icono), `logoTip` y
+  `logoBall`; la bienvenida dibuja el contorno de cada pieza (lapicero, lápiz, ρ) y luego la rellena. Icono de la web
+  con `ictool`; `bienvenida-es/en.jpg` de la guía rehechas con la copia QA del Mac (la clave del marco de la ventana
+  cambió: CONTEXTO, «Ícono»). Visto en el simulador y el Mac; `verificar.sh --rapido` en verde. Subido iOS y macOS.
+- **Apple aprobó la 1.0 el 22-nov con el build 15** (no el 11). El mismo día el usuario **envió la 1.3.0 (iOS y macOS)
+  con el build 64** y la suscripción «Chirogra para contadores». Textos usados (What's New iOS, What's New Mac, notas
+  de revisión iOS y Mac) en APP-STORE.md, «Envío de la 1.3.0 tras aprobarse la 1.0». Al crear la versión se puso
+  `1.3.0` porque el build lleva ese número; la suscripción se añade en «In-App Purchases and Subscriptions» de la
+  versión (no en «In-App Purchases › Create», que es para consumibles).
+- **Capturas de la tienda:** las `00-bienvenida.png` de `~/Desktop/Chirogra – capturas App Store` llevan el logo viejo
+  (χρ); se aconsejó no subirlas. Rehacerlas con el logo nuevo si el usuario lo pide (no hace falta build).
+
+## Chat anterior (21-nov, mediodía y tarde): builds 59, 60 y 61
 
 - **Build 59 (`34f6cc0`):** el usuario eligió hacer **«Anular cobro»**, el pendiente que quedaba del informe de Eric.
   Visto en el simulador y subido a petición suya. «Lo siguiente» 0b.
@@ -199,9 +222,11 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 
 ## Lo que le toca al usuario
 
-1. **Asignar el build 61** al grupo de testers externos del enlace público cuando Apple lo procese, y mandar más
-   testers (Beta Family, Userbrain, UXtweak) con él. Traer aquí lo que digan.
-1b. **Seguir revisando el iPad** con el Debug (o el 61 desde TestFlight, que no enseña la hoja de planes al abrir) y
+0. **Esperar la revisión de la 1.3.0** (iOS y macOS, build 64, con la suscripción de contadores) y traer aquí el
+   resultado o el mensaje del Resolution Center si rechazan algo.
+1. **Asignar el build 64** al grupo de testers externos del enlace público, y mandar más testers (Beta Family con la
+   tarea del iPad, Userbrain, UXtweak) con él. Traer aquí lo que digan.
+1b. **Seguir revisando el iPad** con el Debug (o el 64 desde TestFlight, que no enseña la hoja de planes al abrir) y
    mandar capturas de lo que vea mal; el recorrido del iPad se repite en Ajustes › «Ver el recorrido otra vez».
 2. **Probar el 52 en TestFlight:** el recorrido de cada pestaña, «Más › Ayuda › Ver el recorrido otra vez», y borrar los
    datos de ejemplo y crear su empresa (el recorrido tiene que volver). Si puede, con Reducir movimiento y VoiceOver,
@@ -209,10 +234,13 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 3. Si en el iPad sale el aviso de iCloud, mandar captura de «Detalles».
 4. **Para la 1.4:** la clave de Anthropic y el proyecto de Supabase «chirogra» los pone él en los secretos (no crearlos
    ni buscarlos). Pregunta abierta: si la suscripción cuesta más con el asistente.
-5. **Avisar cuando Apple apruebe la 1.0**, para preparar el envío de la 1.3.
 
 ## Lo siguiente
 
+0. **Build 64: SUBIDO iOS+Mac (21-nov noche) y ENVIADO A REVISIÓN como 1.3.0 (22-nov).** Icono «chirogra pencils»
+   (ver «Último chat»). Pendientes opcionales: rehacer las seis `00-bienvenida.png` de la tienda (iPhone 6.9, iPad 13,
+   Mac; en y es) y el logo de redes de `~/Desktop/Chirogra-logo` con el icono nuevo. Si Apple rechaza, arreglar en
+   `version-1.3` y subir el 65.
 0. **Build 61: SUBIDO iOS+Mac a TestFlight (21-nov, `8dbdd3b`).** (1) `fieldBox()` (`DesignSystem/Components.swift`)
    con `.padding(.vertical, 8)`: el único campo de varias líneas que lo usa, «Notas y términos» de la factura, ya no pega
    el texto al borde; los de una línea no cambian (caben en los 38 pt). (2) `TituloConDetalle`

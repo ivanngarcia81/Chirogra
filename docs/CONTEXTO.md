@@ -46,7 +46,7 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
   estable de las tasas en Reportes › Sales tax. Detalle en RESUMEN, «Último chat». Sin build nuevo.
 - **Último build: 48 (1.3.0)**, subido el 16-nov. **46** (15-nov): tabla de Clientes del iPad sobre gris. **45**
   (14-nov): icono χρ (abajo, «Ícono» en «Decisiones del usuario»).
-- La **1.0 (build 11)** espera la revisión; al aprobarla, **directo la 1.3** con un «What's New» de 1.1 + 1.2 + 1.3 y el
+- La **1.0** quedó **aprobada el 22-nov con el build 15**, y el mismo día el usuario **envió a revisión la 1.3.0 con el build 64** (iOS y macOS) y la suscripción «Chirogra para contadores»; al aprobarla, **directo la 1.3** con un «What's New» de 1.1 + 1.2 + 1.3 y el
   plan de contadores en el envío.
 - iPhone y Mac del usuario con el código del 45 (Producción); el 46 sin instalar; el iPad sin instalar desde el 41.
 - Plan de la 2.0 en [PLAN-2.0.md](PLAN-2.0.md); código cuando la 1.3 esté en la tienda.
@@ -59,7 +59,8 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
 - **Rama `version-1.2`**: la 1.2 entera (último build 43); ya está dentro de `main` y de `version-1.3`. La 1.1 está
   en el commit `e56f45c` (build 30).
 - **Versiones en App Store Connect:**
-  - **1.0 (build 11):** el 7-nov se envió a revisión con la suscripción «Chirogra monthly» y su grupo. Apple la
+  - **1.0: APROBADA el 22-nov con el build 15** (aviso del usuario; el 15 ya trae el arreglo de iCloud de la 1.0.1, así
+    que la 1.0.1 sobra). Historia: el 7-nov se envió a revisión con la suscripción «Chirogra monthly» y su grupo. Apple la
     **rechazó** porque la descripción no tenía el enlace a las condiciones de uso (EULA). El 9-nov el usuario la
     **reenvió** con el **build 11** (en revisión esa noche): descripción completa con «Privacy Policy: …» y «Terms of Use: …» al final (en/es,
     iOS y macOS; texto en APP-STORE.md) y «Chirogra monthly» en el envío; **el plan de contadores NO va en la 1.0**.
