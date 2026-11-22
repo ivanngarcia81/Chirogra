@@ -24,7 +24,8 @@ paso() {
     printf 'bien (%ds)\n' $((SECONDS - inicio))
   else
     printf 'FALLA (%ds)\n' $((SECONDS - inicio))
-    { grep -E "error:|✘|failed|FAILED" "$log" || tail -5 "$log"; } | head -25 | sed 's/^/    /'
+    # Primero las pruebas que fallaron (✘); si no hay, los errores de compilación (sin el ruido de CoreData).
+    { grep -E "✘" "$log" || grep -E "error:|FAILED" "$log" | grep -v "CoreData:" || tail -5 "$log"; } | head -25 | sed 's/^/    /'
     echo "    (registro completo: $log)"
     fallos+=("$nombre")
     log=$(mktemp -t chirogra-verificar)
