@@ -119,10 +119,14 @@ public enum Palette {
     public static let monogram = LinearGradient(colors: [Color(light: 0xA3A3A8, dark: 0xA3A3A8), Color(light: 0x86868B, dark: 0x86868B)],
                                                 startPoint: .top, endPoint: .bottom)
 
-    /// Logotipo (el icono χρ de la app, 14-nov): degradado de índigo, χ blanca y ρ azafrán, igual en claro y oscuro.
-    public static let logoFill = LinearGradient(colors: [Color(light: 0x5A60F0, dark: 0x5A60F0), Color(light: 0x3A3FD1, dark: 0x3A3FD1)],
+    /// Logotipo (el icono «chirogra pencils» de la app, 21-nov): el degradado de índigo de su `icon.json` (Display P3),
+    /// lápices blancos con punta gris y ρ azafrán, igual en claro y oscuro.
+    public static let logoFill = LinearGradient(colors: [Color(.displayP3, red: 0.45541, green: 0.47305, blue: 0.91098),
+                                                         Color(.displayP3, red: 0.24288, green: 0.25120, blue: 0.79671)],
                                                 startPoint: .top, endPoint: .bottom)
     public static let logoMark = Color.white
+    public static let logoTip = Color(light: 0xB9BAC6, dark: 0xB9BAC6)
+    public static let logoBall = Color(light: 0x8E90A0, dark: 0x8E90A0)
     public static let logoRho = Color(light: 0xF2B33D, dark: 0xF2B33D)
 }
 

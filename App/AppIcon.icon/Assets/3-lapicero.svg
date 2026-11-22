@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <title>Chirogra — icono K · lapicero</title>
+  <g transform="translate(352 520) rotate(-35)">
+    <path d="M-28 -205L-28 -248Q-28 -270 -6 -270L6 -270Q28 -270 28 -248L28 -205Z" fill="#FFFFFF"/>
+    <rect x="-28" y="-185" width="56" height="381" fill="#FFFFFF"/>
+    <path d="M-28 196L28 196L15 236L-15 236Z" fill="#B9BAC6"/>
+    <path d="M-10 236L10 236L6 256L6 264A6 6 0 0 1 -6 264L-6 256Z" fill="#FFFFFF"/>
+    <circle cx="0" cy="263" r="8" fill="#8E90A0"/>
+  </g>
+</svg>

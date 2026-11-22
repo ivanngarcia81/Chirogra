@@ -7,7 +7,7 @@ import SwiftUI
 /// pasan deslizando o con «Continuar»; «Saltar» va a la última, con «Crear mi empresa» o «Continuar como contador» según
 /// la elección (canvas «Chirogra — Contadores», opción A; `AccountantWelcome.swift`), «Probar con datos de ejemplo» y
 /// «¿Ya usas Chirogra en otro aparato?» (hoja con el aviso de iCloud, que antes estaba en el paso 1 del alta).
-/// Cada ilustración se anima al llegar a su página (la χρ se dibuja, la factura se marca como pagada, el recibo cae en su
+/// Cada ilustración se anima al llegar a su página (el logo se dibuja, la factura se marca como pagada, el recibo cae en su
 /// gasto, las barras crecen, el candado se cierra). Con «Reducir movimiento» todo aparece quieto.
 /// Los botones siguen la decisión del usuario (vidrio en Tinta, sin relleno morado) y no los del canvas.
 struct WelcomeView: View {
@@ -500,7 +500,7 @@ private struct Bar: View {
     }
 }
 
-// MARK: Página 1: la χρ se dibuja
+// MARK: Página 1: el logo se dibuja
 
 private struct LogoDrawing: View {
     let shown: Bool
@@ -510,14 +510,25 @@ private struct LogoDrawing: View {
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: size * 0.225, style: .continuous).fill(Palette.logoFill)
-            // El contorno de la χ y después el de la ρ se dibujan y luego se rellenan, como el icono (`LogoMark`).
-            letter(ChiGlyph(), color: Palette.logoMark, drawDelay: 0.15, fillDelay: 1.0)
-            letter(RhoGlyph(), color: Palette.logoRho, drawDelay: 0.6, fillDelay: 1.45)
+            // Se dibuja el contorno del lapicero, luego el del lápiz, luego la ρ y su brillo, y cada pieza se rellena
+            // después, como el icono (`LogoMark`).
+            ForEach(LogoGlyph.Part.allCases, id: \.self) { part in
+                letter(LogoGlyph(part: part), color: part.color, drawDelay: Self.drawDelay(part), fillDelay: Self.drawDelay(part) + 0.85)
+            }
         }
         .frame(width: size, height: size)
         .pop(shown, delay: 0, reduceMotion: reduceMotion)
         .accessibilityElement()
         .accessibilityLabel(Text(verbatim: "Chirogra"))
+    }
+
+    /// Cuándo empieza a dibujarse cada pieza: el lapicero, el lápiz y la ρ con su brillo, como antes la χ y la ρ.
+    private static func drawDelay(_ part: LogoGlyph.Part) -> Double {
+        switch part {
+        case .penBody, .penCone, .penBall: 0.15
+        case .pencilBody, .pencilTip: 0.4
+        case .rho, .shine: 0.6
+        }
     }
 
     private func letter<S: Shape>(_ shape: S, color: Color, drawDelay: Double, fillDelay: Double) -> some View {

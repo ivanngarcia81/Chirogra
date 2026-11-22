@@ -345,17 +345,19 @@ tabla del principio. Se programa cuando la 1.3 esté en la tienda.
   (`Settings/SettingsCards.swift`).
 - **Pronunciación del nombre** (16-nov): **«Kairogra»**, porque es griego (χειρόγραφον). Dos testers de Userbrain no
   supieron cómo leerlo («Chiro…», «KyraGra», «TriRobra»).
-- **Ícono:** **χρ** (14-nov, rama `version-1.3`, **build 45** subido iOS y macOS): χ blanca y ρ azafrán (`#F2B33D`) sobre el
-  degradado índigo; archivo del usuario `AppIcon.icon` copiado tal cual a `App/AppIcon.icon`, una sola capa
-  `chirogra-N-icono.svg` con fondo, letras y brillo. Antes, la χ cursiva sola (12-nov, build 41) y la χ redonda con punto
-  (build 20). `LogoMark` dibuja lo mismo dentro de la app con `ChiGlyph` y `RhoGlyph` (`DesignSystem/ChiGlyph.swift`,
-  generado de los dos `<path>` del SVG: si cambia el icono, regenerarlo, no retocarlo a mano) y `Palette.logoRho`. La
-  bienvenida dibuja el contorno de la χ, luego el de la ρ, y las rellena. El de la web (`sitio/img/icono.png`, 256 px)
-  sale del `AppIcon.icns` de la compilación del Mac (`iconutil -c iconset`, `icon_128x128@2x.png`). Capturas de la guía
-  `bienvenida-es/en.jpg` rehechas con la χρ el 14-nov (ventana de 900×1040 fijada con `defaults write
-  com.chirogra.qa.<nombre> "NSWindow Frame SwiftUI.WindowGroup<ChirograUI.ChirograRootView>-1-AppWindow-1"
-  "300 0 900 1040 0 0 1920 1050 "`, porque `defaultSize` solo no bastó). Instalado en el iPhone y el Mac
-  (Producción) el 14-nov; el iPad no.
+- **Ícono:** **«chirogra pencils»** (21-nov, sin build todavía): un lapicero y un lápiz blancos que se cruzan en χ y una
+  ρ azafrán (`#F2B33D`) con brillo de lupa, sobre el degradado índigo de su `icon.json` (Display P3). Archivo del
+  usuario copiado tal cual a `App/AppIcon.icon` (capas `3-lapicero`, `5-lapiz`, `7-rho`, `8-brillo`; las sombras van
+  ocultas). Antes: la χρ de letra (14-nov, build 45), la χ cursiva (build 41) y la χ redonda con punto (build 20).
+  `LogoMark` y la bienvenida lo dibujan con `LogoGlyph` (`DesignSystem/LogoGlyph.swift`, una forma por pieza sacada de
+  los SVG: si cambia el icono, volver a sacarla de ahí, no retocarla a mano) y `Palette.logoFill/logoMark/logoTip/
+  logoBall/logoRho`; la bienvenida dibuja el contorno del lapicero, luego el del lápiz, luego la ρ, y los rellena. El de
+  la web (`sitio/img/icono.png`, 256 px) sale de `ictool` (Icon Composer dentro de Xcode: `ictool App/AppIcon.icon
+  --export-image --platform macOS --rendition Default --width 128 --height 128 --scale 2 --output-file …`). Capturas
+  de la guía `bienvenida-es/en.jpg` rehechas el 21-nov con una copia de prueba del Mac: ventana de 900×1040 fijada con
+  `defaults write com.chirogra.qa.<nombre> "NSWindow Frame SwiftUI.WindowGroup<SwiftUI._ConditionalContent<SwiftUI.ModifiedContent<ChirograUI.ChirograRootView, _SwiftData_SwiftUI.(unknown context at $26f90eaa8).PassthroughModelContainerViewModifier>, ChirograUI.StoreRecoveryView>>-1-AppWindow-1" "300 0 900 1040 0 0 3840 2130 "`
+  (la clave cambió con `StoreRecoveryView` y la pantalla del usuario ahora es 3840×2160 a 1x; mirar con `defaults read`
+  qué clave guarda la app), recorte de 600 px desde (150, 48), 936 de alto en español y 918 en inglés.
 - Gastos y Banca arrancan en el último mes con movimientos; la tarjeta de Gastos suma solo gastos. Método de pago según
   la cuenta (banco → débito/transferencia/cheque; tarjeta → tarjeta; caja → efectivo).
 - **Editar algo contabilizado = reversión + asiento nuevo** (DISEÑO §6.5). Una factura emitida sin cobros se edita así

@@ -1462,16 +1462,17 @@ struct TermHelp: View {
     }
 }
 
-/// Logotipo de Chirogra: el icono de la app (`App/AppIcon.icon`) en pequeño, con el degradado de índigo, la χ blanca
-/// y la ρ azafrán (`ChiGlyph`/`RhoGlyph`, icono χρ del 14-nov; antes, la χ cursiva sola del 12-nov).
+/// Logotipo de Chirogra: el icono de la app (`App/AppIcon.icon`) en pequeño, con el degradado de índigo, el lapicero y
+/// el lápiz que se cruzan en χ y la ρ azafrán con brillo (`LogoGlyph`, icono del 21-nov; antes, la χρ de letra).
 struct LogoMark: View {
     var size: CGFloat = 28
 
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: size * 0.225, style: .continuous).fill(Palette.logoFill)
-            ChiGlyph().fill(Palette.logoMark)
-            RhoGlyph().fill(Palette.logoRho)
+            ForEach(LogoGlyph.Part.allCases, id: \.self) { part in
+                LogoGlyph(part: part).fill(part.color)
+            }
             // El brillo de arriba del icono: blanco al 20 % que se apaga a media altura.
             LinearGradient(stops: [.init(color: .white.opacity(0.2), location: 0), .init(color: .white.opacity(0), location: 0.45)],
                            startPoint: .top, endPoint: .bottom)

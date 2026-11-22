@@ -1,11 +1,59 @@
 {
-  "fill" : "automatic",
+  "fill" : {
+    "linear-gradient" : [
+      "display-p3:0.45541,0.47305,0.91098,1.00000",
+      "display-p3:0.24288,0.25120,0.79671,1.00000"
+    ]
+  },
   "groups" : [
     {
       "layers" : [
         {
-          "image-name" : "chirogra-N-icono.svg",
-          "name" : "chirogra-N-icono"
+          "image-name" : "8-brillo.svg",
+          "name" : "8-brillo"
+        },
+        {
+          "image-name" : "7-rho.svg",
+          "name" : "7-rho"
+        },
+        {
+          "hidden" : true,
+          "image-name" : "6-sombra-rho.svg",
+          "name" : "6-sombra-rho"
+        },
+        {
+          "hidden" : true,
+          "image-name" : "6-sombra-rho.png",
+          "name" : "6-sombra-rho"
+        },
+        {
+          "image-name" : "5-lapiz.svg",
+          "name" : "5-lapiz"
+        },
+        {
+          "hidden" : true,
+          "image-name" : "4-sombra-lapiz.svg",
+          "name" : "4-sombra-lapiz"
+        },
+        {
+          "hidden" : true,
+          "image-name" : "4-sombra-lapiz.png",
+          "name" : "4-sombra-lapiz"
+        },
+        {
+          "image-name" : "3-lapicero.svg",
+          "name" : "3-lapicero"
+        },
+        {
+          "hidden" : true,
+          "image-name" : "2-sombra-lapicero.svg",
+          "name" : "2-sombra-lapicero"
+        },
+        {
+          "glass" : false,
+          "hidden" : true,
+          "image-name" : "2-sombra-lapicero.png",
+          "name" : "2-sombra-lapicero"
         }
       ],
       "shadow" : {
