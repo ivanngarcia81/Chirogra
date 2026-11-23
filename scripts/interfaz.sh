@@ -24,6 +24,9 @@ for runtime in ios:
 echo "▸ Pruebas de interfaz en $(xcrun simctl list devices | grep "$udid" | sed 's/^ *//')"
 # Una prueba que falla se repite (hasta 3 veces): en las máquinas de GitHub el simulador a veces no arranca la app a
 # la primera («does not have a process ID»). Un fallo de verdad falla las tres.
+# El simulador, arrancado antes: en GitHub arranca en frío y la primera prueba caducaba al abrir la app.
+xcrun simctl boot "$udid" 2>/dev/null || true
+xcrun simctl bootstatus "$udid" -b >/dev/null
 # El resultado completo (capturas y árbol de la pantalla de cada fallo) queda en build/interfaz/Resultado.xcresult.
 rm -rf build/interfaz/Resultado.xcresult
 set +e

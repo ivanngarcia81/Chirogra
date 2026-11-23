@@ -50,6 +50,18 @@ final class FlujosTests: XCTestCase {
         element.tap()
     }
 
+    /// Cierra el teclado con «Listo» de su barra; si sigue abierto (en las máquinas lentas de GitHub un toque a veces no
+    /// basta), lo intenta otra vez y luego deslizando el formulario hacia abajo.
+    func dismissKeyboard() {
+        for attempt in 0..<4 where app.keyboards.count > 0 {
+            let done = app.toolbars.buttons["Listo"]
+            if attempt < 2, done.waitForExistence(timeout: 5) { done.tap() } else { app.collectionViews.firstMatch.swipeDown() }
+            let closed = expectation(for: NSPredicate(format: "count == 0"), evaluatedWith: app.keyboards)
+            _ = XCTWaiter.wait(for: [closed], timeout: 5)
+        }
+        XCTAssertEqual(app.keyboards.count, 0, "el teclado sigue abierto")
+    }
+
     /// Cobra la F-1003 de Clínica Del Valle ($1,100.02) desde Inicio y deja abierta su ficha.
     func payClinicInvoice() {
         tapWhenReady(button(startingWith: "Clínica Del Valle, F-1003"))
@@ -95,8 +107,8 @@ final class FlujosTests: XCTestCase {
         // «Precio» de la barra del teclado lleva el foco al precio de la línea (como haría el usuario).
         tapWhenReady(app.buttons["Precio"].firstMatch)
         app.typeText("250")
-        // «Listo» de la barra del teclado: el importe se confirma al salir del campo y vuelve la barra del total.
-        tapWhenReady(app.buttons["Listo"].firstMatch)
+        // Cerrar el teclado: el importe se confirma al salir del campo y vuelve la barra con el total y «Emitir».
+        dismissKeyboard()
         // El total (con el impuesto que toque) es lo que tiene que sumarse a Por cobrar.
         let totalLabel = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH 'Total, $'")).firstMatch
         XCTAssertTrue(totalLabel.waitForExistence(timeout: patience))
