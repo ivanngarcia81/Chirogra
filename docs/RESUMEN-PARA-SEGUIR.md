@@ -6,7 +6,8 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 ## Estado
 
 - **23-nov: build 65 (1.3.0) SUBIDO a TestFlight iOS y macOS** (`00ace74`): la auditoría técnica (`205400a`) y las
-  pruebas de interfaz (`0e9d365`). Commiteado en `version-1.3`, **sin empujar**. La 1.3.0 sigue en revisión con el 64:
+  pruebas de interfaz (`0e9d365`). `version-1.3` **EMPUJADA** el 23-nov, con GitHub Actions en verde (pruebas,
+  compilación y las 4 de interfaz). La 1.3.0 sigue en revisión con el 64:
   el 65 es para TestFlight (el usuario decide si cambia el build del envío).
 - **Ramas:** `version-1.3` con el build 64 (`b2c8e43` + `2c05bbf`) y este resumen, commiteados y **empujados el
   22-nov**. `main` en `83b1db4` (build 50 y la
@@ -81,7 +82,7 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 
 Pedido del usuario: revisar a fondo un informe externo («Auditoría técnica y correcciones de Chirogra — Build 64») y
 corregir desde la causa lo que fuera real. Commiteado en `205400a`; luego, a petición suya, pruebas de interfaz
-(`0e9d365`) y **build 65 subido iOS y macOS** (`00ace74`). Sin empujar. `scripts/verificar.sh` y `scripts/interfaz.sh`
+(`0e9d365`) y **build 65 subido iOS y macOS** (`00ace74`). Empujado, Actions en verde. `scripts/verificar.sh` y `scripts/interfaz.sh`
 en verde.
 
 - **Base caja con notas de crédito (error real):** `cashBasisLedgerLines()` repartía cada cobro sobre la factura menos
@@ -126,7 +127,10 @@ en verde.
   del iPhone que comprueban resultados, no solo que se dibuje: cobrar la F-1003 desde Inicio (Por cobrar baja $1,100.02),
   anular ese cobro (vuelve), emitir una factura nueva (Por cobrar sube su total) y Reportes en base caja (el cobro suma
   $1,092.40 a Total ingresos; en devengado nada). `-qa.reiniciar 1` (solo Debug) borra los libros al abrir.
-  `scripts/interfaz.sh` y un trabajo `interfaz` en `pruebas.yml`, **sin probar aún en GitHub** (se ve al empujar). Truco:
+  `scripts/interfaz.sh` y un trabajo `interfaz` en `pruebas.yml`, en verde en GitHub tras tres arreglos: el script
+  propaga el fallo (con `pipefail`, `|| true` lo tapaba), arranca el simulador antes (en frío caducaba la primera
+  prueba) y la prueba cierra el teclado con insistencia; si falla, Actions adjunta el `.xcresult` con capturas. En
+  GitHub tardan unos 10 minutos (cada prueba 1–4 min). Truco:
   el precio de una línea se escribe con el botón «Precio» de la barra del teclado (tocar el campo a veces no da foco) y
   se confirma con «Listo»; las pruebas van con `@MainActor`.
 - **Docs:** README al día (estado real, 1.4/2.0 como previstas, iCloud, `verificar.sh`); DATOS-V4 §4.
