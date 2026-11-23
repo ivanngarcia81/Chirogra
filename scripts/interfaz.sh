@@ -22,8 +22,12 @@ for runtime in ios:
 ')}
 [[ -n "$udid" ]] || { echo "No hay ningún simulador de iPhone disponible."; exit 1; }
 echo "▸ Pruebas de interfaz en $(xcrun simctl list devices | grep "$udid" | sed 's/^ *//')"
+# Una prueba que falla se repite (hasta 3 veces): en las máquinas de GitHub el simulador a veces no arranca la app a
+# la primera («does not have a process ID»). Un fallo de verdad falla las tres.
+set +e
 xcodebuild test -project Chirogra.xcodeproj -scheme Chirogra -destination "id=$udid" -derivedDataPath build/interfaz \
-  -only-testing:PruebasInterfaz CODE_SIGNING_ALLOWED=NO 2>&1 \
-  | grep -E "Test Case .*(passed|failed)|error:|\*\* TEST" || true
-# `grep` se come el código de salida de xcodebuild: se mira el resultado.
-[[ ${pipestatus[1]} -eq 0 ]]
+  -only-testing:PruebasInterfaz -retry-tests-on-failure -test-iterations 3 CODE_SIGNING_ALLOWED=NO 2>&1 \
+  | grep -E "Test Case .*(passed|failed)|error:|\*\* TEST"
+estado=${pipestatus[1]}
+set -e
+exit $estado

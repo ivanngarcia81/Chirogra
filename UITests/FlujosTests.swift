@@ -7,13 +7,15 @@ import XCTest
 @MainActor
 final class FlujosTests: XCTestCase {
     let app = XCUIApplication()
+    /// Las máquinas de GitHub Actions son mucho más lentas que un Mac: esperas largas (solo se esperan, no se gastan).
+    let patience: TimeInterval = 30
 
     override func setUp() async throws {
         continueAfterFailure = false
         app.launchArguments = ["-iCloudSyncEnabled", "NO", "-AppleLanguages", "(es)", "-AppleLocale", "es_US",
                                "-qa.reiniciar", "1", "-qa.muestra", "1"]
         app.launch()
-        XCTAssertTrue(app.staticTexts["Total pendiente"].waitForExistence(timeout: 20), "Inicio con los datos de ejemplo")
+        XCTAssertTrue(app.staticTexts["Total pendiente"].waitForExistence(timeout: patience * 2), "Inicio con los datos de ejemplo")
     }
 
     // MARK: Ayudantes
@@ -39,7 +41,8 @@ final class FlujosTests: XCTestCase {
         app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", prefix)).firstMatch
     }
 
-    func tapWhenReady(_ element: XCUIElement, timeout: TimeInterval = 10, file: StaticString = #filePath, line: UInt = #line) {
+    func tapWhenReady(_ element: XCUIElement, timeout: TimeInterval? = nil, file: StaticString = #filePath, line: UInt = #line) {
+        let timeout = timeout ?? patience
         XCTAssertTrue(element.waitForExistence(timeout: timeout), "No aparece: \(element)", file: file, line: line)
         // Las hojas y los diálogos se animan: el toque antes de que se asienten se pierde.
         let deadline = Date().addingTimeInterval(timeout)
@@ -52,7 +55,7 @@ final class FlujosTests: XCTestCase {
         tapWhenReady(button(startingWith: "Clínica Del Valle, F-1003"))
         tapWhenReady(app.buttons["Marcar como pagada · $1,100.02"])
         tapWhenReady(app.sheets.buttons["Marcar como pagada"])
-        XCTAssertTrue(app.staticTexts["Clínica Del Valle, $1,100.02, Pagada, Total cobrado $1,100.02"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.staticTexts["Clínica Del Valle, $1,100.02, Pagada, Total cobrado $1,100.02"].waitForExistence(timeout: patience))
     }
 
     // MARK: Pruebas
@@ -62,7 +65,7 @@ final class FlujosTests: XCTestCase {
         payClinicInvoice()
         XCTAssertTrue(button(startingWith: "Cobro, ").exists, "el cobro aparece en la actividad")
         tapWhenReady(app.navigationBars.buttons["Inicio"])
-        XCTAssertTrue(app.staticTexts["Total pendiente"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.staticTexts["Total pendiente"].waitForExistence(timeout: patience))
         XCTAssertEqual(try pendingOnHome(), before - 110_002)
         XCTAssertFalse(button(startingWith: "Clínica Del Valle, F-1003").exists, "ya no está en Por cobrar")
     }
@@ -73,9 +76,9 @@ final class FlujosTests: XCTestCase {
         tapWhenReady(app.navigationBars.buttons["Más acciones"])
         tapWhenReady(app.buttons["Anular cobro…"])
         tapWhenReady(app.sheets.buttons["Anular cobro"])
-        XCTAssertTrue(app.buttons["Marcar como pagada · $1,100.02"].waitForExistence(timeout: 10), "vuelve a poder cobrarse")
+        XCTAssertTrue(app.buttons["Marcar como pagada · $1,100.02"].waitForExistence(timeout: patience), "vuelve a poder cobrarse")
         tapWhenReady(app.navigationBars.buttons["Inicio"])
-        XCTAssertTrue(app.staticTexts["Total pendiente"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.staticTexts["Total pendiente"].waitForExistence(timeout: patience))
         XCTAssertEqual(try pendingOnHome(), before)
         XCTAssertTrue(button(startingWith: "Clínica Del Valle, F-1003").exists)
     }
@@ -83,7 +86,7 @@ final class FlujosTests: XCTestCase {
     func testEmitirUnaFacturaNuevaLaSumaAPorCobrar() throws {
         let before = try pendingOnHome()
         tapWhenReady(app.buttons["Factura"].firstMatch)
-        XCTAssertTrue(app.navigationBars["Nueva factura"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.navigationBars["Nueva factura"].waitForExistence(timeout: patience))
         tapWhenReady(app.buttons.matching(NSPredicate(format: "label == 'Cliente' AND value == 'Sin elegir'")).firstMatch)
         tapWhenReady(app.buttons["Clínica Del Valle"].firstMatch)
         let description = app.textFields["Descripción"]
@@ -96,23 +99,23 @@ final class FlujosTests: XCTestCase {
         tapWhenReady(app.buttons["Listo"].firstMatch)
         // El total (con el impuesto que toque) es lo que tiene que sumarse a Por cobrar.
         let totalLabel = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH 'Total, $'")).firstMatch
-        XCTAssertTrue(totalLabel.waitForExistence(timeout: 5))
+        XCTAssertTrue(totalLabel.waitForExistence(timeout: patience))
         let total = try XCTUnwrap(cents(totalLabel.label))
         XCTAssertGreaterThanOrEqual(total, 25_000)
         tapWhenReady(app.buttons["Emitir factura"])
         // Tras emitir, la app ofrece enviarla: «Ahora no».
         let later = app.buttons["Ahora no"]
-        if later.waitForExistence(timeout: 5) { later.tap() }
+        if later.waitForExistence(timeout: 8) { later.tap() }
         let back = app.navigationBars.buttons["Inicio"]
-        if back.waitForExistence(timeout: 5) { back.tap() }
-        XCTAssertTrue(app.staticTexts["Total pendiente"].waitForExistence(timeout: 10))
+        if back.waitForExistence(timeout: 3) { back.tap() }  // si tras emitir quedó abierta la ficha, se vuelve a Inicio
+        XCTAssertTrue(app.staticTexts["Total pendiente"].waitForExistence(timeout: patience))
         XCTAssertEqual(try pendingOnHome(), before + total)
     }
 
     /// «Total ingresos» del estado de resultados a la vista, en centavos («Total ingresos, $6,062.40, Oct …»).
     func totalIncome() throws -> Int64 {
         let row = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH 'Total ingresos, '")).firstMatch
-        XCTAssertTrue(row.waitForExistence(timeout: 10))
+        XCTAssertTrue(row.waitForExistence(timeout: patience))
         return try XCTUnwrap(cents(row.label.components(separatedBy: ", ")[1]), row.label)
     }
 
@@ -121,18 +124,18 @@ final class FlujosTests: XCTestCase {
         tapWhenReady(app.buttons["Estado de resultados"])
         let accrual = try totalIncome()
         tapWhenReady(app.buttons["Caja"])
-        XCTAssertTrue(app.staticTexts["Ríos Diseño & Obra · base caja"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.staticTexts["Ríos Diseño & Obra · base caja"].waitForExistence(timeout: patience))
         let cash = try totalIncome()
 
         // Cobrar la F-1003 ($1,000 de servicios + $92.40 de materiales + $7.62 de sales tax) desde Inicio.
         tapWhenReady(app.tabBars.buttons["Inicio"])
         payClinicInvoice()
         tapWhenReady(app.tabBars.buttons["Más"])
-        XCTAssertTrue(app.staticTexts["Ríos Diseño & Obra · base caja"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.staticTexts["Ríos Diseño & Obra · base caja"].waitForExistence(timeout: patience))
         // En caja entra el ingreso cobrado sin el impuesto, que es un pasivo.
         XCTAssertEqual(try totalIncome(), cash + 109_240)
         tapWhenReady(app.buttons["Devengado"])
-        XCTAssertTrue(app.staticTexts["Ríos Diseño & Obra · base devengado"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.staticTexts["Ríos Diseño & Obra · base devengado"].waitForExistence(timeout: patience))
         XCTAssertEqual(try totalIncome(), accrual, "en devengado la factura ya contaba al emitirse")
     }
 }
