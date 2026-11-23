@@ -1,6 +1,6 @@
 # Chirogra: contexto para retomar en otro chat
 
-Estado de Chirogra al **21 de noviembre de 2026**. **Para empezar rápido, lee primero
+Estado de Chirogra al **23 de noviembre de 2026**. **Para empezar rápido, lee primero
 [RESUMEN-PARA-SEGUIR.md](RESUMEN-PARA-SEGUIR.md)** (estado, tabla de builds y lo siguiente); luego este, entero. El diseño técnico está en
 [DISEÑO.md](DISEÑO.md), el sistema visual y los argumentos de QA en [REDISEÑO-NATIVO.md](REDISEÑO-NATIVO.md) (§5), los
 datos en [DATOS-V4.md](DATOS-V4.md) (y [DATOS-V2.md](DATOS-V2.md)), la fase 2 en [PLAN-FASE2.md](PLAN-FASE2.md) y la
@@ -12,7 +12,15 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
 
 ## Dónde nos quedamos (empieza aquí)
 
-**Resumen al 21-nov (tarde)** (lo de debajo es el detalle y la historia):
+**Resumen al 23-nov** (lo de debajo es el detalle y la historia):
+- **Último build: 65 (1.3.0)**, subido iOS y macOS el 23-nov (`00ace74`): auditoría técnica (base caja con notas de
+  crédito, suma SHA-256 en las copias, aviso de iCloud en local, saldos rehechos tras sincronizar, importes en 128 bits)
+  y pruebas de interfaz del iPhone (`scripts/interfaz.sh`). **64** (21-nov noche): icono «chirogra pencils».
+- **1.0 aprobada el 22-nov con el build 15; 1.3.0 (iOS y macOS) en revisión con el build 64** y la suscripción de
+  contadores. `version-1.3` empujada el 23-nov con Actions en verde; `main` en `83b1db4` (web), sin cambios.
+- Capturas `00-bienvenida.png` de la tienda rehechas con el icono nuevo (23-nov).
+
+**Resumen al 21-nov (tarde):**
 - **Último build: 61 (1.3.0)**, subido iOS y macOS el 21-nov (`8dbdd3b`): campos de varias líneas con aire y el detalle
   gris en la misma línea en el iPad. **60** (21-nov): iPad más consistente (Conciliación y Reglas con lista y detalle,
   repaso de diseño de las 27 secciones, detalles a 720 pt y reportes a 820 pt **centrados**) y **recorrido de la primera
@@ -380,6 +388,10 @@ tabla del principio. Se programa cuando la 1.3 esté en la tienda.
 - **Recorrido y listas (21-nov):** `.recorridoObjetivo(...)` va por dentro de `.masterRow(...)`; por fuera, la fila
   elegida de la columna maestro perdía su fondo de Tinta (texto blanco sobre blanco). En el iPad la barra lateral solo es
   objetivo si se ve (`RootView.sidebarVisible`): en vertical empieza escondida y su marco seguía ahí.
+- **`.id` en un `Form`/`List` (build 57):** `.recorridoObjetivo(...).id(...)` sobre una vista que da varias filas
+  (`ReceiptPickerButtons`) las junta en una sola; el objetivo va en una sola fila.
+- **iOS 27 y la barra de arriba (build 54):** el nombre de accesibilidad de los botones ya no está en la vista de UIKit
+  sino en un elemento dentro de `UIKitBarItemHost`; `Recorrido.marcoEnVentana` mira también `accessibilityElements`.
 - **Columnas maestro del iPad:** el título comparte fila con los botones de la barra; con «+ Texto» y «⋯» el sistema lo
   corta o lo esconde. Regla: «+» solo si hay otro botón o la etiqueta es larga.
 - **Catálogo de textos:** `scripts/sync-strings.sh` solo compila iOS y marca «stale» los textos del Mac (y reordena
