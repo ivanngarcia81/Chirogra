@@ -8,9 +8,13 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 udid=${1:-$(xcrun simctl list devices available -j | python3 -I -c '
-import json, sys
+import json, re, sys
 runtimes = json.load(sys.stdin)["devices"]
-ios = sorted((r for r in runtimes if ".iOS-" in r), key=lambda r: [int(x) for x in r.split(".iOS-")[1].split("-")], reverse=True)
+# «com.apple.CoreSimulator.SimRuntime.iOS-27-0» (en las máquinas de GitHub puede llevar más detrás).
+def version(runtime):
+    found = re.search(r"\.iOS-(\d+)-(\d+)", runtime)
+    return tuple(int(x) for x in found.groups()) if found else (0, 0)
+ios = sorted((r for r in runtimes if ".iOS-" in r), key=version, reverse=True)
 for runtime in ios:
     phones = [d for d in runtimes[runtime] if d["name"].startswith("iPhone")]
     if phones:
