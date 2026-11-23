@@ -24,9 +24,11 @@ for runtime in ios:
 echo "▸ Pruebas de interfaz en $(xcrun simctl list devices | grep "$udid" | sed 's/^ *//')"
 # Una prueba que falla se repite (hasta 3 veces): en las máquinas de GitHub el simulador a veces no arranca la app a
 # la primera («does not have a process ID»). Un fallo de verdad falla las tres.
+# El resultado completo (capturas y árbol de la pantalla de cada fallo) queda en build/interfaz/Resultado.xcresult.
+rm -rf build/interfaz/Resultado.xcresult
 set +e
 xcodebuild test -project Chirogra.xcodeproj -scheme Chirogra -destination "id=$udid" -derivedDataPath build/interfaz \
-  -only-testing:PruebasInterfaz -retry-tests-on-failure -test-iterations 3 CODE_SIGNING_ALLOWED=NO 2>&1 \
+  -only-testing:PruebasInterfaz -resultBundlePath build/interfaz/Resultado.xcresult -retry-tests-on-failure -test-iterations 3 CODE_SIGNING_ALLOWED=NO 2>&1 \
   | grep -E "Test Case .*(passed|failed)|error:|\*\* TEST"
 estado=${pipestatus[1]}
 set -e

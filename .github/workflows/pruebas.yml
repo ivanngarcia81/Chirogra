@@ -39,3 +39,10 @@ jobs:
           xcrun simctl list devices available | grep -m 3 iPhone || true
       - name: Pruebas de interfaz
         run: zsh scripts/interfaz.sh
+      - name: Guardar el resultado si falla (capturas de cada fallo)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interfaz-xcresult
+          path: build/interfaz/Resultado.xcresult
+          retention-days: 7
