@@ -74,6 +74,20 @@ targets:
         CODE_SIGN_STYLE: Automatic
         ENABLE_APP_SANDBOX: YES
         ENABLE_USER_SELECTED_FILES: readwrite
+  # Pruebas de interfaz (XCUITest) en el simulador del iPhone: flujos de verdad con los datos de ejemplo
+  # (`scripts/interfaz.sh`). No van dentro de la app.
+  PruebasInterfaz:
+    type: bundle.ui-testing
+    platform: iOS
+    sources: [UITests]
+    dependencies:
+      - target: Chirogra
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.chirogra.pruebasinterfaz
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_TARGET_NAME: Chirogra
+        CODE_SIGN_STYLE: Automatic
 schemes:
   Chirogra:
     build:
@@ -84,3 +98,4 @@ schemes:
       storeKitConfiguration: App/Chirogra.storekit
     test:
       gather_coverage_data: true
+      targets: [PruebasInterfaz]

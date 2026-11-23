@@ -13,9 +13,20 @@
 		889416CF49C9AFE2F3A38632 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 3BF4A529585E38589928C266 /* Localizable.xcstrings */; };
 		8D366A0BEB2A3A1EFFBABAA0 /* ChirograCore in Frameworks */ = {isa = PBXBuildFile; productRef = 5222374F4B8B70EB983F946B /* ChirograCore */; };
 		9CB3DF906D7BB2FA485CB8E9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7364B1960027C08F87F64E1F /* Assets.xcassets */; };
+		9F4629A386682ABF06A1F929 /* FlujosTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743B88A652A2FA1EF649958B /* FlujosTests.swift */; };
 		A4D4D4C3591851EB343D3923 /* ChirograUI in Frameworks */ = {isa = PBXBuildFile; productRef = 1AC0F11095AE088BEA25F7A2 /* ChirograUI */; };
 		AAAFE5E41281334BDA89E4BD /* ChirograData in Frameworks */ = {isa = PBXBuildFile; productRef = AF41D00F410173B547718E3A /* ChirograData */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		1F86FB3DD6E2D11C616E15EC /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A71A09469FB98600A3259300 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D82DD003B0D91DD5FD3AF19E;
+			remoteInfo = Chirogra;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		09A11343C2E5E7E54815564C /* Chirogra.storekit */ = {isa = PBXFileReference; path = Chirogra.storekit; sourceTree = "<group>"; };
@@ -26,9 +37,11 @@
 		5E80BC58C6541FB633123F25 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		71CDDD428B9A05C74B6A6CCB /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
 		7364B1960027C08F87F64E1F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		743B88A652A2FA1EF649958B /* FlujosTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlujosTests.swift; sourceTree = "<group>"; };
 		89B034281E78B27BB74D6F66 /* Chirogra.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Chirogra.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8A84B8A2D0C4E08FFB4D297A /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = wrapper.icon; path = AppIcon.icon; sourceTree = "<group>"; };
 		D55008B458B936C43009F114 /* Chirogra-macOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Chirogra-macOS.entitlements"; sourceTree = "<group>"; };
+		DAB5B50C15C3AB9FE21A8CEC /* PruebasInterfaz.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = PruebasInterfaz.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,6 +70,7 @@
 			isa = PBXGroup;
 			children = (
 				89B034281E78B27BB74D6F66 /* Chirogra.app */,
+				DAB5B50C15C3AB9FE21A8CEC /* PruebasInterfaz.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -77,11 +91,20 @@
 			path = App;
 			sourceTree = "<group>";
 		};
+		70E9A5FB190595159046A970 /* UITests */ = {
+			isa = PBXGroup;
+			children = (
+				743B88A652A2FA1EF649958B /* FlujosTests.swift */,
+			);
+			path = UITests;
+			sourceTree = "<group>";
+		};
 		DD25423463D6889FBC19DE87 = {
 			isa = PBXGroup;
 			children = (
 				4AF2C8E367AFD5E4BFCEC674 /* App */,
 				388BF6302C6A145D29949E3F /* Packages */,
+				70E9A5FB190595159046A970 /* UITests */,
 				3A848B582470A3285F3DA76C /* Products */,
 			);
 			sourceTree = "<group>";
@@ -89,6 +112,24 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		C0706ED4DF42E32F108C0450 /* PruebasInterfaz */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0E8AA4991A761BF381DABEFF /* Build configuration list for PBXNativeTarget "PruebasInterfaz" */;
+			buildPhases = (
+				EA8A4D90A4F75DCE5D173DC4 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				0C075B29F8A67C690E21A798 /* PBXTargetDependency */,
+			);
+			name = PruebasInterfaz;
+			packageProductDependencies = (
+			);
+			productName = PruebasInterfaz;
+			productReference = DAB5B50C15C3AB9FE21A8CEC /* PruebasInterfaz.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 		D82DD003B0D91DD5FD3AF19E /* Chirogra */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 9726C24E75BD8534897EAEE7 /* Build configuration list for PBXNativeTarget "Chirogra" */;
@@ -120,6 +161,10 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
+					C0706ED4DF42E32F108C0450 = {
+						ProvisioningStyle = Automatic;
+						TestTargetID = D82DD003B0D91DD5FD3AF19E;
+					};
 					D82DD003B0D91DD5FD3AF19E = {
 						ProvisioningStyle = Automatic;
 					};
@@ -144,6 +189,7 @@
 			projectRoot = "";
 			targets = (
 				D82DD003B0D91DD5FD3AF19E /* Chirogra */,
+				C0706ED4DF42E32F108C0450 /* PruebasInterfaz */,
 			);
 		};
 /* End PBXProject section */
@@ -163,6 +209,14 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		EA8A4D90A4F75DCE5D173DC4 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9F4629A386682ABF06A1F929 /* FlujosTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		FF4ED1A3D969F0E0C549AB17 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -173,7 +227,51 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		0C075B29F8A67C690E21A798 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D82DD003B0D91DD5FD3AF19E /* Chirogra */;
+			targetProxy = 1F86FB3DD6E2D11C616E15EC /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		543CADC0755D9DD3A86711C7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.chirogra.pruebasinterfaz;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Chirogra;
+			};
+			name = Release;
+		};
+		64878B41BCEC845D00AD38A5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.chirogra.pruebasinterfaz;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Chirogra;
+			};
+			name = Debug;
+		};
 		7BE6168E0B5D2D8AA6B1DCE6 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -233,7 +331,6 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = auto;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 6.0;
@@ -346,7 +443,6 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = auto;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 6.0;
@@ -356,6 +452,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		0E8AA4991A761BF381DABEFF /* Build configuration list for PBXNativeTarget "PruebasInterfaz" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				64878B41BCEC845D00AD38A5 /* Debug */,
+				543CADC0755D9DD3A86711C7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 		38004CA3D507E62C080C92FF /* Build configuration list for PBXProject "Chirogra" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

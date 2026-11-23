@@ -39,6 +39,17 @@
          </BuildableReference>
       </MacroExpansion>
       <Testables>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "C0706ED4DF42E32F108C0450"
+               BuildableName = "PruebasInterfaz.xctest"
+               BlueprintName = "PruebasInterfaz"
+               ReferencedContainer = "container:Chirogra.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
       <CommandLineArguments>
       </CommandLineArguments>

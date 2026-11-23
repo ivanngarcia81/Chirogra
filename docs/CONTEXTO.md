@@ -482,6 +482,9 @@ las claves que lista como cambiadas en las dos ramas.
   12,9″ (5.ª gen.) `00008103-001439A91E6B001E`.
 
 ### Comprobar en pantalla
+- **Pruebas de interfaz del repo (23-nov):** objetivo `PruebasInterfaz` (`UITests/FlujosTests.swift`, en `project.yml`
+  y en el esquema), `scripts/interfaz.sh` y un trabajo de GitHub Actions. Arrancan con `-qa.reiniciar 1 -qa.muestra 1`
+  (borra los libros y carga los de ejemplo, solo Debug). Las de abajo, de QA con capturas, siguen siendo temporales.
 - **Simulador** (iPhone/iPad): pruebas de interfaz temporales con un target `UITestsQA` añadido a `project.yml` +
   `xcodegen`, en una copia del repo en el scratchpad (**nunca commitear** `UITestsQA`, el cambio de `project.yml` ni el
   `.xcodeproj` regenerado). Las capturas horizontales salen giradas.

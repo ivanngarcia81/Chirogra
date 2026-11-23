@@ -32,7 +32,10 @@ scripts/verificar.sh            # pruebas del paquete + apps de iOS y Mac compil
 scripts/verificar.sh --rapido   # solo las pruebas
 ```
 
-Es lo mismo que corre GitHub Actions en cada push (`.github/workflows/pruebas.yml`). Las pruebas sueltas:
+Es lo mismo que corre GitHub Actions en cada push (`.github/workflows/pruebas.yml`). Las **pruebas de interfaz**
+(`UITests/`, objetivo `PruebasInterfaz`: cobrar, anular un cobro, emitir una factura y base caja en Reportes, tocando la
+app en el simulador del iPhone con los datos de ejemplo) se corren con `scripts/interfaz.sh` (unos 4 minutos); Actions
+las corre en un trabajo aparte. Las pruebas sueltas:
 `cd Packages/ChirograKit && swift test --skip ScreenSmokeTests` (`ScreenSmokeTests` falla desde el build 54 por
 `ImageRenderer`, pendiente). Para probar la migración con un almacén real de una versión publicada:
 `CHIROGRA_STORE=/ruta/Chirogra.store swift test --filter MigrationTests`.

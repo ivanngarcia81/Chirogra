@@ -40,6 +40,11 @@ struct ChirograApp: App {
         let books = BooksStore()
         _books = State(initialValue: books)
         #if DEBUG
+        // `-qa.reiniciar 1` (solo Debug; pruebas de interfaz, `UITests/`): borra los libros al abrir, para que cada prueba
+        // empiece igual. Con `-qa.muestra 1` vuelven a cargarse los datos de ejemplo.
+        if let container = books.container, UserDefaults.standard.bool(forKey: "qa.reiniciar") {
+            try? BackupArchive.eraseAll(in: container.mainContext)
+        }
         // `-qa.vacia 1` (solo Debug): una empresa nueva y vacía, sin pasar por el alta (estados vacíos y pistas).
         if let container = books.container, UserDefaults.standard.bool(forKey: "qa.vacia") {
             let books = Bookkeeper(context: container.mainContext, actor: "QA")

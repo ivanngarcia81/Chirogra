@@ -27,3 +27,15 @@ jobs:
           xcodebuild -version
       - name: Verificar
         run: zsh scripts/verificar.sh
+  # Pruebas de interfaz (23-nov): los flujos principales en el simulador del iPhone (scripts/interfaz.sh).
+  interfaz:
+    runs-on: xcode-27
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Usar Xcode 27.0
+        run: |
+          sudo xcode-select -s /Applications/Xcode_27.app/Contents/Developer
+          xcrun simctl list devices available | grep -m 3 iPhone || true
+      - name: Pruebas de interfaz
+        run: zsh scripts/interfaz.sh
