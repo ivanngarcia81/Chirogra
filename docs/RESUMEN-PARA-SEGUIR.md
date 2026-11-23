@@ -305,8 +305,9 @@ en verde.
 
 0. **Build 64: SUBIDO iOS+Mac (21-nov noche) y ENVIADO A REVISIÓN como 1.3.0 (22-nov).** Icono «chirogra pencils»
    (ver «Último chat»). Pendientes opcionales: rehacer las seis `00-bienvenida.png` de la tienda (iPhone 6.9, iPad 13,
-   Mac; en y es) y el logo de redes de `~/Desktop/Chirogra-logo` con el icono nuevo. Si Apple rechaza, arreglar en
-   `version-1.3` y subir el 65.
+   Mac; en y es) y el logo de redes de `~/Desktop/Chirogra-logo` con el icono nuevo. El 65 (auditoría técnica, 23-nov)
+   ya está en TestFlight: el usuario decide si cambia el build del envío y si lo asigna a los testers externos. Si
+   Apple rechaza, arreglar en `version-1.3` y subir el 66.
 0. **Build 61: SUBIDO iOS+Mac a TestFlight (21-nov, `8dbdd3b`).** (1) `fieldBox()` (`DesignSystem/Components.swift`)
    con `.padding(.vertical, 8)`: el único campo de varias líneas que lo usa, «Notas y términos» de la factura, ya no pega
    el texto al borde; los de una línea no cambian (caben en los 38 pt). (2) `TituloConDetalle`
