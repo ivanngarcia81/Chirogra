@@ -62,7 +62,9 @@ enum PostalTaxTableLoader {
         if let last = defaults.object(forKey: lastCheckKey) as? Date, now.timeIntervalSince(last) < refreshInterval,
            PostalTaxTables.current != nil { return }
         guard let (data, response) = try? await URLSession.shared.data(from: remoteURL),
-              (response as? HTTPURLResponse)?.statusCode == 200, let table = try? PostalTaxTable(json: data), table.count > 0
+              (response as? HTTPURLResponse)?.statusCode == 200, let table = try? PostalTaxTable(json: data), table.count > 0,
+              // Nunca una tabla más vieja que la que ya hay (p. ej. la de la web sin poner al día tras un build nuevo).
+              table.effectiveDate >= (PostalTaxTables.current?.effectiveDate ?? "")
         else { return }
         PostalTaxTables.current = table
         status.hasTable = true

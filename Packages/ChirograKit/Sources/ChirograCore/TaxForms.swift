@@ -217,7 +217,7 @@ extension ReportBuilder {
         let order = TaxFormCatalog.lines(for: form, year: year).map(\.id)
         let rows = byLine.values.map { entry in
             TaxFormSummary.Row(line: entry.line, amount: entry.amount,
-                               deductibleAmount: (entry.amount * Int64(entry.line.deductiblePercent)).dividedRoundingHalfAwayFromZero(by: 100),
+                               deductibleAmount: entry.amount.multiplied(by: Int64(entry.line.deductiblePercent), dividedRoundingHalfAwayFromZeroBy: 100),
                                accounts: entry.accounts)
         }
         .sorted { (order.firstIndex(of: $0.id) ?? .max) < (order.firstIndex(of: $1.id) ?? .max) }

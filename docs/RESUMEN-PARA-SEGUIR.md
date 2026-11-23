@@ -1,10 +1,11 @@
-# Chirogra: resumen para empezar el siguiente chat (22-nov-2026, build 64, 1.3.0 en revisión)
+# Chirogra: resumen para empezar el siguiente chat (23-nov-2026, build 64, 1.3.0 en revisión)
 
 Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («Dónde nos quedamos» y «Siguiente»).
 **Al usuario se le habla siempre en español.**
 
 ## Estado
 
+- **23-nov: auditoría técnica hecha y SIN COMMITEAR** en el árbol de `version-1.3` (abajo, «Último chat»).
 - **Ramas:** `version-1.3` con el build 64 (`b2c8e43` + `2c05bbf`) y este resumen, commiteados y **empujados el
   22-nov**. `main` en `83b1db4` (build 50 y la
   web con «Kairogra»), empujada el 17-nov; los builds de después no tocan la web, así que `main` no hace falta moverla.
@@ -73,7 +74,57 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 | 63 | `864153d` | 1.3.0: iPad: Libro mayor, Cierre, Bitácora e Impuestos a 820 pt centrados; Ajustes en la tarjeta gris; Bitácora con lista y detalle; más aire en deducibles y estados. Capturas del usuario. |
 | 64 | `b2c8e43` | 1.3.0: **icono «chirogra pencils»** (lapicero y lápiz cruzados en χ, ρ azafrán con brillo de lupa; archivo del usuario), también `LogoMark` y la bienvenida (`LogoGlyph`), el icono de la web y las capturas de la guía. **Enviado a revisión** (1.3.0 iOS y macOS) el 22-nov. |
 
-## Último chat (21-nov noche y 22-nov): build 64, aprobación de la 1.0 y envío de la 1.3.0
+## Último chat (23-nov): auditoría técnica (base caja, copias, iCloud, sales tax) — SIN COMMITEAR
+
+Pedido del usuario: revisar a fondo un informe externo («Auditoría técnica y correcciones de Chirogra — Build 64») y
+corregir desde la causa lo que fuera real. **Todo está en el árbol de trabajo de `version-1.3`, sin commitear** (el
+usuario decide cuándo). `scripts/verificar.sh` completo en verde (pruebas, iOS y Mac compilan). Sin build nuevo.
+
+- **Base caja con notas de crédito (error real):** `cashBasisLedgerLines()` repartía cada cobro sobre la factura menos
+  sus notas, calculado con los datos de hoy: una nota posterior reescribía periodos pasados (el día del cobro salía
+  $125 haber / $25 debe), y el saldo a favor aplicado a **otra** factura no movía nada, así que cuentas y sales tax en
+  caja salían mal (escenario $100 + nota $20 aplicada a otra de $50: 4000 = $100 en vez de $80, 4100 = $28.35 en vez
+  de $50, sales tax $8.25 en vez de $6.60). Ahora cada documento lleva lo que le falta por reconocer
+  (`CashBasisPending`) y los hechos se recorren por fecha (detalle en el comentario de la función y DATOS-V4 §4).
+  Los reembolsos ya no se reparten entre todas las notas del cliente. `CashBasisCreditTests` (15 pruebas, una con
+  historias al azar que comprueba que nada reescribe un día pasado y que, liquidado todo, caja = devengo por cuenta).
+  Las pantallas con base caja (Reportes, Impuestos, Deducibles, Presupuestos) recalculan al aplicar saldo a favor
+  (`CreditApplication` en la clave de su caché).
+- **Copias (error real):** sin contraseña no tenían suma de comprobación (el zlib de Apple es DEFLATE sin suma): de 300
+  copias con un bit cambiado, 80 se restauraban sin aviso con otros datos. Ahora el JSON lleva delante
+  `"integrity":"sha256:…"` (`Backup+Integrity.swift`), mismo formato 1: las versiones anteriores la leen igual y las
+  copias de antes se abren igual. `BackupIntegrityTests`. El cifrado (AES-GCM + PBKDF2) y la copia automática antes de
+  restaurar ya estaban del build 62.
+- **iCloud:** si el contenedor con CloudKit falla, la app abría el mismo almacén en local **sin decirlo**; ahora la
+  franja de iCloud lo avisa (`ChirograStore.cloudKitOpenFailure`). Comprobado que en local se sigue guardando el
+  historial que CloudKit sube después. Nuevo `reconcileDocumentBalances()` (`Bookkeeper+Consistency.swift`) tras cada
+  sincronización: rehace lo cobrado, acreditado y reembolsado de facturas, facturas de proveedor y notas a partir de
+  sus registros (dos cobros a la vez en dos aparatos dejaban la suma de uno solo); solo corrige lo que vio igual dos
+  pasadas seguidas, con línea en la bitácora. `DocumentBalanceTests`, `StoreRecoveryTests`.
+- **Importes extremos (error real):** `(a * b).dividedRoundingHalfAwayFromZero(by:)` en 64 bits cerraba la app: una
+  factura de $100 millones con $10 millones de descuento. Ahora `Int64.multiplied(by:dividedRoundingHalfAwayFromZeroBy:)`
+  en 128 bits en los 9 sitios. `LargeAmountTests`.
+- **Sales tax:** el reporte restaba de cada nota de crédito el importe entero como gravable; con líneas no gravables no
+  cuadraba con el diario. Ahora usa la base y el impuesto contabilizados (`issuedTaxableBase`). Aviso en la sugerencia
+  por ZIP cuando la tabla tiene más de 100 días (`PostalTaxTable.isStale`; la incluida es del 11-nov-2026, así que el
+  aviso sale desde el 20-feb-2027 si no se regenera). La descarga de chirogra.com (apagada) ya no puede poner una tabla
+  más vieja. `SalesTaxCreditNoteTests`, `PostalTaxTableAgeTests`.
+- **Migración real:** almacén escrito por el código de la 1.0 publicada (build 15, `c214680`, esquema 3) migrado con
+  `CHIROGRA_STORE=… swift test --filter MigrationTests`: cuadra, sin huérfanos, nada que corregir en saldos. El almacén
+  quedó en el scratchpad de este chat (se pierde); se regenera con un worktree de `c214680` y `SampleData.populate`.
+- **Revisión independiente (agente) de la base caja y los saldos:** 4 hallazgos arreglados con su prueba (comprobado
+  que fallan sin el arreglo): cada reembolso consume las notas que ya existían cuando se hizo (`refundAllocations`; una
+  nota antedatada emitida después reescribía un mes pasado), signo al deshacer una toma fallida, confirmación de saldos
+  por tiempo (10 min, no dos pasadas: una importación llega en varias tandas) y diccionarios sin cierre con ids
+  repetidos. Además, ya no se puede **anular una factura con nota de crédito** aunque su cobro se haya anulado.
+  403 pruebas (94 + 229 + 80).
+- **Docs:** README al día (estado real, 1.4/2.0 como previstas, iCloud, `verificar.sh`); DATOS-V4 §4.
+- **Pendiente:** `ScreenSmokeTests` sigue cayéndose (SwiftUI, «no current update to enqueue action to», también en
+  serie); pruebas de interfaz de verdad (XCUITest) siguen fuera del repo; la tabla por ZIP no marca los ZIP que cruzan
+  jurisdicciones (habría que regenerarla con los archivos oficiales); `Money(decimal:)` da un valor sin sentido por
+  encima de ~$92 mil billones.
+
+## Chat anterior (21-nov noche y 22-nov): build 64, aprobación de la 1.0 y envío de la 1.3.0
 
 - **Tarea de Beta Family para revisar el iPad** (en inglés y español: About, What to test, 4 tareas y 5 preguntas
   aparte), dada en el chat.

@@ -45,7 +45,7 @@ public enum SalesTaxCalculator {
     public static func taxes(onTaxableBase base: Int64, components: [TaxComponent]) -> [TaxComponentAmount] {
         guard !components.isEmpty else { return [] }
         let combinedRate = components.reduce(0) { $0 + $1.rateMillionths }
-        let total = (base * combinedRate).dividedRoundingHalfAwayFromZero(by: millionth)
+        let total = base.multiplied(by: combinedRate, dividedRoundingHalfAwayFromZeroBy: millionth)
         return split(total, onBase: base, components: components)
     }
 
@@ -61,7 +61,7 @@ public enum SalesTaxCalculator {
     public static func taxesIncluded(inGross gross: Int64, components: [TaxComponent]) -> (base: Int64, taxes: [TaxComponentAmount]) {
         let combinedRate = components.reduce(0) { $0 + $1.rateMillionths }
         guard gross > 0, combinedRate > 0 else { return (gross, []) }
-        let base = (gross * millionth).dividedRoundingHalfAwayFromZero(by: millionth + combinedRate)
+        let base = gross.multiplied(by: millionth, dividedRoundingHalfAwayFromZeroBy: millionth + combinedRate)
         return (base, split(gross - base, onBase: base, components: components))
     }
 
@@ -72,7 +72,7 @@ public enum SalesTaxCalculator {
             TaxComponentAmount(
                 component: component,
                 taxableBase: base,
-                amount: (base * component.rateMillionths).dividedRoundingHalfAwayFromZero(by: millionth)
+                amount: base.multiplied(by: component.rateMillionths, dividedRoundingHalfAwayFromZeroBy: millionth)
             )
         }
         let residual = total - amounts.reduce(0) { $0 + $1.amount }

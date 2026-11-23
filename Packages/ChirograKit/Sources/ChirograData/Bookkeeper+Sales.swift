@@ -356,7 +356,7 @@ extension Bookkeeper {
             share = remainingDiscount
         } else {
             let base = estimate.linesSubtotal
-            share = base == 0 ? 0 : min(remainingDiscount, (estimate.discount * invoicedNow).dividedRoundingHalfAwayFromZero(by: base))
+            share = base == 0 ? 0 : min(remainingDiscount, estimate.discount.multiplied(by: invoicedNow, dividedRoundingHalfAwayFromZeroBy: base))
         }
         invoice.discount = min(max(share, 0), invoicedNow)
         estimate.discountInvoiced += invoice.discount

@@ -133,7 +133,13 @@ final class SyncMonitor {
             state = .failed(code: "CKError.networkUnavailable", network: true)
             hasFailed = true
             lastSync = Calendar.current.date(byAdding: .day, value: -1, to: .now)
-        default: break
+        default:
+            // Los libros se abrieron sin iCloud porque el contenedor falló (`ChirograApp`): no llegará ningún evento, así
+            // que el fallo se dice desde el principio, con su detalle, en vez de quedarse en «sin iCloud».
+            if let failure = ChirograStore.cloudKitOpenFailure {
+                state = .failed(code: failure, network: false)
+                hasFailed = true
+            }
         }
     }
 
@@ -261,6 +267,10 @@ final class AutomationFailures {
 enum AppAutomations {
     private static var running = false
     private static var pendingResolve = false
+    /// Diferencias de saldo vistas, por empresa, con cuándo se vieron por primera vez (`reconcileDocumentBalances`).
+    private static var balanceDiscrepancies: [UUID: [String: Date]] = [:]
+    /// Una diferencia se corrige si sigue igual pasado este tiempo desde que se vio.
+    private static let balanceConfirmation: TimeInterval = 10 * 60
 
     static func run(container: ModelContainer, resolvingDuplicates: Bool = false, waitingForImport: Bool = false) {
         guard !SyncMonitor.shared.isFirstImport else { return }
@@ -297,6 +307,16 @@ enum AppAutomations {
                     _ = try? books.resolveRecurringDuplicates()
                     // Números repetidos por emitir en dos aparatos a la vez (`Bookkeeper+Numbering.swift`).
                     _ = try? books.resolveNumberCollisions()
+                    // Saldos de facturas y notas que se pisaron al cobrar en dos aparatos a la vez
+                    // (`Bookkeeper+Consistency.swift`): solo lo que se ve igual desde hace `balanceConfirmation`. Una
+                    // importación grande llega en varias tandas y cada una lanza una pasada: dos pasadas seguidas no
+                    // bastan para saber que ya llegó todo (revisión del 23-nov).
+                    let seen = balanceDiscrepancies[company.id] ?? [:]
+                    let now = Date()
+                    let confirmed = Set(seen.filter { now.timeIntervalSince($0.value) >= balanceConfirmation }.keys)
+                    if let check = try? books.reconcileDocumentBalances(confirming: confirmed) {
+                        balanceDiscrepancies[company.id] = Dictionary(uniqueKeysWithValues: check.discrepancies.map { ($0, seen[$0] ?? now) })
+                    }
                 }
                 await Task.yield()
                 if let result = try? books.runAutomations() {

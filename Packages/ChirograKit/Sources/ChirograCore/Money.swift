@@ -82,4 +82,16 @@ extension Int64 {
         }
         return quotient
     }
+
+    /// `self × factor ÷ divisor`, redondeando la mitad lejos de cero, con la multiplicación en 128 bits. La de 64 bits
+    /// (`(a * b).dividedRoundingHalfAwayFromZero(by:)`) cerraba la app con importes grandes: una factura de $100 millones
+    /// con $10 millones de descuento desbordaba `descuento × subtotal` (auditoría del 23-nov). Mismo resultado que
+    /// la fórmula de antes siempre que esa no desborde.
+    @inlinable
+    public func multiplied(by factor: Int64, dividedRoundingHalfAwayFromZeroBy divisor: Int64) -> Int64 {
+        precondition(divisor > 0, "El divisor debe ser positivo")
+        let (quotient, remainder) = divisor.dividingFullWidth(multipliedFullWidth(by: factor))
+        guard remainder.magnitude >= divisor.magnitude - remainder.magnitude else { return quotient }
+        return (self < 0) != (factor < 0) ? quotient - 1 : quotient + 1
+    }
 }

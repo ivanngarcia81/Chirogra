@@ -88,6 +88,8 @@ struct DeductionsView: View {
     #endif
     @CompanyQuery(sort: \Account.code) private var accounts: [Account]
     @CompanyQuery private var journalLines: [JournalLine]
+    /// Saldo a favor aplicado: no crea asiento, pero cambia lo reconocido en base caja (clave de la caché).
+    @CompanyQuery private var creditApplications: [CreditApplication]
     @CompanyQuery private var entries: [JournalEntry]
     @ActiveCompanyQuery private var companies: [Company]
     @ReportBasisSetting private var basis
@@ -131,7 +133,7 @@ struct DeductionsView: View {
     private var summary: TaxFormSummary? {
         guard let form else { return nil }
         let lineChoices = accounts.map(\.taxFormLineRaw).joined(separator: ",")
-        let key = "\(period.rawValue)|\(basis.rawValue)|\(form.rawValue)|\(journalLines.count)|\(entries.count)|\(lineChoices.hashValue)"
+        let key = "\(period.rawValue)|\(basis.rawValue)|\(form.rawValue)|\(journalLines.count)|\(entries.count)|\(creditApplications.cacheKey)|\(lineChoices.hashValue)"
         let range = period.range()
         return memo.value(for: key) {
             try? Bookkeeper(context: context).taxSummary(from: range.from, to: range.to, basis: basis, form: form)

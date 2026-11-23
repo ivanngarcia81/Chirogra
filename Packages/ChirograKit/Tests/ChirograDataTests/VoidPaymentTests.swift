@@ -137,4 +137,15 @@ struct VoidPaymentTests {
         try books.voidPayment(payment, on: day(-29))
         #expect(invoice.status == .sent && books.isVoided(payment))
     }
+
+    @Test("Una factura con nota de crédito no se anula, aunque su cobro se haya anulado (revisión)")
+    func noVoidWithCreditNote() throws {
+        let invoice = try issue(amount: 10_000, on: day(-20))
+        let payment = try books.recordPayment(for: invoice, amount: 10_000, date: day(-19), depositAccount: try account("1010"))
+        try books.issueCreditNote(for: invoice, amount: 2_000, isTaxable: false, reason: "Ajuste", date: day(-18))
+        try books.voidPayment(payment)
+        #expect(invoice.status == .sent && invoice.amountPaid == 0 && invoice.creditsApplied == 0)
+        #expect(throws: BookkeepingError.self) { try books.void(invoice) }
+        #expect(invoice.status == .sent)
+    }
 }

@@ -581,7 +581,7 @@ struct EstimateConversionChoice {
             share = remainingDiscount
         } else {
             let base = estimate.linesSubtotal
-            share = base == 0 ? 0 : min(remainingDiscount, (estimate.discount * invoicedNow).dividedRoundingHalfAwayFromZero(by: base))
+            share = base == 0 ? 0 : min(remainingDiscount, estimate.discount.multiplied(by: invoicedNow, dividedRoundingHalfAwayFromZeroBy: base))
         }
         let discount = min(max(share, 0), invoicedNow)
         let components = (try? books.taxComponents(groupID: estimate.taxGroupID, on: .now)) ?? []

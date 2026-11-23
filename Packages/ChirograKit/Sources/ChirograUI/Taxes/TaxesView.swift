@@ -24,6 +24,8 @@ struct TaxesView: View {
     @Environment(\.modelContext) private var context
     @CompanyQuery(sort: \Account.code) private var accounts: [Account]
     @CompanyQuery private var journalLines: [JournalLine]
+    /// Saldo a favor aplicado: no crea asiento, pero cambia lo reconocido en base caja (clave de la caché).
+    @CompanyQuery private var creditApplications: [CreditApplication]
     @CompanyQuery(sort: \TaxAgency.name) private var agencies: [TaxAgency]
     @CompanyQuery(sort: \TaxGroup.name) private var groups: [TaxGroup]
     @CompanyQuery private var taxLines: [InvoiceTaxLine]
@@ -719,7 +721,7 @@ struct TaxesView: View {
     private var deductionsSummary: TaxFormSummary? {
         guard let form = company.flatMap({ TaxForm.forEntity($0.entityType) }) else { return nil }
         let range = DeductionsPeriod.yearToDate.range()
-        let key = "\(basis.rawValue)|\(journalLines.count)|\(accounts.map(\.taxFormLineRaw).joined().hashValue)"
+        let key = "\(basis.rawValue)|\(journalLines.count)|\(creditApplications.cacheKey)|\(accounts.map(\.taxFormLineRaw).joined().hashValue)"
         return deductionsMemo.value(for: key) {
             try? Bookkeeper(context: context).taxSummary(from: range.from, to: range.to, basis: basis, form: form)
         }

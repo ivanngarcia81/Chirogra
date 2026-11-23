@@ -58,6 +58,22 @@ public struct PostalTaxTable: Sendable {
 
     public var count: Int { rates.count }
 
+    /// Las tasas cambian cada trimestre (1 de enero, abril, julio y octubre): pasados estos días desde la fecha de la
+    /// tabla puede haber tasas nuevas que no trae (auditoría del 23-nov).
+    public static let staleAfterDays = 100
+
+    /// Fecha de la tabla (`effectiveDate`, «2026-11-11»); `nil` si falta o no se lee.
+    public var date: Date? {
+        guard !effectiveDate.isEmpty else { return nil }
+        return try? Date(effectiveDate, strategy: Date.ISO8601FormatStyle(timeZone: .current).year().month().day())
+    }
+
+    /// La tabla tiene más de `staleAfterDays` días, o no dice de cuándo es: sus tasas pueden haber cambiado.
+    public func isStale(asOf now: Date = Date(), calendar: Calendar = .current) -> Bool {
+        guard let date, let days = calendar.dateComponents([.day], from: date, to: now).day else { return true }
+        return days > Self.staleAfterDays
+    }
+
     /// La tabla que trae la app (`Resources/sales-tax-zip.json`), o `nil` si no se puede leer.
     public static func bundled() -> PostalTaxTable? {
         guard let url = Bundle.module.url(forResource: "sales-tax-zip", withExtension: "json"),

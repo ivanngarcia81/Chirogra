@@ -96,7 +96,9 @@ struct BackupTests {
         for index in customers.indices { customers[index]["notes"] = nil; customers[index]["paymentTermsDays"] = nil }
         payload["customer"] = customers
         object["payload"] = payload
-        let edited = try JSONSerialization.data(withJSONObject: object)
+        // Como la escribía esa versión: sin la suma del 23-nov y con las claves ordenadas.
+        object["integrity"] = nil
+        let edited = try JSONSerialization.data(withJSONObject: object, options: .sortedKeys)
         let file = BackupArchive.signature + (try (edited as NSData).compressed(using: .zlib) as Data)
 
         let target = try ChirograStore.makeContainer(inMemory: true)
@@ -129,7 +131,8 @@ struct BackupTests {
         accounts[index]["id"] = UUID().uuidString
         payload["account"] = accounts
         object["payload"] = payload
-        let brokenJSON = try JSONSerialization.data(withJSONObject: object)
+        object["integrity"] = nil          // una copia de antes de la suma, con la referencia rota
+        let brokenJSON = try JSONSerialization.data(withJSONObject: object, options: .sortedKeys)
         let brokenFile = BackupArchive.signature + (try (brokenJSON as NSData).compressed(using: .zlib) as Data)
         #expect(throws: BackupError.brokenReference("JournalLine.account")) { try BackupArchive.restore(brokenFile, into: context) }
         #expect(try context.fetchCount(FetchDescriptor<Invoice>()) == invoices)

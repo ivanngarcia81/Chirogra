@@ -139,3 +139,9 @@ final class ReportMemo<Value> {
         return fresh
     }
 }
+
+extension Array where Element == CreditApplication {
+    /// Parte de la clave de las cachés en base caja: aplicar saldo a favor a otra factura no crea asiento (no cambia el
+    /// número de líneas del diario), pero sí lo reconocido en caja.
+    var cacheKey: String { "\(count)|\(reduce(Int64(0)) { $0 &+ $1.amount })" }
+}

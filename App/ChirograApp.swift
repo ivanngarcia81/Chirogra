@@ -119,9 +119,15 @@ final class BooksStore {
             }
             return container
         } catch {
-            // Sin la capacidad de iCloud firmada, CloudKit no está disponible: se abre el almacén local. Si tampoco,
-            // el error sube a la pantalla de recuperación.
+            // Sin la capacidad de iCloud firmada, CloudKit no está disponible: se abre el mismo almacén solo en local. Si
+            // tampoco, el error sube a la pantalla de recuperación. Con iCloud pedido, la franja de iCloud lo dice
+            // (`ChirograStore.cloudKitOpenFailure`): los cambios quedan en el historial y suben cuando vuelva a abrir bien.
             DeletedCompanies.isEnabled = false
+            if wantsSync {
+                let nsError = error as NSError
+                ChirograStore.cloudKitOpenFailure = "\(nsError.domain) \(nsError.code)"
+                NSLog("Chirogra abrió los libros sin iCloud: %@", "\(error)")
+            }
             return try ChirograStore.makeContainer()
         }
     }

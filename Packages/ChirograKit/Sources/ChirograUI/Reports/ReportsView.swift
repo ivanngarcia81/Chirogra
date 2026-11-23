@@ -88,6 +88,8 @@ struct ReportsView: View {
     @ScaledMetric(relativeTo: .body) private var bucketColumn: CGFloat = Self.bucketColumnBase
     @CompanyQuery(sort: \Account.code) private var accounts: [Account]
     @CompanyQuery private var journalLines: [JournalLine]
+    /// Saldo a favor aplicado: no crea asiento, pero cambia lo reconocido en base caja (clave de la caché).
+    @CompanyQuery private var creditApplications: [CreditApplication]
     @CompanyQuery private var invoices: [Invoice]
     @CompanyQuery private var bills: [Bill]
     @ActiveCompanyQuery private var companies: [Company]
@@ -162,7 +164,7 @@ struct ReportsView: View {
     private var basisLines: [LedgerLine] {
         let effective = kind.usesBasis ? basis : .accrual
         guard effective == .cash || kind == .cashFlow else { return ledger.lines }
-        let key = "\(effective.rawValue)|\(journalLines.count)|\(entries.count)|\(CompanySession.key(CompanySession.scope))"
+        let key = "\(effective.rawValue)|\(journalLines.count)|\(entries.count)|\(creditApplications.cacheKey)|\(CompanySession.key(CompanySession.scope))"
         return linesMemo.value(for: key) { (try? Bookkeeper(context: context).ledgerLines(basis: effective)) ?? [] }
     }
 

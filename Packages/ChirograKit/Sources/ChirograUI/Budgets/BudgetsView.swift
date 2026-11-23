@@ -25,6 +25,8 @@ struct BudgetsView: View {
     @CompanyQuery private var budgetLines: [BudgetLine]
     @CompanyQuery(sort: \Account.code) private var accounts: [Account]
     @CompanyQuery private var journalLines: [JournalLine]
+    /// Saldo a favor aplicado: no crea asiento, pero cambia lo reconocido en base caja (clave de la caché).
+    @CompanyQuery private var creditApplications: [CreditApplication]
     @ActiveCompanyQuery private var companies: [Company]
     @ReportBasisSetting private var basis
     @AppStorage("budgetSelection") private var storedSelection = ""
@@ -68,7 +70,7 @@ struct BudgetsView: View {
     private var report: BudgetReport? {
         guard let budget else { return nil }
         let planned = budgetLines.filter { $0.budget?.id == budget.id }
-        let key = "\(budget.id)|\(grouping.rawValue)|\(basis.rawValue)|\(journalLines.count)|\(planned.count)|\(planned.reduce(0) { $0 &+ $1.amount &* Int64($1.month) })"
+        let key = "\(budget.id)|\(grouping.rawValue)|\(basis.rawValue)|\(journalLines.count)|\(creditApplications.cacheKey)|\(planned.count)|\(planned.reduce(0) { $0 &+ $1.amount &* Int64($1.month) })"
         return memo.value(for: key) { try? Bookkeeper(context: context).budgetVsActual(budget, grouping: grouping, basis: basis) }
     }
 

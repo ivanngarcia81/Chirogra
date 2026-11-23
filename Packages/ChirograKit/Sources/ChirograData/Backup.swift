@@ -5,7 +5,8 @@ import SwiftData
 /// sus modelos y los recibos, logos y W-9 adjuntos— independiente de iCloud. Sirve también para entregarle los libros a
 /// un cliente (PLAN-FASE2 §1).
 ///
-/// Formato 1: la firma `CHIROGRA-COPIA-1\n` seguida de JSON comprimido con zlib (`BackupFile`: `info` y `payload`).
+/// Formato 1: la firma `CHIROGRA-COPIA-1\n` seguida de JSON comprimido con zlib (`BackupFile`: `info` y `payload`),
+/// desde el 23-nov con la suma SHA-256 del contenido delante (`Backup+Integrity.swift`; las copias de antes se abren igual).
 /// Cada modelo es un registro con sus propiedades guardadas y sus relaciones a uno por `id`
 /// (`Backup+Generated.swift`, que escribe `scripts/gen-backup.py`). Las propiedades que falten en una copia de un
 /// esquema anterior toman su valor por defecto; una copia de un esquema más nuevo no se abre.
@@ -84,7 +85,8 @@ public enum BackupArchive {
                         companyName: company?.name ?? "", counts: payload.counts, companyID: company?.id)
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.sortedKeys]
-        let json = try encoder.encode(BackupFile(info: info, payload: payload))
+        // Con la suma SHA-256 delante (`Backup+Integrity.swift`): el mismo JSON que `BackupFile`, con una clave más.
+        let json = sealedJSON(info: try encoder.encode(info), payload: try encoder.encode(payload))
         let compressed = try (json as NSData).compressed(using: .zlib) as Data
         return signature + compressed
     }
@@ -163,20 +165,31 @@ public enum BackupArchive {
     static func decompressed(_ data: Data) throws -> Data {
         if isEncrypted(data) { throw BackupError.needsPassword }
         guard data.starts(with: signature) else { throw BackupError.notABackup }
+        let json: Data
         do {
-            return try (data.dropFirst(signature.count) as NSData).decompressed(using: .zlib) as Data
+            json = try (data.dropFirst(signature.count) as NSData).decompressed(using: .zlib) as Data
         } catch {
             throw BackupError.damaged
         }
+        // La suma (`Backup+Integrity.swift`) se comprueba antes de leer nada. Si no cuadra pero la cabecera dice que es de
+        // una versión más nueva (que podría escribirla de otra forma), se dice eso en vez de «dañada».
+        guard hasValidIntegrity(json) else {
+            struct Header: Decodable { var info: Info }
+            if let header = try? JSONDecoder().decode(Header.self, from: json), isNewer(header.info) { throw BackupError.newerVersion }
+            throw BackupError.damaged
+        }
+        return json
+    }
+
+    static func isNewer(_ info: Info) -> Bool {
+        info.formatVersion > formatVersion || info.schemaVersion.compare(schemaVersion, options: .numeric) == .orderedDescending
     }
 
     static func decode(_ data: Data) throws -> BackupFile {
         let json = try decompressed(data)
         struct Header: Decodable { var info: Info }
         guard let header = try? JSONDecoder().decode(Header.self, from: json) else { throw BackupError.damaged }
-        guard header.info.formatVersion <= formatVersion,
-              header.info.schemaVersion.compare(schemaVersion, options: .numeric) != .orderedDescending
-        else { throw BackupError.newerVersion }
+        guard !isNewer(header.info) else { throw BackupError.newerVersion }
         do {
             return try JSONDecoder().decode(BackupFile.self, from: json)
         } catch {

@@ -80,7 +80,7 @@ public enum PostingRules {
         let subtotal = lines.reduce(0) { $0 + $1.amount }
         guard discount >= 0, discount <= subtotal, discount == 0 || discountAccountID != nil else { throw .invalidDiscount }
         let taxableSubtotal = customerIsTaxExempt ? 0 : lines.filter(\.isTaxable).reduce(0) { $0 + $1.amount }
-        let taxableDiscount = subtotal == 0 ? 0 : (discount * taxableSubtotal).dividedRoundingHalfAwayFromZero(by: subtotal)
+        let taxableDiscount = subtotal == 0 ? 0 : discount.multiplied(by: taxableSubtotal, dividedRoundingHalfAwayFromZeroBy: subtotal)
         var taxableBase = taxableSubtotal - taxableDiscount
         let taxes: [TaxComponentAmount]
         var incomeLines = lines

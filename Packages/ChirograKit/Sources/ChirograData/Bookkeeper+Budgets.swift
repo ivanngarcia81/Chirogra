@@ -36,7 +36,7 @@ extension Bookkeeper {
         let budget = Budget(name: name, fiscalYear: fiscalYear)
         insert(budget)
         for line in source?.lines ?? [] {
-            let amount = (line.amount * Int64(factorPercent)).dividedRoundingHalfAwayFromZero(by: 100)
+            let amount = line.amount.multiplied(by: Int64(factorPercent), dividedRoundingHalfAwayFromZeroBy: 100)
             guard amount != 0 else { continue }
             let copy = BudgetLine(accountID: line.accountID, month: line.month, amount: amount)
             copy.budget = budget
@@ -61,7 +61,7 @@ extension Bookkeeper {
                 let raw = lines.filter { $0.accountID == account.id && $0.date >= month.start && $0.date <= month.end }
                     .reduce(Int64(0)) { $0 + $1.debit - $1.credit }
                 let natural = account.type.normalBalance == .debit ? raw : -raw
-                let amount = (natural * Int64(factorPercent)).dividedRoundingHalfAwayFromZero(by: 100)
+                let amount = natural.multiplied(by: Int64(factorPercent), dividedRoundingHalfAwayFromZeroBy: 100)
                 guard amount != 0 else { continue }
                 let line = BudgetLine(accountID: account.id, month: month.month, amount: amount)
                 line.budget = budget

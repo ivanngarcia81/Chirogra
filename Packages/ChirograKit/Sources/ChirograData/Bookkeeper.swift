@@ -697,7 +697,9 @@ public struct Bookkeeper {
 
     /// Anula una factura sin cobros ni notas de crédito revirtiendo su asiento.
     public func void(_ invoice: Invoice, on date: Date = Date()) throws {
-        guard invoice.status == .sent, invoice.amountPaid == 0, invoice.creditsApplied == 0 else {
+        // Tampoco con notas aunque no estén aplicadas (p. ej. una nota sobre la factura pagada y el cobro anulado después):
+        // el saldo a favor seguiría vivo con la factura anulada (revisión del 23-nov).
+        guard invoice.status == .sent, invoice.amountPaid == 0, invoice.creditsApplied == 0, (invoice.creditNotes ?? []).isEmpty else {
             throw BookkeepingError.invalidState(String(localized: "Solo se anulan facturas emitidas sin cobros ni notas de crédito."))
         }
         if let entry = try entry(id: invoice.journalEntryID) {
@@ -846,7 +848,7 @@ public struct Bookkeeper {
             // (con precios con impuesto incluido, la base ya sin impuesto que quedó en el desglose).
             let taxableLines = invoice.sortedLines.filter(\.isTaxable).reduce(0) { $0 + $1.amount }
             let taxableDiscount = invoice.subtotal == 0 ? 0
-                : (invoice.discount * taxableLines).dividedRoundingHalfAwayFromZero(by: invoice.subtotal)
+                : invoice.discount.multiplied(by: taxableLines, dividedRoundingHalfAwayFromZeroBy: invoice.subtotal)
             let grossBase = taxableLines - taxableDiscount
             let base = invoice.pricesIncludeTax ? (invoice.taxLines?.first?.taxableBase ?? grossBase) : grossBase
             return SalesTaxDocument(date: invoice.issueDate, netSales: invoice.netSales,
@@ -855,16 +857,38 @@ public struct Bookkeeper {
         for note in try fetch(CreditNote.self) {
             guard let invoice = note.invoice else { continue }
             let exempt = invoice.customer?.isTaxExempt ?? false
-            let base = note.isTaxable && !exempt ? note.amount : 0
-            // Mismo cálculo que al emitir la nota: tasas con que se emitió la factura.
-            let taxes = base > 0
-                ? SalesTaxCalculator.taxes(onTaxableBase: base, components: try issuedTaxComponents(of: invoice))
-                    .map { SalesTaxDocument.Tax(rateID: $0.component.id, name: $0.component.name, rateMillionths: $0.component.rateMillionths,
-                                                taxableBase: -$0.taxableBase, amount: -$0.amount) }
-                : []
-            documents.append(SalesTaxDocument(date: note.date, netSales: -note.amount, taxableBase: -base, isExempt: exempt, taxes: taxes))
+            // Mismo cálculo que al emitir la nota: tasas con que se emitió la factura y solo la parte gravable de sus líneas.
+            let components = try issuedTaxComponents(of: invoice)
+            let base = try issuedTaxableBase(of: note, invoice: invoice, components: components)
+            var taxes = base > 0 ? SalesTaxCalculator.taxes(onTaxableBase: base, components: components) : []
+            // El impuesto es siempre el que se contabilizó (`note.taxTotal`): si el cálculo no da lo mismo (una nota de
+            // una versión que calculaba distinto), la diferencia va a la tasa mayor, como el residuo de redondeo.
+            if let largest = taxes.indices.max(by: { taxes[$0].component.rateMillionths < taxes[$1].component.rateMillionths }) {
+                taxes[largest].amount += note.taxTotal - taxes.reduce(0) { $0 + $1.amount }
+            }
+            documents.append(SalesTaxDocument(date: note.date, netSales: -note.amount, taxableBase: -base, isExempt: exempt, taxes: taxes.map {
+                SalesTaxDocument.Tax(rateID: $0.component.id, name: $0.component.name, rateMillionths: $0.component.rateMillionths,
+                                     taxableBase: -$0.taxableBase, amount: -$0.amount)
+            }))
         }
         return ReportBuilder.salesTaxSummary(documents: documents, from: from, to: to)
+    }
+
+    /// Base gravable con que se contabilizó una nota de crédito: la parte gravable de sus líneas (`creditLines`), sin
+    /// línea elegida o con la línea de la factura que dé el impuesto que guardó la nota (la nota no guarda cuál fue).
+    /// Antes el reporte tomaba el importe entero como gravable y, en una factura con líneas gravables y no gravables,
+    /// restaba más base e impuesto de los contabilizados (auditoría del 23-nov). Si ninguna da su impuesto (una nota
+    /// de una versión que calculaba distinto), la de sin línea elegida.
+    func issuedTaxableBase(of note: CreditNote, invoice: Invoice, components: [TaxComponent]) throws -> Int64 {
+        guard note.isTaxable, !(invoice.customer?.isTaxExempt ?? false) else { return 0 }
+        var first: Int64?
+        for lineID in [nil] + invoice.sortedLines.map({ Optional($0.id) }) {
+            let base = try creditLines(for: invoice, amount: note.amount, isTaxable: true, lineID: lineID)
+                .filter(\.isTaxable).reduce(0) { $0 + $1.amount }
+            if SalesTaxCalculator.totalTax(onTaxableBase: base, components: components) == note.taxTotal { return base }
+            first = first ?? base
+        }
+        return first ?? note.amount
     }
 
     /// Pago de sales tax a la agencia: Debe Sales Tax Payable (cuenta de la agencia) / Haber Banco.

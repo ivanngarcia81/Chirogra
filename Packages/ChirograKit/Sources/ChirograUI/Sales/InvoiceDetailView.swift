@@ -367,7 +367,7 @@ struct InvoiceDetailView: View {
                         showingCreditNote = true
                     }
                 }
-                let canVoid = invoice.isOpen && invoice.amountPaid == 0 && invoice.creditsApplied == 0
+                let canVoid = invoice.isOpen && invoice.amountPaid == 0 && invoice.creditsApplied == 0 && (invoice.creditNotes ?? []).isEmpty
                 if canVoid {
                     Button("Anular factura", systemImage: "xmark.circle", role: .destructive) { confirmingVoid = true }
                 }

@@ -49,3 +49,26 @@ struct PostalTaxTableTests {
         #expect(!rates.contains { $0.combinedRateMillionths > 200_000 || $0.localRateMillionths < 0 })
     }
 }
+
+/// Antigüedad de la tabla de tasas (auditoría del 23-nov).
+@Suite("Tabla de tasas: antigüedad")
+struct PostalTaxTableAgeTests {
+    func day(_ text: String) -> Date { try! Date(text, strategy: Date.ISO8601FormatStyle(timeZone: .current).year().month().day()) }
+
+    @Test("Vieja a los 100 días de su fecha, o si no dice de cuándo es")
+    func staleness() {
+        let table = PostalTaxTable(rates: [], effectiveDate: "2026-11-11")
+        #expect(table.date == day("2026-11-11"))
+        #expect(!table.isStale(asOf: day("2026-11-23")))
+        #expect(!table.isStale(asOf: day("2027-02-19")))          // 100 días
+        #expect(table.isStale(asOf: day("2027-02-20")))
+        #expect(PostalTaxTable(rates: [], effectiveDate: "").isStale(asOf: day("2026-11-23")))
+        #expect(PostalTaxTable(rates: [], effectiveDate: "otoño").isStale(asOf: day("2026-11-23")))
+    }
+
+    @Test("La tabla que trae la app dice de cuándo es y de dónde sale")
+    func bundledHasDateAndSource() throws {
+        let table = try #require(PostalTaxTable.bundled())
+        #expect(table.date != nil && !table.source.isEmpty && table.count > 20_000)
+    }
+}

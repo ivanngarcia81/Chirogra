@@ -267,7 +267,7 @@ struct MigrationTests {
         ProcessInfo.processInfo.environment["CHIROGRA_STORE"] ?? ProcessInfo.processInfo.environment["CHIROGRA_V1_STORE"]
     }
 
-    @Test("Un almacén escrito por una versión publicada se migra al esquema 4 y cuadra", .enabled(if: publishedStore != nil))
+    @Test("Un almacén escrito por una versión publicada se migra al esquema actual y cuadra", .enabled(if: publishedStore != nil))
     func migratesStoreFromPublishedApp() throws {
         let source = URL(filePath: try #require(Self.publishedStore))
         let url = try Self.temporaryStore()
@@ -292,6 +292,10 @@ struct MigrationTests {
         let companies = try container.mainContext.fetch(FetchDescriptor<Company>())
         #expect(companies.filter { !$0.isArchived }.count == 1)
         #expect(try container.mainContext.fetch(FetchDescriptor<AuditEvent>()).contains { !$0.subjectEntity.isEmpty })
+        // Auditoría del 23-nov: los saldos guardados por esa versión cuadran con sus registros (nada que corregir) y la
+        // base caja cuadra.
+        #expect(try books.reconcileDocumentBalances(confirming: []).discrepancies.isEmpty)
+        #expect(try books.trialBalance(asOf: .distantFuture, basis: .cash).isBalanced)
     }
 
     @Test("El plan de migración va de la versión 1 a la 5 y la app usa la 5")

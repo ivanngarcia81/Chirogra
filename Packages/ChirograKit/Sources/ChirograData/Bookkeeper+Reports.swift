@@ -22,15 +22,26 @@ extension Bookkeeper {
     }
 
     /// Las líneas del diario vistas en **base caja**, balanceadas asiento por asiento (así la balanza, el balance y el
-    /// estado de resultados de `ReportBuilder` sirven igual):
+    /// estado de resultados de `ReportBuilder` sirven igual). El ingreso se reconoce cuando entra el dinero y el gasto
+    /// cuando sale; las cuentas por cobrar y por pagar quedan en cero:
     /// - los asientos de facturas, notas de crédito y facturas de proveedor (y sus reversiones y correcciones) no cuentan;
-    /// - en cada **cobro**, la línea de cuentas por cobrar se sustituye por las líneas de la factura cobrada (ingresos,
-    ///   sales tax, descuento) en proporción a lo cobrado sobre lo que se debía (total menos notas de crédito de esa
-    ///   factura), con el reparto exacto al centavo;
-    /// - en cada **pago a proveedor**, la de cuentas por pagar se sustituye igual por las líneas de gasto de la factura;
-    /// - en un **reembolso** de saldo a favor, la de cuentas por cobrar, por las líneas de las notas de crédito reembolsadas;
+    /// - cada **cobro** sustituye su línea de cuentas por cobrar por la parte de la factura que liquida (ingresos, sales
+    ///   tax, descuento), y cada **pago a proveedor**, la de cuentas por pagar por la parte de la factura del proveedor;
+    /// - una **nota de crédito aplicada a su propia factura** la rebaja: lo que falta por cobrar reconoce la factura ya
+    ///   rebajada (ese día no se reconoce nada: no se movió dinero);
+    /// - el **saldo a favor aplicado a otra factura** (`CreditApplication`, sin asiento) reconoce en su fecha la parte de
+    ///   la nota que se consume (resta ingreso e impuesto de la factura original) y la parte de la otra factura que
+    ///   liquida: ese dinero ya había entrado, así que el neto del día es cero y solo cambia de cuenta si no coinciden;
+    /// - un **reembolso** de saldo a favor sustituye su línea de cuentas por cobrar por la parte de las notas que
+    ///   reembolsa (de la más antigua a la más reciente, como `refundCustomerCredit`);
+    /// - la **reversión** de un cobro, pago o reembolso (`voidPayment`) quita exactamente lo que reconoció, en su fecha;
     /// - lo demás (gastos pagados al momento, depósitos, transferencias, asientos manuales, saldos iniciales) queda igual.
-    /// Aproximación conocida: una nota de crédito aplicada a **otra** factura del cliente no cambia el reparto.
+    ///
+    /// Cada documento lleva la cuenta de lo que le falta por reconocer y los hechos se recorren por fecha: cada parte es
+    /// proporcional a lo que falta, exacta al centavo, y la que liquida el documento se lleva el resto exacto. Así nada
+    /// de lo que pasa después cambia un periodo ya pasado y, liquidado todo, cada cuenta suma lo mismo que en devengo
+    /// (`CashBasisCreditTests`). Si los datos no cuadran (p. ej. una sincronización a medias), el asiento se queda como
+    /// está, con su cuenta por cobrar o por pagar a la vista, en vez de inventar un reparto.
     public func cashBasisLedgerLines() throws -> [LedgerLine] {
         let entries = try postedEntries()
         let entriesByID = Dictionary(entries.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
@@ -52,59 +63,172 @@ extension Bookkeeper {
                 return (id, line.debit - line.credit)
             }
         }
-        var invoiceMixes: [UUID: [(UUID, Int64)]] = [:]
-        func invoiceMix(_ invoice: Invoice) -> [(UUID, Int64)] {
-            if let cached = invoiceMixes[invoice.id] { return cached }
-            let result = mix(invoice.journalEntryID, excluding: receivable)
-                + (invoice.creditNotes ?? []).flatMap { mix($0.journalEntryID, excluding: receivable) }
-            invoiceMixes[invoice.id] = result
-            return result
+        func billAccounts(_ bill: Bill) -> Set<UUID> { payable.union([bill.payableAccountID].compactMap { $0 }) }
+
+        // Lo que le falta por reconocer a cada factura, nota de crédito y factura de proveedor (por su id).
+        var pending: [UUID: CashBasisPending] = [:]
+        func take(_ id: UUID, _ seed: @autoclosure () -> [(UUID, Int64)], _ target: Int64) -> [(UUID, Int64)]? {
+            var state = pending[id] ?? CashBasisPending(seed())
+            defer { pending[id] = state }
+            return state.take(target)
         }
-        /// Líneas que suman `total` (debe − haber) repartido según `weights`.
-        func allocated(_ total: Int64, over weights: [(UUID, Int64)], date: Date, entryID: UUID) -> [LedgerLine]? {
-            guard weights.reduce(0, { $0 + $1.1 }) != 0 else { return nil }
-            return zip(weights, ReportBuilder.allocateSigned(total, weights: weights.map(\.1))).compactMap { weight, share in
-                share == 0 ? nil : LedgerLine(accountID: weight.0, date: date, debit: max(share, 0), credit: max(-share, 0), entryID: entryID)
+        func give(_ id: UUID, _ seed: @autoclosure () -> [(UUID, Int64)], _ parts: [(UUID, Int64)]) {
+            var state = pending[id] ?? CashBasisPending(seed())
+            state.add(parts)
+            pending[id] = state
+        }
+        func invoiceSeed(_ invoice: Invoice) -> [(UUID, Int64)] { mix(invoice.journalEntryID, excluding: receivable) }
+        func noteSeed(_ note: CreditNote) -> [(UUID, Int64)] { mix(note.journalEntryID, excluding: receivable) }
+        func billSeed(_ bill: Bill) -> [(UUID, Int64)] { mix(bill.journalEntryID, excluding: billAccounts(bill)) }
+        func lines(_ parts: [(UUID, Int64)], date: Date, entryID: UUID) -> [LedgerLine] {
+            parts.compactMap { account, net in
+                net == 0 ? nil : LedgerLine(accountID: account, date: date, debit: max(net, 0), credit: max(-net, 0), entryID: entryID)
+            }
+        }
+
+        /// Lo que reconoció cada asiento sustituido: las cuentas que sustituyó y lo tomado de cada documento, para que
+        /// su reversión lo quite exacto.
+        var recognized: [UUID: (accounts: Set<UUID>, taken: [(document: UUID, seed: [(UUID, Int64)], parts: [(UUID, Int64)])])] = [:]
+        var replacements: [UUID: (accounts: Set<UUID>, lines: [LedgerLine])] = [:]
+        var synthetic: [LedgerLine] = []
+
+        /// Sustituye las líneas de `replaced` del asiento por lo tomado, si suma lo mismo; si no, lo devuelve.
+        func settle(_ entry: JournalEntry, replacing replaced: Set<UUID>,
+                    taken: [(document: UUID, seed: [(UUID, Int64)], parts: [(UUID, Int64)])], complete: Bool) {
+            let net = (entry.lines ?? []).reduce(Int64(0)) { sum, line in
+                guard let id = line.account?.id, replaced.contains(id) else { return sum }
+                return sum + line.debit - line.credit
+            }
+            let parts = taken.flatMap(\.parts)
+            guard complete, net != 0, parts.reduce(0, { $0 + $1.1 }) == net else {
+                // `take` ya lo restó de lo pendiente: devolverlo es sumarlo tal cual (revisión del 23-nov).
+                for item in taken { give(item.document, item.seed, item.parts) }
+                return
+            }
+            recognized[entry.id] = (replaced, taken)
+            replacements[entry.id] = (replaced, lines(parts, date: entry.date, entryID: entry.id))
+        }
+
+        // Qué notas consumió cada reembolso (no se guarda): en el orden en que se registraron, con las notas que ya
+        // existían entonces (`Bookkeeper.refundAllocations`). Hasta lo reembolsado de cada nota.
+        let refundShares = Self.refundAllocations(refunds: entries.filter { $0.source == .customerRefund && $0.reversesEntryID == nil },
+                                                  notes: notes, receivable: receivable) { $0.refundedAmount }
+
+        // Los hechos que dependen del orden, por fecha: cobros, pagos, reembolsos, sus reversiones y saldo a favor aplicado.
+        enum Event { case entry(JournalEntry), credit(CreditApplication) }
+        func isRefund(_ entry: JournalEntry) -> Bool {
+            entry.source == .customerRefund || entry.reversesEntryID.flatMap { entriesByID[$0] }?.source == .customerRefund
+        }
+        var events: [(date: Date, created: Date, number: Int, id: String, event: Event)] = entries.compactMap { entry in
+            guard let source = entry.sourceDocumentID, !accrualDocuments.contains(source),
+                  payments[source] != nil || billPayments[source] != nil || isRefund(entry) else { return nil }
+            return (entry.date, entry.createdAt, entry.number, entry.id.uuidString, .entry(entry))
+        }
+        for application in try fetch(CreditApplication.self) {
+            // La de una nota sobre su propia factura nace con la nota: va justo detrás de su asiento.
+            let own = application.note.flatMap { note in note.invoice?.id == application.invoice?.id ? note : nil }
+            events.append((application.date, own?.createdAt ?? application.date,
+                           own?.journalEntryID.flatMap { entriesByID[$0]?.number } ?? Int.max,
+                           application.id.uuidString, .credit(application)))
+        }
+        events.sort { ($0.date, $0.created, $0.number, $0.id) < ($1.date, $1.created, $1.number, $1.id) }
+
+        for item in events {
+            switch item.event {
+            case .entry(let entry):
+                if let originalID = entry.reversesEntryID {
+                    // Reversión (cobro anulado): quita lo que reconoció el original y se lo devuelve a cada documento.
+                    guard let original = recognized[originalID] else { continue }
+                    for taken in original.taken { give(taken.document, taken.seed, taken.parts) }
+                    let parts = original.taken.flatMap(\.parts).map { ($0.0, -$0.1) }
+                    replacements[entry.id] = (original.accounts, lines(parts, date: entry.date, entryID: entry.id))
+                } else if let payment = entry.sourceDocumentID.flatMap({ payments[$0] }) {
+                    var taken: [(document: UUID, seed: [(UUID, Int64)], parts: [(UUID, Int64)])] = []
+                    var complete = true
+                    for application in (payment.applications ?? []).sorted(by: { $0.id.uuidString < $1.id.uuidString }) {
+                        guard let invoice = application.invoice,
+                              let parts = take(invoice.id, invoiceSeed(invoice), -application.amount) else { complete = false; break }
+                        taken.append((invoice.id, invoiceSeed(invoice), parts))
+                    }
+                    settle(entry, replacing: receivable, taken: taken, complete: complete)
+                } else if let payment = entry.sourceDocumentID.flatMap({ billPayments[$0] }) {
+                    guard let bill = payment.bill else { continue }
+                    let parts = take(bill.id, billSeed(bill), payment.amount)
+                    settle(entry, replacing: billAccounts(bill), taken: parts.map { [(bill.id, billSeed(bill), $0)] } ?? [],
+                           complete: parts != nil)
+                } else if entry.sourceDocumentID != nil {
+                    // Reembolso: consume el saldo reembolsado de las notas del cliente, de la más antigua a la más reciente.
+                    let amount = (entry.lines ?? []).reduce(Int64(0)) { sum, line in
+                        guard let id = line.account?.id, receivable.contains(id) else { return sum }
+                        return sum + line.debit - line.credit
+                    }
+                    var left = amount
+                    var taken: [(document: UUID, seed: [(UUID, Int64)], parts: [(UUID, Int64)])] = []
+                    var complete = true
+                    for share in refundShares[entry.id] ?? [] {
+                        guard let parts = take(share.note.id, noteSeed(share.note), share.amount) else { complete = false; break }
+                        taken.append((share.note.id, noteSeed(share.note), parts))
+                        left -= share.amount
+                    }
+                    settle(entry, replacing: receivable, taken: taken, complete: complete && left == 0)
+                }
+            case .credit(let application):
+                guard let note = application.note, let invoice = application.invoice, application.amount > 0,
+                      let noteParts = take(note.id, noteSeed(note), application.amount) else { continue }
+                if note.invoice?.id == invoice.id {
+                    // Sobre su propia factura: la rebaja. Si con eso queda liquidada y las cuentas no coinciden (se había
+                    // cobrado una parte antes), lo que queda suma cero y se reconoce ese día.
+                    give(invoice.id, invoiceSeed(invoice), noteParts)
+                    if var state = pending[invoice.id], state.total == 0 {
+                        synthetic += lines(state.drain(), date: application.date, entryID: application.id)
+                        pending[invoice.id] = state
+                    }
+                } else if let invoiceParts = take(invoice.id, invoiceSeed(invoice), -application.amount) {
+                    synthetic += lines(noteParts + invoiceParts, date: application.date, entryID: application.id)
+                } else {
+                    give(note.id, noteSeed(note), noteParts)
+                }
             }
         }
 
         var result: [LedgerLine] = []
         for entry in entries {
             if let source = entry.sourceDocumentID, accrualDocuments.contains(source) { continue }
+            let replacement = replacements[entry.id]
             for line in entry.lines ?? [] {
                 guard let accountID = line.account?.id else { continue }
-                let original = LedgerLine(accountID: accountID, date: entry.date, debit: line.debit, credit: line.credit, entryID: entry.id)
-                let net = line.debit - line.credit
-                var replacement: [LedgerLine]?
-                if receivable.contains(accountID), let payment = entry.sourceDocumentID.flatMap({ payments[$0] }) {
-                    var lines: [LedgerLine] = []
-                    var covered: Int64 = 0
-                    // La reversión de un cobro anulado (`voidPayment`) quita lo que el cobro reconoció: el mismo reparto
-                    // con el signo contrario.
-                    let sign: Int64 = entry.reversesEntryID == nil ? 1 : -1
-                    for application in payment.applications ?? [] {
-                        guard let invoice = application.invoice,
-                              let part = allocated(-application.amount * sign, over: invoiceMix(invoice), date: entry.date, entryID: entry.id) else { continue }
-                        lines += part
-                        covered -= application.amount * sign
-                    }
-                    if covered == net { replacement = lines }
-                } else if payable.contains(accountID), let payment = entry.sourceDocumentID.flatMap({ billPayments[$0] }),
-                          let bill = payment.bill {
-                    replacement = allocated(net, over: mix(bill.journalEntryID, excluding: payable), date: entry.date, entryID: entry.id)
-                } else if receivable.contains(accountID), entry.source == .customerRefund,
-                          let customerID = entry.sourceDocumentID {
-                    let refunded = notes.filter { $0.customer?.id == customerID && $0.refundedAmount > 0 }
-                    let weights = refunded.flatMap { note -> [(UUID, Int64)] in
-                        let noteMix = mix(note.journalEntryID, excluding: receivable)
-                        let noteTotal = noteMix.reduce(0) { $0 + $1.1 }
-                        guard noteTotal != 0 else { return [] }
-                        return zip(noteMix, ReportBuilder.allocateSigned(note.refundedAmount, weights: noteMix.map(\.1))).map { ($0.0.0, $0.1) }
-                    }
-                    replacement = allocated(net, over: weights, date: entry.date, entryID: entry.id)
-                }
-                result += replacement ?? [original]
+                if let replacement, replacement.accounts.contains(accountID) { continue }
+                result.append(LedgerLine(accountID: accountID, date: entry.date, debit: line.debit, credit: line.credit, entryID: entry.id))
             }
+            result += replacement?.lines ?? []
+        }
+        return result + synthetic
+    }
+
+    /// Qué notas de crédito consumió cada reembolso de saldo a favor (`refundCustomerCredit` solo guarda lo reembolsado
+    /// de cada nota): los reembolsos en el orden en que se registraron (`createdAt`, número) y, a cada uno, las notas de
+    /// su cliente que ya existían entonces, de la más antigua a la más reciente, hasta `capacity` de cada nota. Una nota
+    /// con fecha anterior emitida después no cambia lo que consumió un reembolso anterior (revisión del 23-nov).
+    static func refundAllocations(refunds: [JournalEntry], notes: [CreditNote], receivable: Set<UUID>,
+                                  capacity: (CreditNote) -> Int64) -> [UUID: [(note: CreditNote, amount: Int64)]] {
+        let ordered = notes.sorted { ($0.date, $0.createdAt, $0.id.uuidString) < ($1.date, $1.createdAt, $1.id.uuidString) }
+        var left = Dictionary(ordered.map { ($0.id, max(0, capacity($0))) }, uniquingKeysWith: { first, _ in first })
+        var result: [UUID: [(note: CreditNote, amount: Int64)]] = [:]
+        for refund in refunds.sorted(by: { ($0.createdAt, $0.number, $0.id.uuidString) < ($1.createdAt, $1.number, $1.id.uuidString) }) {
+            guard let customerID = refund.sourceDocumentID else { continue }
+            var amount = (refund.lines ?? []).reduce(Int64(0)) { sum, line in
+                guard let id = line.account?.id, receivable.contains(id) else { return sum }
+                return sum + line.debit - line.credit
+            }
+            var shares: [(note: CreditNote, amount: Int64)] = []
+            for note in ordered where amount > 0 && note.customer?.id == customerID && note.createdAt <= refund.createdAt {
+                let portion = min(amount, left[note.id, default: 0])
+                guard portion > 0 else { continue }
+                shares.append((note, portion))
+                left[note.id, default: 0] -= portion
+                amount -= portion
+            }
+            result[refund.id] = shares
         }
         return result
     }
@@ -229,5 +353,46 @@ extension Bookkeeper {
         return AccountantPackage(companyName: try company()?.name ?? "", from: from, to: to, basis: basis, incomeStatement: income,
                                  balanceSheet: balance, trialBalance: trial, cashFlow: cashFlow, taxSummary: taxes,
                                  receivables: receivables, payables: payables, reconciliations: reconciliations, files: files)
+    }
+}
+
+/// Lo que a un documento (factura, nota de crédito, factura de proveedor) le falta por reconocer en base caja: el neto
+/// (debe − haber) por cuenta de su asiento, sin la cuenta por cobrar o por pagar, en el orden de sus líneas.
+struct CashBasisPending {
+    private(set) var parts: [(account: UUID, amount: Int64)] = []
+
+    init(_ seed: [(UUID, Int64)]) { add(seed) }
+
+    var total: Int64 { parts.reduce(0) { $0 + $1.amount } }
+
+    mutating func add(_ more: [(UUID, Int64)]) {
+        for (account, amount) in more {
+            if let index = parts.firstIndex(where: { $0.account == account }) {
+                parts[index].amount += amount
+            } else {
+                parts.append((account, amount))
+            }
+        }
+    }
+
+    /// La parte que liquida `target` (con el signo de `total`), proporcional a lo que falta y exacta al centavo; si
+    /// liquida todo lo que falta, exactamente eso. `nil` si no hay nada que repartir o se pide más de lo que falta
+    /// (datos que no cuadran): quien llama deja el asiento como está.
+    mutating func take(_ target: Int64) -> [(UUID, Int64)]? {
+        let sum = total
+        guard sum != 0, target != 0, (target > 0) == (sum > 0), target.magnitude <= sum.magnitude else { return nil }
+        let live = parts.filter { $0.amount != 0 }
+        let share: [(UUID, Int64)] = target == sum
+            ? live.map { ($0.account, $0.amount) }
+            : zip(live, ReportBuilder.allocateSigned(target, weights: live.map(\.amount))).map { ($0.0.account, $0.1) }
+        add(share.map { ($0.0, -$0.1) })
+        return share.filter { $0.1 != 0 }
+    }
+
+    /// Lo que queda cuando ya no hay nada por liquidar (suma cero, distinto de cero solo si las cuentas no coinciden).
+    mutating func drain() -> [(UUID, Int64)] {
+        let rest = parts.filter { $0.amount != 0 }.map { ($0.account, $0.amount) }
+        parts = parts.map { ($0.account, 0) }
+        return rest
     }
 }

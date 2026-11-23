@@ -246,7 +246,9 @@ struct CompaniesTests {
         info["schemaVersion"] = "3.0.0"
         info["companyID"] = nil
         object["info"] = info
-        let old = BackupArchive.signature + (try (JSONSerialization.data(withJSONObject: object) as NSData).compressed(using: .zlib) as Data)
+        object["integrity"] = nil          // las copias de la 1.0.1 no llevaban la suma del 23-nov
+        let old = BackupArchive.signature + (try (JSONSerialization.data(withJSONObject: object, options: .sortedKeys) as NSData)
+            .compressed(using: .zlib) as Data)
 
         let target = try ChirograStore.makeContainer(inMemory: true)
         let result = try BackupArchive.restoreCompany(old, into: target.mainContext, mode: .replaceCompany(nil))

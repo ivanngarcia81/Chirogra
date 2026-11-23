@@ -15760,6 +15760,16 @@
         }
       }
     },
+    "La tabla de tasas es del %@: pueden haber cambiado desde entonces." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The rate table is from %@: rates may have changed since then."
+          }
+        }
+      }
+    },
     "La tasa debe estar entre 0 % y 100 %." : {
       "localizations" : {
         "en" : {
@@ -18652,6 +18662,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "This can’t be undone: to keep anything, back up each business first."
+          }
+        }
+      }
+    },
+    "No se sabe de cuándo es la tabla de tasas: compruébala con tu estado." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The rate table has no date: check the rate with your state."
           }
         }
       }
@@ -22767,6 +22787,16 @@
         }
       }
     },
+    "Reembolsado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Refunded"
+          }
+        }
+      }
+    },
     "Reembolsar" : {
       "localizations" : {
         "en" : {
@@ -23926,6 +23956,16 @@
         }
       }
     },
+    "Saldo a favor aplicado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Customer credit applied"
+          }
+        }
+      }
+    },
     "Saldo a favor aplicado a %@: %@" : {
       "localizations" : {
         "en" : {
@@ -23984,6 +24024,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Account balance per books"
+          }
+        }
+      }
+    },
+    "Saldo de la factura %@ corregido tras sincronizar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invoice %@ balance corrected after syncing"
+          }
+        }
+      }
+    },
+    "Saldo de la factura de proveedor %@ corregido tras sincronizar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bill %@ balance corrected after syncing"
+          }
+        }
+      }
+    },
+    "Saldo de la nota de crédito %@ corregido tras sincronizar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Credit note %@ balance corrected after syncing"
           }
         }
       }

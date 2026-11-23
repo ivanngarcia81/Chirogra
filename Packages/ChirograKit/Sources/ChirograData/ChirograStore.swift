@@ -9,6 +9,12 @@ public enum ChirograStore {
     /// Clave de `UserDefaults` del interruptor «Sincronizar con iCloud» (por aparato; la leen la app y Ajustes).
     public static let syncEnabledKey = "iCloudSyncEnabled"
 
+    /// Si al abrir con iCloud el contenedor falló y la app abrió el mismo almacén solo en local (`ChirograApp`), el
+    /// detalle del error («NSCocoaErrorDomain 134060»). Los libros están enteros y lo que se cambie queda en el historial
+    /// del almacén, que iCloud sube la próxima vez que abra bien; la franja de iCloud lo dice (`SyncMonitor`) en vez de
+    /// aparentar que sincroniza (auditoría del 23-nov).
+    @MainActor public static var cloudKitOpenFailure: String?
+
     /// Archivo del almacén de siempre (`Application Support/Chirogra.store`).
     public static var defaultStoreURL: URL { ModelConfiguration("Chirogra", schema: schema).url }
 

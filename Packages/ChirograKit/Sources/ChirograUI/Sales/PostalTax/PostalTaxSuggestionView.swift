@@ -103,6 +103,9 @@ struct PostalTaxSuggestionView: View {
                 Text(suggestion.basis == .origin ? "Tasa sugerida para tu negocio (\(suggestion.rate.postalCode))"
                                                  : "Tasa sugerida para \(suggestion.rate.postalCode)")
                 Text("\(suggestion.breakdown) · aproximada").font(.footnote).foregroundStyle(Palette.ink2)
+                if let stale = staleNote {
+                    Text(stale).font(.footnote).foregroundStyle(Palette.warning)
+                }
             }
         }
         .accessibilityElement(children: .combine)
@@ -148,9 +151,17 @@ struct PostalTaxSuggestionView: View {
         }
     }
 
+    /// Tabla de hace más de un trimestre (`PostalTaxTable.isStale`): las tasas pueden haber cambiado desde entonces.
+    private var staleNote: String? {
+        guard let table = PostalTaxTables.current, table.isStale() else { return nil }
+        guard let date = table.date else { return String(localized: "No se sabe de cuándo es la tabla de tasas: compruébala con tu estado.") }
+        return String(localized: "La tabla de tasas es del \(date.formatted(date: .abbreviated, time: .omitted)): pueden haber cambiado desde entonces.")
+    }
+
     private func message(for suggestion: SalesTaxSuggestion) -> String {
         let table = PostalTaxTables.current
         var text = String(localized: "Es una tasa aproximada para el código postal \(suggestion.rate.postalCode): \(suggestion.breakdown). Un código postal puede tener varias tasas; compruébala con tu estado antes de cobrarla.")
+        if let stale = staleNote { text += " " + stale }
         if let source = table?.source, !source.isEmpty {
             text += "\n\n" + String(localized: "Fuente: \(source)") + (table?.effectiveDate.isEmpty == false ? " · \(table!.effectiveDate)" : "")
         }

@@ -223,10 +223,15 @@ si el usuario confirma, repite con `books.allowingReconciledChanges()` (queda en
   `balanceSheet(asOf:basis:)`, `trialBalance(asOf:basis:)`.
 - **Base caja** (`cashBasisLedgerLines()`): las líneas del diario vistas en caja, balanceadas asiento por asiento (sirven
   todos los `ReportBuilder`). Fuera los asientos de facturas, notas de crédito y facturas de proveedor (con sus
-  reversiones); en cada cobro, la línea de CxC se sustituye por las líneas de la factura (ingresos, sales tax, descuento)
-  en proporción a lo cobrado sobre lo que se debía (total − notas de crédito de esa factura), exacto al centavo
-  (`ReportBuilder.allocateSigned`); igual con los pagos a proveedores (CxP → líneas de gasto) y los reembolsos de saldo
-  a favor (CxC → líneas de las notas reembolsadas). Aproximación: una nota aplicada a **otra** factura no cambia el reparto.
+  reversiones). Cada documento lleva lo que le falta por reconocer (`CashBasisPending`) y los hechos se recorren por
+  fecha: cada cobro sustituye la línea de CxC por la parte de la factura que liquida (ingresos, sales tax, descuento),
+  exacta al centavo (`ReportBuilder.allocateSigned`; el último cobro se lleva el resto exacto); igual los pagos a
+  proveedores (CxP → líneas de gasto). Una nota aplicada a su propia factura la rebaja; el saldo a favor aplicado a
+  **otra** factura (`CreditApplication`, sin asiento) reconoce ese día la parte de la nota (resta) y la de la otra
+  factura (suma); un reembolso, la parte de las notas que reembolsa (de la más antigua a la más reciente); la reversión
+  de un cobro quita exactamente lo que reconoció. Nada posterior cambia un periodo pasado y, liquidado todo, cada cuenta
+  suma lo mismo que en devengo (auditoría del 23-nov, `CashBasisCreditTests`; antes la nota aplicada a otra factura no
+  cambiaba el reparto y el sales tax en caja salía de más).
 - **Flujo de efectivo** indirecto: `cashFlowStatement(from:to:) -> CashFlowStatement` (`netIncome`,
   `nonCashAdjustments` —depreciación: líneas de activo fijo en asientos sin efectivo y con gasto—, `workingCapital`,
   `investing`, `financing`, `beginningCash`, `endingCash`, totales, `isReconciled`). Secciones por tipo de detalle
@@ -308,6 +313,6 @@ si el usuario confirma, repite con `books.allowingReconciledChanges()` (queda en
 - **Sociedades (1065) y C corp (1120)**: sin formulario en Chirogra (`TaxForm.forEntity` → `nil`).
 - ~~Archivar y el límite~~ **Decidido (8-nov):** las archivadas **sí cuentan** para el límite (`canAddCompany()` cuenta
   `companies(includeArchived: true)`); para hacer sitio hay que borrar una. Volver a mostrar una archivada siempre se puede.
-- **Base caja**: aproximación con notas de crédito aplicadas a otra factura (§4).
+- ~~Base caja: aproximación con notas de crédito aplicadas a otra factura~~ **Resuelto el 23-nov** (§4).
 - **Plaid** (fase 3): implementar `BankTransactionSource` con `kind = .plaid`.
 - Antes de publicar: desplegar el esquema 4 a Producción y probarlo allí (CONTEXTO).

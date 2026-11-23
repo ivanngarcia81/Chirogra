@@ -28,18 +28,17 @@ Chirogra.xcodeproj           Proyecto generado (se puede abrir directamente)
 ## Compilar y probar
 
 ```bash
-cd Packages/ChirograKit && swift test
+scripts/verificar.sh            # pruebas del paquete + apps de iOS y Mac compiladas + número de build (unos minutos)
+scripts/verificar.sh --rapido   # solo las pruebas
 ```
 
-```bash
-xcodebuild -project Chirogra.xcodeproj -scheme Chirogra -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build
-```
+Es lo mismo que corre GitHub Actions en cada push (`.github/workflows/pruebas.yml`). Las pruebas sueltas:
+`cd Packages/ChirograKit && swift test --skip ScreenSmokeTests` (`ScreenSmokeTests` falla desde el build 54 por
+`ImageRenderer`, pendiente). Para probar la migración con un almacén real de una versión publicada:
+`CHIROGRA_STORE=/ruta/Chirogra.store swift test --filter MigrationTests`.
 
-```bash
-xcodebuild -project Chirogra.xcodeproj -scheme Chirogra -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO build
-```
-
-Si cambias `project.yml`, regenera el proyecto con `xcodegen generate`.
+Si cambias `project.yml`, regenera el proyecto con `xcodegen generate` (y restaura `App/Chirogra.entitlements` con
+`git checkout`: XcodeGen le quita `ubiquity-kvstore-identifier`).
 
 ## Idiomas
 
@@ -55,31 +54,36 @@ Los textos de la interfaz cambian con el idioma del teléfono, pero los datos gu
 
 ## Sincronización con iCloud
 
-El modelo de datos ya cumple las reglas de CloudKit, pero la capacidad de iCloud no viene activada para que el proyecto compile con cualquier cuenta (los equipos personales no admiten iCloud). Para activarla:
-
-1. En Xcode, target **Chirogra** › *Signing & Capabilities*, elige tu equipo.
-2. Añade **iCloud** con **CloudKit** y el contenedor `iCloud.com.chirogra.app` (o cambia `ChirograApp.cloudKitContainer`).
-3. En la app, *Ajustes › iCloud y copias › Sincronizar con iCloud*, y vuelve a abrirla.
-
-Sin la capacidad, la app usa un almacén local aunque el interruptor esté activado.
+La capacidad de iCloud (CloudKit, contenedor `iCloud.com.chirogra.app`, y el almacén de clave-valor para las empresas
+borradas) está en `App/Chirogra.entitlements` y se firma con el equipo de la app. Con otra cuenta de desarrollo sin
+iCloud, la app abre el mismo almacén solo en local y la franja de iCloud avisa de que no sincroniza. Cada aparato decide
+en *Ajustes › iCloud y copias › Sincronizar con iCloud*.
 
 ## Estado
 
-MVP completo (DISEÑO §3.1), con parte de la fase 2 ya hecha (recurrentes, estimados, envío con plantilla). Funciona:
+Versiones en App Store Connect: la **1.0** (build 15) está aprobada; la **1.3.0** (build 64), que junta la 1.1, la 1.2
+y la 1.3, está en revisión. Lo que hay hoy en el código (rama `version-1.3`):
 
-- **Alta de empresa** con sector, que define la plantilla del plan de cuentas.
-- **Contabilidad:** plan de cuentas, asientos manuales con aviso de cuadre, reversiones, libro mayor con filtro de fechas y cierre de periodo con historial.
-- **Ventas:**
-  - clientes con contacto y notas;
-  - estimados que se convierten en factura;
-  - facturas con descuento, sales tax (también incluido en el precio) y edición de borradores;
-  - PDF con plantilla propia, envío por correo y recordatorios;
-  - cobros, notas de crédito y anulación.
-- **Compras:** proveedores con W-9, facturas por pagar, pagos programados y en lote, recurrentes; gastos con foto o PDF del recibo.
-- **Sales tax:** tasas, grupos, resumen por periodo y pago a la agencia.
-- **Reportes:** resultados, balance general, balanza, antigüedad por cobrar y por pagar, y sales tax, todos con CSV.
-- **Seguridad y datos:** bloqueo con Face ID, iCloud opcional, copia de seguridad `.chirogra` (crear, restaurar y deshacer) y datos de ejemplo.
+- **Alta y empresas:** alta con sector (plan de cuentas por plantilla), varias empresas, datos de ejemplo, bienvenida y
+  recorrido de la primera vez; plan para contadores con panel de clientes.
+- **Contabilidad:** plan de cuentas, asientos manuales y ajustes del contador, reversiones, libro mayor, cierre de
+  periodos con contraseña y «cambios después del cierre», bitácora de cambios.
+- **Ventas:** clientes, estimados que se convierten en factura, facturas con descuento y sales tax (también incluido en
+  el precio), edición de facturas emitidas sin cobros, PDF, envío y recordatorios, enlace de pago, cobros y anulación de
+  cobros, notas de crédito, saldo a favor aplicado o reembolsado, recurrentes.
+- **Compras:** proveedores con W-9 y aviso 1099, facturas por pagar, pagos programados y en lote, gastos con recibo
+  (escaneo y lectura del texto con Vision), reclasificación en lote.
+- **Banca:** importación de extractos, bandeja de movimientos con reglas, dividir y excluir, traspasos, conciliación.
+- **Sales tax:** tasas y grupos, sugerencia por código postal (27 583 ZIP de 34 estados, aproximada y con fecha;
+  `scripts/tasas/`), resumen por periodo y pago a la agencia.
+- **Reportes:** resultados, balance general y balanza en base devengado o **caja**, flujo de efectivo, antigüedad,
+  sales tax, presupuesto contra real, deducibles por línea del formulario y paquete para el contador, con CSV.
+- **Seguridad y datos:** bloqueo con Face ID, iCloud, copia `.chirogra` con contraseña (AES-GCM) y suma SHA-256,
+  restaurar y deshacer, pantalla de recuperación si la base no abre.
 
-La copia de seguridad se genera desde los modelos: después de cambiar el esquema, ejecuta `scripts/gen-backup.py` (`BackupTests` falla si no está al día).
+La copia de seguridad se genera desde los modelos: después de cambiar el esquema, ejecuta `scripts/gen-backup.py`
+(`BackupTests` falla si no está al día).
 
-Fase 2: conciliación bancaria, lectura automática de recibos, estimados y flujo de efectivo. Fase 3: conexión bancaria con Plaid (DISEÑO §3.3).
+**Previsto, no hecho:** la 1.4 (agenda y asistente con IA, [docs/PLAN-1.4.md](docs/PLAN-1.4.md)) y la 2.0 con servidor
+(Plaid, Stripe, el contador dentro de los libros, nómina; [docs/PLAN-2.0.md](docs/PLAN-2.0.md)). Hoy no hay conexión
+directa con bancos: los movimientos entran por archivo.
