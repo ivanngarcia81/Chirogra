@@ -5,7 +5,9 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 
 ## Estado
 
-- **23-nov: auditoría técnica hecha y SIN COMMITEAR** en el árbol de `version-1.3` (abajo, «Último chat»).
+- **23-nov: build 65 (1.3.0) SUBIDO a TestFlight iOS y macOS** (`00ace74`): la auditoría técnica (`205400a`) y las
+  pruebas de interfaz (`0e9d365`). Commiteado en `version-1.3`, **sin empujar**. La 1.3.0 sigue en revisión con el 64:
+  el 65 es para TestFlight (el usuario decide si cambia el build del envío).
 - **Ramas:** `version-1.3` con el build 64 (`b2c8e43` + `2c05bbf`) y este resumen, commiteados y **empujados el
   22-nov**. `main` en `83b1db4` (build 50 y la
   web con «Kairogra»), empujada el 17-nov; los builds de después no tocan la web, así que `main` no hace falta moverla.
@@ -73,12 +75,14 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 | 62 | `b0a1777` | 1.3.0: revisión externa del 21-nov: copias `.chirogra` **con contraseña** (AES-GCM, PBKDF2; se pide al restaurar), números de documento repetidos tras sincronizar se renumeran (`resolveNumberCollisions`, bitácora y aviso), **sin `fatalError`** si la base no abre (`StoreRecoveryView`); iPad: todas las listas como Inicio. `scripts/verificar.sh` y GitHub Actions (`pruebas.yml`, runner `xcode-27`). |
 | 63 | `864153d` | 1.3.0: iPad: Libro mayor, Cierre, Bitácora e Impuestos a 820 pt centrados; Ajustes en la tarjeta gris; Bitácora con lista y detalle; más aire en deducibles y estados. Capturas del usuario. |
 | 64 | `b2c8e43` | 1.3.0: **icono «chirogra pencils»** (lapicero y lápiz cruzados en χ, ρ azafrán con brillo de lupa; archivo del usuario), también `LogoMark` y la bienvenida (`LogoGlyph`), el icono de la web y las capturas de la guía. **Enviado a revisión** (1.3.0 iOS y macOS) el 22-nov. |
+| 65 | `00ace74` | 1.3.0: **auditoría técnica** (base caja con notas de crédito y saldo a favor, suma SHA-256 en las copias, aviso de iCloud en local, saldos rehechos tras sincronizar, importes en 128 bits, sales tax de las notas, aviso de tabla por ZIP vieja, no anular facturas con nota) y **pruebas de interfaz** en el repo (`PruebasInterfaz`, `scripts/interfaz.sh`). 403 pruebas + 4 de interfaz. |
 
-## Último chat (23-nov): auditoría técnica (base caja, copias, iCloud, sales tax) — SIN COMMITEAR
+## Último chat (23-nov): auditoría técnica, pruebas de interfaz y build 65
 
 Pedido del usuario: revisar a fondo un informe externo («Auditoría técnica y correcciones de Chirogra — Build 64») y
-corregir desde la causa lo que fuera real. **Todo está en el árbol de trabajo de `version-1.3`, sin commitear** (el
-usuario decide cuándo). `scripts/verificar.sh` completo en verde (pruebas, iOS y Mac compilan). Sin build nuevo.
+corregir desde la causa lo que fuera real. Commiteado en `205400a`; luego, a petición suya, pruebas de interfaz
+(`0e9d365`) y **build 65 subido iOS y macOS** (`00ace74`). Sin empujar. `scripts/verificar.sh` y `scripts/interfaz.sh`
+en verde.
 
 - **Base caja con notas de crédito (error real):** `cashBasisLedgerLines()` repartía cada cobro sobre la factura menos
   sus notas, calculado con los datos de hoy: una nota posterior reescribía periodos pasados (el día del cobro salía
@@ -118,9 +122,16 @@ usuario decide cuándo). `scripts/verificar.sh` completo en verde (pruebas, iOS 
   por tiempo (10 min, no dos pasadas: una importación llega en varias tandas) y diccionarios sin cierre con ids
   repetidos. Además, ya no se puede **anular una factura con nota de crédito** aunque su cobro se haya anulado.
   403 pruebas (94 + 229 + 80).
+- **Pruebas de interfaz (pedido del usuario):** objetivo `PruebasInterfaz` (`UITests/FlujosTests.swift`) con 4 flujos
+  del iPhone que comprueban resultados, no solo que se dibuje: cobrar la F-1003 desde Inicio (Por cobrar baja $1,100.02),
+  anular ese cobro (vuelve), emitir una factura nueva (Por cobrar sube su total) y Reportes en base caja (el cobro suma
+  $1,092.40 a Total ingresos; en devengado nada). `-qa.reiniciar 1` (solo Debug) borra los libros al abrir.
+  `scripts/interfaz.sh` y un trabajo `interfaz` en `pruebas.yml`, **sin probar aún en GitHub** (se ve al empujar). Truco:
+  el precio de una línea se escribe con el botón «Precio» de la barra del teclado (tocar el campo a veces no da foco) y
+  se confirma con «Listo»; las pruebas van con `@MainActor`.
 - **Docs:** README al día (estado real, 1.4/2.0 como previstas, iCloud, `verificar.sh`); DATOS-V4 §4.
 - **Pendiente:** `ScreenSmokeTests` sigue cayéndose (SwiftUI, «no current update to enqueue action to», también en
-  serie); pruebas de interfaz de verdad (XCUITest) siguen fuera del repo; la tabla por ZIP no marca los ZIP que cruzan
+  serie); solo hay pruebas de interfaz del iPhone (ni iPad ni Mac); la tabla por ZIP no marca los ZIP que cruzan
   jurisdicciones (habría que regenerarla con los archivos oficiales); `Money(decimal:)` da un valor sin sentido por
   encima de ~$92 mil billones.
 
