@@ -127,6 +127,12 @@ iCloud** (CKShare): el cliente invita, el contador acepta con su Apple ID y ve e
 - **Política de privacidad, bienvenida y guía:** los libros siguen solo en tu iCloud; el servidor solo ve lo que
   conectes (banco, Stripe, nómina) y lo borra al pasarlo a tus libros.
 - **Plaid** exige su texto de consentimiento antes de Link. **Nómina** también tiene sus términos.
+- **Compromisos del cuestionario de Plaid (equipo «Chirogra», 23-nov):** publicar en chirogra.com/privacy la política
+  de privacidad con el banco y Plaid **antes** de salir (se contestó «will be published when we go live»); proyecto de
+  Supabase en una **región de EE. UU.** (se contestó que los datos de Plaid se guardan en EE. UU.); y lo que promete
+  [SECURITY-POLICY.md](SECURITY-POLICY.md) (Dependabot y escaneo de secretos en el repo, buzón que se vacía a los 30
+  días, borrar la cuenta desde la app). MFA de los usuarios declarado como Iniciar sesión con Apple (PDF
+  `~/Desktop/Chirogra-Consumer-MFA.pdf`).
 
 ## 6. Esquema 7 de CloudKit (solo añadir)
 
@@ -164,23 +170,26 @@ contador. Se revisa cuando lleguen las respuestas de los proveedores.
 
 ## 8. Costos (para decidir el precio de «Chirogra + Banco»)
 
-| Concepto | Quién paga | Cifra conocida (13-nov, sin confirmar) |
+| Concepto | Quién paga | Cifra |
 |---|---|---|
-| Supabase Pro | Chirogra, fijo | Unos **$25 al mes** más el cómputo (incluye $10 de crédito, que cubre la instancia más pequeña). |
-| Plaid Transactions | Chirogra, por cuenta conectada al mes | Plaid no publica tarifa; fuentes de terceros hablan de unos **$0.25–$0.50**. **Pedir la tarifa.** |
-| Plaid Balance | Chirogra, por consulta | Terceros: unos **$0.05** por consulta. |
-| Plaid Statements | Chirogra | Sin cifra pública. **Pedir la tarifa.** |
+| Supabase Pro | Chirogra, fijo | Unos **$25 al mes** más el cómputo (incluye $10 de crédito, que cubre la instancia más pequeña). Sin confirmar (13-nov). |
+| Plaid Transactions | Chirogra, **por Item al mes** (un Item = un inicio de sesión en un banco, con todas sus cuentas) | **$0.30** (Pay As You Go; tabla del panel de Plaid, 23-nov). «Transactions Refresh» (forzar una actualización): $0.12 por llamada. |
+| Plaid Balance | Chirogra, por consulta | **$0.10** por llamada. |
+| Plaid Statements | Chirogra, por extracto | **$0.50** por extracto (incluido en Pay As You Go). |
+| Plaid, otros planes | — | Growth $2,000 / $2,500 / $4,000 (contrato anual) bajan un 5–12 %; no compensa hasta tener volumen. |
 | Stripe | El negocio, directo a Stripe | ~2.9 % + 30¢ con tarjeta; ACH más barato. Chirogra: $0. |
 | Nómina | Chirogra al proveedor | Negociado. Referencia de mercado: $35–70 por empresa + $6–10 por empleado al mes. |
 | Apple | Sobre cada suscripción | 15 % (Small Business Program, y desde el segundo año de cada suscriptor). |
 
-**Cómo se fija:** con la tarifa de Plaid en la mano, suponer 3 cuentas conectadas por negocio, sumar extractos y saldos,
-y poner un precio que, quitado el 15 % de Apple, cubra Plaid con margen holgado. Lo mismo con los escalones de nómina
+**Cómo se fija:** con la tarifa de Plaid (23-nov, Pay As You Go), un negocio típico con 2 Items (banco y tarjeta en
+bancos distintos) y 3 cuentas cuesta al mes: Transactions 2 × $0.30 = $0.60, Statements 3 × $0.50 = $1.50 si se bajan
+todos los meses, Balance unas 3 consultas al conciliar = $0.30. **Unos $2.40 al mes** (o ~$0.90 si los extractos se
+bajan solo cuando el usuario los pide). Poner un precio que, quitado el 15 % de Apple, cubra Plaid con margen holgado. Lo mismo con los escalones de nómina
 cuando lleguen las cotizaciones.
 
 ## Preguntas abiertas
 
-1. **Precio de «Chirogra + Banco»:** cuando llegue la tarifa de Plaid.
+1. **Precio de «Chirogra + Banco»:** ya está la tarifa de Plaid (sección 8, 23-nov); falta decidirlo.
 2. **¿El plan de contadores ($99.99) incluye el banco** en sus empresas, o cada empresa con banco paga aparte?
 3. **Gusto Embedded o Check:** cuando lleguen las cotizaciones.
 4. **Sales tax exacto por dirección** (Stripe Tax, TaxJar o Avalara, con costo por cálculo): ¿entra en la 2.0 o sigue la
