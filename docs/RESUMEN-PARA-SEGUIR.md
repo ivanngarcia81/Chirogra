@@ -24,7 +24,15 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
   tienda de prueba sin su suscripción (no es un fallo; CONTEXTO, «Dónde nos quedamos»). Mac: TestFlight.
 - **Capturas de la tienda:** las seis `00-bienvenida.png` de `~/Desktop/Chirogra – capturas App Store` (en y es; iPhone
   6.9, iPad 13, Mac) **rehechas el 23-nov** con el icono «chirogra pencils»; las viejas, en «Anteriores bienvenida (logo
-  χ)» de la misma carpeta. El logo de redes de `~/Desktop/Chirogra-logo` sigue con el icono del 17-nov.
+  χ)» de la misma carpeta. El logo de `~/Desktop/Chirogra-logo` (cuadrado a sangre y redondeado, 1024 px, sRGB)
+  **rehecho el 23-nov** con el icono nuevo (los viejos, en «Anteriores (logo χρ)»); el cuadrado es el del App profile de
+  Plaid.
+- **Plaid para la 2.0 (23-nov):** la cuenta solo tiene el equipo de Tamio («Ivan Garcia»); para Chirogra, **equipo
+  nuevo «Chirogra»** (Link y el registro OAuth van por equipo). Política de seguridad para el cuestionario en
+  [SECURITY-POLICY.md](SECURITY-POLICY.md) y en PDF en `~/Desktop/Chirogra-Information-Security-Policy.pdf` (si se
+  cambia, regenerarlo: Markdown → HTML → Chrome sin cabecera). Compromete a activar Dependabot y el escaneo de secretos
+  en el repo (hoy **público** y sin Dependabot), a borrar del buzón lo no recogido en 30 días y a borrar la cuenta desde
+  la app.
 - **Plan de la 1.4** (agenda + asistente con Claude) en [PLAN-1.4.md](PLAN-1.4.md); **plan de la 2.0** en
   [PLAN-2.0.md](PLAN-2.0.md).
 
@@ -307,7 +315,7 @@ en verde.
    enqueue action to»; correr el resto con `--skip ScreenSmokeTests`); solo hay pruebas de interfaz del iPhone (ni iPad
    ni Mac); la tabla por ZIP no marca los ZIP que cruzan jurisdicciones (regenerarla con los archivos oficiales);
    `Money(decimal:)` da un valor sin sentido por encima de ~$92 mil billones.
-3. **Pendientes menores sin cerrar:** logo de redes con el icono nuevo (si lo pide); la confirmación de «Anular cobro»
+3. **Pendientes menores sin cerrar:** la confirmación de «Anular cobro»
    sale como globo con flecha (el usuario puede pedir un aviso centrado); el hueco del teclado del informe de Yurii S.
    (build 53) no se reprodujo: si vuelve, preguntar si usa teclado de otra app, Bluetooth o dictado.
 4. **Tasas por código postal: cada trimestre** (1 ene, 1 abr, 1 jul, 1 oct; la próxima, el 1-ene-2027) correr
