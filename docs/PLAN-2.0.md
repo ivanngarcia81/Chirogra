@@ -130,8 +130,8 @@ iCloud** (CKShare): el cliente invita, el contador acepta con su Apple ID y ve e
 - **Compromisos del cuestionario de Plaid (equipo «Chirogra», 23-nov):** publicar en chirogra.com/privacy la política
   de privacidad con el banco y Plaid **antes** de salir (se contestó «will be published when we go live»); proyecto de
   Supabase en una **región de EE. UU.** (se contestó que los datos de Plaid se guardan en EE. UU.); y lo que promete
-  [SECURITY-POLICY.md](SECURITY-POLICY.md) (Dependabot y escaneo de secretos en el repo, buzón que se vacía a los 30
-  días, borrar la cuenta desde la app). MFA de los usuarios declarado como Iniciar sesión con Apple (PDF
+  [SECURITY-POLICY.md](SECURITY-POLICY.md) (buzón que se vacía a los 30 días, borrar la cuenta desde la app; Dependabot
+  y escaneo de secretos ya activados en el repo el 23-nov). MFA de los usuarios declarado como Iniciar sesión con Apple (PDF
   `~/Desktop/Chirogra-Consumer-MFA.pdf`).
 
 ## 6. Esquema 7 de CloudKit (solo añadir)

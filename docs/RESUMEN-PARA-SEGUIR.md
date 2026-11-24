@@ -32,8 +32,8 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
   bookkeeping»; Plaid dice 2–3 días hábiles). Tras aprobar: Compliance Center (registro OAuth de los bancos) y la
   redirect URI `https://chirogra.com/plaid-oauth`. Política de seguridad para el cuestionario en
   [SECURITY-POLICY.md](SECURITY-POLICY.md) y en PDF en `~/Desktop/Chirogra-Information-Security-Policy.pdf` (si se
-  cambia, regenerarlo: Markdown → HTML → Chrome sin cabecera). Compromete a activar Dependabot y el escaneo de secretos
-  en el repo (hoy **público** y sin Dependabot), a borrar del buzón lo no recogido en 30 días y a borrar la cuenta desde
+  cambia, regenerarlo: Markdown → HTML → Chrome sin cabecera). Dependabot (alertas y actualizaciones de seguridad), escaneo
+  de secretos y protección al empujar **activados el 23-nov** en el repo (público; 0 alertas). Compromete además a borrar del buzón lo no recogido en 30 días y a borrar la cuenta desde
   la app.
 - **Plan de la 1.4** (agenda + asistente con Claude) en [PLAN-1.4.md](PLAN-1.4.md); **plan de la 2.0** en
   [PLAN-2.0.md](PLAN-2.0.md).
