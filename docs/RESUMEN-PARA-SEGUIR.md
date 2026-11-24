@@ -27,8 +27,10 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
   χ)» de la misma carpeta. El logo de `~/Desktop/Chirogra-logo` (cuadrado a sangre y redondeado, 1024 px, sRGB)
   **rehecho el 23-nov** con el icono nuevo (los viejos, en «Anteriores (logo χρ)»); el cuadrado es el del App profile de
   Plaid.
-- **Plaid para la 2.0 (23-nov):** la cuenta solo tiene el equipo de Tamio («Ivan Garcia»); para Chirogra, **equipo
-  nuevo «Chirogra»** (Link y el registro OAuth van por equipo). Política de seguridad para el cuestionario en
+- **Plaid para la 2.0 (23-nov):** equipo nuevo **«Chirogra»** (`6b04d81ce1b977000ef535cc`; el de Tamio es otro) y
+  **solicitud de producción ENVIADA el 23-nov** (Pay As You Go; Transactions, Balance y Statements; uso «SMB
+  bookkeeping»; Plaid dice 2–3 días hábiles). Tras aprobar: Compliance Center (registro OAuth de los bancos) y la
+  redirect URI `https://chirogra.com/plaid-oauth`. Política de seguridad para el cuestionario en
   [SECURITY-POLICY.md](SECURITY-POLICY.md) y en PDF en `~/Desktop/Chirogra-Information-Security-Policy.pdf` (si se
   cambia, regenerarlo: Markdown → HTML → Chrome sin cabecera). Compromete a activar Dependabot y el escaneo de secretos
   en el repo (hoy **público** y sin Dependabot), a borrar del buzón lo no recogido en 30 días y a borrar la cuenta desde
