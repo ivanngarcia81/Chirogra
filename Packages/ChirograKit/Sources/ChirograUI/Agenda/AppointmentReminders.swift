@@ -88,12 +88,13 @@ struct AppointmentReminderScheduler: View {
     @Environment(\.scenePhase) private var scenePhase
     @CompanyQuery(sort: \Appointment.start) private var appointments: [Appointment]
     @AppStorage(AppointmentReminders.enabledKey) private var enabled = true
+    @AppStorage(AppointmentCalendar.enabledKey) private var calendarOn = false
 
     /// Lo que cambia los avisos de una cita.
     private var signature: String {
         appointments.map {
             "\($0.id)|\($0.start.timeIntervalSinceReferenceDate)|\($0.durationMinutes)|\($0.statusRaw)|\($0.reminderMinutes)|\($0.recurrenceRaw)|\($0.recurrenceEnd?.timeIntervalSinceReferenceDate ?? 0)|\($0.title)|\($0.location)|\($0.customerID?.uuidString ?? "")"
-        }.joined(separator: ";") + "|\(enabled)|\(scenePhase == .active)"
+        }.joined(separator: ";") + "|\(enabled)|\(calendarOn)|\(scenePhase == .active)"
     }
 
     var body: some View {
@@ -105,6 +106,8 @@ struct AppointmentReminderScheduler: View {
             .task(id: signature) {
                 guard scenePhase == .active else { return }
                 await AppointmentReminders.reschedule(context: context)
+                // Y los eventos de Calendario, si está encendido en este aparato (`AppointmentCalendar`).
+                AppointmentCalendar.sync(context: context)
             }
     }
 }

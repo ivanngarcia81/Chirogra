@@ -378,8 +378,12 @@ en verde.
    (`Agenda/AgendaCards.swift`). **Avisos** (commiteados): notificaciones
    locales de los próximos 14 días (máx. 50) que se rehacen al cambiar una cita (`AppointmentReminderScheduler` en
    `AppShell`); el permiso se pide al guardar la primera cita con aviso, no al abrir; se apagan por aparato en el «⋯» de
-   la Agenda. Falta de la agenda: la semana del iPad en 7 columnas, el inspector del Mac y Calendario (pendiente de su
-   decisión: con permiso de «solo escritura» no se pueden cambiar ni borrar los eventos ya puestos); después, las pantallas de impuestos estimados. Los trámites del usuario (clave de Anthropic y
+   la Agenda. **Calendario** (opción A del usuario, 25-nov:
+   acceso completo; commiteado): «Añadir las citas a Calendario» en el «⋯» de la Agenda, por aparato; las citas van a
+   un calendario propio «Chirogra» y cada evento lleva `chirogra://cita/<empresa>/<cita>` en su URL, así que se ponen al
+   día (y se quitan al cancelar o borrar) sin duplicarse entre aparatos ni al reinstalar (`AppointmentCalendar`
+   en `Agenda/AppointmentCalendar.swift`; `NSCalendarsFullAccessUsageDescription` y `ENABLE_RESOURCE_ACCESS_CALENDARS` en
+   project.yml). Falta de la agenda: la semana del iPad en 7 columnas y el inspector del Mac; después, las pantallas de impuestos estimados. Los trámites del usuario (clave de Anthropic y
    Supabase «chirogra») hacen falta para el asistente (§4.4).
 1. **Informes de testers:** leerlos, arreglar desde la causa, enseñarle capturas antes/después y esperar su «súbelo».
    Los xlsx de Beta Family se leen descomprimiéndolos (no hay openpyxl); las fotos son enlaces firmados en

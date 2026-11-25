@@ -1,6 +1,24 @@
 {
   "sourceLanguage" : "es",
   "strings" : {
+    "NSCalendarsFullAccessUsageDescription" : {
+      "comment" : "Permiso de Calendario (1.4)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chirogra adds your appointments to a “Chirogra” calendar and keeps it up to date when you change them."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chirogra pone tus citas en un calendario «Chirogra» y lo mantiene al día cuando las cambias."
+          }
+        }
+      }
+    },
     "NSCameraUsageDescription" : {
       "comment" : "Permiso de cámara que muestra iOS (escanear recibos)",
       "extractionState" : "manual",

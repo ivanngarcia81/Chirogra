@@ -5016,6 +5016,16 @@
         }
       }
     },
+    "Añadir las citas a Calendario" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add Appointments to Calendar"
+          }
+        }
+      }
+    },
     "Añadir línea" : {
       "localizations" : {
         "en" : {
@@ -21008,6 +21018,26 @@
         }
       }
     },
+    "Para poner tus citas en Calendario, permite el acceso completo en Ajustes › Apps › Chirogra › Calendarios." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To add your appointments to Calendar, allow full access in Settings › Apps › Chirogra › Calendars."
+          }
+        }
+      }
+    },
+    "Para poner tus citas en Calendario, permite el acceso en Ajustes del Sistema › Privacidad y seguridad › Calendarios." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To add your appointments to Calendar, allow access in System Settings › Privacy & Security › Calendars."
+          }
+        }
+      }
+    },
     "Para que tus facturas cobren el impuesto de tu estado y tu ciudad. Sin tasa, salen sin impuesto." : {
       "localizations" : {
         "en" : {
@@ -26133,6 +26163,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Next close"
+          }
+        }
+      }
+    },
+    "Sin acceso a Calendario" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Access to Calendar"
           }
         }
       }

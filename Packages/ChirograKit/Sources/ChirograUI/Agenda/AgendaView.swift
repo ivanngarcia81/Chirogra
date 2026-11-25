@@ -126,6 +126,8 @@ struct AgendaView: View {
     @State private var day = Calendar.current.startOfDay(for: .now)
     @State private var creating = false
     @AppStorage(AppointmentReminders.enabledKey) private var remindersOn = true
+    @AppStorage(AppointmentCalendar.enabledKey) private var calendarOn = false
+    @State private var calendarDenied = false
     @ScaledMetric(relativeTo: .body) private var hourHeight: CGFloat = 60
 
     private var calendar: Calendar { .current }
@@ -156,6 +158,7 @@ struct AgendaView: View {
             ToolbarItem(placement: .primaryAction) {
                 Menu {
                     Toggle("Avisos de citas en este aparato", isOn: $remindersOn)
+                    Toggle("Añadir las citas a Calendario", isOn: calendarBinding)
                 } label: {
                     Label("Más opciones", systemImage: "ellipsis")
                 }
@@ -164,6 +167,35 @@ struct AgendaView: View {
         .sheet(isPresented: $creating) {
             NavigationStack { AppointmentEditorView(day: day) }.editorSheetSizing()
         }
+        .alert("Sin acceso a Calendario", isPresented: $calendarDenied) {
+            Button("Aceptar", role: .cancel) {}
+        } message: {
+            #if os(iOS)
+            Text("Para poner tus citas en Calendario, permite el acceso completo en Ajustes › Apps › Chirogra › Calendarios.")
+            #else
+            Text("Para poner tus citas en Calendario, permite el acceso en Ajustes del Sistema › Privacidad y seguridad › Calendarios.")
+            #endif
+        }
+    }
+
+    /// «Añadir las citas a Calendario»: al encenderla pide el acceso completo; si no se da, se queda apagada y explica
+    /// dónde darlo. Al apagarla quita los eventos próximos que puso Chirogra.
+    private var calendarBinding: Binding<Bool> {
+        Binding(get: { calendarOn }, set: { turnOn in
+            if turnOn {
+                Task { @MainActor in
+                    if await AppointmentCalendar.requestAccess() {
+                        calendarOn = true
+                        AppointmentCalendar.sync(context: context)
+                    } else {
+                        calendarDenied = true
+                    }
+                }
+            } else {
+                calendarOn = false
+                AppointmentCalendar.removeUpcoming(context: context)
+            }
+        })
     }
 
     private func customerName(_ occurrence: AppointmentOccurrence) -> String? {

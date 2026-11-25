@@ -43,6 +43,8 @@ targets:
         NSFaceIDUsageDescription: Chirogra usa Face ID para proteger tus libros.
         # Escanear recibos con la cámara de documentos (VisionKit, solo iPhone y iPad).
         NSCameraUsageDescription: Chirogra usa la cámara para escanear tus recibos y rellenar el gasto.
+        # 1.4: las citas en Calendario, con acceso completo para poder cambiarlas y quitarlas (`AppointmentCalendar`).
+        NSCalendarsFullAccessUsageDescription: Chirogra pone tus citas en un calendario «Chirogra» y lo mantiene al día cuando las cambias.
         UILaunchScreen: {}
         UIApplicationSceneManifest:
           UIApplicationSupportsMultipleScenes: true
@@ -74,6 +76,8 @@ targets:
         CODE_SIGN_STYLE: Automatic
         ENABLE_APP_SANDBOX: YES
         ENABLE_USER_SELECTED_FILES: readwrite
+        # 1.4: Calendario en la sandbox del Mac (`AppointmentCalendar`).
+        ENABLE_RESOURCE_ACCESS_CALENDARS: YES
   # Pruebas de interfaz (XCUITest) en el simulador del iPhone: flujos de verdad con los datos de ejemplo
   # (`scripts/interfaz.sh`). No van dentro de la app.
   PruebasInterfaz:
