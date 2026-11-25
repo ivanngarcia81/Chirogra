@@ -19,6 +19,15 @@ extension Int64 {
     }
 }
 
+extension View {
+    /// Columna de importe de ancho fijo: en una línea, y se encoge un poco antes que partirse. Los anchos se midieron con
+    /// «$2,400.00»; con otros formatos («2 400,00 US$», región de Ucrania) el «US$» bajaba a una segunda línea (Yurii S.,
+    /// iPad, build 65). Igual que las cifras del PDF (`ReportPDF`).
+    func amountColumn(_ width: CGFloat) -> some View {
+        lineLimit(1).minimumScaleFactor(0.7).frame(width: width, alignment: .trailing)
+    }
+}
+
 extension Locale {
     /// Locales de las fechas para un idioma y una región. `numeric` es el idioma con la región del dispositivo,
     /// así el orden de las fechas en cifras sigue la región (DISEÑO §7.4: en EE. UU., «11/16/2026» también en

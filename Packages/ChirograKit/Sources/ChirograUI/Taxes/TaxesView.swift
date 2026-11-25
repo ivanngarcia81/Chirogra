@@ -621,7 +621,7 @@ struct TaxesView: View {
         ReportCellText(text: kind).lineLimit(1).frame(width: 150, alignment: .leading)
         // En una línea: con letra grande «8.25» y «%» se separaban (QA del 10-nov).
         Text("\(percent.formatted())%").lineLimit(1).minimumScaleFactor(0.6).frame(width: 64, alignment: .trailing)
-        Text(collected.money).lineLimit(1).minimumScaleFactor(0.6).frame(width: 110, alignment: .trailing)
+        Text(collected.money).amountColumn(110)
     }
 
     // MARK: Inspector del Mac

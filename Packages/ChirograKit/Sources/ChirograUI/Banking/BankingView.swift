@@ -229,9 +229,9 @@ struct AccountMovementsView: View {
                     Text("Fecha").frame(width: dateWidth, alignment: .leading)
                     Text("Descripción").frame(minWidth: 100, maxWidth: .infinity, alignment: .leading)
                     Text("Categoría o cuenta").frame(minWidth: 90, maxWidth: 190, alignment: .leading)
-                    Text("Retiro").frame(width: amountWidth, alignment: .trailing)
-                    Text("Depósito").frame(width: amountWidth, alignment: .trailing)
-                    Text("Saldo").frame(width: amountWidth, alignment: .trailing)
+                    Text("Retiro").amountColumn(amountWidth)
+                    Text("Depósito").amountColumn(amountWidth)
+                    Text("Saldo").amountColumn(amountWidth)
                 } rows: {
                     TableRow {
                         Text(month.start.dayMonth).foregroundStyle(Palette.ink2).frame(width: dateWidth, alignment: .leading)
@@ -239,7 +239,7 @@ struct AccountMovementsView: View {
                         Color.clear.frame(minWidth: 90, maxWidth: 190, maxHeight: 1)
                         Color.clear.frame(width: amountWidth, height: 1)
                         Color.clear.frame(width: amountWidth, height: 1)
-                        Text((sign * ledger.openingBalance).money).frame(width: amountWidth, alignment: .trailing)
+                        Text((sign * ledger.openingBalance).money).amountColumn(amountWidth)
                     }
                     .fontWeight(.semibold)
                     ForEach(Array(ledger.rows.enumerated()), id: \.element.id) { index, row in
@@ -249,10 +249,10 @@ struct AccountMovementsView: View {
                                 .lineLimit(1).frame(minWidth: 100, maxWidth: .infinity, alignment: .leading)
                             Text(counterpart(of: lines[row.movement.id])).foregroundStyle(Palette.ink2).lineLimit(1)
                                 .frame(minWidth: 90, maxWidth: 190, alignment: .leading)
-                            Text(row.movement.credit > 0 ? row.movement.credit.money : "").frame(width: amountWidth, alignment: .trailing)
+                            Text(row.movement.credit > 0 ? row.movement.credit.money : "").amountColumn(amountWidth)
                             Text(row.movement.debit > 0 ? row.movement.debit.money : "").foregroundStyle(Palette.positive)
-                                .frame(width: amountWidth, alignment: .trailing)
-                            Text((sign * row.balance).money).frame(width: amountWidth, alignment: .trailing)
+                                .amountColumn(amountWidth)
+                            Text((sign * row.balance).money).amountColumn(amountWidth)
                         }
                         .zebra(index + 1)
                         .accessibilityElement(children: .combine)

@@ -542,8 +542,8 @@ struct BudgetsView: View {
                     let figures = figures(row, at: index)
                     tableRow(key: row.account.id.uuidString, picked: picked, zebra: !offset.isMultiple(of: 2), account: row.account.id) {
                         Text(row.account.name).lineLimit(1).padding(.leading, 14).frame(maxWidth: .infinity, alignment: .leading)
-                        Text(figures.budget.money).frame(width: 120, alignment: .trailing)
-                        Text(figures.actual.money).frame(width: 120, alignment: .trailing)
+                        Text(figures.budget.money).amountColumn(120)
+                        Text(figures.actual.money).amountColumn(120)
                         ReportCellText(text: signed(figures.variance), color: varianceColor(figures)).frame(width: 120, alignment: .trailing)
                         ReportCellText(text: percentText(figures)).frame(width: 56, alignment: .trailing)
                     }
@@ -552,8 +552,8 @@ struct BudgetsView: View {
                 let sum = total(rows, at: index, isExpense: isExpense)
                 TableRow {
                     Text(isExpense ? String(localized: "Total gastos") : String(localized: "Total ingresos")).frame(maxWidth: .infinity, alignment: .leading)
-                    Text(sum.budget.money).frame(width: 120, alignment: .trailing)
-                    Text(sum.actual.money).frame(width: 120, alignment: .trailing)
+                    Text(sum.budget.money).amountColumn(120)
+                    Text(sum.actual.money).amountColumn(120)
                     Text(signed(sum.variance)).foregroundStyle(varianceColor(sum)).frame(width: 120, alignment: .trailing)
                     Text(percentText(sum)).foregroundStyle(Palette.ink2).frame(width: 56, alignment: .trailing)
                 }
@@ -562,8 +562,8 @@ struct BudgetsView: View {
             let netFigures = net(report, at: index)
             TableRow {
                 Text("Utilidad neta").frame(maxWidth: .infinity, alignment: .leading)
-                Text(netFigures.budget.money).frame(width: 120, alignment: .trailing)
-                Text(netFigures.actual.money).frame(width: 120, alignment: .trailing)
+                Text(netFigures.budget.money).amountColumn(120)
+                Text(netFigures.actual.money).amountColumn(120)
                 Text(signed(netFigures.variance)).foregroundStyle(varianceColor(netFigures)).frame(width: 120, alignment: .trailing)
                 Text(percentText(netFigures)).foregroundStyle(Palette.ink2).frame(width: 56, alignment: .trailing)
             }

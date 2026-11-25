@@ -145,6 +145,13 @@ enum SidebarItem: Hashable {
 struct Sidebar: View {
     @Binding var selection: SidebarItem
     @Binding var query: String
+    /// Hasta dónde está desplazada, guardado fuera: al elegir otra página se rehace la vista dividida entera
+    /// (`ShellIdentity`) y la barra volvía arriba; con los reportes de abajo («Antigüedad de saldos», «Sales tax»)
+    /// la fila elegida quedaba fuera de la vista (Yurii S., iPad, build 65).
+    @Binding var scrollOffset: CGFloat
+    @State private var position = ScrollPosition()
+    /// Hasta volver a su sitio no se guarda: la barra nueva empieza arriba y borraba el desplazamiento guardado.
+    @State private var restored = false
     @ActiveCompanyQuery private var companies: [Company]
     /// Todas, para el selector de la ficha del pie.
     @Query private var selectorCompanies: [Company]
@@ -204,6 +211,14 @@ struct Sidebar: View {
             .padding(.vertical, 8)
         }
         .scrollIndicators(.never)
+        .scrollPosition($position)
+        .onScrollGeometryChange(for: CGFloat.self) { $0.contentOffset.y + $0.contentInsets.top } action: { _, offset in
+            if restored { scrollOffset = offset }
+        }
+        .task {
+            if scrollOffset > 0 { position.scrollTo(y: scrollOffset) }
+            restored = true
+        }
         .safeAreaInset(edge: .bottom, spacing: 0) {
             VStack(spacing: 6) {
                 #if os(macOS)

@@ -1357,16 +1357,16 @@ struct ReportsView: View {
             Text("Número").frame(width: 60, alignment: .leading)
             Text("Cuenta").frame(maxWidth: .infinity, alignment: .leading)
             Text("Tipo").frame(width: 150, alignment: .leading)
-            Text("Débito").frame(width: amountColumn, alignment: .trailing)
-            Text("Crédito").frame(width: amountColumn, alignment: .trailing)
+            Text("Débito").amountColumn(amountColumn)
+            Text("Crédito").amountColumn(amountColumn)
         } rows: {
             ForEach(Array(report.rows.enumerated()), id: \.element.id) { index, row in
                 pickableRow(row.account.id.uuidString, index: index, picked: picked) {
                     ReportCellText(text: row.account.code).frame(width: 60, alignment: .leading)
                     Text(row.account.name).lineLimit(1).frame(maxWidth: .infinity, alignment: .leading)
                     ReportCellText(text: row.account.subtype.title).lineLimit(1).frame(width: 150, alignment: .leading)
-                    Text(row.debit == 0 ? "" : row.debit.money).frame(width: amountColumn, alignment: .trailing)
-                    Text(row.credit == 0 ? "" : row.credit.money).frame(width: amountColumn, alignment: .trailing)
+                    Text(row.debit == 0 ? "" : row.debit.money).amountColumn(amountColumn)
+                    Text(row.credit == 0 ? "" : row.credit.money).amountColumn(amountColumn)
                 }
             }
             TableRow {
@@ -1374,8 +1374,8 @@ struct ReportsView: View {
                 Text("Totales").frame(maxWidth: .infinity, alignment: .leading)
                 balanceStatus(report.isBalanced, text: report.isBalanced ? String(localized: "Cuadra") : String(localized: "Diferencia \(difference.money)"))
                     .frame(width: 150, alignment: .leading)
-                doubleRuled(report.totalDebit.money).frame(width: amountColumn, alignment: .trailing)
-                doubleRuled(report.totalCredit.money).frame(width: amountColumn, alignment: .trailing)
+                doubleRuled(report.totalDebit.money).amountColumn(amountColumn)
+                doubleRuled(report.totalCredit.money).amountColumn(amountColumn)
             }
             .fontWeight(.semibold)
         }
@@ -1438,9 +1438,9 @@ struct ReportsView: View {
         TableCard {
             Text(party).frame(maxWidth: .infinity, alignment: .leading)
             ForEach(AgingReport.Bucket.allCases, id: \.self) { bucket in
-                Text(Self.bucketTitles[bucket]!).frame(width: bucketColumn, alignment: .trailing)
+                Text(Self.bucketTitles[bucket]!).amountColumn(bucketColumn)
             }
-            Text("Total").frame(width: bucketColumn + 8, alignment: .trailing)
+            Text("Total").amountColumn(bucketColumn + 8)
         } rows: {
             ForEach(Array(report.rows.enumerated()), id: \.element.id) { index, row in
                 pickableRow("party:\(row.party)", index: index, picked: picked) {
@@ -1454,9 +1454,9 @@ struct ReportsView: View {
                         let amount = row.amounts[bucket] ?? 0
                         ReportCellText(text: amount == 0 ? "—" : amount.money,
                                        color: amount == 0 ? Palette.ink2 : bucket == .current ? Palette.ink : Palette.negative)
-                            .frame(width: bucketColumn, alignment: .trailing)
+                            .amountColumn(bucketColumn)
                     }
-                    Text(row.total.money).fontWeight(.semibold).frame(width: bucketColumn + 8, alignment: .trailing)
+                    Text(row.total.money).fontWeight(.semibold).amountColumn(bucketColumn + 8)
                 }
             }
             if report.rows.isEmpty {
@@ -1468,9 +1468,9 @@ struct ReportsView: View {
                     let amount = report.total(for: bucket)
                     Text(amount == 0 ? "—" : amount.money)
                         .foregroundStyle(amount == 0 ? Palette.ink2 : bucket == .current ? Palette.ink : Palette.negative)
-                        .frame(width: bucketColumn, alignment: .trailing)
+                        .amountColumn(bucketColumn)
                 }
-                doubleRuled(grand.money).frame(width: bucketColumn + 8, alignment: .trailing)
+                doubleRuled(grand.money).amountColumn(bucketColumn + 8)
             }
             .fontWeight(.semibold)
         }
@@ -1617,20 +1617,20 @@ struct ReportsView: View {
         TableCard {
             Text("Jurisdicción").frame(maxWidth: .infinity, alignment: .leading)
             Text("Tasa").frame(width: 64, alignment: .trailing)
-            Text("Ventas gravables").frame(width: wideAmount, alignment: .trailing)
-            Text("Cobrado").frame(width: narrowAmount, alignment: .trailing)
-            Text("Pagado").frame(width: narrowAmount, alignment: .trailing)
-            Text("Saldo").frame(width: narrowAmount, alignment: .trailing)
+            Text("Ventas gravables").amountColumn(wideAmount)
+            Text("Cobrado").amountColumn(narrowAmount)
+            Text("Pagado").amountColumn(narrowAmount)
+            Text("Saldo").amountColumn(narrowAmount)
         } rows: {
             ForEach(Array(rows.enumerated()), id: \.element.id) { index, row in
                 pickableRow(row.key, index: index, picked: picked) {
                     Text(row.components.count > 1 ? String(localized: "\(row.name) · tasa combinada") : [row.name, row.rates].filter { !$0.isEmpty }.joined(separator: " · "))
                         .lineLimit(1).frame(maxWidth: .infinity, alignment: .leading)
                     Text(percent(row.rateMillionths)).frame(width: 64, alignment: .trailing)
-                    Text(row.taxableSales.money).frame(width: wideAmount, alignment: .trailing)
-                    Text(row.collected.money).frame(width: narrowAmount, alignment: .trailing)
-                    Text(row.paid.money).frame(width: narrowAmount, alignment: .trailing)
-                    Text(row.balance.money).fontWeight(.semibold).frame(width: narrowAmount, alignment: .trailing)
+                    Text(row.taxableSales.money).amountColumn(wideAmount)
+                    Text(row.collected.money).amountColumn(narrowAmount)
+                    Text(row.paid.money).amountColumn(narrowAmount)
+                    Text(row.balance.money).fontWeight(.semibold).amountColumn(narrowAmount)
                 }
                 // Desglose por jurisdicción de la tasa combinada; lo pagado se registra por agencia.
                 if row.components.count > 1 {
@@ -1639,10 +1639,10 @@ struct ReportsView: View {
                             Text(component.name).foregroundStyle(Palette.ink2).lineLimit(1).padding(.leading, 16)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                             Text(percent(component.rateMillionths)).foregroundStyle(Palette.ink2).frame(width: 64, alignment: .trailing)
-                            Text(component.taxableSales.money).foregroundStyle(Palette.ink2).frame(width: wideAmount, alignment: .trailing)
-                            Text(component.tax.money).foregroundStyle(Palette.ink2).frame(width: narrowAmount, alignment: .trailing)
-                            Text("—").foregroundStyle(Palette.ink2).frame(width: narrowAmount, alignment: .trailing)
-                            Text("—").foregroundStyle(Palette.ink2).frame(width: narrowAmount, alignment: .trailing)
+                            Text(component.taxableSales.money).foregroundStyle(Palette.ink2).amountColumn(wideAmount)
+                            Text(component.tax.money).foregroundStyle(Palette.ink2).amountColumn(narrowAmount)
+                            Text("—").foregroundStyle(Palette.ink2).amountColumn(narrowAmount)
+                            Text("—").foregroundStyle(Palette.ink2).amountColumn(narrowAmount)
                         }
                     }
                 }
@@ -1654,10 +1654,10 @@ struct ReportsView: View {
             TableRow {
                 Text("Total · tasa combinada").frame(maxWidth: .infinity, alignment: .leading)
                 Text(percent(combined)).frame(width: 64, alignment: .trailing)
-                Text(summary.taxableSales.money).frame(width: wideAmount, alignment: .trailing)
-                Text(summary.totalTax.money).frame(width: narrowAmount, alignment: .trailing)
-                Text(paid.money).frame(width: narrowAmount, alignment: .trailing)
-                doubleRuled(balance.money).frame(width: narrowAmount, alignment: .trailing)
+                Text(summary.taxableSales.money).amountColumn(wideAmount)
+                Text(summary.totalTax.money).amountColumn(narrowAmount)
+                Text(paid.money).amountColumn(narrowAmount)
+                doubleRuled(balance.money).amountColumn(narrowAmount)
             }
             .fontWeight(.semibold)
         }

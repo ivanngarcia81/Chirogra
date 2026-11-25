@@ -915,14 +915,14 @@ struct InvoiceEditorView: View {
                 Text("Producto o servicio").padding(.leading, Self.fieldInset)
                     .frame(minWidth: 140, maxWidth: .infinity, alignment: .leading)
                 Text("Cant.").frame(width: Self.quantityColumn, alignment: .center)
-                Text("Precio").padding(.trailing, Self.fieldInset).frame(width: amountColumn, alignment: .trailing)
+                Text("Precio").padding(.trailing, Self.fieldInset).amountColumn(amountColumn)
                 HStack(spacing: 0) {
                     Text("Impuesto")
                     TermHelp(.taxable).font(.footnote)
                 }
                 .padding(.leading, Self.menuInset)
                 .frame(width: Self.taxColumn, alignment: .leading)
-                Text("Importe").frame(width: amountColumn, alignment: .trailing)
+                Text("Importe").amountColumn(amountColumn)
                 Color.clear.frame(width: 24, height: 1)
             } rows: {
                 ForEach(Array($lines.enumerated()), id: \.element.id) { index, $line in
@@ -958,7 +958,7 @@ struct InvoiceEditorView: View {
                         .frame(width: Self.taxColumn, alignment: .leading)
                         .accessibilityLabel("Impuesto, línea \(index + 1)")
                         .accessibilityValue(line.isTaxable ? Text("Gravable") : Text("No gravable"))
-                        Text(line.amount.money).fontWeight(.semibold).frame(width: amountColumn, alignment: .trailing)
+                        Text(line.amount.money).fontWeight(.semibold).amountColumn(amountColumn)
                         Button { lines.remove(at: index) } label: {
                             Image(systemName: "xmark.circle.fill").frame(width: 24, height: Metrics.target)
                         }

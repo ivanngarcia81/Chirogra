@@ -236,7 +236,10 @@ final class Recorrido {
     private(set) var pasos: [RecorridoID.Paso] = []
     private(set) var paso = 0
     /// La tarjeta a la vista (se esconde mientras el foco se desliza al paso siguiente).
-    private(set) var tarjetaVisible = false
+    private(set) var tarjetaVisible = false {
+        didSet { if tarjetaVisible && !oldValue { visibleDesde = .now } }
+    }
+    @ObservationIgnored private var visibleDesde = Date.distantPast
     /// Lo que la lista tiene que mostrar antes de iluminarlo (`RecorridoID.Paso.desplazar`).
     private(set) var desplazarA: String?
     /// Los recorridos ya vistos: las pistas de TipKit de esa pestaña esperan a que esté aquí.
@@ -422,6 +425,14 @@ final class Recorrido {
     func deslizar(_ deslizamiento: Deslizamiento) {
         guard Self.pasoTras(deslizamiento, actual: paso, total: pasos.count) != nil else { return }
         if deslizamiento == .siguiente { siguiente() } else { anterior() }
+    }
+
+    /// Tocar fuera de la tarjeta pasa al siguiente, salvo en la presentación recién salida: ese toque iba para la app
+    /// (abrir la sección otra vez, una subsección de la barra) y se saltaba el primer paso sin leerlo (Yurii S., iPad,
+    /// build 65: «en Gastos empecé en el paso 2»).
+    func tocarVelo() {
+        guard paso > 0 || Date.now.timeIntervalSince(visibleDesde) > 1 else { return }
+        siguiente()
     }
 
     func siguiente() {
@@ -693,7 +704,7 @@ struct RecorridoOverlay: View {
                 .fill(Color.black.opacity(0.5), style: FillStyle(eoFill: true))
                 .contentShape(Rectangle())
                 // Con VoiceOver, el velo no es un botón: así no atrapa el foco.
-                .onTapGesture { if !voiceOver { recorrido.siguiente() } }
+                .onTapGesture { if !voiceOver { recorrido.tocarVelo() } }
                 .accessibilityHidden(true)
                 .id(reduceMotion ? recorrido.paso : 0)
 

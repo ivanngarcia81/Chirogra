@@ -802,8 +802,8 @@ struct JournalEntryEditorView: View {
             Text("#").frame(width: 22, alignment: .leading)
             Text("Cuenta").frame(maxWidth: .infinity, alignment: .leading)
             Text("Descripción").frame(maxWidth: .infinity, alignment: .leading)
-            Text("Débito").frame(width: amountWidth, alignment: .trailing)
-            Text("Crédito").frame(width: amountWidth, alignment: .trailing)
+            Text("Débito").amountColumn(amountWidth)
+            Text("Crédito").amountColumn(amountWidth)
             Color.clear.frame(width: Metrics.target, height: 1)
         } rows: {
             ForEach(Array($lines.enumerated()), id: \.element.id) { index, $line in
@@ -837,8 +837,8 @@ struct JournalEntryEditorView: View {
                     .frame(minHeight: Metrics.target)
                 Spacer()
                 Text("Totales").fontWeight(.semibold).foregroundStyle(Palette.ink2)
-                Text(typedDebits.money).fontWeight(.bold).frame(width: amountWidth, alignment: .trailing)
-                Text(typedCredits.money).fontWeight(.bold).frame(width: amountWidth, alignment: .trailing)
+                Text(typedDebits.money).fontWeight(.bold).amountColumn(amountWidth)
+                Text(typedCredits.money).fontWeight(.bold).amountColumn(amountWidth)
                 Color.clear.frame(width: Metrics.target, height: 1)
             }
             .background(Palette.surface)
@@ -979,8 +979,8 @@ struct JournalEntryDetailView: View {
             HStack {
                 TituloConDetalle(title: title, detail: memo, titleWeight: bold ? .semibold : .regular)
                 Spacer()
-                Text(debit > 0 ? debit.money : "").frame(width: columnWidth, alignment: .trailing)
-                Text(credit > 0 ? credit.money : "").frame(width: columnWidth, alignment: .trailing)
+                Text(debit > 0 ? debit.money : "").amountColumn(columnWidth)
+                Text(credit > 0 ? credit.money : "").amountColumn(columnWidth)
             }
             .fontWeight(bold ? .semibold : .regular)
             .monospacedDigit()
@@ -1031,8 +1031,8 @@ struct JournalEntryDetailView: View {
                     Text("Cuenta")
                     Spacer()
                     if !dynamicTypeSize.isAccessibilitySize {
-                        Text("Debe").frame(width: columnWidth, alignment: .trailing)
-                        Text("Haber").frame(width: columnWidth, alignment: .trailing)
+                        Text("Debe").amountColumn(columnWidth)
+                        Text("Haber").amountColumn(columnWidth)
                     }
                 }
                 .font(.label).foregroundStyle(Palette.ink2).textCase(nil)
@@ -1395,9 +1395,9 @@ struct LedgerTable: View {
             Text("Fecha").frame(width: dateWidth, alignment: .leading)
             Text("Tipo").frame(width: kindWidth, alignment: .leading)
             Text("Detalle").frame(maxWidth: .infinity, alignment: .leading)
-            Text("Débito").frame(width: amountWidth, alignment: .trailing)
-            Text("Crédito").frame(width: amountWidth, alignment: .trailing)
-            Text("Saldo").frame(width: amountWidth, alignment: .trailing)
+            Text("Débito").amountColumn(amountWidth)
+            Text("Crédito").amountColumn(amountWidth)
+            Text("Saldo").amountColumn(amountWidth)
         } rows: {
             row(date: from?.dayMonth ?? "—", kind: "—", detail: String(localized: "Saldo inicial"), debit: "", credit: "",
                 balance: ledger.openingBalance.money)
@@ -1427,9 +1427,9 @@ struct LedgerTable: View {
             Text(date).foregroundStyle(Palette.ink2).frame(width: dateWidth, alignment: .leading)
             Text(kind).foregroundStyle(Palette.ink2).lineLimit(1).frame(width: kindWidth, alignment: .leading)
             Text(detail).lineLimit(1).frame(maxWidth: .infinity, alignment: .leading)
-            Text(debit).frame(width: amountWidth, alignment: .trailing)
-            Text(credit).frame(width: amountWidth, alignment: .trailing)
-            Text(balance).frame(width: amountWidth, alignment: .trailing)
+            Text(debit).amountColumn(amountWidth)
+            Text(credit).amountColumn(amountWidth)
+            Text(balance).amountColumn(amountWidth)
         }
     }
 }

@@ -367,8 +367,8 @@ struct CustomerDetailView: View {
             if full { Text("Emitida").frame(width: 70, alignment: .leading) }
             Text("Vence").frame(width: 70, alignment: .leading)
             Text("Estado").frame(minWidth: 130, maxWidth: .infinity, alignment: .leading)
-            if full { Text("Importe").frame(width: amountWidth, alignment: .trailing) }
-            Text("Saldo").frame(width: amountWidth, alignment: .trailing)
+            if full { Text("Importe").amountColumn(amountWidth) }
+            Text("Saldo").amountColumn(amountWidth)
         } rows: {
             ForEach(Array(invoices.enumerated()), id: \.element.id) { index, invoice in
                 NavigationLink { InvoiceDetailView(invoice: invoice) } label: {
@@ -380,9 +380,9 @@ struct CustomerDetailView: View {
                         }
                         Text(invoice.dueDate.dayMonth).foregroundStyle(Palette.ink2).frame(width: 70, alignment: .leading)
                         StatusChip(invoice: invoice).fixedSize().frame(minWidth: 130, maxWidth: .infinity, alignment: .leading)
-                        if full { Text(invoice.total.money).frame(width: amountWidth, alignment: .trailing) }
+                        if full { Text(invoice.total.money).amountColumn(amountWidth) }
                         Text(invoice.balanceDue.money)
-                            .foregroundStyle(invoice.isOpen ? Palette.ink : Palette.ink2).frame(width: amountWidth, alignment: .trailing)
+                            .foregroundStyle(invoice.isOpen ? Palette.ink : Palette.ink2).amountColumn(amountWidth)
                     }
                     .zebra(index)
                 }
@@ -403,7 +403,7 @@ struct CustomerDetailView: View {
                 Text("Emitido").frame(width: 70, alignment: .leading)
                 Text("Válido hasta").frame(width: 90, alignment: .leading)
                 Text("Estado").frame(minWidth: 130, maxWidth: .infinity, alignment: .leading)
-                Text("Importe").frame(width: amountWidth, alignment: .trailing)
+                Text("Importe").amountColumn(amountWidth)
             } rows: {
                 ForEach(Array(estimates.enumerated()), id: \.element.id) { index, estimate in
                     NavigationLink { EstimateDetailView(estimate: estimate) } label: {
@@ -412,7 +412,7 @@ struct CustomerDetailView: View {
                             Text(estimate.issueDate.dayMonth).foregroundStyle(Palette.ink2).frame(width: 70, alignment: .leading)
                             Text(estimate.expirationDate.dayMonth).foregroundStyle(Palette.ink2).frame(width: 90, alignment: .leading)
                             estimate.statusChip().fixedSize().frame(minWidth: 130, maxWidth: .infinity, alignment: .leading)
-                            Text(estimate.total.money).frame(width: amountWidth, alignment: .trailing)
+                            Text(estimate.total.money).amountColumn(amountWidth)
                         }
                         .zebra(index)
                     }

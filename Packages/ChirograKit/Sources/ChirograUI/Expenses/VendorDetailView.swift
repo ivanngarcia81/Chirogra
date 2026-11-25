@@ -423,7 +423,7 @@ struct VendorDetailView: View {
                             .lineLimit(1).frame(maxWidth: .infinity, alignment: .leading)
                         Text(bill.dueDate.dayMonth).foregroundStyle(bill.isOverdue ? Palette.negative : Palette.ink2)
                             .frame(width: 64, alignment: .leading)
-                        Text(bill.balanceDue.money).frame(width: 96, alignment: .trailing)
+                        Text(bill.balanceDue.money).amountColumn(96)
                         StatusChip(billWithAge: bill).frame(width: 120, alignment: .leading)
                         Button("Registrar pago") { paying = bill }
                             .buttonStyle(.bordered).controlSize(.small)
@@ -483,7 +483,7 @@ struct VendorDetailView: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             Text(account(of: item)).foregroundStyle(Palette.ink2).lineLimit(1).frame(width: 150, alignment: .leading)
-            Text(amount(of: item).money).frame(width: 96, alignment: .trailing)
+            Text(amount(of: item).money).amountColumn(96)
         }
     }
 

@@ -493,15 +493,15 @@ struct DeductionsView: View {
                         tableRow(key: "line:\(row.id)", picked: picked, account: nil) {
                             Text(row.line.number).fontWeight(.semibold).frame(width: 56, alignment: .leading)
                             Text(row.line.name(for: locale)).fontWeight(.semibold).lineLimit(1).frame(maxWidth: .infinity, alignment: .leading)
-                            Text(row.amount.money).fontWeight(.semibold).frame(width: 120, alignment: .trailing)
+                            Text(row.amount.money).fontWeight(.semibold).amountColumn(120)
                             Text(row.line.kind == .income ? "—" : row.deductibleAmount.money).fontWeight(.semibold)
-                                .frame(width: 120, alignment: .trailing)
+                                .amountColumn(120)
                         }
                         ForEach(row.accounts) { item in
                             tableRow(key: "account:\(item.account.id)", picked: picked, account: item.account.id) {
                                 ReportCellText(text: item.account.code).frame(width: 56, alignment: .leading)
                                 Text(item.account.name).lineLimit(1).padding(.leading, 14).frame(maxWidth: .infinity, alignment: .leading)
-                                Text(item.amount.money).frame(width: 120, alignment: .trailing)
+                                Text(item.amount.money).amountColumn(120)
                                 Text(verbatim: "").frame(width: 120)
                             }
                         }
@@ -514,7 +514,7 @@ struct DeductionsView: View {
                     tableRow(key: "account:\(item.account.id)", picked: picked, account: item.account.id) {
                         ReportCellText(text: item.account.code).frame(width: 56, alignment: .leading)
                         Text(item.account.name).lineLimit(1).padding(.leading, 14).frame(maxWidth: .infinity, alignment: .leading)
-                        Text(item.amount.money).frame(width: 120, alignment: .trailing)
+                        Text(item.amount.money).amountColumn(120)
                         ReportCellText(text: String(localized: "Excluida")).frame(width: 120, alignment: .trailing)
                     }
                 }
@@ -527,7 +527,7 @@ struct DeductionsView: View {
                 Color.clear.frame(width: 56, height: 1)
                 Text("Total deducible").frame(maxWidth: .infinity, alignment: .leading)
                 Text(verbatim: "").frame(width: 120)
-                Text(summary.totalDeductions.money).frame(width: 120, alignment: .trailing)
+                Text(summary.totalDeductions.money).amountColumn(120)
             }
             .fontWeight(.semibold)
         }

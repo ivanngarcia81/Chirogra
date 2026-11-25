@@ -174,8 +174,8 @@ private struct JournalLinesSection: View {
             Text("Líneas").font(.label).foregroundStyle(Palette.ink2).padding(.bottom, 4).accessibilityAddTraits(.isHeader)
             HStack(spacing: 8) {
                 Text("Cuenta").frame(maxWidth: .infinity, alignment: .leading)
-                Text("Débito").frame(width: amountWidth, alignment: .trailing)
-                Text("Crédito").frame(width: amountWidth, alignment: .trailing)
+                Text("Débito").amountColumn(amountWidth)
+                Text("Crédito").amountColumn(amountWidth)
             }
             .font(.label).foregroundStyle(Palette.ink2)
             .padding(.vertical, 4)
@@ -189,8 +189,8 @@ private struct JournalLinesSection: View {
                         if !line.memo.isEmpty { Text(line.memo).font(.subheadline).foregroundStyle(Palette.ink2).lineLimit(2) }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    Text(line.debit > 0 ? line.debit.money : "").frame(width: amountWidth, alignment: .trailing)
-                    Text(line.credit > 0 ? line.credit.money : "").frame(width: amountWidth, alignment: .trailing)
+                    Text(line.debit > 0 ? line.debit.money : "").amountColumn(amountWidth)
+                    Text(line.credit > 0 ? line.credit.money : "").amountColumn(amountWidth)
                 }
                 .monospacedDigit()
                 .padding(.vertical, 5)
@@ -200,8 +200,8 @@ private struct JournalLinesSection: View {
             Divider()
             HStack(spacing: 8) {
                 Text("Totales").frame(maxWidth: .infinity, alignment: .leading)
-                Text(entry.totalDebits.money).frame(width: amountWidth, alignment: .trailing)
-                Text(entry.totalCredits.money).frame(width: amountWidth, alignment: .trailing)
+                Text(entry.totalDebits.money).amountColumn(amountWidth)
+                Text(entry.totalCredits.money).amountColumn(amountWidth)
             }
             .fontWeight(.semibold)
             .monospacedDigit()

@@ -1188,7 +1188,7 @@ struct HomeView: View {
                         ReportCellText(text: invoice.number).lineLimit(1).frame(width: 64, alignment: .leading)
                         Text(invoice.customer?.name ?? String(localized: "Sin cliente")).lineLimit(1).frame(maxWidth: .infinity, alignment: .leading)
                         MacCellStatus(chip: StatusChip(invoice: invoice)).frame(width: 120, alignment: .leading)
-                        Text(invoice.balanceDue.money).frame(width: 90, alignment: .trailing)
+                        Text(invoice.balanceDue.money).amountColumn(90)
                     }
                     .contextMenu { Button("Abrir factura") { openedInvoice = invoice } }
                 }
@@ -1199,7 +1199,7 @@ struct HomeView: View {
                             Text(invoice.number).foregroundStyle(Palette.ink2).lineLimit(1).frame(width: 64, alignment: .leading)
                             Text(invoice.customer?.name ?? String(localized: "Sin cliente")).lineLimit(1).frame(maxWidth: .infinity, alignment: .leading)
                             StatusChip(invoice: invoice).frame(width: 120, alignment: .leading)
-                            Text(invoice.balanceDue.money).frame(width: 90, alignment: .trailing)
+                            Text(invoice.balanceDue.money).amountColumn(90)
                         }
                         .zebra(index, onIOS: true)
                     }
@@ -1235,7 +1235,7 @@ struct HomeView: View {
                                 .lineLimit(1).frame(width: 64, alignment: .leading)
                             Text(bill.vendor?.name ?? String(localized: "Proveedor")).lineLimit(1).frame(maxWidth: .infinity, alignment: .leading)
                             Text(bill.vendorNumber).foregroundStyle(Palette.ink2).lineLimit(1).frame(width: 90, alignment: .leading)
-                            Text(bill.balanceDue.money).frame(width: 90, alignment: .trailing)
+                            Text(bill.balanceDue.money).amountColumn(90)
                         }
                         .zebra(index, onIOS: true)
                     }

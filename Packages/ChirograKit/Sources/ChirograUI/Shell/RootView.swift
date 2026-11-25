@@ -411,6 +411,8 @@ struct AppShell: View {
     @State private var selection: SidebarItem = .section(.home)
     #endif
     @State private var query = ""
+    /// El desplazamiento de la barra lateral, que se rehace con cada página (`Sidebar.scrollOffset`).
+    @State private var sidebarOffset: CGFloat = 0
     /// Cambios sin guardar del editor de la columna de detalle: antes de cambiar de pantalla se pregunta.
     @State private var unsavedChanges = UnsavedChanges()
     @State private var pendingSelection: SidebarItem?
@@ -703,7 +705,7 @@ struct AppShell: View {
     }
 
     private var sidebar: some View {
-        Sidebar(selection: sidebarSelection, query: $query)
+        Sidebar(selection: sidebarSelection, query: $query, scrollOffset: $sidebarOffset)
             #if os(macOS)
             .navigationSplitViewColumnWidth(min: 220, ideal: 220, max: 280)
             #else
