@@ -8,6 +8,8 @@ import TipKit
 /// Secciones de navegación del canvas (DISEÑO §7.1).
 enum AppSection: String, Hashable, CaseIterable, Identifiable {
     case home, sales, expenses, banking, reports, accounting, taxes, settings
+    /// 1.4: la agenda (`AgendaView`), en «Negocio» después de Ventas (canvas «Chirogra 1.4», `Sidebar`).
+    case agenda
     /// Panel de clientes del plan para contadores (`ClientsView`): primera entrada de la barra lateral, fuera de los grupos.
     case clients
 
@@ -19,6 +21,7 @@ enum AppSection: String, Hashable, CaseIterable, Identifiable {
         case .clients: String(localized: "clients.title", defaultValue: "Clientes")
         case .home: String(localized: "Inicio")
         case .sales: String(localized: "Ventas")
+        case .agenda: String(localized: "Agenda")
         case .expenses: String(localized: "Gastos")
         case .banking: String(localized: "Banca")
         case .reports: String(localized: "Reportes")
@@ -32,6 +35,7 @@ enum AppSection: String, Hashable, CaseIterable, Identifiable {
         switch self {
         case .home: "house"
         case .sales: "doc.text"
+        case .agenda: "calendar"
         case .expenses: "wallet.bifold"
         case .banking: "building.columns"
         case .reports: "chart.bar"
@@ -43,7 +47,7 @@ enum AppSection: String, Hashable, CaseIterable, Identifiable {
     }
 
     /// Grupo «Negocio» de la barra lateral (canvas `Sidebar`).
-    static let business: [AppSection] = [.home, .sales, .expenses, .banking, .reports]
+    static let business: [AppSection] = [.home, .sales, .agenda, .expenses, .banking, .reports]
     /// Grupo «Libros» de la barra lateral.
     static let books: [AppSection] = [.accounting, .taxes, .settings]
     // Pestañas del iPhone: Inicio, las que elija el usuario (por defecto Ventas · Gastos · Banca, decisión del 2-nov) y
@@ -54,6 +58,7 @@ enum AppSection: String, Hashable, CaseIterable, Identifiable {
         switch self {
         case .home: HomeView()
         case .sales: SalesView()
+        case .agenda: AgendaView()
         case .expenses: ExpensesView()
         case .banking: BankingView()
         case .reports: ReportsView()

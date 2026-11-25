@@ -26,9 +26,10 @@ struct PhoneShortcutsTests {
         #expect(PhoneShortcuts.decode("").isEmpty)
     }
 
-    @Test("Solo Ventas, Gastos y Banca son secciones (las rutas del panel las buscan en la barra)")
+    @Test("Solo Ventas, Agenda, Gastos y Banca son secciones (las rutas del panel las buscan en la barra)")
     func sections() {
-        #expect(PhoneTool.all.compactMap(\.section) == [.sales, .expenses, .banking])
+        #expect(PhoneTool.all.compactMap(\.section) == [.sales, .agenda, .expenses, .banking])
+        #expect(PhoneTool.all.compactMap(\.section).allSatisfy { AppSection.business.contains($0) })
     }
 
     @Test("Los títulos de las pestañas son cortos")

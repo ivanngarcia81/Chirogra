@@ -9,6 +9,8 @@ import SwiftUI
 /// Herramienta que se puede poner como pestaña del iPhone o como favorito de «Más».
 enum PhoneTool: Hashable, Identifiable {
     case sales, expenses, banking
+    /// 1.4: la agenda.
+    case agenda
     /// Reportes con la lista «Otros reportes» al final (como hoy desde Más).
     case reports
     case report(ReportsView.Kind)
@@ -18,7 +20,7 @@ enum PhoneTool: Hashable, Identifiable {
 
     /// Catálogo en grupos, en el orden de «Más».
     static let groups: [(title: String, tools: [PhoneTool])] = [
-        (String(localized: "Día a día"), [.sales, .expenses, .banking]),
+        (String(localized: "Día a día"), [.sales, .agenda, .expenses, .banking]),
         (String(localized: "Reportes"), [.reports] + ReportsView.Kind.allCases.map(PhoneTool.report)),
         (String(localized: "Impuestos"), [.taxes, .taxRates, .deductions]),
         (String(localized: "Contabilidad"), [.journal, .chartOfAccounts, .ledger, .periodClose, .auditLog]),
@@ -31,6 +33,7 @@ enum PhoneTool: Hashable, Identifiable {
         case .sales: "sales"
         case .expenses: "expenses"
         case .banking: "banking"
+        case .agenda: "agenda"
         case .reports: "reports"
         case .report(let kind): "report.\(kind)"
         case .taxes: "taxes"
@@ -56,6 +59,7 @@ enum PhoneTool: Hashable, Identifiable {
         case .sales: .sales
         case .expenses: .expenses
         case .banking: .banking
+        case .agenda: .agenda
         default: nil
         }
     }
@@ -66,6 +70,7 @@ enum PhoneTool: Hashable, Identifiable {
         case .sales: AppSection.sales.title
         case .expenses: AppSection.expenses.title
         case .banking: AppSection.banking.title
+        case .agenda: AppSection.agenda.title
         case .reports: String(localized: "Todos los reportes")
         case .report(let kind): kind.fullTitle
         case .taxes: String(localized: "Impuestos")
@@ -103,6 +108,7 @@ enum PhoneTool: Hashable, Identifiable {
         case .sales: AppSection.sales.systemImage
         case .expenses: AppSection.expenses.systemImage
         case .banking: AppSection.banking.systemImage
+        case .agenda: AppSection.agenda.systemImage
         case .reports: "chart.bar.doc.horizontal"
         case .report(let kind): kind.moreSymbol
         case .taxes: "percent"
@@ -122,6 +128,7 @@ enum PhoneTool: Hashable, Identifiable {
         case .sales: Palette.indigo
         case .expenses: Palette.orange
         case .banking: Palette.blue
+        case .agenda: Palette.red
         case .reports: Palette.green
         case .report(let kind): kind.moreColor
         case .taxes: Palette.red
@@ -142,6 +149,7 @@ enum PhoneTool: Hashable, Identifiable {
         case .sales: SalesView()
         case .expenses: ExpensesView()
         case .banking: BankingView()
+        case .agenda: AgendaView()
         case .reports: ReportsView()
         case .report(let kind): ReportsView(fixedKind: kind)
         case .taxes: TaxesView()

@@ -61,9 +61,44 @@ public struct AppointmentOccurrence: Identifiable {
     public var isPendingInvoice: Bool { status == .done && appointment.invoiceID == nil && appointment.estimateID == nil }
 }
 
+/// Cómo volver a encontrar una cita en pantalla después de cambiarla: una calculada pasa a guardarse aparte al marcarla
+/// hecha, pero sigue siendo la misma repetición (su serie y su inicio según la regla).
+public enum AppointmentKey: Hashable, Sendable {
+    case stored(UUID)
+    case slot(series: UUID, start: Date)
+}
+
+extension AppointmentOccurrence {
+    public var key: AppointmentKey {
+        if let seriesID, let occurrenceStart { return .slot(series: seriesID, start: occurrenceStart) }
+        return .stored(appointment.id)
+    }
+}
+
 extension Bookkeeper {
 
     // MARK: Leer
+
+    /// La cita de `key` tal como está ahora; `nil` si se borró.
+    public func appointment(for key: AppointmentKey) throws -> AppointmentOccurrence? {
+        let all = try fetch(Appointment.self)
+        switch key {
+        case .stored(let id):
+            guard let found = all.first(where: { $0.id == id }), found.status != .removed, !found.isSeries else { return nil }
+            return AppointmentOccurrence(appointment: found, start: found.start, seriesID: found.seriesID,
+                                         occurrenceStart: found.occurrenceStart, isCalculated: false)
+        case .slot(let series, let start):
+            let slot = Self.slotKey(start)
+            if let saved = all.first(where: { $0.seriesID == series && $0.occurrenceStart.map(Self.slotKey) == slot }) {
+                guard saved.status != .removed else { return nil }
+                return AppointmentOccurrence(appointment: saved, start: saved.start, seriesID: series, occurrenceStart: start, isCalculated: false)
+            }
+            guard let template = all.first(where: { $0.id == series && $0.isSeries }) else { return nil }
+            let lastDay = template.recurrenceEnd.flatMap { Calendar.current.date(byAdding: .day, value: 1, to: Calendar.current.startOfDay(for: $0)) }
+            guard start >= template.start, lastDay.map({ start < $0 }) ?? true else { return nil }
+            return AppointmentOccurrence(appointment: template, start: start, seriesID: series, occurrenceStart: start, isCalculated: true)
+        }
+    }
 
     /// Las citas que empiezan dentro de `range`, por hora, sin las borradas de una serie.
     public func appointments(in range: DateInterval, calendar: Calendar = .current) throws -> [AppointmentOccurrence] {
@@ -114,8 +149,9 @@ extension Bookkeeper {
 
     /// Cambia una cita. En una serie, `scope` dice si solo esta repetición o esta y las siguientes (la regla nueva es la
     /// del borrador). En una suelta, el borrador puede convertirla en serie.
+    @discardableResult
     public func updateAppointment(_ occurrence: AppointmentOccurrence, with draft: AppointmentDraft,
-                                  scope: AppointmentChangeScope = .onlyThis, calendar: Calendar = .current) throws {
+                                  scope: AppointmentChangeScope = .onlyThis, calendar: Calendar = .current) throws -> AppointmentKey {
         try validate(draft)
         let target: Appointment
         switch (occurrence.isRepeating, scope) {
@@ -132,6 +168,14 @@ extension Bookkeeper {
         audit(AuditSubject.appointment.rawValue, target.id, "update",
               String(localized: "Cita cambiada: \(summary(of: target, at: target.start))"))
         try saveOrRollback()
+        return Self.key(of: target)
+    }
+
+    /// La clave de una cita guardada: la de su primera repetición si es una serie.
+    public static func key(of appointment: Appointment) -> AppointmentKey {
+        if appointment.isSeries { return .slot(series: appointment.id, start: appointment.start) }
+        if let series = appointment.seriesID, let slot = appointment.occurrenceStart { return .slot(series: series, start: slot) }
+        return .stored(appointment.id)
     }
 
     /// Hecha, cancelada, no vino o de vuelta a programada.

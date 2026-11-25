@@ -207,6 +207,22 @@ public enum SampleData {
         try books.setAnnualBudget(9_000_000, account: services, in: budget, calendar: calendar)
         try books.setAnnualBudget(1_440_000, account: try account("6400"), in: budget, calendar: calendar)
         try books.setAnnualBudget(240_000, account: try account("6050"), in: budget, calendar: calendar)
+
+        // 1.4: agenda (canvas «Chirogra 1.4», `Agenda`): hoy una hecha sin factura y otra programada, una revisión semanal
+        // que empezó hace dos semanas y una reunión pasado mañana.
+        func at(_ offset: Int, _ hour: Int, _ minute: Int = 0) -> Date {
+            calendar.date(bySettingHour: hour, minute: minute, second: 0, of: day(offset)) ?? day(offset)
+        }
+        let measured = try books.createAppointment(AppointmentDraft(title: t.appointmentMeasure, customerID: customers[0].id,
+                                                                    start: at(0, 9), location: t.appointmentAuroraPlace, reminderMinutes: 15))
+        try books.setStatus(.done, of: AppointmentOccurrence(appointment: measured, start: measured.start, seriesID: nil,
+                                                             occurrenceStart: nil, isCalculated: false))
+        try books.createAppointment(AppointmentDraft(title: t.appointmentShelves, customerID: mirador.id, start: at(0, 11, 30),
+                                                     durationMinutes: 90, location: t.appointmentMiradorPlace, notes: t.appointmentShelvesNotes))
+        try books.createAppointment(AppointmentDraft(title: t.appointmentReview, customerID: customers[2].id, start: at(-14, 10),
+                                                     reminderMinutes: 60, recurrence: .weekly))
+        try books.createAppointment(AppointmentDraft(title: t.appointmentMeeting, customerID: mirador.id, start: at(2, 9, 30),
+                                                     reminderMinutes: 1_440))
     }
 
     // MARK: - Datos de ejemplo o libros propios
@@ -280,6 +296,13 @@ struct SampleTexts {
             : [("Aurora Café", "hello@auroracafe.com"), ("Mirador Hotel", "purchasing@miradorhotel.com"),
                ("Del Valle Clinic", "admin@delvalleclinic.com")]
     }
+    var appointmentMeasure: String { pick("Medición de barra", "Bar measurement") }
+    var appointmentAuroraPlace: String { pick("Café Aurora · Local", "Aurora Café · Shop") }
+    var appointmentShelves: String { pick("Instalación de repisas", "Shelf installation") }
+    var appointmentMiradorPlace: String { pick("Hotel Mirador · Recepción", "Mirador Hotel · Front desk") }
+    var appointmentShelvesNotes: String { pick("Llevar taladro y niveles. Preguntar por Laura.", "Bring the drill and levels. Ask for Laura.") }
+    var appointmentReview: String { pick("Revisión de mostrador", "Counter check-in") }
+    var appointmentMeeting: String { pick("Reunión de proyecto", "Project meeting") }
     var miradorContact: String { pick("Laura Méndez", "Laura Mendez") }
     var miradorTitle: String { pick("Gerente", "General Manager") }
     var miradorNotes: String {

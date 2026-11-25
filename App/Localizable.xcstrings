@@ -875,6 +875,16 @@
         }
       }
     },
+    "%@, %lld citas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@, %lld appointments"
+          }
+        }
+      }
+    },
     "%@, debe %@" : {
       "localizations" : {
         "en" : {
@@ -2096,6 +2106,36 @@
         }
       }
     },
+    "%lld h" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld h"
+          }
+        }
+      }
+    },
+    "%lld h %lld min" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld h %lld min"
+          }
+        }
+      }
+    },
+    "%lld h antes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld h before"
+          }
+        }
+      }
+    },
     "%lld líneas" : {
       "localizations" : {
         "en" : {
@@ -2132,6 +2172,26 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "%lld min" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld min"
+          }
+        }
+      }
+    },
+    "%lld min antes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld min before"
           }
         }
       }
@@ -2738,6 +2798,16 @@
         }
       }
     },
+    "1 día antes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 day before"
+          }
+        }
+      }
+    },
     "1 factura seleccionada" : {
       "localizations" : {
         "en" : {
@@ -2887,6 +2957,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "60 days"
+          }
+        }
+      }
+    },
+    "A la hora" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "At time of appointment"
           }
         }
       }
@@ -3081,6 +3161,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Opens the “To review” inbox"
+          }
+        }
+      }
+    },
+    "Abre la cita" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens the appointment"
           }
         }
       }
@@ -3593,6 +3683,16 @@
         }
       }
     },
+    "Agenda" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schedule"
+          }
+        }
+      }
+    },
     "Agrupar" : {
       "localizations" : {
         "en" : {
@@ -3609,6 +3709,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Not Now"
+          }
+        }
+      }
+    },
+    "Ahora: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Now: %@"
           }
         }
       }
@@ -3875,6 +3985,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Write down what you pay"
+          }
+        }
+      }
+    },
+    "Anota tus citas con los clientes. Cuando termines una, la conviertes en factura con un toque." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keep track of your appointments with customers. When you finish one, turn it into an invoice with a tap."
           }
         }
       }
@@ -5883,6 +6003,16 @@
         }
       }
     },
+    "Cada 2 semanas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Every 2 weeks"
+          }
+        }
+      }
+    },
     "Cada 3 meses, el día %lld" : {
       "localizations" : {
         "en" : {
@@ -5933,12 +6063,32 @@
         }
       }
     },
+    "Cada día" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Every day"
+          }
+        }
+      }
+    },
     "Cada factura queda por pagar; la pagas o programas tú." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Each bill stays unpaid; you pay or schedule it."
+          }
+        }
+      }
+    },
+    "Cada mes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Every month"
           }
         }
       }
@@ -5999,6 +6149,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Each occurrence is recorded automatically to the chosen account."
+          }
+        }
+      }
+    },
+    "Cada semana" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Every week"
           }
         }
       }
@@ -6256,12 +6416,32 @@
         }
       }
     },
+    "Cancelada" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Canceled"
+          }
+        }
+      }
+    },
     "Cancelar" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cancel"
+          }
+        }
+      }
+    },
+    "Cancelar cita" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel Appointment"
           }
         }
       }
@@ -6833,6 +7013,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Appointment created: %@"
+          }
+        }
+      }
+    },
+    "Cita eliminada" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appointment Deleted"
           }
         }
       }
@@ -8393,6 +8583,26 @@
         }
       }
     },
+    "Crear estimado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create Estimate"
+          }
+        }
+      }
+    },
+    "Crear factura" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create Invoice"
+          }
+        }
+      }
+    },
     "Crear la tasa «%@» de %@…" : {
       "localizations" : {
         "en" : {
@@ -9773,6 +9983,16 @@
         }
       }
     },
+    "Duración" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Duration"
+          }
+        }
+      }
+    },
     "Débito" : {
       "localizations" : {
         "en" : {
@@ -9843,12 +10063,42 @@
         }
       }
     },
+    "Día" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Day"
+          }
+        }
+      }
+    },
     "Día a día" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Day to day"
+          }
+        }
+      }
+    },
+    "Día anterior" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Previous day"
+          }
+        }
+      }
+    },
+    "Día siguiente" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next day"
           }
         }
       }
@@ -9979,6 +10229,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Edit Draft"
+          }
+        }
+      }
+    },
+    "Editar cita" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit Appointment"
           }
         }
       }
@@ -11177,6 +11437,56 @@
         }
       }
     },
+    "Eliminada" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deleted"
+          }
+        }
+      }
+    },
+    "Eliminar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete"
+          }
+        }
+      }
+    },
+    "Eliminar cita" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete Appointment"
+          }
+        }
+      }
+    },
+    "Eliminar esta y las siguientes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete This and Following"
+          }
+        }
+      }
+    },
+    "Eliminar solo esta" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete Only This One"
+          }
+        }
+      }
+    },
     "Emitida" : {
       "localizations" : {
         "en" : {
@@ -12074,6 +12384,36 @@
         }
       }
     },
+    "Esta cita se repite" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This Appointment Repeats"
+          }
+        }
+      }
+    },
+    "Esta cita ya no está en la agenda." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This appointment is no longer on your schedule."
+          }
+        }
+      }
+    },
+    "Esta cita ya se hizo y todavía no tiene factura." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This appointment is done and doesn’t have an invoice yet."
+          }
+        }
+      }
+    },
     "Esta factura no lleva impuesto." : {
       "localizations" : {
         "en" : {
@@ -12130,6 +12470,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "This week"
+          }
+        }
+      }
+    },
+    "Esta y las siguientes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This and Following"
           }
         }
       }
@@ -13072,6 +13422,16 @@
         }
       }
     },
+    "Facturada · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invoiced · %@"
+          }
+        }
+      }
+    },
     "Facturado en %@" : {
       "localizations" : {
         "en" : {
@@ -13458,6 +13818,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Deadline %@ · %@"
+          }
+        }
+      }
+    },
+    "Fecha y hora" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Date and time"
           }
         }
       }
@@ -14337,6 +14707,16 @@
         }
       }
     },
+    "Guardar cita" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save Appointment"
+          }
+        }
+      }
+    },
     "Guardar estimado" : {
       "localizations" : {
         "en" : {
@@ -14464,6 +14844,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Click a row in the report to see its details here."
+          }
+        }
+      }
+    },
+    "Hecha" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Done"
+          }
+        }
+      }
+    },
+    "Hecha · sin factura" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Done · not invoiced"
           }
         }
       }
@@ -14597,6 +14997,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Today"
+          }
+        }
+      }
+    },
+    "Hoy · " : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today · "
           }
         }
       }
@@ -15910,6 +16320,16 @@
         }
       }
     },
+    "La repetición cambia solo si eliges «Esta y las siguientes» al guardar." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The repeat changes only if you choose “This and Following” when you save."
+          }
+        }
+      }
+    },
     "La suma de las líneas debe ser igual a %@." : {
       "localizations" : {
         "en" : {
@@ -16193,6 +16613,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Books reopened"
+          }
+        }
+      }
+    },
+    "Lista" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "List"
           }
         }
       }
@@ -16818,6 +17248,16 @@
         }
       }
     },
+    "Lugar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Location"
+          }
+        }
+      }
+    },
     "Línea" : {
       "localizations" : {
         "en" : {
@@ -17041,6 +17481,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mark as Sent"
+          }
+        }
+      }
+    },
+    "Marcar como hecha" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mark as Done"
           }
         }
       }
@@ -18491,6 +18941,16 @@
         }
       }
     },
+    "No hay citas próximas." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No upcoming appointments."
+          }
+        }
+      }
+    },
     "No hay clientes archivados" : {
       "localizations" : {
         "en" : {
@@ -18846,6 +19306,16 @@
         }
       }
     },
+    "No se repite" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Doesn’t repeat"
+          }
+        }
+      }
+    },
     "No se sabe de cuándo es la tabla de tasas: compruébala con tu estado." : {
       "localizations" : {
         "en" : {
@@ -18882,6 +19352,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nothing else to do: Chirogra already put each amount on its side."
+          }
+        }
+      }
+    },
+    "No vino" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No-show"
           }
         }
       }
@@ -19195,6 +19675,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "New category"
+          }
+        }
+      }
+    },
+    "Nueva cita" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New Appointment"
           }
         }
       }
@@ -21241,6 +21731,16 @@
         }
       }
     },
+    "Por facturar · %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To invoice · %lld"
+          }
+        }
+      }
+    },
     "Por jurisdicción" : {
       "localizations" : {
         "en" : {
@@ -22498,6 +22998,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "What's included"
+          }
+        }
+      }
+    },
+    "Qué llevar, a quién preguntar…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What to bring, who to ask for…"
           }
         }
       }
@@ -25286,6 +25796,46 @@
         }
       }
     },
+    "Semana" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Week"
+          }
+        }
+      }
+    },
+    "Semana anterior" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Previous week"
+          }
+        }
+      }
+    },
+    "Semana del %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Week of %@"
+          }
+        }
+      }
+    },
+    "Semana siguiente" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next week"
+          }
+        }
+      }
+    },
     "Semanal" : {
       "localizations" : {
         "en" : {
@@ -25322,6 +25872,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Series"
+          }
+        }
+      }
+    },
+    "Servicio o título" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Service or title"
           }
         }
       }
@@ -25507,6 +26067,16 @@
         }
       }
     },
+    "Sin aviso" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No alert"
+          }
+        }
+      }
+    },
     "Sin avisos" : {
       "localizations" : {
         "en" : {
@@ -25553,6 +26123,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Not closed"
+          }
+        }
+      }
+    },
+    "Sin citas este día" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No appointments this day"
           }
         }
       }
@@ -26210,6 +26790,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Money in only"
+          }
+        }
+      }
+    },
+    "Solo esta" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Only This One"
           }
         }
       }
@@ -27865,6 +28455,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Quarter settled"
+          }
+        }
+      }
+    },
+    "Tu agenda está vacía" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your schedule is empty"
           }
         }
       }
@@ -29579,6 +30179,26 @@
         }
       }
     },
+    "Visita, instalación…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Visit, installation…"
+          }
+        }
+      }
+    },
+    "Vista de la agenda" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schedule view"
+          }
+        }
+      }
+    },
     "Vista previa" : {
       "localizations" : {
         "en" : {
@@ -29686,6 +30306,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Back to Suggested"
+          }
+        }
+      }
+    },
+    "Volver a programar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reschedule"
           }
         }
       }
@@ -30394,6 +31024,16 @@
         }
       }
     },
+    "opcional" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "optional"
+          }
+        }
+      }
+    },
     "pagada" : {
       "localizations" : {
         "en" : {
@@ -30883,6 +31523,16 @@
         }
       }
     },
+    "¿Eliminar esta cita?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete This Appointment?"
+          }
+        }
+      }
+    },
     "¿Llevas los libros de otro negocio?" : {
       "localizations" : {
         "en" : {
@@ -30939,6 +31589,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Remove this receipt?"
+          }
+        }
+      }
+    },
+    "¿Qué citas quieres cambiar?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Which appointments do you want to change?"
           }
         }
       }
@@ -31102,6 +31762,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Last sync"
+          }
+        }
+      }
+    },
+    "Último día" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last day"
           }
         }
       }

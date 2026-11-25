@@ -35,6 +35,9 @@ struct InvoiceEditorView: View {
     /// Borrador existente que se edita; `nil` para una factura nueva.
     var editing: Invoice?
     var mode: Mode = .invoice
+    /// 1.4: la cita desde la que se crea (Agenda › «Crear factura» o «Crear estimado»): cliente, fecha y servicio puestos;
+    /// al guardar se enlaza con la cita.
+    var appointment: AppointmentOccurrence?
 
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
@@ -273,6 +276,7 @@ struct InvoiceEditorView: View {
             if let editingEstimate, !loadedDraft { load(editingEstimate) }
             if !loadedDraft, baseline == nil { applyNewDocumentDefaults() }
             if customerID == nil { customerID = preselectedCustomer?.id }
+            if let appointment, baseline == nil { applyAppointment(appointment) }
             if lines.first?.incomeAccountID == nil { lines[0].incomeAccountID = incomeAccounts.first?.id }
             if baseline == nil { baseline = signature }
             if discount > 0 { showingDiscount = true }
@@ -1177,10 +1181,24 @@ struct InvoiceEditorView: View {
         close()
     }
 
+    /// Cliente, fecha y servicio de la cita (la primera línea lleva el servicio; el precio lo pone el usuario).
+    private func applyAppointment(_ appointment: AppointmentOccurrence) {
+        if customerID == nil { customerID = appointment.appointment.customerID }
+        issueDate = Calendar.current.startOfDay(for: appointment.start)
+        if lines.count == 1, lines[0].details.isEmpty { lines[0].details = appointment.appointment.title }
+    }
+
+    /// Enlaza la factura o el estimado guardado con la cita de la que salió.
+    private func linkAppointment() {
+        guard let appointment else { return }
+        try? books.link(appointment, invoiceID: isEstimate ? nil : savedInvoice?.id, estimateID: isEstimate ? savedEstimate?.id : nil)
+    }
+
     private func saveDraft() {
         if isEditingIssued { saveIssuedChanges(); return }
         do {
             if isEstimate { try persistEstimate() } else { try persistDraft() }
+            linkAppointment()
             close()
         } catch {
             errorMessage = error.localizedDescription
@@ -1206,6 +1224,7 @@ struct InvoiceEditorView: View {
                 return
             }
             try books.issue(invoice)
+            linkAppointment()
             errorMessage = nil
             // Ya no hay nada sin guardar; el editor se cierra al responder «Factura … emitida».
             unsavedChanges?.remove(editorToken)

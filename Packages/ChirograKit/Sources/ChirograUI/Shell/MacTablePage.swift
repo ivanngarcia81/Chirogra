@@ -451,6 +451,7 @@ enum QALaunch {
     static var sidebarItem: SidebarItem? {
         switch defaults.string(forKey: "qa.seccion") {
         case "home": .section(.home)
+        case "agenda": .section(.agenda)
         case "invoices", "sales": .sales(.invoices)
         case "customers": .sales(.customers)
         case "estimates": .sales(.estimates)
