@@ -3,7 +3,8 @@
 Sale de los testers de Userbrain del 16-nov: una pidió **citas o agenda con los clientes** («todo en un solo sitio») y
 otro esperaba un **asistente con IA** dentro de la app. El usuario decidió adelantarlos a la 1.4 en vez de esperar a la
 2.0, y hacer el asistente con **Claude y servidor**, de modo que ese servidor sea la base del de la 2.0 (Plaid, Stripe,
-nómina, contador; [PLAN-2.0.md](PLAN-2.0.md)).
+nómina, contador; [PLAN-2.0.md](PLAN-2.0.md)). El 25-nov se añadió el **apartado para impuestos estimados** (§3) y se
+decidió que **Plaid va justo después, en la 1.5**, reutilizando este servidor.
 
 ## Decisiones del usuario (16-nov)
 
@@ -118,7 +119,27 @@ factura o el presupuesto.
   «recogido». Sin rastreo.
 - **Política de privacidad (es/en), bienvenida, guía y ficha de la tienda:** se añaden el asistente y la agenda.
 
-## 3. Orden de trabajo
+## 3. Apartado para impuestos (impuestos estimados)
+
+Lo pidió un cliente el 25-nov: que la app le diga **cuánto apartar para los impuestos** durante el año («¿tiene R&B?»,
+los *estimated taxes*, formulario **1040-ES**; **confirmado con él el 25-nov**: apartar lo de cada trimestre). Quien trabaja por su cuenta no
+tiene patrón que le retenga, así que paga al IRS por adelantado **4 veces al año** (15-abr, 15-jun, 15-sep y 15-ene),
+no cada semestre. Hoy Chirogra no lo tiene: «estimate» en el código son las cotizaciones.
+
+- **Base:** la ganancia neta del trimestre, que ya sale del estado de resultados (`Reports.swift`, `netIncome`).
+- **Porcentaje que elige el usuario** (sugerido 25–30 %, con un texto claro de que es una guía y no asesoría fiscal; el
+  monto real depende de su contador). Opcional más adelante: cálculo con el impuesto de autoempleo (15.3 %) y las tablas
+  federales; en la 1.4 solo porcentaje.
+- **Tarjeta en Inicio** y en Reportes: «Este trimestre ganaste $X → aparta $Y. Vence el 15 de junio (faltan N días)».
+- **Recordatorios** antes de cada fecha (con los avisos automáticos y las notificaciones de la §2).
+- **Pagos hechos:** registrar el pago al IRS como un asiento a una cuenta «Impuestos estimados pagados» (patrimonio del
+  dueño, no gasto del negocio en una LLC de un solo dueño / sole prop) y mostrar apartado frente a pagado en el año.
+- **El asistente** puede contestar «¿cuánto debo apartar?» con esta misma cuenta.
+- **Con el banco (2.0):** ver si el dinero apartado está de verdad en una cuenta de ahorro aparte.
+- **Corporaciones (C-corp) y S-corp** tienen reglas distintas (1120-W, nómina del dueño): en la 1.4 se avisa que la
+  tarjeta está pensada para dueños únicos y LLC de un solo dueño, y se puede apagar en Ajustes.
+
+## 4. Orden de trabajo
 
 0. **Trámites del usuario (sin código):** cuenta u organización de la API de Anthropic con su clave y un límite de gasto
    mensual, y el proyecto de Supabase «chirogra». Yo no busco ni creo claves: él pone la de Anthropic en los secretos
@@ -131,7 +152,8 @@ factura o el presupuesto.
 4. **Servidor:** proyecto, función `asistente`, verificación de StoreKit y tabla de uso.
 5. **Asistente en la app:** pantalla, herramientas, tarjetas de borrador y permiso.
 6. **Avisos automáticos** como notificación, más los dos tipos nuevos.
-7. **QA completa** (como la de Hudson), costo medido por pregunta, privacidad, textos, guía y capturas, y builds de la
+7. **Apartado para impuestos** (§3): porcentaje, tarjeta, fechas del IRS, pagos hechos y recordatorios.
+8. **QA completa** (como la de Hudson), costo medido por pregunta, privacidad, textos, guía y capturas, y builds de la
    1.4 en TestFlight y Userbrain.
 
 ## Preguntas abiertas
@@ -139,3 +161,5 @@ factura o el presupuesto.
 1. **Modelo:** se decide tras medir en la QA (Opus 5.5 frente a Sonnet 5.5).
 2. **¿Cuesta más la suscripción con el asistente?** ¿O se mantiene el precio y se cubre con el límite de 100 al mes?
 3. **¿Agenda en las pestañas de entrada del iPhone?** Se decide junto con lo de Reportes (testers, build 49).
+4. **Apartado para impuestos** (el cliente confirmó el 25-nov que son los impuestos estimados trimestrales): ¿porcentaje
+   fijo o cálculo con las tablas del IRS? ¿Para todos o solo para el plan de pago?

@@ -1,6 +1,6 @@
 # Chirogra: contexto para retomar en otro chat
 
-Estado de Chirogra al **23 de noviembre de 2026**. **Para empezar rápido, lee primero
+Estado de Chirogra al **25 de noviembre de 2026**. **Para empezar rápido, lee primero
 [RESUMEN-PARA-SEGUIR.md](RESUMEN-PARA-SEGUIR.md)** (estado, tabla de builds y lo siguiente); luego este, entero. El diseño técnico está en
 [DISEÑO.md](DISEÑO.md), el sistema visual y los argumentos de QA en [REDISEÑO-NATIVO.md](REDISEÑO-NATIVO.md) (§5), los
 datos en [DATOS-V4.md](DATOS-V4.md) (y [DATOS-V2.md](DATOS-V2.md)), la fase 2 en [PLAN-FASE2.md](PLAN-FASE2.md) y la
@@ -11,6 +11,10 @@ El historial día a día (builds 2 a 21, pruebas, guiones) se quitó el 9-nov pa
 (`git show 0f7bb1e:docs/CONTEXTO.md`) y en los mensajes de los commits.
 
 ## Dónde nos quedamos (empieza aquí)
+
+**Resumen al 25-nov:** **1.3.0 en la tienda** (build 64). Plaid aprobó producción para el equipo «Chirogra» (24-nov).
+Orden: 1.4 (agenda, asistente, impuestos estimados) → 1.5 (Plaid) → 2.0 (contador, Stripe, nómina). Esperando los
+informes de los testers del 65. Detalle en RESUMEN, «Último chat».
 
 **Resumen al 23-nov** (lo de debajo es el detalle y la historia):
 - **Último build: 65 (1.3.0)**, subido iOS y macOS el 23-nov (`00ace74`): auditoría técnica (base caja con notas de

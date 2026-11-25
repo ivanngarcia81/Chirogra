@@ -1,4 +1,4 @@
-# Chirogra: resumen para empezar el siguiente chat (23-nov-2026, build 65, 1.3.0 en revisión con el 64)
+# Chirogra: resumen para empezar el siguiente chat (25-nov-2026, build 65, 1.3.0 EN LA TIENDA con el 64)
 
 Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («Dónde nos quedamos» y «Lo aprendido»).
 **Al usuario se le habla siempre en español.**
@@ -7,10 +7,10 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 
 - **Último build: 65 (1.3.0)**, subido a TestFlight iOS y macOS el 23-nov (`00ace74`): auditoría técnica y pruebas de
   interfaz (ver «Último chat»). Antes: 64 (21-nov noche, icono «chirogra pencils»); del 22 al 63, en la tabla.
-- **En App Store Connect:** la **1.0 quedó aprobada el 22-nov con el build 15**, y el mismo día el usuario **envió a
-  revisión la 1.3.0 (iOS y macOS) con el build 64** junto con la suscripción «Chirogra para contadores» (textos en
-  APP-STORE.md, «Envío de la 1.3.0 tras aprobarse la 1.0»). Falta ver qué dice Apple. El 65 solo está en TestFlight: el
-  usuario decide si cambia el build del envío. Se saltaron la 1.0.1, la 1.1 y la 1.2 (decidido el 13-nov): el «What's
+- **En App Store Connect:** la **1.0 quedó aprobada el 22-nov con el build 15**, y **la 1.3.0 (iOS y macOS, build 64,
+  con la suscripción «Chirogra para contadores») está APROBADA y EN LA TIENDA** (lo dijo el usuario el 25-nov; textos en
+  APP-STORE.md, «Envío de la 1.3.0 tras aprobarse la 1.0»). El 65 (auditoría técnica) solo está en TestFlight: sus
+  arreglos y los de los testers salen con la siguiente versión (1.4, o una 1.3.1 si algo es grave). Se saltaron la 1.0.1, la 1.1 y la 1.2 (decidido el 13-nov): el «What's
   New» junta las tres. iOS y Mac llevan textos distintos (el Mac sin recorrido ni líneas del iPhone/iPad, y «adjunta» en
   vez de «escanea» recibos). Si Apple rechaza algo, el usuario trae el mensaje del Resolution Center. Si la web de App
   Store Connect falla (sin apps, lo saca al entrar), suele ser la sesión de Safari (pestaña privada / borrar datos).
@@ -27,16 +27,19 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
   χ)» de la misma carpeta. El logo de `~/Desktop/Chirogra-logo` (cuadrado a sangre y redondeado, 1024 px, sRGB)
   **rehecho el 23-nov** con el icono nuevo (los viejos, en «Anteriores (logo χρ)»); el cuadrado es el del App profile de
   Plaid.
-- **Plaid para la 2.0 (23-nov):** equipo nuevo **«Chirogra»** (`6b04d81ce1b977000ef535cc`; el de Tamio es otro) y
-  **solicitud de producción ENVIADA el 23-nov** (Pay As You Go; Transactions, Balance y Statements; uso «SMB
-  bookkeeping»; Plaid dice 2–3 días hábiles). Tras aprobar: Compliance Center (registro OAuth de los bancos) y la
+- **Plaid para la 1.5 (antes 2.0):** equipo nuevo **«Chirogra»** (`6b04d81ce1b977000ef535cc`; el de Tamio es otro),
+  solicitud enviada el 23-nov y **PRODUCCIÓN APROBADA el 24-nov** (Pay As You Go; Transactions, Balance y Statements; uso
+  «SMB bookkeeping»). Quedan las tareas del Home del panel: **Add use case descriptions** (Link › Data Transparency
+  Messaging: casos de contabilidad/finanzas del negocio, nada de pagos ni préstamos; **Publish**), Compliance Center (registro OAuth de los bancos) y la
   redirect URI `https://chirogra.com/plaid-oauth`. Política de seguridad para el cuestionario en
   [SECURITY-POLICY.md](SECURITY-POLICY.md) y en PDF en `~/Desktop/Chirogra-Information-Security-Policy.pdf` (si se
   cambia, regenerarlo: Markdown → HTML → Chrome sin cabecera). Dependabot (alertas y actualizaciones de seguridad), escaneo
   de secretos y protección al empujar **activados el 23-nov** en el repo (público; 0 alertas). Compromete además a borrar del buzón lo no recogido en 30 días y a borrar la cuenta desde
   la app.
-- **Plan de la 1.4** (agenda + asistente con Claude) en [PLAN-1.4.md](PLAN-1.4.md); **plan de la 2.0** en
-  [PLAN-2.0.md](PLAN-2.0.md).
+- **Orden de versiones (decidido el 25-nov):** **1.4** agenda + asistente con Claude + **apartado para impuestos
+  estimados** (pedido de un cliente, confirmado el 25-nov) → **1.5** banco con Plaid y plan «Chirogra + Bank» (reutiliza
+  el servidor de la 1.4) → **2.0** contador dentro, Stripe y nómina. Planes en [PLAN-1.4.md](PLAN-1.4.md) y
+  [PLAN-2.0.md](PLAN-2.0.md) (§1 Plaid es ahora la 1.5).
 
 El detalle de cada build del 49 al 64 (los antiguos puntos «0.» de «Lo siguiente») se quitó el 23-nov para que no se
 acumule: está en `git show 1fe35ff:docs/RESUMEN-PARA-SEGUIR.md` y en los mensajes de los commits.
@@ -88,7 +91,45 @@ acumule: está en `git show 1fe35ff:docs/RESUMEN-PARA-SEGUIR.md` y en los mensaj
 | 64 | `b2c8e43` | 1.3.0: **icono «chirogra pencils»** (lapicero y lápiz cruzados en χ, ρ azafrán con brillo de lupa; archivo del usuario), también `LogoMark` y la bienvenida (`LogoGlyph`), el icono de la web y las capturas de la guía. **Enviado a revisión** (1.3.0 iOS y macOS) el 22-nov. |
 | 65 | `00ace74` | 1.3.0: **auditoría técnica** (base caja con notas de crédito y saldo a favor, suma SHA-256 en las copias, aviso de iCloud en local, saldos rehechos tras sincronizar, importes en 128 bits, sales tax de las notas, aviso de tabla por ZIP vieja, no anular facturas con nota) y **pruebas de interfaz** en el repo (`PruebasInterfaz`, `scripts/interfaz.sh`). 403 pruebas + 4 de interfaz. |
 
-## Último chat (23-nov): auditoría técnica, pruebas de interfaz y build 65
+## Último chat (23 al 25-nov): Plaid aprobado, 1.3 en la tienda, orden de versiones y testers
+
+Sin código: todo fue trámites, decisiones y testers. Commits del chat: `cec3bf1` (resumen limpio), `ad732e0` (política
+de seguridad), `d7a4663`, `a2d9a31`, `63c6ed4` (empujados); lo del 24–25-nov (este resumen y los planes), sin commitear hasta que el usuario lo diga.
+
+- **La 1.3.0 está en la tienda** (iOS y macOS, build 64; el usuario lo dijo el 25-nov). Lo siguiente sale como 1.4.0 (o
+  1.3.1 si un tester encuentra algo grave).
+- **Plaid, equipo «Chirogra»:** pasos del panel hechos con el usuario por capturas (equipo nuevo, Pay As You Go,
+  verificación del negocio, casos de uso, cuestionario de seguridad con [SECURITY-POLICY.md](SECURITY-POLICY.md) y su
+  PDF, PDF de MFA del consumidor en `~/Desktop/Chirogra-Consumer-MFA.pdf`, logo cuadrado de `~/Desktop/Chirogra-logo`).
+  **Producción aprobada el 24-nov.** Quedan las tareas del Home: **Add use case descriptions** (Link › Data
+  Transparency Messaging; contabilidad/finanzas del negocio, nada de pagos ni préstamos; **Publish**; el usuario iba a
+  mandar captura de la lista), Compliance Center (OAuth) y la redirect URI. Dependabot y escaneo de secretos activados.
+- **Orden de versiones (25-nov):** 1.4 = agenda + asistente con Claude + **apartado para impuestos estimados** (un
+  cliente preguntó por «R&B» y confirmó que quería apartar lo de cada trimestre: 1040-ES, 4 pagos al año; PLAN-1.4 §3);
+  1.5 = banco con Plaid y plan «Chirogra + Bank», reutilizando el servidor de la 1.4; 2.0 = contador, Stripe y nómina.
+  Recomendación mía (B) aceptada al decir «comenzar con la 1.4 y así subir la secuencia».
+- **Asistente con IA:** se le explicó cómo funcionaría (botón arriba en Inicio / barra del iPad y Mac, ⌘K; guiar,
+  registrar con borrador que él confirma, preguntas sobre los números, avisos; permiso la primera vez; 100 al mes). En el
+  canvas de diseño de la 1.4 decide **botón o burbuja flotante**.
+- **Apple Pay:** Chirogra no tiene código de Apple Pay (PassKit). A un cliente le salió «Set up Apple Pay»: es la hoja de
+  compra de iOS al tocar un plan sin forma de pago en su cuenta de Apple; él dijo que fue por error. Cobro de facturas
+  con Apple Pay: solo a través del enlace de Stripe/Square en «Pagar ahora» (y Stripe Connect en la 2.0).
+- **Beta Family:** Jiga T. («iPad», en realidad iPhone 13 mini; recorridos ocultos por las marcas de iCloud de otra
+  prueba, sin cambios de código). **Yurii S. (iPad, 25-nov)** se atascó con la tarea «factura de dos líneas → cobro →
+  anular el cobro»: (1) la hoja de planes tras los 7 días (TestFlight no cobra, pero pide la contraseña de la cuenta de
+  Apple, que no recordaba); (2) buscaba «Save»: en el iPad el botón es **«Issue Invoice»**, arriba a la derecha; (3) al
+  emitir pregunta si enviarla («Not Now»); (4) **«Void Payment…» solo sale en «⋯» cuando ya hay un cobro**, y en el menú
+  estaba «Void Invoice», que podía tocar por error. Se le guió paso a paso por el chat de Beta Family. Esperando su
+  informe.
+- **BetaTesting.com:** prueba «Single Session» para dueños de negocio (iPhone/iPad), 5 testers × 2 créditos, sin
+  Expedite. Al lanzar salía «There are no published tasks/surveys…»: hay que publicar las tareas antes; no se sabe si
+  ya lo arregló.
+
+**Para los textos de los tests:** decir «Issue Invoice» y no «Save»; avisar «If a subscription screen appears, tap
+"Try Free" (TestFlight never charges); have your Apple Account password handy»; separar crear factura, cobrar y anular
+en pasos numerados. **Idea si más testers tropiezan:** «Void Payment…» también en la lista de cobros de la factura.
+
+## Chat anterior (23-nov): auditoría técnica, pruebas de interfaz y build 65
 
 Pedido del usuario: revisar a fondo un informe externo («Auditoría técnica y correcciones de Chirogra — Build 64») y
 corregir desde la causa lo que fuera real. Commiteado en `205400a`; luego, a petición suya, pruebas de interfaz
@@ -296,8 +337,9 @@ en verde.
 
 ## Lo que le toca al usuario
 
-0. **Esperar la revisión de la 1.3.0** (iOS y macOS, build 64, con la suscripción de contadores) y traer aquí el
-   resultado o el mensaje del Resolution Center si rechazan algo. Decidir si cambia el build del envío al 65.
+0. **Esperar a que los testers terminen con el 65** (Yurii S. en Beta Family; BetaTesting.com) y traer sus informes:
+   con eso se arregla y se empieza la 1.4.
+0b. **Plaid:** «Add use case descriptions» (Publish), luego las demás tareas del Home (Compliance Center, redirect URI).
 1. **Asignar el 64 o el 65** al grupo de testers externos del enlace público y mandar más testers (Beta Family,
    Userbrain, UXtweak). Traer aquí sus informes.
 2. **Seguir revisando el iPad** (con el Debug o desde TestFlight, que no enseña la hoja de planes al abrir) y mandar
@@ -309,7 +351,8 @@ en verde.
 
 ## Lo siguiente
 
-0. **Lo que diga Apple de la 1.3.0.** Si rechaza algo, arreglarlo en `version-1.3` y subir el 66.
+0. **Arreglos de los testers del 65** en `version-1.3` y, cuando el usuario lo diga, crear `version-1.4` desde ahí
+   (la 1.3.0 ya está en la tienda: la versión siguiente necesita número nuevo, 1.4.0 o 1.3.1).
 1. **Informes de testers:** leerlos, arreglar desde la causa, enseñarle capturas antes/después y esperar su «súbelo».
    Los xlsx de Beta Family se leen descomprimiéndolos (no hay openpyxl); las fotos son enlaces firmados en
    `xl/worksheets/_rels/sheet3.xml.rels` que caducan a los 7 días (bajarlas con curl).
@@ -323,11 +366,14 @@ en verde.
 4. **Tasas por código postal: cada trimestre** (1 ene, 1 abr, 1 jul, 1 oct; la próxima, el 1-ene-2027) correr
    `scripts/tasas/descargar.sh` y `generar.py` y subir un build (DATOS-V5.md). Faltan AL AK AZ CO HI ID LA MO MS NM PA
    SC VA. Sin regenerar, el aviso de tabla vieja sale desde el 20-feb-2027.
-5. **1.4 con agenda y asistente con IA:** plan en [PLAN-1.4.md](PLAN-1.4.md) (rama `version-1.4` aparte; Claude a
-   través de Supabase «chirogra»; 100 preguntas al mes, citas que se repiten, modelo tras medir). Lo primero: los
+5. **1.4 con agenda, asistente con IA e impuestos estimados:** plan en [PLAN-1.4.md](PLAN-1.4.md) (rama
+   `version-1.4` aparte; Claude a través de Supabase «chirogra» en región de EE. UU.; 100 preguntas al mes, citas que se
+   repiten, modelo tras medir; §3 apartado para impuestos). Lo primero: los
    trámites del usuario y el canvas de diseño.
-6. **2.0 con servidor:** plan en [PLAN-2.0.md](PLAN-2.0.md). Ya se pueden hacer los trámites (Plaid con producción y
-   Statements, cotizaciones de Gusto Embedded y Check, Stripe Connect); el código empieza cuando la 1.3 esté en la tienda.
+6. **1.5 con el banco (Plaid)** y **2.0** (contador, Stripe, nómina): plan en [PLAN-2.0.md](PLAN-2.0.md). Plaid ya
+   tiene producción (24-nov); faltan sus tareas del panel. Antes de abrir Link a clientes reales: política de privacidad
+   con el banco, buzón que se borra a los 30 días y borrar la cuenta en la app. Trámites de la 2.0 (cotizaciones de
+   Gusto Embedded y Check, Stripe Connect) cuando toque.
 
 ## Cómo se trabaja con este usuario
 

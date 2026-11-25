@@ -13,7 +13,7 @@ en la tienda. Sustituye a «Después: con servidor» de [PLAN-FASE2.md](PLAN-FAS
 | Permisos del contador | **Los elige el cliente** al invitarlo: solo ver, ver y preguntar, o editar. Lo que haga el contador queda marcado y en la bitácora. |
 | Pago del contador | **Gratis** para el contador invitado (el cliente ya paga). El plan de $99.99 sigue para quien lleva él mismo los libros de muchas empresas. |
 | Otros usuarios | **Solo el dueño y su contador** (sin empleados ni socios en la 2.0). |
-| Primera entrega | **Todo junto**: Plaid, el contador dentro, Stripe y nómina. |
+| Primera entrega | **Todo junto**: Plaid, el contador dentro, Stripe y nómina. **Cambiado el 25-nov:** Plaid sale antes, en la **1.5** (tras la 1.4, con su servidor), con el plan «Chirogra + Bank»; la 2.0 queda con el contador, Stripe y nómina. |
 | Plaid | **Solo lectura**: Transactions, Balance y **Statements desde el inicio**. No mueve dinero. |
 | Stripe | Enlace de pago en cada factura. **Chirogra no cobra comisión**: solo la de Stripe. |
 | Nómina | Con un proveedor embebido (Gusto Embedded o Check). Precio **base + por empleado**. |
@@ -47,7 +47,9 @@ en la tienda. Sustituye a «Después: con servidor» de [PLAN-FASE2.md](PLAN-FAS
 - **En el repo:** carpeta `servidor/` en Chirogra (`supabase/migrations`, `supabase/functions`), en la rama `version-2.0`
   que saldrá de `version-1.3`. Mismas reglas que Tamio: claves solo en los secretos de Supabase, nunca en el repo.
 
-## 1. Plaid (solo lectura)
+## 1. Plaid (solo lectura) — ahora en la 1.5
+
+Producción **aprobada el 24-nov** (equipo «Chirogra» del panel de Plaid; ver RESUMEN, «Estado»).
 
 - **Productos:** Transactions (movimientos), Balance (saldo y límite de la tarjeta) y Statements (extractos en PDF).
 - **Conectar:** Link de Plaid. En iPhone y iPad con el SDK de iOS. En el Mac, ver cómo lo resolvió Tamio para Mac
