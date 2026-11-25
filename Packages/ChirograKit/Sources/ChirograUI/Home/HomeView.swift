@@ -25,6 +25,9 @@ struct HomeView: View {
     @CompanyQuery(sort: \Bill.dueDate) private var bills: [Bill]
     @CompanyQuery private var expenses: [Expense]
     @CompanyQuery private var customers: [Customer]
+    /// 1.4: la agenda («Hoy»).
+    @CompanyQuery(sort: \Appointment.start) private var appointments: [Appointment]
+    @Environment(\.modelContext) private var modelContext
     @CompanyQuery private var payments: [PaymentReceived]
     /// Para decir en «Configura tu sales tax» qué impuesto cobran las facturas.
     @CompanyQuery private var taxRates: [TaxRate]
@@ -72,6 +75,8 @@ struct HomeView: View {
 
     enum PadSection: String, CaseIterable, Identifiable {
         case cash, results, receivables, payables
+        /// 1.4: las citas de hoy (canvas `iPadInicio`); solo si la agenda se usa.
+        case today
         var id: String { rawValue }
     }
 
@@ -494,6 +499,11 @@ struct HomeView: View {
                 .id("home.quick")
                 .padding(.horizontal, Metrics.gutter)
                 .padding(.top, 20)
+
+            // 1.4: las citas de hoy (canvas `Main`), solo si la agenda se usa.
+            TodayAppointmentsCard()
+                .padding(.horizontal, Metrics.gutter)
+                .padding(.top, 16)
 
             if showsSalesTax {
                 group(String(localized: "Impuestos"), recorrido: "home.salesTax") { salesTaxCard }
@@ -936,7 +946,15 @@ struct HomeView: View {
         case .results: String(localized: "Resultados")
         case .receivables: String(localized: "Por cobrar")
         case .payables: String(localized: "Por pagar")
+        case .today: String(localized: "Hoy")
         }
+    }
+
+    private var today: TodayAppointments { TodayAppointments(context: modelContext, stored: appointments) }
+
+    /// Las secciones de la columna; «Hoy» solo si la agenda se usa.
+    private var padSections: [PadSection] {
+        PadSection.allCases.filter { $0 != .today || today.isUsed }
     }
 
     /// Columna del resumen: empresa · mes, y las cuatro secciones con icono, detalle y cifra.
@@ -946,7 +964,7 @@ struct HomeView: View {
                 periodMenu(compact: true, prefix: companyName)
                     .padding(.horizontal, 12)
                     .padding(.bottom, 10)
-                ForEach(PadSection.allCases) { section in padItem(section) }
+                ForEach(padSections) { section in padItem(section) }
                 if showsSalesTax {
                     Divider().padding(.horizontal, 12).padding(.vertical, 4)
                     // El icono alineado con el de las secciones (`padItem` tiene 12 de margen; `HomeRow`, 16).
@@ -971,19 +989,21 @@ struct HomeView: View {
     private func padItem(_ section: PadSection) -> some View {
         let selected = padSection == section
         let soonTotal = soonBills.reduce(0) { $0 + $1.balanceDue }
-        let (icon, color, subtitle, subtitleColor, value): (String, Color, String, Color, Int64) = switch section {
+        let (icon, color, subtitle, subtitleColor, value): (String, Color, String, Color, String) = switch section {
         case .cash:
-            ("building.columns", Palette.blue, accountsSummary(short: true), Palette.ink2, ledger.availableCash)
+            ("building.columns", Palette.blue, accountsSummary(short: true), Palette.ink2, ledger.availableCash.moneyWhole)
         case .results:
             ("chart.bar.xaxis", Palette.indigo, margin.map { String(localized: "Ganancia · \($0.lowercased())") } ?? String(localized: "Ganancia del mes"),
-             Palette.ink2, thisMonth.netIncome)
+             Palette.ink2, thisMonth.netIncome.moneyWhole)
         case .receivables:
             ("doc.text", Palette.green,
              overdue.isEmpty ? String(localized: "\(openInvoices.count) facturas abiertas")
                 : String(localized: "\(overdue.count) vencidas · \(overdueTotal.money)"),
-             overdue.isEmpty ? Palette.ink2 : Palette.negative, receivableTotal)
+             overdue.isEmpty ? Palette.ink2 : Palette.negative, receivableTotal.moneyWhole)
         case .payables:
-            ("calendar", Palette.orange, String(localized: "Próximos 14 días"), Palette.ink2, soonTotal)
+            ("calendar", Palette.orange, String(localized: "Próximos 14 días"), Palette.ink2, soonTotal.moneyWhole)
+        case .today:
+            ("calendar.day.timeline.left", Palette.red, today.padSubtitle, Palette.ink2, "\(today.items.count)")
         }
         return Button { padSection = section } label: {
             HStack(spacing: 12) {
@@ -993,7 +1013,7 @@ struct HomeView: View {
                     Text(subtitle).font(.footnote).foregroundStyle(selected ? Palette.onBrandFill.opacity(0.85) : subtitleColor)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                Text(value.moneyWhole).font(.body.weight(.semibold)).monospacedDigit()
+                Text(value).font(.body.weight(.semibold)).monospacedDigit()
             }
             .foregroundStyle(selected ? Palette.onBrandFill : Palette.ink)
             .padding(.horizontal, 12).padding(.vertical, 8)
@@ -1048,6 +1068,13 @@ struct HomeView: View {
                 payablesCard
                 SectionLink(item: .expenses(.bills)) { ExpensesView(fixedSegment: .bills) } label: { Text("Ver todas las facturas por pagar") }
                     .buttonStyle(FillCapsuleButtonStyle(fullWidth: false))
+            case .today:
+                RowGroup {
+                    if today.items.isEmpty { emptyRow(String(localized: "Sin citas hoy")) }
+                    ForEach(today.items) { AppointmentLinkRow(occurrence: $0, customers: customers) }
+                }
+                SectionLink(item: .section(.agenda)) { AgendaView() } label: { Text("Ver la agenda") }
+                    .buttonStyle(FillCapsuleButtonStyle(fullWidth: false))
             }
         }
     }
@@ -1058,6 +1085,7 @@ struct HomeView: View {
         case .results: String(localized: "\(month.start.monthYear) · ingresos, gastos y ganancia")
         case .receivables: String(localized: "\(openInvoices.count) facturas abiertas")
         case .payables: String(localized: "Próximos 14 días · \(soonBills.reduce(0) { $0 + $1.balanceDue }.money)")
+        case .today: Date.now.formatted(.appDateTime.weekday(.wide).day().month(.wide)).sentenceCased + " · " + today.padSubtitle
         }
     }
 

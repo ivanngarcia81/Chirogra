@@ -369,13 +369,14 @@ en verde.
 0. **1.4 en `version-1.4`:** canvas hecho (asistente con **burbuja flotante**, elegida el 25-nov). **Datos de la agenda
    y de los impuestos estimados hechos** (esquema 6: `Appointment`, `EstimatedTaxSetting`, `EstimatedTaxPayment`;
    [DATOS-V6.md](DATOS-V6.md); commit `cd974ed`, sin empujar). **Pantallas
-   de la agenda, primera tanda** (25-nov, sin commitear): `Agenda/` con Día (franjas), Semana (tira de días) y Lista
+   de la agenda, primera tanda** (25-nov, commit `3d0fb18`): `Agenda/` con Día (franjas), Semana (tira de días) y Lista
    («Por facturar»), ficha de la cita, editor (pregunta centrada «Solo esta / Esta y las siguientes»), «Crear factura»
    y «Crear estimado» desde la cita (`InvoiceEditorView(appointment:)`), Agenda en la barra lateral (después de
    Ventas) y en Más del iPhone, y citas en los datos de ejemplo. QA: `-qa.seccion agenda`, `-agenda.mode day|week|list`,
-   en el iPhone `-phone.tabs sales,agenda,expenses -qa.pestana agenda`. Falta de la agenda: «Hoy» en Inicio, citas en la
-   ficha del cliente, la semana del iPad en 7 columnas y el inspector del Mac, avisos y Calendario; después, las
-   pantallas de impuestos estimados. Los trámites del usuario (clave de Anthropic y
+   en el iPhone `-phone.tabs sales,agenda,expenses -qa.pestana agenda`. Después (sin commitear): «Hoy» en Inicio
+   (tarjeta del iPhone y sección de la columna del iPad, solo si la agenda se usa) y «Citas» en la ficha del cliente
+   (`Agenda/AgendaCards.swift`). Falta de la agenda: la semana del iPad en 7 columnas y el inspector del Mac, avisos y
+   Calendario; después, las pantallas de impuestos estimados. Los trámites del usuario (clave de Anthropic y
    Supabase «chirogra») hacen falta para el asistente (§4.4).
 1. **Informes de testers:** leerlos, arreglar desde la causa, enseñarle capturas antes/después y esperar su «súbelo».
    Los xlsx de Beta Family se leen descomprimiéndolos (no hay openpyxl); las fotos son enlaces firmados en

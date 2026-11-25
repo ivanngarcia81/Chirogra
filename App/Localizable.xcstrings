@@ -412,6 +412,26 @@
     "%@ · %@%%" : {
       "shouldTranslate" : false
     },
+    "%@ · %lld citas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · %lld appointments"
+          }
+        }
+      }
+    },
+    "%@ · 1 cita" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · 1 appointment"
+          }
+        }
+      }
+    },
     "%@ · adjunto" : {
       "localizations" : {
         "en" : {
@@ -592,6 +612,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ · default"
+          }
+        }
+      }
+    },
+    "%@ · próxima %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · next at %@"
           }
         }
       }
@@ -1240,6 +1270,16 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "%lld citas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld appointments"
           }
         }
       }
@@ -2784,6 +2824,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "1 unread notice"
+          }
+        }
+      }
+    },
+    "1 cita" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 appointment"
           }
         }
       }
@@ -7043,6 +7093,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Appointment invoiced: %@"
+          }
+        }
+      }
+    },
+    "Citas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appointments"
+          }
+        }
+      }
+    },
+    "Citas de hoy" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today’s appointments"
           }
         }
       }
@@ -26127,12 +26197,32 @@
         }
       }
     },
+    "Sin citas con este cliente." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No appointments with this customer."
+          }
+        }
+      }
+    },
     "Sin citas este día" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "No appointments this day"
+          }
+        }
+      }
+    },
+    "Sin citas hoy" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No appointments today"
           }
         }
       }
@@ -30010,6 +30100,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "View Profit and Loss"
+          }
+        }
+      }
+    },
+    "Ver la agenda" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View Schedule"
           }
         }
       }

@@ -292,6 +292,7 @@ struct CustomerDetailView: View {
                             foot: averageDaysToPay.map { String(localized: "Paga en \($0) días de promedio") }),
                 ])
                 if customer.creditBalance > 0 { creditCard }
+                CustomerAppointmentsSection(customer: customer)
                 invoiceTable
                 if !estimates.isEmpty { estimateTable }
                 ViewThatFits(in: .horizontal) {
@@ -536,6 +537,8 @@ struct CustomerDetailView: View {
                 Text(balanceFootnote).font(.footnote).foregroundStyle(Palette.ink2)
                     .padding(.horizontal, Metrics.cardPadding).padding(.top, 7)
                 if customer.creditBalance > 0 { creditCard.padding(.top, 20) }
+                // 1.4: sus citas (canvas «Chirogra 1.4», `ClienteCitas`).
+                CustomerAppointmentsSection(customer: customer).padding(.top, 22)
                 FilterPicker(title: String(localized: "Información del cliente"), options: Tab.allCases, selection: $tab, label: \.localizedTitle)
                     .padding(.top, 20)
                 Group {
