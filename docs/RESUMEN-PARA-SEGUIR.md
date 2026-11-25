@@ -375,8 +375,11 @@ en verde.
    Ventas) y en Más del iPhone, y citas en los datos de ejemplo. QA: `-qa.seccion agenda`, `-agenda.mode day|week|list`,
    en el iPhone `-phone.tabs sales,agenda,expenses -qa.pestana agenda`. Después (commit `6d966ed`): «Hoy» en Inicio
    (tarjeta del iPhone y sección de la columna del iPad, solo si la agenda se usa) y «Citas» en la ficha del cliente
-   (`Agenda/AgendaCards.swift`). Falta de la agenda: la semana del iPad en 7 columnas y el inspector del Mac, avisos y
-   Calendario; después, las pantallas de impuestos estimados. Los trámites del usuario (clave de Anthropic y
+   (`Agenda/AgendaCards.swift`). **Avisos** (commiteados): notificaciones
+   locales de los próximos 14 días (máx. 50) que se rehacen al cambiar una cita (`AppointmentReminderScheduler` en
+   `AppShell`); el permiso se pide al guardar la primera cita con aviso, no al abrir; se apagan por aparato en el «⋯» de
+   la Agenda. Falta de la agenda: la semana del iPad en 7 columnas, el inspector del Mac y Calendario (pendiente de su
+   decisión: con permiso de «solo escritura» no se pueden cambiar ni borrar los eventos ya puestos); después, las pantallas de impuestos estimados. Los trámites del usuario (clave de Anthropic y
    Supabase «chirogra») hacen falta para el asistente (§4.4).
 1. **Informes de testers:** leerlos, arreglar desde la causa, enseñarle capturas antes/después y esperar su «súbelo».
    Los xlsx de Beta Family se leen descomprimiéndolos (no hay openpyxl); las fotos son enlaces firmados en

@@ -125,6 +125,7 @@ struct AgendaView: View {
     @AppStorage("agenda.mode") private var mode: Mode = .day
     @State private var day = Calendar.current.startOfDay(for: .now)
     @State private var creating = false
+    @AppStorage(AppointmentReminders.enabledKey) private var remindersOn = true
     @ScaledMetric(relativeTo: .body) private var hourHeight: CGFloat = 60
 
     private var calendar: Calendar { .current }
@@ -151,6 +152,13 @@ struct AgendaView: View {
             }
             ToolbarItem(placement: .primaryAction) {
                 Button { creating = true } label: { Label("Nueva cita", systemImage: "plus") }
+            }
+            ToolbarItem(placement: .primaryAction) {
+                Menu {
+                    Toggle("Avisos de citas en este aparato", isOn: $remindersOn)
+                } label: {
+                    Label("Más opciones", systemImage: "ellipsis")
+                }
             }
         }
         .sheet(isPresented: $creating) {

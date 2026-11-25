@@ -4876,6 +4876,16 @@
         }
       }
     },
+    "Avisos de citas en este aparato" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appointment alerts on this device"
+          }
+        }
+      }
+    },
     "Avisos, %lld sin leer" : {
       "localizations" : {
         "en" : {

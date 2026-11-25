@@ -456,6 +456,8 @@ struct AppShell: View {
             split
             #endif
         }
+        // 1.4: los avisos de las citas de la empresa activa, siempre al día.
+        .background { AppointmentReminderScheduler() }
         // Cambiar de empresa con un editor sin guardar pregunta antes, como cambiar de pantalla (`CompanyHub.select`).
         .onAppear { companyHub.unsavedChanges = unsavedChanges }
         // Panel de clientes: al arrancar, la ruta de un pendiente y «Todos los clientes» (`ClientsRouter`).

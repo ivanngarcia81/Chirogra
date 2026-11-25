@@ -67,6 +67,7 @@ struct AppointmentEditorView: View {
                         .multilineTextAlignment(.trailing)
                         .accessibilityLabel("Servicio o título")
                 }
+                .fieldRow()
             }
             Section {
                 DatePicker("Fecha y hora", selection: $start, displayedComponents: [.date, .hourAndMinute])
@@ -80,6 +81,7 @@ struct AppointmentEditorView: View {
                         .multilineTextAlignment(.trailing)
                         .accessibilityLabel("Lugar")
                 }
+                .fieldRow()
             }
             Section {
                 Picker("Recordatorio", selection: $reminder) {
@@ -185,6 +187,14 @@ struct AppointmentEditorView: View {
             }
             unsavedChanges?.remove(editorToken)
             onSaved?(key)
+            // La primera cita con aviso pide el permiso del sistema; luego `AppointmentReminderScheduler` programa.
+            if reminder >= 0, AppointmentReminders.isEnabled {
+                let context = self.context
+                Task { @MainActor in
+                    await AppointmentReminders.requestAuthorizationIfNeeded()
+                    await AppointmentReminders.reschedule(context: context)
+                }
+            }
             dismiss()
         } catch {
             errorMessage = error.localizedDescription
