@@ -373,7 +373,7 @@ en verde.
    («Por facturar»), ficha de la cita, editor (pregunta centrada «Solo esta / Esta y las siguientes»), «Crear factura»
    y «Crear estimado» desde la cita (`InvoiceEditorView(appointment:)`), Agenda en la barra lateral (después de
    Ventas) y en Más del iPhone, y citas en los datos de ejemplo. QA: `-qa.seccion agenda`, `-agenda.mode day|week|list`,
-   en el iPhone `-phone.tabs sales,agenda,expenses -qa.pestana agenda`. Después (sin commitear): «Hoy» en Inicio
+   en el iPhone `-phone.tabs sales,agenda,expenses -qa.pestana agenda`. Después (commit `6d966ed`): «Hoy» en Inicio
    (tarjeta del iPhone y sección de la columna del iPad, solo si la agenda se usa) y «Citas» en la ficha del cliente
    (`Agenda/AgendaCards.swift`). Falta de la agenda: la semana del iPad en 7 columnas y el inspector del Mac, avisos y
    Calendario; después, las pantallas de impuestos estimados. Los trámites del usuario (clave de Anthropic y
