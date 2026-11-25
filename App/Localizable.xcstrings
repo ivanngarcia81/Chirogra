@@ -11456,6 +11456,16 @@
         }
       }
     },
+    "Elige una cita" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose an Appointment"
+          }
+        }
+      }
+    },
     "Elige una cuenta" : {
       "localizations" : {
         "en" : {
@@ -16854,6 +16864,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "What you owe on that date"
+          }
+        }
+      }
+    },
+    "Lo que elijas en la agenda se abre aquí." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What you choose in the schedule opens here."
           }
         }
       }

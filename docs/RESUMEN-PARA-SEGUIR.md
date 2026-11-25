@@ -383,7 +383,9 @@ en verde.
    un calendario propio «Chirogra» y cada evento lleva `chirogra://cita/<empresa>/<cita>` en su URL, así que se ponen al
    día (y se quitan al cancelar o borrar) sin duplicarse entre aparatos ni al reinstalar (`AppointmentCalendar`
    en `Agenda/AppointmentCalendar.swift`; `NSCalendarsFullAccessUsageDescription` y `ENABLE_RESOURCE_ACCESS_CALENDARS` en
-   project.yml). Falta de la agenda: la semana del iPad en 7 columnas y el inspector del Mac; después, las pantallas de impuestos estimados. Los trámites del usuario (clave de Anthropic y
+   project.yml). **iPad y Mac** (commiteado): Día y Lista en
+   una tarjeta con la ficha de la cita al lado (`AppointmentDetailView(embedded:)`) y la Semana en 7 columnas con
+   franjas (`WeekGrid`); visto en el iPad de 11″, el Mac solo compilado. La agenda queda completa; después, las pantallas de impuestos estimados. Los trámites del usuario (clave de Anthropic y
    Supabase «chirogra») hacen falta para el asistente (§4.4).
 1. **Informes de testers:** leerlos, arreglar desde la causa, enseñarle capturas antes/después y esperar su «súbelo».
    Los xlsx de Beta Family se leen descomprimiéndolos (no hay openpyxl); las fotos son enlaces firmados en

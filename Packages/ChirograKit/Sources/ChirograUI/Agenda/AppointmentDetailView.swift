@@ -8,6 +8,8 @@ import SwiftUI
 /// factura», cancelada o no vino → «Volver a programar»); las demás acciones; y lugar, aviso, repetición y notas.
 struct AppointmentDetailView: View {
     @State var key: AppointmentKey
+    /// iPad y Mac: al lado de la agenda (sin título propio, que es el de la Agenda).
+    var embedded = false
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     /// Solo para redibujar al cambiar algo.
@@ -35,7 +37,7 @@ struct AppointmentDetailView: View {
             }
         }
         .screenBackground()
-        .inlineTitle()
+        .modifier(DetailTitle(embedded: embedded))
     }
 
     private func customer(_ occurrence: AppointmentOccurrence) -> Customer? {
@@ -125,7 +127,7 @@ struct AppointmentDetailView: View {
         .formStyle(.grouped)
         .scrollContentBackground(.hidden)
         .padReadingList(PadReading.detail)
-        .navigationTitle(appointment.title.isEmpty ? String(localized: "Cita") : appointment.title)
+        .modifier(DetailTitle(embedded: embedded, title: appointment.title.isEmpty ? String(localized: "Cita") : appointment.title))
         .toolbar {
             ToolbarItem(placement: .primaryAction) { Button("Editar") { editing = true } }
         }
@@ -182,6 +184,22 @@ struct AppointmentDetailView: View {
             dismiss()
         } catch {
             errorMessage = error.localizedDescription
+        }
+    }
+}
+
+/// Título de la ficha: el de la cita y en línea; nada si va al lado de la agenda.
+private struct DetailTitle: ViewModifier {
+    let embedded: Bool
+    var title: String?
+
+    func body(content: Content) -> some View {
+        if embedded {
+            content
+        } else if let title {
+            content.navigationTitle(title)
+        } else {
+            content.inlineTitle()
         }
     }
 }

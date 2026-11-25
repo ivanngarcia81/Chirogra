@@ -129,14 +129,30 @@ struct AgendaView: View {
     @AppStorage(AppointmentCalendar.enabledKey) private var calendarOn = false
     @State private var calendarDenied = false
     @ScaledMetric(relativeTo: .body) private var hourHeight: CGFloat = 60
+    #if os(iOS)
+    @LayoutSizeClass private var sizeClass
+    #endif
+    /// iPad y Mac: la cita abierta al lado (canvas `iPadAgenda`).
+    @State private var selected: AppointmentKey?
 
     private var calendar: Calendar { .current }
+
+    /// iPad (columna ancha) y Mac: lista o día en una tarjeta con la ficha al lado, y la semana en 7 columnas.
+    private var isWide: Bool {
+        #if os(macOS)
+        true
+        #else
+        sizeClass == .regular
+        #endif
+    }
     private var books: Bookkeeper { Bookkeeper(context: context) }
 
     var body: some View {
         Group {
             if stored.isEmpty {
                 emptyState
+            } else if isWide {
+                wideBody
             } else {
                 switch mode {
                 case .day: dayView
@@ -212,11 +228,71 @@ struct AgendaView: View {
         FilterPicker(title: String(localized: "Vista de la agenda"), options: Mode.allCases, selection: $mode, label: \.title)
     }
 
+    @ViewBuilder
     private func link(_ occurrence: AppointmentOccurrence, trailing: String? = nil) -> some View {
-        NavigationLink {
-            AppointmentDetailView(key: occurrence.key)
-        } label: {
-            AppointmentRow(occurrence: occurrence, customerName: customerName(occurrence), trailing: trailing)
+        if isWide {
+            let isOn = selected == occurrence.key
+            Button { selected = occurrence.key } label: {
+                AppointmentRow(occurrence: occurrence, customerName: customerName(occurrence), trailing: trailing)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .listRowBackground(isOn ? Palette.brandWash : Palette.surface)
+            .accessibilityAddTraits(isOn ? .isSelected : [])
+        } else {
+            NavigationLink {
+                AppointmentDetailView(key: occurrence.key)
+            } label: {
+                AppointmentRow(occurrence: occurrence, customerName: customerName(occurrence), trailing: trailing)
+            }
+        }
+    }
+
+    // MARK: iPad y Mac
+
+    @ViewBuilder
+    private var wideBody: some View {
+        if mode == .week {
+            weekGridView
+        } else {
+            HStack(alignment: .top, spacing: 16) {
+                Group {
+                    if mode == .day { dayView } else { listView }
+                }
+                .frame(width: 400)
+                .background(Palette.masterColumn, in: RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous))
+                Group {
+                    if let selected {
+                        AppointmentDetailView(key: selected, embedded: true).id(selected)
+                    } else {
+                        ContentUnavailableView("Elige una cita", systemImage: "calendar",
+                                               description: Text("Lo que elijas en la agenda se abre aquí."))
+                    }
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+            .padding(.horizontal, 8)
+            .padding(.bottom, 8)
+        }
+    }
+
+    /// Semana del iPad y el Mac (canvas `iPadAgendaSemana`, `MacAgenda`): 7 columnas con las franjas por hora.
+    private var weekGridView: some View {
+        let week = occurrences(from: weekStart, days: 7).filter { $0.status != .cancelled }
+        let firstHour = min(8, week.map { calendar.component(.hour, from: $0.start) }.min() ?? 8)
+        let lastHour = max(19, week.map { calendar.component(.hour, from: $0.end) + (calendar.component(.minute, from: $0.end) > 0 ? 1 : 0) }.max() ?? 19)
+        return ScrollView {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(spacing: 16) {
+                    modePicker.frame(maxWidth: 360)
+                    Spacer()
+                    dayStepper(title: String(localized: "Semana del \(weekStart.dayMonth)"), unit: .weekOfYear).frame(maxWidth: 360)
+                }
+                WeekGrid(start: weekStart, items: week, firstHour: firstHour, lastHour: min(24, lastHour), hourHeight: hourHeight,
+                         name: customerName)
+            }
+            .padding(.horizontal, Metrics.gutter)
+            .padding(.bottom, 24)
         }
     }
 
@@ -235,7 +311,8 @@ struct AgendaView: View {
                         .frame(maxWidth: .infinity).padding(.vertical, 8)
                 }
                 DayGrid(items: items, firstHour: firstHour, lastHour: min(24, lastHour), hourHeight: hourHeight,
-                        isToday: calendar.isDateInToday(day), name: customerName)
+                        isToday: calendar.isDateInToday(day), name: customerName,
+                        onSelect: isWide ? { selected = $0.key } : nil, selectedID: selected)
             }
             .padding(.horizontal, Metrics.gutter)
             .padding(.bottom, 24)
@@ -352,6 +429,9 @@ private struct DayGrid: View {
     let hourHeight: CGFloat
     let isToday: Bool
     let name: (AppointmentOccurrence) -> String?
+    /// iPad y Mac: elegir abre la ficha al lado; si no, se navega a ella.
+    var onSelect: ((AppointmentOccurrence) -> Void)? = nil
+    var selectedID: AppointmentKey? = nil
     @ScaledMetric(relativeTo: .footnote) private var labelWidth: CGFloat = 58
 
     private var calendar: Calendar { .current }
@@ -361,28 +441,7 @@ private struct DayGrid: View {
         return CGFloat((parts.hour ?? 0) - firstHour) * hourHeight + CGFloat(parts.minute ?? 0) / 60 * hourHeight
     }
 
-    /// Carril de cada cita (0, 1…) y cuántos carriles tiene su grupo de citas que se pisan.
-    private var lanes: [String: (lane: Int, of: Int)] {
-        var result: [String: (Int, Int)] = [:]
-        var group: [AppointmentOccurrence] = []
-        var groupEnd = Date.distantPast
-        var laneEnds: [Date] = []
-        func close() {
-            let count = max(1, laneEnds.count)
-            for item in group { result[item.id] = (result[item.id]?.0 ?? 0, count) }
-            group = []; laneEnds = []
-        }
-        for item in items.sorted(by: { $0.start < $1.start }) {
-            if item.start >= groupEnd { close() }
-            let lane = laneEnds.firstIndex { $0 <= item.start } ?? laneEnds.count
-            if lane == laneEnds.count { laneEnds.append(item.end) } else { laneEnds[lane] = item.end }
-            result[item.id] = (lane, 0)
-            group.append(item)
-            groupEnd = max(groupEnd, item.end)
-        }
-        close()
-        return result
-    }
+    private var lanes: [String: (lane: Int, of: Int)] { AgendaLayout.lanes(items) }
 
     var body: some View {
         let hours = Array(firstHour..<lastHour)
@@ -408,13 +467,11 @@ private struct DayGrid: View {
                     let place = lanes[item.id] ?? (0, 1)
                     let laneWidth = width / CGFloat(max(1, place.of))
                     let height = max(CGFloat(item.appointment.durationMinutes) / 60 * hourHeight, 44)
-                    NavigationLink {
-                        AppointmentDetailView(key: item.key)
-                    } label: {
-                        block(item, tall: height >= hourHeight * 0.9)
+                    AgendaBlockLink(item: item, onSelect: onSelect) {
+                        AgendaBlock(item: item, name: name(item), tall: height >= hourHeight * 0.9,
+                                    isSelected: selectedID == item.key)
                             .frame(width: laneWidth - 4, height: height - 3, alignment: .topLeading)
                     }
-                    .buttonStyle(.plain)
                     .offset(x: left + CGFloat(place.lane) * laneWidth, y: offset(item.start) + 1)
                 }
                 if isToday, (firstHour..<lastHour).contains(calendar.component(.hour, from: .now)) {
@@ -429,29 +486,6 @@ private struct DayGrid: View {
             }
         }
         .frame(height: CGFloat(hours.count) * hourHeight)
-    }
-
-    private func block(_ item: AppointmentOccurrence, tall: Bool) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
-            HStack(alignment: .firstTextBaseline, spacing: 6) {
-                Text(name(item) ?? item.appointment.title).font(.subheadline.weight(.semibold)).lineLimit(1)
-                Spacer(minLength: 4)
-                StatusChip(text: item.statusTitle, foreground: item.statusColor, compact: true, dot: item.statusDot)
-            }
-            if tall {
-                Text(name(item) == nil ? item.timeRange : "\(item.appointment.title) · \(item.timeRange)")
-                    .font(.footnote).foregroundStyle(Palette.ink2).lineLimit(2)
-            }
-        }
-        .foregroundStyle(Palette.ink)
-        .padding(.horizontal, 10)
-        .padding(.vertical, 6)
-        .background(Palette.brandWash, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-        .overlay(alignment: .leading) {
-            Capsule().fill(item.statusDot).frame(width: 3).padding(.vertical, 6)
-        }
-        .accessibilityElement(children: .combine)
-        .accessibilityHint(Text("Abre la cita"))
     }
 }
 
@@ -485,6 +519,171 @@ private struct WeekStrip: View {
                 .accessibilityLabel(Text("\(date.formatted(.appDateTime.weekday(.wide).day().month(.wide))), \(count) citas"))
                 .accessibilityAddTraits(isOn ? .isSelected : [])
             }
+        }
+    }
+}
+
+enum AgendaLayout {
+    /// Carril de cada cita (0, 1…) y cuántos carriles tiene su grupo de citas que se pisan.
+    static func lanes(_ items: [AppointmentOccurrence]) -> [String: (lane: Int, of: Int)] {
+        var result: [String: (Int, Int)] = [:]
+        var group: [AppointmentOccurrence] = []
+        var groupEnd = Date.distantPast
+        var laneEnds: [Date] = []
+        func close() {
+            let count = max(1, laneEnds.count)
+            for item in group { result[item.id] = (result[item.id]?.0 ?? 0, count) }
+            group = []; laneEnds = []
+        }
+        for item in items.sorted(by: { $0.start < $1.start }) {
+            if item.start >= groupEnd { close() }
+            let lane = laneEnds.firstIndex { $0 <= item.start } ?? laneEnds.count
+            if lane == laneEnds.count { laneEnds.append(item.end) } else { laneEnds[lane] = item.end }
+            result[item.id] = (lane, 0)
+            group.append(item)
+            groupEnd = max(groupEnd, item.end)
+        }
+        close()
+        return result
+    }
+}
+
+/// Un bloque de cita en las franjas: cliente, estado y, si cabe, servicio y hora.
+private struct AgendaBlock: View {
+    let item: AppointmentOccurrence
+    let name: String?
+    let tall: Bool
+    var isSelected = false
+    /// Columna estrecha (la semana): el nombre en dos líneas y la hora con el punto del estado, sin la palabra.
+    var narrow = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            if narrow {
+                Text(name ?? item.appointment.title).font(.footnote.weight(.semibold)).lineLimit(tall ? 2 : 1)
+                HStack(spacing: 4) {
+                    StatusDot(color: item.statusDot)
+                    Text(item.start.formatted(.appDateTime.hour().minute())).font(.caption).foregroundStyle(Palette.ink2)
+                        .lineLimit(1).monospacedDigit()
+                }
+            } else {
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                Text(name ?? item.appointment.title).font(.subheadline.weight(.semibold)).lineLimit(1)
+                Spacer(minLength: 4)
+                StatusChip(text: item.statusTitle, foreground: item.statusColor, compact: true, dot: item.statusDot)
+            }
+            if tall {
+                Text(name == nil ? item.timeRange : "\(item.appointment.title) · \(item.timeRange)")
+                    .font(.footnote).foregroundStyle(Palette.ink2).lineLimit(2)
+            }
+            }
+        }
+        .foregroundStyle(Palette.ink)
+        .padding(.horizontal, narrow ? 7 : 10)
+        .padding(.vertical, 6)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .background(Palette.brandWash, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .overlay {
+            if isSelected { RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(Palette.brand, lineWidth: 2) }
+        }
+        .overlay(alignment: .leading) {
+            Capsule().fill(item.statusDot).frame(width: 3).padding(.vertical, 6)
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityHint(Text("Abre la cita"))
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+}
+
+/// Toque en un bloque: en el iPad y el Mac elige la cita (la ficha está al lado); en el iPhone, navega a ella.
+private struct AgendaBlockLink<Label: View>: View {
+    let item: AppointmentOccurrence
+    let onSelect: ((AppointmentOccurrence) -> Void)?
+    @ViewBuilder let label: Label
+
+    var body: some View {
+        if let onSelect {
+            Button { onSelect(item) } label: { label }.buttonStyle(.plain)
+        } else {
+            NavigationLink { AppointmentDetailView(key: item.key) } label: { label }.buttonStyle(.plain)
+        }
+    }
+}
+
+/// La semana en 7 columnas con las franjas por hora (canvas `iPadAgendaSemana`, `MacAgenda`). Tocar una cita la abre.
+private struct WeekGrid: View {
+    let start: Date
+    let items: [AppointmentOccurrence]
+    let firstHour: Int
+    let lastHour: Int
+    let hourHeight: CGFloat
+    let name: (AppointmentOccurrence) -> String?
+    @ScaledMetric(relativeTo: .footnote) private var labelWidth: CGFloat = 58
+
+    private var calendar: Calendar { .current }
+
+    private func offset(_ date: Date) -> CGFloat {
+        let parts = calendar.dateComponents([.hour, .minute], from: date)
+        return CGFloat((parts.hour ?? 0) - firstHour) * hourHeight + CGFloat(parts.minute ?? 0) / 60 * hourHeight
+    }
+
+    var body: some View {
+        let days = (0..<7).compactMap { calendar.date(byAdding: .day, value: $0, to: start) }
+        let hours = Array(firstHour..<lastHour)
+        VStack(spacing: 6) {
+            HStack(spacing: 4) {
+                Color.clear.frame(width: labelWidth)
+                ForEach(days, id: \.self) { day in
+                    let today = calendar.isDateInToday(day)
+                    HStack(spacing: 4) {
+                        Text(day.formatted(.appDateTime.weekday(.abbreviated))).font(.footnote).foregroundStyle(Palette.ink2)
+                        Text(day.formatted(.appDateTime.day())).font(.headline).monospacedDigit()
+                            .foregroundStyle(today ? Palette.onBrandFill : Palette.ink)
+                            .padding(.horizontal, today ? 7 : 0).padding(.vertical, today ? 2 : 0)
+                            .background(today ? Palette.brandFill : .clear, in: Capsule())
+                    }
+                    .frame(maxWidth: .infinity)
+                    .accessibilityElement(children: .combine)
+                }
+            }
+            HStack(alignment: .top, spacing: 4) {
+                VStack(spacing: 0) {
+                    ForEach(hours, id: \.self) { hour in
+                        Text(calendar.date(bySettingHour: hour, minute: 0, second: 0, of: .now)?.formatted(.appDateTime.hour()) ?? "")
+                            .font(.caption).foregroundStyle(Palette.ink2).monospacedDigit()
+                            .frame(width: labelWidth, height: hourHeight, alignment: .topTrailing)
+                            .offset(y: -7)
+                    }
+                }
+                .accessibilityHidden(true)
+                ForEach(days, id: \.self) { day in
+                    let dayItems = items.filter { calendar.isDate($0.start, inSameDayAs: day) }
+                    let lanes = AgendaLayout.lanes(dayItems)
+                    ZStack(alignment: .topLeading) {
+                        VStack(spacing: 0) {
+                            ForEach(hours, id: \.self) { _ in
+                                Rectangle().fill(Palette.separator).frame(height: 0.5).frame(height: hourHeight, alignment: .top)
+                            }
+                        }
+                        .accessibilityHidden(true)
+                        GeometryReader { proxy in
+                            ForEach(dayItems) { item in
+                                let place = lanes[item.id] ?? (0, 1)
+                                let laneWidth = proxy.size.width / CGFloat(max(1, place.of))
+                                let height = max(CGFloat(item.appointment.durationMinutes) / 60 * hourHeight, 40)
+                                AgendaBlockLink(item: item, onSelect: nil) {
+                                    AgendaBlock(item: item, name: name(item), tall: height >= hourHeight * 0.9, narrow: true)
+                                        .frame(width: laneWidth - 3, height: height - 3, alignment: .topLeading)
+                                }
+                                .offset(x: CGFloat(place.lane) * laneWidth, y: offset(item.start) + 1)
+                            }
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                    .background(calendar.isDateInToday(day) ? Palette.brandWash.opacity(0.35) : .clear)
+                }
+            }
+            .frame(height: CGFloat(hours.count) * hourHeight)
         }
     }
 }
