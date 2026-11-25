@@ -27,7 +27,7 @@ enum ClientRoute: Equatable {
         case .home, .notices: .section(.home)
         case .bankInbox: .banking(.inbox)
         case .overdueInvoices: .sales(.invoices)
-        case .salesTax, .accountantPackage: .section(.taxes)
+        case .salesTax, .accountantPackage: .taxes(.salesTax)
         case .reconcile: .banking(.reconcile)
         case .periodClose: .accounting(.close)
         }

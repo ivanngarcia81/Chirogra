@@ -27,6 +27,7 @@ struct HomeView: View {
     @CompanyQuery private var customers: [Customer]
     /// 1.4: la agenda («Hoy»).
     @CompanyQuery(sort: \Appointment.start) private var appointments: [Appointment]
+    @CompanyQuery private var taxSettings: [EstimatedTaxSetting]
     @Environment(\.modelContext) private var modelContext
     @CompanyQuery private var payments: [PaymentReceived]
     /// Para decir en «Configura tu sales tax» qué impuesto cobran las facturas.
@@ -514,6 +515,11 @@ struct HomeView: View {
                           pickerOnTop: true)
             }
 
+            // 1.4: apartado para impuestos estimados (canvas `Main`), salvo que esté apagado.
+            if EstimatedTaxCard.isShown(settings: taxSettings, company: companies.first) {
+                group(String(localized: "Apartado para impuestos"), recorrido: "home.setAside") { EstimatedTaxCard() }
+            }
+
             group(String(localized: "Por cobrar"), recorrido: "home.receivables") {
                 receivablesCard(limit: 3)
             } trailing: { seeAllInvoices }
@@ -841,7 +847,7 @@ struct HomeView: View {
         case .settled: defaultTaxLabel ?? String(localized: "No debes nada")
         case .credit: String(localized: "Se descuenta de la próxima declaración")
         }
-        return SectionLink(item: .section(.taxes)) { TaxesView() } label: {
+        return SectionLink(item: .taxes(.salesTax)) { TaxesView() } label: {
             HomeRow(title: position.title, subtitle: subtitle) {
                 IconTile(systemImage: "percent", foreground: Palette.red)
             } trailing: {
@@ -1542,7 +1548,7 @@ struct HomeView: View {
         let enabled = step.action != nil && (!step.done || step.opensWhenDone)
         switch step.action {
         case .taxes where enabled:
-            SectionLink(item: .section(.taxes)) { TaxesView(tab: .rates) } label: { stepLabel(step, enabled: true) }
+            SectionLink(item: .taxes(.salesTax)) { TaxesView(tab: .rates) } label: { stepLabel(step, enabled: true) }
                 .buttonStyle(.plain)
                 .modifier(StepAccessibility(done: step.done))
         case .invoice(let invoice) where enabled:

@@ -311,7 +311,7 @@ struct ReportsView: View {
             case .salesTax:
                 ToolbarItem(placement: .primaryAction) { quarterPicker }
                 ToolbarItem(placement: .primaryAction) {
-                    SectionLink(item: .section(.taxes)) { TaxesView() } label: {
+                    SectionLink(item: .taxes(.salesTax)) { TaxesView() } label: {
                         HStack(spacing: 6) { Image(systemName: "checkmark.circle"); Text("Registrar pago") }
                     }
                     .headerButton()
@@ -611,6 +611,8 @@ struct ReportsView: View {
     private var phoneContent: some View {
         Text(subtitle).font(.subheadline).foregroundStyle(Palette.ink2)
             .padding(.bottom, 8)
+        // 1.4: apartado para impuestos (canvas «Chirogra 1.4», `Reportes`), arriba de Reportes del iPhone.
+        if fixedKind == nil { EstimatedTaxCard(showsTitle: true).padding(.bottom, 16) }
         switch kind {
         case .income: phoneIncome
         case .balance: phoneBalance
@@ -1793,7 +1795,7 @@ struct ReportsView: View {
                         .buttonStyle(.primary)
                         .disabled(row.balance <= 0)
                 }
-                SectionLink(item: .section(.taxes)) { TaxesView() } label: { Text("Ver tasas") }
+                SectionLink(item: .taxes(.salesTax)) { TaxesView() } label: { Text("Ver tasas") }
                     .buttonStyle(.secondary)
             }
         }

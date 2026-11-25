@@ -15,6 +15,8 @@ enum PhoneTool: Hashable, Identifiable {
     case reports
     case report(ReportsView.Kind)
     case taxes, taxRates, deductions
+    /// 1.4: impuestos estimados (1040-ES).
+    case estimatedTax
     case chartOfAccounts, journal, ledger, periodClose, auditLog
     case companies
 
@@ -22,7 +24,7 @@ enum PhoneTool: Hashable, Identifiable {
     static let groups: [(title: String, tools: [PhoneTool])] = [
         (String(localized: "Día a día"), [.sales, .agenda, .expenses, .banking]),
         (String(localized: "Reportes"), [.reports] + ReportsView.Kind.allCases.map(PhoneTool.report)),
-        (String(localized: "Impuestos"), [.taxes, .taxRates, .deductions]),
+        (String(localized: "Impuestos"), [.taxes, .estimatedTax, .taxRates, .deductions]),
         (String(localized: "Contabilidad"), [.journal, .chartOfAccounts, .ledger, .periodClose, .auditLog]),
         (String(localized: "Empresas"), [.companies]),
     ]
@@ -37,6 +39,7 @@ enum PhoneTool: Hashable, Identifiable {
         case .reports: "reports"
         case .report(let kind): "report.\(kind)"
         case .taxes: "taxes"
+        case .estimatedTax: "taxes.estimated"
         case .taxRates: "taxes.rates"
         case .deductions: "taxes.deductions"
         case .chartOfAccounts: "chartOfAccounts"
@@ -74,6 +77,7 @@ enum PhoneTool: Hashable, Identifiable {
         case .reports: String(localized: "Todos los reportes")
         case .report(let kind): kind.fullTitle
         case .taxes: String(localized: "Impuestos")
+        case .estimatedTax: String(localized: "Impuestos estimados")
         case .taxRates: String(localized: "Tasas de sales tax")
         case .deductions: String(localized: "Deducibles")
         case .chartOfAccounts: String(localized: "Plan de cuentas")
@@ -94,6 +98,7 @@ enum PhoneTool: Hashable, Identifiable {
         case .report(.cashFlow): String(localized: "Flujo", comment: "Pestaña del iPhone: flujo de efectivo")
         case .report(let kind): kind.localizedTitle
         case .taxRates: String(localized: "Tasas")
+        case .estimatedTax: String(localized: "tab.estimatedTax", defaultValue: "Estimados", comment: "Pestaña del iPhone: impuestos estimados")
         case .chartOfAccounts: String(localized: "Cuentas")
         case .journal: String(localized: "Diario")
         case .ledger: String(localized: "Mayor")
@@ -112,6 +117,7 @@ enum PhoneTool: Hashable, Identifiable {
         case .reports: "chart.bar.doc.horizontal"
         case .report(let kind): kind.moreSymbol
         case .taxes: "percent"
+        case .estimatedTax: "building.columns.circle"
         case .taxRates: "list.number"
         case .deductions: "dollarsign"
         case .chartOfAccounts: "list.bullet.indent"
@@ -132,6 +138,7 @@ enum PhoneTool: Hashable, Identifiable {
         case .reports: Palette.green
         case .report(let kind): kind.moreColor
         case .taxes: Palette.red
+        case .estimatedTax: Palette.indigo
         case .taxRates: Palette.pink
         case .deductions: Palette.green
         case .chartOfAccounts: Palette.indigo
@@ -153,6 +160,7 @@ enum PhoneTool: Hashable, Identifiable {
         case .reports: ReportsView()
         case .report(let kind): ReportsView(fixedKind: kind)
         case .taxes: TaxesView()
+        case .estimatedTax: EstimatedTaxView()
         case .taxRates: TaxesView(tab: .rates)
         case .deductions: TaxesView(tab: .deductions)
         case .chartOfAccounts: ChartOfAccountsView()

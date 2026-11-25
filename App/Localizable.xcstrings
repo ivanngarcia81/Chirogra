@@ -1022,6 +1022,16 @@
     "%lld" : {
       "shouldTranslate" : false
     },
+    "%lld %%" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld%%"
+          }
+        }
+      }
+    },
     "%lld abiertas · %@" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -3193,6 +3203,16 @@
         }
       }
     },
+    "Abre impuestos estimados" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens estimated taxes"
+          }
+        }
+      }
+    },
     "Abre la Vista Rápida" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -3773,6 +3793,16 @@
         }
       }
     },
+    "Ajustar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adjust"
+          }
+        }
+      }
+    },
     "Ajuste" : {
       "localizations" : {
         "en" : {
@@ -4297,6 +4327,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Appearance"
+          }
+        }
+      }
+    },
+    "Aparta" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set aside"
+          }
+        }
+      }
+    },
+    "Apartado en %@ %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set aside in %@ %@"
+          }
+        }
+      }
+    },
+    "Apartado para impuestos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tax set-aside"
           }
         }
       }
@@ -5205,6 +5265,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No changes yet."
+          }
+        }
+      }
+    },
+    "Aún no hay ganancia este periodo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No profit yet this period"
           }
         }
       }
@@ -6993,6 +7063,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Chirogra only keeps the last 4 digits of the TIN. Get the W-9 before paying a contractor."
+          }
+        }
+      }
+    },
+    "Chirogra solo lo anota. El pago lo haces tú directamente con el IRS." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chirogra only records it. You make the payment directly with the IRS."
           }
         }
       }
@@ -8916,6 +8996,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "When they accept it, you turn it into an invoice without typing anything again."
+          }
+        }
+      }
+    },
+    "Cuando registres ingresos y gastos, aquí verás cuánto apartar antes del %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "When you record income and expenses, you’ll see here how much to set aside before %@."
           }
         }
       }
@@ -11244,6 +11334,16 @@
         }
       }
     },
+    "Elige el pago y la cuenta de la que salió." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose the payment and the account it came from."
+          }
+        }
+      }
+    },
     "Elige el que más se parezca a tu negocio para ver el plan de cuentas que te prepararemos." : {
       "localizations" : {
         "en" : {
@@ -12834,6 +12934,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "This transaction has already been reviewed."
+          }
+        }
+      }
+    },
+    "Este periodo ganaste" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This period you earned"
           }
         }
       }
@@ -15636,6 +15746,16 @@
         }
       }
     },
+    "Impuestos estimados" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estimated Taxes"
+          }
+        }
+      }
+    },
     "Incluir %@ en el pago en lote" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -16516,6 +16636,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "The passwords don't match."
+          }
+        }
+      }
+    },
+    "Las cuatro fechas de %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The four dates in %@"
           }
         }
       }
@@ -17988,6 +18118,16 @@
         }
       }
     },
+    "Mostrar en Inicio y Reportes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show on Home and Reports"
+          }
+        }
+      }
+    },
     "Mostrar en el selector" : {
       "localizations" : {
         "en" : {
@@ -18536,6 +18676,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nothing due in the next two weeks."
+          }
+        }
+      }
+    },
+    "Nada que apartar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing to set aside"
           }
         }
       }
@@ -20535,6 +20685,16 @@
         }
       }
     },
+    "Pagado al IRS %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paid to the IRS %@"
+          }
+        }
+      }
+    },
     "Pagado con" : {
       "localizations" : {
         "en" : {
@@ -20691,6 +20851,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bill payment"
+          }
+        }
+      }
+    },
+    "Pago al IRS" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "IRS Payment"
           }
         }
       }
@@ -20866,6 +21036,16 @@
         }
       }
     },
+    "Pagos anotados" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recorded payments"
+          }
+        }
+      }
+    },
     "Pagos del año" : {
       "localizations" : {
         "en" : {
@@ -20924,6 +21104,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Scheduled payments"
+          }
+        }
+      }
+    },
+    "Pagos trimestrales al IRS · formulario 1040-ES" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quarterly payments to the IRS · Form 1040-ES"
           }
         }
       }
@@ -21372,6 +21562,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pending"
+          }
+        }
+      }
+    },
+    "Pensado para dueño único y LLC de un solo dueño. Si tu negocio es una corporación, puedes apagar la tarjeta con el interruptor." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Designed for sole proprietors and single-member LLCs. If your business is a corporation, you can turn the card off with the switch."
           }
         }
       }
@@ -22040,6 +22240,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Percentage (e.g. 2)"
+          }
+        }
+      }
+    },
+    "Porcentaje a apartar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Percentage to set aside"
           }
         }
       }
@@ -23012,6 +23222,16 @@
         }
       }
     },
+    "Quitar pago" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove Payment"
+          }
+        }
+      }
+    },
     "Quitar recibo" : {
       "localizations" : {
         "en" : {
@@ -23895,6 +24115,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Record Payment"
+          }
+        }
+      }
+    },
+    "Registrar pago al IRS" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Record IRS Payment"
           }
         }
       }
@@ -25295,6 +25525,16 @@
         }
       }
     },
+    "Salió de" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paid from"
+          }
+        }
+      }
+    },
     "Saltar" : {
       "localizations" : {
         "en" : {
@@ -25699,6 +25939,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Repeats"
+          }
+        }
+      }
+    },
+    "Se revierte su asiento. El pago al IRS no cambia: Chirogra solo lo anota." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Its journal entry is reversed. Your IRS payment doesn’t change: Chirogra only records it."
           }
         }
       }
@@ -26703,6 +26953,16 @@
         }
       }
     },
+    "Sin pago anotado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No payment recorded"
+          }
+        }
+      }
+    },
     "Sin pagos en el año" : {
       "localizations" : {
         "en" : {
@@ -27261,6 +27521,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Suggested: %@."
+          }
+        }
+      }
+    },
+    "Sugerido: entre 25 % y 30 %. Es una guía, no asesoría fiscal; tu contador te dice el monto real." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suggested: between 25% and 30%. This is a guide, not tax advice; your accountant tells you the actual amount."
           }
         }
       }
@@ -29671,6 +29941,26 @@
         }
       }
     },
+    "Vence el %@ · falta 1 día" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Due %@ · 1 day left"
+          }
+        }
+      }
+    },
+    "Vence el %@ · faltan %lld días" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Due %@ · %lld days left"
+          }
+        }
+      }
+    },
     "Vence el %@." : {
       "localizations" : {
         "en" : {
@@ -29728,6 +30018,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Due today · balance %@"
+          }
+        }
+      }
+    },
+    "Vence hoy, %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Due today, %@"
           }
         }
       }
@@ -29942,6 +30242,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld days overdue · balance %@"
+          }
+        }
+      }
+    },
+    "Vencía el %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Was due %@"
           }
         }
       }
@@ -31325,6 +31635,16 @@
         }
       }
     },
+    "tab.estimatedTax" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Est. Tax"
+          }
+        }
+      }
+    },
     "todas las cuentas" : {
       "localizations" : {
         "en" : {
@@ -31749,6 +32069,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Create “%@” as a new customer?"
+          }
+        }
+      }
+    },
+    "¿Quitar este pago?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove This Payment?"
           }
         }
       }

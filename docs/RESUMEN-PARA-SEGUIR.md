@@ -385,7 +385,13 @@ en verde.
    en `Agenda/AppointmentCalendar.swift`; `NSCalendarsFullAccessUsageDescription` y `ENABLE_RESOURCE_ACCESS_CALENDARS` en
    project.yml). **iPad y Mac** (commiteado): Día y Lista en
    una tarjeta con la ficha de la cita al lado (`AppointmentDetailView(embedded:)`) y la Semana en 7 columnas con
-   franjas (`WeekGrid`); visto en el iPad de 11″, el Mac solo compilado. La agenda queda completa; después, las pantallas de impuestos estimados. Los trámites del usuario (clave de Anthropic y
+   franjas (`WeekGrid`); visto en el iPad de 11″, el Mac solo compilado. La agenda queda completa. **Pantallas de impuestos estimados** (commiteadas):
+   `Taxes/EstimatedTaxViews.swift` con la tarjeta «Apartado para impuestos» (Inicio del iPhone entre «Ingresos y gastos»
+   y «Por cobrar», y arriba de Reportes; oculta por defecto en S/C-corp), la pantalla (pago que toca, «Registrar pago
+   al IRS», las cuatro fechas, pagos anotados con «Quitar», porcentaje y tarjeta) y la hoja «Pago al IRS». Impuestos
+   tiene subsecciones en la barra (`SidebarItem.taxes`: «Impuesto sobre ventas» e «Impuestos estimados») y Más del
+   iPhone la herramienta nueva. QA: `-qa.seccion estimatedTax`. Falta la sección del iPad en Inicio y el inspector
+   del Mac; después, las pantallas de impuestos estimados. Los trámites del usuario (clave de Anthropic y
    Supabase «chirogra») hacen falta para el asistente (§4.4).
 1. **Informes de testers:** leerlos, arreglar desde la causa, enseñarle capturas antes/después y esperar su «súbelo».
    Los xlsx de Beta Family se leen descomprimiéndolos (no hay openpyxl); las fotos son enlaces firmados en

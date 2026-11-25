@@ -41,6 +41,8 @@ enum SidebarItem: Hashable {
     case accounting(AccountingPage)
     /// Banca 1.2: Cuentas · Por revisar · Reglas · Conciliación (`BankingPage`, en `Banking/BankInboxViews.swift`).
     case banking(BankingPage)
+    /// 1.4: Impuesto sobre ventas · Impuestos estimados (canvas «Chirogra 1.4», `Sidebar`).
+    case taxes(TaxesPage)
 
     /// Sección principal a la que pertenece (la que se marca en la barra).
     var section: AppSection {
@@ -51,6 +53,7 @@ enum SidebarItem: Hashable {
         case .report: .reports
         case .accounting: .accounting
         case .banking: .banking
+        case .taxes: .taxes
         }
     }
 
@@ -68,6 +71,7 @@ enum SidebarItem: Hashable {
         case .report(let kind): ReportsView(fixedKind: kind)
         case .accounting(let page): page.destination
         case .banking(let page): page.destination
+        case .taxes(let page): page.destination
         }
     }
 
@@ -93,6 +97,8 @@ enum SidebarItem: Hashable {
         case .banking(.inbox): "tray"
         case .banking(.rules): "wand.and.stars"
         case .banking(.reconcile): "checkmark.seal"
+        case .taxes(.salesTax): "percent"
+        case .taxes(.estimated): "building.columns.circle"
         }
     }
 
@@ -117,6 +123,8 @@ enum SidebarItem: Hashable {
         case .banking(.inbox): Palette.orange
         case .banking(.rules): Palette.indigo
         case .banking(.reconcile): Palette.green
+        case .taxes(.salesTax): Palette.red
+        case .taxes(.estimated): Palette.indigo
         }
     }
 
@@ -132,6 +140,7 @@ enum SidebarItem: Hashable {
         case .reports: ReportsView.Kind.allCases.map { ($0.fullTitle, .report($0)) }
         case .accounting: AccountingPage.allCases.map { ($0.title, .accounting($0)) }
         case .banking: BankingPage.allCases.map { ($0.title, .banking($0)) }
+        case .taxes: TaxesPage.allCases.map { ($0.title, .taxes($0)) }
         default: []
         }
     }

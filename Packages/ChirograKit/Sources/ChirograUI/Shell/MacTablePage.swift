@@ -469,7 +469,8 @@ enum QALaunch {
         case "close": .accounting(.close)
         case "auditLog": .accounting(.auditLog)
         case "reports": .section(.reports)
-        case "taxes": .section(.taxes)
+        case "taxes": .taxes(.salesTax)
+        case "estimatedTax": .taxes(.estimated)
         case "settings": .section(.settings)
         case "clients": .section(.clients)
         // `-qa.seccion report3`: el reporte con ese índice de `ReportsView.Kind.allCases` (repaso visual del 21-nov).
