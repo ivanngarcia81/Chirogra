@@ -458,6 +458,9 @@ struct AppShell: View {
         }
         // 1.4: los avisos de las citas de la empresa activa, siempre al día.
         .background { AppointmentReminderScheduler() }
+        // 1.4: el asistente en el iPhone (hoja, con la burbuja sobre la barra de pestañas). En el iPad y el Mac va en
+        // la columna de detalle (`detailColumn`), donde el inspector y la burbuja se colocan bien.
+        .modifier(AssistantPresentation(compact: true, enabled: isCompactLayout))
         // Cambiar de empresa con un editor sin guardar pregunta antes, como cambiar de pantalla (`CompanyHub.select`).
         .onAppear { companyHub.unsavedChanges = unsavedChanges }
         // Panel de clientes: al arrancar, la ruta de un pendiente y «Todos los clientes» (`ClientsRouter`).
@@ -499,6 +502,14 @@ struct AppShell: View {
     }
 
     private var panelAvailable: Bool { ClientsRouter.isAvailable(companies: allCompanies) }
+
+    private var isCompactLayout: Bool {
+        #if os(iOS)
+        sizeClass == .compact
+        #else
+        false
+        #endif
+    }
 
     /// iPhone: 5 pestañas (Inicio · Ventas · Gastos · Banca · Más), como el canvas. Con el panel de clientes, al abrir la
     /// app se ve el panel; al elegir un cliente, sus pestañas (canvas `iPhoneEntrada`).
@@ -733,6 +744,8 @@ struct AppShell: View {
         NavigationStack {
             if isSearching { SearchResultsView(query: query) } else { content() }
         }
+        // 1.4: la burbuja abajo a la derecha del detalle y el asistente en el panel de la derecha.
+        .modifier(AssistantPresentation(compact: false, enabled: !isCompactLayout))
         #if os(iOS)
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { detailWidth = $0 }
         .safeAreaInset(edge: .top, spacing: 0) { SyncErrorBanner() }

@@ -1032,6 +1032,16 @@
         }
       }
     },
+    "%lld %% de %@ de ganancia este periodo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld%% of %@ profit this period"
+          }
+        }
+      }
+    },
     "%lld abiertas · %@" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -3021,12 +3031,32 @@
         }
       }
     },
+    "A Anthropic, la empresa que hace el modelo de IA, a través del servidor de Chirogra." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To Anthropic, the company that makes the AI model, through Chirogra’s server."
+          }
+        }
+      }
+    },
     "A la hora" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "At time of appointment"
+          }
+        }
+      }
+    },
+    "A quién" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To whom"
           }
         }
       }
@@ -3469,6 +3499,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Accept Suggestions"
+          }
+        }
+      }
+    },
+    "Aceptar y empezar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accept and Start"
           }
         }
       }
@@ -4140,6 +4180,16 @@
         }
       }
     },
+    "Antes de empezar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Before You Start"
+          }
+        }
+      }
+    },
     "Anticipo del %lld %%" : {
       "localizations" : {
         "en" : {
@@ -4792,6 +4842,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Journal Entries"
+          }
+        }
+      }
+    },
+    "Asistente" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Assistant"
           }
         }
       }
@@ -6906,6 +6966,16 @@
         }
       }
     },
+    "Cerrar el asistente" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close the assistant"
+          }
+        }
+      }
+    },
     "Cerrar hasta el %@" : {
       "localizations" : {
         "en" : {
@@ -7854,6 +7924,16 @@
         }
       }
     },
+    "Con tu %lld %%, para el pago del %@:" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "With your %lld%%, for the %@ payment:"
+          }
+        }
+      }
+    },
     "Con una conciliación en curso: %@" : {
       "localizations" : {
         "en" : {
@@ -8386,6 +8466,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Contractors, remodeling, electricians, plumbers…"
+          }
+        }
+      }
+    },
+    "Conversación nueva" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New conversation"
           }
         }
       }
@@ -9562,6 +9652,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Keep the app open for a moment: the deletion is uploading to iCloud so your other devices delete it too."
+          }
+        }
+      }
+    },
+    "Del %@ al %@ llevas:" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "From %@ to %@ you have:"
           }
         }
       }
@@ -10761,6 +10861,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "The entry needs at least two different accounts."
+          }
+        }
+      }
+    },
+    "El asistente necesita internet. Tus libros siguen aquí y puedes registrar a mano." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The assistant needs the internet. Your books are still here and you can record by hand."
+          }
+        }
+      }
+    },
+    "El asistente necesita una suscripción activa" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The Assistant Needs an Active Subscription"
+          }
+        }
+      }
+    },
+    "El asistente usa inteligencia artificial para contestar. Esto pasa con tus datos cada vez que preguntas:" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The assistant uses artificial intelligence to answer. This is what happens with your data each time you ask:"
           }
         }
       }
@@ -12398,6 +12528,16 @@
         }
       }
     },
+    "Es una guía, no asesoría fiscal." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This is a guide, not tax advice."
+          }
+        }
+      }
+    },
     "Es una tasa aproximada para el código postal %@: %@. Un código postal puede tener varias tasas; compruébala con tu estado antes de cobrarla." : {
       "localizations" : {
         "en" : {
@@ -13922,6 +14062,16 @@
         }
       }
     },
+    "Faltan %lld días. Es una guía, no asesoría fiscal." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld days left. This is a guide, not tax advice."
+          }
+        }
+      }
+    },
     "Favoritos" : {
       "localizations" : {
         "en" : {
@@ -14601,6 +14751,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Expenses"
+          }
+        }
+      }
+    },
+    "Gastos %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Expenses %@"
           }
         }
       }
@@ -15848,6 +16008,16 @@
         }
       }
     },
+    "Ingresos %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Income %@"
+          }
+        }
+      }
+    },
     "Ingresos del mes" : {
       "localizations" : {
         "en" : {
@@ -16733,6 +16903,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Transactions dated through %@ are locked. To correct them, reopen the period."
+          }
+        }
+      }
+    },
+    "Leer la política de privacidad" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Read the Privacy Policy"
           }
         }
       }
@@ -17886,6 +18066,16 @@
         }
       }
     },
+    "Mensaje para el asistente" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Message for the assistant"
+          }
+        }
+      }
+    },
     "Mensaje para el cliente" : {
       "localizations" : {
         "en" : {
@@ -18720,6 +18910,16 @@
         }
       }
     },
+    "Nadie te debe ahora mismo: no tienes facturas pendientes de cobro." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nobody owes you right now: you have no unpaid invoices."
+          }
+        }
+      }
+    },
     "Naturaleza" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -18807,6 +19007,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Net 60"
+          }
+        }
+      }
+    },
+    "Ni la pregunta ni las cifras se guardan después de contestarte." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neither the question nor the figures are kept after you get your answer."
           }
         }
       }
@@ -19313,6 +19523,26 @@
         }
       }
     },
+    "No pude calcular el apartado." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I couldn’t calculate the set-aside."
+          }
+        }
+      }
+    },
+    "No pude leer tus números." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I couldn’t read your numbers."
+          }
+        }
+      }
+    },
     "No pudimos leer la fila %lld: revisa el formato de fecha y la columna del importe." : {
       "localizations" : {
         "en" : {
@@ -19392,6 +19622,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "They don’t appear in the switcher, but their books are kept and count toward your plan’s limit. Delete one to make room."
+          }
+        }
+      }
+    },
+    "No se guarda" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not kept"
           }
         }
       }
@@ -22345,6 +22585,36 @@
         }
       }
     },
+    "Pregunta o pide algo…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ask or request something…"
+          }
+        }
+      }
+    },
+    "Pregunta por tus números o registra con una frase" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ask about your numbers or record with a sentence"
+          }
+        }
+      }
+    },
+    "Pregunta por tus números, busca algo o registra con una frase." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ask about your numbers, find something, or record with a sentence."
+          }
+        }
+      }
+    },
     "Preparado con Chirogra · %@" : {
       "localizations" : {
         "en" : {
@@ -23412,6 +23682,16 @@
         }
       }
     },
+    "Qué se envía" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What is sent"
+          }
+        }
+      }
+    },
     "RECHAZADO" : {
       "localizations" : {
         "en" : {
@@ -23448,6 +23728,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Reopen %@"
+          }
+        }
+      }
+    },
+    "Reactivar suscripción" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reactivate Subscription"
           }
         }
       }
@@ -27980,6 +28270,26 @@
         }
       }
     },
+    "Te deben %@ en %lld facturas." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You’re owed %@ on %lld invoices."
+          }
+        }
+      }
+    },
+    "Te deben %@ en %lld facturas. %lld ya vencieron:" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You’re owed %@ on %lld invoices. %lld are past due:"
+          }
+        }
+      }
+    },
     "Te sugerimos un plan de cuentas listo para usar." : {
       "localizations" : {
         "en" : {
@@ -28289,6 +28599,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No business is set up yet."
+          }
+        }
+      }
+    },
+    "Todavía no puedo contestar preguntas escritas: falta conectar el asistente con su servidor. Mientras tanto, prueba las sugerencias de abajo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I can’t answer typed questions yet: the assistant still needs to be connected to its server. In the meantime, try the suggestions below."
           }
         }
       }
@@ -28716,6 +29036,16 @@
         }
       }
     },
+    "Total por cobrar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total receivable"
+          }
+        }
+      }
+    },
     "Total por pagar" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -29039,6 +29369,16 @@
         }
       }
     },
+    "Tu pregunta y solo las cifras que el asistente pida para contestarla." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your question and only the figures the assistant asks for to answer it."
+          }
+        }
+      }
+    },
     "Tu primer cliente" : {
       "localizations" : {
         "en" : {
@@ -29298,6 +29638,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Your books are read-only because your subscription ended. Subscribe to keep recording."
+          }
+        }
+      }
+    },
+    "Tus libros están en solo lectura: puedes verlos y exportarlos, pero no preguntar ni registrar con el asistente." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your books are read-only: you can view and export them, but not ask or record with the assistant."
           }
         }
       }
@@ -30388,6 +30738,16 @@
         }
       }
     },
+    "Ver Por cobrar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View Receivables"
+          }
+        }
+      }
+    },
     "Ver asiento" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -30480,6 +30840,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "View Profit and Loss"
+          }
+        }
+      }
+    },
+    "Ver impuestos estimados" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View Estimated Taxes"
           }
         }
       }
@@ -31453,6 +31823,16 @@
         }
       }
     },
+    "https://chirogra.com/privacidad/" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "https://chirogra.com/privacy/"
+          }
+        }
+      }
+    },
     "iCloud no está activado" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -31983,6 +32363,26 @@
         }
       }
     },
+    "¿Cuánto aparto para impuestos?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How much should I set aside for taxes?"
+          }
+        }
+      }
+    },
+    "¿Cuánto gané este mes?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How much did I make this month?"
+          }
+        }
+      }
+    },
     "¿De qué cuenta salió?" : {
       "localizations" : {
         "en" : {
@@ -32019,6 +32419,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Delete This Appointment?"
+          }
+        }
+      }
+    },
+    "¿En qué te ayudo?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How Can I Help?"
           }
         }
       }
@@ -32089,6 +32499,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Remove this receipt?"
+          }
+        }
+      }
+    },
+    "¿Quién me debe?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Who owes me?"
           }
         }
       }

@@ -391,7 +391,13 @@ en verde.
    al IRS», las cuatro fechas, pagos anotados con «Quitar», porcentaje y tarjeta) y la hoja «Pago al IRS». Impuestos
    tiene subsecciones en la barra (`SidebarItem.taxes`: «Impuesto sobre ventas» e «Impuestos estimados») y Más del
    iPhone la herramienta nueva. QA: `-qa.seccion estimatedTax`. Falta la sección del iPad en Inicio y el inspector
-   del Mac; después, las pantallas de impuestos estimados. Los trámites del usuario (clave de Anthropic y
+   del Mac. **Asistente sin servidor** (commiteado): burbuja flotante (`Assistant/`, encima de la barra de pestañas
+   en el iPhone, abajo a la derecha del detalle en iPad y Mac), hoja en el iPhone y panel (inspector) en iPad y Mac,
+   permiso la primera vez (`assistant.consent`, por aparato), sin conexión y solo lectura. Las sugerencias de cifras
+   (ganancia del mes, quién me debe, cuánto apartar) se contestan ya en el aparato (`AssistantTools`, lo que el servidor
+   usará como herramientas) con tarjetas e «Ir a…»; «Anota un gasto» abre el editor; una pregunta escrita dice que falta
+   el servidor. Siguiente del asistente: servidor (función `asistente` en Supabase «chirogra») cuando el usuario ponga
+   la clave de Anthropic y cree el proyecto; después, las pantallas de impuestos estimados. Los trámites del usuario (clave de Anthropic y
    Supabase «chirogra») hacen falta para el asistente (§4.4).
 1. **Informes de testers:** leerlos, arreglar desde la causa, enseñarle capturas antes/después y esperar su «súbelo».
    Los xlsx de Beta Family se leen descomprimiéndolos (no hay openpyxl); las fotos son enlaces firmados en
