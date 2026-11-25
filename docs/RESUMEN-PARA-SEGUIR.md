@@ -1,4 +1,4 @@
-# Chirogra: resumen para empezar el siguiente chat (25-nov-2026, build 65, 1.3.0 EN LA TIENDA con el 64)
+# Chirogra: resumen para empezar el siguiente chat (25-nov-2026, rama `version-1.4` EMPEZADA; 1.3.0 EN LA TIENDA con el 64)
 
 Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («Dónde nos quedamos» y «Lo aprendido»).
 **Al usuario se le habla siempre en español.**
@@ -14,7 +14,9 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
   New» junta las tres. iOS y Mac llevan textos distintos (el Mac sin recorrido ni líneas del iPhone/iPad, y «adjunta» en
   vez de «escanea» recibos). Si Apple rechaza algo, el usuario trae el mensaje del Resolution Center. Si la web de App
   Store Connect falla (sin apps, lo saca al entrar), suele ser la sesión de Safari (pestaña privada / borrar datos).
-- **Ramas:** `version-1.3` con el 65 y sus docs, **empujada el 23-nov** (GitHub Actions en verde: pruebas, compilación y
+- **Rama de trabajo: `version-1.4`** (1.4.0, creada el 25-nov desde `version-1.3` en `81f8708`, sin empujar). La 1.4
+  empieza por el canvas de diseño: encargo en [DISEÑO-1.4.md](DISEÑO-1.4.md), que el usuario pega en Claude Design.
+- **Ramas:** `version-1.3` con el 65, sus docs (**empujada el 23-nov**) y `81f8708` (arreglos de Yurii S., sin empujar) (GitHub Actions en verde: pruebas, compilación y
   las 4 de interfaz). `main` en `83b1db4` (build 50 y la web con «Kairogra»), empujada el 17-nov; los builds de después
   no tocan la web (`sitio/`, se publica desde `main`), así que no hace falta moverla.
 - **Testers externos** (Userbrain, Beta Family, UXtweak) entran con el enlace público
@@ -91,7 +93,20 @@ acumule: está en `git show 1fe35ff:docs/RESUMEN-PARA-SEGUIR.md` y en los mensaj
 | 64 | `b2c8e43` | 1.3.0: **icono «chirogra pencils»** (lapicero y lápiz cruzados en χ, ρ azafrán con brillo de lupa; archivo del usuario), también `LogoMark` y la bienvenida (`LogoGlyph`), el icono de la web y las capturas de la guía. **Enviado a revisión** (1.3.0 iOS y macOS) el 22-nov. |
 | 65 | `00ace74` | 1.3.0: **auditoría técnica** (base caja con notas de crédito y saldo a favor, suma SHA-256 en las copias, aviso de iCloud en local, saldos rehechos tras sincronizar, importes en 128 bits, sales tax de las notas, aviso de tabla por ZIP vieja, no anular facturas con nota) y **pruebas de interfaz** en el repo (`PruebasInterfaz`, `scripts/interfaz.sh`). 403 pruebas + 4 de interfaz. |
 
-## Último chat (23 al 25-nov): Plaid aprobado, 1.3 en la tienda, orden de versiones y testers
+## Último chat (25-nov, tarde): informe de Yurii S. en el iPad y comienzo de la 1.4
+
+- **Informe de Yurii S.** (Beta Family, iPad Pro 11″, iPadOS 26.7.1, formato de Ucrania; 4/5 general, **2/5
+  facilidad**, 3/5 recomendar). Tres arreglos en `81f8708` (`version-1.3`), comprobados con una prueba de interfaz
+  temporal en el simulador «iPad Pro 11-inch (M5)» `BEC858CE` que falla con el código de antes y pasa con este:
+  importes en una línea en todas las tablas (`amountColumn(_:)`; «2 400,00 / US$» bajaba a dos líneas), la barra lateral
+  guarda su desplazamiento (`Sidebar.scrollOffset`; se rehacía con cada página y volvía arriba) y la presentación de
+  cada recorrido no se salta con un toque en su primer segundo (`Recorrido.tocarVelo`).
+- **Pendiente de su informe:** pide un tutorial más simple que explique anular cobros y las líneas de la factura,
+  «sobre todo en el iPad». Sin hacer; idea: «Void Payment…» también en la lista de cobros de la factura.
+- **1.4 empezada** a petición del usuario: rama `version-1.4` (1.4.0) y encargo del canvas en
+  [DISEÑO-1.4.md](DISEÑO-1.4.md) (agenda, asistente con opción A botón / B burbuja, permiso, apartado para impuestos).
+
+## Chat anterior (23 al 25-nov): Plaid aprobado, 1.3 en la tienda, orden de versiones y testers
 
 Sin código: todo fue trámites, decisiones y testers. Commits del chat: `cec3bf1` (resumen limpio), `ad732e0` (política
 de seguridad), `d7a4663`, `a2d9a31`, `63c6ed4` (empujados); lo del 24–25-nov (este resumen y los planes), sin commitear hasta que el usuario lo diga.
@@ -351,8 +366,9 @@ en verde.
 
 ## Lo siguiente
 
-0. **Arreglos de los testers del 65** en `version-1.3` y, cuando el usuario lo diga, crear `version-1.4` desde ahí
-   (la 1.3.0 ya está en la tienda: la versión siguiente necesita número nuevo, 1.4.0 o 1.3.1).
+0. **1.4 en `version-1.4`:** el usuario hace el canvas con [DISEÑO-1.4.md](DISEÑO-1.4.md) y elige; mientras, se puede
+   empezar la agenda por los datos (esquema 6, `Appointment`, PLAN-1.4 §1 y §4.2), que no dependen del canvas. Los
+   trámites del usuario (clave de Anthropic y Supabase «chirogra») hacen falta para el asistente (§4.4).
 1. **Informes de testers:** leerlos, arreglar desde la causa, enseñarle capturas antes/después y esperar su «súbelo».
    Los xlsx de Beta Family se leen descomprimiéndolos (no hay openpyxl); las fotos son enlaces firmados en
    `xl/worksheets/_rels/sheet3.xml.rels` que caducan a los 7 días (bajarlas con curl).
