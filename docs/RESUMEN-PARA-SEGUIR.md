@@ -5,8 +5,11 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 
 ## Estado
 
-- **Último build: 65 (1.3.0)**, subido a TestFlight iOS y macOS el 23-nov (`00ace74`): auditoría técnica y pruebas de
-  interfaz (ver «Último chat»). Antes: 64 (21-nov noche, icono «chirogra pencils»); del 22 al 63, en la tabla.
+- **Último build: 66 (1.4.0)**, subido a TestFlight iOS y macOS el 25-nov (`c0c2e33`): agenda (avisos y Calendario),
+  impuestos estimados y asistente sin servidor. **Esquema 6 de CloudKit creado en Desarrollo el 25-nov
+  (`-qa.esquemaCloudKit 1` → «listo»); falta que el usuario lo despliegue a Producción («Deploy Schema Changes…») ANTES
+  de usar el 66 con libros reales**: sin eso, Producción rechaza los registros nuevos (citas, impuestos estimados).
+  Antes: 65 (1.3.0, 23-nov, `00ace74`): auditoría técnica y pruebas de interfaz. Antes: 64 (21-nov noche, icono «chirogra pencils»); del 22 al 63, en la tabla.
 - **En App Store Connect:** la **1.0 quedó aprobada el 22-nov con el build 15**, y **la 1.3.0 (iOS y macOS, build 64,
   con la suscripción «Chirogra para contadores») está APROBADA y EN LA TIENDA** (lo dijo el usuario el 25-nov; textos en
   APP-STORE.md, «Envío de la 1.3.0 tras aprobarse la 1.0»). El 65 (auditoría técnica) solo está en TestFlight: sus
@@ -14,9 +17,10 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
   New» junta las tres. iOS y Mac llevan textos distintos (el Mac sin recorrido ni líneas del iPhone/iPad, y «adjunta» en
   vez de «escanea» recibos). Si Apple rechaza algo, el usuario trae el mensaje del Resolution Center. Si la web de App
   Store Connect falla (sin apps, lo saca al entrar), suele ser la sesión de Safari (pestaña privada / borrar datos).
-- **Rama de trabajo: `version-1.4`** (1.4.0, creada el 25-nov desde `version-1.3` en `81f8708`, sin empujar). La 1.4
+- **Rama de trabajo: `version-1.4`** (1.4.0, creada el 25-nov desde `version-1.3` en `81f8708`; build 66; empujada el
+  25-nov junto con `version-1.3`). La 1.4
   tiene su canvas: https://claude.ai/artifact/GDQsZiSZRruwx3PhhLytyt (encargo en [DISEÑO-1.4.md](DISEÑO-1.4.md)).
-- **Ramas:** `version-1.3` con el 65, sus docs (**empujada el 23-nov**) y `81f8708` (arreglos de Yurii S., sin empujar) (GitHub Actions en verde: pruebas, compilación y
+- **Ramas:** `version-1.3` con el 65, sus docs y `81f8708` (arreglos de Yurii S.), **empujada el 25-nov** (GitHub Actions en verde: pruebas, compilación y
   las 4 de interfaz). `main` en `83b1db4` (build 50 y la web con «Kairogra»), empujada el 17-nov; los builds de después
   no tocan la web (`sitio/`, se publica desde `main`), así que no hace falta moverla.
 - **Testers externos** (Userbrain, Beta Family, UXtweak) entran con el enlace público
