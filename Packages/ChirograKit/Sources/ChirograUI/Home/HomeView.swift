@@ -1147,6 +1147,15 @@ struct HomeView: View {
             if showsSetupCard { setupCard.frame(maxWidth: 760, alignment: .leading) }
             KPIGrid(items: macKPIs, large: true)
             if showsSalesTax { salesTaxCard.frame(maxWidth: 760, alignment: .leading) }
+            // 1.4: las citas de hoy y el apartado para impuestos, uno al lado del otro si caben (solo lo que se usa).
+            let showsSetAside = EstimatedTaxCard.isShown(settings: taxSettings, company: companies.first)
+            if today.isUsed && showsSetAside {
+                macPair(firstShare: 1) { TodayAppointmentsCard() } and: { EstimatedTaxCard(showsTitle: true) }
+            } else if today.isUsed {
+                TodayAppointmentsCard().frame(maxWidth: 760, alignment: .leading)
+            } else if showsSetAside {
+                EstimatedTaxCard(showsTitle: true).frame(maxWidth: 760, alignment: .leading)
+            }
             macPair(firstShare: 2) {
                 chartCard(height: 190, barWidth: 12, pickerOnTop: false, months: 12,
                           title: String(localized: "Ingresos y gastos · 12 meses"))

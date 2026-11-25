@@ -366,9 +366,20 @@ struct AssistantPresentation: ViewModifier {
                 .sheet(isPresented: $assistant.isOpen) { AssistantView() }
         } else {
             content
+                #if os(iOS)
                 .overlay(alignment: .bottomTrailing) {
                     AssistantBubble().padding(.trailing, 24).padding(.bottom, 24)
                 }
+                #else
+                // En el Mac, un botón de la barra en vez de la burbuja: la burbuja tapaba los botones de abajo del
+                // inspector que ya tienen muchas pantallas («Abrir factura» en Inicio).
+                .toolbar {
+                    ToolbarItem(placement: .primaryAction) {
+                        Button { assistant.isOpen.toggle() } label: { Label("Asistente", systemImage: "sparkles") }
+                            .help(Text("Asistente"))
+                    }
+                }
+                #endif
                 .inspector(isPresented: $assistant.isOpen) {
                     AssistantView().inspectorColumnWidth(min: 340, ideal: 380, max: 480)
                 }

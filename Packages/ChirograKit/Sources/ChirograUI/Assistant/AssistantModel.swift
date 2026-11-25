@@ -72,6 +72,13 @@ final class AssistantState {
         didSet { UserDefaults.standard.set(consented, forKey: Self.consentKey) }
     }
 
+    init() {
+        #if DEBUG
+        // `-qa.asistente 1`: abierto al arrancar (capturas del Mac, donde no hay toques).
+        isOpen = UserDefaults.standard.bool(forKey: "qa.asistente")
+        #endif
+    }
+
     func reset() { messages = [] }
 
     func ask(_ suggestion: AssistantSuggestion, context: ModelContext, basis: AccountingBasis) {
