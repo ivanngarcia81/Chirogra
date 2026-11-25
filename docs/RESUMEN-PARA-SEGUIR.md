@@ -368,7 +368,7 @@ en verde.
 
 0. **1.4 en `version-1.4`:** canvas hecho (asistente con **burbuja flotante**, elegida el 25-nov). **Datos de la agenda
    y de los impuestos estimados hechos** (esquema 6: `Appointment`, `EstimatedTaxSetting`, `EstimatedTaxPayment`;
-   [DATOS-V6.md](DATOS-V6.md); sin commitear el 25-nov). Siguiente:
+   [DATOS-V6.md](DATOS-V6.md); commit `cd974ed`, sin empujar). Siguiente:
    las pantallas de la agenda según el canvas (Día/Semana/Lista, ficha, editor, «Hoy» en Inicio, citas del cliente,
    Agenda en la barra y en Más) y los datos de ejemplo con citas. Los trámites del usuario (clave de Anthropic y
    Supabase «chirogra») hacen falta para el asistente (§4.4).
