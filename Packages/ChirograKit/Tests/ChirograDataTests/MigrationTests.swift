@@ -298,17 +298,20 @@ struct MigrationTests {
         #expect(try books.trialBalance(asOf: .distantFuture, basis: .cash).isBalanced)
     }
 
-    @Test("El plan de migración va de la versión 1 a la 5 y la app usa la 5")
+    @Test("El plan de migración va de la versión 1 a la 6 y la app usa la 6")
     func plan() {
         #expect(ChirograMigrationPlan.schemas.map { $0.versionIdentifier }
-                == [Schema.Version(1, 0, 0), Schema.Version(2, 0, 0), Schema.Version(3, 0, 0), Schema.Version(4, 0, 0), Schema.Version(5, 0, 0)])
-        #expect(ChirograMigrationPlan.stages.count == 4)
+                == [Schema.Version(1, 0, 0), Schema.Version(2, 0, 0), Schema.Version(3, 0, 0), Schema.Version(4, 0, 0), Schema.Version(5, 0, 0),
+                    Schema.Version(6, 0, 0)])
+        #expect(ChirograMigrationPlan.stages.count == 5)
         #expect(SchemaV2.models.count == SchemaV1.models.count + 8)
         #expect(SchemaV3.models.count == SchemaV2.models.count)
         #expect(SchemaV4.models.count == SchemaV3.models.count + 6)
         #expect(SchemaV5.models.count == SchemaV4.models.count)
-        #expect(ChirograStore.schema.entities.count == SchemaV5.models.count)
-        #expect(CompanyOwnership.ownedTypes.count == SchemaV5.models.count - 1)
+        #expect(SchemaV6.models.count == SchemaV5.models.count + 3)
+        #expect(ChirograStore.schema.entities.count == SchemaV6.models.count)
+        #expect(CompanyOwnership.ownedTypes.count == SchemaV6.models.count - 1)
+        #expect(CompanyOwnership.ownedTypesV4.count == SchemaV4.models.count - 1)
         #expect(ChirograStore.schema.entities.first { $0.name == "AuditEvent" }?.storedProperties.contains { $0.name == "device" } == true)
     }
 
@@ -457,4 +460,38 @@ struct MigrationTests {
         #expect(transaction.ignoreReason.isEmpty)
         #expect(try Self.ownedCount(context, companyID: companyID) == 2)
     }
+
+    /// Esquema 5 → 6 (1.3 → 1.4): ligera. Solo aparece la tabla de las citas, vacía; lo de antes no se toca.
+    @MainActor
+    @Test("Un almacén del esquema 5 se migra al 6: todo se conserva y la agenda empieza vacía")
+    func migratesV5Store() throws {
+        let url = try Self.temporaryStore()
+        defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
+        let companyID: UUID
+        do {
+            let schema = Schema(versionedSchema: SchemaV5.self)
+            let container = try ModelContainer(for: schema, configurations: ModelConfiguration("Chirogra", schema: schema, url: url, cloudKitDatabase: .none))
+            let context = ModelContext(container)
+            let company = SchemaV4.Company(legalName: "Cinco LLC")
+            context.insert(company)
+            companyID = company.id
+            let event = SchemaV5.AuditEvent(actor: "", entityName: "Company", entityID: companyID, action: "create", summary: "Alta de Cinco LLC",
+                                            device: "iPad", changeDetails: "")
+            event.companyID = companyID
+            context.insert(event)
+            try context.save()
+        }
+        let container = try ChirograStore.makeContainer(url: url)
+        let context = container.mainContext
+        let event = try #require(try context.fetch(FetchDescriptor<AuditEvent>()).first)
+        #expect(event.summary == "Alta de Cinco LLC" && event.device == "iPad")
+        #expect(try context.fetch(FetchDescriptor<Appointment>()).isEmpty)
+        #expect(try context.fetch(FetchDescriptor<EstimatedTaxPayment>()).isEmpty)
+        let appointment = Appointment(title: "Visita", start: Date())
+        appointment.companyID = companyID
+        context.insert(appointment)
+        try context.save()
+        #expect(try Self.ownedCount(context, companyID: companyID) == 2)
+    }
 }
+

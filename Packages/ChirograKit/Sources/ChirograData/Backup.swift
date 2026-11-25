@@ -63,7 +63,7 @@ public enum BackupArchive {
     }
 
     static var schemaVersion: String {
-        let version = SchemaV5.versionIdentifier
+        let version = SchemaV6.versionIdentifier
         return "\(version.major).\(version.minor).\(version.patch)"
     }
 

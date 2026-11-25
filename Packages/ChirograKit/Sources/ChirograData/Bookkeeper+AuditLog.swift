@@ -155,6 +155,10 @@ public enum AuditSubject: String, CaseIterable, Sendable {
     case reconciliation = "Reconciliation"
     case budget = "Budget"
     case backup = "Backup"
+    /// 1.4: la agenda.
+    case appointment = "Appointment"
+    /// 1.4: impuestos estimados (porcentaje y pagos al IRS).
+    case estimatedTax = "EstimatedTax"
 }
 
 /// Acciones que las pantallas anotan con `logChange` (los servicios usan además las suyas: «post», «void»…).

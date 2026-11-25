@@ -52,6 +52,8 @@ extension AuditSubject {
         case .reconciliation: String(localized: "Conciliación")
         case .budget: String(localized: "Presupuesto")
         case .backup: String(localized: "Copia de seguridad")
+        case .appointment: String(localized: "Cita")
+        case .estimatedTax: String(localized: "Impuesto estimado")
         }
     }
 
@@ -72,6 +74,8 @@ extension AuditSubject {
         case .bankTransaction, .bankRule, .reconciliation: "building.columns"
         case .budget: "chart.bar"
         case .backup: "externaldrive"
+        case .appointment: "calendar"
+        case .estimatedTax: "building.columns.circle"
         }
     }
 
@@ -87,10 +91,10 @@ extension AuditSubject {
 
     var area: AuditLogFilter {
         switch self {
-        case .customer, .item, .invoice, .estimate: .sales
+        case .customer, .item, .invoice, .estimate, .appointment: .sales
         case .vendor, .bill, .billPayment, .expense, .attachment, .recurringTemplate: .expenses
         case .bankTransaction, .bankRule, .reconciliation: .banking
-        case .account, .journalEntry, .budget: .accounting
+        case .account, .journalEntry, .budget, .estimatedTax: .accounting
         case .company, .taxRate, .taxGroup, .backup: .company
         }
     }

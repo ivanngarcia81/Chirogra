@@ -98,5 +98,4 @@ cómo se abre (A y B).
 (https://claude.ai/artifact/GDQsZiSZRruwx3PhhLytyt), hecho por el usuario en Claude Design el 25-nov. Se lee con la
 herramienta Artifact (`path: project/<tablero>.dc.html`; la lista de tableros en `project/canvas.json`). Al leerlo el
 25-nov, los tableros de la §3 (Reportes, Apartado, PagoIRS, iPadApartado, MacApartado) estaban en `canvas.json` pero sin
-publicar; la tarjeta del apartado sí está en Inicio (`Main`, `iPadInicio`). Pendiente de él: elegir A (botón) o B
-(burbuja) para abrir el asistente.
+publicar; la tarjeta del apartado sí está en Inicio (`Main`, `iPadInicio`). **Elegida la B (burbuja flotante)** el 25-nov.

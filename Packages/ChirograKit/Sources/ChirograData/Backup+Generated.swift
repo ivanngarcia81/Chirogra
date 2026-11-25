@@ -1,4 +1,4 @@
-// Generado por scripts/gen-backup.py a partir del esquema actual (SchemaV5). No editar a mano: cambia el modelo y vuelve a
+// Generado por scripts/gen-backup.py a partir del esquema actual (SchemaV6). No editar a mano: cambia el modelo y vuelve a
 // ejecutar el script (BackupTests comprueba que cubre todas las propiedades del esquema).
 
 import ChirograCore
@@ -580,6 +580,46 @@ extension BackupPayload {
         var amount: Int64?
         var budget: UUID?
     }
+
+    struct AppointmentRecord: Codable {
+        var id: UUID?
+        var companyID: UUID?
+        var customerID: UUID?
+        var title: String?
+        var start: Date?
+        var durationMinutes: Int?
+        var location: String?
+        var notes: String?
+        var statusRaw: String?
+        var reminderMinutes: Int?
+        var recurrenceRaw: String?
+        var recurrenceEnd: Date?
+        var seriesID: UUID?
+        var occurrenceStart: Date?
+        var invoiceID: UUID?
+        var estimateID: UUID?
+        var createdAt: Date?
+    }
+
+    struct EstimatedTaxSettingRecord: Codable {
+        var id: UUID?
+        var companyID: UUID?
+        var percent: Int?
+        var showsCard: Bool?
+        var createdAt: Date?
+    }
+
+    struct EstimatedTaxPaymentRecord: Codable {
+        var id: UUID?
+        var companyID: UUID?
+        var taxYear: Int?
+        var period: Int?
+        var date: Date?
+        var amount: Int64?
+        var accountID: UUID?
+        var journalEntryID: UUID?
+        var createdAt: Date?
+    }
 }
 
 struct BackupPayload: Codable {
@@ -622,6 +662,9 @@ struct BackupPayload: Codable {
     var reconciliation: [ReconciliationRecord]?
     var budget: [BudgetRecord]?
     var budgetLine: [BudgetLineRecord]?
+    var appointment: [AppointmentRecord]?
+    var estimatedTaxSetting: [EstimatedTaxSettingRecord]?
+    var estimatedTaxPayment: [EstimatedTaxPaymentRecord]?
 }
 
 // MARK: - Propiedades cubiertas (para BackupTests)
@@ -668,9 +711,12 @@ extension BackupArchive {
         "Reconciliation": ["id", "companyID", "accountID", "statementDate", "statementEndingBalance", "beginningBalance", "statusRaw", "closedAt", "createdAt"],
         "Budget": ["id", "companyID", "name", "fiscalYear", "createdAt", "lines"],
         "BudgetLine": ["id", "companyID", "accountID", "month", "amount", "budget"],
+        "Appointment": ["id", "companyID", "customerID", "title", "start", "durationMinutes", "location", "notes", "statusRaw", "reminderMinutes", "recurrenceRaw", "recurrenceEnd", "seriesID", "occurrenceStart", "invoiceID", "estimateID", "createdAt"],
+        "EstimatedTaxSetting": ["id", "companyID", "percent", "showsCard", "createdAt"],
+        "EstimatedTaxPayment": ["id", "companyID", "taxYear", "period", "date", "amount", "accountID", "journalEntryID", "createdAt"],
     ]
 
-    static let modelCount = 39
+    static let modelCount = 42
 }
 
 // MARK: - Exportar
@@ -1291,6 +1337,49 @@ extension BackupPayload {
                 budget: model.budget?.id
             )
         }.sorted { ($0.id?.uuidString ?? "") < ($1.id?.uuidString ?? "") }
+        appointment = try context.fetch(scope.descriptor(Appointment.self)).map { model in
+            AppointmentRecord(
+                id: model.id,
+                companyID: model.companyID,
+                customerID: model.customerID,
+                title: model.title,
+                start: model.start,
+                durationMinutes: model.durationMinutes,
+                location: model.location,
+                notes: model.notes,
+                statusRaw: model.statusRaw,
+                reminderMinutes: model.reminderMinutes,
+                recurrenceRaw: model.recurrenceRaw,
+                recurrenceEnd: model.recurrenceEnd,
+                seriesID: model.seriesID,
+                occurrenceStart: model.occurrenceStart,
+                invoiceID: model.invoiceID,
+                estimateID: model.estimateID,
+                createdAt: model.createdAt
+            )
+        }.sorted { ($0.id?.uuidString ?? "") < ($1.id?.uuidString ?? "") }
+        estimatedTaxSetting = try context.fetch(scope.descriptor(EstimatedTaxSetting.self)).map { model in
+            EstimatedTaxSettingRecord(
+                id: model.id,
+                companyID: model.companyID,
+                percent: model.percent,
+                showsCard: model.showsCard,
+                createdAt: model.createdAt
+            )
+        }.sorted { ($0.id?.uuidString ?? "") < ($1.id?.uuidString ?? "") }
+        estimatedTaxPayment = try context.fetch(scope.descriptor(EstimatedTaxPayment.self)).map { model in
+            EstimatedTaxPaymentRecord(
+                id: model.id,
+                companyID: model.companyID,
+                taxYear: model.taxYear,
+                period: model.period,
+                date: model.date,
+                amount: model.amount,
+                accountID: model.accountID,
+                journalEntryID: model.journalEntryID,
+                createdAt: model.createdAt
+            )
+        }.sorted { ($0.id?.uuidString ?? "") < ($1.id?.uuidString ?? "") }
     }
 
     /// Número de registros por entidad.
@@ -1335,6 +1424,9 @@ extension BackupPayload {
             "Reconciliation": reconciliation?.count ?? 0,
             "Budget": budget?.count ?? 0,
             "BudgetLine": budgetLine?.count ?? 0,
+            "Appointment": appointment?.count ?? 0,
+            "EstimatedTaxSetting": estimatedTaxSetting?.count ?? 0,
+            "EstimatedTaxPayment": estimatedTaxPayment?.count ?? 0,
         ]
     }
 }
@@ -1382,6 +1474,9 @@ struct BackupRegistry {
     var reconciliation: [UUID: Reconciliation] = [:]
     var budget: [UUID: Budget] = [:]
     var budgetLine: [UUID: BudgetLine] = [:]
+    var appointment: [UUID: Appointment] = [:]
+    var estimatedTaxSetting: [UUID: EstimatedTaxSetting] = [:]
+    var estimatedTaxPayment: [UUID: EstimatedTaxPayment] = [:]
 
     func require<M>(_ table: [UUID: M], _ id: UUID?, _ field: String) throws -> M {
         guard let id, let model = table[id] else { throw BackupError.brokenReference(field) }
@@ -1437,6 +1532,9 @@ extension BackupPayload {
         Reconciliation.self,
         Budget.self,
         BudgetLine.self,
+        Appointment.self,
+        EstimatedTaxSetting.self,
+        EstimatedTaxPayment.self,
     ]
 
     /// Crea los modelos en `context` (primero los que otros piden en su inicializador) y después sus relaciones.
@@ -2059,6 +2157,52 @@ extension BackupPayload {
             model.amount = record.amount ?? 0
             context.insert(model)
             registry.budgetLine[model.id] = model
+        }
+        for record in appointment ?? [] {
+            let model = Appointment(title: "", start: Date())
+            model.id = record.id ?? UUID()
+            model.companyID = record.companyID
+            model.customerID = record.customerID
+            model.title = record.title ?? ""
+            model.start = record.start ?? Date()
+            model.durationMinutes = record.durationMinutes ?? 60
+            model.location = record.location ?? ""
+            model.notes = record.notes ?? ""
+            model.statusRaw = record.statusRaw ?? AppointmentStatus.scheduled.rawValue
+            model.reminderMinutes = record.reminderMinutes ?? 30
+            model.recurrenceRaw = record.recurrenceRaw ?? ""
+            model.recurrenceEnd = record.recurrenceEnd
+            model.seriesID = record.seriesID
+            model.occurrenceStart = record.occurrenceStart
+            model.invoiceID = record.invoiceID
+            model.estimateID = record.estimateID
+            model.createdAt = record.createdAt ?? Date()
+            context.insert(model)
+            registry.appointment[model.id] = model
+        }
+        for record in estimatedTaxSetting ?? [] {
+            let model = EstimatedTaxSetting()
+            model.id = record.id ?? UUID()
+            model.companyID = record.companyID
+            model.percent = record.percent ?? 25
+            model.showsCard = record.showsCard ?? true
+            model.createdAt = record.createdAt ?? Date()
+            context.insert(model)
+            registry.estimatedTaxSetting[model.id] = model
+        }
+        for record in estimatedTaxPayment ?? [] {
+            let model = EstimatedTaxPayment(taxYear: 0, period: 0, date: Date(), amount: 0, accountID: nil)
+            model.id = record.id ?? UUID()
+            model.companyID = record.companyID
+            model.taxYear = record.taxYear ?? 0
+            model.period = record.period ?? 1
+            model.date = record.date ?? Date()
+            model.amount = record.amount ?? 0
+            model.accountID = record.accountID
+            model.journalEntryID = record.journalEntryID
+            model.createdAt = record.createdAt ?? Date()
+            context.insert(model)
+            registry.estimatedTaxPayment[model.id] = model
         }
         for record in company ?? [] {
             guard let id = record.id, let model = registry.company[id] else { continue }

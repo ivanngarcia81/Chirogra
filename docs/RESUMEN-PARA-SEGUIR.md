@@ -366,9 +366,12 @@ en verde.
 
 ## Lo siguiente
 
-0. **1.4 en `version-1.4`:** el usuario hace el canvas con [DISEÑO-1.4.md](DISEÑO-1.4.md) y elige; mientras, se puede
-   empezar la agenda por los datos (esquema 6, `Appointment`, PLAN-1.4 §1 y §4.2), que no dependen del canvas. Los
-   trámites del usuario (clave de Anthropic y Supabase «chirogra») hacen falta para el asistente (§4.4).
+0. **1.4 en `version-1.4`:** canvas hecho (asistente con **burbuja flotante**, elegida el 25-nov). **Datos de la agenda
+   y de los impuestos estimados hechos** (esquema 6: `Appointment`, `EstimatedTaxSetting`, `EstimatedTaxPayment`;
+   [DATOS-V6.md](DATOS-V6.md); sin commitear el 25-nov). Siguiente:
+   las pantallas de la agenda según el canvas (Día/Semana/Lista, ficha, editor, «Hoy» en Inicio, citas del cliente,
+   Agenda en la barra y en Más) y los datos de ejemplo con citas. Los trámites del usuario (clave de Anthropic y
+   Supabase «chirogra») hacen falta para el asistente (§4.4).
 1. **Informes de testers:** leerlos, arreglar desde la causa, enseñarle capturas antes/después y esperar su «súbelo».
    Los xlsx de Beta Family se leen descomprimiéndolos (no hay openpyxl); las fotos son enlaces firmados en
    `xl/worksheets/_rels/sheet3.xml.rels` que caducan a los 7 días (bajarlas con curl).

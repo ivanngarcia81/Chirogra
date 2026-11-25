@@ -36,10 +36,10 @@ public enum SchemaV4: VersionedSchema {
 }
 
 public enum ChirograMigrationPlan: SchemaMigrationPlan {
-    public static var schemas: [any VersionedSchema.Type] { [SchemaV1.self, SchemaV2.self, SchemaV3.self, SchemaV4.self, SchemaV5.self] }
-    public static var stages: [MigrationStage] { [migrateV1toV2, migrateV2toV3, migrateV3toV4, migrateV4toV5] }
+    public static var schemas: [any VersionedSchema.Type] { [SchemaV1.self, SchemaV2.self, SchemaV3.self, SchemaV4.self, SchemaV5.self, SchemaV6.self] }
+    public static var stages: [MigrationStage] { [migrateV1toV2, migrateV2toV3, migrateV3toV4, migrateV4toV5, migrateV5toV6] }
 
-    // `migrateV4toV5` (ligera) está en `SchemaV5.swift`.
+    // `migrateV4toV5` y `migrateV5toV6` (ligeras) están en `SchemaV5.swift` y `SchemaV6.swift`.
 
     /// Ligera: SwiftData/Core Data añade las columnas y tablas nuevas con sus valores por defecto.
     public static var migrateV1toV2: MigrationStage { .lightweight(fromVersion: SchemaV1.self, toVersion: SchemaV2.self) }
@@ -58,7 +58,8 @@ public enum ChirograMigrationPlan: SchemaMigrationPlan {
     }
 }
 
-// Los modelos que la app usa: los del esquema 4, salvo `AuditEvent` y `BankTransaction`, que son del 5 (`SchemaV5.swift`).
+// Los modelos que la app usa: los del esquema 4, salvo `AuditEvent` y `BankTransaction`, que son del 5 (`SchemaV5.swift`),
+// y los que añade el 6 (`SchemaV6.swift`).
 public typealias Company = SchemaV4.Company
 public typealias Account = SchemaV4.Account
 public typealias JournalEntry = SchemaV4.JournalEntry
@@ -118,15 +119,15 @@ extension CompanyOwnership {
         Attachment.self, TaxAgency.self, TaxRate.self, TaxGroup.self, NumberSequence.self, AuditEvent.self,
         RecurringTemplate.self, RecurringTemplateLine.self, CustomerNote.self, InvoiceEvent.self, Estimate.self, EstimateLine.self,
         PeriodClose.self, NoticeState.self, BankTransaction.self, BankRule.self, BankImportProfile.self, Reconciliation.self,
-        Budget.self, BudgetLine.self,
+        Budget.self, BudgetLine.self, Appointment.self, EstimatedTaxSetting.self, EstimatedTaxPayment.self,
     ]
 }
 
 extension CompanyOwnership {
-    /// `ownedTypes` con las clases del esquema 4 (congeladas) en lugar de las que el 5 sustituye: para la migración
-    /// 3 → 4, que trabaja sobre un almacén del esquema 4.
+    /// `ownedTypes` con las clases del esquema 4 (congeladas) en lugar de las que el 5 sustituye, y sin las que el 6
+    /// añade: para la migración 3 → 4, que trabaja sobre un almacén del esquema 4.
     static var ownedTypesV4: [any CompanyOwned.Type] {
-        ownedTypes.map { type in
+        ownedTypes.filter { type in !SchemaV6.addedTypes.contains(ObjectIdentifier(type)) }.map { type in
             switch ObjectIdentifier(type) {
             case ObjectIdentifier(SchemaV5.AuditEvent.self): SchemaV4.AuditEvent.self
             case ObjectIdentifier(SchemaV5.BankTransaction.self): SchemaV4.BankTransaction.self

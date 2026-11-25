@@ -2768,6 +2768,16 @@
         }
       }
     },
+    "1.er pago" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1st payment"
+          }
+        }
+      }
+    },
     "1099" : {
       "localizations" : {
         "en" : {
@@ -2811,12 +2821,42 @@
         }
       }
     },
+    "2.º pago" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "2nd payment"
+          }
+        }
+      }
+    },
+    "3.er pago" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "3rd payment"
+          }
+        }
+      }
+    },
     "30 días" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "30 days"
+          }
+        }
+      }
+    },
+    "4.º pago" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "4th payment"
           }
         }
       }
@@ -4087,6 +4127,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Appearance"
+          }
+        }
+      }
+    },
+    "Apartado para impuestos cambiado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tax set-aside changed"
           }
         }
       }
@@ -6743,6 +6793,66 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Period Close"
+          }
+        }
+      }
+    },
+    "Cita" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appointment"
+          }
+        }
+      }
+    },
+    "Cita %@: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appointment %@: %@"
+          }
+        }
+      }
+    },
+    "Cita cambiada: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appointment changed: %@"
+          }
+        }
+      }
+    },
+    "Cita creada: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appointment created: %@"
+          }
+        }
+      }
+    },
+    "Cita eliminada: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appointment deleted: %@"
+          }
+        }
+      }
+    },
+    "Cita facturada: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appointment invoiced: %@"
           }
         }
       }
@@ -10511,6 +10621,16 @@
         }
       }
     },
+    "El pago tiene que ser del 1.º al 4.º." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The payment must be the 1st through the 4th."
+          }
+        }
+      }
+    },
     "El periodo está cerrado hasta el %@." : {
       "localizations" : {
         "en" : {
@@ -11864,6 +11984,16 @@
         }
       }
     },
+    "Escribe cuánto pagaste." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter how much you paid."
+          }
+        }
+      }
+    },
     "Escribe el monto cobrado: hasta %@." : {
       "localizations" : {
         "en" : {
@@ -12355,6 +12485,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Estimate deleted: %@"
+          }
+        }
+      }
+    },
+    "Estimado desde la cita: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estimate from appointment: %@"
           }
         }
       }
@@ -14896,6 +15036,26 @@
         }
       }
     },
+    "Impuesto estimado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estimated tax"
+          }
+        }
+      }
+    },
+    "Impuesto estimado %@ · %@ (1040-ES)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estimated tax %@ · %@ (1040-ES)"
+          }
+        }
+      }
+    },
     "Impuesto incluido" : {
       "localizations" : {
         "en" : {
@@ -15265,6 +15425,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "The new category doesn't exist or is archived."
+          }
+        }
+      }
+    },
+    "La cita necesita un cliente o un título." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The appointment needs a customer or a title."
+          }
+        }
+      }
+    },
+    "La cita tiene que durar algo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The appointment needs a duration."
           }
         }
       }
@@ -19911,6 +20091,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bill payment"
+          }
+        }
+      }
+    },
+    "Pago al IRS eliminado: %@ · %@ %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "IRS payment deleted: %@ · %@ %@"
+          }
+        }
+      }
+    },
+    "Pago al IRS: %@ · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "IRS payment: %@ · %@"
           }
         }
       }
@@ -26536,6 +26736,16 @@
         }
       }
     },
+    "Tarjeta en Inicio y Reportes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Card on Home and Reports"
+          }
+        }
+      }
+    },
     "Tasa" : {
       "localizations" : {
         "en" : {
@@ -29706,6 +29916,16 @@
         }
       }
     },
+    "cancelada" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "canceled"
+          }
+        }
+      }
+    },
     "clients.column" : {
       "localizations" : {
         "en" : {
@@ -29909,6 +30129,16 @@
         }
       }
     },
+    "eliminada" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "deleted"
+          }
+        }
+      }
+    },
     "esta categoría" : {
       "localizations" : {
         "en" : {
@@ -30093,6 +30323,16 @@
         }
       }
     },
+    "hecha" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "done"
+          }
+        }
+      }
+    },
     "hoy" : {
       "localizations" : {
         "en" : {
@@ -30174,6 +30414,16 @@
         }
       }
     },
+    "programada" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "scheduled"
+          }
+        }
+      }
+    },
     "proveedor" : {
       "localizations" : {
         "en" : {
@@ -30211,6 +30461,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "total balance %@"
+          }
+        }
+      }
+    },
+    "sin asistencia" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "no-show"
           }
         }
       }

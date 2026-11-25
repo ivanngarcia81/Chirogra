@@ -7,8 +7,8 @@ import Testing
 struct CloudKitSchemaTests {
     @Test("El modelo de Core Data del esquema actual cumple las reglas de CloudKit")
     func modelFollowsCloudKitRules() throws {
-        let model = try #require(NSManagedObjectModel.makeManagedObjectModel(for: SchemaV5.models))
-        #expect(model.entities.count == SchemaV5.models.count)
+        let model = try #require(NSManagedObjectModel.makeManagedObjectModel(for: SchemaV6.models))
+        #expect(model.entities.count == SchemaV6.models.count)
         for entity in model.entities {
             for relationship in entity.relationshipsByName.values {
                 #expect(relationship.inverseRelationship != nil, "\(entity.name ?? "").\(relationship.name) sin inversa")
@@ -34,7 +34,7 @@ struct CloudKitSchemaTests {
                                      "description", "debugDescription", "hash", "superclass", "className", "objectID", "entity",
                                      "managedObjectContext", "isFault", "isDeleted", "isInserted", "isUpdated", "hasChanges",
                                      "changedValues", "faultingState", "hasPersistentChangedValues", "self", "zone"]
-        let model = try #require(NSManagedObjectModel.makeManagedObjectModel(for: SchemaV5.models))
+        let model = try #require(NSManagedObjectModel.makeManagedObjectModel(for: SchemaV6.models))
         for entity in model.entities {
             for name in entity.propertiesByName.keys {
                 #expect(!reserved.contains(name), "\(entity.name ?? "").\(name) choca con un campo reservado de CloudKit")
@@ -46,7 +46,7 @@ struct CloudKitSchemaTests {
     /// used with CloudKit»): `subjectEntity` es una propiedad nueva y el valor lo copia la migración a medida.
     @Test("El historial guarda la entidad en subjectEntity, sin renombrar ninguna propiedad")
     func auditEventSubject() throws {
-        let model = try #require(NSManagedObjectModel.makeManagedObjectModel(for: SchemaV5.models))
+        let model = try #require(NSManagedObjectModel.makeManagedObjectModel(for: SchemaV6.models))
         let audit = try #require(model.entitiesByName["AuditEvent"])
         #expect(audit.attributesByName["subjectEntity"] != nil)
         #expect(audit.attributesByName["entityName"] == nil)
@@ -107,5 +107,13 @@ struct CloudKitSchemaTests {
             }
         }
         #expect(Set(added) == ["AuditEvent.device", "AuditEvent.changeDetails", "BankTransaction.ignoreReason"])
+    }
+
+    @Test("El esquema 6 solo añade: tres entidades nuevas sin relaciones, con valor por defecto u opcional en todo")
+    func schema6OnlyAdds() throws {
+        let (old, new) = try Self.expectOnlyAdds(from: SchemaV5.models, to: SchemaV6.models)
+        let added = Set(new.entities.compactMap(\.name)).subtracting(old.entities.compactMap(\.name))
+        #expect(added == ["Appointment", "EstimatedTaxSetting", "EstimatedTaxPayment"])
+        for name in added { #expect(try #require(new.entitiesByName[name]).relationshipsByName.isEmpty, "\(name)") }
     }
 }

@@ -306,6 +306,7 @@ extension EntrySource {
         case .bankDeposit: String(localized: "Depósito")
         case .transfer: String(localized: "Transferencia")
         case .accountantAdjustment: String(localized: "Ajuste del contador")
+        case .estimatedTax: String(localized: "Impuesto estimado")
         }
     }
 }

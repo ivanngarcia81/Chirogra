@@ -17,6 +17,7 @@ decidió que **Plaid va justo después, en la 1.5**, reutilizando este servidor.
 | Modelo | **Se decide tras medir** (16-nov): en la QA, Opus 5.5 y Sonnet 5.5 con las mismas preguntas reales; se elige con el costo y la calidad medidos. |
 | Límite | **100 preguntas al mes** por suscripción (16-nov). Al llegar, se avisa y se reinicia el mes siguiente. |
 | Citas que se repiten | **Desde el principio** (16-nov): cada día, semana, 2 semanas o mes, con fin opcional; cambiar «solo esta» o «esta y las siguientes». |
+| Cómo se abre el asistente | **B: burbuja flotante** abajo a la derecha, en todas las pantallas (25-nov, canvas https://claude.ai/artifact/GDQsZiSZRruwx3PhhLytyt, tableros `EntradaB`, `EntradaBAgenda`, `iPadEntradaB`). En el Mac, además, ⌘K. |
 | Pronunciación | «Kairogra» (griego). Ver CONTEXTO, «Decisiones del usuario». |
 
 ## 1. Agenda (citas con clientes)
@@ -88,8 +89,8 @@ factura o el presupuesto.
   declarar (`Bookkeeper+Notices.swift`). Se añaden presupuesto excedido y las citas, y la opción de recibirlos como
   **notificación** del aparato, una vez al día. Esto es local y no gasta IA. Desde el aviso, «Pregúntale al asistente»
   abre la conversación con el contexto puesto.
-- **Dónde se abre:** botón del asistente arriba en Inicio (iPhone) y en la barra de herramientas (Mac e iPad), más
-  ⌘K en el Mac. En español o inglés, según el idioma de la app.
+- **Dónde se abre:** burbuja flotante abajo a la derecha en todas las pantallas (decisión del 25-nov), más ⌘K en el
+  Mac. En español o inglés, según el idioma de la app.
 - **Sin conexión, o sin suscripción:** el botón explica por qué no está disponible. El resto de la app no cambia.
 
 ### Modelo y costo

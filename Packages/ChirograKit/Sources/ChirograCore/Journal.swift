@@ -19,6 +19,8 @@ public enum EntrySource: String, CaseIterable, Sendable, Codable {
     case transfer
     /// 1.2: asiento a mano marcado como ajuste del contador. Una versión anterior lo lee como `manual`.
     case accountantAdjustment
+    /// 1.4: pago de impuestos estimados al IRS (1040-ES), a retiros del dueño. Una versión anterior lo lee como `manual`.
+    case estimatedTax
 
     /// Asiento escrito a mano (también el ajuste del contador): se puede revertir desde Contabilidad.
     public var isManual: Bool { self == .manual || self == .accountantAdjustment }
