@@ -91,3 +91,12 @@ El banco con Plaid (1.5), el contador dentro de la app, Stripe y nómina (2.0). 
 ## Qué entregar
 iPhone (claro y oscuro), iPad horizontal y Mac. Con los estados vacíos, el permiso del asistente y las dos opciones de
 cómo se abre (A y B).
+
+---
+
+**Diseño:** canvas «Chirogra 1.4 — Agenda, asistente e impuestos estimados»
+(https://claude.ai/artifact/GDQsZiSZRruwx3PhhLytyt), hecho por el usuario en Claude Design el 25-nov. Se lee con la
+herramienta Artifact (`path: project/<tablero>.dc.html`; la lista de tableros en `project/canvas.json`). Al leerlo el
+25-nov, los tableros de la §3 (Reportes, Apartado, PagoIRS, iPadApartado, MacApartado) estaban en `canvas.json` pero sin
+publicar; la tarjeta del apartado sí está en Inicio (`Main`, `iPadInicio`). Pendiente de él: elegir A (botón) o B
+(burbuja) para abrir el asistente.

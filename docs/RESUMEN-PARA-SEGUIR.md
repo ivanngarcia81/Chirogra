@@ -15,7 +15,7 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
   vez de «escanea» recibos). Si Apple rechaza algo, el usuario trae el mensaje del Resolution Center. Si la web de App
   Store Connect falla (sin apps, lo saca al entrar), suele ser la sesión de Safari (pestaña privada / borrar datos).
 - **Rama de trabajo: `version-1.4`** (1.4.0, creada el 25-nov desde `version-1.3` en `81f8708`, sin empujar). La 1.4
-  empieza por el canvas de diseño: encargo en [DISEÑO-1.4.md](DISEÑO-1.4.md), que el usuario pega en Claude Design.
+  tiene su canvas: https://claude.ai/artifact/GDQsZiSZRruwx3PhhLytyt (encargo en [DISEÑO-1.4.md](DISEÑO-1.4.md)).
 - **Ramas:** `version-1.3` con el 65, sus docs (**empujada el 23-nov**) y `81f8708` (arreglos de Yurii S., sin empujar) (GitHub Actions en verde: pruebas, compilación y
   las 4 de interfaz). `main` en `83b1db4` (build 50 y la web con «Kairogra»), empujada el 17-nov; los builds de después
   no tocan la web (`sitio/`, se publica desde `main`), así que no hace falta moverla.
