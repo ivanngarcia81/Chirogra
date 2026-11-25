@@ -49,11 +49,14 @@ struct AssistantView: View {
             .screenBackground()
             .navigationTitle("Asistente")
             .inlineTitle()
+            // Solo con el asistente abierto: en el iPad, el panel cerrado seguía poniendo su «X» en la barra del detalle.
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button { assistant.isOpen = false } label: { Label("Cerrar el asistente", systemImage: "xmark") }
+                if assistant.isOpen {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button { assistant.isOpen = false } label: { Label("Cerrar el asistente", systemImage: "xmark") }
+                    }
                 }
-                if assistant.consented && !assistant.messages.isEmpty {
+                if assistant.isOpen && assistant.consented && !assistant.messages.isEmpty {
                     ToolbarItem(placement: .primaryAction) {
                         Button { assistant.reset() } label: { Label("Conversación nueva", systemImage: "square.and.pencil") }
                     }

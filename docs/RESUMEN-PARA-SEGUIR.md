@@ -390,8 +390,8 @@ en verde.
    y «Por cobrar», y arriba de Reportes; oculta por defecto en S/C-corp), la pantalla (pago que toca, «Registrar pago
    al IRS», las cuatro fechas, pagos anotados con «Quitar», porcentaje y tarjeta) y la hoja «Pago al IRS». Impuestos
    tiene subsecciones en la barra (`SidebarItem.taxes`: «Impuesto sobre ventas» e «Impuestos estimados») y Más del
-   iPhone la herramienta nueva. QA: `-qa.seccion estimatedTax`. Falta la sección del iPad en Inicio y el inspector
-   del Mac. **Asistente sin servidor** (commiteado): burbuja flotante (`Assistant/`, encima de la barra de pestañas
+   iPhone la herramienta nueva. QA: `-qa.seccion estimatedTax`. La sección del iPad en Inicio
+   («Apartado para impuestos» en la columna) hecha después (commiteada); falta el inspector del Mac. **Asistente sin servidor** (commiteado): burbuja flotante (`Assistant/`, encima de la barra de pestañas
    en el iPhone, abajo a la derecha del detalle en iPad y Mac), hoja en el iPhone y panel (inspector) en iPad y Mac,
    permiso la primera vez (`assistant.consent`, por aparato), sin conexión y solo lectura. Las sugerencias de cifras
    (ganancia del mes, quién me debe, cuánto apartar) se contestan ya en el aparato (`AssistantTools`, lo que el servidor

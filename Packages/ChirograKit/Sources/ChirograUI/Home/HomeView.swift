@@ -78,6 +78,8 @@ struct HomeView: View {
         case cash, results, receivables, payables
         /// 1.4: las citas de hoy (canvas `iPadInicio`); solo si la agenda se usa.
         case today
+        /// 1.4: el apartado para impuestos estimados (canvas `iPadInicio`, «Impuestos»), salvo que esté apagado.
+        case setAside
         var id: String { rawValue }
     }
 
@@ -953,14 +955,25 @@ struct HomeView: View {
         case .receivables: String(localized: "Por cobrar")
         case .payables: String(localized: "Por pagar")
         case .today: String(localized: "Hoy")
+        case .setAside: String(localized: "Apartado para impuestos")
         }
+    }
+
+    @ReportBasisSetting private var reportBasis
+
+    private var setAside: EstimatedTaxSummary? {
+        _ = journalLines.count
+        return try? Bookkeeper(context: modelContext).estimatedTaxSummary(basis: reportBasis)
     }
 
     private var today: TodayAppointments { TodayAppointments(context: modelContext, stored: appointments) }
 
     /// Las secciones de la columna; «Hoy» solo si la agenda se usa.
     private var padSections: [PadSection] {
-        PadSection.allCases.filter { $0 != .today || today.isUsed }
+        PadSection.allCases.filter {
+            ($0 != .today || today.isUsed)
+                && ($0 != .setAside || EstimatedTaxCard.isShown(settings: taxSettings, company: companies.first))
+        }
     }
 
     /// Columna del resumen: empresa · mes, y las cuatro secciones con icono, detalle y cifra.
@@ -1010,6 +1023,10 @@ struct HomeView: View {
             ("calendar", Palette.orange, String(localized: "Próximos 14 días"), Palette.ink2, soonTotal.moneyWhole)
         case .today:
             ("calendar.day.timeline.left", Palette.red, today.padSubtitle, Palette.ink2, "\(today.items.count)")
+        case .setAside:
+            ("building.columns.circle", Palette.indigo,
+             setAside.map { String(localized: "Vence el \($0.focus.period.due.dayMonth)") } ?? "",
+             Palette.ink2, (setAside?.focus.toSetAside ?? 0).moneyWhole)
         }
         return Button { padSection = section } label: {
             HStack(spacing: 12) {
@@ -1074,6 +1091,14 @@ struct HomeView: View {
                 payablesCard
                 SectionLink(item: .expenses(.bills)) { ExpensesView(fixedSegment: .bills) } label: { Text("Ver todas las facturas por pagar") }
                     .buttonStyle(FillCapsuleButtonStyle(fullWidth: false))
+            case .setAside:
+                if let setAside {
+                    EstimatedTaxSummaryContent(summary: setAside)
+                        .padding(.horizontal, 20).padding(.vertical, 18)
+                        .background(Palette.surface, in: RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous))
+                }
+                SectionLink(item: .taxes(.estimated)) { EstimatedTaxView() } label: { Text("Ver impuestos estimados") }
+                    .buttonStyle(FillCapsuleButtonStyle(fullWidth: false))
             case .today:
                 RowGroup {
                     if today.items.isEmpty { emptyRow(String(localized: "Sin citas hoy")) }
@@ -1092,6 +1117,7 @@ struct HomeView: View {
         case .receivables: String(localized: "\(openInvoices.count) facturas abiertas")
         case .payables: String(localized: "Próximos 14 días · \(soonBills.reduce(0) { $0 + $1.balanceDue }.money)")
         case .today: Date.now.formatted(.appDateTime.weekday(.wide).day().month(.wide)).sentenceCased + " · " + today.padSubtitle
+        case .setAside: setAside.map { "\($0.focus.period.title) · " + String(localized: "\($0.percent) % de la ganancia") } ?? ""
         }
     }
 
