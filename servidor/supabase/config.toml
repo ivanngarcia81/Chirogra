@@ -1,0 +1,6 @@
+# Proyecto de Supabase «chirogra» (organización Chirogra). Solo lo que usa el asistente de la 1.4.
+project_id = "chirogra"
+
+[functions.asistente]
+# La app no tiene sesión de Supabase: quién pregunta lo dice la compra firmada por la App Store (`apple.ts`).
+verify_jwt = false

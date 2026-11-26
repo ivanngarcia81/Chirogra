@@ -5,7 +5,16 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 
 ## Estado
 
-- **Último build: 67 (1.4.0)**, subido a TestFlight iOS y macOS el 26-nov: el asistente con los lápices del icono en vez
+- **Servidor del asistente EN MARCHA (26-nov), en el build 68:** proyecto de Supabase **«Chirogra»**
+  (`nybetiuxfzkbfoijssfo`, organización Chirogra, plan gratis), función `asistente` desplegada (versión 2) y esquema
+  `asistente.uso` creado. Código en `servidor/` (README ahí). Secretos: `ANTHROPIC_API_KEY` y `ASISTENTE_PRUEBA` (los
+  puso el usuario; la de prueba está en el scratchpad de la sesión, `asistente-prueba.txt`, y en la app Debug va con
+  `-qa.asistentePrueba`). Probado en el simulador con `-qa.asistentePregunta`: contesta «¿cómo registro un cobro?» con la
+  guía y «¿cuánto gané y en qué gasté más?» con dos herramientas (cifras iguales a Inicio). Uso medido: la primera
+  pregunta escribe ~17 mil tokens en caché (~$0.09); con la caché caliente, ~$0.02 por pregunta. Falta: probar la
+  compra real (TestFlight), respuestas que se escriben poco a poco y los borradores (preparar_gasto…).
+- **Último build: 68 (1.4.0)**, subido a TestFlight iOS y macOS el 26-nov: el asistente contesta preguntas escritas con el
+  servidor (falta probar la compra real desde TestFlight). Antes: 67, subido el 26-nov: el asistente con los lápices del icono en vez
   de la chispa, y en el iPad y el Mac su panel con cabecera propia (la «X» dentro del panel), línea divisoria y fondo
   gris más claro (`Palette.assistantPanel`). Antes: 66 (1.4.0), subido el 25-nov (`c0c2e33`): agenda (avisos y Calendario),
   impuestos estimados y asistente sin servidor. **Esquema 6 de CloudKit creado en Desarrollo el 25-nov
@@ -99,7 +108,8 @@ acumule: está en `git show 1fe35ff:docs/RESUMEN-PARA-SEGUIR.md` y en los mensaj
 | 64 | `b2c8e43` | 1.3.0: **icono «chirogra pencils»** (lapicero y lápiz cruzados en χ, ρ azafrán con brillo de lupa; archivo del usuario), también `LogoMark` y la bienvenida (`LogoGlyph`), el icono de la web y las capturas de la guía. **Enviado a revisión** (1.3.0 iOS y macOS) el 22-nov. |
 | 65 | `00ace74` | 1.3.0: **auditoría técnica** (base caja con notas de crédito y saldo a favor, suma SHA-256 en las copias, aviso de iCloud en local, saldos rehechos tras sincronizar, importes en 128 bits, sales tax de las notas, aviso de tabla por ZIP vieja, no anular facturas con nota) y **pruebas de interfaz** en el repo (`PruebasInterfaz`, `scripts/interfaz.sh`). 403 pruebas + 4 de interfaz. |
 | 66 | `c0c2e33` | 1.4.0: agenda (avisos, Calendario), impuestos estimados, asistente sin servidor (esquema 6). |
-| 67 | — | 1.4.0: asistente con los lápices de Chirogra; panel del iPad y Mac con cabecera, «X», línea y fondo más claro. |
+| 67 | `aea107d` | 1.4.0: asistente con los lápices de Chirogra; panel del iPad y Mac con cabecera, «X», línea y fondo más claro. |
+| 68 | — | 1.4.0: el asistente contesta preguntas escritas con el servidor de Supabase «Chirogra» (Claude Opus 5.5 y herramientas en el aparato). |
 
 ## Último chat (25-nov, tarde): informe de Yurii S. en el iPad y comienzo de la 1.4
 

@@ -140,6 +140,7 @@ struct AssistantView: View {
 
     private var newConversationButton: some View {
         Button { assistant.reset() } label: { Label("Conversación nueva", systemImage: "square.and.pencil") }
+            .disabled(assistant.isWorking)
             .help(Text("Conversación nueva"))
     }
 
@@ -153,6 +154,14 @@ struct AssistantView: View {
                         ForEach(assistant.messages) { message in
                             AssistantBubbleRow(message: message).id(message.id)
                         }
+                        if assistant.isWorking {
+                            HStack(spacing: 8) {
+                                ProgressView().controlSize(.small)
+                                Text("Pensando…").font(.subheadline).foregroundStyle(Palette.ink2)
+                            }
+                            .id("pensando")
+                            .accessibilityElement(children: .combine)
+                        }
                     }
                 }
                 .padding(Metrics.gutter)
@@ -162,7 +171,19 @@ struct AssistantView: View {
             .onChange(of: assistant.messages.count) {
                 if let last = assistant.messages.last { withAnimation { proxy.scrollTo(last.id, anchor: .top) } }
             }
+            .onChange(of: assistant.isWorking) {
+                if assistant.isWorking { withAnimation { proxy.scrollTo("pensando", anchor: .bottom) } }
+            }
             .safeAreaInset(edge: .bottom, spacing: 0) { composer }
+            #if DEBUG
+            // `-qa.asistentePregunta "texto"`: la pregunta se hace sola al abrir (capturas, sin teclear). Solo Debug.
+            .task {
+                guard !AssistantState.askedQAQuestion, assistant.messages.isEmpty,
+                      let question = UserDefaults.standard.string(forKey: "qa.asistentePregunta"), !question.isEmpty else { return }
+                AssistantState.askedQAQuestion = true
+                assistant.ask(question, context: context, basis: basis)
+            }
+            #endif
         }
     }
 
@@ -238,10 +259,10 @@ struct AssistantView: View {
                     .padding(.vertical, 10)
                 Button(action: send) {
                     Image(systemName: "arrow.up.circle.fill").font(.system(size: 30))
-                        .foregroundStyle(draft.trimmingCharacters(in: .whitespaces).isEmpty ? Palette.ink2 : Palette.brand)
+                        .foregroundStyle(canSend ? Palette.brand : Palette.ink2)
                 }
                 .buttonStyle(.plain)
-                .disabled(draft.trimmingCharacters(in: .whitespaces).isEmpty)
+                .disabled(!canSend)
                 .accessibilityLabel("Enviar")
                 .padding(.trailing, 8)
             }
@@ -251,8 +272,11 @@ struct AssistantView: View {
         .padding(.vertical, 8)
     }
 
+    private var canSend: Bool { !assistant.isWorking && !draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+
     private func send() {
-        assistant.ask(draft)
+        guard canSend else { return }
+        assistant.ask(draft, context: context, basis: basis)
         draft = ""
     }
 
@@ -345,7 +369,10 @@ private struct AssistantAnswer: View {
     var body: some View {
         switch content {
         case .text(let text):
-            Text(text).foregroundStyle(Palette.ink)
+            // Las respuestas del modelo traen negritas y listas cortas en Markdown.
+            Text((try? AttributedString(markdown: text, options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace))) ?? AttributedString(text))
+                .foregroundStyle(Palette.ink)
+                .textSelection(.enabled)
         case let .profit(income, expenses, net, period):
             VStack(alignment: .leading, spacing: 8) {
                 Text("Del \(period.start.dayMonth) al \(period.end.dayMonth) llevas:").foregroundStyle(Palette.ink)

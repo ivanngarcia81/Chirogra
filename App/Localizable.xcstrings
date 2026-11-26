@@ -1042,6 +1042,16 @@
         }
       }
     },
+    "%lld %% de la ganancia" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld%% of profit"
+          }
+        }
+      }
+    },
     "%lld abiertas · %@" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -10865,6 +10875,16 @@
         }
       }
     },
+    "El asistente está muy ocupado ahora mismo. Prueba otra vez en un momento." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The assistant is very busy right now. Try again in a moment."
+          }
+        }
+      }
+    },
     "El asistente necesita internet. Tus libros siguen aquí y puedes registrar a mano." : {
       "localizations" : {
         "en" : {
@@ -17088,6 +17108,16 @@
         }
       }
     },
+    "Llegaste a las 100 preguntas de este mes. Se renuevan el día 1. Las sugerencias de abajo siguen funcionando." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You’ve reached this month’s 100 questions. They reset on the 1st. The suggestions below still work."
+          }
+        }
+      }
+    },
     "Llegaste al límite de empresas" : {
       "localizations" : {
         "en" : {
@@ -19431,6 +19461,16 @@
         }
       }
     },
+    "No hay conexión. El asistente necesita internet para contestar; las sugerencias de abajo funcionan sin ella." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No connection. The assistant needs the internet to answer; the suggestions below work without it."
+          }
+        }
+      }
+    },
     "No hay cuentas con movimiento al corte." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -19533,6 +19573,26 @@
         }
       }
     },
+    "No pude comprobar tu suscripción con la App Store. Si acabas de suscribirte, espera un momento y prueba otra vez." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I couldn’t verify your subscription with the App Store. If you just subscribed, wait a moment and try again."
+          }
+        }
+      }
+    },
+    "No pude contestar ahora. Prueba otra vez en un momento." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I couldn’t answer right now. Try again in a moment."
+          }
+        }
+      }
+    },
     "No pude leer tus números." : {
       "localizations" : {
         "en" : {
@@ -19570,6 +19630,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "We couldn’t sync your data"
+          }
+        }
+      }
+    },
+    "No puedo ayudarte con esa pregunta. Prueba a preguntarlo de otra forma." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I can’t help with that question. Try asking it another way."
           }
         }
       }
@@ -21812,6 +21882,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Designed for sole proprietors and single-member LLCs. If your business is a corporation, you can turn the card off with the switch."
+          }
+        }
+      }
+    },
+    "Pensando…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thinking…"
           }
         }
       }
@@ -31326,6 +31406,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "You already have this tax: %@"
+          }
+        }
+      }
+    },
+    "Ya usaste las 20 preguntas de prueba. Con la suscripción tienes 100 preguntas al mes." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You’ve used your 20 trial questions. With a subscription you get 100 questions a month."
           }
         }
       }
