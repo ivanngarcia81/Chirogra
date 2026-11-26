@@ -7,14 +7,16 @@
 //   el uso libre, el `AppTransaction` firmado (`app`, 20 preguntas en total). Las pruebas de la app Debug mandan la
 //   cabecera `x-chirogra-prueba` con el secreto `ASISTENTE_PRUEBA`.
 //
-// Petición (POST, JSON): { idioma, hoy, aparato, empresa, base, compra?, app?, mensajes }
+// Petición (POST, JSON): { idioma, hoy, aparato, empresa, base, compra?, app?, mensajes, capacidades? }
+// `capacidades`: lo que sabe enseñar la app (build 69): «borradores» (tarjetas de registrar con una frase) y
+// «pantallas» (botón «Ir a…», más sales_tax y buscar_movimientos).
 // Respuesta: { contenido, parada, preguntas: { usadas, limite } } o { error } con el código HTTP del caso.
 
 import Anthropic from "npm:@anthropic-ai/sdk@1.14.0";
 import postgres from "npm:postgres@3.4.9";
 import { permiso, type Permiso } from "./apple.ts";
-import { HERRAMIENTAS } from "./herramientas.ts";
-import { contexto, guia, INSTRUCCIONES } from "./prompt.ts";
+import { BORRADORES, HERRAMIENTAS, PANTALLAS } from "./herramientas.ts";
+import { contexto, guia, instrucciones } from "./prompt.ts";
 
 const MODELO = "claude-opus-5-5";
 const LIMITES = {
@@ -37,6 +39,7 @@ type Cuerpo = {
   compra?: unknown;
   app?: unknown;
   mensajes?: unknown;
+  capacidades?: unknown;
 };
 
 const json = (cuerpo: unknown, estado = 200) =>
@@ -104,6 +107,9 @@ Deno.serve(async (req) => {
   if (!uso.permitido) return json({ error: "limite", clase: quien.clase, preguntas }, 429);
 
   const idioma = cuerpo.idioma === "en" ? "en" : "es";
+  const capacidades = Array.isArray(cuerpo.capacidades) ? cuerpo.capacidades : [];
+  const borradores = capacidades.includes("borradores");
+  const pantallas = capacidades.includes("pantallas");
   const textoGuia = await guia(idioma);
   try {
     const respuesta = await anthropic.beta.messages.create({
@@ -112,9 +118,9 @@ Deno.serve(async (req) => {
       betas: ["server-side-fallback-2026-07-01"],
       fallbacks: "default",
       output_config: { effort: "low" },
-      tools: HERRAMIENTAS,
+      tools: [...HERRAMIENTAS, ...(pantallas ? PANTALLAS : []), ...(borradores ? BORRADORES : [])],
       system: [
-        { type: "text", text: INSTRUCCIONES },
+        { type: "text", text: instrucciones(borradores, pantallas) },
         { type: "text", text: textoGuia, cache_control: { type: "ephemeral" } },
         {
           type: "text",

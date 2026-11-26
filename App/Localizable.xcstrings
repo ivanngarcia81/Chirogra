@@ -3357,6 +3357,16 @@
         }
       }
     },
+    "Abrir el borrador" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open the draft"
+          }
+        }
+      }
+    },
     "Abrir estimado" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -4862,6 +4872,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Assistant"
+          }
+        }
+      }
+    },
+    "Asistente (⌘K)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Assistant (⌘K)"
           }
         }
       }
@@ -7277,6 +7297,16 @@
         }
       }
     },
+    "Cita nueva" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New appointment"
+          }
+        }
+      }
+    },
     "Citas" : {
       "localizations" : {
         "en" : {
@@ -9418,6 +9448,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Delivery ZIP code"
+          }
+        }
+      }
+    },
+    "Cómo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How"
           }
         }
       }
@@ -12303,6 +12343,16 @@
         }
       }
     },
+    "Entra en" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deposit to"
+          }
+        }
+      }
+    },
     "Entradas y salidas" : {
       "localizations" : {
         "en" : {
@@ -13742,6 +13792,16 @@
         }
       }
     },
+    "Factura nueva (borrador)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New invoice (draft)"
+          }
+        }
+      }
+    },
     "Factura por etapas o partes del trabajo" : {
       "localizations" : {
         "en" : {
@@ -14038,6 +14098,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "The system account “%@” is missing."
+          }
+        }
+      }
+    },
+    "Falta la factura o la cuenta donde entra el dinero." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The invoice or the deposit account is missing."
           }
         }
       }
@@ -14677,6 +14747,16 @@
         }
       }
     },
+    "Gasto nuevo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New expense"
+          }
+        }
+      }
+    },
     "Gasto operativo" : {
       "localizations" : {
         "en" : {
@@ -14892,6 +14972,16 @@
         }
       }
     },
+    "Gastos recurrentes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recurring expenses"
+          }
+        }
+      }
+    },
     "Gastos y costos" : {
       "localizations" : {
         "en" : {
@@ -15010,6 +15100,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Keep the receipt: the IRS asks you to keep it. You can drop a photo or a PDF here."
+          }
+        }
+      }
+    },
+    "Guardado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saved"
           }
         }
       }
@@ -16189,6 +16289,16 @@
         }
       }
     },
+    "Ir a %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Go to %@"
+          }
+        }
+      }
+    },
     "JPG, PNG, HEIC o PDF" : {
       "localizations" : {
         "en" : {
@@ -16545,6 +16655,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "The date falls in a closed period (through %@). When you record it, you'll be asked for the closing password."
+          }
+        }
+      }
+    },
+    "La fecha cae en un periodo cerrado. Pulsa «Editar» para cambiarla." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The date falls in a closed period. Tap “Edit” to change it."
           }
         }
       }
@@ -20971,6 +21091,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Paid"
+          }
+        }
+      }
+    },
+    "Pagado a" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paid to"
           }
         }
       }
@@ -31629,6 +31759,16 @@
         }
       }
     },
+    "el día y la hora" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "the date and time"
+          }
+        }
+      }
+    },
     "el estado" : {
       "localizations" : {
         "en" : {
@@ -31954,6 +32094,26 @@
         }
       }
     },
+    "la cuenta donde entra el dinero" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "the deposit account"
+          }
+        }
+      }
+    },
+    "la factura" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "the invoice"
+          }
+        }
+      }
+    },
     "mes/día/año" : {
       "localizations" : {
         "en" : {
@@ -32131,6 +32291,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "your city"
+          }
+        }
+      }
+    },
+    "un cliente o un título" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "a customer or a title"
+          }
+        }
+      }
+    },
+    "un monto que no pase del saldo (%@)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "an amount no greater than the balance (%@)"
+          }
+        }
+      }
+    },
+    "una línea con precio" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "a line with a price"
           }
         }
       }

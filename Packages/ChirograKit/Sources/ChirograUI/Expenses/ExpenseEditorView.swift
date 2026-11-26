@@ -18,6 +18,10 @@ struct ExpenseEditorView: View {
     var initialReceipt: ReceiptFile? = nil
     /// Desde la ficha de una cuenta en Banca («Registrar gasto»): la cuenta con que se pagó.
     var paymentAccount: Account? = nil
+    /// 1.4: el borrador del asistente («Editar» en su tarjeta): el formulario nace relleno con él.
+    var prefill: ExpenseInput? = nil
+    /// Al guardar un gasto nuevo (el asistente marca su tarjeta como guardada).
+    var onSaved: ((Expense) -> Void)? = nil
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     @Environment(\.unsavedChanges) private var unsavedChanges
@@ -228,8 +232,7 @@ struct ExpenseEditorView: View {
     private func load() {
         guard !loaded else { return }
         defer { Task { @MainActor in loaded = true } }
-        if let expense {
-            let input = ExpenseInput(expense)
+        if let input = expense.map({ ExpenseInput($0) }) ?? prefill {
             payee = input.payee
             vendorID = input.vendor?.id
             customerID = input.customer?.id
@@ -242,6 +245,7 @@ struct ExpenseEditorView: View {
             taxFollowsRate = input.salesTaxIncluded > 0
                 && input.salesTaxIncluded == estimatedTax(in: input.lines.reduce(0) { $0 + $1.amount })
             lines = input.lines.isEmpty ? [LineDraft()] : input.lines.map { LineDraft(details: $0.details, amount: $0.amount, accountID: $0.accountID) }
+            if expense == nil { initialDate = date }
         } else {
             paymentAccountID = paymentAccount?.id ?? paymentAccounts.first { $0.subtype == .bank }?.id
             initialDate = date
@@ -716,6 +720,7 @@ struct ExpenseEditorView: View {
                 problems.append(String(localized: "El gasto se guardó, pero no se pudo crear la repetición: \(error.localizedDescription)"))
             }
         }
+        onSaved?(created)
         if !problems.isEmpty {
             errorMessage = problems.joined(separator: " ")
         } else if another {

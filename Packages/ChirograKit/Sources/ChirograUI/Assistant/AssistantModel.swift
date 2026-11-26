@@ -16,6 +16,11 @@ enum AssistantContent {
     case profit(income: Int64, expenses: Int64, net: Int64, period: DateInterval)
     case receivables(total: Int64, rows: [AssistantReceivable], count: Int)
     case setAside(EstimatedTaxSummary)
+    /// Un borrador para registrar (`AssistantDrafts`): su tarjeta con «Guardar» y «Editar». El estado vive en
+    /// `AssistantState.drafts`, para que la tarjeta cambie al guardarlo.
+    case draft(UUID)
+    /// «Ir a…» una pantalla que pidió Claude al explicar cómo se hace algo (`abrir_pantalla`).
+    case screen(SidebarItem)
 }
 
 struct AssistantReceivable: Identifiable {
@@ -69,8 +74,16 @@ final class AssistantState {
     private var conversation: [JSONValue] = []
     /// Esperando al servidor.
     private(set) var isWorking = false
-    /// Abre el editor de gasto (sugerencia «Anota un gasto» mientras no hay servidor).
+    /// Abre el editor de gasto (sugerencia «Anota un gasto»).
     var registeringExpense = false
+    /// Los borradores de «registrar con una frase», por id de su tarjeta.
+    private(set) var drafts: [UUID: AssistantDraft] = [:]
+    /// El borrador que se corrige en su editor («Editar» en la tarjeta).
+    var editingDraft: UUID?
+    /// La factura (borrador) que se abre desde su tarjeta, ya guardada.
+    var openingInvoice: Invoice?
+    /// Lo que el usuario hizo con las tarjetas desde la última pregunta: se le dice a Claude con la siguiente.
+    private var notes: [String] = []
     var consented = UserDefaults.standard.bool(forKey: AssistantState.consentKey) {
         didSet { UserDefaults.standard.set(consented, forKey: Self.consentKey) }
     }
@@ -92,6 +105,34 @@ final class AssistantState {
         guard !isWorking else { return }
         messages = []
         conversation = []
+        drafts = [:]
+        notes = []
+    }
+
+    // MARK: Tarjetas de borrador
+
+    /// «Guardar» en la tarjeta: lo guarda tal cual se enseñó.
+    func save(draft id: UUID, context: ModelContext) {
+        guard var draft = drafts[id], draft.canSave else { return }
+        draft.state = AssistantDrafts.save(draft, context: context)
+        drafts[id] = draft
+        guard case .saved = draft.state else { return }
+        notes.append(draft.savedNote)
+        // Como en el editor de citas: la primera cita con aviso pide el permiso del sistema y se programan los avisos.
+        if case .appointment(let appointment) = draft.payload, appointment.reminderMinutes >= 0, AppointmentReminders.isEnabled {
+            Task { @MainActor in
+                await AppointmentReminders.requestAuthorizationIfNeeded()
+                await AppointmentReminders.reschedule(context: context)
+            }
+        }
+    }
+
+    /// Guardado desde su editor («Editar»): la tarjeta pasa a guardada (con lo que se haya cambiado allí).
+    func markSaved(draft id: UUID) {
+        guard var draft = drafts[id] else { return }
+        draft.state = .saved(invoiceID: nil)
+        drafts[id] = draft
+        notes.append("El usuario corrigió en el editor y guardó: \(draft.title.lowercased()).")
     }
 
     func ask(_ suggestion: AssistantSuggestion, context: ModelContext, basis: AccountingBasis) {
@@ -113,7 +154,13 @@ final class AssistantState {
         guard !trimmed.isEmpty, !isWorking else { return }
         messages.append(AssistantMessage(role: .user, content: .text(trimmed)))
         let before = conversation
-        conversation.append(.object(["role": .string("user"), "content": .string(trimmed)]))
+        let pendingNotes = notes
+        // Lo hecho con las tarjetas va delante de la pregunta, como nota de la app (no lo escribió el usuario).
+        let content: JSONValue = pendingNotes.isEmpty ? .string(trimmed) : .array(
+            pendingNotes.map { .object(["type": .string("text"), "text": .string("[Nota de la app] \($0)")]) }
+            + [.object(["type": .string("text"), "text": .string(trimmed)])])
+        notes = []
+        conversation.append(.object(["role": .string("user"), "content": content]))
         isWorking = true
         Task {
             defer { isWorking = false }
@@ -122,12 +169,18 @@ final class AssistantState {
             } catch {
                 // La conversación vuelve a como estaba: sin la pregunta que no se contestó.
                 conversation = before
+                notes = pendingNotes + notes
                 messages.append(AssistantMessage(role: .assistant, content: .text(Self.explain(error))))
             }
         }
     }
 
     private func converse(context: ModelContext, basis: AccountingBasis) async throws {
+        // Los botones «Ir a…» van debajo de la respuesta final, no entre las vueltas.
+        var screens: [SidebarItem] = []
+        defer {
+            for item in screens { messages.append(AssistantMessage(role: .assistant, content: .screen(item))) }
+        }
         let books = Bookkeeper(context: context)
         let company = (try? books.company())?.displayName ?? ""
         let purchase = await AssistantServer.purchaseProof()
@@ -151,8 +204,19 @@ final class AssistantState {
                 return
             }
             let results: [JSONValue] = calls.map { call in
-                let output = AssistantTools.run(call["name"]?.string ?? "", input: call["input"] ?? .null,
-                                                context: context, basis: basis)
+                let name = call["name"]?.string ?? ""
+                let output: String
+                if let (draft, json) = AssistantDrafts.prepare(name, input: call["input"] ?? .null, context: context) {
+                    drafts[draft.id] = draft
+                    messages.append(AssistantMessage(role: .assistant, content: .draft(draft.id)))
+                    output = json
+                } else {
+                    output = AssistantTools.run(name, input: call["input"] ?? .null, context: context, basis: basis)
+                    if name == "abrir_pantalla", let item = AssistantScreens.item(call["input"]?["pantalla"]?.string ?? ""),
+                       !screens.contains(item) {
+                        screens.append(item)
+                    }
+                }
                 return .object(["type": .string("tool_result"), "tool_use_id": call["id"] ?? .null, "content": .string(output)])
             }
             conversation.append(.object(["role": .string("user"), "content": .array(results)]))
@@ -292,6 +356,15 @@ enum AssistantTools {
                      "titulo": o.appointment.title, "lugar": o.appointment.location,
                      "estado": o.status.rawValue] as [String: Any]
                 }]
+            case "sales_tax":
+                result = try salesTax(books: books, now: now)
+            case "buscar_movimientos":
+                result = try search(input, books: books)
+            case "abrir_pantalla":
+                // La pide Claude con la respuesta; el botón lo pone `AssistantState` (aquí solo se confirma).
+                let screen = AssistantScreens.item(input["pantalla"]?.string ?? "")
+                result = screen.map { ["boton": String(localized: "Ir a \(AssistantScreens.title($0))")] }
+                    ?? ["error": "No existe esa pantalla."]
             default:
                 result = ["error": "No existe la herramienta \(name)."]
             }
@@ -305,6 +378,75 @@ enum AssistantTools {
     }
 
     private enum ToolError: Error { case badDates }
+
+    /// Sales tax: lo pendiente según los libros, el periodo de declaración en curso y el anterior con su fecha límite.
+    private static func salesTax(books: Bookkeeper, now: Date) throws -> [String: Any] {
+        let cal = Calendar.current
+        let agencies = try books.fetch(TaxAgency.self).filter { !$0.isArchived }
+        let liabilities = try books.fetch(Account.self).filter { $0.subtype == .salesTaxPayable && !$0.isArchived }
+        let frequency = FilingFrequency.shownForSalesTax(agencies)
+        let current = Bookkeeper.salesTaxFilingPeriod(frequency, containing: now)
+        let previous = Bookkeeper.salesTaxFilingPeriod(frequency, containing: cal.date(byAdding: .day, value: -1, to: current.start) ?? current.start)
+        func owed(asOf date: Date?) -> Int64 { liabilities.reduce(0) { $0 + books.postedBalance(of: $1, asOf: date) } }
+        func summary(_ from: Date, _ to: Date) throws -> [String: Any] {
+            let s = try books.salesTaxSummary(from: from, to: to)
+            return ["periodo": label(from, to), "ventas": s.totalSales.money, "ventas_gravables": s.taxableSales.money,
+                    "impuesto_cobrado": s.totalTax.money,
+                    "por_tasa": s.rows.map { ["tasa": $0.name, "porcentaje": "\($0.percent)", "impuesto": $0.tax.money] as [String: Any] }]
+        }
+        let endOfPrevious = cal.date(byAdding: DateComponents(day: 1, second: -1), to: cal.startOfDay(for: previous.end)) ?? previous.end
+        var last = try summary(previous.start, endOfPrevious)
+        last["fecha_limite"] = day(previous.deadline)
+        last["pendiente_al_cierre"] = owed(asOf: endOfPrevious).money
+        var running = try summary(current.start, now)
+        running["fecha_limite"] = day(current.deadline)
+        return ["frecuencia": frequency.rawValue, "agencias": agencies.map(\.name), "pendiente_hoy": owed(asOf: nil).money,
+                "periodo_anterior": last, "periodo_en_curso": running,
+                "nota": "Saldo de la cuenta de sales tax según los libros. La declaración se presenta en la agencia del estado."]
+    }
+
+    /// Movimientos que nombran a alguien o algo: gastos, facturas por pagar, facturas y cobros, con sus totales.
+    private static func search(_ input: JSONValue, books: Bookkeeper) throws -> [String: Any] {
+        let wanted = AssistantDrafts.folded(input["texto"]?.string ?? "")
+        guard wanted.count >= 2 else { return ["error": "Falta qué buscar (un nombre, un número o una palabra)."] }
+        var from = Date.distantPast, to = Date.distantFuture
+        // Sin «desde» o sin «hasta», abierto por ese lado.
+        if input["desde"]?.string != nil || input["hasta"]?.string != nil {
+            (from, to) = try period(.object(["desde": .string(input["desde"]?.string ?? "1900-01-01"),
+                                             "hasta": .string(input["hasta"]?.string ?? "2999-12-31")]))
+        }
+        func hit(_ texts: String...) -> Bool { texts.contains { AssistantDrafts.folded($0).contains(wanted) } }
+        func inRange(_ date: Date) -> Bool { date >= from && date <= to }
+        typealias Row = (date: Date, kind: String, who: String, reference: String, amount: Int64, memo: String)
+        var rows: [Row] = []
+        for e in try books.fetch(Expense.self) where !e.isVoid && inRange(e.date)
+            && hit(e.payee, e.vendor?.name ?? "", e.memo, e.reference, e.customer?.name ?? "") {
+            rows.append((e.date, "gasto", e.vendor?.name ?? e.payee, e.reference, e.total, e.memo))
+        }
+        for b in try books.fetch(Bill.self) where b.status != .void && inRange(b.billDate)
+            && hit(b.vendor?.name ?? "", b.vendorNumber, b.memo) {
+            rows.append((b.billDate, "factura por pagar", b.vendor?.name ?? "", b.vendorNumber, b.total, b.memo))
+        }
+        for i in try books.fetch(Invoice.self) where i.status != .void && i.status != .draft && inRange(i.issueDate)
+            && hit(i.customer?.name ?? "", i.number) {
+            rows.append((i.issueDate, "factura", i.customer?.name ?? "", i.number, i.total, ""))
+        }
+        for p in try books.fetch(PaymentReceived.self) where !books.isVoided(p) && inRange(p.date) && hit(p.customer?.name ?? "") {
+            let invoices = (p.applications ?? []).compactMap { $0.invoice?.number }.sorted().joined(separator: ", ")
+            rows.append((p.date, "cobro", p.customer?.name ?? "", invoices, p.amount, invoices.isEmpty ? "" : "aplicado a \(invoices)"))
+        }
+        rows.sort { $0.date > $1.date }
+        let totals = Dictionary(grouping: rows, by: \.kind).mapValues { group in
+            ["cuantos": group.count, "total": group.reduce(Int64(0)) { $0 + $1.amount }.money] as [String: Any]
+        }
+        return ["buscado": input["texto"]?.string ?? "", "periodo": from == .distantPast && to == .distantFuture ? "todo" : label(from, to),
+                "encontrados": rows.count, "totales_por_tipo": totals,
+                "detalle": rows.prefix(40).map { r in
+                    ["fecha": day(r.date), "tipo": r.kind, "quien": r.who, "referencia": r.reference, "importe": r.amount.money,
+                     "nota": r.memo] as [String: Any]
+                },
+                "nota": rows.count > 40 ? "Solo los 40 más recientes en «detalle»; los totales son de todos." : ""]
+    }
 
     /// «desde» y «hasta» (incluido) en el calendario del aparato: del inicio de «desde» al último instante de «hasta».
     private static func period(_ input: JSONValue) throws -> (Date, Date) {
@@ -346,5 +488,40 @@ final class AssistantConnectivity {
             Task { @MainActor in AssistantConnectivity.shared.isOnline = online }
         }
         monitor.start(queue: DispatchQueue(label: "chirogra.asistente.red"))
+    }
+}
+
+/// Las pantallas a las que el asistente puede llevar (`abrir_pantalla`). Los ids son los del servidor
+/// (`servidor/supabase/functions/asistente/herramientas.ts`): si se cambia uno, cambiarlo en los dos sitios.
+enum AssistantScreens {
+    static let all: [(id: String, item: SidebarItem)] = [
+        ("inicio", .section(.home)), ("agenda", .section(.agenda)), ("ajustes", .section(.settings)),
+        ("facturas", .sales(.invoices)), ("estimados", .sales(.estimates)), ("clientes", .sales(.customers)),
+        ("gastos", .expenses(.expenses)), ("proveedores", .expenses(.vendors)), ("facturas_por_pagar", .expenses(.bills)),
+        ("gastos_recurrentes", .expenses(.recurring)),
+        ("banca_cuentas", .banking(.accounts)), ("banca_por_revisar", .banking(.inbox)), ("banca_reglas", .banking(.rules)),
+        ("conciliacion", .banking(.reconcile)),
+        ("reporte_resultados", .report(.income)), ("reporte_balance_general", .report(.balance)), ("reporte_balanza", .report(.trial)),
+        ("reporte_flujo_de_efectivo", .report(.cashFlow)), ("reporte_por_cobrar", .report(.receivables)),
+        ("reporte_por_pagar", .report(.payables)), ("reporte_sales_tax", .report(.salesTax)), ("presupuestos", .report(.budget)),
+        ("plan_de_cuentas", .accounting(.chart)), ("asientos_de_diario", .accounting(.journal)), ("libro_mayor", .accounting(.ledger)),
+        ("cierre_de_periodo", .accounting(.close)), ("bitacora", .accounting(.auditLog)),
+        ("impuesto_sobre_ventas", .taxes(.salesTax)), ("impuestos_estimados", .taxes(.estimated)),
+    ]
+
+    static func item(_ id: String) -> SidebarItem? { all.first { $0.id == id }?.item }
+
+    /// El nombre tal como sale en la barra lateral.
+    static func title(_ item: SidebarItem) -> String {
+        switch item {
+        case .section(let section): return section.title
+        case .expenses(.recurring): return String(localized: "Gastos recurrentes")
+        case .report(let kind): return kind.fullTitle
+        case .accounting(let page): return page.title
+        case .banking(let page): return page.title
+        case .taxes(let page): return page.title
+        case .sales, .expenses:
+            return SidebarItem.subsections(of: item.section).first { $0.item == item }?.title ?? item.section.title
+        }
     }
 }

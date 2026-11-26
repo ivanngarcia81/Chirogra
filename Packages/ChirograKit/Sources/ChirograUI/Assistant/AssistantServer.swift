@@ -87,6 +87,10 @@ enum AssistantServer {
         let compra: String?
         let app: String?
         let mensajes: [JSONValue]
+        /// Lo que sabe enseñar esta app (build 69): «borradores» = las tarjetas de registrar con una frase; «pantallas» =
+        /// el botón «Ir a…» (`abrir_pantalla`), `sales_tax` y `buscar_movimientos`. El servidor solo le da a Claude las
+        /// herramientas que la app entiende.
+        var capacidades: [String] = ["borradores", "pantallas"]
     }
 
     static func send(_ request: Request) async throws -> AssistantReply {

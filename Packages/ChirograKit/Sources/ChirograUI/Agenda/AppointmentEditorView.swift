@@ -15,6 +15,8 @@ struct AppointmentEditorView: View {
     var customerID: UUID?
     /// Al guardar, la clave de la cita resultante (con «esta y las siguientes» es otra serie).
     var onSaved: ((AppointmentKey) -> Void)?
+    /// 1.4: el borrador del asistente («Editar» en su tarjeta): la cita nueva nace rellena con él.
+    var prefill: AppointmentDraft?
 
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
@@ -37,11 +39,12 @@ struct AppointmentEditorView: View {
     @State private var askingScope = false
     @State private var errorMessage: String?
 
-    init(occurrence: AppointmentOccurrence? = nil, day: Date? = nil, customerID: UUID? = nil,
+    init(occurrence: AppointmentOccurrence? = nil, day: Date? = nil, customerID: UUID? = nil, prefill: AppointmentDraft? = nil,
          onSaved: ((AppointmentKey) -> Void)? = nil) {
         self.occurrence = occurrence
         self.day = day
         self.customerID = customerID
+        self.prefill = prefill
         self.onSaved = onSaved
     }
 
@@ -150,6 +153,15 @@ struct AppointmentEditorView: View {
                 recurrence = appointment.recurrence
                 if let end = appointment.recurrenceEnd { ends = true; lastDay = end }
             }
+        } else if let prefill {
+            selectedCustomer = prefill.customerID
+            title = prefill.title
+            start = prefill.start
+            duration = prefill.durationMinutes
+            location = prefill.location
+            reminder = prefill.reminderMinutes
+            notes = prefill.notes
+            lastDay = Calendar.current.date(byAdding: .month, value: 3, to: start) ?? start
         } else {
             selectedCustomer = customerID
             start = Self.defaultStart(on: day ?? .now)

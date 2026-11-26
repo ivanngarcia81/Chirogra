@@ -240,10 +240,11 @@ struct Sidebar: View {
         // Al vaciar la búsqueda se suelta el foco del campo.
         .onChange(of: query) { _, text in if text.isEmpty { searching = false } }
         .background(Palette.sidebar)
-        // ⌘K lleva a la búsqueda, como en el canvas.
+        // ⌘F lleva a la búsqueda. Era ⌘K (canvas); desde la 1.4, ⌘K abre el asistente, como dice el plan (decisión del
+        // usuario del 26-nov).
         .background {
             Button("Buscar") { searching = true }
-                .keyboardShortcut("k", modifiers: .command)
+                .keyboardShortcut("f", modifiers: .command)
                 .hidden()
         }
     }

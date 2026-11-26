@@ -5,6 +5,26 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 
 ## Estado
 
+- **Asistente, puntos 1 a 4 de lo que faltaba (26-nov tarde, build 69):**
+  1. **Registrar con una frase:** herramientas `preparar_gasto`, `preparar_factura`, `preparar_cobro` y `preparar_cita`
+     (`Assistant/AssistantDrafts.swift`). La app busca proveedor, categoría, cuenta, cliente o factura en los libros y
+     enseña una tarjeta con «Guardar» y «Editar» (el editor de siempre, relleno: `ExpenseEditorView(prefill:onSaved:)`,
+     `AppointmentEditorView(prefill:)`). La factura se guarda como borrador («Guardar borrador» → «Abrir el borrador»).
+     Nada se guarda sin pulsar. Lo guardado se le dice a Claude en la pregunta siguiente («[Nota de la app]»).
+  2. **«Ir a…»:** `abrir_pantalla` con 29 pantallas (`AssistantScreens`; los ids, iguales en `herramientas.ts`). El botón
+     sale debajo de la respuesta.
+  3. **`sales_tax`** (pendiente, periodo en curso y anterior con fecha límite) y **`buscar_movimientos`** (gastos,
+     facturas por pagar, facturas y cobros con totales por tipo).
+  4. **⌘K abre el asistente** (Mac e iPad con teclado) y **la búsqueda pasa a ⌘F** (decisión del usuario del 26-nov). La
+     guía de la web todavía dice ⌘K para buscar: cambiarla con los textos de la 1.4.
+  - **Servidor: función `asistente` versión 5.** La app nueva manda `capacidades: ["borradores", "pantallas"]` y solo
+    entonces el servidor le da esas herramientas e instrucciones: el build 68 sigue igual que antes.
+  - Probado en el simulador (iPhone, `-qa.asistentePregunta`): gasto de Adobe, factura a Hotel Mirador, cobro de Clínica
+    Del Valle, cita con Café Aurora, «¿cómo registro un cobro?», sales tax y «¿cuánto le he facturado a Hotel Mirador?».
+    Pruebas nuevas: `AssistantDraftsTests` (9) y 3 más en `AssistantToolsTests`.
+  - **Después (lo decide el usuario):** 5 avisos como notificación (presupuesto, citas, «Pregúntale al asistente»), 6
+    apartado para impuestos en el inspector del Mac, 7 privacidad, 8 textos (guía, What's New, tienda), 9 QA. Y el
+    precio de la suscripción con el asistente, cuando haya más clientes.
 - **Servidor del asistente EN MARCHA (26-nov), en el build 68:** proyecto de Supabase **«Chirogra»**
   (`nybetiuxfzkbfoijssfo`, organización Chirogra, plan gratis), función `asistente` desplegada (versión 2) y esquema
   `asistente.uso` creado. Código en `servidor/` (README ahí). Secretos: `ANTHROPIC_API_KEY` y `ASISTENTE_PRUEBA` (los
@@ -13,8 +33,9 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
   guía y «¿cuánto gané y en qué gasté más?» con dos herramientas (cifras iguales a Inicio). Uso medido: la primera
   pregunta escribe ~17 mil tokens en caché (~$0.09); con la caché caliente, ~$0.02 por pregunta. Falta: probar la
   compra real (TestFlight), respuestas que se escriben poco a poco y los borradores (preparar_gasto…).
-- **Último build: 68 (1.4.0)**, subido a TestFlight iOS y macOS el 26-nov: el asistente contesta preguntas escritas con el
-  servidor (falta probar la compra real desde TestFlight). Antes: 67, subido el 26-nov: el asistente con los lápices del icono en vez
+- **Último build: 69 (1.4.0)**, subido a TestFlight iOS y macOS el 26-nov: los puntos 1 a 4 del asistente (arriba). Antes: 68,
+  el asistente contesta preguntas escritas con el servidor (el usuario lo probó con su suscripción real el 26-nov: entró como
+  «sub», 1 pregunta, ~7 centavos). Antes: 67, subido el 26-nov: el asistente con los lápices del icono en vez
   de la chispa, y en el iPad y el Mac su panel con cabecera propia (la «X» dentro del panel), línea divisoria y fondo
   gris más claro (`Palette.assistantPanel`). Antes: 66 (1.4.0), subido el 25-nov (`c0c2e33`): agenda (avisos y Calendario),
   impuestos estimados y asistente sin servidor. **Esquema 6 de CloudKit creado en Desarrollo el 25-nov
@@ -109,7 +130,8 @@ acumule: está en `git show 1fe35ff:docs/RESUMEN-PARA-SEGUIR.md` y en los mensaj
 | 65 | `00ace74` | 1.3.0: **auditoría técnica** (base caja con notas de crédito y saldo a favor, suma SHA-256 en las copias, aviso de iCloud en local, saldos rehechos tras sincronizar, importes en 128 bits, sales tax de las notas, aviso de tabla por ZIP vieja, no anular facturas con nota) y **pruebas de interfaz** en el repo (`PruebasInterfaz`, `scripts/interfaz.sh`). 403 pruebas + 4 de interfaz. |
 | 66 | `c0c2e33` | 1.4.0: agenda (avisos, Calendario), impuestos estimados, asistente sin servidor (esquema 6). |
 | 67 | `aea107d` | 1.4.0: asistente con los lápices de Chirogra; panel del iPad y Mac con cabecera, «X», línea y fondo más claro. |
-| 68 | — | 1.4.0: el asistente contesta preguntas escritas con el servidor de Supabase «Chirogra» (Claude Opus 5.5 y herramientas en el aparato). |
+| 68 | `7f3d0e4` | 1.4.0: el asistente contesta preguntas escritas con el servidor de Supabase «Chirogra» (Claude Opus 5.5 y herramientas en el aparato). |
+| 69 | — | 1.4.0: asistente que registra con una frase (gasto, factura, cobro, cita), botón «Ir a…», sales tax y buscar movimientos; ⌘K asistente, ⌘F buscar. |
 
 ## Último chat (25-nov, tarde): informe de Yurii S. en el iPad y comienzo de la 1.4
 

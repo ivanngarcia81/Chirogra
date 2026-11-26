@@ -101,6 +101,27 @@ struct AssistantView: View {
         .sheet(isPresented: $assistant.registeringExpense) {
             NavigationStack { ExpenseEditorView() }.editorSheetSizing()
         }
+        // «Editar» en una tarjeta de borrador: el editor de siempre, relleno con lo que entendió el asistente.
+        .sheet(isPresented: Binding(get: { assistant.editingDraft != nil }, set: { if !$0 { assistant.editingDraft = nil } })) {
+            if let id = assistant.editingDraft, let draft = assistant.drafts[id] {
+                NavigationStack {
+                    switch draft.payload {
+                    case .expense(let input):
+                        ExpenseEditorView(prefill: input, onSaved: { _ in assistant.markSaved(draft: id) })
+                    case .appointment(let input):
+                        AppointmentEditorView(prefill: input, onSaved: { _ in assistant.markSaved(draft: id) })
+                    case .payment(let payment):
+                        if let invoice = payment.invoice { InvoiceDetailView(invoice: invoice) }
+                    case .invoice:
+                        EmptyView()
+                    }
+                }
+                .editorSheetSizing()
+            }
+        }
+        .sheet(item: $assistant.openingInvoice) { invoice in
+            NavigationStack { InvoiceEditorView(editing: invoice) }.editorSheetSizing()
+        }
     }
 
     private var content: some View {
@@ -414,6 +435,12 @@ private struct AssistantAnswer: View {
                     goTo(String(localized: "Ver Por cobrar"), item: .sales(.invoices)) { SalesView(fixedSegment: .invoices) }
                 }
             }
+        case .draft(let id):
+            AssistantDraftCard(id: id)
+        case .screen(let item):
+            goTo(String(localized: "Ir a \(AssistantScreens.title(item))"), item: item) { item.destination }
+                .padding(.horizontal, 14)
+                .background(Palette.surface, in: Capsule())
         case .setAside(let summary):
             VStack(alignment: .leading, spacing: 8) {
                 Text("Con tu \(summary.percent) %, para el pago del \(summary.focus.period.due.formatted(.appDateTime.day().month(.wide))):")
@@ -449,6 +476,93 @@ private struct AssistantAnswer: View {
     }
 }
 
+/// La tarjeta de un borrador (canvas `AsistenteRespuesta`, «Gasto $85 · Adobe · Software · Tarjeta»): lo que entendió
+/// el asistente, lo que falta y «Guardar» o «Editar». Nada se guarda sin pulsar «Guardar».
+private struct AssistantDraftCard: View {
+    let id: UUID
+    @Environment(\.modelContext) private var context
+    @State private var assistant = AssistantState.shared
+
+    var body: some View {
+        if let draft = assistant.drafts[id] {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(spacing: 8) {
+                    Image(systemName: draft.systemImage).foregroundStyle(Palette.brand).accessibilityHidden(true)
+                    Text(draft.title).font(.headline).foregroundStyle(Palette.ink)
+                    Spacer(minLength: 8)
+                    if case .saved = draft.state {
+                        StatusChip(text: String(localized: "Guardado"), foreground: Palette.positive, compact: true, dot: Palette.green)
+                    }
+                }
+                VStack(spacing: 6) {
+                    ForEach(Array(draft.rows.enumerated()), id: \.offset) { _, row in
+                        HStack(alignment: .firstTextBaseline, spacing: 12) {
+                            Text(row.label).foregroundStyle(Palette.ink2)
+                            Spacer(minLength: 8)
+                            Text(row.value).foregroundStyle(row.value == "—" ? Palette.ink2 : Palette.ink)
+                                .multilineTextAlignment(.trailing).monospacedDigit()
+                        }
+                        .font(.subheadline)
+                        .accessibilityElement(children: .combine)
+                    }
+                }
+                if !draft.missing.isEmpty, draft.state == .pending {
+                    Text("Para guardar, falta: \(draft.missing.joined(separator: ", ")).")
+                        .font(.footnote).foregroundStyle(Palette.warning)
+                }
+                if case .failed(let message) = draft.state {
+                    Text(message).font(.footnote).foregroundStyle(Palette.negative)
+                }
+                buttons(draft)
+            }
+            .padding(16)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Palette.surface, in: RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous))
+        }
+    }
+
+    @ViewBuilder
+    private func buttons(_ draft: AssistantDraft) -> some View {
+        switch draft.state {
+        case .saved(let invoiceID):
+            if let invoiceID {
+                Button("Abrir el borrador") {
+                    assistant.openingInvoice = try? Bookkeeper(context: context).fetch(Invoice.self).first { $0.id == invoiceID }
+                }
+                .buttonStyle(.bordered)
+            }
+        case .pending, .saving, .failed:
+            HStack(spacing: 10) {
+                Button {
+                    assistant.save(draft: id, context: context)
+                } label: {
+                    Text(isInvoice(draft) ? "Guardar borrador" : "Guardar").frame(minWidth: 72)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(Palette.brand)
+                .disabled(!draft.canSave)
+                if canEdit(draft) {
+                    Button("Editar") { assistant.editingDraft = id }.buttonStyle(.bordered)
+                }
+            }
+            .padding(.top, 2)
+        }
+    }
+
+    private func isInvoice(_ draft: AssistantDraft) -> Bool {
+        if case .invoice = draft.payload { true } else { false }
+    }
+
+    /// La factura se corrige al abrir su borrador; un cobro sin factura no tiene dónde corregirse.
+    private func canEdit(_ draft: AssistantDraft) -> Bool {
+        switch draft.payload {
+        case .expense, .appointment: true
+        case .payment(let payment): payment.invoice != nil
+        case .invoice: false
+        }
+    }
+}
+
 /// La burbuja y dónde se abre el asistente: en el iPhone, en una hoja, con la burbuja encima de la barra de pestañas;
 /// en el iPad y el Mac, en el panel de la derecha (inspector).
 struct AssistantPresentation: ViewModifier {
@@ -478,10 +592,16 @@ struct AssistantPresentation: ViewModifier {
                 .toolbar {
                     ToolbarItem(placement: .primaryAction) {
                         Button { assistant.isOpen.toggle() } label: { Label { Text("Asistente") } icon: { AssistantMark(size: 18) } }
-                            .help(Text("Asistente"))
+                            .help(Text("Asistente (⌘K)"))
                     }
                 }
                 #endif
+                // ⌘K abre y cierra el asistente (iPad con teclado y Mac; plan de la 1.4, decisión del 26-nov).
+                .background {
+                    Button("Asistente") { assistant.isOpen.toggle() }
+                        .keyboardShortcut("k", modifiers: .command)
+                        .hidden()
+                }
                 .inspector(isPresented: $assistant.isOpen) {
                     AssistantView(panel: true).inspectorColumnWidth(min: 340, ideal: 380, max: 480)
                 }

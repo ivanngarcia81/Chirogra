@@ -49,6 +49,34 @@ struct AssistantToolsTests {
         #expect(AssistantTools.day(now) == "2026-11-25")
     }
 
+    @Test("Buscar movimientos: encuentra el gasto por el proveedor, con el total por tipo")
+    func search() throws {
+        let category = try #require(ExpenseCategories.groups(from: try books.accounts()).costs.first)
+        let (draft, _) = try #require(AssistantDrafts.prepare("preparar_gasto", input: .object([
+            "monto": .number(40), "proveedor": .string("Home Depot"), "categoria": .string(category.name),
+            "fecha": .string("2026-11-20")]), context: container.mainContext, now: now))
+        #expect(AssistantDrafts.save(draft, context: container.mainContext) == .saved(invoiceID: nil))
+        let found = try run("buscar_movimientos", ["texto": "home depot", "desde": "2026-01-01"])
+        #expect(found["encontrados"] as? Int == 1)
+        #expect(try run("buscar_movimientos", ["texto": "home depot", "hasta": "2026-11-19"])["encontrados"] as? Int == 0)
+        #expect(try run("buscar_movimientos", ["texto": "x"])["error"] != nil)
+    }
+
+    @Test("Sales tax: lo pendiente y los dos periodos con su fecha límite")
+    func salesTax() throws {
+        let result = try run("sales_tax")
+        #expect(result["pendiente_hoy"] is String)
+        #expect((result["periodo_anterior"] as? [String: Any])?["fecha_limite"] is String)
+        #expect((result["periodo_en_curso"] as? [String: Any])?["impuesto_cobrado"] is String)
+    }
+
+    @Test("Abrir pantalla: el botón con el nombre de la barra; una que no existe da error")
+    func screen() throws {
+        #expect(try run("abrir_pantalla", ["pantalla": "facturas"])["boton"] as? String == "Ir a Facturas")
+        #expect(try run("abrir_pantalla", ["pantalla": "nada"])["error"] != nil)
+        #expect(Set(AssistantScreens.all.map(\.id)).count == AssistantScreens.all.count)
+    }
+
     @Test("Por cobrar y saldos sin datos: listas vacías y totales en cero")
     func empty() throws {
         let receivables = try run("por_cobrar")
