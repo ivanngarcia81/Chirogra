@@ -453,7 +453,15 @@ struct AppShell: View {
             #if os(iOS)
             if sizeClass == .compact { tabs } else { splitConRecorrido }
             #else
+            // El Mac no tiene el recorrido de la primera vez por secciones; sí el tutorial de seguir (1.4), que empieza
+            // Inicio al aparecer.
             split
+                .environment(recorrido)
+                .overlay { RecorridoOverlay().environment(recorrido) }
+                // «Aprende haciendo» (Ajustes): a Inicio, que lo empieza.
+                .onChange(of: recorrido.pedidoInicio) {
+                    if selection == .section(.home) { recorrido.empezarGuiadoSiHaceFalta() } else { show(.section(.home)) }
+                }
             #endif
         }
         // 1.4: los avisos de las citas de la empresa activa, siempre al día.
@@ -1032,6 +1040,16 @@ struct MoreView: View {
                             HStack(spacing: 12) {
                                 IconTile(systemImage: "hand.point.up.left", foreground: Palette.brand)
                                 Text("Ver el recorrido otra vez").foregroundStyle(Palette.ink)
+                                Spacer(minLength: 8)
+                            }
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        // 1.4: el tutorial de seguir (cliente, factura, gasto e impuestos haciéndolos de verdad).
+                        Button { recorrido.repetirGuiado() } label: {
+                            HStack(spacing: 12) {
+                                IconTile(systemImage: "hand.tap", foreground: Palette.brand)
+                                Text("Aprende haciendo").foregroundStyle(Palette.ink)
                                 Spacer(minLength: 8)
                             }
                             .contentShape(Rectangle())

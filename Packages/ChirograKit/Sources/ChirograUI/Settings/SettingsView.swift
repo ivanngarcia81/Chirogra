@@ -98,7 +98,13 @@ struct SettingsWideView: View {
                     ForEach(SettingsPage.allCases) { option in pageRow(option) }
                     Divider().padding(.vertical, 6)
                     guideRow
-                    if let recorrido, recorrido.esIPad { tourRow(recorrido) }
+                    if let recorrido, recorrido.esIPad {
+                        tourRow(recorrido)
+                        learnByDoingRow(recorrido)
+                    }
+                    #if os(macOS)
+                    if let recorrido { learnByDoingRow(recorrido) }
+                    #endif
                 }
                 .padding(.horizontal, 10)
                 .padding(.vertical, 8)
@@ -195,6 +201,24 @@ struct SettingsWideView: View {
             HStack(spacing: 8) {
                 IconTile(systemImage: "hand.point.up.left", foreground: Palette.brand)
                 Text("Ver el recorrido otra vez")
+                    .foregroundStyle(Palette.ink)
+                    .lineLimit(2)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .padding(.horizontal, 6)
+            .padding(.vertical, 4)
+            .frame(minHeight: Self.rowHeight)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    /// 1.4: el tutorial de seguir otra vez (cliente, factura, gasto e impuestos haciéndolos de verdad), desde Inicio.
+    private func learnByDoingRow(_ recorrido: Recorrido) -> some View {
+        Button { recorrido.repetirGuiado() } label: {
+            HStack(spacing: 8) {
+                IconTile(systemImage: "hand.tap", foreground: Palette.brand)
+                Text("Aprende haciendo")
                     .foregroundStyle(Palette.ink)
                     .lineLimit(2)
                     .frame(maxWidth: .infinity, alignment: .leading)

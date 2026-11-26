@@ -37,6 +37,8 @@ struct HomeView: View {
     @CompanyQuery(sort: \TaxAgency.name) private var taxAgencies: [TaxAgency]
     /// La tarjeta de primeros pasos del tablero se ocultó en este aparato.
     @AppStorage("homeSetupStepsHidden") private var setupStepsHidden = false
+    /// Tutorial de seguir (1.4): empieza aquí y lleva por las filas de «Primeros pasos».
+    @Environment(Recorrido.self) private var recorrido: Recorrido?
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     #if os(iOS)
@@ -154,6 +156,9 @@ struct HomeView: View {
         }
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
         .background(Palette.background)
+        // El tutorial de seguir va por las filas de «Primeros pasos»: si estaban ocultas, vuelven.
+        .onChange(of: recorrido?.esGuiado ?? false, initial: true) { _, guiado in if guiado { setupStepsHidden = false } }
+        .onAppear { recorrido?.empezarGuiadoSiHaceFalta() }
         .navigationTitle("Inicio")
         .headerTitle()
         #if os(macOS)
@@ -586,6 +591,7 @@ struct HomeView: View {
                         }
                     }
                     .buttonStyle(.plain)
+                    .recorridoObjetivo("home.rapido.\(action.2.rawValue)").id("home.rapido.\(action.2.rawValue)")
                 }
             }
             .accessibilityElement(children: .contain)
@@ -594,6 +600,8 @@ struct HomeView: View {
             HStack(alignment: .top, spacing: 8) {
                 ForEach(actions, id: \.2) { action in
                     QuickAction(title: action.0, systemImage: action.1) { sheet = action.2 }
+                        // Tutorial de seguir repetido desde Ayuda: sin la fila de «Primeros pasos», se toca esto.
+                        .recorridoObjetivo("home.rapido.\(action.2.rawValue)").id("home.rapido.\(action.2.rawValue)")
                 }
             }
             .accessibilityElement(children: .contain)
@@ -1047,6 +1055,8 @@ struct HomeView: View {
         .buttonStyle(.plain)
         .accessibilityElement(children: .combine)
         .accessibilityAddTraits(selected ? .isSelected : [])
+        // Tutorial de seguir: en el iPad el apartado para impuestos es esta fila (en el iPhone y el Mac, la tarjeta).
+        .recorridoObjetivo("pad.apartado", si: section == .setAside)
     }
 
     @ViewBuilder
@@ -1096,6 +1106,7 @@ struct HomeView: View {
                     EstimatedTaxSummaryContent(summary: setAside)
                         .padding(.horizontal, 20).padding(.vertical, 18)
                         .background(Palette.surface, in: RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous))
+                        .recorridoObjetivo("pad.apartado.detalle")
                 }
                 SectionLink(item: .taxes(.estimated)) { EstimatedTaxView() } label: { Text("Ver impuestos estimados") }
                     .buttonStyle(FillCapsuleButtonStyle(fullWidth: false))
@@ -1578,9 +1589,17 @@ struct HomeView: View {
         .accessibilityLabel("Primeros pasos")
     }
 
-    @ViewBuilder
+    /// La fila con su objetivo del tutorial de seguir (`home.paso.customer`…), solo si se puede tocar: si ya está
+    /// hecha, el tutorial salta su grupo.
     private func stepRow(_ step: SetupStep) -> some View {
         let enabled = step.action != nil && (!step.done || step.opensWhenDone)
+        return stepRowContent(step, enabled: enabled)
+            .recorridoObjetivo("home.paso.\(step.id)", si: enabled)
+            .id("home.paso.\(step.id)")
+    }
+
+    @ViewBuilder
+    private func stepRowContent(_ step: SetupStep, enabled: Bool) -> some View {
         switch step.action {
         case .taxes where enabled:
             SectionLink(item: .taxes(.salesTax)) { TaxesView(tab: .rates) } label: { stepLabel(step, enabled: true) }
