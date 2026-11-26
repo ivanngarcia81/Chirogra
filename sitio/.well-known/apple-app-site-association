@@ -1,0 +1,13 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["4N9XEU7F4P.com.chirogra.app"],
+        "components": [
+          { "/": "/plaid-oauth", "comment": "Vuelta de OAuth de Plaid (Chase, Wells Fargo, Bank of America...)" },
+          { "/": "/plaid-oauth/*" }
+        ]
+      }
+    ]
+  }
+}
