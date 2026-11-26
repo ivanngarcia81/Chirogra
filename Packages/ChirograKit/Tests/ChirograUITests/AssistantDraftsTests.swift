@@ -101,6 +101,7 @@ struct AssistantDraftsTests {
         let (draft, _) = try prepare("preparar_cobro", ["cliente": .string("Nadie")])
         #expect(draft.missing.contains("la factura"))
         #expect(!draft.canSave)
+        #expect(!draft.isShown)
     }
 
     @Test("Cita: día y hora en la hora del aparato")

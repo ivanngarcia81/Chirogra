@@ -44,6 +44,16 @@ struct AssistantDraft: Identifiable {
     let missing: [String]
     var state: State = .pending
 
+    /// El tipo, para reconocer la misma tarjeta preparada otra vez.
+    var kind: String {
+        switch payload {
+        case .expense: "gasto"
+        case .invoice: "factura"
+        case .payment: "cobro"
+        case .appointment: "cita"
+        }
+    }
+
     var title: String {
         switch payload {
         case .expense: String(localized: "Gasto nuevo")
@@ -63,6 +73,11 @@ struct AssistantDraft: Identifiable {
     }
 
     var canSave: Bool { missing.isEmpty && (state == .pending || isRetryable) }
+
+    /// Un cobro sin factura no tiene nada que enseñar ni que corregir: no sale tarjeta y Claude pregunta cuál.
+    var isShown: Bool {
+        if case .payment(let payment) = payload { payment.invoice != nil } else { true }
+    }
 
     private var isRetryable: Bool { if case .failed = state { true } else { false } }
 
@@ -99,7 +114,9 @@ enum AssistantDrafts {
         var result: [String: Any] = extra
         result["borrador"] = Dictionary(draft.rows.map { ($0.label, $0.value) }, uniquingKeysWith: { a, _ in a })
         result["faltan"] = draft.missing
-        result["estado"] = draft.missing.isEmpty
+        result["estado"] = !draft.isShown
+            ? "Sin tarjeta: no se sabe qué factura es. Pregunta cuál (las opciones van en «facturas_posibles») y vuelve a preparar el cobro con su número."
+            : draft.missing.isEmpty
             ? "Tarjeta en pantalla, SIN GUARDAR: el usuario la revisa y pulsa «Guardar» o «Editar»."
             : "Tarjeta en pantalla, SIN GUARDAR y sin poder guardarse todavía: falta lo de «faltan». Pregúntalo, o el usuario lo completa con «Editar»."
         let data = (try? JSONSerialization.data(withJSONObject: result, options: [.sortedKeys])) ?? Data()

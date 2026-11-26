@@ -509,6 +509,7 @@ struct ClientsView: View {
         .background(Palette.background)
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
         #if os(macOS)
+        .assistantBubbleArea()
         .inspector(isPresented: $showsInspector) {
             ClientInspector(client: shown.first { $0.id == selection }, canWrite: canWrite,
                             actions: { AnyView(actions($0)) })

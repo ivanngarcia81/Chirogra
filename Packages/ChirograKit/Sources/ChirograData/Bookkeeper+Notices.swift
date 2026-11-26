@@ -17,6 +17,12 @@ public enum NoticeKind: String, CaseIterable, Sendable {
     /// Factura, nota de crédito o estimado al que se le cambió el número en los últimos 30 días porque otro aparato
     /// emitió el mismo (`resolveNumberCollisions`): por si ya se le mandó al cliente con el número de antes.
     case documentRenumbered
+    /// 1.4: gasto del mes por encima de lo presupuestado en una categoría (el presupuesto del año fiscal de hoy).
+    case budgetExceeded
+    /// 1.4: pago estimado al IRS (1040-ES) que vence en los próximos 15 días con algo por apartar y sin pagar.
+    case estimatedTaxDue
+    /// 1.4: cita hecha en los últimos 30 días sin factura ni presupuesto («Por facturar» de la agenda).
+    case appointmentToInvoice
 }
 
 /// Aviso calculado a partir de los datos. La UI pone el texto (el nombre y el importe vienen aquí).
@@ -60,8 +66,12 @@ extension Bookkeeper {
     static let recentRecurringDays = 7
     static let salesTaxNoticeDays = 15
 
-    /// Avisos actuales, de los más urgentes a los menos. No incluye los descartados.
-    public func notices(asOf date: Date = Date(), calendar: Calendar = .current) throws -> [Notice] {
+    static let estimatedTaxNoticeDays = 15
+    static let appointmentToInvoiceDays = 30
+
+    /// Avisos actuales, de los más urgentes a los menos. No incluye los descartados. `basis`: la de los reportes, para
+    /// el presupuesto y la ganancia de los impuestos estimados (como en sus pantallas).
+    public func notices(asOf date: Date = Date(), calendar: Calendar = .current, basis: AccountingBasis = .accrual) throws -> [Notice] {
         let today = calendar.startOfDay(for: date)
         func days(to day: Date) -> Int { calendar.dateComponents([.day], from: today, to: calendar.startOfDay(for: day)).day ?? 0 }
         var notices: [Notice] = []
@@ -117,6 +127,23 @@ extension Bookkeeper {
                                   date: period.deadline, days: until, amount: owed, party: agency.name, reference: "", documentID: agency.id))
         }
 
+        notices += try budgetNotices(asOf: date, calendar: calendar, basis: basis)
+        notices += try estimatedTaxNotices(asOf: date, calendar: calendar, basis: basis)
+
+        // Citas hechas sin facturar de los últimos 30 días (las de hoy, también).
+        if let from = calendar.date(byAdding: .day, value: -Self.appointmentToInvoiceDays, to: today),
+           let to = calendar.date(byAdding: .day, value: 1, to: today) {
+            let names = Dictionary(try fetch(Customer.self).map { ($0.id, $0.name) }, uniquingKeysWith: { a, _ in a })
+            for occurrence in try appointments(in: DateInterval(start: from, end: to), calendar: calendar)
+            where occurrence.isPendingInvoice && occurrence.start <= date {
+                let appointment = occurrence.appointment
+                notices.append(Notice(id: "appointment:\(occurrence.id)", kind: .appointmentToInvoice, date: occurrence.start,
+                                      days: days(to: occurrence.start), amount: 0,
+                                      party: appointment.customerID.flatMap { names[$0] } ?? appointment.title,
+                                      reference: appointment.title, documentID: appointment.id))
+            }
+        }
+
         // Números cambiados por una colisión entre aparatos (`Bookkeeper+Numbering.swift`).
         let renumberStart = calendar.date(byAdding: .day, value: -Self.renumberNoticeDays, to: today) ?? today
         let renumberAction = Self.renumberAction
@@ -158,6 +185,38 @@ extension Bookkeeper {
                 return notice
             }
             .sorted { ($0.kind.priority, $0.days, $0.id) < ($1.kind.priority, $1.days, $1.id) }
+    }
+
+    /// Categorías de gasto del mes de `date` por encima de lo presupuestado (el presupuesto del año fiscal que lo contiene;
+    /// con varios, el primero de `budgets()`). Sin presupuesto, nada.
+    private func budgetNotices(asOf date: Date, calendar: Calendar, basis: AccountingBasis) throws -> [Notice] {
+        for budget in try budgets() {
+            let months = try months(ofFiscalYear: budget.fiscalYear, calendar: calendar)
+            guard let month = months.firstIndex(where: { $0.start <= date && date <= $0.end }) else { continue }
+            let report = try budgetVsActual(budget, grouping: .month, basis: basis, calendar: calendar)
+            let key = Self.dayKey(months[month].start, calendar).prefix(7)
+            return report.expenses.compactMap { row in
+                guard month < row.budget.count, row.budget[month] > 0,
+                      row.actual[month] > row.budget[month] else { return nil }
+                return Notice(id: "budget:\(budget.id.uuidString):\(row.account.id.uuidString):\(key)", kind: .budgetExceeded,
+                              date: months[month].end, days: 0, amount: row.actual[month] - row.budget[month],
+                              party: row.account.name, reference: budget.name, documentID: budget.id)
+            }
+        }
+        return []
+    }
+
+    /// El pago estimado al IRS que toca, si vence en los próximos 15 días, queda algo por apartar y no está pagado. Solo
+    /// con la tarjeta de impuestos estimados a la vista (por defecto, no en S-corp ni C-corp).
+    private func estimatedTaxNotices(asOf date: Date, calendar: Calendar, basis: AccountingBasis) throws -> [Notice] {
+        let shown = try estimatedTaxSetting()?.showsCard ?? ![.sCorp, .cCorp].contains(company()?.entityType ?? .soleProprietorship)
+        guard shown, let summary = try estimatedTaxSummary(today: date, basis: basis, calendar: calendar),
+              (0...Self.estimatedTaxNoticeDays).contains(summary.daysLeft), !summary.focus.isPaid else { return [] }
+        let owed = summary.focus.toSetAside - summary.focus.paid
+        guard owed > 0 else { return [] }
+        let due = summary.focus.period.due
+        return [Notice(id: "estimatedTax:\(Self.dayKey(due, calendar))", kind: .estimatedTaxDue, date: due, days: summary.daysLeft,
+                       amount: owed, party: "IRS", reference: "1040-ES")]
     }
 
     /// Avisos sin leer (para el globo de la campana).
@@ -262,6 +321,9 @@ extension NoticeKind {
         case .billDueSoon: 3
         case .recurringGenerated: 4
         case .documentRenumbered: 1
+        case .estimatedTaxDue: 2
+        case .budgetExceeded: 3
+        case .appointmentToInvoice: 4
         }
     }
 }

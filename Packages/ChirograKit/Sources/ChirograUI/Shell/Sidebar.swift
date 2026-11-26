@@ -293,7 +293,7 @@ struct Sidebar: View {
     }
 
     #if os(macOS)
-    private static let searchPrompt = String(localized: "Buscar ⌘K")
+    private static let searchPrompt = String(localized: "Buscar ⌘F")
     #else
     private static let searchPrompt = String(localized: "Buscar")
     #endif

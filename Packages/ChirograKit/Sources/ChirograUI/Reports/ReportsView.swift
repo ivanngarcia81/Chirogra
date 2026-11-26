@@ -2246,7 +2246,7 @@ private struct MacReportInspector<Inspector: View, Actions: View>: ViewModifier 
     @ViewBuilder
     private func withInspector(_ content: Content) -> some View {
         if enabled {
-            content.inspector(isPresented: isAvailable ? $shown : .constant(false)) {
+            content.assistantBubbleArea().inspector(isPresented: isAvailable ? $shown : .constant(false)) {
                 column.inspectorColumnWidth(min: 260, ideal: 300, max: 420)
             }
         } else {

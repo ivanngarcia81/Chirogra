@@ -679,6 +679,7 @@ private struct ReconciliationMacSession: View {
                     .keyboardShortcut("i", modifiers: [.command, .option])
             }
         }
+        .assistantBubbleArea()
         .inspector(isPresented: $showsInspector) {
             inspector(summary).inspectorColumnWidth(min: 260, ideal: 300, max: 420)
         }

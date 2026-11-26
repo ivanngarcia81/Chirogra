@@ -101,6 +101,19 @@ final class AssistantState {
         #endif
     }
 
+    /// Texto para el campo de escribir, puesto desde fuera (un aviso, una notificación). La vista lo recoge y lo borra.
+    var pendingDraft: String?
+
+    /// Abre el asistente con `text` escrito en el campo, sin mandarlo. Si hay una hoja abierta encima (la lista de avisos
+    /// del iPhone), espera a que se cierre.
+    func compose(_ text: String) {
+        pendingDraft = text
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(450))
+            isOpen = true
+        }
+    }
+
     func reset() {
         guard !isWorking else { return }
         messages = []
@@ -178,6 +191,8 @@ final class AssistantState {
     private func converse(context: ModelContext, basis: AccountingBasis) async throws {
         // Los botones «Ir a…» van debajo de la respuesta final, no entre las vueltas.
         var screens: [SidebarItem] = []
+        // Tarjetas incompletas de esta pregunta, por tipo (se quitan si llega la corregida).
+        var incomplete: [String: (message: UUID, draft: UUID)] = [:]
         defer {
             for item in screens { messages.append(AssistantMessage(role: .assistant, content: .screen(item))) }
         }
@@ -207,8 +222,18 @@ final class AssistantState {
                 let name = call["name"]?.string ?? ""
                 let output: String
                 if let (draft, json) = AssistantDrafts.prepare(name, input: call["input"] ?? .null, context: context) {
-                    drafts[draft.id] = draft
-                    messages.append(AssistantMessage(role: .assistant, content: .draft(draft.id)))
+                    if draft.isShown {
+                        // Claude lo vuelve a preparar corregido (otra categoría, otro cliente): la tarjeta incompleta
+                        // de antes, del mismo tipo y en esta misma pregunta, se quita.
+                        if let previous = incomplete.removeValue(forKey: draft.kind) {
+                            messages.removeAll { $0.id == previous.message }
+                            drafts[previous.draft] = nil
+                        }
+                        drafts[draft.id] = draft
+                        let message = AssistantMessage(role: .assistant, content: .draft(draft.id))
+                        messages.append(message)
+                        if !draft.missing.isEmpty { incomplete[draft.kind] = (message.id, draft.id) }
+                    }
                     output = json
                 } else {
                     output = AssistantTools.run(name, input: call["input"] ?? .null, context: context, basis: basis)

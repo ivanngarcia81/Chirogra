@@ -218,6 +218,24 @@ Los textos de la 1.1 (descripción, «What's New» y notas para la revisión) ya
 quedan en el aparato y en su iCloud privado (Apple), al que el desarrollador no tiene acceso. Los informes de fallos que
 Apple comparte con permiso del usuario no cuentan como recogida por la app.
 
+### App Privacy desde la 1.4 (asistente con IA): deja de ser «Data Not Collected»
+
+Preparado el 26-nov. Con el asistente, la pregunta y las cifras que pide pasan por el servidor de Chirogra (Supabase)
+hacia Anthropic, que las conserva un tiempo limitado para seguridad: según la definición de Apple eso cuenta como
+recogido aunque nuestro servidor no lo guarde. Política actualizada en `sitio/privacidad` y `sitio/privacy` (se publica
+al unir la rama con `main`, **antes** de enviar la 1.4). Lo marca el usuario en App Store Connect › App Privacy ›
+Edit, antes de enviar la 1.4:
+
+| Tipo de dato (Apple) | Qué es en Chirogra | Uso | ¿Vinculado al usuario? | ¿Rastreo? |
+|---|---|---|---|---|
+| User Content › **Other User Content** | Lo que se escribe al asistente | App Functionality | No | No |
+| Financial Info › **Other Financial Info** | Las cifras ya sumadas que pide el asistente (gastos por categoría, por cobrar…) | App Functionality | No | No |
+| Usage Data › **Product Interaction** | Cuántas preguntas al mes (el límite), con el número de compra de la App Store | App Functionality | No | No |
+
+- «Vinculado: No» porque no hay cuenta, nombre ni correo: el contador de preguntas usa el `originalTransactionId` de la
+  App Store (o el `appTransactionId` en el uso libre), que no identifica a la persona.
+- Nada más cambia: los libros siguen en el aparato y en iCloud privado; las notificaciones y Calendario son locales.
+
 ## Clasificación por edad
 
 Responder «None / No» a todo (sin violencia, contenido sexual, juegos de azar, compras de bienes regulados, contenido generado
@@ -430,6 +448,98 @@ Chirogra 1.3 es nuestra actualización más grande.
 > network request is made. Bank statements are imported from CSV, OFX or QFX files the user chooses; there is no bank
 > connection. Backups can be encrypted with a password chosen by the user. iCloud sync is optional (Settings › iCloud
 > and Backups). All data stays on the device and in the user's private iCloud database; there is no server.
+
+## Versión 1.4.0: textos de la tienda, «What's New» y notas para la revisión
+
+Preparado el 26-nov (rama `version-1.4`). Antes de enviar: (1) unir la rama con `main` para publicar la guía y la
+política de privacidad nuevas en chirogra.com; (2) cambiar App Privacy (arriba, «App Privacy desde la 1.4»);
+(3) capturas nuevas con la agenda y el asistente.
+
+**Promotional text (en)**
+New: an AI assistant that answers questions about your numbers and records expenses, invoices and appointments from one sentence. Plus a schedule and estimated taxes.
+
+**Texto promocional (es)**
+Nuevo: un asistente con IA que contesta sobre tus números y registra gastos, facturas y citas con una frase. Y además, agenda e impuestos estimados.
+
+**Descripción: secciones nuevas** (van después de INVOICES AND ESTIMATES / FACTURAS Y ESTIMADOS)
+
+> ASSISTANT
+> • Ask about your business: “How much did I make this month?”, “Who owes me?”, “How much sales tax do I owe?”
+> • Record with one sentence: “I spent $85 on Adobe with the credit card” becomes an expense you review and save
+> • Ask how to do anything in the app and get a button that takes you there
+> • Your device calculates the figures; only your question and the totals it needs are sent, with your permission
+>
+> SCHEDULE
+> • Appointments with customers by day, week or list, including repeating ones
+> • Reminders before each appointment and an optional copy in Calendar
+> • Turn a completed appointment into an invoice or estimate
+>
+> ESTIMATED TAXES
+> • How much to set aside for each IRS quarterly payment (1040-ES), with the percentage you choose
+> • The four due dates and the payments you’ve made, plus a reminder before each one
+
+> ASISTENTE
+> • Pregunta por tu negocio: «¿Cuánto gané este mes?», «¿Quién me debe?», «¿Cuánto sales tax debo?»
+> • Registra con una frase: «Gasté $85 en Adobe con la tarjeta» se convierte en un gasto que revisas y guardas
+> • Pregunta cómo hacer cualquier cosa en la app y te lleva a la pantalla
+> • Las cifras las calcula tu aparato; solo se envía tu pregunta y los totales que hacen falta, con tu permiso
+>
+> AGENDA
+> • Citas con clientes por día, semana o lista, también las que se repiten
+> • Avisos antes de cada cita y, si quieres, copia en Calendario
+> • Convierte una cita hecha en factura o estimado
+>
+> IMPUESTOS ESTIMADOS
+> • Cuánto apartar para cada pago trimestral al IRS (1040-ES), con el porcentaje que elijas
+> • Las cuatro fechas y los pagos hechos, con un aviso antes de cada una
+
+En PRIVATE BY DESIGN / PRIVADO DE VERDAD, cambiar «No ads, no analytics, no tracking» por «No ads, no analytics, no
+tracking. The assistant is optional and asks before sending anything» (es: «Sin anuncios, analíticas ni rastreo. El
+asistente es opcional y pide permiso antes de enviar nada»). Keywords: cambiar `books` por `ai assistant` (en) y
+añadir `asistente` en es si cabe.
+
+**What's New (en)**
+
+Chirogra 1.4 brings an AI assistant, a schedule and estimated taxes.
+
+• Assistant: ask about your numbers, ask how to do something, or record an expense, invoice, payment or appointment with one sentence. Nothing is saved until you tap Save
+• Schedule: appointments with customers, repeating appointments, reminders and Calendar; invoice an appointment in one tap
+• Estimated taxes: how much to set aside for each IRS quarterly payment, the due dates and the payments you’ve made
+• New notices: estimated tax due, budget exceeded and appointments not invoiced, plus an optional daily summary
+• Mac: ⌘K opens the assistant and ⌘F opens search
+• Fixes and improvements on iPhone, iPad and Mac
+
+**Novedades (es)**
+
+Chirogra 1.4 trae un asistente con IA, la agenda y los impuestos estimados.
+
+• Asistente: pregunta por tus números, pregunta cómo se hace algo, o registra un gasto, una factura, un cobro o una cita con una frase. Nada se guarda hasta que tocas Guardar
+• Agenda: citas con clientes, citas que se repiten, avisos y Calendario; factura una cita con un toque
+• Impuestos estimados: cuánto apartar para cada pago trimestral al IRS, las fechas y los pagos hechos
+• Avisos nuevos: pago al IRS por vencer, presupuesto excedido y citas sin facturar, más un resumen diario opcional
+• Mac: ⌘K abre el asistente y ⌘F la búsqueda
+• Arreglos y mejoras en iPhone, iPad y Mac
+
+**Notas para la revisión de la 1.4 (App Review Information › Notes)**
+
+> Chirogra doesn't require an account. On first launch, swipe through the welcome tour (or tap Skip) and tap "Try with
+> sample data" on the last page to explore a sample company.
+>
+> New in 1.4:
+> - Assistant (AI, guideline 5.1.2(i)): tap the pencils bubble at the bottom right (Mac: Assistant button in the
+>   toolbar, or ⌘K). The first time, a permission screen explains what is sent (the question and only the totals the
+>   assistant needs), to whom (Anthropic, through Chirogra's server) and that we don't store it; nothing is sent until
+>   the user taps "Accept and Start". Try "How much did I make this month?" or "I spent $85 on Adobe with the credit
+>   card": the second shows a draft card; nothing is saved until the user taps Save. Questions are counted per
+>   subscription (100 a month) or, before subscribing, 20 in total; access is checked with the App Store signed
+>   transaction, so it works in the review environment without an account.
+> - Schedule: sidebar › Schedule (iPhone: More › Schedule). Reminders ask for notification permission when the first
+>   appointment with a reminder is saved; "Add Appointments to Calendar" (⋯ menu) asks for Calendar access.
+> - Estimated taxes: Taxes › Estimated Taxes, and the "Tax set-aside" card on Home.
+> - Settings › Notifications: optional daily summary (asks for notification permission when turned on).
+>
+> Bank statements are imported from files the user chooses; there is no bank connection. iCloud sync is optional.
+> Books stay on the device and in the user's private iCloud database.
 
 ## Versión 1.3.0: «What's New» y notas para la revisión
 

@@ -166,6 +166,8 @@ struct EstimatedTaxView: View {
         _ = (payments.count, lines.count, settings.count)
         let summary = estimatedTaxSummary(context, basis: basis)
         return Form {
+            #if !os(macOS)
+            // En el Mac va de subtítulo de la ventana.
             Section {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Pagos trimestrales al IRS · formulario 1040-ES").font(.subheadline).foregroundStyle(Palette.ink2)
@@ -173,6 +175,7 @@ struct EstimatedTaxView: View {
                 .listRowBackground(Color.clear)
                 .listRowInsets(EdgeInsets(top: 0, leading: 4, bottom: 0, trailing: 4))
             }
+            #endif
             if let summary {
                 Section {
                     if summary.focus.profit > 0 || summary.paidThisYear > 0 {
@@ -193,12 +196,15 @@ struct EstimatedTaxView: View {
                         .padding(.vertical, 18)
                     }
                 }
+                #if !os(macOS)
+                // En el Mac, el formulario va en el inspector (canvas `MacApartado`).
                 Section {
                     Button { paying = true } label: { Label("Registrar pago al IRS", systemImage: "plus") }
                         .buttonStyle(PrimaryButtonStyle())
                         .listRowBackground(Color.clear)
                         .listRowInsets(EdgeInsets())
                 }
+                #endif
                 Section(heading: String(localized: "Las cuatro fechas de \(String(summary.taxYear))")) {
                     ForEach(summary.rows) { row in periodRow(row, summary: summary) }
                 }
@@ -244,6 +250,16 @@ struct EstimatedTaxView: View {
         .padReadingList(PadReading.detail)
         .screenBackground()
         .navigationTitle("Impuestos estimados")
+        #if os(macOS)
+        .navigationSubtitle(String(localized: "Pagos trimestrales al IRS · formulario 1040-ES"))
+        .macInspectorToggle(isAvailable: summary != nil)
+        .macReportInspector(title: String(localized: "Registrar pago al IRS"), hasSelection: summary != nil,
+                            placeholder: "", selectionKey: nil, isAvailable: summary != nil) {
+            IRSPaymentSheet(summary: summary, inline: true)
+        } actions: {
+            EmptyView()
+        }
+        #endif
         .sheet(isPresented: $paying) {
             NavigationStack { IRSPaymentSheet(summary: summary) }.editorSheetSizing()
         }
@@ -310,6 +326,9 @@ struct EstimatedTaxView: View {
 /// solo lo anota; el pago se hace con el IRS.
 struct IRSPaymentSheet: View {
     let summary: EstimatedTaxSummary?
+    /// En el inspector del Mac (canvas `MacApartado`): los campos sin hoja ni título, «Registrar pago» debajo y, al
+    /// guardar, «Pago registrado» en vez de cerrarse.
+    var inline = false
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     @Environment(\.unsavedChanges) private var unsavedChanges
@@ -321,6 +340,7 @@ struct IRSPaymentSheet: View {
     @State private var accountID: UUID?
     @State private var loaded = false
     @State private var errorMessage: String?
+    @State private var recorded = false
 
     /// Los cuatro pagos del año del que toca y el 4.º del año anterior (se paga en enero).
     private var choices: [EstimatedTaxCalendar.Period] {
@@ -336,6 +356,50 @@ struct IRSPaymentSheet: View {
     }
 
     var body: some View {
+        if inline { inlineForm } else { sheet }
+    }
+
+    /// Los campos en columna, con su nombre encima (como los formularios del inspector del Mac).
+    private var inlineForm: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Picker("Pago", selection: $periodKey) {
+                ForEach(choices, id: \.self) { period in
+                    Text("\(period.title) \(String(period.year))").tag(key(period))
+                }
+            }
+            DatePicker("Fecha", selection: $date, displayedComponents: .date)
+            LabeledContent("Monto") {
+                MoneyField(title: String(localized: "Monto"), minorUnits: $amount).multilineTextAlignment(.trailing)
+            }
+            Picker("Salió de", selection: $accountID) {
+                ForEach(moneyAccounts) { Text($0.displayName).tag(Optional($0.id)) }
+            }
+            Text("Chirogra solo lo anota. El pago lo haces tú directamente con el IRS.")
+                .font(.footnote).foregroundStyle(Palette.ink2)
+            if recorded {
+                Label("Pago registrado", systemImage: "checkmark").font(.footnote).foregroundStyle(Palette.positive)
+            }
+            if let errorMessage { ErrorBanner(message: errorMessage) }
+            Button("Registrar pago", action: save)
+                .buttonStyle(.borderedProminent)
+                .tint(Palette.brand)
+                .frame(maxWidth: .infinity, alignment: .trailing)
+        }
+        .onAppear(perform: load)
+        .onChange(of: amount) { if amount != 0 { recorded = false } }
+    }
+
+    private func load() {
+        guard !loaded else { return }
+        loaded = true
+        if let focus = summary?.focus {
+            periodKey = key(focus.period)
+            amount = max(0, focus.toSetAside - focus.paid)
+        }
+        accountID = moneyAccounts.first { $0.subtype == .bank }?.id ?? moneyAccounts.first?.id
+    }
+
+    private var sheet: some View {
         Form {
             Section {
                 Picker("Pago", selection: $periodKey) {
@@ -364,15 +428,7 @@ struct IRSPaymentSheet: View {
         .bottomActionBar {
             Button("Registrar pago", action: save).buttonStyle(PrimaryButtonStyle())
         }
-        .onAppear {
-            guard !loaded else { return }
-            loaded = true
-            if let focus = summary?.focus {
-                periodKey = key(focus.period)
-                amount = max(0, focus.toSetAside - focus.paid)
-            }
-            accountID = moneyAccounts.first { $0.subtype == .bank }?.id ?? moneyAccounts.first?.id
-        }
+        .onAppear(perform: load)
     }
 
     private func save() {
@@ -383,6 +439,12 @@ struct IRSPaymentSheet: View {
         do {
             try Bookkeeper(context: context).recordEstimatedTaxPayment(taxYear: period.year, period: period.number, date: date,
                                                                        amount: amount, fromAccountID: accountID)
+            if inline {
+                errorMessage = nil
+                recorded = true
+                amount = 0
+                return
+            }
             unsavedChanges?.remove(editorToken)
             dismiss()
         } catch {

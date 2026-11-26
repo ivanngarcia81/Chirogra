@@ -36,7 +36,8 @@ enum SettingsPage: String, CaseIterable, Identifiable {
     // `payments` (Cobro en línea, `Sales/PayNow/PaymentSettingsView.swift`): agente de recibos y cobro, 1.1.
     // `security` (Face ID o Touch ID) se separó de `data` en el build 40: antes las dos filas de «Más» abrían la misma
     // pantalla (pedido del usuario del 12-nov: «separarlas de verdad»).
-    case profile, template, payments, formats, companies, data, security
+    // `notices` (1.4): el resumen diario de avisos y los avisos de las citas (`NoticeDigestSettings`).
+    case profile, template, payments, formats, notices, companies, data, security
     var id: String { rawValue }
 
     var title: String {
@@ -45,6 +46,7 @@ enum SettingsPage: String, CaseIterable, Identifiable {
         case .template: String(localized: "Plantilla de factura")
         case .payments: String(localized: "Cobro en línea")
         case .formats: String(localized: "Moneda y formatos")
+        case .notices: String(localized: "Avisos")
         case .companies: String(localized: "Empresas")
         case .data: String(localized: "iCloud y copias")
         case .security: String(localized: "Seguridad")
@@ -57,6 +59,7 @@ enum SettingsPage: String, CaseIterable, Identifiable {
         case .template: "doc.richtext.fill"
         case .payments: "creditcard.fill"
         case .formats: "dollarsign"
+        case .notices: "bell.badge.fill"
         case .companies: "building.2.fill"
         case .data: "icloud.fill"
         case .security: "faceid"
@@ -69,6 +72,7 @@ enum SettingsPage: String, CaseIterable, Identifiable {
         case .template: Palette.indigo
         case .payments: Palette.pink
         case .formats: Palette.green
+        case .notices: Palette.red
         case .companies: Palette.orange
         case .data: Palette.teal
         case .security: Palette.red
@@ -127,6 +131,7 @@ struct SettingsWideView: View {
                     case .template: InvoiceTemplateView(company: company, embedded: true)
                     case .payments: PaymentSettingsView(company: company, embedded: true)
                     case .formats: FormatsView(company: company, embedded: true)
+                    case .notices: NoticeDigestSettings(embedded: true)
                     case .companies: CompaniesView(embedded: true)
                     case .data: ICloudAndBackupsView(embedded: true)
                     case .security: SecurityView(embedded: true)
@@ -256,6 +261,7 @@ struct SettingsLinks: View {
             link(.template) { InvoiceTemplateView(company: company) }
             link(.payments) { PaymentSettingsView(company: company) }
             link(.formats) { FormatsView(company: company) }
+            link(.notices) { NoticeDigestSettings() }
             link(.companies) { CompaniesView() }
         }
         link(.data) { ICloudAndBackupsView() }

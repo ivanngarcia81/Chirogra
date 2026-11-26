@@ -17,11 +17,13 @@ struct NoticesButton: View {
     @CompanyQuery private var bills: [Bill]
     @CompanyQuery private var expenses: [Expense]
     @CompanyQuery private var lines: [JournalLine]
+    @CompanyQuery private var appointments: [Appointment]
+    @ReportBasisSetting private var basis
     @State private var showing = false
 
     var body: some View {
-        let _ = (states.count, invoices.count, bills.count, expenses.count, lines.count)
-        let unread = ((try? Bookkeeper(context: context).notices()) ?? []).filter { !$0.isRead }.count
+        let _ = (states.count, invoices.count, bills.count, expenses.count, lines.count, appointments.count)
+        let unread = ((try? Bookkeeper(context: context).notices(basis: basis)) ?? []).filter { !$0.isRead }.count
         Button { showing = true } label: {
             Label("Avisos", systemImage: "bell")
                 .labelStyle(.iconOnly)
@@ -67,13 +69,15 @@ struct NoticesList: View {
     @CompanyQuery private var invoices: [Invoice]
     @CompanyQuery private var bills: [Bill]
     @CompanyQuery private var expenses: [Expense]
+    @CompanyQuery private var appointments: [Appointment]
+    @ReportBasisSetting private var basis
     @State private var errorMessage: String?
 
     private var books: Bookkeeper { Bookkeeper(context: context) }
 
     var body: some View {
-        let _ = (states.count, invoices.count, bills.count, expenses.count)
-        let notices = (try? books.notices()) ?? []
+        let _ = (states.count, invoices.count, bills.count, expenses.count, appointments.count)
+        let notices = (try? books.notices(basis: basis)) ?? []
         List {
             if let errorMessage { ErrorBanner(message: errorMessage) }
             ForEach(notices) { notice in
@@ -91,6 +95,8 @@ struct NoticesList: View {
                         .tint(Palette.gray)
                 }
                 .swipeActions(edge: .leading) {
+                    Button("Preguntar", systemImage: "bubble.left") { ask(about: notice) }
+                        .tint(Palette.brand)
                     if !notice.isRead {
                         Button("Leído", systemImage: "envelope.open") { act { try books.markNoticeRead(notice.id) } }
                             .tint(Palette.indigo)
@@ -104,8 +110,10 @@ struct NoticesList: View {
                     if !notice.isRead {
                         Button("Marcar como leído", systemImage: "envelope.open") { act { try books.markNoticeRead(notice.id) } }
                     }
+                    Button("Pregúntale al asistente", systemImage: "bubble.left") { ask(about: notice) }
                     Button("Descartar", systemImage: "xmark") { act { try books.dismissNotice(notice.id) } }
                 }
+                .accessibilityAction(named: "Pregúntale al asistente") { ask(about: notice) }
                 .accessibilityAction(named: "Descartar") { act { try books.dismissNotice(notice.id) } }
                 .accessibilityAction(named: "Marcar como leído") { act { try books.markNoticeRead(notice.id) } }
             }
@@ -139,6 +147,14 @@ struct NoticesList: View {
     private func act(_ action: () throws -> Void) {
         do { try action(); errorMessage = nil } catch { errorMessage = error.localizedDescription }
     }
+
+    /// «Pregúntale al asistente» (plan de la 1.4 §2): cierra la lista y abre el asistente con la pregunta escrita sobre
+    /// este aviso, para que el usuario la mande o la cambie (no se manda sola: cada pregunta cuenta).
+    private func ask(about notice: Notice) {
+        act { try books.markNoticeRead(notice.id) }
+        dismiss()
+        AssistantState.shared.compose(notice.question)
+    }
 }
 
 /// Fila del aviso: icono de su tipo, qué pasa, a quién y cuándo, el importe y el punto de no leído.
@@ -163,12 +179,12 @@ private struct NoticeRow: View {
                 Text(failure ?? notice.detail).font(.footnote)
                     .foregroundStyle(failure != nil ? Palette.negative : notice.isUrgent ? Palette.warning : Palette.ink2)
                     .fixedSize(horizontal: false, vertical: true)
-                if dynamicTypeSize.isAccessibilitySize {
+                if dynamicTypeSize.isAccessibilitySize && notice.amount != 0 {
                     Text(notice.amount.money).font(.footnote).monospacedDigit().foregroundStyle(Palette.ink)
                 }
             }
             Spacer(minLength: 8)
-            if !dynamicTypeSize.isAccessibilitySize {
+            if !dynamicTypeSize.isAccessibilitySize && notice.amount != 0 {
                 Text(notice.amount.money).monospacedDigit().foregroundStyle(Palette.ink)
             }
             Circle().fill(notice.isRead ? Color.clear : Palette.blue).frame(width: 8, height: 8).padding(.top, 6)
@@ -192,6 +208,9 @@ extension Notice {
         case .recurringGenerated: "arrow.triangle.2.circlepath"
         case .salesTaxDue: "percent"
         case .documentRenumbered: "number"
+        case .budgetExceeded: "chart.bar"
+        case .estimatedTaxDue: "building.columns"
+        case .appointmentToInvoice: "calendar.badge.clock"
         }
     }
 
@@ -203,7 +222,16 @@ extension Notice {
         case .recurringGenerated: needsConfirmation ? Palette.orange : Palette.indigo
         case .salesTaxDue: Palette.pink
         case .documentRenumbered: Palette.orange
+        case .budgetExceeded: Palette.red
+        case .estimatedTaxDue: Palette.indigo
+        case .appointmentToInvoice: Palette.teal
         }
+    }
+
+    /// La pregunta para el asistente sobre este aviso («Pregúntale al asistente»).
+    var question: String {
+        let amountText = amount != 0 ? " (\(amount.money))" : ""
+        return String(localized: "Tengo este aviso: «\(title)» — \(detail)\(amountText). ¿Qué tengo que hacer?")
     }
 
     /// Lo de hoy o lo vencido va en naranja.
@@ -224,6 +252,9 @@ extension Notice {
             case .creditNote: String(localized: "La nota de crédito \(previousReference) ahora es \(reference)")
             default: String(localized: "La factura \(previousReference) ahora es \(reference)")
             }
+        case .budgetExceeded: String(localized: "Te pasaste del presupuesto en \(party)")
+        case .estimatedTaxDue: String(localized: "Pago estimado al IRS")
+        case .appointmentToInvoice: String(localized: "Cita sin facturar · \(party)")
         }
     }
 
@@ -245,6 +276,12 @@ extension Notice {
             documentKind == .estimate
                 ? String(localized: "\(party) · Otro aparato usó el mismo número. Si ya lo enviaste, mándalo otra vez.")
                 : String(localized: "\(party) · Otro aparato usó el mismo número. Si ya la enviaste, mándala otra vez.")
+        case .budgetExceeded:
+            String(localized: "\(reference) · este mes, \(amount.money) por encima")
+        case .estimatedTaxDue:
+            String(localized: "1040-ES · \(date.shortDate) · \(dueText)")
+        case .appointmentToInvoice:
+            [reference == party ? "" : reference, date.shortDate].filter { !$0.isEmpty }.joined(separator: " · ")
         }
     }
 
@@ -266,6 +303,7 @@ struct NoticeDestination: View {
     @CompanyQuery private var bills: [Bill]
     @CompanyQuery private var expenses: [Expense]
     @CompanyQuery private var estimates: [Estimate]
+    @CompanyQuery private var appointments: [Appointment]
 
     var body: some View {
         let id = notice.documentID
@@ -288,6 +326,14 @@ struct NoticeDestination: View {
             } else { missing }
         case .salesTaxDue:
             TaxesView()
+        case .budgetExceeded:
+            ReportsView(fixedKind: .budget)
+        case .estimatedTaxDue:
+            EstimatedTaxView()
+        case .appointmentToInvoice:
+            if let appointment = appointments.first(where: { $0.id == id }) {
+                AppointmentDetailView(key: Bookkeeper.key(of: appointment))
+            } else { missing }
         }
     }
 

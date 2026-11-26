@@ -181,6 +181,7 @@ where Value: Identifiable, Value.ID == UUID,
                 .tint(showsInspector ? Palette.brand : Palette.ink)
             }
         }
+        .assistantBubbleArea()
         .inspector(isPresented: $showsInspector) {
             inspectorColumn(selected)
                 .inspectorColumnWidth(min: 260, ideal: 300, max: 420)

@@ -458,6 +458,8 @@ struct AppShell: View {
         }
         // 1.4: los avisos de las citas de la empresa activa, siempre al día.
         .background { AppointmentReminderScheduler() }
+        // 1.4: el resumen diario de la campana (si está encendido en Ajustes › Avisos) y qué hacer al tocar una notificación.
+        .background { NoticeDigestScheduler() }
         // 1.4: el asistente en el iPhone (hoja, con la burbuja sobre la barra de pestañas). En el iPad y el Mac va en
         // la columna de detalle (`detailColumn`), donde el inspector y la burbuja se colocan bien.
         .modifier(AssistantPresentation(compact: true, enabled: isCompactLayout))

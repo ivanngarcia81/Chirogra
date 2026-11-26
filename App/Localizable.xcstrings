@@ -550,6 +550,16 @@
         }
       }
     },
+    "%@ · este mes, %@ por encima" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · this month, %@ over"
+          }
+        }
+      }
+    },
     "%@ · extracto al %@" : {
       "localizations" : {
         "en" : {
@@ -2928,6 +2938,16 @@
         }
       }
     },
+    "1040-ES · %@ · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1040-ES · %@ · %@"
+          }
+        }
+      }
+    },
     "1099" : {
       "localizations" : {
         "en" : {
@@ -4190,6 +4210,16 @@
         }
       }
     },
+    "Antes de cada cita, con el tiempo que elijas en la cita. Solo en este aparato." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Before each appointment, as early as you choose in the appointment. Only on this device."
+          }
+        }
+      }
+    },
     "Antes de cerrar %@" : {
       "localizations" : {
         "en" : {
@@ -5032,6 +5062,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Appointment alerts on this device"
+          }
+        }
+      }
+    },
+    "Avisos de las citas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appointment reminders"
           }
         }
       }
@@ -6161,13 +6201,13 @@
         }
       }
     },
-    "Buscar ⌘K" : {
+    "Buscar ⌘F" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Search ⌘K"
+            "value" : "Search ⌘F"
           }
         }
       }
@@ -7307,6 +7347,16 @@
         }
       }
     },
+    "Cita sin facturar · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appointment not invoiced · %@"
+          }
+        }
+      }
+    },
     "Citas" : {
       "localizations" : {
         "en" : {
@@ -7323,6 +7373,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Today’s appointments"
+          }
+        }
+      }
+    },
+    "Citas de hoy: %lld." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appointments today: %lld."
           }
         }
       }
@@ -15481,6 +15541,16 @@
         }
       }
     },
+    "Hora" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Time"
+          }
+        }
+      }
+    },
     "Hoy" : {
       "localizations" : {
         "en" : {
@@ -16996,6 +17066,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Only you see notes; they don't appear on invoices."
+          }
+        }
+      }
+    },
+    "Las notificaciones de Chirogra están apagadas. Enciéndelas en los ajustes del sistema, en Notificaciones." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notifications for Chirogra are off. Turn them on in your device settings, under Notifications."
           }
         }
       }
@@ -18838,6 +18918,16 @@
         }
       }
     },
+    "Más avisos en la campana: %lld." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "More notices in the bell: %lld."
+          }
+        }
+      }
+    },
     "Más categorías…" : {
       "localizations" : {
         "en" : {
@@ -19161,12 +19251,12 @@
         }
       }
     },
-    "Ni la pregunta ni las cifras se guardan después de contestarte." : {
+    "Chirogra no guarda la pregunta ni las cifras, y Anthropic no las usa para entrenar sus modelos." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Neither the question nor the figures are kept after you get your answer."
+            "value" : "Chirogra doesn’t store your question or the figures, and Anthropic doesn’t use them to train its models."
           }
         }
       }
@@ -20339,6 +20429,16 @@
         }
       }
     },
+    "Notificaciones de la campana" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bell notifications"
+          }
+        }
+      }
+    },
     "Nueva" : {
       "localizations" : {
         "en" : {
@@ -21385,6 +21485,16 @@
         }
       }
     },
+    "Pago estimado al IRS" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estimated payment to the IRS"
+          }
+        }
+      }
+    },
     "Pago parcial" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -21452,6 +21562,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Scheduled payment recorded: %@"
+          }
+        }
+      }
+    },
+    "Pago registrado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Payment recorded"
           }
         }
       }
@@ -22821,6 +22941,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ask about your numbers, find something, or record with a sentence."
+          }
+        }
+      }
+    },
+    "Preguntar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ask"
+          }
+        }
+      }
+    },
+    "Preguntar al asistente" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ask the assistant"
+          }
+        }
+      }
+    },
+    "Pregúntale al asistente" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ask the assistant"
           }
         }
       }
@@ -25085,6 +25235,16 @@
         }
       }
     },
+    "Resumen de hoy" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today’s summary"
+          }
+        }
+      }
+    },
     "Resumen de sales tax" : {
       "localizations" : {
         "en" : {
@@ -25101,6 +25261,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Month summary"
+          }
+        }
+      }
+    },
+    "Resumen diario" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daily summary"
           }
         }
       }
@@ -28500,6 +28670,16 @@
         }
       }
     },
+    "Te pasaste del presupuesto en %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Over budget in %@"
+          }
+        }
+      }
+    },
     "Te sugerimos un plan de cuentas listo para usar." : {
       "localizations" : {
         "en" : {
@@ -28536,6 +28716,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "It will have its own books: customers, invoices, taxes and reports. You'll see it in Clients, next to the others."
+          }
+        }
+      }
+    },
+    "Tengo este aviso: «%@» — %@%@. ¿Qué tengo que hacer?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I have this notice: “%@” — %@%@. What should I do?"
+          }
+        }
+      }
+    },
+    "Tengo estos avisos hoy: %@. ¿Qué hago primero?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I have these notices today: %@. What should I do first?"
           }
         }
       }
@@ -30180,6 +30380,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "A recurring bill needs a vendor."
+          }
+        }
+      }
+    },
+    "Una notificación al día con lo nuevo de la campana: facturas que vencen, sales tax y pagos al IRS que se acercan, presupuestos excedidos, citas por facturar y las citas del día. Si no hay nada nuevo, no avisa. Solo en este aparato." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "One notification a day with what’s new in the bell: invoices coming due, sales tax and IRS payments coming up, budgets exceeded, appointments to invoice and the day’s appointments. If nothing is new, it stays quiet. Only on this device."
           }
         }
       }
@@ -32799,6 +33009,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Which appointments do you want to change?"
+          }
+        }
+      }
+    },
+    "¿Qué citas tengo hoy?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What appointments do I have today?"
           }
         }
       }

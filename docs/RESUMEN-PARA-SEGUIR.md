@@ -22,9 +22,32 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
   - Probado en el simulador (iPhone, `-qa.asistentePregunta`): gasto de Adobe, factura a Hotel Mirador, cobro de Clínica
     Del Valle, cita con Café Aurora, «¿cómo registro un cobro?», sales tax y «¿cuánto le he facturado a Hotel Mirador?».
     Pruebas nuevas: `AssistantDraftsTests` (9) y 3 más en `AssistantToolsTests`.
-  - **Después (lo decide el usuario):** 5 avisos como notificación (presupuesto, citas, «Pregúntale al asistente»), 6
-    apartado para impuestos en el inspector del Mac, 7 privacidad, 8 textos (guía, What's New, tienda), 9 QA. Y el
-    precio de la suscripción con el asistente, cuando haya más clientes.
+- **Puntos 5 a 8 (26-nov noche, SIN COMMITEAR):**
+  5. **Avisos:** tres tipos nuevos en la campana (`NoticeKind.budgetExceeded`, `.estimatedTaxDue`, `.appointmentToInvoice`;
+     `notices(asOf:calendar:basis:)`), «Pregúntale al asistente» en cada aviso (abre el asistente con la pregunta
+     escrita, sin mandarla: `AssistantState.compose`) y el **resumen diario** (`Home/NoticeDigest.swift`): una
+     notificación al día a la hora elegida, solo con lo nuevo (o lo que vence ese día) y las citas, programada 7 días por
+     adelantado; tocarla abre la campana (`ClientsRouter.open(_, route: .notices)`), «Preguntar al asistente» abre el
+     asistente. `NotificationRouter` es el delegado de notificaciones (también enseña las de citas con la app abierta).
+     Ajustes › Avisos (`SettingsPage.notices`): resumen diario (apagado de entrada) y avisos de citas.
+  6. **Mac › Impuestos estimados:** inspector con «Registrar pago al IRS» (`IRSPaymentSheet(inline: true)`), canvas
+     `MacApartado`.
+  7. **Privacidad:** `sitio/privacidad` y `sitio/privacy` con la sección del asistente (se publican al unir con `main`);
+     la pantalla de permiso dice ahora «Chirogra no guarda… Anthropic no las usa para entrenar»; etiqueta de App
+     Privacy en APP-STORE.md («App Privacy desde la 1.4»), la marca el usuario.
+  8. **Textos:** guía (es/en) con El asistente, Agenda (Schedule en inglés), Impuestos estimados, el resumen diario y
+     ⌘F/⌘K; APP-STORE.md «Versión 1.4.0» (promocional, secciones de la descripción, What's New, notas para Apple).
+     Faltan las capturas nuevas de la tienda y de la guía. Cuando la guía nueva esté publicada, quitar del prompt del
+     servidor las «Novedades de la 1.4 que la guía todavía no explica».
+  9. **QA (iPhone, iPad, Mac, es/en):** **el Mac no tenía permiso de red saliente** (`ENABLE_OUTGOING_NETWORK_CONNECTIONS`,
+     com.apple.security.network.client): en los builds 68 y 69 del Mac el asistente siempre dice «No hay conexión»;
+     arreglado en project.yml y pbxproj, va en el 70. Además: un cobro sin factura que cuadre ya no enseña tarjeta
+     (`AssistantDraft.isShown`, Claude pregunta cuál), la tarjeta incompleta se sustituye por la corregida, «Buscar ⌘F».
+  - **Burbuja en el Mac (26-nov, petición del usuario):** la burbuja flotante también en el Mac (antes un botón de la
+    barra), de 48 pt, abajo a la derecha de la parte principal de la pantalla: las pantallas con inspector propio marcan
+    esa parte con `.assistantBubbleArea()` (preferencia `AssistantBubbleArea`) y la burbuja queda a la izquierda del
+    inspector, sin tapar sus botones. Vista en Inicio (con y sin inspector), Facturas, Agenda y con el asistente abierto.
+  - **Después:** el precio de la suscripción con el asistente, cuando haya más clientes.
 - **Servidor del asistente EN MARCHA (26-nov), en el build 68:** proyecto de Supabase **«Chirogra»**
   (`nybetiuxfzkbfoijssfo`, organización Chirogra, plan gratis), función `asistente` desplegada (versión 2) y esquema
   `asistente.uso` creado. Código en `servidor/` (README ahí). Secretos: `ANTHROPIC_API_KEY` y `ASISTENTE_PRUEBA` (los

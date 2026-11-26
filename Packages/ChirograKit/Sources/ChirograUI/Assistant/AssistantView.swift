@@ -35,18 +35,27 @@ struct AssistantMark: View {
 }
 
 /// La burbuja flotante (canvas `EntradaB`, `iPadEntradaB`; decisión del usuario del 25-nov): botón redondo de vidrio con
-/// el símbolo del asistente, abajo a la derecha, en todas las pantallas.
+/// el símbolo del asistente, abajo a la derecha, en todas las pantallas. En el Mac también desde el 26-nov (antes era
+/// un botón de la barra), un poco más chica y a la izquierda del inspector de la pantalla (`assistantBubbleArea`).
 struct AssistantBubble: View {
     @State private var assistant = AssistantState.shared
+
+    #if os(macOS)
+    private let diameter: CGFloat = 48
+    #else
+    private let diameter: CGFloat = 56
+    #endif
 
     var body: some View {
         if !assistant.isOpen {
             Button { assistant.isOpen = true } label: {
-                AssistantMark(size: 30)
-                    .frame(width: 56, height: 56)
+                AssistantMark(size: diameter * 0.54)
+                    .frame(width: diameter, height: diameter)
+                    .contentShape(Circle())
             }
             .buttonStyle(.plain)
             .glassEffect(.regular.interactive(), in: Circle())
+            .help(Text("Asistente (⌘K)"))
             .accessibilityLabel("Asistente")
             .accessibilityHint(Text("Pregunta por tus números o registra con una frase"))
             .transition(.scale.combined(with: .opacity))
@@ -196,6 +205,13 @@ struct AssistantView: View {
                 if assistant.isWorking { withAnimation { proxy.scrollTo("pensando", anchor: .bottom) } }
             }
             .safeAreaInset(edge: .bottom, spacing: 0) { composer }
+            // Una pregunta puesta desde fuera («Pregúntale al asistente» de un aviso o de una notificación).
+            .task(id: assistant.pendingDraft) {
+                guard let text = assistant.pendingDraft else { return }
+                draft = text
+                assistant.pendingDraft = nil
+                composing = true
+            }
             #if DEBUG
             // `-qa.asistentePregunta "texto"`: la pregunta se hace sola al abrir (capturas, sin teclear). Solo Debug.
             .task {
@@ -317,7 +333,7 @@ struct AssistantView: View {
                 RowGroup(dividerInset: 16 + 30 + 12) {
                     consentRow("paperplane", Palette.blue, "Qué se envía", "Tu pregunta y solo las cifras que el asistente pida para contestarla.")
                     consentRow("server.rack", Palette.indigo, "A quién", "A Anthropic, la empresa que hace el modelo de IA, a través del servidor de Chirogra.")
-                    consentRow("checkmark.shield", Palette.green, "No se guarda", "Ni la pregunta ni las cifras se guardan después de contestarte.")
+                    consentRow("checkmark.shield", Palette.green, "No se guarda", "Chirogra no guarda la pregunta ni las cifras, y Anthropic no las usa para entrenar sus modelos.")
                 }
                 Link("Leer la política de privacidad", destination: URL(string: String(localized: "https://chirogra.com/privacidad/"))!)
                     .font(.subheadline).frame(maxWidth: .infinity)
@@ -563,6 +579,20 @@ private struct AssistantDraftCard: View {
     }
 }
 
+/// La parte principal de una pantalla con inspector propio (sin el inspector): la burbuja del Mac va abajo a la derecha
+/// de ella. Se marca justo antes del `.inspector` de la pantalla.
+struct AssistantBubbleArea: PreferenceKey {
+    static let defaultValue: Anchor<CGRect>? = nil
+    static func reduce(value: inout Anchor<CGRect>?, nextValue: () -> Anchor<CGRect>?) { value = nextValue() ?? value }
+}
+
+extension View {
+    /// Ver `AssistantBubbleArea`.
+    func assistantBubbleArea() -> some View {
+        anchorPreference(key: AssistantBubbleArea.self, value: .bounds) { $0 }
+    }
+}
+
 /// La burbuja y dónde se abre el asistente: en el iPhone, en una hoja, con la burbuja encima de la barra de pestañas;
 /// en el iPad y el Mac, en el panel de la derecha (inspector).
 struct AssistantPresentation: ViewModifier {
@@ -587,12 +617,14 @@ struct AssistantPresentation: ViewModifier {
                     AssistantBubble().padding(.trailing, 24).padding(.bottom, 24)
                 }
                 #else
-                // En el Mac, un botón de la barra en vez de la burbuja: la burbuja tapaba los botones de abajo del
-                // inspector que ya tienen muchas pantallas («Abrir factura» en Inicio).
-                .toolbar {
-                    ToolbarItem(placement: .primaryAction) {
-                        Button { assistant.isOpen.toggle() } label: { Label { Text("Asistente") } icon: { AssistantMark(size: 18) } }
-                            .help(Text("Asistente (⌘K)"))
+                // En el Mac, abajo a la derecha de la parte principal de la pantalla: con el inspector de la pantalla
+                // abierto, a su izquierda (encima tapaba sus botones de abajo, como «Abrir factura» en Inicio).
+                .overlayPreferenceValue(AssistantBubbleArea.self) { area in
+                    GeometryReader { proxy in
+                        let rect = area.map { proxy[$0] } ?? CGRect(origin: .zero, size: proxy.size)
+                        AssistantBubble()
+                            .padding(20)
+                            .frame(width: max(rect.maxX, 0), height: max(rect.maxY, 0), alignment: .bottomTrailing)
                     }
                 }
                 #endif
