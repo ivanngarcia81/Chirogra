@@ -42,6 +42,8 @@ struct InvoiceEditorView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    /// Tutorial de seguir (1.4): elegir el cliente, escribir el precio y emitir lo hacen avanzar.
+    @Environment(Recorrido.self) private var recorrido: Recorrido?
     #if os(iOS)
     @LayoutSizeClass private var sizeClass
     #endif
@@ -188,6 +190,8 @@ struct InvoiceEditorView: View {
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
         #endif
         .recorridoPantalla(.invoiceEditor)
+        .recorridoCumple("factura.precio", linesSubtotal > 0)
+        .onChange(of: customerID, initial: true) { if customerID != nil { recorrido?.ocurrio("factura.cliente") } }
         .sheet(item: $previewing) { invoice in
             NavigationStack { InvoicePreviewView(invoice: invoice, company: companies.first) }.editorSheetSizing()
         }
@@ -504,6 +508,8 @@ struct InvoiceEditorView: View {
             Section(title: "Productos y servicios") {
                 ForEach($lines) { $line in
                     lineRow($line)
+                        // Tutorial de seguir: la primera línea es la que se ilumina para escribir qué vendió.
+                        .recorridoObjetivo("factura.linea", si: line.id == lines.first?.id)
                 }
                 .onDelete { lines.remove(atOffsets: $0) }
                 Button { addLine() } label: {
@@ -612,6 +618,7 @@ struct InvoiceEditorView: View {
                 Button(action: attemptPrimary) { Text(isEstimate || isEditingIssued ? "Guardar" : "Emitir") }
                     .buttonStyle(.primaryCompact)
                     .accessibilityLabel(primaryTitle)
+                    .recorridoObjetivo("editor.emitir")
             }
         }
     }
@@ -858,6 +865,7 @@ struct InvoiceEditorView: View {
                 .buttonStyle(.plain)
                 .accessibilityLabel("Cliente")
                 .accessibilityValue(customer?.name ?? String(localized: "Sin elegir"))
+                .recorridoObjetivo("editor.customer")
             }
             boxRow(String(localized: "Número")) {
                 Text(documentNumber).foregroundStyle(Palette.ink2).monospacedDigit()
@@ -972,6 +980,7 @@ struct InvoiceEditorView: View {
                         .accessibilityLabel("Quitar la línea \(index + 1)")
                     }
                     .zebra(index)
+                    .recorridoObjetivo("factura.linea", si: index == 0)
                 }
                 Divider()
                 Button("Añadir línea", systemImage: "plus", action: addLine)
@@ -1016,7 +1025,7 @@ struct InvoiceEditorView: View {
                 Text(linesSubtotal.money).monospacedDigit()
             }
             boxRow(String(localized: "Impuesto")) {
-                taxPicker.labelsHidden().fixedSize()
+                taxPicker.labelsHidden().fixedSize().recorridoObjetivo("editor.tax")
             }
             boxRow(String(localized: "Descuento")) {
                 MoneyField(title: String(localized: "Descuento"), minorUnits: $discount)
@@ -1229,6 +1238,7 @@ struct InvoiceEditorView: View {
             // Ya no hay nada sin guardar; el editor se cierra al responder «Factura … emitida».
             unsavedChanges?.remove(editorToken)
             justIssued = invoice
+            recorrido?.ocurrio("factura.emitida")
         } catch {
             errorMessage = error.localizedDescription
         }

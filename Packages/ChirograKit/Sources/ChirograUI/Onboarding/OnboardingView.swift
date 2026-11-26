@@ -698,6 +698,8 @@ struct OnboardingView: View {
             }
         }
         if !problems.isEmpty { SetupIssue.shared.message = problems.joined(separator: "\n\n") }
+        // 1.4: su propia empresa (no otra del contador): al llegar a Inicio, el tutorial de seguir.
+        if !addsCompany { Recorrido.pedirGuiado() }
         onFinish?()
     }
 

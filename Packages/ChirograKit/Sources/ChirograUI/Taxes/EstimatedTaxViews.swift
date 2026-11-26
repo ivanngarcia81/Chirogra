@@ -142,6 +142,9 @@ struct EstimatedTaxCard: View {
                 }
                 .buttonStyle(.plain)
                 .accessibilityHint(Text("Abre impuestos estimados"))
+                .accessibilityIdentifier("tarjeta.apartado")
+                .recorridoObjetivo("tarjeta.apartado")
+                .id("tarjeta.apartado")
             }
         }
     }
@@ -185,6 +188,7 @@ struct EstimatedTaxView: View {
                             EstimatedTaxSummaryContent(summary: summary, amountSize: 36)
                         }
                         .padding(.vertical, 6)
+                        .recorridoObjetivo("apartado.resumen")
                     } else {
                         VStack(spacing: 6) {
                             Image(systemName: "percent").font(.system(size: 40)).foregroundStyle(Palette.ink2).accessibilityHidden(true)
@@ -194,6 +198,7 @@ struct EstimatedTaxView: View {
                         }
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 18)
+                        .recorridoObjetivo("apartado.resumen")
                     }
                 }
                 #if !os(macOS)

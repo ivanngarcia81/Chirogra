@@ -28,6 +28,9 @@ enum RecorridoID: String, CaseIterable {
     /// iPad a pantalla completa (barra lateral, lista y detalle; build 60, pedido del usuario del 21-nov): el corto de la
     /// primera vez en cada sección, con sus propios pasos y su propio «visto» (el del iPhone no vale: es otra pantalla).
     case padHome, padSales, padExpenses, padBanking, padReports
+    /// 1.4: el tutorial de seguir (`RecorridoGuiado.swift`): al crear su empresa, la persona toca y crea de verdad su
+    /// primer cliente, su primera factura y un gasto, y ve sus impuestos. Igual en iPhone, iPad y Mac.
+    case guiado
 
     /// Las 5 pestañas, que tienen también el recorrido corto de la primera vez (y las secciones del iPad).
     var esPestana: Bool { [.home, .sales, .expenses, .banking, .more].contains(self) || esIPad }
@@ -39,7 +42,20 @@ enum RecorridoID: String, CaseIterable {
     var enHoja: Bool { self == .invoiceEditor || self == .expenseEditor }
 
     /// El corto en las pestañas; con el «Tutorial completo», el largo (en las demás pantallas, solo ese).
-    func pasos(aFondo: Bool) -> [Paso] { aFondo ? pasosAFondo : esPestana ? pasos : [] }
+    func pasos(aFondo: Bool) -> [Paso] {
+        if self == .guiado { return Self.pasosGuiado }
+        return aFondo ? pasosAFondo : esPestana ? pasos : []
+    }
+
+    /// Qué espera un paso del tutorial de seguir para pasar al siguiente (sin espera: «Siguiente», como el recorrido).
+    enum Espera: Equatable {
+        /// Que aparezca ese objetivo: la persona tocó lo iluminado y se abrió la pantalla que sigue.
+        case aparece(String)
+        /// Que pase algo en la app (`Recorrido.ocurrio`): se guardó el cliente, se emitió la factura.
+        case evento(String)
+        /// «Siguiente» se enciende cuando la pantalla lo da por hecho (`recorridoCumple`): escribió el nombre.
+        case listo(String)
+    }
 
     struct Paso {
         /// Lo que se ilumina; `nil` = presentación de la pestaña, centrada. `ax:` = un botón de la barra de
@@ -53,6 +69,19 @@ enum RecorridoID: String, CaseIterable {
         /// Vive en una `List`, que no dibuja (ni mide) las filas fuera de la pantalla: se cuenta aunque aún no tenga
         /// marco, y se salta si al desplazarse no aparece.
         var enLista = false
+        /// Tutorial de seguir: lo que espera para pasar al siguiente.
+        var espera: Espera? = nil
+        /// Tutorial de seguir: el paso vive en un editor (hoja); lo dibuja el velo de la hoja.
+        var enHoja = false
+        /// Tutorial de seguir: los pasos de un mismo grupo (cliente, factura, gasto…). Si el primero no está en la
+        /// pantalla (ya hay cliente: su fila de «Primeros pasos» no se puede tocar), se salta el grupo entero.
+        var grupo: String? = nil
+        /// Tutorial de seguir: solo si se saltó ese grupo (el sales tax, cuando no hay «Apartado para impuestos»).
+        var siSeSalto: String? = nil
+        /// Tutorial de seguir: la tarjeta de despedida, con la guía y el tutorial completo.
+        var final = false
+        /// Tutorial de seguir: el paso pide escribir; en los demás el teclado se cierra (tapaba lo iluminado).
+        var escribe = false
     }
 
     var pasos: [Paso] {
@@ -257,6 +286,198 @@ final class Recorrido {
     /// son los de las pantallas del iPhone), y nada tapa abajo.
     var esIPad = false
 
+    // MARK: Tutorial de seguir (1.4)
+
+    /// El recorrido a la vista es el tutorial de seguir.
+    var esGuiado: Bool { activo == .guiado }
+    var pasoActual: RecorridoID.Paso? { pasos.indices.contains(paso) ? pasos[paso] : nil }
+    /// Qué capa dibuja el paso a la vista: la de la hoja (editores) o la de la pantalla.
+    var capaEnHoja: Bool { esGuiado ? pasoActual?.enHoja ?? false : activo?.enHoja ?? false }
+    /// Lo que la pantalla da por hecho (`Espera.listo`: escribió el nombre del cliente).
+    private(set) var cumplidos: Set<String> = []
+    /// Lo que ya pasó en este tutorial (`Espera.evento`), por si pasa mientras la tarjeta cambia de paso.
+    @ObservationIgnored private var ocurridos: Set<String> = []
+    /// Grupos saltados porque su primer paso no estaba (ya había cliente, por ejemplo).
+    @ObservationIgnored private var gruposSaltados: Set<String> = []
+    /// Alto del teclado a la vista: la tarjeta no se pone detrás de él.
+    var teclado: CGFloat = 0
+    /// Editores abiertos en hojas: un paso de la pantalla de detrás espera a que se cierren («Factura emitida» sigue
+    /// encima de Inicio hasta que la persona responde).
+    @ObservationIgnored private var hojasAbiertas = 0
+    func hojaAbierta() { hojasAbiertas += 1 }
+    /// Mientras un paso de la pantalla de detrás espera a que se cierren las hojas, el tutorial no dibuja nada: si no,
+    /// la hoja que la persona abre entonces (enviar la factura recién emitida) quedaba cubierta por el velo, en gris y
+    /// sin tarjeta (lo vio el usuario en el Mac, 26-nov).
+    private(set) var esperandoHojas = false
+    /// Al crear su empresa (`OnboardingView`), el tutorial de seguir queda pedido: empieza en Inicio.
+    static let guiadoKey = "recorrido.guiado.pendiente"
+    static var guiadoPendiente: Bool { UserDefaults.standard.bool(forKey: guiadoKey) }
+    static func pedirGuiado() { UserDefaults.standard.set(true, forKey: guiadoKey) }
+
+    /// Empieza el tutorial de seguir (al llegar a Inicio con la empresa recién creada, o desde Ayuda).
+    func empezarGuiado() {
+        guard activo == nil else { return }
+        UserDefaults.standard.set(false, forKey: Self.guiadoKey)
+        Task {
+            try? await Task.sleep(for: .milliseconds(600))
+            guard activo == nil else { return }
+            pasos = RecorridoID.guiado.pasos(aFondo: false)
+            cumplidos = []
+            ocurridos = []
+            gruposSaltados = []
+            activoAFondo = false
+            paso = 0
+            tarjetaVisible = false
+            withAnimation(.easeOut(duration: 0.25)) { activo = .guiado }
+            try? await Task.sleep(for: .milliseconds(100))
+            withAnimation(reduceMotion ? .easeInOut(duration: 0.2) : .spring(response: 0.35, dampingFraction: 0.8)) {
+                tarjetaVisible = true
+            }
+        }
+    }
+
+    /// «Aprende haciendo» en Ayuda: el tutorial de seguir otra vez, desde Inicio (que lo empieza al ver el pedido). Lo ya
+    /// hecho se toca con los botones rápidos de Inicio cuando su fila de «Primeros pasos» ya no está.
+    func repetirGuiado() {
+        guard activo == nil else { return }
+        Self.pedirGuiado()
+        pedidoInicio += 1
+    }
+
+    /// Lo pide Inicio al aparecer (el Mac no tiene recorrido por secciones que lo empiece).
+    func empezarGuiadoSiHaceFalta() {
+        guard Self.guiadoPendiente, !desactivado || Self.qaGuiado else { return }
+        empezarGuiado()
+    }
+
+    private static var qaGuiado: Bool {
+        #if DEBUG
+        UserDefaults.standard.string(forKey: "qa.recorrido") == "guiado"
+        #else
+        false
+        #endif
+    }
+
+    /// El marco de un objetivo. En el tutorial de seguir, si es lo que el paso espera que aparezca, pasa al siguiente.
+    func ponerMarco(_ id: String, _ marco: CGRect?) {
+        marcos[id] = marco
+        guard esGuiado, let marco, marco.width > 0, case .aparece(let esperado) = pasoActual?.espera,
+              esperado.split(separator: "|").contains(Substring(id)) else { return }
+        siguiente()
+    }
+
+    /// Pasó algo en la app (se guardó el cliente, se emitió la factura). Si un paso lo espera, el tutorial sigue
+    /// después de él (también si la persona se adelantó: guardó sin tocar «Siguiente»).
+    func ocurrio(_ evento: String) {
+        guard esGuiado else { return }
+        ocurridos.insert(evento)
+        revisarEspera()
+    }
+
+    /// Lo que la pantalla da por hecho (o deja de dar): enciende o apaga «Siguiente».
+    func marcar(_ clave: String, _ hecho: Bool) {
+        guard esGuiado || !hecho else { return }
+        if hecho { cumplidos.insert(clave) } else { cumplidos.remove(clave) }
+    }
+
+    /// Tras cambiar de paso (o al pasar algo): lo ya hecho no se vuelve a pedir.
+    private func revisarEspera() {
+        guard esGuiado, !cambiando else { return }
+        let hechos = pasos.indices.filter { indice in
+            guard indice >= paso, case .evento(let evento) = pasos[indice].espera else { return false }
+            return ocurridos.contains(evento)
+        }
+        if let ultimo = hechos.last {
+            paso = ultimo
+            siguiente()
+            return
+        }
+        if case .aparece(let esperado) = pasoActual?.espera, marco(de: esperado) != nil { siguiente() }
+    }
+
+    /// Se cerró una hoja. Si el paso a la vista vivía en ella (la persona canceló el editor), el tutorial vuelve al
+    /// primer paso de su grupo, el que lo abre, en vez de quedarse con la tarjeta dentro de una hoja que ya no está.
+    func hojaCerrada() {
+        hojasAbiertas = max(hojasAbiertas - 1, 0)
+        guard esGuiado else { return }
+        Task {
+            try? await Task.sleep(for: .milliseconds(700))
+            guard esGuiado, !cambiando, let actual = pasoActual, actual.enHoja, !objetivoPresente(actual) else { return }
+            guard let inicio = pasos.indices.first(where: { pasos[$0].grupo == actual.grupo && pasos[$0].grupo != nil }),
+                  inicio < paso else { return }
+            // Lo hecho en ese editor ya no vale: el nuevo empieza vacío.
+            for candidato in pasos where candidato.grupo == actual.grupo {
+                if case .evento(let evento) = candidato.espera { ocurridos.remove(evento) }
+            }
+            paso = inicio - 1
+            ir(adelante: true)
+        }
+    }
+
+    /// «3 de 15»: en el tutorial de seguir no cuentan los pasos que no se van a ver (grupos saltados y el sales tax
+    /// cuando sí hay apartado para impuestos).
+    var numeracion: (actual: Int, total: Int) {
+        guard esGuiado else { return (paso + 1, pasos.count) }
+        let cuentan = pasos.indices.filter { indice in
+            let candidato = pasos[indice]
+            if let grupo = candidato.grupo, gruposSaltados.contains(grupo) { return false }
+            if let otro = candidato.siSeSalto, !gruposSaltados.contains(otro) { return false }
+            return true
+        }
+        return ((cuentan.firstIndex { $0 >= paso } ?? cuentan.count - 1) + 1, cuentan.count)
+    }
+
+    /// El marco de un objetivo del tutorial de seguir: puede llevar alternativas separadas por «|» (la barra de abajo
+    /// del iPhone o el botón de arriba de la hoja ancha); vale la primera que esté.
+    func marco(de objetivo: String) -> CGRect? {
+        objetivo.split(separator: "|").lazy.compactMap { self.marcos[String($0)] }.first { $0.width > 0 }
+    }
+
+    private func objetivoPresente(_ paso: RecorridoID.Paso) -> Bool {
+        guard let objetivo = paso.objetivo else { return true }
+        #if os(iOS)
+        for parte in objetivo.split(separator: "|") where parte.hasPrefix("ax:") {
+            if Self.marcoEnVentana(etiqueta: String(parte.dropFirst(3))) != nil { return true }
+        }
+        #endif
+        return marco(de: objetivo) != nil
+    }
+
+    /// Espera a que el objetivo aparezca (la pantalla de detrás se rehace al cerrar la hoja); `false` si no llega.
+    private func esperarObjetivo(_ paso: RecorridoID.Paso, intentos: Int = 12) async -> Bool {
+        for _ in 0..<intentos {
+            if objetivoPresente(paso) { return true }
+            try? await Task.sleep(for: .milliseconds(150))
+        }
+        return objetivoPresente(paso)
+    }
+
+    private func cerrarTeclado() {
+        #if os(iOS)
+        guard teclado > 0 else { return }
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+        #endif
+    }
+
+    #if os(iOS)
+    /// Los botones de la barra de una hoja (`ax:`) se buscan mientras su paso está a la vista: la hoja tarda en subir.
+    private func seguirBotonDeBarra() {
+        let botones = (pasoActual?.objetivo ?? "").split(separator: "|").map(String.init).filter { $0.hasPrefix("ax:") }
+        guard !botones.isEmpty else { return }
+        let indice = paso
+        Task {
+            for _ in 0..<40 {
+                guard esGuiado, paso == indice else { return }
+                for boton in botones {
+                    let marco = Self.marcoEnVentana(etiqueta: String(boton.dropFirst(3)))
+                    if marcos[boton] != marco { marcos[boton] = marco }
+                }
+                try? await Task.sleep(for: .milliseconds(250))
+            }
+        }
+    }
+    #endif
+
     /// «Más › Ayuda › Tutorial completo»: cada pantalla explica todos sus botones la primera vez que se abre (tester de
     /// Beta Family, 18-nov: «too short»). No sale solo; el recorrido corto de la primera vez no cambia.
     private(set) var aFondo = UserDefaults.standard.bool(forKey: Recorrido.aFondoKey)
@@ -277,6 +498,9 @@ final class Recorrido {
             Self.olvidarAFondo()
             aFondo = true
         }
+        // `-qa.recorrido guiado`: el tutorial de seguir al llegar a Inicio (con `-qa.alta 1 -qa.altaCrear 1`, recién
+        // creada la empresa).
+        if defaults.string(forKey: "qa.recorrido") == "guiado" { Self.pedirGuiado() }
         let usaQA = ProcessInfo.processInfo.arguments.contains { $0.hasPrefix("-qa.") }
         desactivado = usaQA && defaults.object(forKey: "qa.recorrido") == nil
         #endif
@@ -329,7 +553,13 @@ final class Recorrido {
 
     /// Al entrar en una pestaña: si no se ha visto, espera a que la pantalla se coloque y empieza.
     func empezarSiHaceFalta(_ id: RecorridoID?) {
-        guard let id, activo == nil, !desactivado, id.esIPad == esIPad else { return }
+        guard let id, activo == nil else { return }
+        // Empresa recién creada: en Inicio, el tutorial de seguir en vez del recorrido corto.
+        if id == .home || id == .padHome, Self.guiadoPendiente {
+            empezarGuiadoSiHaceFalta()
+            return
+        }
+        guard !desactivado, id.esIPad == esIPad else { return }
         let fondo = aFondo && !esIPad
         if fondo {
             guard !UserDefaults.standard.bool(forKey: id.fondoKey) else { return }
@@ -362,26 +592,27 @@ final class Recorrido {
 
     /// Entero en la pantalla, sin la barra de navegación de arriba ni la de pestañas de abajo.
     private func aLaVista(_ paso: RecorridoID.Paso) -> Bool {
-        guard let objetivo = paso.objetivo, let marco = marcos[objetivo], marco.width > 0, altoPantalla > 0 else { return false }
-        return marco.minY >= 100 && marco.maxY <= altoPantalla - margenAbajo
+        guard let objetivo = paso.objetivo, let marco = marco(de: objetivo), altoPantalla > 0 else { return false }
+        // Con el teclado a la vista, lo que queda detrás no cuenta (el tutorial de seguir pide escribir).
+        return marco.minY >= 100 && marco.maxY <= altoPantalla - max(margenAbajo, teclado + 8)
     }
 
     /// Al menos una parte en la pantalla (con letra grande, la tarjeta de Inicio no cabe entera).
     private func asoma(_ paso: RecorridoID.Paso) -> Bool {
-        guard let objetivo = paso.objetivo, let marco = marcos[objetivo], marco.width > 0, altoPantalla > 0 else { return false }
-        return marco.maxY > 100 && marco.minY < altoPantalla - margenAbajo
+        guard let objetivo = paso.objetivo, let marco = marco(de: objetivo), altoPantalla > 0 else { return false }
+        return marco.maxY > 100 && marco.minY < altoPantalla - max(margenAbajo, teclado + 8)
     }
 
     private func tieneMarco(_ paso: RecorridoID.Paso) -> Bool {
         guard let objetivo = paso.objetivo else { return true }
-        return (marcos[objetivo]?.width ?? 0) > 0
+        return marco(de: objetivo) != nil
     }
 
     /// Fuera de la pantalla del todo, o sin medir (una fila de `List` que ya no se dibuja). Lo de arriba no lleva
     /// `desplazar`: solo pasa al volver atrás después de bajar (por eso lleva también su `.id`).
     private func fuera(_ paso: RecorridoID.Paso) -> Bool {
         guard let objetivo = paso.objetivo else { return false }
-        guard let marco = marcos[objetivo], marco.width > 0 else { return true }
+        guard let marco = marco(de: objetivo) else { return true }
         guard altoPantalla > 0 else { return false }
         return marco.maxY <= 100 || marco.minY >= altoPantalla
     }
@@ -394,7 +625,9 @@ final class Recorrido {
         let haceFalta = paso.desplazar ? paso.enLista || !aLaVista(paso) : fuera(paso)
         guard haceFalta else { return true }
         let visible = { paso.desplazar ? self.asoma(paso) : !self.fuera(paso) }
-        desplazarA = objetivo
+        // Con alternativas («fila|botón»), se desplaza a la que esté (o a la primera).
+        desplazarA = objetivo.split(separator: "|").map(String.init).first { (marcos[$0]?.width ?? 0) > 0 }
+            ?? String(objetivo.split(separator: "|").first ?? Substring(objetivo))
         try? await Task.sleep(for: .milliseconds(450))
         desplazarA = nil
         // La última fila de una lista larga tarda más en dibujarse (y medirse) al llegar: se espera un poco.
@@ -423,6 +656,8 @@ final class Recorrido {
 
     /// La tarjeta deslizada, o ajustada con VoiceOver.
     func deslizar(_ deslizamiento: Deslizamiento) {
+        // En el tutorial de seguir se avanza haciendo, no deslizando.
+        guard !esGuiado else { return }
         guard Self.pasoTras(deslizamiento, actual: paso, total: pasos.count) != nil else { return }
         if deslizamiento == .siguiente { siguiente() } else { anterior() }
     }
@@ -431,6 +666,7 @@ final class Recorrido {
     /// (abrir la sección otra vez, una subsección de la barra) y se saltaba el primer paso sin leerlo (Yurii S., iPad,
     /// build 65: «en Gastos empecé en el paso 2»).
     func tocarVelo() {
+        guard !esGuiado else { return }
         guard paso > 0 || Date.now.timeIntervalSince(visibleDesde) > 1 else { return }
         siguiente()
     }
@@ -455,7 +691,11 @@ final class Recorrido {
             var proximo = paso + salto
             // Lo que no se pone a la vista se salta (hacia atrás para en la presentación, que siempre está).
             while pasos.indices.contains(proximo) {
-                if await ponerALaVista(pasos[proximo]) { break }
+                if esGuiado {
+                    if await sirveGuiado(proximo) { break }
+                } else if await ponerALaVista(pasos[proximo]) {
+                    break
+                }
                 proximo += salto
             }
             guard pasos.indices.contains(proximo) else {
@@ -471,11 +711,53 @@ final class Recorrido {
                 withAnimation(.easeOut(duration: 0.24)) { tarjetaVisible = true }
             }
             cambiando = false
+            if esGuiado {
+                #if os(iOS)
+                seguirBotonDeBarra()
+                #endif
+                revisarEspera()
+            }
         }
+    }
+
+    /// Tutorial de seguir: si el paso se enseña. El primero de un grupo espera a que su objetivo esté (si no llega, se
+    /// salta el grupo entero); los demás se enseñan aunque su objetivo aún no esté (la hoja que lo trae está subiendo).
+    private func sirveGuiado(_ indice: Int) async -> Bool {
+        let candidato = pasos[indice]
+        if let grupo = candidato.grupo, gruposSaltados.contains(grupo) { return false }
+        if let otro = candidato.siSeSalto, !gruposSaltados.contains(otro) { return false }
+        // Lo que explica sin pedir que se escriba: el teclado se cierra, que tapaba el impuesto y la barra de «Emitir».
+        if !candidato.escribe { cerrarTeclado() }
+        let empiezaGrupo = candidato.grupo != nil && (indice == 0 || pasos[indice - 1].grupo != candidato.grupo)
+        guard empiezaGrupo else {
+            if candidato.desplazar { _ = await ponerALaVista(candidato) }
+            return true
+        }
+        // Un paso de la pantalla de detrás espera a que se cierren las hojas (y lo que abren: enviar la factura).
+        if !candidato.enHoja {
+            if hojasAbiertas > 0 { withAnimation(.easeOut(duration: 0.2)) { esperandoHojas = true } }
+            while hojasAbiertas > 0, esGuiado { try? await Task.sleep(for: .milliseconds(300)) }
+            esperandoHojas = false
+            try? await Task.sleep(for: .milliseconds(400))
+        }
+        // Lo que se toca en Inicio puede estar más abajo: primero se desplaza (si ya se ve, no hace nada).
+        if candidato.desplazar { _ = await ponerALaVista(candidato) }
+        if await esperarObjetivo(candidato), await ponerALaVista(candidato) { return true }
+        if let grupo = candidato.grupo { gruposSaltados.insert(grupo) }
+        return false
     }
 
     func terminar() {
         guard let activo else { return }
+        // El tutorial de seguir enseña Inicio: su recorrido corto ya no hace falta.
+        if activo == .guiado {
+            for id in [RecorridoID.home, .padHome] {
+                UserDefaults.standard.set(true, forKey: id.seenKey)
+                NSUbiquitousKeyValueStore.default.set(true, forKey: id.seenKey)
+                vistos.insert(id)
+            }
+            cumplidos = []
+        }
         if activoAFondo { UserDefaults.standard.set(true, forKey: activo.fondoKey) }
         // El largo de una pestaña vale también por el corto (no sale después).
         if activo.esPestana {
@@ -528,6 +810,9 @@ extension View {
         if condicion { recorridoObjetivo(id) } else { self }
     }
 
+    /// Tutorial de seguir: la pantalla da por hecho un paso (`Espera.listo`) mientras `hecho` sea cierto.
+    func recorridoCumple(_ clave: String, _ hecho: Bool) -> some View { modifier(RecorridoCumple(clave: clave, hecho: hecho)) }
+
     /// Desplaza la lista o el `ScrollView` hasta lo que el recorrido va a iluminar (la vista lleva `.id` igual al
     /// objetivo).
     func siguiendoRecorrido(_ proxy: ScrollViewProxy) -> some View {
@@ -537,6 +822,19 @@ extension View {
     /// Lo mismo, para una lista o un formulario sin `ScrollViewReader` propio.
     func recorridoDesplazable() -> some View {
         ScrollViewReader { proxy in siguiendoRecorrido(proxy) }
+    }
+}
+
+private struct RecorridoCumple: ViewModifier {
+    let clave: String
+    let hecho: Bool
+    @Environment(Recorrido.self) private var recorrido: Recorrido?
+
+    func body(content: Content) -> some View {
+        content
+            .onChange(of: hecho, initial: true) { recorrido?.marcar(clave, hecho) }
+            .onChange(of: recorrido?.esGuiado) { recorrido?.marcar(clave, hecho) }
+            .onDisappear { recorrido?.marcar(clave, false) }
     }
 }
 
@@ -569,6 +867,10 @@ private struct RecorridoObjetivo: ViewModifier {
     /// Sube al aparecer: así se vuelve a medir aunque el marco sea el mismo de antes (al volver a una pestaña, el
     /// marco no cambia y `onGeometryChange` no avisaba; sin esto, Inicio se quedaba sin sus pasos).
     @State private var apariciones = 0
+    /// El último marco que midió esta vista: al desaparecer solo borra el suyo. Con el mismo objetivo en dos sitios
+    /// (la fila de «Primeros pasos» de la primera vez y la del tablero), la vieja se iba después de llegar la nueva y
+    /// borraba su marco: el tutorial de seguir no encontraba la fila.
+    @State private var ultimo: CGRect?
 
     nonisolated private struct Medida: Equatable, Sendable {
         var marco: CGRect
@@ -578,11 +880,15 @@ private struct RecorridoObjetivo: ViewModifier {
     func body(content: Content) -> some View {
         content
             .onGeometryChange(for: Medida.self) { Medida(marco: $0.frame(in: .global), aparicion: apariciones) } action: {
-                recorrido?.marcos[id] = $0.marco
+                ultimo = $0.marco
+                recorrido?.ponerMarco(id, $0.marco)
             }
             .onAppear { apariciones += 1 }
             // Al cerrar una pantalla su marco no sirve: la factura siguiente puede no tener «Registrar pago».
-            .onDisappear { recorrido?.marcos[id] = nil }
+            .onDisappear {
+                guard let recorrido, recorrido.marcos[id] == nil || recorrido.marcos[id] == ultimo else { return }
+                recorrido.ponerMarco(id, nil)
+            }
     }
 }
 
@@ -609,8 +915,10 @@ private struct RecorridoEnHoja: ViewModifier {
 
     func body(content: Content) -> some View {
         content.overlay {
-            if let recorrido, recorrido.activo?.enHoja == true { RecorridoOverlay(enHoja: true).environment(recorrido) }
+            if let recorrido, recorrido.capaEnHoja { RecorridoOverlay(enHoja: true).environment(recorrido) }
         }
+        .onAppear { recorrido?.hojaAbierta() }
+        .onDisappear { recorrido?.hojaCerrada() }
     }
 }
 
@@ -652,7 +960,7 @@ struct RecorridoOverlay: View {
 
     /// El alto de la capa del recorrido a la vista (la hoja es más baja que la pantalla).
     private func ponerAlto() {
-        if (recorrido.activo?.enHoja ?? false) == enHoja, alto > 0 {
+        if recorrido.capaEnHoja == enHoja, alto > 0 {
             // Los marcos son de la ventana: el alto también (el del velo salía 81 pt más bajo y la última fila de
             // «Más», «Ayuda», contaba como tapada aunque se veía).
             #if os(iOS)
@@ -669,7 +977,8 @@ struct RecorridoOverlay: View {
 
     var body: some View {
         GeometryReader { geo in
-            if let activo = recorrido.activo, activo.enHoja == enHoja, recorrido.pasos.indices.contains(recorrido.paso) {
+            if recorrido.activo != nil, !recorrido.esperandoHojas, recorrido.capaEnHoja == enHoja,
+               recorrido.pasos.indices.contains(recorrido.paso) {
                 contenido(geo: geo)
                     .transition(.opacity)
             }
@@ -677,6 +986,18 @@ struct RecorridoOverlay: View {
         .ignoresSafeArea()
         .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { alto = $0; ponerAlto() }
         .onChange(of: recorrido.activo, initial: true) { ponerAlto() }
+        .onChange(of: recorrido.capaEnHoja) { ponerAlto() }
+        #if os(iOS)
+        // El tutorial de seguir pide escribir: la tarjeta se queda encima del teclado.
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillChangeFrameNotification)) { aviso in
+            guard let fin = aviso.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else { return }
+            let pantalla = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first?.screen.bounds.height ?? fin.maxY
+            recorrido.teclado = max(0, pantalla - fin.minY)
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
+            recorrido.teclado = 0
+        }
+        #endif
         .onChange(of: reduceMotion, initial: true) { recorrido.reduceMotion = reduceMotion }
         .onChange(of: recorrido.tarjetaVisible) { if recorrido.tarjetaVisible { focoEnTarjeta = true } }
     }
@@ -686,7 +1007,7 @@ struct RecorridoOverlay: View {
         let paso = recorrido.pasos[recorrido.paso]
         let origen = geo.frame(in: .global).origin
         let centro = CGRect(x: geo.size.width / 2, y: geo.size.height / 2, width: 0, height: 0)
-        let hueco = paso.objetivo.flatMap { recorrido.marcos[$0] }
+        let hueco = paso.objetivo.flatMap { recorrido.esGuiado ? recorrido.marco(de: $0) : recorrido.marcos[$0] }
             .map { $0.offsetBy(dx: -origen.x, dy: -origen.y).insetBy(dx: -6, dy: -6) }
         let radio = min((hueco?.height ?? 0) / 2, 22)
         let ancho = min(geo.size.width - 32, 380)
@@ -700,13 +1021,24 @@ struct RecorridoOverlay: View {
                     .accessibilityHidden(true)
                     .transition(.opacity)
             }
-            VeloConHueco(hueco: hueco ?? centro, radio: radio)
-                .fill(Color.black.opacity(0.5), style: FillStyle(eoFill: true))
-                .contentShape(Rectangle())
-                // Con VoiceOver, el velo no es un botón: así no atrapa el foco.
-                .onTapGesture { if !voiceOver { recorrido.tocarVelo() } }
-                .accessibilityHidden(true)
-                .id(reduceMotion ? recorrido.paso : 0)
+            if recorrido.esGuiado && paso.objetivo != nil {
+                // Tutorial de seguir: lo iluminado se toca de verdad (el toque pasa por el hueco). En una hoja el velo
+                // no detiene nada: hay que escribir, elegir en menús y tocar «Guardar» en la barra, que vive en UIKit.
+                // En la pantalla de detrás, el resto queda tapado para no perderse por otro camino.
+                let velo = VeloConHueco(hueco: hueco ?? CGRect(x: geo.size.width / 2, y: -40, width: 0, height: 0), radio: radio)
+                velo.fill(Color.black.opacity(paso.enHoja ? 0.35 : 0.5), style: FillStyle(eoFill: true))
+                    .contentShape(velo, eoFill: true)
+                    .allowsHitTesting(!paso.enHoja && hueco != nil)
+                    .accessibilityHidden(true)
+            } else {
+                VeloConHueco(hueco: hueco ?? centro, radio: radio)
+                    .fill(Color.black.opacity(0.5), style: FillStyle(eoFill: true))
+                    .contentShape(Rectangle())
+                    // Con VoiceOver, el velo no es un botón: así no atrapa el foco.
+                    .onTapGesture { if !voiceOver { recorrido.tocarVelo() } }
+                    .accessibilityHidden(true)
+                    .id(reduceMotion ? recorrido.paso : 0)
+            }
 
             if let hueco {
                 Anillo(radio: radio, late: !reduceMotion)
@@ -725,7 +1057,17 @@ struct RecorridoOverlay: View {
 
     @ViewBuilder
     private func globo(paso: RecorridoID.Paso, hueco: CGRect?, ancho: CGFloat, geo: GeometryProxy) -> some View {
-        if let hueco, hueco.height > geo.size.height * 0.5, geo.size.width - hueco.maxX >= ancho + 40 {
+        // Lo que queda a la vista encima del teclado (el tutorial de seguir pide escribir).
+        let altoUtil = max(geo.size.height - recorrido.teclado, altoTarjeta + 120)
+        if recorrido.esGuiado && paso.objetivo != nil && hueco == nil {
+            // Tutorial de seguir con lo iluminado aún sin medir (la hoja sube, el teclado tapa «Emitir»): la tarjeta
+            // abajo, sin flecha; el hueco aparece cuando el objetivo esté.
+            tarjeta(paso: paso)
+                .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { altoTarjeta = $0 }
+                .frame(width: ancho)
+                .offset(x: (geo.size.width - ancho) / 2, y: altoUtil - altoTarjeta - 34)
+                .transition(.opacity)
+        } else if let hueco, hueco.height > geo.size.height * 0.5, geo.size.width - hueco.maxX >= ancho + 40 {
             // iPad: lo iluminado ocupa casi todo el alto (la barra lateral) y a su derecha cabe la tarjeta: al lado, a
             // media altura, sin flecha.
             tarjeta(paso: paso)
@@ -740,9 +1082,9 @@ struct RecorridoOverlay: View {
             let izquierda = min(max(hueco.midX - ancho / 2, 16), geo.size.width - ancho - 16)
             // Debajo o encima, donde haya más sitio; si no cabe entera, se queda dentro de la pantalla (sin flecha,
             // tapando parte de lo iluminado).
-            let debajo = geo.size.height - hueco.maxY >= hueco.minY
+            let debajo = altoUtil - hueco.maxY >= hueco.minY
             let deseado = debajo ? hueco.maxY + 16 : hueco.minY - 16 - altoTarjeta
-            let arriba = min(max(deseado, 54), geo.size.height - altoTarjeta - 34)
+            let arriba = min(max(deseado, 54), altoUtil - altoTarjeta - (recorrido.teclado > 0 ? 8 : 34))
             let conFlecha = abs(arriba - deseado) < 1
             let flecha = min(max(hueco.midX - izquierda, 30), ancho - 30)
             VStack(spacing: 0) {
@@ -781,7 +1123,7 @@ struct RecorridoOverlay: View {
     /// dos estilos en la misma app (Eric, Beta Family, build 55). Con VoiceOver se ajusta para cambiar de paso.
     /// El mismo `PasoIndicador` que la bienvenida y el alta (repaso visual, build 56).
     private var indicador: some View {
-        PasoIndicador(actual: recorrido.paso + 1, total: recorrido.pasos.count)
+        PasoIndicador(actual: recorrido.numeracion.actual, total: recorrido.numeracion.total)
             .accessibilityAdjustableAction { direccion in
                 switch direccion {
                 case .increment: recorrido.deslizar(.siguiente)
@@ -808,15 +1150,20 @@ struct RecorridoOverlay: View {
             Text(paso.mensaje).font(.body).foregroundStyle(Palette.ink2)
                 .padding(.top, 8)
             indicador.padding(.top, 18)
-            Button(esUltimo ? String(localized: "Entendido") : String(localized: "Empezar")) { recorrido.siguiente() }
-                .buttonStyle(.primary)
-                .padding(.top, 18)
-            if !esUltimo {
-                Button("Saltar") { recorrido.terminar() }
-                    .font(.subheadline)
-                    .foregroundStyle(Palette.ink2)
-                    .frame(minHeight: 44)
-                    .padding(.top, 4)
+            if paso.final {
+                despedida
+            } else {
+                Button(esUltimo ? String(localized: "Entendido") : String(localized: "Empezar")) { recorrido.siguiente() }
+                    .buttonStyle(.primary)
+                    .padding(.top, 18)
+                if !esUltimo {
+                    Button(recorrido.esGuiado ? String(localized: "Ahora no") : String(localized: "Saltar")) { recorrido.terminar() }
+                        .buttonStyle(.borderless)
+                        .font(.subheadline)
+                        .foregroundStyle(Palette.ink2)
+                        .frame(minHeight: 44)
+                        .padding(.top, 4)
+                }
             }
         }
         .multilineTextAlignment(.center)
@@ -840,11 +1187,15 @@ struct RecorridoOverlay: View {
             if dynamicTypeSize.isAccessibilitySize {
                 // Letra grande: uno debajo del otro, a todo el ancho.
                 indicador.padding(.top, 14)
-                Button(esUltimo ? String(localized: "Entendido") : String(localized: "Siguiente")) { recorrido.siguiente() }
-                    .buttonStyle(.primary)
-                    .padding(.top, 12)
+                if muestraSiguiente(paso) {
+                    Button(esUltimo ? String(localized: "Entendido") : String(localized: "Siguiente")) { recorrido.siguiente() }
+                        .buttonStyle(.primary)
+                        .disabled(!siguienteActivo(paso))
+                        .padding(.top, 12)
+                }
                 if !esUltimo {
-                    Button("Saltar") { recorrido.terminar() }
+                    Button(textoSaltar) { recorrido.terminar() }
+                        .buttonStyle(.borderless)
                         .foregroundStyle(Palette.ink2)
                         .frame(maxWidth: .infinity, minHeight: 44)
                 }
@@ -853,16 +1204,20 @@ struct RecorridoOverlay: View {
                     indicador
                     Spacer(minLength: 8)
                     if !esUltimo {
-                        Button("Saltar") { recorrido.terminar() }
+                        Button(textoSaltar) { recorrido.terminar() }
+                            .buttonStyle(.borderless)
                             .font(.subheadline)
                             .foregroundStyle(Palette.ink2)
                             .frame(minHeight: 44)
                             .padding(.horizontal, 6)
                     }
-                    Button(esUltimo ? String(localized: "Entendido") : String(localized: "Siguiente")) { recorrido.siguiente() }
-                        .buttonStyle(.primaryCompact)
-                        .controlSize(.regular)
-                        .fixedSize()
+                    if muestraSiguiente(paso) {
+                        Button(esUltimo ? String(localized: "Entendido") : String(localized: "Siguiente")) { recorrido.siguiente() }
+                            .buttonStyle(.primaryCompact)
+                            .controlSize(.regular)
+                            .fixedSize()
+                            .disabled(!siguienteActivo(paso))
+                    }
                 }
                 .padding(.top, 12)
             }
@@ -872,6 +1227,50 @@ struct RecorridoOverlay: View {
         .padding(.bottom, 12)
         .frame(maxWidth: .infinity, alignment: .leading)
         .modifier(FondoDeTarjeta())
+    }
+
+    /// En el tutorial de seguir, «Saltar» sale del tutorial entero.
+    private var textoSaltar: String { recorrido.esGuiado ? String(localized: "Salir") : String(localized: "Saltar") }
+
+    /// Tutorial de seguir: sin «Siguiente» mientras espera que la persona toque lo iluminado o guarde.
+    private func muestraSiguiente(_ paso: RecorridoID.Paso) -> Bool {
+        switch paso.espera {
+        case .aparece, .evento: false
+        case .listo, nil: true
+        }
+    }
+
+    /// Tutorial de seguir: «Siguiente» se enciende cuando la pantalla da el paso por hecho (escribió el nombre).
+    private func siguienteActivo(_ paso: RecorridoID.Paso) -> Bool {
+        guard case .listo(let clave) = paso.espera else { return true }
+        return recorrido.cumplidos.contains(clave)
+    }
+
+    /// Despedida del tutorial de seguir: «Terminar», la guía de chirogra.com y, en el iPhone, el tutorial completo
+    /// (pantalla por pantalla) para lo demás.
+    @ViewBuilder
+    private var despedida: some View {
+        Button(String(localized: "Terminar")) { recorrido.terminar() }
+            .buttonStyle(.primary)
+            .padding(.top, 18)
+        Link(destination: ChirograLinks.guide) {
+            Label(String(localized: "Guía de uso en chirogra.com"), systemImage: "safari")
+        }
+        .font(.subheadline)
+        .foregroundStyle(Palette.brand)
+        .frame(minHeight: 44)
+        .padding(.top, 4)
+        #if os(iOS)
+        if !recorrido.esIPad {
+            Button(String(localized: "Encender el tutorial completo")) {
+                recorrido.terminar()
+                recorrido.activarAFondo()
+            }
+            .font(.subheadline)
+            .foregroundStyle(Palette.brand)
+            .frame(minHeight: 44)
+        }
+        #endif
     }
 
     /// Margen lateral de las dos tarjetas (antes 24 en la presentación y 20/16 en los pasos; repaso visual, build 56).
@@ -896,7 +1295,9 @@ private struct TarjetaAccesible: ViewModifier {
     func body(content: Content) -> some View {
         content
             .accessibilityElement(children: .contain)
-            .accessibilityAddTraits(.isModal)
+            // En el tutorial de seguir, lo iluminado se toca: con VoiceOver tiene que poder alcanzarse (modal lo
+            // escondía), salvo en la presentación y la despedida.
+            .accessibilityAddTraits(recorrido.esGuiado && recorrido.pasoActual?.objetivo != nil ? [] : .isModal)
             .accessibilityAction(.escape) { recorrido.terminar() }
     }
 }

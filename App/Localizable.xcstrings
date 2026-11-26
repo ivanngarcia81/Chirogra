@@ -35074,6 +35074,496 @@
           }
         }
       }
+    },
+    "Aprende haciendo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Learn by doing"
+          }
+        }
+      }
+    },
+    "Tu empresa ya está creada. Ahora haz tú lo más importante: tu primer cliente, tu primera factura, un gasto y tus impuestos. Te vamos señalando dónde tocar." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your business is set up. Now do the most important things yourself: your first customer, your first invoice, an expense and your taxes. We'll point to where to tap."
+          }
+        }
+      }
+    },
+    "Toca aquí para añadir a quien le vendes." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap here to add someone you sell to."
+          }
+        }
+      }
+    },
+    "Haz clic aquí para añadir a quien le vendes." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Click here to add someone you sell to."
+          }
+        }
+      }
+    },
+    "Escribe su nombre" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Type their name"
+          }
+        }
+      }
+    },
+    "El de la persona o la empresa. El correo y el teléfono son opcionales: puedes ponerlos ahora o después." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The person's or the company's. Email and phone are optional: add them now or later."
+          }
+        }
+      }
+    },
+    "Guárdalo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save it"
+          }
+        }
+      }
+    },
+    "Toca «Guardar». Ya podrás hacerle facturas." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap “Save”. Then you can invoice them."
+          }
+        }
+      }
+    },
+    "Haz clic en «Guardar». Ya podrás hacerle facturas." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Click “Save”. Then you can invoice them."
+          }
+        }
+      }
+    },
+    "Tu primera factura" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your first invoice"
+          }
+        }
+      }
+    },
+    "Toca aquí para cobrarle a tu cliente." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap here to bill your customer."
+          }
+        }
+      }
+    },
+    "Haz clic aquí para cobrarle a tu cliente." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Click here to bill your customer."
+          }
+        }
+      }
+    },
+    "Elige el cliente" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose the customer"
+          }
+        }
+      }
+    },
+    "Toca aquí y elige el cliente que acabas de crear." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap here and choose the customer you just added."
+          }
+        }
+      }
+    },
+    "Haz clic aquí y elige el cliente que acabas de crear." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Click here and choose the customer you just added."
+          }
+        }
+      }
+    },
+    "Qué vendiste y a cuánto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What you sold, and for how much"
+          }
+        }
+      }
+    },
+    "Escribe el producto o servicio y su precio. Después toca «Siguiente»." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Type the product or service and its price. Then tap “Next”."
+          }
+        }
+      }
+    },
+    "El sales tax, solo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sales tax, done for you"
+          }
+        }
+      }
+    },
+    "Chirogra le suma el impuesto de tu estado. Si esta venta no lleva impuesto, cámbialo aquí." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chirogra adds your state's tax. If this sale isn't taxable, change it here."
+          }
+        }
+      }
+    },
+    "Emítela" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Issue it"
+          }
+        }
+      }
+    },
+    "Toca «Emitir»: queda registrada y por cobrar. Luego puedes mandársela a tu cliente." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap “Issue”: it's recorded and waiting to be paid. Then you can send it to your customer."
+          }
+        }
+      }
+    },
+    "Haz clic en «Emitir factura»: queda registrada y por cobrar. Luego puedes mandársela a tu cliente." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Click “Issue Invoice”: it's recorded and waiting to be paid. Then you can send it to your customer."
+          }
+        }
+      }
+    },
+    "Toca aquí cada vez que pagues algo del negocio." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap here every time you pay for something for the business."
+          }
+        }
+      }
+    },
+    "Haz clic aquí cada vez que pagues algo del negocio." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Click here every time you pay for something for the business."
+          }
+        }
+      }
+    },
+    "¿Cuánto pagaste?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How much did you pay?"
+          }
+        }
+      }
+    },
+    "Escribe el monto del recibo. Después toca «Siguiente»." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Type the amount on the receipt. Then tap “Next”."
+          }
+        }
+      }
+    },
+    "¿A quién le pagaste?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Who did you pay?"
+          }
+        }
+      }
+    },
+    "Escribe la tienda o la persona. Después toca «Siguiente»." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Type the store or the person. Then tap “Next”."
+          }
+        }
+      }
+    },
+    "¿En qué se fue?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What was it for?"
+          }
+        }
+      }
+    },
+    "Elige la categoría: así tus reportes y tus impuestos salen bien." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose the category so your reports and taxes come out right."
+          }
+        }
+      }
+    },
+    "Toca «Guardar». El gasto queda registrado y resta de tu ganancia." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap “Save”. The expense is recorded and comes off your profit."
+          }
+        }
+      }
+    },
+    "Haz clic en «Guardar gasto». Queda registrado y resta de tu ganancia." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Click “Save Expense”. It's recorded and comes off your profit."
+          }
+        }
+      }
+    },
+    "Tu apartado para impuestos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your tax set-aside"
+          }
+        }
+      }
+    },
+    "Con cada venta y cada gasto, Chirogra calcula cuánto apartar para el IRS. Tócala." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "With every sale and expense, Chirogra works out how much to set aside for the IRS. Tap it."
+          }
+        }
+      }
+    },
+    "Con cada venta y cada gasto, Chirogra calcula cuánto apartar para el IRS. Haz clic en ella." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "With every sale and expense, Chirogra works out how much to set aside for the IRS. Click it."
+          }
+        }
+      }
+    },
+    "Lo que toca apartar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What to set aside"
+          }
+        }
+      }
+    },
+    "Es lo que conviene guardar para el pago al IRS de este trimestre. Cuando pagues, anótalo en «Registrar pago al IRS»." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This is what to save for this quarter's IRS payment. When you pay, record it with “Record IRS Payment”."
+          }
+        }
+      }
+    },
+    "Tu sales tax" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your sales tax"
+          }
+        }
+      }
+    },
+    "Toca aquí para ver el impuesto de tus ventas." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap here to see the tax on your sales."
+          }
+        }
+      }
+    },
+    "Haz clic aquí para ver el impuesto de tus ventas." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Click here to see the tax on your sales."
+          }
+        }
+      }
+    },
+    "Lo que le debes al estado" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What you owe the state"
+          }
+        }
+      }
+    },
+    "Cada factura suma aquí el sales tax que cobraste. Es lo que declaras y pagas." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Every invoice adds the sales tax you charged here. It's what you file and pay."
+          }
+        }
+      }
+    },
+    "¡Ya sabes lo principal!" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You know the essentials!"
+          }
+        }
+      }
+    },
+    "Clientes, facturas, gastos e impuestos. Para lo demás, sigue con la guía de chirogra.com o con el tutorial completo, que explica cada pantalla." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Customers, invoices, expenses and taxes. For everything else, keep going with the guide at chirogra.com or the full tutorial, which explains every screen."
+          }
+        }
+      }
+    },
+    "Clientes, facturas, gastos e impuestos. Para lo demás, sigue con la guía de chirogra.com." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Customers, invoices, expenses and taxes. For everything else, keep going with the guide at chirogra.com."
+          }
+        }
+      }
+    },
+    "Salir" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exit"
+          }
+        }
+      }
+    },
+    "Terminar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finish"
+          }
+        }
+      }
+    },
+    "Guía de uso en chirogra.com" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "User guide at chirogra.com"
+          }
+        }
+      }
+    },
+    "Encender el tutorial completo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turn on the full tutorial"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

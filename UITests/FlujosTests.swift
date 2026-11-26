@@ -151,3 +151,152 @@ final class FlujosTests: XCTestCase {
         XCTAssertEqual(try totalIncome(), accrual, "en devengado la factura ya contaba al emitirse")
     }
 }
+
+/// El tutorial de seguir (1.4): con la empresa recién creada, la persona crea de verdad su primer cliente, su primera
+/// factura y un gasto tocando lo que se ilumina, y termina en el apartado para impuestos. Con `TEST_RUNNER_CAPTURAS=<carpeta>`
+/// guarda una captura de cada paso.
+@MainActor
+final class TutorialGuiadoTests: XCTestCase {
+    let app = XCUIApplication()
+    let patience: TimeInterval = 30
+
+    override func setUp() async throws {
+        continueAfterFailure = false
+        app.launchArguments = ["-iCloudSyncEnabled", "NO", "-AppleLanguages", "(es)", "-AppleLocale", "es_US",
+                               "-qa.reiniciar", "1", "-qa.alta", "1", "-qa.altaCrear", "1", "-qa.altaEstado", "TX",
+                               "-qa.recorrido", "guiado"]
+        app.launch()
+    }
+
+    private var paso = 0
+
+    /// Espera la tarjeta del paso y, si se pidieron, guarda su captura.
+    func tarjeta(_ titulo: String, file: StaticString = #filePath, line: UInt = #line) {
+        XCTAssertTrue(app.staticTexts[titulo].waitForExistence(timeout: patience), "No sale la tarjeta «\(titulo)»", file: file, line: line)
+        // La tarjeta entra animada y el foco se desliza: la captura, cuando se asienta.
+        RunLoop.current.run(until: Date().addingTimeInterval(1.2))
+        foto(titulo)
+    }
+
+    func foto(_ nombre: String) {
+        paso += 1
+        let captura = XCUIScreen.main.screenshot()
+        let adjunto = XCTAttachment(screenshot: captura)
+        adjunto.name = nombre
+        adjunto.lifetime = .keepAlways
+        add(adjunto)
+        if let carpeta = ProcessInfo.processInfo.environment["CAPTURAS"] {
+            let archivo = String(format: "%02d ", paso) + nombre.replacingOccurrences(of: "/", with: "-") + ".png"
+            try? captura.pngRepresentation.write(to: URL(fileURLWithPath: carpeta).appendingPathComponent(archivo))
+        }
+    }
+
+    func tocar(_ elemento: XCUIElement, file: StaticString = #filePath, line: UInt = #line) {
+        XCTAssertTrue(elemento.waitForExistence(timeout: patience), "No aparece: \(elemento)", file: file, line: line)
+        let limite = Date().addingTimeInterval(patience)
+        while !elemento.isHittable, Date() < limite { RunLoop.current.run(until: Date().addingTimeInterval(0.2)) }
+        elemento.tap()
+    }
+
+    func boton(_ prefijo: String) -> XCUIElement {
+        app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", prefijo)).firstMatch
+    }
+
+    /// En el iPad los editores son anchos: la tabla de líneas y «Guardar gasto».
+    var esIPad: Bool { UIDevice.current.userInterfaceIdiom == .pad }
+
+    func testElTutorialDeSeguirCreaClienteFacturaYGasto() throws {
+        tarjeta("Aprende haciendo")
+        tocar(app.buttons["Empezar"])
+
+        // Cliente: tocar la fila, escribir el nombre, «Siguiente», «Guardar».
+        tarjeta("Tu primer cliente")
+        tocar(boton("Añade tu primer cliente"))
+        tarjeta("Escribe su nombre")
+        XCTAssertFalse(app.buttons["Siguiente"].isEnabled, "«Siguiente» espera al nombre")
+        let nombre = app.textFields["Nombre o empresa"]
+        tocar(nombre)
+        nombre.typeText("Rosa Martínez")
+        foto("Nombre escrito")
+        tocar(app.buttons["Siguiente"])
+        tarjeta("Guárdalo")
+        tocar(app.navigationBars.buttons["Guardar"])
+
+        // Factura: la fila, el cliente, la línea con su precio, el impuesto y «Emitir».
+        tarjeta("Tu primera factura")
+        tocar(boton("Crea tu primera factura"))
+        tarjeta("Elige el cliente")
+        tocar(app.buttons.matching(NSPredicate(format: "label == 'Cliente' AND value == 'Sin elegir'")).firstMatch)
+        tocar(app.buttons["Rosa Martínez"].firstMatch)
+        tarjeta("Qué vendiste y a cuánto")
+        let descripcion = app.textFields[esIPad ? "Producto o servicio, línea 1" : "Descripción"]
+        tocar(descripcion)
+        descripcion.typeText("Diseño de logotipo")
+        if esIPad { tocar(app.textFields["Precio, línea 1"]) } else { tocar(app.buttons["Precio"].firstMatch) }
+        app.typeText("250")
+        foto("Línea escrita")
+        tocar(app.buttons["Siguiente"])
+        tarjeta("El sales tax, solo")
+        tocar(app.buttons["Siguiente"])
+        tarjeta("Emítela")
+        if app.keyboards.count > 0, app.toolbars.buttons["Listo"].exists { tocar(app.toolbars.buttons["Listo"]) }
+        foto("Emítela sin teclado")
+        tocar(app.buttons["Emitir factura"])
+        // «Enviar a …» en vez de «Ahora no»: la hoja de enviar no puede quedar tapada por el velo (26-nov, Mac).
+        tocar(boton("Enviar a Rosa Martínez"))
+        XCTAssertTrue(app.navigationBars.firstMatch.waitForExistence(timeout: patience))
+        RunLoop.current.run(until: Date().addingTimeInterval(1.5))
+        foto("Hoja de enviar")
+        XCTAssertFalse(app.staticTexts["Anota un gasto"].isHittable, "el tutorial no se dibuja encima de la hoja de enviar")
+        tocar(app.navigationBars.buttons["Cancelar"].firstMatch)
+        let descartar = app.buttons["Descartar"]
+        if descartar.waitForExistence(timeout: 3) { descartar.tap() }
+        RunLoop.current.run(until: Date().addingTimeInterval(2))
+        foto("Tras emitir")
+
+        // Gasto: la fila, el monto, la categoría y «Guardar».
+        tarjeta("Anota un gasto")
+        tocar(boton("Registra un gasto"))
+        tarjeta("¿Cuánto pagaste?")
+        let monto = app.textFields["Monto"]
+        tocar(monto)
+        monto.typeText("45")
+        foto("Monto escrito")
+        tocar(app.buttons["Siguiente"])
+        tarjeta("¿A quién le pagaste?")
+        let pagadoA = app.textFields["Pagado a (comercio o persona)"]
+        tocar(pagadoA)
+        pagadoA.typeText("Office Depot")
+        tocar(app.buttons["Siguiente"])
+        tarjeta("¿En qué se fue?")
+        XCTAssertFalse(app.buttons["Siguiente"].isEnabled, "«Siguiente» espera a la categoría")
+        tocar(app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Categoría'")).firstMatch)
+        foto("Menú de categorías")
+        let suministros = app.buttons.matching(NSPredicate(format: "label CONTAINS[c] 'suministros'")).firstMatch
+        XCTAssertTrue(suministros.waitForExistence(timeout: 10), app.debugDescription)
+        suministros.tap()
+        foto("Categoría elegida")
+        tocar(app.buttons["Siguiente"])
+        tarjeta("Guárdalo")
+        tocar(app.navigationBars.buttons[esIPad ? "Guardar gasto" : "Guardar"])
+
+        // Impuestos: el apartado para el IRS si Inicio lo enseña; si no (el iPad lo tiene en su columna), el sales tax.
+        let apartado = app.staticTexts["Tu apartado para impuestos"]
+        let ventas = app.staticTexts["Tu sales tax"]
+        let limite = Date().addingTimeInterval(patience)
+        while !apartado.exists, !ventas.exists, Date() < limite { RunLoop.current.run(until: Date().addingTimeInterval(0.3)) }
+        if apartado.exists {
+            tarjeta("Tu apartado para impuestos")
+            if esIPad { tocar(boton("Apartado para impuestos")) } else { tocar(app.buttons["tarjeta.apartado"]) }
+            tarjeta("Lo que toca apartar")
+        } else {
+            tarjeta("Tu sales tax")
+            tocar(boton("Configura tu sales tax"))
+            tarjeta("Lo que le debes al estado")
+        }
+        tocar(app.buttons["Siguiente"])
+        tarjeta("¡Ya sabes lo principal!")
+        tocar(app.buttons["Terminar"])
+        XCTAssertFalse(app.staticTexts["¡Ya sabes lo principal!"].waitForExistence(timeout: 2))
+    }
+}

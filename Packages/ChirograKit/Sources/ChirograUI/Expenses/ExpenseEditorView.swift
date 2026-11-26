@@ -25,6 +25,8 @@ struct ExpenseEditorView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     @Environment(\.unsavedChanges) private var unsavedChanges
+    /// Tutorial de seguir (1.4): el monto y guardar lo hacen avanzar.
+    @Environment(Recorrido.self) private var recorrido: Recorrido?
     /// Testigo del editor en `UnsavedChanges`: se retira al guardar, antes de cerrar.
     @State private var editorToken = EditorToken()
     @CompanyQuery(sort: \Account.code) private var accounts: [Account]
@@ -169,6 +171,9 @@ struct ExpenseEditorView: View {
             if isWide { wideForm } else { compactForm }
         }
         .recorridoPantalla(.expenseEditor)
+        .recorridoCumple("gasto.monto", total > 0)
+        .recorridoCumple("gasto.pagadoA", vendorID != nil || !payee.trimmingCharacters(in: .whitespaces).isEmpty)
+        .recorridoCumple("gasto.categoria", lines.allSatisfy { $0.accountID != nil })
         .navigationTitle(isEditing ? "Editar gasto" : "Nuevo gasto")
         .inlineTitle()
         .discardableEditor(tracking: tracking, token: editorToken)
@@ -332,6 +337,7 @@ struct ExpenseEditorView: View {
                     }
                 } else {
                     TextField("Pagado a (comercio o persona)", text: $payee)
+                        .recorridoObjetivo("gasto.pagadoA").id("gasto.pagadoA")
                 }
             }
             if lines.count == 1 {
@@ -721,6 +727,7 @@ struct ExpenseEditorView: View {
             }
         }
         onSaved?(created)
+        recorrido?.ocurrio("gasto.guardado")
         if !problems.isEmpty {
             errorMessage = problems.joined(separator: " ")
         } else if another {

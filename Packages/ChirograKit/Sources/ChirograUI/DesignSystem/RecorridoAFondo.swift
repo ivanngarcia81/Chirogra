@@ -301,7 +301,7 @@ extension RecorridoID {
                  mensaje: String(localized: "Cuando le pagues al estado, anótalo aquí y la deuda baja.")),
         ]
         // El iPad solo tiene el corto (`RecorridoID.pasos`).
-        case .padHome, .padSales, .padExpenses, .padBanking, .padReports: []
+        case .padHome, .padSales, .padExpenses, .padBanking, .padReports, .guiado: []
         }
     }
 }

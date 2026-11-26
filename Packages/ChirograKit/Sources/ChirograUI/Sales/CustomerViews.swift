@@ -955,6 +955,8 @@ struct CustomerEditorView: View {
     /// Testigo del editor en `UnsavedChanges`: se retira al guardar, antes de cerrar.
     @State private var editorToken = EditorToken()
     @CompanyQuery(sort: \TaxGroup.name) private var taxGroups: [TaxGroup]
+    /// Tutorial de seguir (1.4): escribir el nombre y guardar lo hacen avanzar.
+    @Environment(Recorrido.self) private var recorrido: Recorrido?
 
     @State private var name = ""
     @State private var contactName = ""
@@ -982,6 +984,8 @@ struct CustomerEditorView: View {
                 // decía qué campo era una vez escrito (QA Hudson, H22).
                 TextField("Nombre o empresa", text: $name)
                     .accessibilityLabel("Nombre o empresa")
+                    .recorridoObjetivo("cliente.nombre")
+                    .recorridoCumple("cliente.nombre", !name.trimmingCharacters(in: .whitespaces).isEmpty)
                 TextField("Correo", text: $email)
                     .accessibilityLabel("Correo")
                     .textContentType(.emailAddress)
@@ -1086,7 +1090,7 @@ struct CustomerEditorView: View {
         target.isTaxExempt = isTaxExempt; target.exemptionReason = exemptionReason
         books.logSave(.customer, id: target.id, name: target.name, before: before, after: AuditSnapshot(target))
         try? context.save()
-        if customer == nil { onCreate?(target) }
+        if customer == nil { onCreate?(target); recorrido?.ocurrio("cliente.guardado") }
         unsavedChanges?.remove(editorToken); dismiss()
     }
 }
