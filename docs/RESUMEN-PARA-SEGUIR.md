@@ -5,10 +5,12 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
 
 ## Estado
 
-- **Último build: 66 (1.4.0)**, subido a TestFlight iOS y macOS el 25-nov (`c0c2e33`): agenda (avisos y Calendario),
+- **Último build: 67 (1.4.0)**, subido a TestFlight iOS y macOS el 26-nov: el asistente con los lápices del icono en vez
+  de la chispa, y en el iPad y el Mac su panel con cabecera propia (la «X» dentro del panel), línea divisoria y fondo
+  gris más claro (`Palette.assistantPanel`). Antes: 66 (1.4.0), subido el 25-nov (`c0c2e33`): agenda (avisos y Calendario),
   impuestos estimados y asistente sin servidor. **Esquema 6 de CloudKit creado en Desarrollo el 25-nov
-  (`-qa.esquemaCloudKit 1` → «listo»); falta que el usuario lo despliegue a Producción («Deploy Schema Changes…») ANTES
-  de usar el 66 con libros reales**: sin eso, Producción rechaza los registros nuevos (citas, impuestos estimados).
+  (`-qa.esquemaCloudKit 1` → «listo») y DESPLEGADO A PRODUCCIÓN por el usuario el 25-nov** («Deploy Schema Changes…»):
+  el 66 ya se puede usar con libros reales.
   Antes: 65 (1.3.0, 23-nov, `00ace74`): auditoría técnica y pruebas de interfaz. Antes: 64 (21-nov noche, icono «chirogra pencils»); del 22 al 63, en la tabla.
 - **En App Store Connect:** la **1.0 quedó aprobada el 22-nov con el build 15**, y **la 1.3.0 (iOS y macOS, build 64,
   con la suscripción «Chirogra para contadores») está APROBADA y EN LA TIENDA** (lo dijo el usuario el 25-nov; textos en
@@ -96,6 +98,8 @@ acumule: está en `git show 1fe35ff:docs/RESUMEN-PARA-SEGUIR.md` y en los mensaj
 | 63 | `864153d` | 1.3.0: iPad: Libro mayor, Cierre, Bitácora e Impuestos a 820 pt centrados; Ajustes en la tarjeta gris; Bitácora con lista y detalle; más aire en deducibles y estados. Capturas del usuario. |
 | 64 | `b2c8e43` | 1.3.0: **icono «chirogra pencils»** (lapicero y lápiz cruzados en χ, ρ azafrán con brillo de lupa; archivo del usuario), también `LogoMark` y la bienvenida (`LogoGlyph`), el icono de la web y las capturas de la guía. **Enviado a revisión** (1.3.0 iOS y macOS) el 22-nov. |
 | 65 | `00ace74` | 1.3.0: **auditoría técnica** (base caja con notas de crédito y saldo a favor, suma SHA-256 en las copias, aviso de iCloud en local, saldos rehechos tras sincronizar, importes en 128 bits, sales tax de las notas, aviso de tabla por ZIP vieja, no anular facturas con nota) y **pruebas de interfaz** en el repo (`PruebasInterfaz`, `scripts/interfaz.sh`). 403 pruebas + 4 de interfaz. |
+| 66 | `c0c2e33` | 1.4.0: agenda (avisos, Calendario), impuestos estimados, asistente sin servidor (esquema 6). |
+| 67 | — | 1.4.0: asistente con los lápices de Chirogra; panel del iPad y Mac con cabecera, «X», línea y fondo más claro. |
 
 ## Último chat (25-nov, tarde): informe de Yurii S. en el iPad y comienzo de la 1.4
 

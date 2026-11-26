@@ -60,6 +60,9 @@ public enum Palette {
     /// Tarjeta de la lista del iPad (Inicio y las páginas de lista, `MasterCardPage`): gris más oscuro que el suelo
     /// (`background`) para que se note (pedido del 21-nov; antes 0xF7F7F9, más clara que el suelo, y casi no se veía).
     public static let masterColumn = Color(light: 0xE8E8ED, dark: 0x1C1C1E)
+    /// Panel del asistente en el iPad: gris más claro que el suelo (`background`) para que se distinga de la pantalla
+    /// (pedido del 26-nov).
+    public static let assistantPanel = Color(light: 0xFAFAFC, dark: 0x101012)
     public static let ink = Color(uiColor: .label)
     #else
     /// Suelo del contenido del Mac, ENTRE las tarjetas (decisión del usuario del 8-nov, «como Tamio»: tres niveles,
@@ -69,6 +72,8 @@ public enum Palette {
     public static let background = Color(light: 0xF6F6F8, dark: 0x1E1E20)
     /// Tarjetas del Mac ENCIMA del suelo (cifras, gráficas, tablas): blancas, con filo y sombra corta (`card()`).
     public static let surface = Color(light: 0xFFFFFF, dark: 0x262629)
+    /// Panel del asistente: gris más claro que el suelo (pedido del 26-nov).
+    public static let assistantPanel = Color(light: 0xFCFCFD, dark: 0x232326)
     public static let surface2 = Color(nsColor: .tertiarySystemFill)
     public static let fill2 = Color(nsColor: .systemFill)
     public static let separator = Color(nsColor: .separatorColor)

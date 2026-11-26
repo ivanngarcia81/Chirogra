@@ -3,6 +3,37 @@ import ChirograData
 import SwiftData
 import SwiftUI
 
+/// El símbolo del asistente: los lápices y la ρ del icono de Chirogra, sin el cuadro de fondo (decisión del usuario del
+/// 26-nov, en vez de la chispa de siempre). Lápices en el color de la marca con las puntas más claras; la ρ, azafrán.
+struct AssistantMark: View {
+    var size: CGFloat = 24
+
+    /// Lo que ocupan las piezas en el lienzo de 1024 de `LogoGlyph` (de x 173 a 854 y de y 280 a 759).
+    private static let glyphWidth: CGFloat = 681
+    private static let glyphCenterY: CGFloat = 519.5
+
+    var body: some View {
+        let canvas = size * 1024 / Self.glyphWidth
+        ZStack {
+            ForEach(LogoGlyph.Part.allCases, id: \.self) { part in
+                LogoGlyph(part: part).fill(color(part))
+            }
+        }
+        .frame(width: canvas, height: canvas)
+        .offset(y: (512 - Self.glyphCenterY) * canvas / 1024)
+        .frame(width: size, height: size)
+        .accessibilityHidden(true)
+    }
+
+    private func color(_ part: LogoGlyph.Part) -> Color {
+        switch part {
+        case .penBody, .pencilBody, .penBall: Palette.brand
+        case .penCone, .pencilTip: Palette.brand.opacity(0.5)
+        case .rho, .shine: Palette.logoRho
+        }
+    }
+}
+
 /// La burbuja flotante (canvas `EntradaB`, `iPadEntradaB`; decisión del usuario del 25-nov): botón redondo de vidrio con
 /// el símbolo del asistente, abajo a la derecha, en todas las pantallas.
 struct AssistantBubble: View {
@@ -11,9 +42,7 @@ struct AssistantBubble: View {
     var body: some View {
         if !assistant.isOpen {
             Button { assistant.isOpen = true } label: {
-                Image(systemName: "sparkles")
-                    .font(.system(size: 24, weight: .medium))
-                    .foregroundStyle(Palette.brand)
+                AssistantMark(size: 30)
                     .frame(width: 56, height: 56)
             }
             .buttonStyle(.plain)
@@ -35,37 +64,83 @@ struct AssistantView: View {
     @State private var draft = ""
     @FocusState private var composing: Bool
 
+    /// En el panel de la derecha (iPad y Mac): cabecera propia con el título y la «X» dentro del panel. Con la pila de
+    /// navegación de la hoja, en el iPad la «X» y el título se iban a la barra del detalle, lejos del panel (26-nov).
+    var panel = false
+
     var body: some View {
-        NavigationStack {
-            Group {
-                if subscription.isReadOnly {
-                    locked
-                } else if !assistant.consented {
-                    consent
-                } else {
-                    conversation
+        Group {
+            if panel {
+                VStack(spacing: 0) {
+                    panelHeader
+                    Divider()
+                    content
                 }
-            }
-            .screenBackground()
-            .navigationTitle("Asistente")
-            .inlineTitle()
-            // Solo con el asistente abierto: en el iPad, el panel cerrado seguía poniendo su «X» en la barra del detalle.
-            .toolbar {
-                if assistant.isOpen {
-                    ToolbarItem(placement: .cancellationAction) {
-                        Button { assistant.isOpen = false } label: { Label("Cerrar el asistente", systemImage: "xmark") }
-                    }
+                .background(Palette.assistantPanel)
+                // La línea que lo separa de la pantalla: los dos tienen el mismo fondo gris.
+                .overlay(alignment: .leading) {
+                    Rectangle().fill(Palette.separator).frame(width: 1).ignoresSafeArea()
                 }
-                if assistant.isOpen && assistant.consented && !assistant.messages.isEmpty {
-                    ToolbarItem(placement: .primaryAction) {
-                        Button { assistant.reset() } label: { Label("Conversación nueva", systemImage: "square.and.pencil") }
-                    }
+            } else {
+                NavigationStack {
+                    content
+                        .navigationTitle("Asistente")
+                        .inlineTitle()
+                        // Solo con el asistente abierto: evita una «X» de más al cerrarlo.
+                        .toolbar {
+                            if assistant.isOpen {
+                                ToolbarItem(placement: .cancellationAction) { closeButton }
+                            }
+                            if assistant.isOpen && assistant.consented && !assistant.messages.isEmpty {
+                                ToolbarItem(placement: .primaryAction) { newConversationButton }
+                            }
+                        }
                 }
             }
         }
         .sheet(isPresented: $assistant.registeringExpense) {
             NavigationStack { ExpenseEditorView() }.editorSheetSizing()
         }
+    }
+
+    private var content: some View {
+        Group {
+            if subscription.isReadOnly {
+                locked
+            } else if !assistant.consented {
+                consent
+            } else {
+                conversation
+            }
+        }
+        .scrollContentBackground(.hidden)
+        .background(panel ? Palette.assistantPanel : Palette.background)
+    }
+
+    /// Cabecera del panel: el símbolo y «Asistente» a la izquierda; conversación nueva y cerrar a la derecha.
+    private var panelHeader: some View {
+        HStack(spacing: 10) {
+            AssistantMark(size: 22)
+            Text("Asistente").font(.headline).foregroundStyle(Palette.ink)
+            Spacer(minLength: 8)
+            if assistant.consented && !assistant.messages.isEmpty {
+                newConversationButton.labelStyle(.iconOnly).buttonStyle(.bordered).buttonBorderShape(.circle)
+            }
+            closeButton.labelStyle(.iconOnly).buttonStyle(.bordered).buttonBorderShape(.circle)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .frame(minHeight: 52)
+    }
+
+    private var closeButton: some View {
+        Button { assistant.isOpen = false } label: { Label("Cerrar el asistente", systemImage: "xmark") }
+            .help(Text("Cerrar el asistente"))
+    }
+
+    private var newConversationButton: some View {
+        Button { assistant.reset() } label: { Label("Conversación nueva", systemImage: "square.and.pencil") }
+            .help(Text("Conversación nueva"))
     }
 
     // MARK: Conversación
@@ -94,7 +169,7 @@ struct AssistantView: View {
     private var start: some View {
         VStack(alignment: .leading, spacing: 16) {
             VStack(spacing: 6) {
-                Image(systemName: "sparkles").font(.system(size: 40)).foregroundStyle(Palette.brand).accessibilityHidden(true)
+                AssistantMark(size: 52)
                 Text("¿En qué te ayudo?").font(.title2.bold()).foregroundStyle(Palette.ink)
                 Text("Pregunta por tus números, busca algo o registra con una frase.")
                     .font(.subheadline).foregroundStyle(Palette.ink2).multilineTextAlignment(.center)
@@ -188,7 +263,7 @@ struct AssistantView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
                 VStack(spacing: 8) {
-                    Image(systemName: "sparkles").font(.system(size: 40)).foregroundStyle(Palette.brand).accessibilityHidden(true)
+                    AssistantMark(size: 52)
                     Text("Antes de empezar").font(.title2.bold())
                     Text("El asistente usa inteligencia artificial para contestar. Esto pasa con tus datos cada vez que preguntas:")
                         .font(.subheadline).foregroundStyle(Palette.ink2).multilineTextAlignment(.center)
@@ -375,13 +450,13 @@ struct AssistantPresentation: ViewModifier {
                 // inspector que ya tienen muchas pantallas («Abrir factura» en Inicio).
                 .toolbar {
                     ToolbarItem(placement: .primaryAction) {
-                        Button { assistant.isOpen.toggle() } label: { Label("Asistente", systemImage: "sparkles") }
+                        Button { assistant.isOpen.toggle() } label: { Label { Text("Asistente") } icon: { AssistantMark(size: 18) } }
                             .help(Text("Asistente"))
                     }
                 }
                 #endif
                 .inspector(isPresented: $assistant.isOpen) {
-                    AssistantView().inspectorColumnWidth(min: 340, ideal: 380, max: 480)
+                    AssistantView(panel: true).inspectorColumnWidth(min: 340, ideal: 380, max: 480)
                 }
         }
     }
