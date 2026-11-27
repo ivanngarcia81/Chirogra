@@ -1,4 +1,4 @@
-# Chirogra: resumen para empezar el siguiente chat (25-nov-2026, rama `version-1.4` EMPEZADA; 1.3.0 EN LA TIENDA con el 64)
+# Chirogra: resumen para empezar el siguiente chat (27-nov-2026, rama `version-1.4` con el build 70; 1.3.0 EN LA TIENDA con el 64)
 
 Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («Dónde nos quedamos» y «Lo aprendido»).
 **Al usuario se le habla siempre en español.**
@@ -22,7 +22,7 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
   - Probado en el simulador (iPhone, `-qa.asistentePregunta`): gasto de Adobe, factura a Hotel Mirador, cobro de Clínica
     Del Valle, cita con Café Aurora, «¿cómo registro un cobro?», sales tax y «¿cuánto le he facturado a Hotel Mirador?».
     Pruebas nuevas: `AssistantDraftsTests` (9) y 3 más en `AssistantToolsTests`.
-- **Puntos 5 a 8 (26-nov noche, SIN COMMITEAR):**
+- **Puntos 5 a 9 (26-nov noche, commit `fcd68e7`, EMPUJADO; van en el build 70):**
   5. **Avisos:** tres tipos nuevos en la campana (`NoticeKind.budgetExceeded`, `.estimatedTaxDue`, `.appointmentToInvoice`;
      `notices(asOf:calendar:basis:)`), «Pregúntale al asistente» en cada aviso (abre el asistente con la pregunta
      escrita, sin mandarla: `AssistantState.compose`) y el **resumen diario** (`Home/NoticeDigest.swift`): una
@@ -41,7 +41,7 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
      servidor las «Novedades de la 1.4 que la guía todavía no explica».
   9. **QA (iPhone, iPad, Mac, es/en):** **el Mac no tenía permiso de red saliente** (`ENABLE_OUTGOING_NETWORK_CONNECTIONS`,
      com.apple.security.network.client): en los builds 68 y 69 del Mac el asistente siempre dice «No hay conexión»;
-     arreglado en project.yml y pbxproj, va en el 70. Además: un cobro sin factura que cuadre ya no enseña tarjeta
+     arreglado en project.yml y pbxproj, va en el 70 (duda abierta: el usuario dice que en el Mac «hay conexión»; ver «Último chat»). Además: un cobro sin factura que cuadre ya no enseña tarjeta
      (`AssistantDraft.isShown`, Claude pregunta cuál), la tarjeta incompleta se sustituye por la corregida, «Buscar ⌘F».
   - **Burbuja en el Mac (26-nov, petición del usuario):** la burbuja flotante también en el Mac (antes un botón de la
     barra), de 48 pt, abajo a la derecha de la parte principal de la pantalla: las pantallas con inspector propio marcan
@@ -56,7 +56,9 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
   guía y «¿cuánto gané y en qué gasté más?» con dos herramientas (cifras iguales a Inicio). Uso medido: la primera
   pregunta escribe ~17 mil tokens en caché (~$0.09); con la caché caliente, ~$0.02 por pregunta. Falta: probar la
   compra real (TestFlight), respuestas que se escriben poco a poco y los borradores (preparar_gasto…).
-- **Último build: 69 (1.4.0)**, subido a TestFlight iOS y macOS el 26-nov: los puntos 1 a 4 del asistente (arriba). Antes: 68,
+- **Último build: 70 (1.4.0, `4f77961`)**, lo subió a TestFlight el chat del tutorial el 26-nov noche (comprobar en TestFlight que
+  llegó iOS y macOS): tutorial «Aprende haciendo» ([TUTORIAL-GUIADO.md](TUTORIAL-GUIADO.md)) + puntos 5 a 9 + burbuja del Mac.
+  Antes: 69, subido el 26-nov (`805125e`): los puntos 1 a 4 del asistente (arriba). Antes: 68,
   el asistente contesta preguntas escritas con el servidor (el usuario lo probó con su suscripción real el 26-nov: entró como
   «sub», 1 pregunta, ~7 centavos). Antes: 67, subido el 26-nov: el asistente con los lápices del icono en vez
   de la chispa, y en el iPad y el Mac su panel con cabecera propia (la «X» dentro del panel), línea divisoria y fondo
@@ -154,9 +156,31 @@ acumule: está en `git show 1fe35ff:docs/RESUMEN-PARA-SEGUIR.md` y en los mensaj
 | 66 | `c0c2e33` | 1.4.0: agenda (avisos, Calendario), impuestos estimados, asistente sin servidor (esquema 6). |
 | 67 | `aea107d` | 1.4.0: asistente con los lápices de Chirogra; panel del iPad y Mac con cabecera, «X», línea y fondo más claro. |
 | 68 | `7f3d0e4` | 1.4.0: el asistente contesta preguntas escritas con el servidor de Supabase «Chirogra» (Claude Opus 5.5 y herramientas en el aparato). |
-| 69 | — | 1.4.0: asistente que registra con una frase (gasto, factura, cobro, cita), botón «Ir a…», sales tax y buscar movimientos; ⌘K asistente, ⌘F buscar. |
+| 69 | `805125e` | 1.4.0: asistente que registra con una frase (gasto, factura, cobro, cita), botón «Ir a…», sales tax y buscar movimientos; ⌘K asistente, ⌘F buscar. |
+| 70 | `4f77961` | 1.4.0: tutorial de seguir «Aprende haciendo»; avisos nuevos en la campana y resumen diario (Ajustes › Avisos); Mac con permiso de red, inspector «Registrar pago al IRS» y burbuja flotante; privacidad y guía de la web; textos de la tienda. |
 
-## Último chat (25-nov, tarde): informe de Yurii S. en el iPad y comienzo de la 1.4
+## Último chat (26-nov, tarde y noche): asistente completo (puntos 1 a 9) y burbuja en el Mac
+
+- **Qué pidió el usuario y en qué orden:** comprobar en el servidor su pregunta desde TestFlight (entró como «sub»);
+  hacer los puntos 1 a 4 del asistente (build 69, ver «Estado»); eligió **⌘K asistente y ⌘F buscar**; probó «registrar
+  con la IA» en el iPhone y salió bien; luego los puntos 5 a 9 (commit `fcd68e7`); y la **burbuja flotante también en
+  el Mac** (la quitó antes porque tapaba los botones del inspector; ahora queda a su izquierda, `.assistantBubbleArea()`).
+  Dijo «haz commit y súbelo a GitHub y no hagas el build todavía»; el build 70 lo subió el otro chat (el del tutorial),
+  que trae encima `fcd68e7`.
+- **Duda abierta del Mac:** al Mac de los builds 68 y 69 le falta `com.apple.security.network.client` (comprobado con
+  `codesign -d --entitlements` en `/Applications/Chirogra.app`), y la copia de prueba sin ese permiso decía «No hay
+  conexión». El usuario dice que en el Mac «hay conexión». En los registros de Supabase hubo preguntas «sub» del build 69
+  a las 3:23 p. m. (EST) con `CFNetwork/3896.200.61 Darwin/27.2.0`, que es igual en macOS 27.2 y en iOS 27.2: no se sabe
+  si fueron del Mac o del iPhone. Con el 70 da igual (lleva el permiso), pero si vuelve a salir, preguntarle si fue en
+  el Mac y si contestó con sus números.
+- **Precio de la suscripción con el asistente:** lo decide él más adelante, cuando haya más clientes («si crece se va a
+  gastar el costo rápido»).
+- **Yuri (Yurii S.)** probará en el iPad cuando Apple apruebe la beta externa; el usuario le manda el enlace.
+- **Otros chats en paralelo:** el del tutorial trabajó en el worktree `~/Documents/GitHub/Chirogra-tutorial` (rama
+  `tutorial-seguir`), lo unió a `version-1.4` y subió el 70. Antes de trabajar aquí, `git fetch` y `git pull` si la rama
+  va por detrás. Solo un chat sube cada número de build.
+
+## Chat anterior (25-nov, tarde): informe de Yurii S. en el iPad y comienzo de la 1.4
 
 - **Informe de Yurii S.** (Beta Family, iPad Pro 11″, iPadOS 26.7.1, formato de Ucrania; 4/5 general, **2/5
   facilidad**, 3/5 recomendar). Tres arreglos en `81f8708` (`version-1.3`), comprobados con una prueba de interfaz
@@ -414,6 +438,13 @@ en verde.
   inglés.
 
 ## Lo que le toca al usuario
+
+00. **Probar el build 70** en el Mac (la burbuja abajo a la derecha, a la izquierda del inspector; que el asistente
+   conteste; Ajustes › Avisos) y en el iPhone/iPad (avisos nuevos, «Pregúntale al asistente», el tutorial).
+00b. **Antes de enviar la 1.4 a revisión:** cambiar la etiqueta **App Privacy** en App Store Connect (ya no es «Data
+   Not Collected»; qué marcar en APP-STORE.md, «App Privacy desde la 1.4»), capturas nuevas de la tienda y de la guía,
+   y unir `version-1.4` con `main` para publicar la guía y la privacidad nuevas. Después de publicar la guía, quitar del
+   prompt del servidor (`servidor/`, función `asistente`) las «Novedades de la 1.4 que la guía todavía no explica».
 
 0. **Esperar a que los testers terminen con el 65** (Yurii S. en Beta Family; BetaTesting.com) y traer sus informes:
    con eso se arregla y se empieza la 1.4.
