@@ -1,4 +1,4 @@
-# Chirogra: resumen para empezar el siguiente chat (27-nov-2026, rama `version-1.4` con el build 70; 1.3.0 EN LA TIENDA con el 64)
+# Chirogra: resumen para empezar el siguiente chat (27-nov-2026, rama `version-1.4` con el build 70 + icono «Ecuación» sin build; 1.3.0 EN LA TIENDA con el 64)
 
 Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («Dónde nos quedamos» y «Lo aprendido»).
 **Al usuario se le habla siempre en español.**
@@ -56,6 +56,15 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
   guía y «¿cuánto gané y en qué gasté más?» con dos herramientas (cifras iguales a Inicio). Uso medido: la primera
   pregunta escribe ~17 mil tokens en caché (~$0.09); con la caché caliente, ~$0.02 por pregunta. Falta: probar la
   compra real (TestFlight), respuestas que se escriben poco a poco y los borradores (preparar_gasto…).
+- **Icono «Ecuación» (27-nov, commit `a0574a4`, SIN BUILD todavía; el siguiente build lo lleva):** la ecuación
+  contable en tres bloques sobre azul marino (activos azafrán a la izquierda; pasivos blancos y capital gris a la
+  derecha). Archivo del usuario copiado tal cual a `App/AppIcon.icon`; `LogoMark` y la bienvenida con `LogoGlyph` nuevo
+  (la bienvenida dibuja los tres bloques uno a uno); **el asistente sigue con los lápices** (`AssistantGlyph`): si el
+  usuario quiere que también cambie, se hace en `AssistantMark` y en la guía («burbuja de los lápices»). Detalle en
+  CONTEXTO, «Ícono». **Web publicada:** `sitio/img/icono.png` y las capturas `bienvenida-es/en.jpg` de la guía, en
+  `main` (`de19b72`, solo esas tres imágenes; el resto de la web de la 1.4 sigue esperando a la unión con `main`).
+  Comprobado: compila iOS y Mac, el icono compilado del Mac sale bien y la bienvenida del Mac (copia
+  `com.chirogra.qa.icono`) dibuja el logo nuevo.
 - **Último build: 70 (1.4.0, `4f77961`)**, lo subió a TestFlight el chat del tutorial el 26-nov noche (comprobar en TestFlight que
   llegó iOS y macOS): tutorial «Aprende haciendo» ([TUTORIAL-GUIADO.md](TUTORIAL-GUIADO.md)) + puntos 5 a 9 + burbuja del Mac.
   Antes: 69, subido el 26-nov (`805125e`): los puntos 1 a 4 del asistente (arriba). Antes: 68,
@@ -89,12 +98,15 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
   6.9, iPad 13, Mac) **rehechas el 23-nov** con el icono «chirogra pencils»; las viejas, en «Anteriores bienvenida (logo
   χ)» de la misma carpeta. El logo de `~/Desktop/Chirogra-logo` (cuadrado a sangre y redondeado, 1024 px, sRGB)
   **rehecho el 23-nov** con el icono nuevo (los viejos, en «Anteriores (logo χρ)»); el cuadrado es el del App profile de
-  Plaid.
+  Plaid. **Con el icono «Ecuación» (27-nov) hay que rehacer las dos cosas otra vez** antes de enviar la 1.4 (y cambiar
+  el logo del App profile de Plaid si el usuario quiere).
 - **Plaid para la 1.5 (antes 2.0):** equipo nuevo **«Chirogra»** (`6b04d81ce1b977000ef535cc`; el de Tamio es otro),
   solicitud enviada el 23-nov y **PRODUCCIÓN APROBADA el 24-nov** (Pay As You Go; Transactions, Balance y Statements; uso
-  «SMB bookkeeping»). Quedan las tareas del Home del panel: **Add use case descriptions** (Link › Data Transparency
-  Messaging: casos de contabilidad/finanzas del negocio, nada de pagos ni préstamos; **Publish**), Compliance Center (registro OAuth de los bancos) y la
-  redirect URI `https://chirogra.com/plaid-oauth`. Política de seguridad para el cuestionario en
+  «SMB bookkeeping»). Tareas del Home del panel **hechas por el usuario el 26-nov** (con este chat): casos de uso de Data
+  Transparency (solo «Track and manage your finances» y «Do business accounting»), Compliance Center «Up to date», App
+  profile (descripción de 250 caracteres) e Institutions guardado. La página de vuelta `https://chirogra.com/plaid-oauth`
+  y el `apple-app-site-association` están publicados en `main` (`b0d14fe`). **Falta:** que el usuario añada esa URL en
+  Developers › API › Allowed redirect URIs (comprobar con él). Política de seguridad para el cuestionario en
   [SECURITY-POLICY.md](SECURITY-POLICY.md) y en PDF en `~/Desktop/Chirogra-Information-Security-Policy.pdf` (si se
   cambia, regenerarlo: Markdown → HTML → Chrome sin cabecera). Dependabot (alertas y actualizaciones de seguridad), escaneo
   de secretos y protección al empujar **activados el 23-nov** en el repo (público; 0 alertas). Compromete además a borrar del buzón lo no recogido en 30 días y a borrar la cuenta desde
@@ -159,7 +171,27 @@ acumule: está en `git show 1fe35ff:docs/RESUMEN-PARA-SEGUIR.md` y en los mensaj
 | 69 | `805125e` | 1.4.0: asistente que registra con una frase (gasto, factura, cobro, cita), botón «Ir a…», sales tax y buscar movimientos; ⌘K asistente, ⌘F buscar. |
 | 70 | `4f77961` | 1.4.0: tutorial de seguir «Aprende haciendo»; avisos nuevos en la campana y resumen diario (Ajustes › Avisos); Mac con permiso de red, inspector «Registrar pago al IRS» y burbuja flotante; privacidad y guía de la web; textos de la tienda. |
 
-## Último chat (26-nov, tarde y noche): asistente completo (puntos 1 a 9) y burbuja en el Mac
+## Último chat (26 y 27-nov, en paralelo con el del asistente): Plaid, tutorial «Aprende haciendo», build 70 e icono «Ecuación»
+
+- **Qué pidió el usuario y en qué orden:** terminar lo de Plaid (lo guié paso a paso por el panel; página de vuelta y
+  enlace universal empujados a `main` en `b0d14fe`); un **tutorial de seguir** («si dice presione aquí, va y presiona»)
+  desde que crea su empresa, con cliente, factura, gasto e impuestos, en iPhone, iPad y Mac, para la 1.4 y **en una rama
+  aparte** para no chocar con el otro chat (`tutorial-seguir`, ver [TUTORIAL-GUIADO.md](TUTORIAL-GUIADO.md)); ponérselo
+  en el iPhone y en el Mac (copias «Chirogra Prueba», Debug sin iCloud); arreglar la hoja de enviar que salía gris en el
+  Mac (`esperandoHojas`); commit y push sin build; unirlo a `version-1.4` con lo del otro chat (`27e5329`, sin choques,
+  5/5 pruebas de interfaz); y **subir el build 70** (iOS y Mac, «EXPORT SUCCEEDED» los dos).
+- **27-nov:** instalar el icono «chirogra Ecuacion.icon» de su escritorio en iOS y macOS, poner el logo en la web y la
+  bienvenida, commit, push y este resumen (ver «Estado», el icono). Rama de trabajo `icono-ecuacion` en el worktree
+  `~/Documents/GitHub/Chirogra-tutorial`, unida a `version-1.4` por avance rápido.
+- **Sin hacer, a decidir por él:** si el asistente pasa también a los bloques; si se borran las copias «Chirogra Prueba»
+  (iPhone `com.chirogra.qa.bienvenida`; Mac `~/Applications/Chirogra Prueba.app` y los contenedores
+  `com.chirogra.qa.tutorial` y `com.chirogra.qa.icono`); textos y orden del tutorial cuando lo pruebe con el 70.
+- **Limitación conocida del tutorial en el Mac:** «Guardar» y «Emitir factura» de la barra de la hoja no se iluminan
+  (son AppKit); la tarjeta lo dice en el texto.
+- **Worktree:** `~/Documents/GitHub/Chirogra-tutorial` sigue ahí (rama `icono-ecuacion`); se puede quitar con
+  `git worktree remove` cuando nadie lo use. `tutorial-seguir` ya está unida.
+
+## Chat anterior (26-nov, tarde y noche): asistente completo (puntos 1 a 9) y burbuja en el Mac
 
 - **Qué pidió el usuario y en qué orden:** comprobar en el servidor su pregunta desde TestFlight (entró como «sub»);
   hacer los puntos 1 a 4 del asistente (build 69, ver «Estado»); eligió **⌘K asistente y ⌘F buscar**; probó «registrar
