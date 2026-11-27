@@ -1,59 +1,38 @@
 {
   "fill" : {
-    "linear-gradient" : [
-      "display-p3:0.45541,0.47305,0.91098,1.00000",
-      "display-p3:0.24288,0.25120,0.79671,1.00000"
-    ]
+    "automatic-gradient" : "display-p3:0.15328,0.24990,0.49589,1.00000"
   },
   "groups" : [
     {
+      "hidden" : false,
       "layers" : [
         {
-          "image-name" : "8-brillo.svg",
-          "name" : "8-brillo"
+          "fill" : "none",
+          "hidden" : false,
+          "image-name" : "05-bloque-derecho-inferior.svg",
+          "name" : "05-bloque-derecho-inferior"
         },
         {
-          "image-name" : "7-rho.svg",
-          "name" : "7-rho"
+          "fill-specializations" : [
+            {
+              "appearance" : "dark",
+              "value" : "none"
+            }
+          ],
+          "hidden" : false,
+          "image-name" : "04-bloque-derecho-superior.svg",
+          "name" : "04-bloque-derecho-superior"
         },
         {
-          "hidden" : true,
-          "image-name" : "6-sombra-rho.svg",
-          "name" : "6-sombra-rho"
-        },
-        {
-          "hidden" : true,
-          "image-name" : "6-sombra-rho.png",
-          "name" : "6-sombra-rho"
-        },
-        {
-          "image-name" : "5-lapiz.svg",
-          "name" : "5-lapiz"
-        },
-        {
-          "hidden" : true,
-          "image-name" : "4-sombra-lapiz.svg",
-          "name" : "4-sombra-lapiz"
-        },
-        {
-          "hidden" : true,
-          "image-name" : "4-sombra-lapiz.png",
-          "name" : "4-sombra-lapiz"
-        },
-        {
-          "image-name" : "3-lapicero.svg",
-          "name" : "3-lapicero"
-        },
-        {
-          "hidden" : true,
-          "image-name" : "2-sombra-lapicero.svg",
-          "name" : "2-sombra-lapicero"
+          "hidden" : false,
+          "image-name" : "03-bloque-izquierdo.svg",
+          "name" : "03-bloque-izquierdo"
         },
         {
           "glass" : false,
           "hidden" : true,
-          "image-name" : "2-sombra-lapicero.png",
-          "name" : "2-sombra-lapicero"
+          "image-name" : "02-brillo.svg",
+          "name" : "02-brillo"
         }
       ],
       "shadow" : {

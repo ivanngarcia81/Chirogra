@@ -1471,17 +1471,21 @@ struct TermHelp: View {
     }
 }
 
-/// Logotipo de Chirogra: el icono de la app (`App/AppIcon.icon`) en pequeño, con el degradado de índigo, el lapicero y
-/// el lápiz que se cruzan en χ y la ρ azafrán con brillo (`LogoGlyph`, icono del 21-nov; antes, la χρ de letra).
+/// Logotipo de Chirogra: el icono de la app (`App/AppIcon.icon`) en pequeño, los tres bloques de la ecuación contable
+/// sobre azul marino con su sombra (`LogoGlyph`, icono «Ecuación» del 27-nov; antes, los lápices en χ con la ρ).
 struct LogoMark: View {
     var size: CGFloat = 28
 
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: size * 0.225, style: .continuous).fill(Palette.logoFill)
-            ForEach(LogoGlyph.Part.allCases, id: \.self) { part in
-                LogoGlyph(part: part).fill(part.color)
+            ZStack {
+                ForEach(LogoGlyph.Part.allCases, id: \.self) { part in
+                    LogoGlyph(part: part).fill(part.color)
+                }
             }
+            .compositingGroup()
+            .shadow(color: .black.opacity(0.4), radius: Self.shadowRadius(size: size), y: size * 36 / 1024)
             // El brillo de arriba del icono: blanco al 20 % que se apaga a media altura.
             LinearGradient(stops: [.init(color: .white.opacity(0.2), location: 0), .init(color: .white.opacity(0), location: 0.45)],
                            startPoint: .top, endPoint: .bottom)
@@ -1492,7 +1496,10 @@ struct LogoMark: View {
         .accessibilityLabel("Chirogra")
     }
 
-    /// Filo con que la bienvenida dibuja las letras antes de rellenarlas, sin bajar de 1.5 pt.
+    /// La sombra de los bloques (`feGaussianBlur` de 35 y 36 hacia abajo en los SVG), que en tamaños chicos no se note.
+    static func shadowRadius(size: CGFloat) -> CGFloat { size * 30 / 1024 }
+
+    /// Filo con que la bienvenida dibuja los bloques antes de rellenarlos, sin bajar de 1.5 pt.
     static func glyphLineWidth(size: CGFloat) -> CGFloat { max(size * 6.2 / 1024, 1.5) }
 }
 

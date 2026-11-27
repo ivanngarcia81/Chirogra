@@ -510,10 +510,17 @@ private struct LogoDrawing: View {
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: size * 0.225, style: .continuous).fill(Palette.logoFill)
-            // Se dibuja el contorno del lapicero, luego el del lápiz, luego la ρ y su brillo, y cada pieza se rellena
-            // después, como el icono (`LogoMark`).
-            ForEach(LogoGlyph.Part.allCases, id: \.self) { part in
-                letter(LogoGlyph(part: part), color: part.color, drawDelay: Self.drawDelay(part), fillDelay: Self.drawDelay(part) + 0.85)
+            // Se dibuja el contorno de los activos, luego el de los pasivos, luego el del capital, y cada bloque se
+            // rellena después, como el icono (`LogoMark`): la ecuación se va armando.
+            ZStack {
+                ForEach(LogoGlyph.Part.allCases, id: \.self) { part in
+                    letter(LogoGlyph(part: part), color: part.color, drawDelay: Self.drawDelay(part), fillDelay: Self.drawDelay(part) + 0.85)
+                }
+            }
+            .compositingGroup()
+            // La sombra llega con el relleno del último bloque; solo ella se anima aquí, no el dibujo de los bloques.
+            .animation(reduceMotion ? nil : .easeOut(duration: 0.5).delay(1.45)) { blocks in
+                blocks.shadow(color: .black.opacity(shown ? 0.4 : 0), radius: LogoMark.shadowRadius(size: size), y: size * 36 / 1024)
             }
         }
         .frame(width: size, height: size)
@@ -522,12 +529,12 @@ private struct LogoDrawing: View {
         .accessibilityLabel(Text(verbatim: "Chirogra"))
     }
 
-    /// Cuándo empieza a dibujarse cada pieza: el lapicero, el lápiz y la ρ con su brillo, como antes la χ y la ρ.
+    /// Cuándo empieza a dibujarse cada bloque: activos, pasivos y capital, como antes el lapicero, el lápiz y la ρ.
     private static func drawDelay(_ part: LogoGlyph.Part) -> Double {
         switch part {
-        case .penBody, .penCone, .penBall: 0.15
-        case .pencilBody, .pencilTip: 0.4
-        case .rho, .shine: 0.6
+        case .assets: 0.15
+        case .liabilities: 0.4
+        case .equity: 0.6
         }
     }
 

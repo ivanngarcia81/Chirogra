@@ -124,14 +124,16 @@ public enum Palette {
     public static let monogram = LinearGradient(colors: [Color(light: 0xA3A3A8, dark: 0xA3A3A8), Color(light: 0x86868B, dark: 0x86868B)],
                                                 startPoint: .top, endPoint: .bottom)
 
-    /// Logotipo (el icono «chirogra pencils» de la app, 21-nov): el degradado de índigo de su `icon.json` (Display P3),
-    /// lápices blancos con punta gris y ρ azafrán, igual en claro y oscuro.
-    public static let logoFill = LinearGradient(colors: [Color(.displayP3, red: 0.45541, green: 0.47305, blue: 0.91098),
-                                                         Color(.displayP3, red: 0.24288, green: 0.25120, blue: 0.79671)],
+    /// Logotipo (el icono «Ecuación» de la app, 27-nov): el azul marino del `automatic-gradient` de su `icon.json`, sacado
+    /// del icono que exporta Icon Composer (Display P3, arriba y abajo), y los bloques con los colores de sus SVG, igual en
+    /// claro y oscuro.
+    public static let logoFill = LinearGradient(colors: [Color(.displayP3, red: 0.1686, green: 0.2825, blue: 0.5635),
+                                                         Color(.displayP3, red: 0.1536, green: 0.2481, blue: 0.4961)],
                                                 startPoint: .top, endPoint: .bottom)
-    public static let logoMark = Color.white
-    public static let logoTip = Color(light: 0xB9BAC6, dark: 0xB9BAC6)
-    public static let logoBall = Color(light: 0x8E90A0, dark: 0x8E90A0)
+    public static let logoAssets = Color(light: 0xFFB84D, dark: 0xFFB84D)
+    public static let logoLiabilities = Color.white
+    public static let logoEquity = Color(light: 0x6B7686, dark: 0x6B7686)
+    /// La ρ azafrán del símbolo del asistente (`AssistantMark`, los lápices del icono anterior).
     public static let logoRho = Color(light: 0xF2B33D, dark: 0xF2B33D)
 }
 

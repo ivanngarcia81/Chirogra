@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <title>Brillo</title>
+  <defs>
+    <radialGradient id="e-brillo-grad" gradientUnits="userSpaceOnUse" cx="307.2" cy="163.84" r="694.2">
+      <stop offset="0" stop-color="#828CA0" stop-opacity="0.35" />
+      <stop offset="1" stop-color="#828CA0" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <g id="brillo" inkscape:groupmode="layer" inkscape:label="Brillo">
+    <rect x="0" y="0" width="1024" height="1024" fill="url(#e-brillo-grad)" />
+  </g>
+</svg>

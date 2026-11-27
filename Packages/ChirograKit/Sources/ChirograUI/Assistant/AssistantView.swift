@@ -3,20 +3,21 @@ import ChirograData
 import SwiftData
 import SwiftUI
 
-/// El símbolo del asistente: los lápices y la ρ del icono de Chirogra, sin el cuadro de fondo (decisión del usuario del
-/// 26-nov, en vez de la chispa de siempre). Lápices en el color de la marca con las puntas más claras; la ρ, azafrán.
+/// El símbolo del asistente: los lápices y la ρ del icono «chirogra pencils», sin el cuadro de fondo (decisión del usuario
+/// del 26-nov, en vez de la chispa de siempre; el icono de la app cambió el 27-nov, el asistente no). Lápices en el color
+/// de la marca con las puntas más claras; la ρ, azafrán.
 struct AssistantMark: View {
     var size: CGFloat = 24
 
-    /// Lo que ocupan las piezas en el lienzo de 1024 de `LogoGlyph` (de x 173 a 854 y de y 280 a 759).
+    /// Lo que ocupan las piezas en el lienzo de 1024 de `AssistantGlyph` (de x 173 a 854 y de y 280 a 759).
     private static let glyphWidth: CGFloat = 681
     private static let glyphCenterY: CGFloat = 519.5
 
     var body: some View {
         let canvas = size * 1024 / Self.glyphWidth
         ZStack {
-            ForEach(LogoGlyph.Part.allCases, id: \.self) { part in
-                LogoGlyph(part: part).fill(color(part))
+            ForEach(AssistantGlyph.Part.allCases, id: \.self) { part in
+                AssistantGlyph(part: part).fill(color(part))
             }
         }
         .frame(width: canvas, height: canvas)
@@ -25,7 +26,7 @@ struct AssistantMark: View {
         .accessibilityHidden(true)
     }
 
-    private func color(_ part: LogoGlyph.Part) -> Color {
+    private func color(_ part: AssistantGlyph.Part) -> Color {
         switch part {
         case .penBody, .pencilBody, .penBall: Palette.brand
         case .penCone, .pencilTip: Palette.brand.opacity(0.5)

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <title>Bloque izquierdo (activos)</title>
+  <defs>
+    <filter id="e-sombra" x="-60%" y="-60%" width="220%" height="220%" color-interpolation-filters="sRGB">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="35" result="blur" />
+      <feOffset in="blur" dx="0" dy="36" result="off" />
+      <feFlood flood-color="#000000" flood-opacity="0.5" result="color" />
+      <feComposite in="color" in2="off" operator="in" result="shadow" />
+      <feMerge>
+        <feMergeNode in="shadow" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+  <g id="bloque-izquierdo" inkscape:groupmode="layer" inkscape:label="Bloque izquierdo (activos)">
+    <rect x="224" y="232" width="260" height="560" rx="56" ry="56" fill="#FFB84D" filter="url(#e-sombra)" />
+  </g>
+</svg>

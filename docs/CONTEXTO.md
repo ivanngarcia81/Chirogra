@@ -358,16 +358,25 @@ tabla del principio. Se programa cuando la 1.3 esté en la tienda.
   (`Settings/SettingsCards.swift`).
 - **Pronunciación del nombre** (16-nov): **«Kairogra»**, porque es griego (χειρόγραφον). Dos testers de Userbrain no
   supieron cómo leerlo («Chiro…», «KyraGra», «TriRobra»).
-- **Ícono:** **«chirogra pencils»** (21-nov, sin build todavía): un lapicero y un lápiz blancos que se cruzan en χ y una
-  ρ azafrán (`#F2B33D`) con brillo de lupa, sobre el degradado índigo de su `icon.json` (Display P3). Archivo del
-  usuario copiado tal cual a `App/AppIcon.icon` (capas `3-lapicero`, `5-lapiz`, `7-rho`, `8-brillo`; las sombras van
-  ocultas). Antes: la χρ de letra (14-nov, build 45), la χ cursiva (build 41) y la χ redonda con punto (build 20).
-  `LogoMark` y la bienvenida lo dibujan con `LogoGlyph` (`DesignSystem/LogoGlyph.swift`, una forma por pieza sacada de
-  los SVG: si cambia el icono, volver a sacarla de ahí, no retocarla a mano) y `Palette.logoFill/logoMark/logoTip/
-  logoBall/logoRho`; la bienvenida dibuja el contorno del lapicero, luego el del lápiz, luego la ρ, y los rellena. El de
-  la web (`sitio/img/icono.png`, 256 px) sale de `ictool` (Icon Composer dentro de Xcode: `ictool App/AppIcon.icon
+- **Ícono:** **«Ecuación»** (27-nov, para la 1.4): la ecuación contable en tres bloques redondeados sobre azul marino
+  (`automatic-gradient` del `icon.json`): a la izquierda, alto, los activos (azafrán `#FFB84D`); a la derecha, arriba,
+  los pasivos (blanco) y abajo el capital (gris pizarra `#6B7686`). Archivo del usuario («chirogra Ecuacion.icon» del
+  escritorio) copiado tal cual a `App/AppIcon.icon` (capas `03`–`05`; `02-brillo` va oculta; CoreSVG avisa de un error
+  al compilar, por los filtros de sombra de los SVG, pero el icono sale bien). Antes: «chirogra pencils» (21-nov, build
+  64: lapicero y lápiz en χ con la ρ azafrán), la χρ de letra (14-nov, build 45), la χ cursiva (build 41) y la χ
+  redonda con punto (build 20). `LogoMark` y la bienvenida lo dibujan con `LogoGlyph` (`DesignSystem/LogoGlyph.swift`,
+  los tres `rect` de los SVG: si cambia el icono, volver a sacarlo de ahí, no retocarlo a mano) y `Palette.logoFill/
+  logoAssets/logoLiabilities/logoEquity` (el azul sacado del PNG que exporta `ictool`, arriba y abajo); la bienvenida
+  dibuja el contorno de los activos, luego el de los pasivos, luego el del capital, los rellena y al final llega la
+  sombra. **El asistente sigue con los lápices** (`AssistantMark` con `Assistant/AssistantGlyph.swift`, la forma del
+  icono anterior), porque el usuario los eligió para él el 26-nov y la guía habla de «la burbuja de los lápices»:
+  cambiarlo solo si él lo pide. El de
+  la web (`sitio/img/icono.png`, 256 px) sale de `ictool` (el de `Xcode.app/Contents/Applications/Icon Composer.app/Contents/Executables/`; el de
+  `Developer/usr/bin` no sabe `--export-image`: `ictool App/AppIcon.icon
   --export-image --platform macOS --rendition Default --width 128 --height 128 --scale 2 --output-file …`). Capturas
-  de la guía `bienvenida-es/en.jpg` rehechas el 21-nov con una copia de prueba del Mac: ventana de 900×1040 fijada con
+  de la guía `bienvenida-es/en.jpg` rehechas el 21-nov y el 27-nov con una copia de prueba del Mac (`-qa.alta 1
+  -qa.altaEstado TX -qa.altaZip 78702 -qa.tablaZip muestra -qa.altaCiudad Austin -qa.altaCiudadTasa 2`, `open -g` para
+  no quitarle el foco, `screencapture -l` de la ventana de 900 de ancho): ventana de 900×1040 fijada con
   `defaults write com.chirogra.qa.<nombre> "NSWindow Frame SwiftUI.WindowGroup<SwiftUI._ConditionalContent<SwiftUI.ModifiedContent<ChirograUI.ChirograRootView, _SwiftData_SwiftUI.(unknown context at $26f90eaa8).PassthroughModelContainerViewModifier>, ChirograUI.StoreRecoveryView>>-1-AppWindow-1" "300 0 900 1040 0 0 3840 2130 "`
   (la clave cambió con `StoreRecoveryView` y la pantalla del usuario ahora es 3840×2160 a 1x; mirar con `defaults read`
   qué clave guarda la app), recorte de 600 px desde (150, 48), 936 de alto en español y 918 en inglés.
