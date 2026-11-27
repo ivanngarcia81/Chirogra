@@ -1,4 +1,4 @@
-# Chirogra: resumen para empezar el siguiente chat (27-nov-2026, rama `version-1.4` con el build 70 + icono «Ecuación» sin build; 1.3.0 EN LA TIENDA con el 64)
+# Chirogra: resumen para empezar el siguiente chat (27-nov-2026, rama `version-1.4` con el build 71; 1.3.0 EN LA TIENDA con el 64)
 
 Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («Dónde nos quedamos» y «Lo aprendido»).
 **Al usuario se le habla siempre en español.**
@@ -56,7 +56,7 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
   guía y «¿cuánto gané y en qué gasté más?» con dos herramientas (cifras iguales a Inicio). Uso medido: la primera
   pregunta escribe ~17 mil tokens en caché (~$0.09); con la caché caliente, ~$0.02 por pregunta. Falta: probar la
   compra real (TestFlight), respuestas que se escriben poco a poco y los borradores (preparar_gasto…).
-- **Icono «Ecuación» (27-nov, commit `a0574a4`, SIN BUILD todavía; el siguiente build lo lleva):** la ecuación
+- **Icono «Ecuación» (27-nov, commit `a0574a4`, en el build 71):** la ecuación
   contable en tres bloques sobre azul marino (activos azafrán a la izquierda; pasivos blancos y capital gris a la
   derecha). Archivo del usuario copiado tal cual a `App/AppIcon.icon`; `LogoMark` y la bienvenida con `LogoGlyph` nuevo
   (la bienvenida dibuja los tres bloques uno a uno); **el asistente sigue con los lápices** (`AssistantGlyph`): si el
@@ -65,7 +65,8 @@ Lee esto primero y después [CONTEXTO.md](CONTEXTO.md), que tiene el detalle («
   `main` (`de19b72`, solo esas tres imágenes; el resto de la web de la 1.4 sigue esperando a la unión con `main`).
   Comprobado: compila iOS y Mac, el icono compilado del Mac sale bien y la bienvenida del Mac (copia
   `com.chirogra.qa.icono`) dibuja el logo nuevo.
-- **Último build: 70 (1.4.0, `4f77961`)**, lo subió a TestFlight el chat del tutorial el 26-nov noche (comprobar en TestFlight que
+- **Último build: 71 (1.4.0, 27-nov): el 70 con el icono «Ecuación»** (subido por el chat del tutorial, iOS y Mac).
+  Antes: **70 (1.4.0, `4f77961`)**, lo subió a TestFlight el chat del tutorial el 26-nov noche (comprobar en TestFlight que
   llegó iOS y macOS): tutorial «Aprende haciendo» ([TUTORIAL-GUIADO.md](TUTORIAL-GUIADO.md)) + puntos 5 a 9 + burbuja del Mac.
   Antes: 69, subido el 26-nov (`805125e`): los puntos 1 a 4 del asistente (arriba). Antes: 68,
   el asistente contesta preguntas escritas con el servidor (el usuario lo probó con su suscripción real el 26-nov: entró como
@@ -170,6 +171,7 @@ acumule: está en `git show 1fe35ff:docs/RESUMEN-PARA-SEGUIR.md` y en los mensaj
 | 68 | `7f3d0e4` | 1.4.0: el asistente contesta preguntas escritas con el servidor de Supabase «Chirogra» (Claude Opus 5.5 y herramientas en el aparato). |
 | 69 | `805125e` | 1.4.0: asistente que registra con una frase (gasto, factura, cobro, cita), botón «Ir a…», sales tax y buscar movimientos; ⌘K asistente, ⌘F buscar. |
 | 70 | `4f77961` | 1.4.0: tutorial de seguir «Aprende haciendo»; avisos nuevos en la campana y resumen diario (Ajustes › Avisos); Mac con permiso de red, inspector «Registrar pago al IRS» y burbuja flotante; privacidad y guía de la web; textos de la tienda. |
+| 71 | «Build 71» | 1.4.0: icono «Ecuación» (tres bloques: activos, pasivos y capital), `LogoMark` y bienvenida; el asistente sigue con los lápices. |
 
 ## Último chat (26 y 27-nov, en paralelo con el del asistente): Plaid, tutorial «Aprende haciendo», build 70 e icono «Ecuación»
 
@@ -183,9 +185,10 @@ acumule: está en `git show 1fe35ff:docs/RESUMEN-PARA-SEGUIR.md` y en los mensaj
 - **27-nov:** instalar el icono «chirogra Ecuacion.icon» de su escritorio en iOS y macOS, poner el logo en la web y la
   bienvenida, commit, push y este resumen (ver «Estado», el icono). Rama de trabajo `icono-ecuacion` en el worktree
   `~/Documents/GitHub/Chirogra-tutorial`, unida a `version-1.4` por avance rápido.
-- **Sin hacer, a decidir por él:** si el asistente pasa también a los bloques; si se borran las copias «Chirogra Prueba»
-  (iPhone `com.chirogra.qa.bienvenida`; Mac `~/Applications/Chirogra Prueba.app` y los contenedores
-  `com.chirogra.qa.tutorial` y `com.chirogra.qa.icono`); textos y orden del tutorial cuando lo pruebe con el 70.
+- **Copias «Chirogra Prueba» BORRADAS** (27-nov, a petición suya) del iPhone y del Mac, con sus contenedores.
+  Luego pidió **subir el build 71** (el icono).
+- **Sin hacer, a decidir por él:** si el asistente pasa también a los bloques; textos y orden del tutorial cuando lo
+  pruebe.
 - **Limitación conocida del tutorial en el Mac:** «Guardar» y «Emitir factura» de la barra de la hoja no se iluminan
   (son AppKit); la tarjeta lo dice en el texto.
 - **Worktree:** `~/Documents/GitHub/Chirogra-tutorial` sigue ahí (rama `icono-ecuacion`); se puede quitar con
